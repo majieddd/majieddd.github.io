@@ -1,7 +1,7 @@
 /* ==========================================================================
    COSMIC CONQUEST — Expansion Pack
    --------------------------------------------------------------------------
-   The elemental system, sixteen additional towers (each built on a verb no
+   The elemental system, twenty-two additional towers (each built on a verb no
    other tower uses), the campaign arena modifiers and campaign boons.
    Loaded after config.js; merges into TOWER_TYPES / TOWER_ORDER.
    ========================================================================== */
@@ -62,7 +62,7 @@ const COMBOS = {
 };
 
 /* --------------------------------------------------------------------------
-   SIXTEEN NEW TOWERS
+   TWENTY-TWO NEW TOWERS
    Same schema as config.js. `glyph` drives the shared turret rendering so the
    expansion does not need sixteen bespoke sprites.
 -------------------------------------------------------------------------- */
@@ -442,7 +442,11 @@ const TOWER_TYPES_2 = {
     color:'#fcd34d', dark:'#78500a', attack:'chain', glyph:'♒',
     desc:'A tuned discharge that walks the crowd from body to body, wherever they happen to be standing. It is not the damage that matters — everything it touches is left OPEN, and every other tower on the board collects. A chain asks who else is near THIS ONE; an Arc asks who else is on this ROAD. MID-GAME: worth exactly what the rest of your line can convert.',
     base:{ damage:7, range:3.3, rate:0.85, dmgType:'magic', chains:4, chainRange:2.4, falloff:0.80, vuln:0.16, vulnDur:3 },
-    levels:[ { cost:175, name:'ANTIPHON', mods:{ damage:22, chains:5, vuln:0.21 } },
+    /* CANTICLE, not ANTIPHON: Session 19 adds a Federation tower of that
+       name and two things in one faction's copy answering to one word is the
+       same lie as a wrong number. The id is untouched -- only the printed
+       tier name moves. */
+    levels:[ { cost:175, name:'CANTICLE', mods:{ damage:22, chains:5, vuln:0.21 } },
              { cost:315, name:'CHORAL',   mods:{ damage:34, chains:6, vuln:0.26, range:3.6 } } ],
     talents:[
       { id:'co_open', row:0, col:0, name:'OPEN CHORD',   desc:'+10% to the opening it leaves.', mods:{ vuln:0.10 } },
@@ -498,19 +502,342 @@ const TOWER_TYPES_2 = {
         surge:{ rangeMul:1.06 }, note:'One span that carries the whole board.' },
       { id:'substation', name:'SUBSTATION', cost:410, mods:{ range:3.0, auraDmg:0.34, auraRate:0.26, latticeBonus:3 },
         surge:{ auraDmg:0.05 }, note:'A short reach and a very dense one.' } ]
+  },
+
+  /* ── SESSION 19 ─────────────────────────────────────────────────────────
+     Three PIRATE and two ROBOTIC, from docs/NEW-TOWERS-DESIGN.md. Each names
+     a mechanic key that appears nowhere else in the arsenal and each of those
+     keys has a reader in entities.js -- the audit rule, and the specific way
+     five talents and six commander traits shipped inert here.
+
+     The machine two are `origin: 'robotic'`, which is the entire story lock:
+     Meta.isStoryTower reads the origin, so the soul shop refuses to price
+     them exactly as it refuses the existing eight. ROBOTIC_UNLOCK_ORDER in
+     config.js says where in the ladder they are issued. */
+
+  pressgang: {
+    id:'pressgang', element:'kinetic', origin:'pirate', name:'PRESS GANG', role:'Conscripts the dead into your own line', cost:225, costGrowth:1.66,
+    color:'#fca5a5', dark:'#5b1a1a', attack:'press', glyph:'⚓',
+    desc:'A boarding crew with a hook and no scruples. What it kills does not stay down: the body is dragged back onto its feet, handed a weapon and pointed at whatever is behind it. A conscript is built out of the corpse, so a heavy one makes a heavy hand and a mite makes very little — and it serves for a fixed span and then falls apart. FOUNDRY forges bodies and a SIREN sends them at somebody else; this is the reanimation loop pointed INWARD, at your own ground. EARLY-GAME by construction: one extra body is most of a wave when waves are thin and a rounding error when they are not.',
+    /* pressHp is a SHARE of the corpse, not a figure -- that is what keeps a
+       conscript honest at every wave without a second copy of the curve, and
+       it is why the tower fades: the share is constant while the number of
+       bodies it must hold is not. */
+    base:{ damage:11, range:3.2, rate:0.9, projSpeed:16, dmgType:'physical',
+           pressCd:5.0, pressDur:9, pressHp:0.55, pressDps:7, pressMax:2 },
+    levels:[ { cost:150, name:'BOATSWAIN', mods:{ damage:21, pressCd:4.2, pressDur:11, pressDps:11, pressMax:3 } },
+             { cost:275, name:'WARRANT',   mods:{ damage:34, pressCd:3.4, pressDur:13, pressHp:0.75, pressDps:17, pressMax:4, range:3.5 } } ],
+    talents:[
+      { id:'pg_rope',  row:0, col:0, name:'SHORT ROPE',    desc:'Presses 30% sooner.',              mods:{ pressCdMul:0.70 } },
+      { id:'pg_terms', row:0, col:1, name:'LONG ARTICLES', desc:'Conscripts serve 4s longer.',      mods:{ pressDur:4 } },
+      { id:'pg_flesh', row:1, col:0, name:'PRESSED FLESH', desc:'+45% conscript health.',           mods:{ pressHpMul:1.45 } },
+      { id:'pg_arms',  row:1, col:1, name:'ISSUED ARMS',   desc:'+60% conscript damage.',           mods:{ pressDpsMul:1.60 } },
+      { id:'pg_crew',  row:2, col:0, name:'FULL CREW',     desc:'+2 conscripts held at once.',      mods:{ pressMax:2 } },
+      { id:'pg_share', row:2, col:1, name:'DEAD MAN\'S SHARE', desc:'A conscript that falls takes 2.4x its damage with it.', mods:{ pressBlast:2.4 } } ],
+    branches:[
+      { id:'gang',  name:'THE GANG', cost:360, mods:{ damage:46, pressCd:2.2, pressDur:10, pressHp:0.48, pressDps:20, pressMax:7 },
+        surge:{ pressMax:1 }, note:'A rolling crew. Every body that falls is another that stands up.' },
+      { id:'bosun', name:'BOSUN',    cost:360, mods:{ damage:54, pressCd:6.5, pressDur:22, pressHp:1.90, pressDps:44, pressMax:2 },
+        surge:{ pressDps:6 }, note:'Two long-service hands, kept and armed, and they do not fall over.' } ]
+  },
+
+  privateer: {
+    id:'privateer', element:'void', origin:'pirate', name:'PRIVATEER', role:'Robs a rival commander on every kill', cost:255, costGrowth:1.80,
+    color:'#fbbf24', dark:'#5c3a05', attack:'projectile', glyph:'⚑',
+    desc:'Sails under a letter of marque nobody issued. It fights the wave like any other gun, but the prize is not the bounty — every kill lifts a share of a RIVAL COMMANDER\'S PURSE and puts it in yours. It takes a share rather than a sum, so a rival banking for an ascension is the richest target on the board and a rival it has already emptied is barely worth shooting: it cannot run away with the match. On a board of many seats it picks a victim rather than assuming there is only one, and when every rival has fallen it is a plain gun with a flag. LATE-GAME, and it compounds.',
+    base:{ damage:17, range:3.8, rate:0.95, projSpeed:19, dmgType:'physical', privateerSteal:0.012 },
+    levels:[ { cost:165, name:'CORSAIR',  mods:{ damage:31, privateerSteal:0.019 } },
+             { cost:305, name:'BUCCANEER',mods:{ damage:50, privateerSteal:0.028, range:4.1 } } ],
+    talents:[
+      { id:'pr_marque', row:0, col:0, name:'LETTERS OF MARQUE', desc:'+60% taken per kill.',        mods:{ privateerStealMul:1.60 } },
+      { id:'pr_guns',   row:0, col:1, name:'CHASE GUNS',        desc:'+45% damage.',                mods:{ damageMul:1.45 } },
+      { id:'pr_nest',   row:1, col:0, name:'CROW\'S NEST',      desc:'+30% range.',                 mods:{ rangeMul:1.30 } },
+      { id:'pr_rig',    row:1, col:1, name:'RUNNING RIGGING',   desc:'+30% fire rate.',             mods:{ rateMul:1.30 } },
+      { id:'pr_purse',  row:2, col:0, name:'PICK THE PURSE',    desc:'Robs the richest rival ANYWHERE on the board, not only the seat you are aimed at.', mods:{ privateerPick:true } },
+      { id:'pr_scuttle',row:2, col:1, name:'SCUTTLE',           desc:'What it cannot carry it burns: the victim loses half again on top.', mods:{ privateerScuttle:0.5 } } ],
+    branches:[
+      { id:'raider',    name:'RAIDER',    cost:420, mods:{ damage:66, rate:1.5, privateerSteal:0.021 },
+        surge:{ privateerSteal:0.002 }, note:'Volume. A hundred small robberies nobody bothers to report.' },
+      { id:'admiralty', name:'ADMIRALTY', cost:420, mods:{ damage:124, rate:0.55, privateerSteal:0.058, privateerScuttle:0.6 },
+        surge:{ privateerSteal:0.006 }, note:'Fewer prizes, and each one taken down to the hull.' } ]
+  },
+
+  bloodprice: {
+    /* `cost: 0` is the literal truth and Game.towerCost quotes it as such.
+       The price is `base.lifeCost`, charged by Game.build out of the only
+       resource on the board that cannot be earned back at will. */
+    id:'bloodprice', element:'fire', origin:'pirate', name:'BLOOD PRICE', role:'Bought with lives, never with gold', cost:0, costGrowth:1.0,
+    color:'#ef4444', dark:'#450a0a', attack:'projectile', glyph:'☩',
+    desc:'No gold changes hands. You pay for it out of the counter in the corner, and you do not get it back — selling it returns nothing, because the bill was never in gold. What arrives is a gun far past anything the wave could otherwise afford, standing on your line immediately. And it reads the ledger it was bought from: every life this commander has PAID into a Blood Price makes every Blood Price fire faster, so the second one is a statement about the run and the third is a different game. Lives lost to a leak buy it nothing. It can never take your last life — five is the floor, for both commanders.',
+    base:{ damage:52, range:4.2, rate:0.85, projSpeed:22, dmgType:'physical', splash:1.05,
+           lifeCost:2, bloodRate:0.06 },
+    levels:[ { cost:190, name:'EXSANGUINE',   mods:{ damage:98, splash:1.20 } },
+             { cost:340, name:'HAEMORRHAGE',  mods:{ damage:172, splash:1.40, range:4.6 } } ],
+    talents:[
+      { id:'bp_ledger', row:0, col:0, name:'RED LEDGER',  desc:'+45% damage.',                          mods:{ damageMul:1.45 } },
+      { id:'bp_art',    row:0, col:1, name:'ARTERIAL',    desc:'+45% splash.',                          mods:{ splashMul:1.45 } },
+      { id:'bp_quick',  row:1, col:0, name:'QUICKENED',   desc:'A further +8% fire rate per life paid.',mods:{ bloodRate:0.08 } },
+      { id:'bp_saw',    row:1, col:1, name:'BONE SAW',    desc:'Ignores 40% of armour.',                mods:{ pierce:0.40 } },
+      { id:'bp_caut',   row:2, col:0, name:'CAUTERISE',   desc:'Hits burn for 18/s over 3s.',           mods:{ burn:18, burnDur:3 } },
+      { id:'bp_debt',   row:2, col:1, name:'BLOOD DEBT',  desc:'Every 12 kills returns one life.',      mods:{ bloodTally:12 } } ],
+    branches:[
+      { id:'tithe',        name:'TITHE',        cost:460, mods:{ damage:296, rate:1.0, splash:1.55 },
+        surge:{ damageMul:1.06 }, note:'A larger bill was paid, so it is a larger gun.' },
+      { id:'exsanguinate', name:'EXSANGUINATE', cost:460, mods:{ damage:158, rate:1.9, bloodRate:0.05, burn:30, burnDur:5 },
+        surge:{ burn:6 }, note:'It keeps taking long after the shell has landed.' } ]
+  },
+
+  replicator: {
+    id:'replicator', element:'kinetic', origin:'robotic', name:'REPLICATOR', role:'Builds you a tower, unasked', cost:340, costGrowth:1.86,
+    color:'#67e8f9', dark:'#083344', attack:'replicate', glyph:'⧉',
+    desc:'A machine that does not need a commander. Left standing long enough it surveys the ground beside it and puts up another emplacement, free, out of your own five — legal ground only, never on rubble and never on top of anything. It will not build something it cannot account for: the gift\'s price, asked of the same call that would charge you, must be within the Replicator\'s own. So it grows as you invest in it, and it spends the one thing you cannot buy more of — TILES. The longest investment in the arsenal: nothing for several waves, then compounding.',
+    base:{ damage:9, range:3.0, rate:0.7, projSpeed:18, dmgType:'physical',
+           replicateEvery:4, replicateReach:3, replicateCount:1 },
+    levels:[ { cost:180, name:'FABRICATOR', mods:{ damage:19, replicateEvery:3, replicateReach:4 } },
+             { cost:330, name:'ASSEMBLER',  mods:{ damage:33, replicateEvery:3, replicateReach:5, replicateLevel:1 } } ],
+    talents:[
+      { id:'rp_cycle', row:0, col:0, name:'SHORT CYCLE',      desc:'One wave sooner between builds.',                 mods:{ replicateEvery:-1 } },
+      { id:'rp_arm',   row:0, col:1, name:'LONG ARM',         desc:'+2 tiles of placement reach.',                    mods:{ replicateReach:2 } },
+      { id:'rp_gun',   row:1, col:0, name:'SIDEARM',          desc:'+40% damage.',                                    mods:{ damageMul:1.40 } },
+      { id:'rp_seed',  row:1, col:1, name:'SEED STOCK',       desc:'What it builds arrives one mark higher.',         mods:{ replicateLevel:1 } },
+      { id:'rp_auth',  row:2, col:0, name:'DESIGN AUTHORITY', desc:'Builds the best thing it can account for rather than any.', mods:{ replicatePick:true } },
+      { id:'rp_twin',  row:2, col:1, name:'TWIN LINE',        desc:'Builds two at a time.',                           mods:{ replicateCount:1 } } ],
+    branches:[
+      { id:'swarm',     name:'SWARM',     cost:470, mods:{ damage:28, replicateEvery:2, replicateReach:6, replicateCount:1 },
+        surge:{ replicateReach:1 }, note:'Constant and cheap. It will fill your board whether or not you wanted it filled.' },
+      { id:'archetype', name:'ARCHETYPE', cost:470, mods:{ damage:74, replicateEvery:6, replicateReach:5, replicateLevel:2, replicatePick:true },
+        surge:{ replicateLevel:1 }, note:'Rarely, and never something second-rate.' } ]
+  },
+
+  nullfield: {
+    id:'nullfield', element:'void', origin:'robotic', name:'NULL FIELD', role:'Switches enemy abilities off', cost:300, costGrowth:1.80,
+    color:'#a5b4fc', dark:'#1e1b4b', attack:'null', glyph:'⊘',
+    desc:'It fires nothing and it blocks nothing. Inside the volume it holds, no mending, no shielding, no regeneration, no blinking, no jamming, no summoning, no phasing and no standing back up — only walking, and dying. The arsenal can out-damage a mechanic; this is the only thing that switches one off. Against a wave built on an ability it is total; against a plain armoured column it does nothing whatsoever, and that is the point. CONDITIONAL: an answer, not an upgrade.',
+    /* `nullRadius` is the authored field, and recompute() publishes it AS
+       `range` -- one number for the drawn circle, the printed figure and the
+       volume the engine tests. A second authored `range` beside it is exactly
+       the UI/engine desync this project keeps re-shipping. */
+    base:{ dmgType:'none', nullRadius:3.2 },
+    levels:[ { cost:175, name:'DEAD ZONE', mods:{ nullRadius:3.8 } },
+             { cost:330, name:'ABSOLUTE',  mods:{ nullRadius:4.4, nullVuln:0.15 } } ],
+    talents:[
+      { id:'nf_wide',  row:0, col:0, name:'WIDER NULL',  desc:'+30% field radius.',                              mods:{ nullRadiusMul:1.30 } },
+      { id:'nf_deco',  row:0, col:1, name:'DECOHERENCE', desc:'Everything inside takes +18% damage.',            mods:{ nullVuln:0.18 } },
+      { id:'nf_visc',  row:1, col:0, name:'VISCOUS',     desc:'Everything inside is slowed 25%.',                mods:{ nullSlow:0.25 } },
+      { id:'nf_eras',  row:1, col:1, name:'ERASURE',     desc:'Suppressed regeneration is dealt as damage instead.', mods:{ nullBackfire:1.0 } },
+      { id:'nf_lock',  row:2, col:0, name:'HARD LOCK',   desc:'A unit that leaves stays suppressed 2s longer.',  mods:{ nullLinger:2 } },
+      { id:'nf_array', row:2, col:1, name:'FIELD ARRAY', desc:'+20% radius and a further +10% damage taken.',    mods:{ nullRadiusMul:1.20, nullVuln:0.10 } } ],
+    branches:[
+      { id:'quiet',   name:'QUIET',   cost:440, mods:{ nullRadius:6.6, nullLinger:1.5 },
+        surge:{ nullRadiusMul:1.05 }, note:'A very large volume in which nothing clever happens.' },
+      { id:'erasure', name:'ERASURE', cost:440, mods:{ nullRadius:4.0, nullVuln:0.42, nullSlow:0.40, nullBackfire:2.0 },
+        surge:{ nullVuln:0.04 }, note:'A small volume, and inside it everything is worse than it was.' } ]
   }
 };
+
+Object.assign(TOWER_TYPES_2, {
+  /* SESSION 19 — THE SIX. Three Federation and three Xeno, each carrying a
+     base key that appears nowhere else in the arsenal and a reader for it in
+     entities.js. Three of the six do not watch the enemy at all: SEPULCHRE
+     watches your own tower list, ORISON watches one named creature for its
+     whole life, and ANTIPHON watches bodies dying on a board you do not own.
+     They sit HERE, inside TOWER_TYPES_2, because applyGoldSquish runs once
+     at the foot of this file and anything added after it keeps unsquished
+     prices for the rest of the match. */
+
+  sepulchre: {
+    id:'sepulchre', element:'radiant', origin:'light', name:'SEPULCHRE', role:'Your dead towers keep firing', cost:300, costGrowth:1.86,
+    color:'#fef3c7', dark:'#57430c', attack:'sepulchre', glyph:'✞',
+    desc:'A reliquary raised over the ground your emplacements stand on. When one of them leaves that ground — sold for the gold, or taken by the board itself — it does not stop firing: what is left of it holds the line at a share of its old strength until the wave turns over. Worthless over empty tiles, and transformative over a line you are about to rebuild, because selling stops being a loss and becomes a tempo play. INVESTMENT, and the faction tenet stated as a mechanic rather than as flavour.',
+    /* sepulchreWards is how many departures one chapel can hold at once. It
+       is the cap that stops an entire board being sold into a single
+       Sepulchre and rebuilt elsewhere while the old board is still shooting. */
+    base:{ range:3.2, dmgType:'none', sepulchreFrac:0.40, sepulchreDur:16, sepulchreWards:1 },
+    levels:[ { cost:190, name:'OSSUARY',   mods:{ sepulchreFrac:0.55, sepulchreDur:20, sepulchreWards:2, range:3.5 } },
+             { cost:355, name:'MAUSOLEUM', mods:{ sepulchreFrac:0.68, sepulchreDur:24, sepulchreWards:3, range:3.8 } } ],
+    talents:[
+      { id:'se_share', row:0, col:0, name:'MARTYR\'S SHARE',    desc:'Wards keep 12% more of what they were.', mods:{ sepulchreFrac:0.12 } },
+      { id:'se_wide',  row:0, col:1, name:'CONSECRATED GROUND', desc:'+35% radius.',                          mods:{ rangeMul:1.35 } },
+      { id:'se_long',  row:1, col:0, name:'LONG MOURNING',      desc:'Wards stand 8s longer.',                mods:{ sepulchreDur:8 } },
+      { id:'se_more',  row:1, col:1, name:'CATACOMB',           desc:'+1 ward held at once.',                 mods:{ sepulchreWards:1 } },
+      { id:'se_deep',  row:2, col:0, name:'UNENDING WATCH',     desc:'Wards keep 18% more of what they were.', mods:{ sepulchreFrac:0.18 } },
+      { id:'se_gold',  row:2, col:1, name:'GRAVE GOODS',        desc:'Each ward raised returns 40 gold.',     mods:{ sepulchreGold:40 } } ],
+    branches:[
+      { id:'martyrium',  name:'MARTYRIUM',  cost:470, mods:{ sepulchreFrac:0.92, sepulchreDur:30, sepulchreWards:2, range:4.0 },
+        surge:{ sepulchreFrac:0.02 }, note:'One ward that fights very nearly as hard as the tower it replaced.' },
+      { id:'necropolis', name:'NECROPOLIS', cost:470, mods:{ sepulchreFrac:0.42, sepulchreDur:40, sepulchreWards:6, range:4.6 },
+        surge:{ sepulchreWards:1 }, note:'A deep vault. Everything you gave up this wave is still standing on it.' } ]
+  },
+
+  orison: {
+    id:'orison', element:'radiant', origin:'light', name:'ORISON', role:'Names one creature the offering', cost:265, costGrowth:1.76,
+    color:'#fbbf24', dark:'#78500a', attack:'orison', glyph:'◉',
+    desc:'Once a wave the chapel names the largest thing walking at you and dedicates it. While the offering lives, every tower you own hits harder; when it is finally killed, you are given back a life. It inverts the instinct the rest of the board runs on — you want that one creature to last, and killing it early throws the blessing away. CONDITIONAL: enormous on a wave built round a single heavy body, close to idle on a swarm. An offering that walks into your base, or is taken off the board by something that does not kill it, pays nothing.',
+    /* range is board-wide on purpose. The chapel does not shoot and does not
+       need a target in reach; it names one creature out of the whole wave,
+       which is why it argues with your roster instead of scaling with it. */
+    base:{ range:99, dmgType:'none', offeringDmg:0.14, offeringRate:0.00, offeringLives:1 },
+    levels:[ { cost:180, name:'DEVOTION',     mods:{ offeringDmg:0.20, offeringRate:0.06 } },
+             { cost:335, name:'INTERCESSION', mods:{ offeringDmg:0.27, offeringRate:0.10, offeringLives:2 } } ],
+    talents:[
+      { id:'or_dmg',  row:0, col:0, name:'FERVOUR',    desc:'+8% damage while the offering lives.',      mods:{ offeringDmg:0.08 } },
+      { id:'or_rate', row:0, col:1, name:'PLAINSONG',  desc:'+8% fire rate while the offering lives.',   mods:{ offeringRate:0.08 } },
+      { id:'or_life', row:1, col:0, name:'RECOMPENSE', desc:'+1 life when the offering is taken.',       mods:{ offeringLives:1 } },
+      { id:'or_gold', row:1, col:1, name:'ALMS',       desc:'A taken offering also pays 60 gold.',       mods:{ offeringGold:60 } },
+      { id:'or_deep', row:2, col:0, name:'HIGH RITE',  desc:'+12% damage while the offering lives.',     mods:{ offeringDmg:0.12 } },
+      { id:'or_mark', row:2, col:1, name:'SANCTIFIED', desc:'The offering itself takes 25% less damage, so it lasts.', mods:{ offeringGuard:0.25 } } ],
+    branches:[
+      { id:'litany',   name:'LITANY',   cost:445, mods:{ offeringDmg:0.46, offeringRate:0.16, offeringLives:2 },
+        surge:{ offeringDmg:0.04 }, note:'The whole line lifted for as long as the offering stands.' },
+      { id:'oblation', name:'OBLATION', cost:445, mods:{ offeringDmg:0.18, offeringRate:0.04, offeringLives:5, offeringGold:200, offeringGuard:0.35 },
+        surge:{ offeringLives:0.25 }, note:'A small blessing, and a very large debt settled at the end of it.' } ]
+  },
+
+  antiphon: {
+    id:'antiphon', element:'storm', origin:'light', name:'ANTIPHON', role:'Answers your losses on rival ground', cost:245, costGrowth:1.70,
+    color:'#facc15', dark:'#713f12', attack:'antiphon', glyph:'♫',
+    desc:'It has no cadence of its own. Every detachment you MUSTER that dies on another commander\'s lane is answered here, and the chapel spends those answers as free volleys over your own ground. It is the only structure whose output is decided by what is happening on somebody else\'s board. CONDITIONAL and purely PvP — silent on a board that never sends, one of the heaviest guns in the arsenal on one that sends constantly. Your reanimated dead do not count: the chapel answers only what you paid for.',
+    /* antiphonBank is how many unspent answers it holds. Uncapped, a
+       commander could muster all match and dump a hundred volleys into one
+       wave, which makes the mechanic a battery rather than pressure. */
+    /* `homing` because a volley is an ANSWER, not suppressing fire: the
+       shot count comes off antiphonVolley and fireProjectile only gives
+       every shot in a burst a target when this is set. Unguided, a four-
+       shot answer sprays past the thing it was bought to kill. */
+    base:{ damage:26, range:4.2, rate:1.1, projSpeed:16, dmgType:'magic', homing:true, antiphonPerLoss:1, antiphonBank:4, antiphonVolley:2 },
+    levels:[ { cost:170, name:'RESPONSE', mods:{ damage:46, antiphonBank:6, antiphonVolley:3 } },
+             { cost:320, name:'DESCANT',  mods:{ damage:76, antiphonBank:8, antiphonVolley:4, range:4.6 } } ],
+    talents:[
+      { id:'an_amp',    row:0, col:0, name:'FORTE',      desc:'+45% damage.',                    mods:{ damageMul:1.45 } },
+      { id:'an_volley', row:0, col:1, name:'RESPONSORY', desc:'+1 shot per answer.',             mods:{ antiphonVolley:1 } },
+      { id:'an_hold',   row:1, col:0, name:'REMEMBRANCE',desc:'+3 answers held unspent.',        mods:{ antiphonBank:3 } },
+      { id:'an_grief',  row:1, col:1, name:'DEEP GRIEF', desc:'+0.5 answers for every body lost.', mods:{ antiphonPerLoss:0.5 } },
+      { id:'an_wide',   row:2, col:0, name:'NAVE',       desc:'+30% range.',                     mods:{ rangeMul:1.30 } },
+      { id:'an_toll',   row:2, col:1, name:'TOLLING',    desc:'Answers splash 1.0 tiles.',       mods:{ splash:1.0 } } ],
+    branches:[
+      { id:'dirge',    name:'DIRGE',    cost:420, mods:{ damage:190, antiphonVolley:6, antiphonBank:5, rate:1.3 },
+        surge:{ antiphonVolley:1 }, note:'Fewer answers, and every one of them is a barrage.' },
+      { id:'threnody', name:'THRENODY', cost:420, mods:{ damage:98, antiphonPerLoss:3, antiphonBank:16, antiphonVolley:3 },
+        surge:{ antiphonPerLoss:0.3 }, note:'Every body you spend is answered three times over.' } ]
+  },
+
+  gestalt: {
+    id:'gestalt', element:'venom', origin:'xeno', name:'GESTALT', role:'Grows on every kill near it', cost:240, costGrowth:1.80,
+    color:'#8b5cf6', dark:'#2e1065', attack:'gestalt', glyph:'⬢',
+    desc:'It does not upgrade. It EATS. Every creature that dies inside its reach — whatever killed it — is folded in permanently, and its gullet widens as it goes, so a Gestalt standing in a killzone feeds itself. Leave it too long without a body and it forgets the whole lot at once. Its real price is not gold, it is the tile: put it where the killing is, or do not put it down. INVESTMENT, and the only one in the arsenal that can be lost without being sold.',
+    /* gestaltMax is the ceiling on permanent accumulation. Without it a
+       tower placed in a good killzone at wave 5 is the only tower on the
+       board by wave 30 and the rest of the arsenal is decoration. */
+    base:{ damage:9, range:2.8, rate:1.0, projSpeed:15, dmgType:'physical', gestaltPerKill:0.9, gestaltRange:0.012, gestaltDecay:9, gestaltMax:20 },
+    levels:[ { cost:165, name:'ACCRUAL',   mods:{ damage:17, gestaltPerKill:1.7, gestaltMax:30, gestaltDecay:10 } },
+             { cost:305, name:'CONFLUX',   mods:{ damage:28, gestaltPerKill:2.8, gestaltMax:42, gestaltDecay:11, range:3.1 } } ],
+    talents:[
+      { id:'ge_glut', row:0, col:0, name:'GLUTTONY',     desc:'+60% growth from every body.',   mods:{ gestaltPerKillMul:1.60 } },
+      { id:'ge_hold', row:0, col:1, name:'SLOW TO FORGET',desc:'6s longer before it forgets.',   mods:{ gestaltDecay:6 } },
+      { id:'ge_max',  row:1, col:0, name:'DEEP GUT',     desc:'+14 to what it can hold.',       mods:{ gestaltMax:14 } },
+      { id:'ge_wide', row:1, col:1, name:'SPREADING',    desc:'The gullet widens twice as fast.', mods:{ gestaltRange:0.012 } },
+      { id:'ge_fast', row:2, col:0, name:'QUICK FEED',   desc:'+35% fire rate.',                mods:{ rateMul:1.35 } },
+      { id:'ge_bore', row:2, col:1, name:'BORING TEETH', desc:'Ignores 35% of armour.',         mods:{ pierce:0.35 } } ],
+    branches:[
+      { id:'hive',   name:'HIVE',   cost:400, mods:{ damage:34, gestaltPerKill:6.2, gestaltMax:60, gestaltDecay:9 },
+        surge:{ gestaltPerKill:0.4 }, note:'Everything it eats it keeps, and it can hold a great deal of it.' },
+      { id:'sprawl', name:'SPRAWL', cost:400, mods:{ damage:46, gestaltPerKill:2.4, gestaltMax:40, gestaltDecay:16, gestaltRange:0.030, range:3.4 },
+        surge:{ gestaltDecay:1 }, note:'A slower forgetting, and a gullet that never stops opening.' } ]
+  },
+
+  maw: {
+    id:'maw', element:'void', origin:'xeno', name:'MAW', role:'Swallows one creature whole', cost:310, costGrowth:1.88,
+    color:'#7c3aed', dark:'#2b0f5c', attack:'maw', glyph:'⊙',
+    desc:'It does not shoot. It opens, and the largest thing in reach is GONE — not killed, REMOVED: no bounty, no corpse to send at anybody, nothing left to reanimate, and one fewer creature on the wave. What it swallowed is digested into gold over the next several seconds instead, and that is the only payment you get for it. Against a single elite you cannot out-damage, it is the whole answer; against a swarm it eats one mite and looks foolish. CONDITIONAL, and the hardest counter in the arsenal.',
+    /* mawYield is a multiple of what the swallowed body WOULD have paid.
+       At 1.0 removal is gold-neutral and nothing else; below it, deleting a
+       creature costs you money, which is the honest price of refusing to
+       fight something. The bounty itself is never paid -- Game.killEnemy
+       returns on the removed-not-killed flag before it reaches awardGold --
+       so this is a replacement for the bounty, never a second copy of it. */
+    base:{ range:3.0, dmgType:'none', mawCd:18, mawDigest:6, mawYield:1.0 },
+    levels:[ { cost:200, name:'CRAW',    mods:{ mawCd:15, mawDigest:5.5, mawYield:1.4, range:3.3 } },
+             { cost:370, name:'ABYSSAL', mods:{ mawCd:12.5, mawDigest:5, mawYield:1.9, range:3.6 } } ],
+    talents:[
+      { id:'mw_fast',  row:0, col:0, name:'QUICK HUNGER',    desc:'Opens 25% more often.',    mods:{ mawCdMul:0.75 } },
+      { id:'mw_rich',  row:0, col:1, name:'RICH MEAL',       desc:'+60% digested gold.',      mods:{ mawYieldMul:1.60 } },
+      { id:'mw_wide',  row:1, col:0, name:'LONG REACH',      desc:'+30% radius.',             mods:{ rangeMul:1.30 } },
+      { id:'mw_quick', row:1, col:1, name:'FAST DIGESTION',  desc:'Digests 40% sooner.',      mods:{ mawDigestMul:0.60 } },
+      { id:'mw_deep',  row:2, col:0, name:'SECOND STOMACH',  desc:'Opens 30% more often.',    mods:{ mawCdMul:0.70 } },
+      { id:'mw_boss',  row:2, col:1, name:'TITAN\'S PORTION', desc:'It can swallow a boss.',  mods:{ mawBoss:true } } ],
+    branches:[
+      { id:'devourer',   name:'DEVOURER',   cost:500, mods:{ mawCd:9, mawDigest:4, mawYield:1.6, mawBoss:true, range:3.8 },
+        surge:{ mawYield:0.15 }, note:'It opens often, and nothing walking is too large for it.' },
+      { id:'rumination', name:'RUMINATION', cost:500, mods:{ mawCd:22, mawDigest:11, mawYield:5.0, range:4.2 },
+        surge:{ mawYield:0.4 }, note:'One meal, taken slowly, that pays for the rest of the line.' } ]
+  },
+
+  veil: {
+    id:'veil', element:'void', origin:'xeno', name:'HUNGERING VEIL', role:'Bills healing back as damage', cost:225, costGrowth:1.66,
+    color:'#c084fc', dark:'#3b0764', attack:'veil', glyph:'◌',
+    desc:'A field that keeps accounts. Every point of health a creature has ever been GIVEN back — by a mender, by a shield rebuilding itself, by a blessing, by its own regeneration, by standing up again after it died — is written down, and inside the veil that ledger is called in as damage no armour and no shield will stop. Menders, Aegis units and regenerating bosses become liabilities to their own side. CONDITIONAL: near-idle against a wave with no support in it, decisive against one built around it. It is the only structure that reads what an enemy HAS BEEN rather than what it is.',
+    base:{ range:3.0, dmgType:'pure', veilHealTax:1.0 },
+    levels:[ { cost:155, name:'ARREARS',     mods:{ veilHealTax:1.35, range:3.3 } },
+             { cost:290, name:'FORECLOSURE', mods:{ veilHealTax:1.75, range:3.6 } } ],
+    talents:[
+      { id:'vl_wide', row:0, col:0, name:'DEEPER SHROUD',  desc:'+35% radius.',                             mods:{ rangeMul:1.35 } },
+      { id:'vl_tax',  row:0, col:1, name:'HARSHER TERMS',  desc:'+0.5 damage per point ever healed.',       mods:{ veilHealTax:0.5 } },
+      { id:'vl_slow', row:1, col:0, name:'WEIGHT OF DEBT', desc:'Everything inside is slowed 20%.',         mods:{ veilSlow:0.20 } },
+      { id:'vl_vuln', row:1, col:1, name:'IN ARREARS',     desc:'Anything still in debt takes +18% damage.', mods:{ veilVuln:0.18 } },
+      { id:'vl_deep', row:2, col:0, name:'TOTAL RECALL',   desc:'+0.8 damage per point ever healed.',       mods:{ veilHealTax:0.8 } },
+      { id:'vl_gold', row:2, col:1, name:'COLLECTIONS',    desc:'Every 250 points collected pays 25 gold.', mods:{ veilTithe:25 } } ],
+    branches:[
+      { id:'ledger', name:'THE LEDGER', cost:380, mods:{ veilHealTax:3.2, veilVuln:0.22, range:3.8 },
+        surge:{ veilHealTax:0.15 }, note:'Nothing given is ever forgiven, and it is called in with interest.' },
+      { id:'famine', name:'FAMINE',     cost:380, mods:{ veilHealTax:1.5, veilSlow:0.38, range:5.0 },
+        surge:{ rangeMul:1.05 }, note:'A field wide enough to cover the whole approach, and everything in it drags.' } ]
+  }
+});
 
 /* Merge into the master roster. */
 Object.assign(TOWER_TYPES, TOWER_TYPES_2);
 TOWER_ORDER.push('foundry', 'saboteur', 'rampart', 'executioner', 'chrono', 'echo',
                  'quake', 'siren', 'alchemist', 'glaive', 'cyclone', 'capacitor',
                  'shepherd', 'ward', 'reckoning', 'arbalest',
-                 'custodian', 'concord', 'ichor', 'pylon');
+                 'custodian', 'concord', 'ichor', 'pylon',
+                 /* Session 19. The DEFINITIONS above are inside TOWER_TYPES_2
+                    and so are already merged by the Object.assign two lines up
+                    -- which is what matters, because applyGoldSquish() below
+                    walks TOWER_TYPES and is the ONE pass that reaches a price.
+                    Anything defined after it keeps pre-squish numbers and is
+                    eight times too expensive. */
+                 'pressgang', 'privateer', 'bloodprice', 'replicator', 'nullfield');
+
+/* NULL FIELD authors its volume ONCE, as `nullRadius`. Tower.recompute
+   publishes it as `range` for everything LIVE -- but the static surfaces read
+   `base.range` straight off this table: the tower tooltip and the loadout
+   card (ui.js) and the placement ghost (Game.drawBuildOverlay). With no
+   `range` in the table a 3.2-tile field shipped with a "0.0 tiles" tooltip
+   and a build ghost of zero radius. So the table's `range` is DERIVED from
+   the authored figure here rather than written beside it: authoring the same
+   distance twice is how the eight UI/engine desyncs in this project's history
+   all began. */
+for (const id in TOWER_TYPES) {
+  const b = TOWER_TYPES[id].base;
+  if (b && b.nullRadius) b.range = b.nullRadius;
+}
 
 /* GOLD SQUISH runs here and only here: both rosters are now in TOWER_TYPES,
    so one loop reaches every price, bounty and purse (config.js). */
 applyGoldSquish();
+
+/* SESSION 19 -- THE SIX. Light to ten, Xeno to ten. Appended here rather than
+   spliced into the statement above so this insert is clear of every other
+   Session 19 edit in this file; applyGoldSquish iterates TOWER_TYPES and never
+   TOWER_ORDER, so an id added after it is still priced by the squish that
+   already ran.
+
+   `splice` rather than `push` on purpose: a sibling Session 19 patch finds its
+   own roster edit by searching for the literal TOWER_ORDER-dot-push and
+   refuses to write when that string is not unique in the file. Same append,
+   same result, and the merge now lands in either arrival order. */
+TOWER_ORDER.splice(TOWER_ORDER.length, 0,
+                   'sepulchre', 'orison', 'antiphon', 'gestalt', 'maw', 'veil');
 
 /* --------------------------------------------------------------------------
    CAMPAIGN CONTENT — arena modifiers shown on the world-path nodes, and the

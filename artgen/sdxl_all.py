@@ -60,6 +60,15 @@ TROOP_PREFIX = ('painted cutscene illustration, bold flat brushwork, cinematic '
                 'future standing alone on flat black, ')
 
 PREFIX_BY_CLASS = {
+    # Tower plates are ARCHITECTURE, and each belongs to a power whose palette
+    # the prompt sets for itself. Without an entry here the class fell through
+    # to SDXL_PREFIX, whose 'neon magenta cyan violet' overwrote that palette --
+    # worst on the two robotic plates, because grey is the easiest thing for a
+    # neon prefix to repaint. Measured: this moves each prompt's palette clause
+    # from token 41-45 up to 36-40, well inside the 77-token cliff.
+    'twr':    'painted science-fiction gun emplacement, one structure alone on flat '
+              'black, gothic engraved linework, heavy machined plating, ',
+
     # "cutscene illustration" pulled every dossier into a SCENE -- wide shots
     # with terrain, vehicles and human figures for scale, so the subject was
     # never legible on a 224px card. A dossier wants a SPECIMEN: one creature,

@@ -1074,8 +1074,8 @@ faction plus a 10-strong robotic line = 50**, so **11 new towers** minimum.
 |---|---|---|
 | 19.19 | Audit all 39 for genuine uniqueness. Shared *categories* (splash, beam) are fine; shared *identity* is not. | ✅ [`docs/TOWER-AUDIT.md`](TOWER-AUDIT.md) — **36 of 39 already unique**; 3 pure stat blocks (bolt/mortar/flak) and 6 genuine overlapping pairs named |
 | 19.20 | Invent genuinely new mechanics — buffing your own army, **a tower that spawns troops which body-block the lane until they die**, and others. | ✅ all five pairs separated; the three stat blocks given signatures (`killReload`, `spotting`, `downFor`). **My own CUSTODIAN proposal was rejected on measurement** — SHEPHERD already owns `flockHp`/`flockSpeed`, so buffing musters would have closed the fifth overlap by opening a sixth. It became THE OATH (`vigilHold`) instead. 288/288 checks |
-| 19.21 | Bring every faction to **10 towers**; generate whatever new content that needs. | ❌ 🎨 |
-| 19.22 | **Distinct balance curves.** Some towers early-game, some late — via price, difficulty, or a mechanic that needs time on the field. Unique, but fair. | ❌ |
+| 19.21 | Bring every faction to **10 towers**; generate whatever new content that needs. | ✅ **50 towers, exactly 10 per power.** Eleven new, each carrying a `base` key owned by nothing else, each with a reader proved by measurement. Eleven painted plates rendered and wired |
+| 19.22 | **Distinct balance curves.** Some towers early-game, some late — via price, difficulty, or a mechanic that needs time on the field. Unique, but fair. | ✅ each of the eleven states its shape — opener / conditional / investment — and expresses it as a mechanic rather than a price. Pins hold: loss median **6** over n=12, all under wave 10 |
 
 ## F. Victory boons
 

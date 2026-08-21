@@ -354,12 +354,27 @@
   T('19.12 the loadout is four columns at desk width', function () {
     const grid = document.querySelector('#lo-columns');
     if (!grid) { skip('19.12 the loadout is four columns at desk width', 'not on the loadout screen'); return; }
-    const tracks = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length;
+    /* Render it first. An UNRENDERED grid reports its authored template, which
+       contains `minmax(0px, 1fr)` -- and that has a space in it, so counting
+       tracks by splitting on spaces reports six for a four-column grid. Once
+       laid out the value resolves to plain pixels and the count is honest. */
+    if (document.getElementById('screen-loadout').classList.contains('hidden')) {
+      UI.show('screen-loadout');
+    }
+    UI.renderLoadout();
+    const tpl = getComputedStyle(grid).gridTemplateColumns;
+    /* Count top-level tracks, ignoring spaces inside any remaining function. */
+    let depth = 0, tracks = tpl.trim() ? 1 : 0;
+    for (const ch of tpl.trim()) {
+      if (ch === '(') depth++;
+      else if (ch === ')') depth--;
+      else if (ch === ' ' && depth === 0) tracks++;
+    }
     /* Below LO_FOUR_COL_MIN_PX the detail columns collapse to a drawer BY
        DESIGN, so a narrow pane reporting two tracks is correct, not a fault. */
     ok('19.12 the loadout is four columns at desk width',
        innerWidth < 1200 ? tracks >= 2 : tracks === 4,
-       tracks + ' tracks at ' + innerWidth + 'px wide');
+       tracks + ' tracks at ' + innerWidth + 'px wide: ' + tpl);
   });
 
   T('19.15 both preview stages actually move', function () {

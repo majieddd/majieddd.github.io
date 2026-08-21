@@ -56,6 +56,11 @@ class Side {
        -- and ownsTile partitions the grid, so the per-side sets are disjoint
        by construction. */
     this.cleared = new Set();
+    /* BLOOD PRICE's ledger. Lives this commander has SPENT on a tower, which
+       is a different quantity from lives lost -- `stats.leaked` is that one.
+       Tower.rateMul reads this and only this, so the doctrine pays for
+       commitment and pays nothing at all for a leak. */
+    this.livesPaid = 0;
     this.stats = { kills: 0, goldEarned: 0, leaked: 0, built: 0, sent: 0, livesRestored: 0, mustered: 0 };
   }
   get alive() { return this.lives > 0; }
@@ -1132,6 +1137,13 @@ const Game = {
   towerCost(side, type) {
     const S = this.sides[side];
     const def = TOWER_TYPES[type];
+    /* A life-priced tower costs no gold AT ALL, and every surface that prints
+       a price prints this figure beside a gold glyph. Falling through to the
+       Math.max(1, ...) below would have quoted 1 gold for a purchase the
+       engine never charges gold for -- a small lie, but the exact shape of
+       the seven UI/engine desyncs this project has already shipped.
+       Game.towerLifeCost is where the real price lives. */
+    if (def && def.base && def.base.lifeCost) return 0;
     const owned = Math.max(0, S.countOf(type) - (S.traits.freeCopies || 0));
     /* COST_GROWTH_STEEPEN of the fractional part -- x1.50 becomes x2.25,
        x2.35 becomes x4.38. Through appliedGrowth so the four surfaces that
@@ -1144,14 +1156,114 @@ const Game = {
     return Math.max(1, Math.round(def.cost * Math.pow(growth, owned) * inflation * S.mods.cost * boon));
   },
 
+  /* --- THE SECOND CURRENCY ------------------------------------------------
+     BLOOD PRICE is bought with lives. Four calls, and every surface that
+     prices, offers, greys out or charges a build goes through one of them, so
+     there is exactly one statement of what a life-priced tower costs. */
+
+  /** The life price of the next copy, or 0 for everything bought with gold.
+      Compounds per copy the way gold prices already do, so a second Blood
+      Price is a statement about the run rather than a default opening. */
+  towerLifeCost(side, type) {
+    const def = TOWER_TYPES[type];
+    const base = def && def.base && def.base.lifeCost;
+    if (!base) return 0;
+    return Math.ceil(base * Math.pow(BLOOD_PRICE_GROWTH, this.sides[side].countOf(type)));
+  },
+
+  /** Can this side pay for that build right now, in whichever currency it is
+      denominated? THE affordability test -- the radial, the build ghost and
+      Game.build all ask it, so a greyed option and a refused purchase can
+      never disagree. */
+  canAffordBuild(side, type) {
+    const S = this.sides[side];
+    if (!S) return false;
+    const life = this.towerLifeCost(side, type);
+    /* THE HARD FLOOR, identical for both seats. A tower that can take your
+       last life is not a decision, it is a delayed loss wearing one. */
+    if (life > 0) return S.lives - life >= BLOOD_PRICE_FLOOR;
+    return S.gold >= this.towerCost(side, type);
+  },
+
+  /** The denominator the RIVAL divides a build's value by, in gold, for
+      everything -- including what is not bought with gold.
+
+      AI.bestAction scores a candidate as `value / cost`. A life-priced tower
+      quotes zero, and `value / 0` is Infinity: measured on a mirror board,
+      the rival picked BLOOD PRICE on every build tick it had a spot for and
+      had spent its buffer down to the floor by wave 4, which made the FRESH
+      pin look better while making the match worse -- exactly the failure the
+      design note warns about. Stating the life price in gold lets the two
+      currencies compete honestly. Infinity is returned rather than a refusal
+      because AI.bestAction's own `cost > gold * 1.8` test already reads that
+      as "not this tick", so no change is needed on its side of the call. */
+  bidCost(side, type) {
+    const life = this.towerLifeCost(side, type);
+    if (!life) return this.towerCost(side, type);
+    const S = this.sides[side];
+    if (S.lives - life < BLOOD_PRICE_FLOOR) return Infinity;
+    /* A PREFERENCE, not a rule, and only for a commander the player is not
+       driving -- exactly the shape MUSTER_AI_SAFE_LIVES already has for
+       sends. The rule above applies to both seats identically. */
+    if (S.isAI && S.lives - life < S.maxLives * BLOOD_PRICE_AI_RESERVE) return Infinity;
+    return life * BLOOD_PRICE_BID_GOLD;
+  },
+
+  /** Spend lives on a purchase. Deliberately NOT loseLives: a leak books a
+      breach, flashes the screen, feeds `stats.leaked` and can end the match.
+      This is a transaction, it is floored above zero by canAffordBuild, and
+      it can never resolve a battle. */
+  spendLives(side, n) {
+    const S = this.sides[side];
+    S.lives -= n;
+    S.livesPaid = (S.livesPaid || 0) + n;
+    if (side === this.viewSide) {
+      this.hurtFlash = 0.5; this.shake(5); Sound.play('leak');
+      this.addFloater(this.width / 2, 60, '-' + n + ' ♥ PAID', false, '#ef4444', 16);
+    }
+    UI.syncLive();
+  },
+
+  /**
+   * REPLICATOR's free emplacement.
+   *
+   * Everything Game.build enforces except the payment: loadout membership,
+   * tile legality through canBuild (ownership, lane, authored terrain, arena
+   * rubble, anything already standing) and the base-level floor. It cannot
+   * be reached by a player and takes no price, so it deliberately does NOT
+   * re-enter build() -- a "free" flag on the paid path is how a discount ends
+   * up reachable from the shop.
+   */
+  buildFree(side, type, gx, gy) {
+    const S = this.sides[side];
+    if (!S || !TOWER_TYPES[type]) return null;
+    if (!S.loadout.includes(type)) return null;
+    if (!this.canBuild(side, gx, gy)) return null;
+    const t = new Tower(type, gx, gy, side);
+    if ((S.baseLevel || 1) > 1) this.applyBaseLevelTo(t, S.baseLevel);
+    S.towers.push(t);
+    /* Counted as built: it raises this side's tower count, which raises every
+       future price through the inflation term in towerCost. A free tower that
+       did not is a free tower that costs nothing at all, and the board cost
+       is the whole balance of REPLICATOR. */
+    S.stats.built++;
+    this.recomputeAuras();
+    if (side === 0) UI.syncAll();
+    return t;
+  },
+
   build(side, type, gx, gy) {
     const S = this.sides[side];
     const cost = this.towerCost(side, type);
+    const life = this.towerLifeCost(side, type);
     if (!TOWER_TYPES[type] || !this.canBuild(side, gx, gy)) { if (side === 0) Sound.play('denied'); return null; }
     /* Only the five towers you deployed with may be built. */
     if (!S.loadout.includes(type)) { if (side === 0) Sound.play('denied'); return null; }
-    if (S.gold < cost) { if (side === 0) { Sound.play('denied'); UI.flashGold(); } return null; }
-    S.gold -= cost;
+    if (!this.canAffordBuild(side, type)) {
+      if (side === 0) { Sound.play('denied'); if (!life) UI.flashGold(); }
+      return null;
+    }
+    if (life > 0) this.spendLives(side, life); else S.gold -= cost;
     const t = new Tower(type, gx, gy, side);
     /* The base's level is the floor every new tower starts from. Past level 3
        the specialisation is included -- the player picks it immediately, free
@@ -1960,10 +2072,10 @@ const Game = {
     }
 
     /* UNSTABLE escalation: the dead heal their neighbours. */
-    if (e.deathHeal) {
+    if (e.deathHeal && !e.nulled) {
       const r2 = (2.6 * TILE) ** 2;
       for (const o of this.enemies) {
-        if (o === e || o.dead || o.hostileTo !== e.hostileTo) continue;
+        if (o === e || o.dead || o.hostileTo !== e.hostileTo || o.nulled) continue;
         if (dist2(e.x, e.y, o.x, o.y) <= r2) o.hp = Math.min(o.maxHp, o.hp + e.maxHp * e.deathHeal);
       }
     }
@@ -2481,6 +2593,12 @@ const Game = {
       let damp = 1;
       for (const f of this._purgeFields)
         if (f.side === e.hostileTo && dist2(f.x, f.y, e.x, e.y) <= f.r2) damp = Math.min(damp, 1 - f.amt);
+      /* NULL FIELD. A carrier's field is an ability, so nothing inside the
+         null receives one. Resolved here rather than in the carrier loop
+         below because auraDamp is already the single per-unit answer to "how
+         much of a projected field reaches this body", and a second gate one
+         loop down would be a second answer to the same question. */
+      if (e.nulled) damp = 0;
       e.auraDamp = damp;
     }
     for (const c of this.enemies) {
@@ -2502,9 +2620,15 @@ const Game = {
     /* --- menders repair their own faction only --- */
     for (const m of this.enemies) {
       if (m.dead || !m.def.healRate) continue;
+      /* NULL FIELD gates BOTH ends: a mender standing in the field cannot
+         work, and a body inside it cannot be worked on from outside. Either
+         alone leaves a visible hole -- a mender parked at the edge healing
+         into the null, or one inside it healing the column behind. */
+      if (m.nulled) continue;
       const r2 = (m.def.healRadius * TILE) ** 2;
       for (const e of this.enemies) {
         if (e === m || e.dead || e.hp >= e.maxHp || e.hostileTo !== m.hostileTo) continue;
+        if (e.nulled) continue;
         if (dist2(m.x, m.y, e.x, e.y) <= r2) {
           e.hp = Math.min(e.maxHp, e.hp + m.def.healRate * dt);
           if (Math.random() < dt * 2) this.spawnParticle(e.x + rand(-5, 5), e.y + rand(-5, 5), 0, rand(-28, -12), 0.45, 2.2, '#34d399', 'spark');
@@ -2888,7 +3012,7 @@ const Game = {
     const def = TOWER_TYPES[this.selectedType];
     const { gx, gy } = this.hover;
     const cx = (gx + 0.5) * TILE, cy = (gy + 0.5) * TILE;
-    const ok = this.canBuild(0, gx, gy) && this.sides[0].gold >= this.towerCost(0, this.selectedType);
+    const ok = this.canBuild(0, gx, gy) && this.canAffordBuild(0, this.selectedType);
     ctx.save();
     ctx.fillStyle = ok ? 'rgba(74,222,128,0.09)' : 'rgba(239,68,68,0.11)';
     ctx.strokeStyle = ok ? 'rgba(74,222,128,0.9)' : 'rgba(239,68,68,0.9)';
@@ -3214,7 +3338,9 @@ const Game = {
        order is frozen: the prices and the greying are re-read every frame,
        and Game.build re-checks the purse at release, so a stale order can
        never let an unpayable build through. */
-    for (const it of items) it.afford = S.gold >= it.cost;
+    /* Through canAffordBuild, not `S.gold >= cost`, so the ring can order a
+       life-priced tower by whether it is actually payable. */
+    for (const it of items) it.afford = this.canAffordBuild(0, it.type);
     items.sort((a, b) => ((b.afford ? 1 : 0) - (a.afford ? 1 : 0)) || (b.value - a.value));
 
     /* Keep the whole ring on the board. Side 0 owns the left columns, where a
@@ -3323,7 +3449,8 @@ const Game = {
        desync this codebase keeps re-shipping. */
     for (const it of r.items) {
       it.cost = this.towerCost(0, it.type);
-      it.afford = S.gold >= it.cost;
+      it.life = this.towerLifeCost(0, it.type);
+      it.afford = this.canAffordBuild(0, it.type);
     }
 
     const grow = clamp((performance.now() - r.born) / (RADIAL_GROW_SECS * 1000), 0, 1);
@@ -3380,8 +3507,12 @@ const Game = {
       /* The price stays legible on the ones you cannot afford: greying an
          option without saying what it would take is a dead end, not a hint. */
       ctx.font = 'bold 11px ui-monospace, Consolas, monospace';
-      ctx.fillStyle = it.afford ? '#e6f5ff' : '#94a3b8';
-      ctx.fillText('◈' + it.cost, ix, iy + iconR + 12);
+      /* THE PRICE IN ITS OWN CURRENCY. A life-priced tower quotes ♥ and its
+         life figure; quoting the ◈0 that towerCost truthfully returns would
+         read as free, which is the one thing this purchase is not. */
+      ctx.fillStyle = it.life ? (it.afford ? '#fca5a5' : '#7f1d1d')
+                              : (it.afford ? '#e6f5ff' : '#94a3b8');
+      ctx.fillText(it.life ? '♥' + it.life : '◈' + it.cost, ix, iy + iconR + 12);
     }
 
     /* Only the armed choice is named, in the middle. Five labels around a
@@ -3390,7 +3521,8 @@ const Game = {
       const it = r.items[r.hover];
       ctx.font = 'bold 13px ui-monospace, Consolas, monospace';
       ctx.fillStyle = it.afford ? TOWER_TYPES[it.type].color : '#f87171';
-      ctx.fillText(it.afford ? TOWER_TYPES[it.type].name : 'NOT ENOUGH GOLD',
+      const refusal = it.life ? 'NOT ENOUGH LIVES' : 'NOT ENOUGH GOLD';
+      ctx.fillText(it.afford ? TOWER_TYPES[it.type].name : refusal,
                    r.mx, r.my - TILE * 0.95);
     }
     ctx.restore();

@@ -596,7 +596,14 @@ const AI = {
     /* --- new towers (restricted to the five it deployed with) --- */
     for (const type of S.loadout) {
       const def = TOWER_TYPES[type];
-      const cost = Game.towerCost(S.index, type);
+      /* Game.bidCost, not towerCost. Rival parity for BLOOD PRICE, which is
+         priced in LIVES and therefore quotes zero gold: `value / 0` below is
+         Infinity, so the rival picked it on every build tick and had traded
+         its whole buffer for tempo by wave 4. bidCost states both currencies
+         in one unit and returns Infinity when the spend would be imprudent,
+         which the gate on the next line already reads as "not this tick".
+         Game.build still charges the real price and enforces the real floor. */
+      const cost = Game.bidCost(S.index, type);
       if (cost > gold * 1.8) continue;
       const spot = this.bestSpotFor(def);
       if (!spot) continue;

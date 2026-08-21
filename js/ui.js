@@ -2270,6 +2270,12 @@ const UI = {
         <span class="lo-d-name"><b>${t.name}</b><span class="lo-role">${t.role}</span></span>
         <span class="lo-d-cost">◈${t.cost}</span>
       </div>
+      ${/* The painted plate, when the pack has one. artImg returns '' for a
+            key the pack has not got, so an un-rendered tower shows the
+            procedural icon above and nothing else -- no broken image, no
+            layout shift. That is what lets the catalogue entry ship before
+            the pixels do. */ ''}
+      ${artImg('twr_' + id, 'lo-d-art', t.name)}
       <div class="lo-chips">
         <span class="elem-badge" style="--el:${el.color}">${el.icon} ${el.name}</span>
         ${this.originBadge(id)}

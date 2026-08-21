@@ -1849,3 +1849,23 @@ body:not(.arena-field) .arena-ladder { display: none; }
   .lo-detail-col { transition: none; }
   .lo-chip { transition: none; }
 }
+
+
+/* The painted tower plate in the loadout's detail column. Sized off the
+   dossier's .ei-art so a tower and an enemy read at the same scale, and
+   `display:block` on an empty string collapses to nothing, which is what
+   artImg returns for a key the pack has not got yet. */
+.lo-d-art {
+  display: block;
+  width: 100%;
+  /* A FIXED height, not a max. artImg emits loading="lazy" and the plate is a
+     data URI that decodes asynchronously, so an intrinsically-sized img has no
+     height until it decodes -- measured at 2px (the border alone) and then
+     jumping to 132px. Reserving the box means the detail column's layout is
+     final before the pixels arrive, and object-fit crops rather than squashes. */
+  height: 132px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin: 8px 0 2px;
+  border: 1px solid rgba(110, 165, 210, 0.18);
+}

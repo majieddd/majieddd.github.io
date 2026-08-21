@@ -199,7 +199,9 @@ ACCENT = {
 }
 ENEMIES = {
     # The first pass rendered a TALL bipedal walker -- the owner flagged it.
-    'crawler':   ('a single low six-legged machine crawling flat along the ground, body held close to the dirt like a beetle or a spider-tank, six segmented mechanical legs splayed wide to the sides, wide and low silhouette, NOT bipedal, NOT humanoid, NOT standing upright, no legs beneath the body', 'none'),
+    # Was 105 CLIP tokens against a 75-token window, and every word of the
+    # correction below sat in the 30 that were discarded. Closes at 73 now.
+    'crawler':   ('a low six-legged machine crawling flat along the ground, NOT bipedal, NOT upright, body pressed into the dirt like a spider-tank', 'none'),
     'sprinter':  ('a lean sprinting alien runner built for speed, long limbs, streamlined', 'none'),
     'mite':      ('a tiny swarming alien mite, insectile, one of many', 'none'),
     'bulwark':   ('a heavily plated walking bulwark, slab armour bolted over flesh', 'none'),
@@ -274,6 +276,98 @@ PLANET_VARIANTS = {
         'a nest world veiled in a living membrane, pulsing with bioluminescent veins',
     ],
 }
+
+# --------------------------------------------------------------------------
+# TOWER PLATES (Session 19) -- the eleven towers of NEW-TOWERS-DESIGN.md.
+#
+# A NEW ASSET CLASS, `twr_<id>`. It is not a dossier and not a troop:
+#
+#   * a dossier (`foe_*` machine) is a clinical greyscale SPECIMEN, because it
+#     belongs to nobody and the lab-exhibit look is the point;
+#   * a troop (`foe_*` in FACTION_TROOPS) is a SOLDIER painted in its power's
+#     colours, because the owner asked the armies to read like the commanders;
+#   * a tower is neither -- it is a PIECE OF ITS POWER'S ENGINEERING, a thing
+#     that was built rather than born or grown, and it never walks.
+#
+# So each subject below is a silhouette no other subject in the catalogue has:
+# an upright casket, a spire, a pipe battery, a stalked nest, a ground funnel,
+# a hung curtain, a derrick, a strongbox gun, an altar gun, a print gantry, a
+# ring pylon. A Federation reliquary and a Pirate scuttling rig must not be the
+# same shape in two colours, which is the failure this class is most exposed to
+# -- eleven emplacements is the largest single-silhouette family in the pack.
+#
+# Each subject also states the tower's MECHANIC as an object, not as a mood:
+# the casket still has a barrel coming out of it, the privateer squats on
+# somebody else's coin, the replicator is mid-print on its own copy. A plate
+# that only conveys "gold, holy, tall" would be this brief's art-side version
+# of a tower whose identity is "+X% damage".
+#
+# BUDGET (measured, this machine's sdxl-turbo CLIP tokenizer). On the SDXL
+# path sdxl_all.prefix_for() prepends a class prefix; `twr` is not in its
+# PREFIX_BY_CLASS, so these fall through to SDXL_PREFIX, which is 32 tokens.
+# That leaves the palette clause opening at CLIP position 34, and it closes at
+# 41-45 across the eleven -- level with the accent clause in the shipped
+# dossier pack (44-45), which measured 44 of 49 correct. The subject and the
+# framing then close by 75, so unlike every other class here the whole of a
+# tower plate's DIRECTION lands inside the 77-token window; only the shared
+# {STYLE} tail is truncated, and that tail exists for krea_gen.py, whose
+# Qwen3-VL encoder has no such window.
+#
+# PALETTE, and why these exact words. Guidance is 0, so NEG is inert -- there
+# is no subtracting the prefix's "neon magenta cyan violet"; the only lever is
+# leading with the hue wanted. BRAND.md's measurements pick the words:
+# 'radiant gold' landed 18/18 while the invented 'xeno violet' and 'raider
+# crimson' were dead tokens, and purple survives an organic subject only when
+# it is named as EMITTED light, which is why the xeno line keeps
+# 'bioluminescence' verbatim at the cost of two tokens.
+TOWER_PLATE_PALETTE = {
+    'light':   'Painted entirely in radiant gold and ivory',
+    'xeno':    'Glowing purple bioluminescence, violet chitin',
+    # Not 'blood crimson': 'crimson' is the measured dead token, and 'bright
+    # red' is the phrasing that took the crimson dossiers from 2/6 to 6/6.
+    'pirate':  'Bright red glow over rust and salvage',
+    # The machines answer to nobody, so they take the dossier greyscale rule
+    # rather than a power's paint -- and this is the phrase that measured
+    # 10/10, kept word-for-word rather than shortened to buy back tokens.
+    'robotic': 'No colour at all, pure blacks whites and chrome greys',
+}
+
+# Stated once, and short: it is the last clause before the truncation cliff, so
+# every token spent here is taken off the subject silently.
+TOWER_PLATE_FRAME = 'One emplacement alone on flat black.'
+
+TOWER_PLATES = {
+    # FEDERATION OF LIGHT -- service that outlasts the servant. Reliquary
+    # engineering: caskets, spires, choir pipes. Nothing here is a gun first.
+    'sepulchre':  ('light',   'a gilded reliquary casket stood upright on a plinth, lid ajar, '
+                              'a gun barrel reaching out of it'),
+    'orison':     ('light',   'a slender prayer-spire crowned by one enormous aiming lens, '
+                              'a votive bell hung beneath'),
+    'antiphon':   ('light',   'a battery of cathedral organ pipes and vox horns in answering '
+                              'pairs, mouths turned outward'),
+    # THE XENO -- an appetite. Grown, not built: stalks, throats, membranes.
+    'gestalt':    ('xeno',    'a swelling brain-nest on a fleshy stalk, studded with the '
+                              'skulls it has absorbed'),
+    'maw':        ('xeno',    'a lamprey funnel opening out of the ground, ring after ring '
+                              'of teeth going down'),
+    'veil':       ('xeno',    'a hanging curtain of translucent membrane slung between two '
+                              'rib-bone posts'),
+    # THE PIRATES -- theft and conscription. Salvage welded onto salvage, and
+    # in every case the loot is visible in the frame.
+    'pressgang':  ('pirate',  'a scrap derrick swinging a barbed net over an empty crew cage, '
+                              'chains and boarding hooks'),
+    'privateer':  ('pirate',  'a bolted-on grapnel cannon squatting over a riveted strongbox '
+                              'spilling stolen coin'),
+    'bloodprice': ('pirate',  'a transfusion altar welded under a heavy gun, tubes running '
+                              'from a drained cradle into the breech'),
+    # ROBOTIC -- the Vigil. Unornamented, and the only two plates in the class
+    # with no colour: a machine that answers to nobody carries nobody's hue.
+    'replicator': ('robotic', 'a fabricator gantry printing a second identical turret beside '
+                              'itself, half-built'),
+    'nullfield':  ('robotic', 'a squat suppression pylon of three dead concentric rings, the '
+                              'air inside gone flat'),
+}
+
 
 def build_jobs():
     """(key, prompt, gen_px, out_px, aspect) for every image in the catalogue."""
@@ -356,6 +450,16 @@ def build_jobs():
                  'A deep space nebula field of violet and teal gas clouds with distant stars, '
                  'soft and atmospheric, a seamless background texture with no foreground objects '
                  f'and no focal point. {STYLE}', 1024, 768, 'wide'))
+    # PALETTE BEFORE SUBJECT, for the same reason the dossiers put the accent
+    # first: on the SDXL path everything past token 77 is discarded silently,
+    # and a class prefix naming a different palette is already 32 tokens of
+    # head start. 224px matches the dossier card -- a tower plate is read at
+    # the same size, and quality_for() has no `twr` entry so it takes the 86
+    # default rather than the dossiers' 84.
+    for tid, (org, desc) in TOWER_PLATES.items():
+        jobs.append((f'twr_{tid}',
+                     f'{TOWER_PLATE_PALETTE[org]}. {desc}. {TOWER_PLATE_FRAME} {STYLE}',
+                     1024, 224, 'square'))
     return jobs
 
 

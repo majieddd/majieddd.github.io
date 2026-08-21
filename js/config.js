@@ -1220,6 +1220,142 @@ const REQUISITION_MAX = 0.45;
    upgrades one. */
 const VIGIL_REF_HP = 40;
 
+/* ══ SESSION 19 — THE SIX (Federation of Light · The Xeno) ═════════════════
+   Six towers built on a reaction the arsenal has never watched: your own
+   tower leaving the board, one named creature living or dying, your paid
+   dead falling on someone else's ground, a lull in the killing, a creature
+   deleted rather than damaged, and healing treated as a debt.
+
+   Every constant below names the specific failure it prevents, because the
+   ones that did not are how five inert talents shipped.
+   ------------------------------------------------------------------------ */
+
+/* ── SEPULCHRE: A WARD THAT OUTLIVES ITS TOWER ───────────────────── */
+
+/* Seconds between a ward's strikes. A ward reproduces the DPS figure the
+   departed tower carried -- Tower.estimateDps, the same figure the inspector
+   prints and the rival prices with -- so this only decides how lumpy that
+   output is. Deliberately coarse: a ward resolving every frame would be a
+   second full simulation of all thirty attack verbs. */
+const SEPULCHRE_TICK = 0.5;
+
+/* Hard ceiling on the share of the departed tower a ward keeps, applied in
+   the READER. STAT_CEIL holds the talent path to it, but a branch and every
+   ascension surge bypass that table outright -- and a ward that out-fights
+   the tower it replaced makes selling strictly better than keeping, which
+   inverts the whole mechanic into an exploit. */
+const SEPULCHRE_FRAC_MAX = 1.00;
+
+/* A Sepulchre learns of a departure by MISSING a tower from its side's list,
+   so it has to hold last frame's list. If more than this many seconds have
+   passed since that list was taken -- the chapel was jammed, or it is a
+   second Sepulchre built long after the first -- the held list is stale and
+   every tower built since would read as a departure. A gap that wide is a
+   COLD START, not a massacre. */
+const SEPULCHRE_CENSUS_GAP = 0.5;
+
+/* The standing promise, in nominal body-health per second on the wave curve,
+   that a Sepulchre is worth before anything has died on it. Zero is the
+   truthful figure and it is also the figure that makes AI.projectedUpgrade
+   refuse to draft the tower at all -- the same hole VIGIL_REF_HP plugs. */
+const SEPULCHRE_IDLE_REF = 22;
+
+/* Hard ceiling on wards held, applied in the reader. NECROPOLIS gains one per
+   ascension surge and surges do not pass through STAT_CEIL, so a deep chapel
+   would otherwise hold an unbounded shadow board -- sell the line, keep it
+   all firing, rebuild it somewhere else. */
+const SEPULCHRE_WARDS_MAX = 10;
+
+/* ── ORISON: THE OFFERING ────────────────────────────────── */
+
+/* Seconds after a wave turns over before the chapel will name its offering.
+   It names the LARGEST creature walking at you, and in the first seconds of
+   a wave the only creature on the board is whatever spawned first -- naming
+   immediately picks a mite and throws the wave's real target away. The
+   chapel names the moment the wave has finished arriving anyway; this is
+   only the ceiling on how long it will wait for a slow one. */
+const ORISON_NAMING_DELAY = 6;
+
+/* A life restored, amortised over the wave it is restored in and expressed
+   in nominal body-health per second, so estimateDps can price it in damage
+   units exactly as VIGIL_REF_HP prices a warden. */
+const ORISON_REF_HP = 2.2;
+
+/* What the standing lend is worth to the rival's scoring, per point of
+   offeringDmg. The chapel lends to every tower you own, so its honest worth
+   is a share of the whole line -- but summing that line inside estimateDps
+   makes the rival's pricing pass quadratic, and estimateDps is already
+   called per tower per frame by the Sepulchre census. */
+const ORISON_BOARD_WEIGHT = 60;
+
+/* Hard ceiling on lives ransomed by one offering. Game.restoreLife already
+   clamps to maxLives, so this is not about the counter -- it is about how
+   completely a deep OBLATION erases the cost of leaking, which is the one
+   resource the pins cannot see moving. Surges bypass STAT_CEIL. */
+const ORISON_LIVES_MAX = 6;
+
+/* ── ANTIPHON: THE ANSWER ────────────────────────────────── */
+
+/* Share of the time a chapel actually holds an answer AND has something in
+   reach to spend it on. It is silent by construction, so pricing it at its
+   volley rate reads as one of the heaviest guns in the arsenal and the rival
+   builds nothing else. */
+const ANTIPHON_UPTIME = 0.30;
+
+/* ── MAW: REMOVAL ──────────────────────────────────────── */
+
+/* Seconds a Maw waits before trying again when it opened on an empty lane.
+   Without it a full cooldown is burned on nothing and the Maw sits idle
+   through the wave it was placed for. */
+const MAW_EMPTY_RETRY = 0.4;
+
+/* A nominal body, same units and same reason as VIGIL_REF_HP: removal deals
+   no damage at all, so estimateDps has nothing to report and the rival would
+   place one Maw and never upgrade it. */
+const MAW_REF_HP = 260;
+
+/* Hard ceiling on the digest multiple, applied in the reader for the same
+   reason REQUISITION_MAX is: RUMINATION gains yield per ascension surge, and
+   surges skip STAT_CEIL entirely. Removal that pays five times a bounty is a
+   counter; removal that pays fifteen is an economy engine wearing a counter's
+   description. */
+const MAW_YIELD_MAX = 6.0;
+
+/* ── HUNGERING VEIL: THE LEDGER ───────────────────────────── */
+
+/* Share of a creature's OUTSTANDING healing debt called in each second it
+   stands inside a veil. This is PACE, not size -- the size of the bill is
+   the tower's own `veilHealTax`, damage per point of health ever given back.
+   They have to be separate numbers because one cannot be both: a pure rate
+   settles at exactly the healing rate whatever it is set to (dD/dt = H - kD
+   gives kD* = H for every k), which would have made every single upgrade to
+   the tower change nothing at all. */
+const VEIL_COLLECT_RATE = 1.25;
+
+/* Smallest charge worth applying. takeDamage floors every non-DOT hit at one
+   whole point, so billing a fraction per frame would round a 0.2 charge up
+   to a full point sixty times a second -- a veil quietly dealing 60 damage a
+   second to a creature that was never healed. Charges bank to this figure
+   and are then applied whole. */
+const VEIL_MIN_CHARGE = 1;
+
+/* Ceiling on the ledger, as a multiple of the body's own maximum health. A
+   regenerating boss that walks four waves inside a mender ball would
+   otherwise arrive carrying a bill larger than anything on the board and the
+   veil would delete it in a single frame. */
+const VEIL_DEBT_CAP = 6;
+
+/* Points of debt collected that pay out one TITHE. Named so the talent copy
+   and the reader quote one figure rather than two. */
+const VEIL_TITHE_PER = 250;
+
+/* Debt a supported body accrues per second, on the wave curve, used only to
+   price the veil for the rival. It deals nothing at all against a wave with
+   no support in it -- which is the tower's stated curve, and also a zero the
+   rival cannot draft against. */
+const VEIL_REF_DEBT = 12;
+
+
 const TOWER_TYPES = {
 
   bolt: {
@@ -1739,9 +1875,24 @@ const STORY_TOWER_ORIGIN = 'robotic';
    teaches adjacency and PYLON pays it off, which is the whole robotic rule.
    FOUNDRY, QUAKE and SINGULARITY reshape a board and want a board to reshape.
    VAULT is last: an economy tower only pays a player who already has
-   somewhere to spend. */
+   somewhere to spend.
+
+   NULL FIELD and REPLICATOR sit LATE, and for opposite reasons. NULL FIELD is
+   an answer, not an upgrade -- it is worth nothing until the campaign is
+   actually fielding menders, wraiths, jammers and blinks, which is deep in
+   the ladder -- so it lands after QUAKE, once the escalations that build a
+   wave around one ability are routine. REPLICATOR is the longest investment
+   in the arsenal and it SPENDS BOARD: it pays nothing for several waves and
+   then fills tiles the player did not choose, which is a gift only to a
+   commander who has already run out of things to buy. That is the same
+   argument that puts VAULT last, so it goes one rung further out.
+
+   Both are `origin: 'robotic'`, which is the whole story lock -- Meta.
+   isStoryTower reads the origin, so neither can be priced by the soul shop
+   any more than the existing eight can. */
 const ROBOTIC_UNLOCK_ORDER = ['dronebay', 'railgun', 'echo', 'pylon',
-                              'foundry', 'quake', 'singularity', 'vault'];
+                              'foundry', 'quake', 'nullfield', 'singularity',
+                              'vault', 'replicator'];
 
 /* Every soul-shop purchase raises the next one on that banner by this much.
    It stops a hoarded bank buying the whole arsenal in one sitting, which is
@@ -2361,7 +2512,13 @@ function sqGold(v) { return Math.max(1, Math.round(v / GOLD_SQUISH)); }
 /** Tower stat keys denominated in absolute GOLD. Their multipliers end in
     Mul and are deliberately absent; execBounty is a fraction and absent too. */
 const GOLD_STAT_KEYS = ['income', 'killCut', 'waveBonus', 'drainGold', 'sabotageGold',
-                        'execGold', 'charmGold', 'transGold', 'flockGold', 'vigilGold'];
+                        'execGold', 'charmGold', 'transGold', 'flockGold', 'vigilGold',
+                        /* THE SIX. `mawYield` is deliberately absent: it is a
+                           MULTIPLE of a bounty, and ENEMY_TYPES.bounty is
+                           squished where it becomes paid gold rather than in
+                           this table. Squishing a multiplier would divide the
+                           yield by eight twice over. */
+                        'sepulchreGold', 'offeringGold', 'veilTithe'];
 /** Gold per second of prep window surrendered by an early call. Was a bare 5
     inside rushWave; named so the squish reaches it exactly once. */
 const RUSH_GOLD_PER_SEC = 5 / GOLD_SQUISH;
@@ -2388,6 +2545,132 @@ const DEPOT_TICKS_PER_WAVE = 5;
    no reference spend behind it is a number the rival cannot compare to
    anything, which is how a stat ends up read by nobody. */
 const DEPOT_REQ_REF_SPEND = sqGold(120);
+
+/* --------------------------------------------------------------------------
+   SESSION 19 -- THE PIRATE THREE AND THE MACHINE TWO
+
+   Every number the five new towers read that is not authored in their own
+   `base` block. Each says what it protects against, because each of them is
+   here to stop a measured failure rather than to express a taste.
+-------------------------------------------------------------------------- */
+
+/* ---- PRESS GANG ---------------------------------------------------------
+   A conscript is built out of the corpse, so its health tracks the wave
+   without a curve of its own. These bound the two ends that a share cannot. */
+
+/* Floor on a conscript's health. A mite at wave 1 yields a body worth roughly
+   six health, which dies to the trample wear below before it lands a blow --
+   a tower that visibly does nothing reads as broken, not as weak. */
+const PRESS_MIN_HP = 14;
+/* Health a conscript loses per second while it is grappling, plus the
+   target's radius. Identical in shape to the Minion's trample wear so the two
+   bodies on the board die on the same terms; a conscript that never wore down
+   would make PRESS GANG a permanent wall rather than an opener. */
+const PRESS_TRAMPLE = 9;
+/* Tiles per second a conscript closes at. Slower than a forged automaton
+   (3.6): a pressed hand is not a machine, and the difference is what stops
+   PRESS GANG out-holding FOUNDRY on FOUNDRY's own axis. */
+const PRESS_ENGAGE_SPEED = 3.0;
+/* How much of a conscript's nominal throughput the RIVAL is allowed to price.
+   A body only fights while one is standing and something is in reach, so
+   quoting the full figure makes AI.effectiveness read PRESS GANG as though
+   every conscript were a second turret. The same 0.55 discount the minion
+   line already carries, for the same reason. */
+const PRESS_UPTIME_DISCOUNT = 0.55;
+
+/* ---- PRIVATEER ----------------------------------------------------------
+   The steal is a share of the VICTIM'S PURSE, which is what makes it an
+   investment that compounds: a rival banking for an ascension is the richest
+   target on the board. A share also cannot run away -- robbing them makes
+   them poorer, which makes the next theft smaller -- so no cap on the
+   fraction is needed, only a cap per event. */
+
+/* Ceiling on one theft, in multiples of the bounty the kill itself paid.
+   Without it a single early kill against a rival sitting on its opening purse
+   transfers a whole wave of income in one shot, and the seat that lands the
+   first kill simply wins. Measured in bounties so the ceiling rides the wave
+   curve rather than needing a second copy of it. */
+const PRIVATEER_CAP_BOUNTIES = 6;
+/* A theft that rounds to nothing still has to be visible, or the tower reads
+   as inert against a broke rival. One gold is the smallest honest answer. */
+const PRIVATEER_MIN_TAKE = 1;
+
+/* ---- BLOOD PRICE --------------------------------------------------------
+   The only tower in the arsenal bought with a currency other than gold.
+   Everything here exists because a second currency has failure modes gold
+   does not: it cannot be earned back at will, and it is the thing you lose
+   the match by running out of. */
+
+/* Lives this side must still hold AFTER the purchase. It is the hard floor
+   and it is the same for both seats: BLOOD PRICE can never take your last
+   life, and it can never take the rival's either. Five rather than one
+   because a commander left on one life has no buffer to play the wave with
+   and the tower would be a delayed loss dressed as a decision. */
+const BLOOD_PRICE_FLOOR = 5;
+/* Each copy costs this much more than the last, compounding, the way gold
+   prices already do. Two Blood Prices must be a statement about the run and
+   not a default opening. */
+const BLOOD_PRICE_GROWTH = 1.6;
+/* What ONE life is worth to the rival's build scorer, in gold. AI.bestAction
+   divides a candidate's value by its cost, and a life-priced tower quotes
+   ZERO gold -- `value / 0` is Infinity, so the rival picked BLOOD PRICE on
+   every single build tick and traded its whole buffer for tempo inside four
+   waves. This is the exchange rate that lets the two currencies compete
+   honestly; see Game.bidCost, which is the only reader. */
+const BLOOD_PRICE_BID_GOLD = sqGold(280);
+/* The rival will not spend below this share of its maximum lives, whatever
+   the tempo is worth. The hard floor above is a RULE and applies to both
+   seats identically; this is a PREFERENCE and applies only to a commander
+   the player is not driving, exactly as MUSTER_AI_SAFE_LIVES already does
+   for sends. Without it the mirror-AI plays the tower correctly by its own
+   arithmetic and still loses, because a buffer spent early is a buffer the
+   late waves needed. */
+const BLOOD_PRICE_AI_RESERVE = 0.72;
+
+/* ---- REPLICATOR ---------------------------------------------------------
+   A tower that places towers. Every guard here is about the free build being
+   a real build: same legality, same price curve, same board cost. */
+
+/* The machine will not reproduce something it cannot account for: the free
+   tower's CURRENT price -- Game.towerCost, the same call that would charge a
+   player -- must be at or below the Replicator's own current price times
+   this. At 1.0 it is a strict rule and the curve does the rest: every copy
+   you own raises the Replicator's price, so the machine's reach grows with
+   your investment in it, and a gift can never outvalue the thing that made
+   it. Raising this is the only way to break that. */
+const REPLICATE_BUDGET_MUL = 1.0;
+/* Floor on the wave gap however many SHORT CYCLE talents are stacked. At zero
+   a Replicator would fire on every wave boundary and, with TWIN LINE, fill a
+   board faster than the player can sell. */
+const REPLICATE_MIN_WAVES = 1;
+
+/* ---- NULL FIELD ---------------------------------------------------------
+   Ability suppression. The design note is exact about the risk: a
+   suppression that misses one ability is worse than none, because the player
+   cannot tell which. So the field is marked once per frame onto the unit and
+   every ability tick reads ONE flag -- there is no per-ability list to fall
+   out of date. */
+
+/* How long a mark survives without being refreshed. Towers step before
+   enemies in Game.step, so one frame is enough in principle; a few frames of
+   slack is what stops a unit flickering back to full ability on a long frame
+   or a resumed tab. */
+const NULL_MARK_SECONDS = 0.25;
+/* Nominal body the rival prices a suppression against, and the radius that
+   nominal figure was calibrated at. Suppression deals no damage, so without
+   these AI.projectedUpgrade reads NULL FIELD as a zero and the rival builds
+   one and never touches it again -- the same hole VIGIL_REF_HP fills for
+   CUSTODIAN, priced through Game.waveHpMul, which is THE definition. */
+const NULL_REF_HP = 55;
+const NULL_REF_RADIUS = 3.2;
+/* Nominal bodies per second a field of that radius is denying something to.
+   Deliberately conservative: NULL FIELD is CONDITIONAL, and a rival that
+   priced it as though every wave were built on an ability would field it
+   against plain armoured waves where it does literally nothing. */
+const NULL_REF_RATE = 0.5;
+/* What a point of `nullVuln` is worth relative to the suppression itself,
+   for the same scorer. */
+const NULL_VULN_WEIGHT = 2.2;
 
 /**
  * The one normalisation pass. Called ONCE, from towers2.js, after the
@@ -2450,7 +2733,12 @@ const STAT_CEIL = {
      the rate it wants and the ceiling is what delivers it. killReload cannot
      usefully exceed one whole reload; requisition is ceilinged again inside
      the reader, because surges bypass this table entirely. */
-  runFalloff: 0.90, killReload: 1.00, requisition: 0.45, digest: 0.30
+  runFalloff: 0.90, killReload: 1.00, requisition: 0.45, digest: 0.30,
+  /* THE SIX. sepulchreFrac is ceilinged again inside its reader
+     (SEPULCHRE_FRAC_MAX) because branches and ascension surges skip this
+     table entirely, and a ward stronger than the tower it replaced makes
+     selling strictly better than keeping. */
+  sepulchreFrac: 1.00, offeringDmg: 0.60, offeringGuard: 0.60, veilSlow: 0.60
 };
 function waveCountMultiplier(w) { return 1 + (w - 1) * 0.022; }
 /** Bounty still grows slower than health, but it has to keep enough pace that

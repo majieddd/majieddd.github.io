@@ -222,6 +222,14 @@ class Enemy {
     return Math.min(0.98, this.pullResist + this.auraPullResist);
   }
   get totalArmor()      { return Math.max(0, this.armor + this.auraArmor - this.shredAmt); }
+  /** NULL FIELD. THE flag. Every ability tick in the engine reads this one
+      getter and nothing anywhere reads a per-ability list, because a
+      suppression that misses one ability is worse than none -- the player
+      cannot tell which one is still working. The complete set gated on it:
+      regeneration (and the ERASURE backfire), shield regeneration, mender
+      healing, the UNSTABLE death-heal, every aura carrier (through auraDamp),
+      summoning, jamming, blinking, wraith phasing and the Revenant's revive. */
+  get nulled()          { return this.nullT > 0; }
 
   get effectiveSpeed() {
     if (this.freezeTimer > 0) return 0;
@@ -338,7 +346,15 @@ class Enemy {
   credit(tower, dealt) {
     if (!tower || dealt <= 0) return;
     tower.damageDealt += dealt;
-    if (this.dead && !this._counted) { this._counted = true; tower.kills++; }
+    /* The THIRD place a kill is credited: burns, bleeds, venom, digestion and
+       the minion grind all land here and nowhere else. A prize hook installed
+       only in registerDamage would pay nothing for a tower that finishes with
+       a status, which is how BLOOD DEBT and the PRIVATEER purse would have
+       come to disagree with the kill counter printed beside them. */
+    if (this.dead && !this._counted) {
+      this._counted = true; tower.kills++;
+      if (tower.onKill) tower.onKill(this, Game);
+    }
   }
 
   takeDamage(amount, type, opts = {}) {
@@ -354,6 +370,12 @@ class Enemy {
     /* A phased Wraith simply cannot be hurt — sustained damage is wasted on it. */
     if (this.phaseOn) { this.flash = 0.05; return 0; }
     amount *= (1 + this.vulnAmt);
+    /* ORISON's SANCTIFIED. The chapel wants its offering to LAST, so the one
+       creature it named is harder to kill -- the tension the whole tower is
+       built on, not a defensive buff handed to the enemy. Read off the body
+       rather than looked up on the tower list, because takeDamage is the
+       hottest path in the simulation. */
+    if (this.offeringGuard) amount *= (1 - this.offeringGuard);
     if (this.boss || this.miniboss) {
       const hunter = Game.sides[this.hostileTo];
       if (hunter && hunter.traits) amount *= (hunter.traits.eliteDamage || 1);
@@ -397,12 +419,23 @@ class Enemy {
     }
     if (this.hp <= 0) {
       /* A Revenant stands back up once, at a fraction of its health. */
-      if (this.revivesLeft > 0) {
+      /* Standing back up is an ability like any other, so a Revenant killed
+         inside the field stays down. The charge is SPENT rather than held --
+         see the summon tick for why. */
+      if (this.revivesLeft > 0 && !this.nulled) {
         this.revivesLeft--;
         this.hp = this.maxHp * (this.def.revive || 0.45);
         this.shield = 0;
         Game.onRevive(this);
-      } else { this.hp = 0; this.dead = true; }
+      } else {
+        this.hp = 0; this.dead = true;
+        /* THE ONE DEATH SITE, and the reason GESTALT and ANTIPHON hook here
+           instead of in Game.killEnemy: that funnel is also reached by a
+           SIREN conversion, by a Custodian's oath and by the posthumous
+           sweep of an eliminated seat, none of which is a kill. Everything
+           that arrives here was shot to death by something. */
+        onEnemyDeath(this);
+      }
     }
     return dealt;
   }
@@ -411,9 +444,33 @@ class Enemy {
     this.age += dt;
     if (this.flash > 0) this.flash -= dt;
 
+    /* THE HEALING LEDGER -- written here, read only by HUNGERING VEIL.
+       Health GIVEN BACK is observed as a frame-to-frame RISE rather than
+       hooked at each healer, because five of the six things that raise a
+       body live outside this file: menders and death-heals in Game.step, a
+       SHEPHERD blessing, a doctrine feed in entities2. A reader that saw
+       only the two in here (regeneration and a Revenant standing up) would
+       quietly under-bill the exact enemies the tower exists to punish.
+       Health and shield are tested separately: netting them would forgive a
+       shield rebuilt in the same frame the body took a hit. A frame that is
+       net-negative books nothing, which is deliberately generous to the
+       healer. VEIL_DEBT_CAP is what stops a four-wave-old regenerator
+       arriving with a bill larger than anything on the board. */
+    if (this._hpMark === undefined) { this._hpMark = this.hp; this._shMark = this.shield; }
+    let given = 0;
+    if (this.hp > this._hpMark) given += this.hp - this._hpMark;
+    if (this.shield > this._shMark) given += this.shield - this._shMark;
+    if (given > 0) this.healDebt = Math.min((this.healDebt || 0) + given, this.maxHp * VEIL_DEBT_CAP);
+    this._hpMark = this.hp; this._shMark = this.shield;
+
     if (this.slowTimer > 0)  { this.slowTimer -= dt;  if (this.slowTimer <= 0) this.slowFactor = 0; }
     if (this.markT > 0) { this.markT -= dt; if (this.markT <= 0) this.markEl = null; }
     if (this.suppressT > 0) this.suppressT -= dt;
+    /* Refreshed every frame by any NULL FIELD holding this unit. Towers step
+       before enemies in Game.step so one frame would do; the window is wider
+       so a long frame or a resumed tab cannot flicker a wraith back to
+       phasing between the two passes. */
+    if (this.nullT > 0) this.nullT -= dt;
     if (this.comboCd > 0) this.comboCd -= dt;
     if (this.recentDmg > 0) this.recentDmg *= Math.max(0, 1 - dt / 3);
     if (this.freezeTimer > 0) this.freezeTimer -= dt;
@@ -469,10 +526,19 @@ class Enemy {
       if (this.groundedT <= 0) this.grounded = false;
     }
 
-    if (this.regen > 0 && this.hp < this.maxHp && !this.dead)
-      this.hp = Math.min(this.maxHp, this.hp + this.maxHp * this.regen * dt);
+    if (this.regen > 0 && this.hp < this.maxHp && !this.dead) {
+      if (!this.nulled) this.hp = Math.min(this.maxHp, this.hp + this.maxHp * this.regen * dt);
+      else if (this.nullBackfire > 0)
+        /* ERASURE. Denying a heal is invisible -- the bar simply stops moving,
+           which reads as the field not working. Turning the denied share back
+           on the body is the same information delivered where the player is
+           already looking. Pure and dot-flagged so it neither re-rolls armour
+           nor farms the min-1 floor at 60Hz. */
+        this.credit(this.nullSrc, this.takeDamage(
+          this.maxHp * this.regen * this.nullBackfire * dt, 'pure', { dot: true }));
+    }
 
-    if (this.maxShield > 0 && this.shield < this.maxShield) {
+    if (this.maxShield > 0 && this.shield < this.maxShield && !this.nulled) {
       if (this.shieldCooldown > 0) this.shieldCooldown -= dt;
       else this.shield = Math.min(this.maxShield,
         this.shield + (this.def.shieldRegen || this.shieldRegenOverride || 0) * dt);
@@ -480,7 +546,14 @@ class Enemy {
 
     if (this.def.summon && !this.dead) {
       this.summonTimer -= dt;
-      if (this.summonTimer <= 0) { this.summonTimer = this.def.summon.interval; Game.summonFrom(this, this.def.summon); }
+      /* The attempt is CONSUMED rather than deferred -- here, at the jam and
+         at the blink. Freezing the clock instead would let a unit bank its
+         whole cooldown inside the field and spend it the instant it stepped
+         out, which turns a suppression into a delay. */
+      if (this.summonTimer <= 0) {
+        this.summonTimer = this.def.summon.interval;
+        if (!this.nulled) Game.summonFrom(this, this.def.summon);
+      }
     }
 
     if (this.dead) return;
@@ -490,7 +563,7 @@ class Enemy {
       this.jamTimer -= dt;
       if (this.jamTimer <= 0) {
         this.jamTimer = this.def.jam.interval;
-        Game.jamTowers(this, this.def.jam);
+        if (!this.nulled) Game.jamTowers(this, this.def.jam);
       }
     }
 
@@ -499,21 +572,34 @@ class Enemy {
       this.blinkTimer -= dt;
       if (this.blinkTimer <= 0) {
         this.blinkTimer = this.def.teleport.interval;
-        Game.spawnBurst(this.x, this.y, 10, this.def.color, 120);
-        this.dist = Math.min(this.path.total, this.dist + this.def.teleport.tiles * TILE);
-        this.updatePosition();
-        Game.spawnBurst(this.x, this.y, 10, this.def.color, 120);
-        Sound.play('blink');
+        if (this.nulled) {
+          /* A drawn fizzle, so a suppressed blink reads as a suppression and
+             not as a blink that happened to be short. */
+          Game.spawnBurst(this.x, this.y, 5, '#a5b4fc', 55);
+        } else {
+          Game.spawnBurst(this.x, this.y, 10, this.def.color, 120);
+          this.dist = Math.min(this.path.total, this.dist + this.def.teleport.tiles * TILE);
+          this.updatePosition();
+          Game.spawnBurst(this.x, this.y, 10, this.def.color, 120);
+          Sound.play('blink');
+        }
       }
     }
 
     /* --- WRAITH: alternating invulnerability windows --- */
     if (this.def.phase) {
-      this.phaseTimer -= dt;
-      if (this.phaseTimer <= 0) {
-        this.phaseOn = !this.phaseOn;
-        this.phaseTimer = this.phaseOn ? this.def.phase.on : this.def.phase.off;
-        if (this.phaseOn) Sound.play('phase');
+      /* A phased wraith is INVULNERABLE -- takeDamage returns 0 on phaseOn --
+         so suppression has to drop the window immediately rather than merely
+         decline to open the next one. Waiting two seconds for the current
+         flicker to expire is a suppression the player cannot see working. */
+      if (this.nulled) { this.phaseOn = false; this.phaseTimer = this.def.phase.off; }
+      else {
+        this.phaseTimer -= dt;
+        if (this.phaseTimer <= 0) {
+          this.phaseOn = !this.phaseOn;
+          this.phaseTimer = this.phaseOn ? this.def.phase.on : this.def.phase.off;
+          if (this.phaseOn) Sound.play('phase');
+        }
       }
     }
     const spd = this.effectiveSpeed;
@@ -1260,6 +1346,15 @@ class Tower {
     if (surges > 0 && this.branch && this.branch.surge)
       for (const k in this.branch.surge) s[k] = (s[k] || 0) + this.branch.surge[k] * surges * surgeMul;
 
+    /* NULL FIELD publishes its suppression volume AS `range`. Read here, after
+       levels, branch, talents, rolls and surges have all had their say, so
+       there is exactly ONE number: the circle the board draws, the figure the
+       inspector prints, the radius atk_null tests and the reach the rival's
+       coverage sampling scores are the same value by construction. Authoring
+       a `range` beside `nullRadius` would be the eighth UI/engine desync this
+       project has shipped. */
+    if (s.nullRadius) s.range = s.nullRadius;
+
     /* BUILD NODES. The tile decides which of three things it grants: a matched
        element is sharpened, a tower that marks NOTHING of its own is lent the
        node's element -- which is where the map enters the combo table -- and a
@@ -1355,16 +1450,34 @@ class Tower {
     /* CASCADE's lingering sabotage. In rateMul rather than effRate so the
        drone cadence (which reads rateMul directly) is slowed too. */
     const sab = 1 - (this.sabLingerAmt || 0);
-    return (1 + this.aura.rate + (this.focusRateAmt || 0)) * this.ascRate * this.sideMods.rate * deep * pulse * sab;
+    /* BLOOD PRICE reads the ledger it was bought from. `livesPaid` counts only
+       what was SPENT on a Blood Price -- never a life lost to a leak -- so the
+       tower rewards commitment to the doctrine and pays nothing whatsoever for
+       doing badly. In rateMul rather than effRate so the inspector, the shop
+       preview and the shot clock all read one multiplier. */
+    const blood = 1 + (this.stats.bloodRate || 0) * ((S && S.livesPaid) || 0);
+    /* ORISON's standing lend rides HERE rather than in effRate, for the same
+       reason CASCADE does: the drone cadence reads rateMul directly. */
+    return (1 + this.aura.rate + (this.focusRateAmt || 0)) * this.ascRate * this.sideMods.rate * deep * pulse * sab * blood
+           * offeringRateMul(this.side);
   }
   get effDamage() {
     const alch = (this.alchStacks || 0) * ((this.stats.transmute || 0) * (this.stats.transmuteMul || 1));
-    return ((this.stats.damage || 0) + alch) * (1 + this.aura.dmg + (this.focusDmgAmt || 0)) * this.ascDamage * this.sideMods.damage * this.commanderDamage * GLOBAL_DAMAGE_TUNE;
+    /* GESTALT eats where the ALCHEMIST transmutes, so it is added to the base
+       figure the same way and BEFORE the multipliers: one eaten body is worth
+       one point of the tower's own damage, aura, ascension and all. */
+    const gest = (this.gestaltStacks || 0) * ((this.stats.gestaltPerKill || 0) * (this.stats.gestaltPerKillMul || 1));
+    return ((this.stats.damage || 0) + alch + gest) * (1 + this.aura.dmg + (this.focusDmgAmt || 0)) * this.ascDamage * this.sideMods.damage * this.commanderDamage * GLOBAL_DAMAGE_TUNE * offeringDamageMul(this.side);
   }
-  effDamageFor(v) { return v * (1 + this.aura.dmg + (this.focusDmgAmt || 0)) * this.ascDamage * this.sideMods.damage * this.commanderDamage * GLOBAL_DAMAGE_TUNE; }
+  effDamageFor(v) { return v * (1 + this.aura.dmg + (this.focusDmgAmt || 0)) * this.ascDamage * this.sideMods.damage * this.commanderDamage * GLOBAL_DAMAGE_TUNE * offeringDamageMul(this.side); }
   get effRate()   { return (this.stats.rate || 1) * this.rateMul; }
   get effRange()  { const S = Game.sides[this.side];
-                    return (this.stats.range || 1) * (1 + this.aura.range + (this.focusRangeAmt || 0)) * this.ascRange * this.sideMods.range
+                    /* A GESTALT's gullet widens with what it has eaten, so its
+                       feeding radius is part of the growth rather than a stat
+                       beside it -- which is also why a lull costs it coverage
+                       as well as damage. */
+                    const gest = (this.gestaltStacks || 0) * (this.stats.gestaltRange || 0);
+                    return ((this.stats.range || 1) + gest) * (1 + this.aura.range + (this.focusRangeAmt || 0)) * this.ascRange * this.sideMods.range
                            * ((S && S.pulse && S.pulse.range) || 1); }
   get rangePx()   { return this.effRange * TILE; }
   get effSplash() { return (this.stats.splash || 0) * this.sideMods.splash; }
@@ -1452,6 +1565,69 @@ class Tower {
       return VIGIL_REF_HP * Game.waveHpMul(Math.max(1, Game.wave))
              * (Math.max(0, s.vigilHold || 0) / Math.max(1, s.vigilEvery || 10));
     }
+    if (a === 'press') {
+      /* PRESS GANG is a gun PLUS the bodies its kills leave standing. The gun
+         is priced the ordinary way at the bottom of this function; the crew is
+         a second throughput the rival has to see, or it reads the tower as an
+         11-damage bolt and never drafts it. Bounded by the crew ceiling and
+         discounted for the fact that a body only fights while one is standing
+         and something is in reach. */
+      const crew = Math.min(s.pressMax || 1,
+                            (s.pressDur || 8) / Math.max(0.1, s.pressCd || 5));
+      return this.effDamage * this.effRate
+           + this.effDamageFor(s.pressDps || 0) * crew * PRESS_UPTIME_DISCOUNT;
+    }
+    if (a === 'replicate') {
+      /* A free tower has no damage figure. Converted on the scale the rival
+         already uses for gold -- the DEPOT's -- so a Replicator competes with
+         a Vault on the terms a Vault is already priced in, rather than on a
+         second exchange rate that would drift from it. */
+      const gift = Game.towerCost(this.side, this.type) * REPLICATE_BUDGET_MUL
+                 * Math.max(1, s.replicateCount || 1);
+      const perTick = gift / (Math.max(REPLICATE_MIN_WAVES, s.replicateEvery || 4)
+                              * DEPOT_TICKS_PER_WAVE);
+      return this.effDamage * this.effRate + perTick * AI_ECON_UPGRADE_WEIGHT;
+    }
+    if (a === 'null') {
+      /* Suppression deals nothing. Priced exactly as `vigil` is -- against a
+         nominal body on the LIVE wave curve through Game.waveHpMul, which is
+         THE definition -- because AI.projectedUpgrade reads this and a zero
+         leaves the rival building one and never touching it again. Scaled by
+         field AREA, since area is what the tower actually buys. */
+      const r = Math.max(0.1, s.range || 1);
+      return NULL_REF_HP * Game.waveHpMul(Math.max(1, Game.wave)) * NULL_REF_RATE
+             * ((r * r) / (NULL_REF_RADIUS * NULL_REF_RADIUS))
+             * (1 + (s.nullVuln || 0) * NULL_VULN_WEIGHT);
+    }
+    /* SESSION 19 -- THE SIX. Four of them deal no damage in the ordinary
+       sense, so each is converted onto the wave curve exactly the way VIGIL
+       is above: through Game.waveHpMul, which is THE definition, never a
+       second copy of it. A zero here is what leaves the rival building one
+       and then never touching it again. */
+    if (a === 'sepulchre') {
+      /* What its wards are ACTUALLY dealing, plus the standing promise that
+         it will catch the next tower you give up. Priced off the wards it
+         holds rather than off the board it might inherit -- the board pass is
+         what this function is being called from. */
+      const frac = Math.min(SEPULCHRE_FRAC_MAX, s.sepulchreFrac || 0);
+      let held = 0;
+      for (const w of (this.wards || [])) held += w.dps;
+      return (held + SEPULCHRE_IDLE_REF * Game.waveHpMul(Math.max(1, Game.wave))) * frac;
+    }
+    if (a === 'orison') {
+      /* A life restored, amortised across its wave, plus the lend it makes to
+         every other tower you own -- WEIGHTED rather than summed, because
+         summing the line here is quadratic. */
+      const w = Game.waveHpMul(Math.max(1, Game.wave));
+      return ORISON_REF_HP * w * (s.offeringLives || 0)
+           + ORISON_BOARD_WEIGHT * w * (s.offeringDmg || 0);
+    }
+    if (a === 'antiphon')
+      return this.effDamage * this.effRate * Math.max(1, s.antiphonVolley || 1) * ANTIPHON_UPTIME;
+    if (a === 'maw')
+      return MAW_REF_HP * Game.waveHpMul(Math.max(1, Game.wave)) / Math.max(1, s.mawCd || 18);
+    if (a === 'veil')
+      return VEIL_REF_DEBT * Game.waveHpMul(Math.max(1, Game.wave)) * (s.veilHealTax || 0);
     if (a === 'depot') {
       /* Supply has no damage figure either, so it is converted on the scale
          the rival already uses for gold: per VAULT tick, times the weight
@@ -1634,7 +1810,10 @@ class Tower {
 
   fireProjectile(target, game) {
     const s = this.stats;
-    const shots = s.multishot || 1;
+    /* ANTIPHON spends one banked ANSWER as a whole volley, so its shot count
+       is its own key rather than `multishot`: sharing one would mean a talent
+       that widened either tower silently widened the other. */
+    const shots = s.multishot || s.antiphonVolley || 1;
     Sound.play(this.type === 'toxin' ? 'toxin' : this.type === 'cryo' ? 'cryo'
              : this.type === 'flak' ? 'flak' : this.type === 'siphon' ? 'siphon' : 'bolt');
     for (let i = 0; i < shots; i++) {
@@ -2030,7 +2209,14 @@ class Tower {
     if (dealt > 0 && game.applyElement) game.applyElement(enemy, this.def.element, dealt, this);
     if (!quiet && dealt > 0 && this.side === Game.viewSide)
       game.addFloater(enemy.x, enemy.y, Math.round(dealt), crit);
-    if (enemy.dead && !enemy._counted) { enemy._counted = true; this.kills++; }
+    /* `this.onKill &&` is not defensive noise: entities2.js hangs this very
+       method off AbilityOwner.prototype, and an ability construct is not a
+       Tower. Without the guard the first kill an aimed battery lands throws
+       inside Game.step, which has no try/catch, and freezes the battle. */
+    if (enemy.dead && !enemy._counted) {
+      enemy._counted = true; this.kills++;
+      if (this.onKill) this.onKill(enemy, game);
+    }
 
     if (enemy.dead) {
       const k = this.stats;
@@ -2121,7 +2307,10 @@ class Tower {
     } finally { this._inOrigin = false; }
     /* A kill landed by the rider still belongs to this tower; registerDamage
        already ran its own counting check before the rider fired. */
-    if (enemy.dead && !enemy._counted) { enemy._counted = true; this.kills++; }
+    if (enemy.dead && !enemy._counted) {
+      enemy._counted = true; this.kills++;
+      if (this.onKill) this.onKill(enemy, game);
+    }
   }
 
   tickCooldowns(dt) {
@@ -2139,7 +2328,14 @@ class Tower {
        the rival prices both through estimateDps, which isSupport short-
        circuits to zero -- so they paint their own radius here instead of
        shipping a tower whose entire mechanic is a circle nobody can see. */
-    if (this.stats.requisition || this.stats.vigilHold) this.drawAuraField(ctx);
+    /* Four of THE SIX are a circle and nothing else, so they paint their own
+       radius here beside the depot and the watch. ORISON is deliberately
+       absent: its reach is the whole board and a 99-tile ring would paint
+       over the entire arena. */
+    if (this.stats.requisition || this.stats.vigilHold || this.stats.nullRadius
+        || this.stats.sepulchreFrac
+        || this.stats.veilHealTax || this.stats.mawCd || this.stats.gestaltPerKill)
+      this.drawAuraField(ctx);
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.fillStyle = 'rgba(8,12,20,0.85)';
@@ -2177,6 +2373,23 @@ class Tower {
     ctx.restore();
 
     for (const m of this.mines) m.draw(ctx);
+    /* A SEPULCHRE's wards are drawn where the tower STOOD, never at the
+       chapel. A ward the player cannot find is a mechanic they cannot plan
+       around, and the whole point is that the tile is still held. */
+    if (this.wards) for (const w of this.wards) {
+      ctx.save();
+      ctx.globalAlpha = 0.34 + 0.24 * Math.sin(this.age * 3 + w.x * 0.1);
+      ctx.strokeStyle = w.color; ctx.lineWidth = 1.4;
+      ctx.setLineDash([3, 4]);
+      ctx.strokeRect(w.x - 13, w.y - 13, 26, 26);
+      ctx.setLineDash([]);
+      ctx.fillStyle = w.color;
+      ctx.font = 'bold 12px ui-monospace, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('✞', w.x, w.y + 4);
+      ctx.textAlign = 'left';
+      ctx.restore();
+    }
     for (const dr of this.drones) dr.draw(ctx);
     if (this.minionList) for (const mn of this.minionList) mn.draw(ctx);
     if (this.wallList) for (const w of this.wallList) w.draw(ctx);
@@ -2612,3 +2825,903 @@ class Projectile {
     ctx.restore();
   }
 }
+
+/* ==========================================================================
+   SESSION 19 — THE SIX: READERS
+   --------------------------------------------------------------------------
+   Every base key the six new towers carry is SPENT here. The rule this file
+   is held to (docs/TOWER-AUDIT.md) is that a key without a reader is an
+   inert tower, and this project has already shipped five talents and six
+   commander traits exactly that way.
+
+   Three of the six do not watch enemies at all:
+
+     SEPULCHRE watches YOUR OWN tower list and reacts to absence from it.
+       Nothing sets `dead` on a Tower -- all eighteen writers of that flag are
+       enemies, projectiles or constructs -- so membership of S.towers is the
+       only honest test of whether a tower is still on the board, and it is
+       the test Game.sell, Game.relocate and THE CONTRACTION all already use.
+       Watching membership rather than hooking sell() is deliberate: it covers
+       every route a tower can leave by, including the two that exist today
+       (the sell button/`S` hotkey, and the maelstrom horizon eating the tile)
+       and any third one added later.
+
+     ORISON watches ONE named creature for its whole life, including the ways
+       it can end that are not a kill.
+
+     ANTIPHON watches bodies dying on a board it does not own, addressed by
+       Game.rivalOf's own vocabulary (`owner` / `hostileTo`) rather than by a
+       seat index -- so it is correct at seat 2 and in the twenty-seat arena
+       without a special case, and it never touches `sendPaths`, which both
+       multi-seat builders hard-code to two entries.
+   ========================================================================== */
+
+/* ------------------------------------------------------------- THE OFFERING */
+
+/**
+ * The live offering a side has named this wave, or null.
+ *
+ * Held on the chapel that named it rather than on the side, because a jammed
+ * ORISON never runs its handler: a flag written onto the side would have no
+ * one left to clear it and the blessing would stand for the rest of the
+ * match. Everything about the offering is therefore PULLED, never pushed.
+ */
+function orisonOffering(side) {
+  const S = Game.sides && Game.sides[side];
+  if (!S || !S.towers) return null;
+  for (const t of S.towers) {
+    const e = t.offering;
+    /* `leaked` and `charmed` are endings too. The reap splices the body out
+       of Game.enemies in the same frame it is flagged, but the object itself
+       survives on this reference, which is the only reason the chapel can
+       tell a kill from a breach at all. */
+    if (e && !e.dead && !e.leaked && e.hostileTo === side) return e;
+  }
+  return null;
+}
+
+/** True when some chapel on this side has already named its offering for
+    `wave`. One offering per SIDE per wave: two chapels lend twice over, but
+    they cannot each ransom a life off the same wave. */
+function orisonNamedThisWave(side, wave) {
+  const S = Game.sides && Game.sides[side];
+  if (!S || !S.towers) return false;
+  for (const t of S.towers) if (t.orisonNamed && t.orisonWave === wave) return true;
+  return false;
+}
+
+/* Folded once per frame per side. effDamage is called several hundred times
+   in a frame and it must not walk the tower list each time. Keyed on the
+   SIDES ARRAY as well as the clock, because a new battle rebuilds that array
+   and restarts the clock -- without the identity test the first frame of the
+   second battle would read the first battle's fold. */
+const _offeringFold = { sides: null, t: -1, dmg: [], rate: [] };
+function offeringFold() {
+  const G = typeof Game === 'undefined' ? null : Game;
+  if (!G || !G.sides) return null;
+  if (_offeringFold.sides !== G.sides || _offeringFold.t !== G.clock) {
+    _offeringFold.sides = G.sides;
+    _offeringFold.t = G.clock;
+    for (let i = 0; i < G.sides.length; i++) {
+      let d = 0, r = 0;
+      if (orisonOffering(i)) {
+        for (const t of G.sides[i].towers) {
+          /* A silenced chapel lends nothing, exactly as a silenced Beacon
+             stops relighting. */
+          if (!t.stats.offeringDmg || t.jammed) continue;
+          d += t.stats.offeringDmg;
+          r += t.stats.offeringRate || 0;
+        }
+      }
+      _offeringFold.dmg[i] = d;
+      _offeringFold.rate[i] = r;
+    }
+  }
+  return _offeringFold;
+}
+function offeringDamageMul(side) { const f = offeringFold(); return f ? 1 + (f.dmg[side] || 0) : 1; }
+function offeringRateMul(side)   { const f = offeringFold(); return f ? 1 + (f.rate[side] || 0) : 1; }
+
+/* ------------------------------------------------------------ THE DEPARTED */
+
+/**
+ * Towers that were on `side`'s board last frame and are not on it now.
+ *
+ * Refreshed once per frame however many Sepulchres ask, and each of them
+ * raises its own ward off the same departure -- two chapels over one tile is
+ * two wards, which is what the second chapel was paid for.
+ *
+ * The snapshot carries the departing tower's OWN estimateDps figure, which is
+ * the number the inspector prints and the rival prices with. Re-deriving a
+ * ward's output from thirty attack verbs would have been a second definition
+ * of every tower in the game, and this project has shipped seven desyncs of
+ * exactly that shape.
+ */
+/**
+ * What a departing tower is worth to a ward, in damage per second.
+ *
+ * estimateDps is the rival's PRICING figure, not an output figure, and for the
+ * supply verbs it is GOLD converted onto the damage scale. `isSupport` already
+ * zeroes `aura` and `economy` inside estimateDps -- which is why a sold VAULT
+ * and a sold BEACON correctly raise no ward at all -- but `depot` is not in
+ * that getter, and its branch returns waveBonus and requisition multiplied by
+ * AI_ECON_UPGRADE_WEIGHT. Measured at wave 1 on the merged tree, a sold
+ * QUARTERMASTER raised a ward dealing 79.2 magic damage per second at the base
+ * 0.40 share and about 182/s at MARTYRIUM, against roughly 10/s for the best
+ * real gun on that board. A tower that has never dealt a point of damage
+ * cannot leave a ward that does: the caller already drops a zero.
+ */
+function wardDps(t) {
+  if (t.isSupport || t.def.attack === 'depot') return 0;
+  return t.estimateDps();
+}
+
+const _sepulchreCensus = [];
+function sepulchreDepartures(side, game) {
+  const S = game.sides[side];
+  let c = _sepulchreCensus[side];
+  if (!c || c.sides !== game.sides) c = _sepulchreCensus[side] = { sides: game.sides, t: -1e9, seen: [], gone: [] };
+  if (c.t === game.clock) return c.gone;
+  /* COLD START. A held list older than SEPULCHRE_CENSUS_GAP belongs to a
+     chapel that was jammed, or to a chapel sold waves ago -- diffing against
+     it would read every tower built since as a departure and raise a ward
+     for each. */
+  const cold = (game.clock - c.t) > SEPULCHRE_CENSUS_GAP;
+  c.t = game.clock;
+  c.gone.length = 0;
+  if (!cold) for (const rec of c.seen) if (S.towers.indexOf(rec.tower) < 0) c.gone.push(rec);
+  c.seen.length = 0;
+  for (const t of S.towers)
+    c.seen.push({ tower: t, x: t.x, y: t.y, r: t.rangePx, dps: wardDps(t),
+                  dmgType: t.stats.dmgType, color: t.def.color, name: t.def.name });
+  return c.gone;
+}
+
+/* ----------------------------------------------------------- THE PAID SEND */
+
+/**
+ * Tag the bodies a MUSTER puts on the board.
+ *
+ * `reanimated` is true for a bought detachment AND for a corpse your own kill
+ * sent onward, and Game.muster passes no field that tells the two apart -- so
+ * the only honest signal is the CALL. Counting reanimates too would make
+ * ANTIPHON fire on every kill anybody makes, which is the opposite of the
+ * curve it is designed to have.
+ *
+ * Wrapped rather than edited because Game is defined after this file; the
+ * wrap is installed the first time a chapel actually needs it, is idempotent,
+ * and changes nothing about what muster does. entities2.js already extends
+ * Enemy.update, Enemy.takeDamage, Enemy.totalArmor and Tower.estimateDps the
+ * same way -- this is the house pattern, not a workaround.
+ */
+function ensurePaidSendLedger() {
+  if (typeof Game === 'undefined' || !Game.muster || Game._paidSendLedger) return;
+  Game._paidSendLedger = true;
+  const inner = Game.muster;
+  Game.muster = function (side, tier) {
+    const before = this.pendingSpawns.length;
+    const ok = inner.call(this, side, tier);
+    if (ok) for (let i = before; i < this.pendingSpawns.length; i++) this.pendingSpawns[i].paidSend = true;
+    return ok;
+  };
+}
+
+/* --------------------------------------------------------------- THE DEATH */
+
+/**
+ * The ONE death site. Called from Enemy.takeDamage the instant a body loses
+ * its last point of health, and deliberately not from Game.killEnemy: that
+ * funnel is also reached by SIREN's conversion, by a Custodian's oath and by
+ * the posthumous sweep of an eliminated seat, none of which is a kill. What
+ * arrives here was shot to death by something.
+ */
+function onEnemyDeath(e) {
+  const G = typeof Game === 'undefined' ? null : Game;
+  if (!G || !G.sides) return;
+
+  /* GESTALT feeds on whatever dies inside its reach, no matter which tower
+     did it -- the defender is `hostileTo`, since only that side's guns could
+     have been shooting at this body. */
+  const D = G.sides[e.hostileTo];
+  if (D && D.towers) {
+    for (const t of D.towers) {
+      const per = t.stats.gestaltPerKill;
+      if (!per || t.jammed) continue;
+      if (dist2(t.x, t.y, e.x, e.y) > t.rangePx * t.rangePx) continue;
+      const cap = Math.max(1, Math.round(t.stats.gestaltMax || 20));
+      if ((t.gestaltStacks || 0) < cap) t.gestaltStacks = (t.gestaltStacks || 0) + 1;
+      /* The clock is stamped even at the ceiling: a full Gestalt still being
+         fed has plainly not gone quiet, and forgetting it at the cap would
+         punish the exact placement the tower asks for. */
+      t.gestaltLast = G.clock;
+    }
+  }
+
+  /* ANTIPHON answers a body its side PAID for that died on somebody else's
+     ground. `owner` and `hostileTo` are the same vocabulary Game.muster and
+     Game.rivalOf use, so this is correct at seat 2 and on all twenty seats
+     without a special case. */
+  if (e.paidSend && e.owner !== undefined && e.owner !== null && e.owner !== e.hostileTo) {
+    const O = G.sides[e.owner];
+    if (O && O.towers) {
+      for (const t of O.towers) {
+        const per = t.stats.antiphonPerLoss;
+        if (!per || t.jammed) continue;
+        const cap = Math.max(1, t.stats.antiphonBank || 4);
+        t.answers = Math.min(cap, (t.answers || 0) + per);
+        if (t.side === G.viewSide) G.spawnBurst(t.x, t.y, 6, t.def.color, 80);
+      }
+    }
+  }
+}
+
+/* ------------------------------------------------------ BEHAVIOUR: THE SIX */
+
+/* SEPULCHRE — hold the line for towers that are no longer on it. */
+Tower.prototype.atk_sepulchre = function (dt, game) {
+  const s = this.stats;
+  if (!this.wards) this.wards = [];
+  const cap = Math.min(SEPULCHRE_WARDS_MAX, Math.max(1, Math.round(s.sepulchreWards || 1)));
+  const r2 = this.rangePx * this.rangePx;
+
+  for (const rec of sepulchreDepartures(this.side, game)) {
+    if (rec.tower === this) continue;
+    /* A tower with no output leaves no ward. A sold Vault has nothing to
+       keep firing, and letting it take a ward slot would let a player fill a
+       Necropolis with economy towers and lock the chapel out of the gun it
+       is actually about to sell. */
+    if (rec.dps <= 0) continue;
+    if (this.wards.length >= cap) continue;
+    if (dist2(this.x, this.y, rec.x, rec.y) > r2) continue;
+    this.wards.push({
+      x: rec.x, y: rec.y, r: rec.r, dps: rec.dps, color: rec.color,
+      /* A ward that carried no damage type of its own strikes as magic
+         rather than as `none`, which takeDamage treats as unmitigated. */
+      dmgType: (rec.dmgType && rec.dmgType !== 'none') ? rec.dmgType : 'magic',
+      t: (s.sepulchreDur || 16), wave: game.wave, cd: 0
+    });
+    if (s.sepulchreGold) game.awardGold(this.side, s.sepulchreGold, this);
+    game.spawnBurst(rec.x, rec.y, 16, this.def.color, 130);
+    if (this.side === game.viewSide) {
+      Sound.play('forge');
+      game.addFloater(rec.x, rec.y - 16, rec.name + ' KEPT', false, this.def.color, 13);
+    }
+  }
+
+  /* Read live rather than captured, so upgrading the chapel strengthens the
+     wards already standing on it. SEPULCHRE_FRAC_MAX is applied HERE because
+     branches and ascension surges bypass STAT_CEIL entirely. */
+  const frac = Math.min(SEPULCHRE_FRAC_MAX, s.sepulchreFrac || 0);
+  for (let i = this.wards.length - 1; i >= 0; i--) {
+    const w = this.wards[i];
+    w.t -= dt;
+    /* "Until the wave ends" is read as the wave NUMBER turning over, which is
+       the only unambiguous edge: onWaveSpawned fires when the last unit has
+       SPAWNED, not when the board is clear. */
+    if (w.t <= 0 || w.wave !== game.wave) {
+      this.wards.splice(i, 1);
+      game.spawnBurst(w.x, w.y, 8, '#94a3b8', 70);
+      continue;
+    }
+    w.cd -= dt;
+    if (w.cd > 0) continue;
+    w.cd = SEPULCHRE_TICK;
+    let best = null, bd = Infinity;
+    const wr2 = w.r * w.r;
+    for (const e of game.enemies) {
+      if (e.dead || e.leaked || e.hostileTo !== this.side) continue;
+      const d2 = dist2(w.x, w.y, e.x, e.y);
+      if (d2 <= wr2 && d2 < bd) { bd = d2; best = e; }
+    }
+    if (!best) continue;
+    const dealt = best.takeDamage(w.dps * frac * SEPULCHRE_TICK, w.dmgType, { pierce: this.effPierce });
+    this.registerDamage(dealt, best, game);
+    game.beams.push({ points: [{ x: w.x, y: w.y }, { x: best.x, y: best.y }],
+                      life: 0.16, maxLife: 0.16, color: w.color, width: 2 });
+  }
+};
+
+/* ORISON — name one creature the offering, and settle what it owes. */
+Tower.prototype.atk_orison = function (dt, game) {
+  const s = this.stats;
+  const e = this.offering;
+  if (e) {
+    /* THREE endings, and only one of them is the offering being accepted.
+       `charmed` is the engine's removed-not-killed flag (a Custodian's oath,
+       a Siren's conversion, a Maw), `leaked` is the creature walking into
+       your own base -- which you have already paid for in lives -- and
+       `dead` without `charmed` is the only thing that was actually killed.
+       A reanimate raised off the corpse is a NEW body carrying none of these
+       fields, so one enemy can never settle the rite twice. */
+    if (e.dead && !e.charmed) {
+      this.offering = null;
+      const n = Math.min(ORISON_LIVES_MAX, Math.round(s.offeringLives || 0));
+      if (n > 0) game.restoreLife(this.side, n, this);
+      if (s.offeringGold) game.awardGold(this.side, s.offeringGold, this);
+      game.spawnBurst(e.x, e.y, 20, this.def.color, 150);
+      if (this.side === game.viewSide) {
+        Sound.play('heal');
+        game.addFloater(this.x, this.y - 24, 'OFFERING TAKEN', false, this.def.color, 14);
+      }
+    } else if (e.leaked || e.charmed || e.hostileTo !== this.side) {
+      /* The rite lapses. Nothing is owed in either direction, and nothing is
+         re-named: one offering per wave is the whole tension. */
+      this.offering = null;
+    }
+  }
+
+  if (this.orisonWave !== game.wave) {
+    this.orisonWave = game.wave;
+    this.orisonNamed = false;
+    this.orisonT = 0;
+    this.offering = null;
+  }
+  this.orisonT = (this.orisonT || 0) + dt;
+
+  if (this.orisonNamed) return;
+  /* Wait for the wave to finish arriving before choosing, or the first mite
+     out of the gate is named and the boss behind it is not. The delay is the
+     ceiling on that wait, not the wait itself. */
+  if (game.waveRunning && this.orisonT < ORISON_NAMING_DELAY) return;
+  if (orisonNamedThisWave(this.side, game.wave)) return;
+
+  let best = null, bh = -1;
+  for (const c of game.enemies) {
+    /* Your own dead marching at somebody else are not part of the wave
+       walking at you, and a body already dedicated cannot be dedicated
+       twice. */
+    if (c.dead || c.leaked || c.reanimated || c.hostileTo !== this.side) continue;
+    if (c.offeringOf !== undefined) continue;
+    if (c.maxHp > bh) { bh = c.maxHp; best = c; }
+  }
+  if (!best) return;
+  this.offering = best;
+  this.orisonNamed = true;
+  best.offeringOf = this.side;
+  /* Captured on the body rather than looked up per hit: takeDamage is the
+     hottest path in the simulation and it must not walk a tower list. The
+     consequence is that upgrading the chapel does not re-bless an offering
+     already named, which is the correct reading of a rite. */
+  if (s.offeringGuard) best.offeringGuard = s.offeringGuard;
+  game.spawnBurst(best.x, best.y, 14, this.def.color, 120);
+  if (this.side === game.viewSide) {
+    Sound.play('choice');
+    game.addFloater(best.x, best.y - 20, 'THE OFFERING', false, this.def.color, 14);
+  }
+};
+
+/* ANTIPHON — spend what your losses on rival ground have banked. */
+Tower.prototype.atk_antiphon = function (dt, game) {
+  ensurePaidSendLedger();
+  const s = this.stats;
+  this.cooldown -= dt;
+  const target = this.acquire(game.enemies);
+  if (target) {
+    const aim = this.predict(target, s.projSpeed);
+    this.angle = angleLerp(this.angle, Math.atan2(aim.y - this.y, aim.x - this.x), Math.min(1, dt * 14));
+  }
+  if (!target || this.cooldown > 0 || (this.answers || 0) < 1) return;
+  this.answers -= 1;
+  this.cooldown = 1 / this.effRate;
+  this.recoil = 1;
+  /* Straight to the projectile path rather than through fire(), whose switch
+     only knows the six core verbs -- an unlisted verb there fires nothing at
+     all and reads exactly like a banking bug. */
+  this.fireProjectile(target, game);
+  /* A votive thread to the ground the answer was bought on: without it the
+     player sees a tower that fires at random and cannot connect it to the
+     detachment they just lost. */
+  if (this.side === game.viewSide) game.addFloater(this.x, this.y - 22, 'ANSWERED', false, this.def.color, 13);
+};
+
+/* GESTALT — grow on every body that dies in reach; forget the lot on a lull. */
+Tower.prototype.atk_gestalt = function (dt, game) {
+  const s = this.stats;
+  /* USE IT OR LOSE IT. The whole stack goes at once, not a point at a time:
+     a decay that trickled would just be a slightly worse ramp, and this
+     tower's cost is supposed to be the TILE. */
+  if ((this.gestaltStacks || 0) > 0 &&
+      game.clock - (this.gestaltLast || 0) > (s.gestaltDecay || 9)) {
+    this.gestaltStacks = 0;
+    game.spawnBurst(this.x, this.y, 14, '#64748b', 90);
+    if (this.side === game.viewSide) {
+      Sound.play('denied');
+      game.addFloater(this.x, this.y - 22, 'FORGOTTEN', false, '#94a3b8', 14);
+    }
+  }
+  const target = this.acquire(game.enemies);
+  if (target) {
+    const aim = this.predict(target, s.projSpeed);
+    this.angle = angleLerp(this.angle, Math.atan2(aim.y - this.y, aim.x - this.x), Math.min(1, dt * 14));
+  }
+  this.cooldown -= dt;
+  if (target && this.cooldown <= 0) { this.cooldown = 1 / this.effRate; this.recoil = 1; this.fireProjectile(target, game); }
+};
+
+/* MAW — remove one creature from the board and digest it into gold. */
+Tower.prototype.atk_maw = function (dt, game) {
+  const s = this.stats;
+
+  /* Digestion pays in whole gold through awardGold, so mods.gold applies to
+     it exactly once and exactly as it would have applied to the bounty this
+     replaces. Paid against the RUNNING TOTAL rather than by accumulating
+     fractions frame by frame: the last instalment is whatever is still owed,
+     so a meal pays exactly what it was worth and never a coin less. */
+  if ((this.digestLeft || 0) > 0) {
+    this.digestLeft = Math.max(0, this.digestLeft - (this.digestTotal / Math.max(0.5, this.digestDur)) * dt);
+    const due = (this.digestLeft <= 0 ? this.digestTotal
+                                      : Math.floor(this.digestTotal - this.digestLeft)) - (this.digestPaid || 0);
+    if (due > 0) {
+      this.digestPaid = (this.digestPaid || 0) + due;
+      game.awardGold(this.side, due, this);
+    }
+    if (Math.random() < dt * 8)
+      game.spawnParticle(this.x + rand(-9, 9), this.y + rand(-9, 9), rand(-6, 6), rand(-24, -6), rand(0.3, 0.6), rand(1.5, 3), '#c084fc', 'spark');
+  }
+
+  this.mawT = (this.mawT === undefined ? (s.mawCd || 18) * 0.5 : this.mawT) - dt;
+  if (this.mawT > 0) return;
+
+  let best = null, bh = -1;
+  const r2 = this.rangePx * this.rangePx;
+  for (const e of game.enemies) {
+    if (e.dead || e.leaked || e.charmed || e.hostileTo !== this.side) continue;
+    /* A boss is too large to swallow until TITAN'S PORTION says otherwise.
+       Minibosses are fair game at base -- being the answer to one heavy body
+       is the tower's entire reason to exist. */
+    if (e.boss && !s.mawBoss) continue;
+    if (dist2(this.x, this.y, e.x, e.y) > r2) continue;
+    if (e.hp > bh) { bh = e.hp; best = e; }
+  }
+  if (!best) { this.mawT = MAW_EMPTY_RETRY; return; }
+  this.mawT = (s.mawCd || 18);
+
+  /* REMOVAL, stated in full, because a removal that quietly pays a bounty is
+     a duplication exploit:
+       - `charmed` is the engine's REMOVED-NOT-KILLED flag. Game.killEnemy
+         returns on it before awardGold, before S.stats.kills++, before the
+         death-heal and contagion clauses, and before reanimate() -- so the
+         swallowed creature pays NO bounty, banks NO kill for the side and
+         leaves NO corpse for anybody to send onward.
+       - `_counted` stops registerDamage/credit booking a kill for some other
+         tower that happened to be shooting it.
+       - the Maw books the kill on ITSELF, so the inspector's own figure
+         still says what this tower has taken off the board.
+       - `dead` is what makes the reap splice it out of Game.enemies, so the
+         wave is one creature shorter and every "remaining" figure in the
+         game derives from that same array.
+       - the digest below is a REPLACEMENT for the bounty, never a second
+         copy of it. */
+  best.dead = true;
+  best._counted = true;
+  best.charmed = true;
+  best.devoured = true;
+  this.kills++;
+  const meal = Math.max(0, Math.round((best.bounty || 0) * Math.min(MAW_YIELD_MAX, s.mawYield || 1)));
+  /* A second meal taken mid-digest folds whatever is still owed into one
+     ledger, so the first one is never dropped on the floor. */
+  this.digestTotal = (this.digestLeft || 0) + meal;
+  this.digestLeft = this.digestTotal;
+  this.digestPaid = 0;
+  this.digestDur = Math.max(0.5, s.mawDigest || 6);
+  this.recoil = 1;
+  game.spawnImplosion(best.x, best.y, 48, this.def.color);
+  game.beams.push({ points: [{ x: this.x, y: this.y }, { x: best.x, y: best.y }],
+                    life: 0.35, maxLife: 0.35, color: this.def.color, width: 3.5 });
+  if (this.side === game.viewSide) {
+    Sound.play('siren');
+    game.addFloater(best.x, best.y - 18, 'SWALLOWED', false, this.def.color, 15);
+  }
+};
+
+/* HUNGERING VEIL — call in what a creature has been given. */
+Tower.prototype.atk_veil = function (dt, game) {
+  const s = this.stats;
+  const tax = s.veilHealTax || 0;
+  const r2 = this.rangePx * this.rangePx;
+  for (const e of game.enemies) {
+    if (e.dead || e.leaked || e.hostileTo !== this.side) continue;
+    if (dist2(this.x, this.y, e.x, e.y) > r2) continue;
+    /* Refreshed a little longer than a frame so a body on the edge of the
+       field is not flickering in and out of the effect. */
+    if (s.veilSlow) e.applySlow(s.veilSlow * this.effStatus, 0.3);
+    const debt = e.healDebt || 0;
+    if (debt <= 0 || tax <= 0) continue;
+    if (s.veilVuln) e.applyVuln(s.veilVuln, 0.4);
+    const called = Math.min(debt, debt * VEIL_COLLECT_RATE * dt);
+    e.healDebt = debt - called;
+    /* Banked to VEIL_MIN_CHARGE before it is applied: takeDamage floors any
+       non-DOT hit at one whole point, so charging a fraction per frame would
+       bill sixty points a second off a body that was barely healed. */
+    e.veilPending = (e.veilPending || 0) + called * tax;
+    if (e.veilPending < VEIL_MIN_CHARGE) continue;
+    const amt = e.veilPending;
+    e.veilPending = 0;
+    /* `pure` on purpose. A debt is not stopped by armour and not absorbed by
+       the shield that is itself part of the debt. */
+    const dealt = e.takeDamage(amt, 'pure', {});
+    this.registerDamage(dealt, e, game, false, true);
+    if (s.veilTithe) {
+      this.titheAcc = (this.titheAcc || 0) + dealt;
+      while (this.titheAcc >= VEIL_TITHE_PER) {
+        this.titheAcc -= VEIL_TITHE_PER;
+        game.awardGold(this.side, s.veilTithe, this);
+      }
+    }
+    if (Math.random() < 0.5)
+      game.spawnParticle(e.x + rand(-6, 6), e.y + rand(-6, 6), rand(-5, 5), rand(-26, -8), rand(0.3, 0.6), rand(1.5, 3), '#c084fc', 'spark');
+  }
+};
+
+
+/* ==========================================================================
+   SESSION 19 -- THE PIRATE THREE AND THE MACHINE TWO
+
+   Hung off Tower.prototype and appended here rather than threaded through the
+   core, in the same shape entities2.js already uses. Tower.update dispatches
+   `this['atk_' + def.attack]` before its own switch, so a new verb needs no
+   change to the dispatcher.
+
+   Every `base` key these towers declare is read below or in recompute():
+
+     pressCd pressDur pressHp pressDps pressMax pressBlast  -- atk_press,
+       pressConscript, class Conscript
+     privateerSteal privateerScuttle privateerPick          -- privateerTake
+     lifeCost                                               -- Game.towerLifeCost
+     bloodRate                                              -- Tower.rateMul
+     bloodTally                                             -- Tower.onKill
+     replicateEvery replicateReach replicateCount
+       replicateLevel replicatePick                         -- atk_replicate,
+       replicateOnce
+     nullRadius                                             -- Tower.recompute
+     nullVuln nullSlow nullBackfire nullLinger              -- atk_null
+   ========================================================================== */
+
+/**
+ * PRESS GANG's conscript. Not a Minion: a Minion is FORGED to a spec the
+ * tower carries and lives until it is worn down, and this is built out of a
+ * specific corpse and serves a fixed term. That difference is the tower --
+ * FOUNDRY answers "how many bodies can I keep standing", PRESS GANG answers
+ * "what did I just kill".
+ */
+class Conscript {
+  constructor(tower, corpse) {
+    const s = tower.stats;
+    this.tower = tower;
+    this.x = corpse.x; this.y = corpse.y;
+    /* A SHARE of the corpse rather than a figure of its own. That is why this
+       tower needs no wave curve of its own and why it still fades: the share
+       is constant, the number of bodies a wave puts on the lane is not. */
+    this.maxHp = Math.max(PRESS_MIN_HP, corpse.maxHp * (s.pressHp || 0.5));
+    this.hp = this.maxHp;
+    this.dps = s.pressDps || 6;
+    /* The term of service. When it expires the hand simply falls apart --
+       DEAD MAN'S SHARE is the only thing it leaves behind. */
+    this.life = s.pressDur || 8;
+    this.dead = false; this.age = 0; this.target = null;
+  }
+
+  update(dt, game) {
+    this.age += dt;
+    this.life -= dt;
+    const t = this.tower;
+    /* A conscript belongs to the tower that pressed it: sell the Press Gang
+       and the crew goes with it, because atk_press is what ticks them and a
+       sold tower is no longer in S.towers. */
+    if (!this.target || this.target.dead || this.target.leaked ||
+        dist2(t.x, t.y, this.target.x, this.target.y) > t.rangePx * t.rangePx * 2.3) {
+      this.target = null;
+      let bd = Infinity;
+      for (const e of game.enemies) {
+        if (e.dead || e.flying || e.hostileTo !== t.side) continue;
+        if (e.boss || e.miniboss) continue;
+        const d2 = dist2(t.x, t.y, e.x, e.y);
+        if (d2 < t.rangePx * t.rangePx && d2 < bd) { bd = d2; this.target = e; }
+      }
+    }
+    const tg = this.target;
+    if (tg) {
+      const dx = tg.x - this.x, dy = tg.y - this.y;
+      const d = Math.hypot(dx, dy) || 1;
+      const spd = PRESS_ENGAGE_SPEED * TILE;
+      if (d > tg.radius + 8) { this.x += dx / d * spd * dt; this.y += dy / d * spd * dt; }
+      else {
+        const dealt = tg.takeDamage(t.effDamageFor(this.dps) * dt, 'physical', { pierce: t.effPierce });
+        t.registerDamage(dealt, tg, game, false, true);
+        /* It HOLDS as well as hits -- a pressed hand grabs. Half a Foundry
+           automaton's grip, so the two do not answer the same question. */
+        tg.applySlow(0.22 * t.effStatus, 0.25);
+        this.hp -= (PRESS_TRAMPLE + tg.radius) * dt;
+      }
+    } else {
+      const dx = t.x - this.x, dy = t.y - this.y;
+      const d = Math.hypot(dx, dy) || 1;
+      if (d > 26) { this.x += dx / d * 2.2 * TILE * dt; this.y += dy / d * 2.2 * TILE * dt; }
+    }
+
+    if (this.hp <= 0 || this.life <= 0) {
+      this.dead = true;
+      const blast = t.stats.pressBlast;
+      if (blast) {
+        const r = 1.1 * TILE, r2 = r * r;
+        for (const e of game.enemies) {
+          if (e.dead || e.hostileTo !== t.side) continue;
+          if (dist2(this.x, this.y, e.x, e.y) <= r2) {
+            const dealt = e.takeDamage(t.effDamageFor(this.dps) * blast, 'physical', {});
+            t.registerDamage(dealt, e, game);
+          }
+        }
+        game.spawnExplosion(this.x, this.y, r, t.def.color);
+      } else game.spawnBurst(this.x, this.y, 6, t.def.color, 70);
+    }
+  }
+
+  draw(ctx) {
+    const c = this.tower.def.color;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    const b = Math.sin(this.age * 7) * 1.2;
+    /* Ragged rather than machined -- a Foundry automaton is a rounded box and
+       a conscript must not be mistaken for one at a glance. */
+    ctx.fillStyle = c; ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(0, -8 + b); ctx.lineTo(6, -1 + b); ctx.lineTo(4, 6 + b);
+    ctx.lineTo(-4, 6 + b); ctx.lineTo(-6, -1 + b);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    const f = clamp(this.hp / this.maxHp, 0, 1);
+    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(-7, -13, 14, 2.5);
+    ctx.fillStyle = f > 0.5 ? '#fca5a5' : '#f87171'; ctx.fillRect(-7, -13, 14 * f, 2.5);
+    ctx.restore();
+  }
+}
+
+/**
+ * THE KILL FUNNEL. registerDamage, originStrike and Enemy.credit are the
+ * three places a kill is credited to a tower, and all three call this -- so a
+ * prize is paid exactly once per body however it died, and never for a body
+ * some other tower finished.
+ */
+Tower.prototype.onKill = function (enemy, game) {
+  const s = this.stats;
+  if (!s) return;
+  if (s.pressCd) this.pressConscript(enemy, game);
+  if (s.privateerSteal) this.privateerTake(enemy, game);
+  /* BLOOD DEBT. The only route by which a life spent on a Blood Price comes
+     back, and it comes back through the counter rather than the ledger --
+     `livesPaid` is untouched, so repaying the debt does not un-buy the fire
+     rate it bought. */
+  if (s.bloodTally) {
+    this.bloodKills = (this.bloodKills || 0) + 1;
+    if (this.bloodKills >= s.bloodTally) {
+      this.bloodKills = 0;
+      game.restoreLife(this.side, 1, this);
+    }
+  }
+};
+
+/** PRESS GANG -- drag the corpse back onto its feet. */
+Tower.prototype.pressConscript = function (enemy, game) {
+  const s = this.stats;
+  if ((this.pressT || 0) > 0) return;
+  this.minionList = this.minionList || [];
+  if (this.minionList.length >= (s.pressMax || 1)) return;
+  this.pressT = s.pressCd;
+  /* minionList, not a list of its own: Tower.draw already paints that array
+     and a second one would need a second draw hook for no gain. Nothing else
+     can collide -- FOUNDRY is the only other writer and it is a different
+     attack verb, so no tower ever holds both kinds. */
+  this.minionList.push(new Conscript(this, enemy));
+  if (this.side === Game.viewSide) {
+    game.spawnBurst(enemy.x, enemy.y, 8, this.def.color, 95);
+    game.addFloater(enemy.x, enemy.y - 14, 'PRESSED', false, this.def.color, 12);
+  }
+};
+
+/**
+ * PRIVATEER -- lift a share of a rival commander's purse.
+ *
+ * A SHARE, never a sum. That is what makes the tower an investment that
+ * compounds against a rival banking for an ascension and self-limiting
+ * against one it has already emptied -- it can never lock a seat out of the
+ * match, because every theft shrinks the next one.
+ */
+Tower.prototype.privateerTake = function (enemy, game) {
+  const s = this.stats;
+  /* Game.musterVictims is THE answer to "who is on the other side of this
+     board" -- one rival on a duel, two on the Confluence, the next seat still
+     standing round a twenty-seat ring. `sendPaths` has exactly two entries
+     and indexing it by seat froze whole battles. */
+  let victims = game.musterVictims(this.side);
+  /* PICK THE PURSE widens the pool to every seat still standing. It has to:
+     in the arena musterVictims returns exactly ONE seat -- the next round the
+     ring -- so a talent that only sorted THAT list moved no gold at all on
+     nineteen boards out of twenty, which is the inert-stat failure this
+     project has shipped eleven times. A privateer answers to nobody,
+     including its own sailing orders. */
+  if (s.privateerPick) {
+    victims = [];
+    for (let k = 0; k < game.sides.length; k++) {
+      const S = game.sides[k];
+      if (k === this.side || !S || S.defeated || !S.alive) continue;
+      victims.push(k);
+    }
+  }
+  if (!victims.length) return;          /* every rival eliminated: nothing to take */
+  /* Default: the seat this commander is already aimed at, so the tower reads
+     the same way a send does. Only the talent goes shopping. */
+  let v = victims[0];
+  if (s.privateerPick)
+    for (const k of victims) if (game.sides[k].gold > game.sides[v].gold) v = k;
+  const V = game.sides[v];
+  if (!V || V.defeated || V.gold <= 0) return;
+
+  /* Capped in BOUNTIES so the ceiling rides the wave curve instead of needing
+     a second copy of it. Uncapped, one early kill against an opening purse
+     transfers a whole wave of income and the first kill decides the match. */
+  const cap = Math.max(PRIVATEER_MIN_TAKE, Math.round(enemy.bounty * PRIVATEER_CAP_BOUNTIES));
+  const take = Math.min(Math.max(PRIVATEER_MIN_TAKE, Math.floor(V.gold * s.privateerSteal)),
+                        cap, Math.floor(V.gold));
+  if (take <= 0) return;
+
+  V.gold -= take;
+  /* SCUTTLE burns what the boat cannot carry: the victim loses more than the
+     raider gains, which is the only asymmetry in the tower and the reason it
+     is a WEAPON against a commander rather than an income tower. */
+  if (s.privateerScuttle) V.gold = Math.max(0, V.gold - Math.floor(take * s.privateerScuttle));
+
+  /* Through awardGold so the raider's own gold modifiers, the difficulty's
+     economy multiplier and the tower's goldMade ledger all apply exactly as
+     they do to a bounty. The victim's loss is the RAW figure -- their purse
+     is theirs and is not scaled by the thief's economy. */
+  const got = game.awardGold(this.side, take, this);
+  if (this.side === Game.viewSide && got > 0)
+    game.addFloater(enemy.x, enemy.y - 20, '+' + got + ' PRIZE', false, '#fbbf24', 12);
+};
+
+/* PRESS GANG -- a real gun, and the crew its kills leave standing. */
+Tower.prototype.atk_press = function (dt, game) {
+  if (this.pressT > 0) this.pressT -= dt;
+  this.minionList = this.minionList || [];
+  for (let i = this.minionList.length - 1; i >= 0; i--) {
+    this.minionList[i].update(dt, game);
+    if (this.minionList[i].dead) this.minionList.splice(i, 1);
+  }
+  this.gunTick(dt, game);
+};
+
+/* REPLICATOR -- a small gun, and a machine that does not need you. */
+Tower.prototype.atk_replicate = function (dt, game) {
+  this.gunTick(dt, game);
+  const s = this.stats;
+  /* Counted in WAVES, because "after N waves" is what the card says and
+     Game.wave is what that means. Armed at the wave it was placed, so it can
+     never deliver on the frame it lands. */
+  if (this.replWave === undefined) { this.replWave = game.wave; return; }
+  const every = Math.max(REPLICATE_MIN_WAVES, s.replicateEvery || 4);
+  if (game.wave - this.replWave < every) return;
+  this.replWave = game.wave;
+  for (let i = 0, n = Math.max(1, s.replicateCount || 1); i < n; i++) this.replicateOnce(game);
+};
+
+/** One free emplacement, or nothing at all. */
+Tower.prototype.replicateOnce = function (game) {
+  const s = this.stats;
+  const S = game.sides[this.side];
+  if (!S) return null;
+
+  /* WHAT. Only out of this commander's own five, and only something the
+     machine can account for: the gift's price is asked of Game.towerCost --
+     the very call that would charge a player, so the per-type growth curve,
+     the board-size inflation and the side's cost modifiers are all already in
+     it -- and must be within the Replicator's own current price. */
+  const budget = game.towerCost(this.side, this.type) * REPLICATE_BUDGET_MUL;
+  const pool = [];
+  for (const type of (S.loadout || [])) {
+    const def = TOWER_TYPES[type];
+    if (!def) continue;
+    /* Never another Replicator: a machine that reproduces machines that
+       reproduce compounds without bound, and the board is finite. */
+    if (def.base && def.base.replicateEvery) continue;
+    /* Never a life-priced tower. BLOOD PRICE quotes zero gold, which would
+       make it the cheapest thing on every shelf and hand the commander the
+       most expensive gun in the game for nothing -- the price is in lives and
+       a gift cannot pay it. */
+    if (def.base && def.base.lifeCost) continue;
+    const cost = game.towerCost(this.side, type);
+    if (cost > budget) continue;
+    pool.push({ type, cost });
+  }
+  if (!pool.length) return null;
+  /* "It does not ask which." DESIGN AUTHORITY is the talent that makes it
+     ask: without it the pick is uniform, with it the machine takes the
+     dearest thing it can account for. */
+  const choice = s.replicatePick
+    ? pool.reduce((a, b) => (b.cost > a.cost ? b : a))
+    : pool[Math.floor(Math.random() * pool.length)];
+
+  /* WHERE. Rings outward from the Replicator and stops at the first legal
+     tile. Game.canBuild is the ONLY legality test used, which is what
+     guarantees the gift respects ownership, the lane, authored terrain,
+     arena rubble and anything already standing -- rather than a second copy
+     of those rules that could drift from the one the player is held to. */
+  const reach = Math.max(1, Math.round(s.replicateReach || 3));
+  const spots = [];
+  for (let dy = -reach; dy <= reach; dy++)
+    for (let dx = -reach; dx <= reach; dx++) {
+      if (!dx && !dy) continue;
+      if (Math.abs(dx) + Math.abs(dy) > reach) continue;
+      const gx = this.gx + dx, gy = this.gy + dy;
+      if (!game.canBuild(this.side, gx, gy)) continue;
+      spots.push({ gx, gy, d: Math.abs(dx) + Math.abs(dy) });
+    }
+  if (!spots.length) return null;
+  spots.sort((a, b) => a.d - b.d);
+  const at = spots[0];
+
+  const t = game.buildFree(this.side, choice.type, at.gx, at.gy);
+  if (!t) return null;
+  /* SEED STOCK / ARCHETYPE. Applied through the same retrofit the base level
+     uses, so a seeded tower reaches its specialisation by the identical path
+     a bought one does. */
+  const bump = Math.round(s.replicateLevel || 0);
+  if (bump > 0) game.applyBaseLevelTo(t, (S.baseLevel || 1) + bump);
+  game.recomputeAuras();
+  if (this.side === Game.viewSide) {
+    game.spawnBurst(t.x, t.y, 14, this.def.color, 120);
+    game.addFloater(t.x, t.y - 22, 'REPLICATED', false, this.def.color, 12);
+  }
+  return t;
+};
+
+/**
+ * NULL FIELD -- mark everything inside the volume, once per frame.
+ *
+ * The tower itself does exactly this and no more. Every actual suppression is
+ * a read of `Enemy.nulled` at the tick that would have done the thing, which
+ * is the only arrangement in which the field cannot quietly miss an ability:
+ * there is no list here to keep up to date.
+ */
+Tower.prototype.atk_null = function (dt, game) {
+  const s = this.stats;
+  const r2 = this.rangePx * this.rangePx;
+  /* HARD LOCK extends the mark past the boundary. NULL_MARK_SECONDS alone is
+     just enough slack to survive a long frame. */
+  const hold = NULL_MARK_SECONDS + (s.nullLinger || 0);
+  const vuln = s.nullVuln || 0, slow = s.nullSlow || 0;
+  let held = 0;
+  for (const e of game.enemies) {
+    if (e.dead || e.hostileTo !== this.side) continue;
+    if (dist2(this.x, this.y, e.x, e.y) > r2) continue;
+    e.nullT = Math.max(e.nullT || 0, hold);
+    e.nullSrc = this;
+    e.nullBackfire = s.nullBackfire || 0;
+    if (vuln) e.applyVuln(vuln, NULL_MARK_SECONDS + 0.1);
+    if (slow) e.applySlow(slow * this.effStatus, NULL_MARK_SECONDS + 0.1);
+    held++;
+  }
+  this.firing = held > 0;
+  this.nullHeld = held;
+};
+
+/**
+ * The ordinary acquire-aim-fire loop, factored out so PRESS GANG and
+ * REPLICATOR fire through exactly the path every projectile tower uses. A
+ * copy of Tower.update's tail would be a second definition of targeting, and
+ * this file already carries the scars of second definitions.
+ */
+Tower.prototype.gunTick = function (dt, game) {
+  const target = this.acquire(game.enemies);
+  if (target) {
+    const aim = this.predict(target, this.stats.projSpeed);
+    this.angle = angleLerp(this.angle, Math.atan2(aim.y - this.y, aim.x - this.x), Math.min(1, dt * 14));
+  }
+  this.cooldown -= dt;
+  if (target && this.cooldown <= 0) {
+    this.cooldown = 1 / this.effRate;
+    /* Tower.fire switches on def.attack and has no case for these verbs, so
+       it is bypassed rather than extended -- the recoil it would have set is
+       set here instead. */
+    this.recoil = 1;
+    this.fireProjectile(target, game);
+  }
+};
