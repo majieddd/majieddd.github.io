@@ -129,3 +129,45 @@ within 4.5° — see the crest row in `docs/NOTE-LEDGER.md`.
 **Seeds must be stable.** `sdxl_all.py` used Python's `hash()`, which is salted
 per process, so no regeneration was reproducible. It now uses FNV-1a: re-render a
 class and it comes back recognisably itself.
+
+---
+
+## Amendment (Session 19, owner): faction troops leave the greyscale rule
+
+The original rule — *mobs are greyscale plus at most one allegiance accent* —
+was applied to everything keyed `foe_*`. That turned out to cover two different
+kinds of thing, and only one of them was served by it.
+
+The owner's note:
+
+> When looking through the artstyle of the army units, they don't quite match
+> the same artstyle aesthetic as for example the profile pictures for the
+> commanders. I really want them to look more similar to the commanders … but
+> keep their model style, similar to the towers.
+
+They were right, and the cause was mechanical. `prefix_for()` splits an art key
+on `_` and dispatches on the first segment, so `foe_crawler` (a neutral machine)
+and `foe_votary` (a Federation soldier) both received the **`foe`** prefix:
+
+> *greyscale science-fiction creature specimen, one subject alone on flat black…*
+
+That is a **lab exhibit**, and it is exactly right for a machine nobody owns.
+Commanders, meanwhile, have no class prefix at all and fall through to
+`SDXL_PREFIX` — painted, coloured, brushwork. So the two classes were never
+going to match: one was a painting and the other a specimen card.
+
+### The rule now
+
+| Class | Treatment |
+|---|---|
+| **Commanders** (`cmd_*`) | Painted portrait, full palette. Unchanged. |
+| **Faction troops** (`foe_*` in `FACTION_TROOPS`) | **Painted in their power's colours**, full-body framing like a tower plate. `TROOP_PREFIX` in `sdxl_all.py`, palette in `FACTION_PALETTE`. |
+| **Neutral machines** (every other `foe_*`) | Greyscale plus at most one accent. **Unchanged** — they belong to nobody, and the clinical look is the point. |
+
+`FACTION_PALETTE` and `FACTION_ACCENT` are deliberately separate constants:
+one is the colour a troop is *painted in*, the other the single splash a
+greyscale machine is *allowed*. Collapsing them is how this got confused before.
+
+Keys are unchanged (`foe_<id>`), so no game-side art lookup had to move —
+`prefix_for()` consults the troop roster instead, which is the only thing that
+can tell a soldier from a specimen.
