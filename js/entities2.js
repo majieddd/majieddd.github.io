@@ -15,7 +15,11 @@ class Minion {
     this.tower = tower;
     this.x = spot.x; this.y = spot.y;
     const s = tower.stats;
-    this.maxHp = waveScaled((s.minionHp || 50) * (s.minionHpMul || 1)) * tower.ascDamage;
+    /* 19.16 -- a minion is a summoned body, so it is on the same penalty
+       curve a mustered one is. Health only: the item is a HEALTH penalty,
+       and damping the damage too would price the tower twice. */
+    this.maxHp = waveScaled((s.minionHp || 50) * (s.minionHpMul || 1)) * tower.ascDamage
+                 * spawnHpPenaltyMul(Game.wave);
     this.hp = this.maxHp;
     this.dps = waveScaled((s.minionDps || 8) * (s.minionDpsMul || 1)) * 0.55;
     this.slow = s.minionSlow || 0.3;

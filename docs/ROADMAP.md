@@ -981,20 +981,67 @@ that already fits is pointless — which is exactly why it reads as leftovers.
 
 | # | Note | Status |
 |---|---|---|
-| 19.1 | Spread worlds **much further apart** so choosing a destination is a real act of navigation, not a glance. The layout must exceed the viewport by design. | ❌ |
-| 19.2 | **Fully redesign and modernise** the map so picking your next world feels like a deliberate, good-looking choice. | ❌ |
-| 19.3 | **Open centred on the first world.** Today it does not, which reads as cheap or broken. | ❌ |
-| 19.4 | **Remove the galaxy backdrop image** — it does not fit. | ❌ 🎨 |
+| 19.1 | Spread worlds **much further apart** so choosing a destination is a real act of navigation, not a glance. The layout must exceed the viewport by design. | ✅ world space separated from viewport: `GX_WORLD` 620×400 vs `GX_VIEW` 137×99 — **4.53× wider, 5.29× taller**. Rings 10.5/15/19.5 → 14/20/26. Closest pair 11.11 units, no clumping |
+| 19.2 | **Fully redesign and modernise** the map so picking your next world feels like a deliberate, good-looking choice. | ✅ inertial drag, zoom bounds, recentre, reachable-vs-locked states, keyboard + coarse-pointer parity — 43/43 behaviour checks |
+| 19.3 | **Open centred on the first world.** Today it does not, which reads as cheap or broken. | ✅ centres on the current world on open and on campaign advance; defers via `_pending` when the screen has no size yet, so it centres on first paint rather than snapping later |
+| 19.4 | **Remove the galaxy backdrop image** — it does not fit. | ✅ plate, body class, `--art-galaxy` and the wrap `::before` all cleared; procedural starfield kept and re-tuned for the larger area. Also fixed the canvas backing store, which was sized from the **border** box while `inset:0` lays it in the **content** box — a 689×381 buffer painted into 687×379, i.e. a ~0.3% downscale blur on every star |
 
 ## B. Unlocks, factions and the soul shop
 
 | # | Note | Status |
 |---|---|---|
-| 19.5 | **Robotic towers unlock through the story only** — beat a solar system to earn one. **DRONE BAY is the first.** | ❌ |
-| 19.6 | **No cross-faction buying.** You must be on that faction's profile, spending that profile's souls, to unlock its towers. | ❌ |
-| 19.7 | A tower unlocked in the menu is **immediately selectable** — no restart, no relog. | ❌ |
-| 19.8 | The **hover preview is glitchy** on tower cards. Fix it so it reads as intentional motion. | ❌ |
-| 19.9 | **Soul shop inflation:** each purchase raises every *other* purchase from that faction by **+1 soul**. | ❌ |
+| 19.5 | **Robotic towers unlock through the story only** — beat a solar system to earn one. **DRONE BAY is the first.** | ✅ ladder DRONE BAY → RAILGUN → ECHO → PYLON → FOUNDRY → QUAKE → SINGULARITY → VAULT; `unlockTower` and `canUnlockTower` both refuse them, shop lists them as story unlocks with systems owed |
+| 19.6 | **No cross-faction buying.** You must be on that faction's profile, spending that profile's souls, to unlock its towers. | ✅ 22/22 checks, incl. a second profile of another faction proven unable to buy the first's towers. Storage unchanged — only the purchase gate, per [`UNITS-AND-BOONS-DESIGN.md`](UNITS-AND-BOONS-DESIGN.md) |
+| 19.7 | A tower unlocked in the menu is **immediately selectable** — no restart, no relog. | ✅ 7/7 — cached list rebuilt at the source rather than papered over |
+| 19.8 | The **hover preview is glitchy** on tower cards. Fix it so it reads as intentional motion. | ✅ 15/15 — successive frames differ (motion, not a still), survives 14 rapid hovers, and releases its rAF handle on teardown. **Must be verified in a FRONTED tab**: a backgrounded tab throttles rAF to zero and fails all five of these spuriously |
+| 19.9 | **Soul shop inflation:** each purchase raises every *other* purchase from that faction by **+1 soul**. | ✅ 10/10 — one definition of the price, read by both the shop and the deduction, so the player is never charged a figure they were not shown |
+
+### B — what landed, and the proof
+
+- **19.5.** `STORY_TOWER_ORIGIN` + `ROBOTIC_UNLOCK_ORDER` (`js/config.js`) and
+  `Meta.storyLadder / storyPending / storySystemsFor / towerStoryLock /
+  grantStoryTower` (`js/commanders.js`). The grant hangs off the one place a
+  system is recognised as taken, inside `recordWorld`, and rides out on
+  `st.storyTower` for the reward summary. Issue order:
+  **DRONE BAY → RAILGUN → ECHO → PYLON → FOUNDRY → QUAKE → SINGULARITY → VAULT.**
+  `unlockTower` refuses them and the shop lists them under THE MACHINE LINE
+  with the number of systems still owed, never a price. `robotic` stays
+  `gated: false` on purpose — `AI.rivalArsenal` reads `gated`, and narrowing
+  it would give the player a shelf shape the rival could not mirror.
+- **19.6.** **Souls were already per profile; the vault was not.** Measured
+  before the change: profile A (xeno, 200 souls) bought TOXIN for 6, and a
+  brand-new Federation profile B owned TOXIN at 200 souls untouched — a tower
+  the origin gate would have refused it outright. Tower unlocks now live on
+  `root.vault.unlockedBy[banner]`, one shelf per faction plus `none` for a
+  profile that has not sworn (folded in by `adoptShelf` when it does). Souls
+  stay per profile; commanders and abilities stay install-wide, which 19.6
+  does not cover. Existing installs are grandfathered — every shelf is seeded
+  from the retired flat list, so nobody loses an arsenal.
+- **19.7.** Cause, not symptom: the redraw hung off `_soulShopClosed`, which
+  only the ✕ ran. Measured — buy on the loadout screen and the grid stayed at
+  1 card through the purchase AND through an Escape dismissal. Now
+  `UI.refreshArsenalViews()` publishes at the moment the vault changes, and
+  `#overlay-souls._escDismiss` gives Escape the same exit the ✕ has.
+- **19.8.** Diagnosis: `runTowerPreview` opened with `stopTowerPreview()`,
+  which calls `hideTooltip()` — so the preview hid the tooltip it had just
+  been shown in (measured `hidden` immediately after `showTowerPreview`), and
+  `moveTooltip` early-returns while hidden so no later mousemove recovered it.
+  Split into `cancelTowerPreview` (loop only) and `stopTowerPreview` (loop +
+  tooltip). Also: the loop never stopped when its canvas was re-rendered away
+  under the cursor (measured 63 frames into a detached canvas in 500 ms) —
+  now guarded by `cv.isConnected` plus a generation counter, so a burst of
+  hovers can never leave two loops alive. Frames are time-based (`TP_MAX_DT`)
+  instead of assumed-60Hz, recoil is time-since-shot decayed at the engine's
+  rate (the old expression assumed a 0.5 s cadence and drew mortar at 6.3 and
+  railgun at 7.0 against a 0–1 contract), the stub's `aimed()` applies the
+  recoil translate the engine applies, and the canvas gets a device-pixel
+  backing store.
+- **19.9.** `Meta.soulSurcharge()` is the single definition, and
+  `Meta.chargeSouls(cost)` is the single deduction. `towerUnlockCost()`,
+  `abilityCost()` and `commanderCost(id)` all add it, and every buyer now
+  charges the value its own cost function returned — `unlockAbility` and
+  `unlockTower` previously charged the raw constant while the shop printed
+  the accessor, which were equal only by luck.
 
 ## C. Units — the new system
 
@@ -1014,9 +1061,9 @@ maps, faction-flavoured, individually talented, and presented side by side.
 
 | # | Note | Status |
 |---|---|---|
-| 19.16 | **Spawned-unit HP penalty curve:** −50% early, easing to **−25% at wave 5** and **0% at wave 10**. | ❌ |
-| 19.17 | **Muster income is far too small.** Summoning your own troops must be meaningfully rewarding. | ❌ |
-| 19.18 | **CANISTER rework:** stacks **strip armour** (its identity against TOXIN) and deal **max-health-based** damage at about **⅓ of toxin's total damage percentage** to compensate. | ❌ |
+| 19.16 | **Spawned-unit HP penalty curve:** −50% early, easing to **−25% at wave 5** and **0% at wave 10**. | ✅ `spawnHpPenaltyMul(wave)` is the single definition; shape **derived** from the owner's three anchors so it cannot drift from its own documentation. Measured **0.500 / 0.750 / 1.000** at waves 1 / 5 / 10 |
+| 19.17 | **Muster income is far too small.** Summoning your own troops must be meaningfully rewarding. | ✅ verified it is the *purchase* that got richer, not the count: deep maxed runs bought **fewer** musters (18/14 vs 26/24) while reaching more income — the Session-15 AI over-buying failure mode explicitly ruled out |
+| 19.18 | **CANISTER rework:** stacks **strip armour** (its identity against TOXIN) and deal **max-health-based** damage at about **⅓ of toxin's total damage percentage** to compensate. | ✅ no longer shares `poisonPct`/`poisonDps` with TOXIN — the overlap named in [`TOWER-AUDIT.md`](TOWER-AUDIT.md) is gone |
 
 ## E. Tower identity — 10 per faction
 

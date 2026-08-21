@@ -158,6 +158,10 @@ class Enemy {
     this.slowFactor = 0; this.slowTimer = 0;
     this.burnDps = 0;    this.burnTimer = 0;
     this.poisonStacks = 0; this.poisonTimer = 0; this.poisonDps = 0; this.poisonPct = 0; this.poisonContagion = 0;
+    /* Share of MAX health per stack per second -- CANISTER's axis. Kept
+       separate from poisonPct so one cloud can carry both and neither
+       tower has to pretend to be the other. */
+    this.poisonMaxPct = 0;
     this.bleedDps = 0;   this.bleedTimer = 0;
     this.freezeTimer = 0;
     this.vulnAmt = 0; this.vulnTimer = 0;
@@ -271,11 +275,15 @@ class Enemy {
     if (dps >= this.bleedDps) { this.bleedDps = dps; this.bleedTimer = dur; this.bleedSrc = src; }
     else this.bleedTimer = Math.max(this.bleedTimer, dur * 0.5);
   }
-  applyPoison(dps, pct, dur, maxStacks, contagion, src) {
+  /* `maxPct` is inserted AFTER `pct` rather than appended, so a call site that
+     was not updated is a hard argument-order break at the first tick instead
+     of a silently missing effect. All three call sites move together. */
+  applyPoison(dps, pct, maxPct, dur, maxStacks, contagion, src) {
     this.poisonStacks = Math.min(maxStacks, this.poisonStacks + 1);
     this.poisonTimer = dur;
     this.poisonDps = Math.max(this.poisonDps, dps);
     this.poisonPct = Math.max(this.poisonPct, pct);
+    this.poisonMaxPct = Math.max(this.poisonMaxPct, maxPct || 0);
     this.poisonContagion = Math.max(this.poisonContagion, contagion || 0);
     if (src) this.poisonSrc = src;
   }
@@ -407,13 +415,21 @@ class Enemy {
     }
     if (this.poisonTimer > 0) {
       this.poisonTimer -= dt;
-      /* Venom scales off CURRENT health, so it savages a healthy giant and
-         fades to nothing as the target weakens. It softens; it never finishes. */
-      const per = this.poisonDps + this.hp * this.poisonPct;
-      this.credit(this.poisonSrc, this.takeDamage(per * this.poisonStacks * dt, 'pure', { dot: true }));
+      /* TOXIN scales off CURRENT health, so it savages a healthy giant and
+         fades to nothing as the target weakens. It softens; it never finishes.
+         CANISTER gas scales off MAX health instead -- a constant share of what
+         the target arrived with, which is why it is the half that still works
+         on a nearly-dead heavy and why it has to be ceilinged. The ceiling and
+         the elite reduction live in maxHpVenomFrac, the same function the
+         inspector prints from. */
+      let per = (this.poisonDps + this.hp * this.poisonPct) * this.poisonStacks;
+      if (this.poisonMaxPct > 0)
+        per += this.maxHp * maxHpVenomFrac(this.poisonMaxPct, this.poisonStacks,
+                                           this.boss || this.miniboss);
+      this.credit(this.poisonSrc, this.takeDamage(per * dt, 'pure', { dot: true }));
       if (Math.random() < dt * 6) Game.spawnParticle(this.x + rand(-7, 7), this.y + rand(-7, 7),
         rand(-6, 6), rand(-24, -6), rand(0.3, 0.6), rand(1.5, 3), '#a3e635', 'spark');
-      if (this.poisonTimer <= 0) { this.poisonStacks = 0; this.poisonDps = 0; this.poisonPct = 0; }
+      if (this.poisonTimer <= 0) { this.poisonStacks = 0; this.poisonDps = 0; this.poisonPct = 0; this.poisonMaxPct = 0; }
     }
 
     if (this.regen > 0 && this.hp < this.maxHp && !this.dead)
@@ -1304,6 +1320,15 @@ class Tower {
     const crit = (s.crit || 0) + this.sideMods.crit;
     if (crit > 0) d *= (1 + crit * (Math.max(s.critMult || 0, 2.5) - 1));
     if (s.poisonDps) d += s.poisonDps * (s.maxStacks || 1) * 0.6 * this.effStatus;
+    /* A share-of-health effect has no damage figure of its own, so it is
+       priced against a nominal wave body -- through Game.waveHpMul, which is
+       THE definition of the curve, never a second copy of it. Without this
+       term AI.effectiveness reads CANISTER as a 9-damage tower and the rival
+       never drafts the thing it has in its own human line. The 0.6 is the
+       same uptime discount the flat venom half already carries. */
+    if (s.poisonMaxPct)
+      d += MAXHP_DOT_REF_HP * Game.waveHpMul(Math.max(1, Game.wave))
+           * maxHpVenomFrac(s.poisonMaxPct * this.effStatus, s.maxStacks || 1, false) * 0.6;
     if (s.bleed) d += s.bleed * this.effStatus;
     return d;
   }
@@ -2165,7 +2190,7 @@ class Projectile {
       if (s.freezeChance && Math.random() < s.freezeChance) { enemy.applyFreeze((s.freezeDur || 0.8) * st); Sound.play('freeze'); }
     }
     if (s.poisonDps) {
-      enemy.applyPoison(s.poisonDps * st, (s.poisonPct || 0) * st, (s.poisonDur || 4) * st, s.maxStacks || 5, s.contagion || 0, t);
+      enemy.applyPoison(s.poisonDps * st, (s.poisonPct || 0) * st, (s.poisonMaxPct || 0) * st, (s.poisonDur || 4) * st, s.maxStacks || 5, s.contagion || 0, t);
       if (s.shredPerStack) enemy.applyShred(s.shredPerStack * enemy.poisonStacks, s.poisonDur || 4);
       if (s.corrodeSlow) enemy.applySlow(s.corrodeSlow * st, (s.poisonDur || 4) * st);
     }

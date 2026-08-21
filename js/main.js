@@ -149,8 +149,11 @@
     if (typeof ARTPACK === 'undefined') return;
     const root = document.documentElement;
     if (ARTPACK.nebula) root.style.setProperty('--art-nebula', `url("${ARTPACK.nebula}")`);
-    if (ARTPACK.galaxy_bg) { root.style.setProperty('--art-galaxy', `url("${ARTPACK.galaxy_bg}")`);
-                             document.body.classList.add('has-galaxyart'); }
+    /* The galaxy map's painted plate is gone (owner-set, 19.4): it did not fit
+       the vector map laid over it, and the class that installed it also broke
+       the map's own layout. No variable is published either -- an unused
+       --art-galaxy is exactly the dead reference that gets wired back up by
+       accident. The procedural starfield is the backdrop now. */
     /* The title screen is a CSS nebula now (owner-set, Session 16) -- the
        painted key art is no longer used as a backdrop. The variable is still
        published for anything else that wants the painting; the class that

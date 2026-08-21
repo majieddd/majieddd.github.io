@@ -52,25 +52,38 @@ const SYSTEM_NAMES = ['CORVUS', 'ARDENT', 'TALLOW REACH', 'THE SPINDLE', 'BLACKG
    divides by it to keep orbits visually circular. Keep the two in step. */
 const GX_RENDER_SQUASH = 0.64;
 /* Three rings and the golden angle: seven worlds land evenly instead of the
-   two-ring alternation that paired them up. */
-const GX_RINGS = [10.5, 15.0, 19.5];
+   two-ring alternation that paired them up.
+
+   Session 19 scaled all three by exactly 4/3 along with the world. The scale
+   being UNIFORM is the point: every intra-system distance scales with it, so
+   the measured minimum separation moves 8.33 -> 11.11 and cannot be dragged
+   back under the ~4.7-unit combined dot-and-ring width by one ring having been
+   rounded harder than its neighbours. That is the Session 16 double-squash
+   failure in a different costume. */
+const GX_RINGS = [14.0, 20.0, 26.0];
+/* The outermost orbit. The halo radius and both system labels in config.js are
+   pitched against this, and naming it is what stops a raised ring quietly
+   leaving the furniture sitting on top of the worlds. */
+const GX_RING_OUTER = GX_RINGS[GX_RINGS.length - 1];
 const GX_GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
-/* The bounds a world is held inside. DERIVED from the frame in config.js
-   rather than typed: the old pair of literals ([3, 97] and [5, 96]) was
-   tighter than the orbits it had to hold, so eleven of thirty-five worlds
-   were pushed flat onto an edge -- three of them onto the same line, which is
-   what a player actually saw. Anything reaching these now is a layout bug to
-   fix in GX_SYSTEM_SLOTS, not a value to squash. */
+/* The bounds a world is held inside. These are a WORLD-space bound now, not a
+   screen fit -- which is the root cause note 19.1 names. They used to be
+   derived from GX_VIEW, and GX_VIEW was the same rectangle the whole galaxy
+   was drawn into, so the clamp was literally "push every world back onto one
+   screen". Derived from GX_WORLD they are what they were always described as:
+   a guard against a layout bug, sitting far outside anything the slots and
+   orbits can reach. Anything touching these is a bug to fix in
+   GX_SYSTEM_SLOTS, not a value to squash. */
 const GX_MARK_HALF = 4.2;      /* the widest world mark: the seat ring plus its stroke */
-const GX_X_MIN = GX_VIEW.x + GX_MARK_HALF;
-const GX_X_MAX = GX_VIEW.x + GX_VIEW.w - GX_MARK_HALF;
+const GX_X_MIN = GX_WORLD.x + GX_MARK_HALF;
+const GX_X_MAX = GX_WORLD.x + GX_WORLD.w - GX_MARK_HALF;
 /* Vertical margins are asymmetric -- the contested ⚔ sits above a world and
    the star pips below it -- and are converted out of drawn space, because
    generation y is squashed by GX_RENDER_SQUASH before anything is painted. */
 const GX_MARK_UP = 6.8, GX_MARK_DOWN = 5.5;
-const GX_Y_MIN = (GX_VIEW.y + GX_MARK_UP) / GX_RENDER_SQUASH;
-const GX_Y_MAX = (GX_VIEW.y + GX_VIEW.h - GX_MARK_DOWN) / GX_RENDER_SQUASH;
+const GX_Y_MIN = (GX_WORLD.y + GX_MARK_UP) / GX_RENDER_SQUASH;
+const GX_Y_MAX = (GX_WORLD.y + GX_WORLD.h - GX_MARK_DOWN) / GX_RENDER_SQUASH;
 
 const WORLD_KINDS = {
   standard: { id: 'standard', label: 'World',      icon: '●', weight: 58 },
@@ -114,7 +127,13 @@ function generateGalaxy(seed, playerFaction) {
        one frame and drawn into another is how the orbits came to hang off the
        edge in the first place. */
     const slot = GX_SYSTEM_SLOTS[si % GX_SYSTEM_SLOTS.length];
-    const cx = slot[0], cy = slot[1];
+    /* Slots are authored in RENDERED units -- what the viewBox actually shows
+       -- while a system's STORED y is generation space, which the renderer
+       squashes again on the way out. Converting here rather than in the table
+       keeps the table readable against GX_WORLD, which is the one rectangle
+       the slots have to fit inside. Nothing draws from rnd() in this
+       conversion, so no saved campaign's maps, arenas or boons move. */
+    const cx = slot[0], cy = slot[1] / GX_RENDER_SQUASH;
 
     /* Each system is dominated by one rival power, which supplies its commander. */
     const holder = rivals[si % rivals.length];

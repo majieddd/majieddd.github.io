@@ -1323,7 +1323,7 @@ const Game = {
               const d2 = dist2(enemy.x, enemy.y, o.x, o.y);
               if (d2 < nd) { nd = d2; nearest = o; }
             }
-            if (nearest) nearest.applyPoison(power * 0.25, 0, 4, 4, 0, tower);
+            if (nearest) nearest.applyPoison(power * 0.25, 0, 0, 4, 4, 0, tower);
             break;
           }
           case 'entropy': {
@@ -1503,7 +1503,10 @@ const Game = {
          them -- the constructor applies each exactly once -- which also
          restores the armour a summon was arriving without. BATCH-A/numbers */
       this.pendingSpawns.push(new Enemy(def, enemy.path, {
-        hpMul: this.waveHpMul(Math.max(1, this.wave)) * SUMMON_DAMP,
+        /* 19.16 -- a brood is a summoned body like any other, on the same
+           curve. Symmetric by construction: a wave arrives identically on
+           every seat, so the term cannot favour one commander. */
+        hpMul: this.waveHpMul(Math.max(1, this.wave)) * SUMMON_DAMP * spawnHpPenaltyMul(this.wave),
         bountyMul: 0.5, hostileTo: enemy.hostileTo, owner: enemy.owner,
         reanimated: enemy.reanimated,
         startDist: Math.max(0, enemy.dist - 12), offset: rand(-14, 14),
@@ -1625,6 +1628,12 @@ const Game = {
     let m = this.waveHpMul(Math.max(1, this.wave)) * (1 + this.drift.hp);
     for (const mod of this.enemyMods) if (mod.hpMul) m *= mod.hpMul;
     m *= MUSTER_DAMP * this.sides[side].mods.reanim;
+    /* 19.16. A bought body is worth a FRACTION of a wave body in the opening
+       and the full damped figure from wave 10 on. It sits inside musterHpMul
+       rather than at the spawn, because the muster bar, the rival's pressure
+       estimate and the spawn all read this function -- putting it anywhere
+       else is how a preview and a payout disagree. */
+    m *= spawnHpPenaltyMul(this.wave);
     const V = this.sides[victim];
     if (V) m *= (1 - (V.traits.reanimResist || 0));
     return m;
@@ -1890,7 +1899,9 @@ const Game = {
         if (d2 <= r2 && d2 < bd) { bd = d2; best = o; }
       }
       if (best) {
-        best.applyPoison(e.poisonDps, e.poisonPct, 4, 10, 0, e.poisonSrc);
+        /* The max-health share crosses with the rest of the cloud, or a
+           contagion jump would silently launder CANISTER gas into TOXIN. */
+        best.applyPoison(e.poisonDps, e.poisonPct, e.poisonMaxPct, 4, 10, 0, e.poisonSrc);
         best.poisonStacks = Math.max(best.poisonStacks, e.poisonStacks);
         best.contagionSpent = true;
         this.beams.push({ points: [{ x: e.x, y: e.y }, { x: best.x, y: best.y }],

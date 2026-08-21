@@ -303,8 +303,12 @@ const TOWER_ORIGINS = {
           'overload for far more than they should, and the heat that builds ' +
           'takes the gun offline when the bank finally fills.'
   },
+  /* `gated: false` and `story: true` are not in tension. GATED is about which
+     banner may hold the hardware, and the machines answer to nobody -- which
+     is exactly why AI.rivalArsenal must keep seeing them as legal to every
+     rival. STORY is about how you come by it: conquest, never souls. */
   robotic: {
-    id: 'robotic', faction: null, gated: false,
+    id: 'robotic', faction: null, gated: false, story: true,
     name: 'ROBOTIC', short: 'Robotic', icon: '⬡', color: '#94a3b8',
     tag: 'LATTICE',
     rule: 'LATTICE',

@@ -94,6 +94,11 @@ function foldTraits(side) {
    one free per faction and the rest bought with souls. */
 const COMMANDERS = COMMANDER_ROSTER;
 
+/* One arsenal shelf per banner, plus `none` for a profile that has not sworn
+   yet -- whose shelf is folded into the banner's the moment it does. */
+const NO_BANNER_SHELF = 'none';
+function arsenalShelfKeys() { return Object.keys(FACTIONS).concat([NO_BANNER_SHELF]); }
+
 /* --------------------------------------------------------------------------
    META PROGRESSION
 -------------------------------------------------------------------------- */
@@ -257,6 +262,30 @@ const Meta = {
       r.vault.musterUnlocked = MUSTER_BASE_UNLOCK.slice();
       this.save();
     }
+    /* ARSENAL SHELVES. Tower unlocks used to be ONE install-wide list while
+       souls were -- and still are -- per profile. So a Xeno file could bank
+       the souls, buy TOXIN, and a Federation file that never paid a soul
+       owned it, in defiance of the origin gate that would have refused the
+       purchase on that banner outright. One shelf per banner puts the scope
+       of the grant back where the scope of the spend already was. Existing
+       installs are grandfathered -- every shelf is seeded from the old flat
+       list -- so the migration takes nothing away from anybody. */
+    if (!r.vault.unlockedBy) {
+      const legacy = Array.isArray(r.vault.unlocked) ? r.vault.unlocked : [];
+      r.vault.unlockedBy = {};
+      for (const k of arsenalShelfKeys()) r.vault.unlockedBy[k] = legacy.slice();
+      /* Deleted rather than left beside its replacement. A stale second copy
+         of the same fact is how one vault came to be read from two places. */
+      delete r.vault.unlocked;
+      this.save();
+    }
+    /* The inflation ladder starts at zero for a grandfathered save: nobody is
+       retro-charged for purchases made at the old flat price. */
+    if (!r.vault.bought) {
+      r.vault.bought = {};
+      for (const k of arsenalShelfKeys()) r.vault.bought[k] = 0;
+      this.save();
+    }
     return r.vault;
   },
   setSettings(s) { const r = this.root(); r.settings = Object.assign(r.settings || {}, s); this.save(); },
@@ -328,6 +357,8 @@ const Meta = {
     const p = this.load();
     if (factionId) {
       p.faction = factionId;
+      /* ...and takes the unsworn arsenal shelf with it. */
+      this.adoptShelf(factionId);
       /* Swearing to a faction hands you its base commander, permanently. */
       const base = freeCommanderOf(factionId);
       const v = this.vault();
@@ -406,7 +437,7 @@ const Meta = {
     if (stars > prev) c.stars[worldId] = stars;
 
     /* A solar system whose every world is conquered pays a bounty, once. */
-    let systemTaken = null, saved = [];
+    let systemTaken = null, saved = [], storyTower = null;
     if (souls || stars > prev) {
       const gx = this.galaxy();
       const sys = gx && gx.systems.find(s2 => s2.worlds.some(w => w.id === worldId));
@@ -416,6 +447,10 @@ const Meta = {
           c.systemsTaken.push(sys.id);
           souls += this.SYSTEM_BOUNTY;
           systemTaken = sys.name;
+          /* The machine line is the reward for a WHOLE system, so it hangs
+             off the one place a system is recognised as taken. Anywhere else
+             and it is either paid twice or missed entirely. */
+          storyTower = this.grantStoryTower();
         }
       }
       /* Conquest SAVES the world's denizens: its map's roster joins the
@@ -430,7 +465,7 @@ const Meta = {
     if (souls) p.souls += souls;
     this.save();
     return { worldId, stars, previous: prev, improved: stars > prev,
-             conquered: stars >= 3 && prev < 3, souls, systemTaken, saved };
+             conquered: stars >= 3 && prev < 3, souls, systemTaken, saved, storyTower };
   },
   /** 2-3 forks generated deterministically from the campaign seed + depth. */
   campaignOptions() {
@@ -556,10 +591,38 @@ const Meta = {
   },
   souls() { return this.load().souls; },
 
-  /* ---- tower unlocks ---- */
-  isTowerUnlocked(id) { return this.vault().unlocked.includes(id); },
-  unlockedTowers() { return this.vault().unlocked.slice(); },
-  towerUnlockCost() { return TOWER_UNLOCK_COST; },
+  /* ---- tower unlocks -- ONE SHELF PER BANNER ---- */
+  /** The banner whose shelf the active profile spends on and reads from. */
+  shelfKey() { return this.load().faction || NO_BANNER_SHELF; },
+  /** The active banner's shelf, defaulted on read: an unknown faction id (an
+      edited save, a power added later) gets a legal starter shelf instead of
+      throwing, and the starters can never go missing from one. */
+  arsenalShelf() {
+    const v = this.vault();
+    const k = this.shelfKey();
+    const shelf = (v.unlockedBy[k] = v.unlockedBy[k] || STARTER_TOWERS.slice());
+    for (const id of STARTER_TOWERS) if (!shelf.includes(id)) shelf.push(id);
+    return shelf;
+  },
+  isTowerUnlocked(id) { return this.arsenalShelf().includes(id); },
+  unlockedTowers() { return this.arsenalShelf().slice(); },
+
+  /* ---- soul prices -- ONE definition each, printed AND charged ---- */
+  /** Every purchase on a banner raises every later one on it. Read by the
+      shop and by every deduction, because two expressions for one price is
+      exactly how a panel came to promise 21 souls while paying 6. */
+  soulSurcharge() { return (this.vault().bought[this.shelfKey()] || 0) * SOUL_INFLATION_STEP; },
+  /** Take the souls AND book the purchase that raises the next price. Every
+      buyer goes through here so no purchase can escape the ladder. */
+  chargeSouls(cost) {
+    const p = this.load(), v = this.vault();
+    if (p.souls < cost) return false;
+    p.souls -= cost;
+    const k = this.shelfKey();
+    v.bought[k] = (v.bought[k] || 0) + 1;
+    return true;
+  },
+  towerUnlockCost() { return TOWER_UNLOCK_COST + this.soulSurcharge(); },
 
   /** ORIGIN GATING. A tower built by one of the three POWERS may only be
       bought while you are sworn to that power -- their arsenals are the point
@@ -576,7 +639,42 @@ const Meta = {
   /** Gating decides what may be BOUGHT and never what you already own: an
       unlock made under a previous banner is kept for good, which is also why
       the shared vault is never filtered on read. */
-  canUnlockTower(id) { return !this.isTowerUnlocked(id) && !this.towerOriginLock(id); },
+  canUnlockTower(id) {
+    return !this.isTowerUnlocked(id) && !this.towerOriginLock(id) && !this.towerStoryLock(id);
+  },
+
+  /* ---- the machine line: earned through the story, never sold ---- */
+  isStoryTower(id) { return originOf(id).id === STORY_TOWER_ORIGIN; },
+  /** The ladder in issue order. A robotic tower the order forgot is appended
+      rather than becoming unreachable -- it can be neither bought nor earned
+      otherwise, which is the worst of both laws. */
+  storyLadder() {
+    const named = ROBOTIC_UNLOCK_ORDER.filter(id => TOWER_TYPES[id]);
+    return named.concat(TOWER_ORDER.filter(id => this.isStoryTower(id) && !named.includes(id)));
+  },
+  /** Everything still owed, next one first. */
+  storyPending() { return this.storyLadder().filter(id => !this.isTowerUnlocked(id)); },
+  /** How many more solar systems this machine is away; 0 once it is yours.
+      The shop prints this and grantStoryTower issues from the same list, so
+      the promise on the card is the promise the campaign keeps. */
+  storySystemsFor(id) {
+    const i = this.storyPending().indexOf(id);
+    return i < 0 ? 0 : i + 1;
+  },
+  /** Why the shop refuses to price this one, or null. */
+  towerStoryLock(id) {
+    if (!this.isStoryTower(id) || this.isTowerUnlocked(id)) return null;
+    return { origin: TOWER_ORIGINS[STORY_TOWER_ORIGIN], systems: this.storySystemsFor(id) };
+  },
+  /** Issue the next machine. Called where a solar system is recognised as
+      taken and nowhere else, so it can be neither earned twice nor missed. */
+  grantStoryTower() {
+    const next = this.storyPending()[0];
+    if (!next) return null;
+    this.arsenalShelf().push(next);
+    this.save();
+    return next;
+  },
 
   /* ---- muster (saved denizen) unlocks -- conquest-fed, shared vault ---- */
   /** Filtered on read so a stale save can never surface an unsendable id. */
@@ -629,21 +727,34 @@ const Meta = {
   /* ============================== FACTION / COMMANDER / ABILITY UNLOCKS == */
 
   faction() { return this.load().faction; },
-  setFaction(id) { const p = this.load(); p.faction = id; this.save(); return id; },
+  setFaction(id) { const p = this.load(); p.faction = id; this.adoptShelf(id); this.save(); return id; },
+
+  /** Swearing to a banner takes the unsworn shelf with you. A profile can
+      reach the shop before it has a faction, and stranding those unlocks on a
+      shelf nothing reads again would charge souls for nothing. */
+  adoptShelf(id) {
+    if (!id) return;
+    const v = this.vault();
+    const from = v.unlockedBy[NO_BANNER_SHELF] || [];
+    const to = (v.unlockedBy[id] = v.unlockedBy[id] || STARTER_TOWERS.slice());
+    for (const t of from) if (!to.includes(t)) to.push(t);
+    v.bought[id] = (v.bought[id] || 0) + (v.bought[NO_BANNER_SHELF] || 0);
+    v.unlockedBy[NO_BANNER_SHELF] = STARTER_TOWERS.slice();
+    v.bought[NO_BANNER_SHELF] = 0;
+  },
 
   isCommanderUnlocked(id) { return this.vault().cmdUnlocked.includes(id); },
   commanderCost(id) {
     const c = COMMANDER_ROSTER.find(x => x.id === id);
     /* A commander outside your own faction costs more -- you are recruiting
        across a line that is supposed to mean something. */
-    return c && c.faction === this.faction() ? 12 : 18;
+    return (c && c.faction === this.faction() ? 12 : 18) + this.soulSurcharge();
   },
   unlockCommander(id) {
-    const p = this.load(), v = this.vault();
+    const v = this.vault();
     if (v.cmdUnlocked.includes(id)) return false;
-    const cost = this.commanderCost(id);
-    if (p.souls < cost) return false;
-    p.souls -= cost;
+    /* The charge reads the SAME commanderCost the shop button printed. */
+    if (!this.chargeSouls(this.commanderCost(id))) return false;
     v.cmdUnlocked.push(id);
     this.save(true);
     return true;
@@ -656,7 +767,7 @@ const Meta = {
     if (!c) return false;
     return c.tech.every(t => this.isUnlocked(cmdId, t.id));
   },
-  abilityCost() { return ABILITY_UNLOCK_COST; },
+  abilityCost() { return ABILITY_UNLOCK_COST + this.soulSurcharge(); },
 
   /** First encounter with an enemy type. Returns true exactly once, forever. */
   markSeen(type) {
@@ -688,21 +799,24 @@ const Meta = {
     return { stars: p.prestige[id] };
   },
   unlockAbility(cmdId) {
-    const p = this.load(), v = this.vault();
-    if (v.abilUnlocked.includes(cmdId) || p.souls < ABILITY_UNLOCK_COST) return false;
-    p.souls -= ABILITY_UNLOCK_COST;
+    const v = this.vault();
+    if (v.abilUnlocked.includes(cmdId)) return false;
+    /* The raw constant used to be charged here while the shop printed
+       abilityCost(). They were equal, which is why it survived -- and the
+       moment a surcharge landed on one of them they would have parted. */
+    if (!this.chargeSouls(this.abilityCost())) return false;
     v.abilUnlocked.push(cmdId);
     this.save(true);
     return true;
   },
   unlockTower(id) {
-    const p = this.load(), v = this.vault();
-    if (v.unlocked.includes(id) || p.souls < TOWER_UNLOCK_COST) return false;
+    if (this.isTowerUnlocked(id)) return false;
     /* Refused at the store, not merely hidden in the shop -- the shop SHOWS
-       locked entries, so the button exists and has to be honest. */
-    if (this.towerOriginLock(id)) return false;
-    p.souls -= TOWER_UNLOCK_COST;
-    v.unlocked.push(id);
+       locked entries, so the button exists and has to be honest. A machine is
+       refused for a second reason: it has no price to pay at all. */
+    if (this.towerOriginLock(id) || this.towerStoryLock(id)) return false;
+    if (!this.chargeSouls(this.towerUnlockCost())) return false;
+    this.arsenalShelf().push(id);
     this.save();
     return true;
   },

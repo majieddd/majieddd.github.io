@@ -16,7 +16,10 @@ window.PINS = (function () {
     }
     for (const id of TOWER_ORDER) p.towerXp[id] = 999999;
     const v = Meta.vault();
-    v.unlocked = TOWER_ORDER.slice();
+    /* Unlocks are shelved PER BANNER since 19.6, so writing the retired flat
+       list would leave the "maxed" pin holding one tower and read as a
+       catastrophe -- the third documented way to mis-measure this pin. */
+    for (const k of Object.keys(v.unlockedBy)) v.unlockedBy[k] = TOWER_ORDER.slice();
     v.cmdUnlocked = COMMANDERS.map(c => c.id);
     p.souls = 99999;
     /* Galaxy tier is DELIBERATELY left at zero. It multiplies enemy scaling,

@@ -1207,14 +1207,17 @@ body.tri-field #hud { gap: 8px; padding: 8px 10px; }
    row's text started wherever its glyph happened to end. */
 .mu-ic { width: 20px; text-align: center; flex: 0 0 20px; }
 
-/* ═════════════════ GALACTIC MAP ART ═════════════════════════════════════ */
-/* The painted starfield sits behind the SVG, dimmed so owner rings, star
-   pips and system names keep their contrast. Inert without the pack key. */
-body.has-galaxyart .worldmap-wrap { position: relative; }
-body.has-galaxyart .worldmap-wrap::before { content: ""; position: absolute; inset: 0;
-  background: var(--art-galaxy) center/cover no-repeat; opacity: .42; border-radius: inherit;
-  pointer-events: none; z-index: 0; }
-body.has-galaxyart .worldmap-wrap > * { position: relative; z-index: 1; }
+/* ═════════════════ GALACTIC MAP ART -- REMOVED (19.4) ═══════════════════
+   The painted galaxy plate is gone: the owner's call, and it never fitted the
+   vector map laid over it. The procedural starfield and its parallax stay.
+
+   It took a second bug out with it. To lift the map over the plate, the rule
+   set `position: relative` on EVERY child of the wrap -- including the
+   absolutely-positioned parallax canvas, which it therefore dropped back into
+   the grid as a full-width block. MEASURED: the viewport was 1881px tall
+   against a 690px map. Nothing here is worth reinstating; a backdrop plate, if
+   one is ever wanted again, belongs on the viewport's own ::before, which the
+   children cannot be dragged into.  */
 
 /* ═════════════════ MUSTER DETACHMENT (loadout strip + battle header) ════ */
 /* The battle header now carries two readouts; the second label needs air. */
@@ -1248,28 +1251,95 @@ body.has-galaxyart .worldmap-wrap > * { position: relative; z-index: 1; }
 .rw-saved span { font-size: 10.5px; color: var(--tc, #e05555); }
 .rw-saved em { font-style: normal; font-size: 9px; color: var(--text-mute); width: 100%; }
 
-/* ═════════════════ GALAXY 2.5D VIEWPORT ════════════════════════════════ */
-.gx-viewport { position: relative; overflow: hidden; cursor: grab;
+/* ═════════════════ GALAXY VIEWPORT — a window onto world space ═════════ */
+/* THE VIEWPORT NEEDS A DEFINITE SIZE. It used to be a grid that sized itself
+   to its own contents, which is only ever going to produce a window exactly
+   as big as the thing inside it -- and a window exactly as big as its map has
+   nothing to pan. The plane is sized in PIXELS by GalaxyFX.resize() off
+   GX_WORLD, several windows across, and pinned to the middle. */
+.gx-viewport { position: relative; display: block; overflow: hidden; cursor: grab;
+  padding: 0; height: clamp(340px, 64vh, 760px);
   perspective: 1400px; perspective-origin: 50% 42%; touch-action: none; }
 .gx-viewport.dragging { cursor: grabbing; }
+.gx-viewport:focus-visible { outline: 1px solid rgba(120,220,255,.55); outline-offset: -2px; }
 .gx-stars-cv { position: absolute; inset: 0; width: 100%; height: 100%;
   z-index: 0; pointer-events: none; }
 /* The map plane itself: tilted away from the viewer so the field recedes.
    transform-style must stay flat -- the SVG is 2D and only the PLANE is
-   rotated, which keeps text crisp and hit-testing exact. */
-.gx-plane { position: relative; z-index: 1; width: 100%; height: 100%;
+   rotated, which keeps text crisp and hit-testing exact. Width, height and the
+   centring margins are JS's, because they are world size times a scale the
+   window decides. */
+.gx-plane { position: absolute; left: 50%; top: 50%; z-index: 1;
   transform-origin: 50% 50%; will-change: transform; }
 .gx-viewport .gx-plane > svg { display: block; width: 100%; height: 100%;
-  transform: rotateX(16deg); transform-origin: 50% 55%; }
+  max-height: none; transform: rotateX(16deg); transform-origin: 50% 55%; }
 /* A horizon wash so the receding edge fades into the starfield instead of
    ending on a hard rectangle. */
 .gx-viewport::after { content: ""; position: absolute; inset: 0; z-index: 2;
   pointer-events: none;
   background: linear-gradient(180deg, rgba(4,6,11,.55) 0%, rgba(4,6,11,0) 22%,
                               rgba(4,6,11,0) 72%, rgba(4,6,11,.5) 100%); }
-.gx-hint { position: absolute; left: 10px; bottom: 8px; z-index: 3;
+.gx-hint { position: absolute; left: 12px; bottom: 9px; z-index: 3;
   font-family: var(--display); font-size: 9px; letter-spacing: .14em;
-  color: var(--text-mute); opacity: .65; pointer-events: none; }
+  color: var(--text-mute); opacity: .62; pointer-events: none; }
+/* Both captions live over the map now that it fills its own box, so they are
+   parked in opposite corners rather than stacked in one. */
+.gx-viewport > .wm-hint { position: absolute; right: 12px; bottom: 7px; z-index: 3;
+  margin: 0; text-align: right; pointer-events: none; opacity: .8; }
+
+/* NAVIGATION. A wheel is a mouse affordance and nothing else; a map bigger
+   than its window needs zoom and recentre that a finger and a keyboard can
+   both reach. */
+.gx-nav { position: absolute; right: 10px; top: 10px; z-index: 4;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.gx-nav-btn { font-family: var(--display); font-size: 11px; letter-spacing: .12em;
+  min-width: 30px; padding: 5px 9px; border-radius: 8px; cursor: pointer;
+  color: var(--text-dim); background: rgba(6, 10, 18, .74);
+  border: 1px solid rgba(120, 220, 255, .22);
+  transition: border-color .16s var(--e-tap), color .16s var(--e-tap), background .16s var(--e-tap); }
+.gx-nav-btn:hover { color: #bae6fd; border-color: rgba(120, 220, 255, .6);
+  background: rgba(8, 18, 30, .9); }
+.gx-nav-btn:focus-visible { outline: 1px solid rgba(120,220,255,.7); outline-offset: 1px; }
+.gx-home { font-size: 9.5px; letter-spacing: .16em; }
+
+/* THE TRAVEL RANGE: the ring marks the system you are standing in; the dashed
+   COURSES are the exact set of worlds the unlock rules currently allow, one
+   line each. The ring deliberately does NOT try to enclose that set -- it is
+   scattered over five systems and a circle drawn round it swallows most of the
+   galaxy. Both are under the worlds, and inert, so neither can take a click
+   meant for a destination. */
+.gx-reach { pointer-events: none; }
+.gx-range { fill: none; stroke: rgba(120, 220, 255, .28); stroke-width: .45;
+  stroke-dasharray: 3.4 3.4; }
+.gx-range-lbl { font-family: var(--display); font-size: calc(2.3px * var(--gxlab, 1));
+  letter-spacing: .3px; fill: rgba(120, 220, 255, .6); }
+.gx-course { stroke: rgba(120, 220, 255, .34); stroke-width: .3; stroke-dasharray: 1.6 2.4; }
+.gx-here { fill: none; stroke: #7dd3fc; stroke-width: .5; opacity: .85; }
+.gx-here-lbl { font-family: var(--display); font-size: calc(2.1px * var(--gxlab, 1));
+  letter-spacing: .28px; fill: rgba(125, 211, 252, .75); }
+
+/* REACHABLE VERSUS LOCKED, said twice so it survives colour-blindness and a
+   dark room: locked worlds lose their colour as well as their light, and a
+   world you can open breathes. */
+.gx-world.shut { opacity: .26; filter: grayscale(.9); }
+/* Scoped to the campaign map on purpose: on the universe map every world is
+   open, and thirty-five simultaneous pulses is a light show, not a signal. */
+@media (prefers-reduced-motion: no-preference) {
+  #worldmap-wrap .gx-world.open .gx-ring { animation: gxReach 2.8s ease-in-out infinite; }
+  #worldmap-wrap .gx-here { animation: gxHere 2.8s ease-in-out infinite; }
+}
+@keyframes gxReach { 0%, 100% { opacity: .78; } 50% { opacity: 1; stroke-width: .62; } }
+@keyframes gxHere  { 0%, 100% { opacity: .55; } 50% { opacity: .95; } }
+
+/* SEMANTIC ZOOM. Labels are scaled back up as the map shrinks (--gxlab is set
+   by GalaxyFX.apply), and the per-world detail drops out entirely on an
+   overview -- three-pixel star pips are noise, not information. */
+.gx-viewport .gx-sysname { font-size: calc(2.6px * var(--gxlab, 1)); }
+.gx-viewport.gx-far .gx-sysmeta,
+.gx-viewport.gx-far .gx-pip,
+.gx-viewport.gx-far .gx-tri,
+.gx-viewport.gx-far .gx-here-lbl { display: none; }
+
 @media (prefers-reduced-motion: reduce) {
   .gx-viewport .gx-plane > svg { transform: none; }
 }
@@ -1317,6 +1387,11 @@ body.has-galaxyart .worldmap-wrap > * { position: relative; z-index: 1; }
    not an error. Dimmed, not hidden, and never colour-coded as a failure. */
 .soul-item.origin-locked { opacity: .58; filter: saturate(.55); cursor: not-allowed; }
 .soul-item.origin-locked:hover { opacity: .78; filter: saturate(.8); }
+/* A machine on the story ladder is a reward you have not reached, not a
+   refusal, so it keeps its colour where an origin-locked entry loses it. */
+.soul-item.story-locked { opacity: .74; filter: none; cursor: default; }
+.soul-item.story-locked:hover { opacity: .95; }
+.soul-item.story-locked .si-lock { color: #fbbf24; }
 .si-lock {
   display: block;
   color: var(--cc);

@@ -55,18 +55,23 @@ const UI = {
   renderTitle() {
     const names = Meta.profileNames();
     const active = Meta.activeName();
-    /* Tower and commander unlocks moved to the install-wide vault; the
-       per-profile arrays they left behind are still seeded to the starters and
-       never written again, so reading them reported "1 towers unlocked" on a
-       full install. Souls stay per-profile and are still read from the row. */
+    /* Tower unlocks are shelved per BANNER since 19.6 and commanders are
+       still install-wide, so a row reports ITS OWN shelf. The retired flat
+       list was read here, and the copy beside it promised every profile the
+       same arsenal -- which is the arrangement 19.6 exists to end. Souls stay
+       per-profile and are still read from the row. */
     const vault = Meta.vault();
     $('#profile-list').innerHTML = names.map(n => {
       const r = Meta.root().profiles[n];
+      const shelf = vault.unlockedBy[r.faction || NO_BANNER_SHELF] || STARTER_TOWERS;
       const lv = Object.values(r.commanders || {}).reduce((s, c) => s + (c.xp || 0), 0);
       const fa = r.faction ? FACTIONS[r.faction] : null;
       return `<button class="profile-row ${n === active ? 'active' : ''}" data-profile="${n}"
-              data-tt="${n}|${fa ? fa.name + '. ' : 'No allegiance chosen. '}Arsenal is shared across every profile: ${
-                vault.unlocked.length} towers and ${vault.cmdUnlocked.length} commanders unlocked. ${
+              data-tt="${n}|${fa ? fa.name + '. ' : 'No allegiance chosen. '}This banner's arsenal holds ${
+                shelf.length} ${shelf.length === 1 ? 'tower' : 'towers'}; ${
+                vault.cmdUnlocked.length} ${
+                vault.cmdUnlocked.length === 1 ? 'commander is' : 'commanders are'
+                } recruited across the install. ${
                 r.souls || 0} souls banked.${r.campaign ? ' Campaign in progress.' : ''}">
         <span class="pr-name">${n}</span>
         <span class="pr-meta">◉ ${r.souls || 0} souls · ${r.campaign ? 'node ' + (r.campaign.depth + 1) : 'no campaign'} · ${formatNum(lv)} XP</span>
@@ -128,8 +133,27 @@ const UI = {
   openSoulShop(onClose) {
     Sound.play('click');
     this.renderSoulShop();
-    $('#overlay-souls').classList.remove('hidden');
+    const ov = $('#overlay-souls');
+    ov.classList.remove('hidden');
     this._soulShopClosed = onClose || null;
+    /* Escape dismisses an overlay through closeTopOverlay, which never ran
+       the caller's redraw -- so a tower bought and then dismissed with the
+       key instead of the X was owned by the save and invisible to the screen
+       underneath. Publishing the hook here puts it on the way IN, the one
+       path every open passes. */
+    ov._escDismiss = () => {
+      const cb = this._soulShopClosed; this._soulShopClosed = null; if (cb) cb();
+    };
+  },
+
+  /** Republish an arsenal change to every screen that renders from it.
+      Called the MOMENT the vault changes rather than on the way out of the
+      shop: the redraw used to hang off one of the shop's two exits, so a
+      purchase was not selectable until the screen was left and re-entered. */
+  refreshArsenalViews() {
+    this.renderTitle();
+    if (!$('#screen-loadout').classList.contains('hidden')) this.renderLoadout();
+    if (!$('#screen-command').classList.contains('hidden')) this.buildCommanderScreen();
   },
 
   bind() {
@@ -332,7 +356,15 @@ const UI = {
       incomeTimer: (stats.incomeEvery || 0) * 0.6,
       alchStacks: 0, jamTimer: 0, rampMult: 2, cooldown: 0.25, effRate: 1,
       aura: { dmg: 0, rate: 0, range: 0 },
-      aimed(c2, fn) { c2.save(); c2.rotate(this.angle); fn(); c2.restore(); }
+      /* The engine's own aimed() (entities.js) pulls the barrel back by
+         recoil*4. Dropping the translate here meant the firing preview
+         computed a recoil every frame and then threw it away, so the gun in
+         the shop never once reacted to its own shot. Static icons pass
+         recoil 0, so the translate is a no-op for them. */
+      aimed(c2, fn) {
+        c2.save(); c2.rotate(this.angle); c2.translate(-this.recoil * 4, 0);
+        fn(); c2.restore();
+      }
     };
   },
 
@@ -468,9 +500,12 @@ const UI = {
       }).join('') || '<p class="hint">Every recruited commander has both abilities.</p>'}</div>
 
       <h3 class="section-label">ARSENAL — unlock a tower permanently (◉${Meta.towerUnlockCost()} each)</h3>
-      <p class="hint">Human and robotic hardware is sold to everyone. A power's own
-        arsenal is only for sale while you are sworn to it.</p>
-      <div class="soul-grid unlocks">${TOWER_ORDER.filter(id => !Meta.isTowerUnlocked(id)).map(id => {
+      <p class="hint">Human hardware is sold to everyone. A power's own arsenal is only for
+        sale while you are sworn to it, and whatever you buy joins <b>that banner's</b>
+        shelf — another commander's file does not inherit it. Each purchase raises the
+        next one on this banner by ${SOUL_INFLATION_STEP}.</p>
+      <div class="soul-grid unlocks">${TOWER_ORDER.filter(id =>
+          !Meta.isTowerUnlocked(id) && !Meta.isStoryTower(id)).map(id => {
         const t = TOWER_TYPES[id];
         const el = ELEMENTS[t.element];
         const og = originOf(id);
@@ -491,21 +526,51 @@ const UI = {
             ? `<span class="si-lock">⊘ SWORN TO ${lock.name} ONLY</span>`
             : `<span class="si-cost">◉ ${Meta.towerUnlockCost()}</span>`}
         </button>`;
-      }).join('') || '<p class="hint">Every tower is unlocked.</p>'}</div>`;
+      }).join('') || '<p class="hint">Every tower on sale is unlocked.</p>'}</div>
+
+      <h3 class="section-label">THE MACHINE LINE — issued, never sold</h3>
+      <p class="hint">Robotic hardware answers to no power and is not for sale at any price.
+        Conquer a solar system and the next machine on the line is issued to you.</p>
+      <!-- Listed in ISSUE order, not roster order: the ladder is the whole
+           point of the section, and storyPending is the same list
+           grantStoryTower draws the next machine from. -->
+      <div class="soul-grid unlocks">${Meta.storyPending().map(id => {
+        const t = TOWER_TYPES[id];
+        const el = ELEMENTS[t.element];
+        const og = originOf(id);
+        /* No price and no button behaviour: this entry cannot be bought, so
+           it must not carry a figure that looks like one. `n` comes from the
+           same pending list grantStoryTower issues from. */
+        const n = Meta.storySystemsFor(id);
+        return `<button class="soul-item unlock story-locked" data-story="${id}"
+                style="--cc:${og.color}" disabled data-preview="${id}">
+          <span class="si-fig">${this.towerIconHTML(id, 40)}</span>
+          <span class="si-name">${t.name}</span>
+          <span class="si-el" style="--el:${el.color}">${el.icon} ${el.name}</span>
+          <span class="si-og" style="--og:${og.color}">${og.icon} ${og.name}</span>
+          <span class="si-lock">✦ ${n === 1 ? 'TAKE A SOLAR SYSTEM'
+                                             : 'TAKE ' + n + ' SOLAR SYSTEMS'}</span>
+        </button>`;
+      }).join('') || '<p class="hint">The whole machine line has been issued.</p>'}</div>`;
 
     this.paintTowerIcons(body);
     this.bindChipTips(body);
+    /* Every buyer redraws the SHOP (prices just went up for everything else on
+       this banner) and then republishes to the screens underneath. */
     $$('[data-unlock-cmd]', body).forEach(b => b.addEventListener('click', () => {
-      if (Meta.unlockCommander(b.dataset.unlockCmd)) { Sound.play('branch'); this.renderSoulShop(); }
+      if (Meta.unlockCommander(b.dataset.unlockCmd))
+        { Sound.play('branch'); this.renderSoulShop(); this.refreshArsenalViews(); }
       else Sound.play('denied');
     }));
     $$('[data-unlock-abil]', body).forEach(b => b.addEventListener('click', () => {
-      if (Meta.unlockAbility(b.dataset.unlockAbil)) { Sound.play('branch'); this.renderSoulShop(); }
+      if (Meta.unlockAbility(b.dataset.unlockAbil))
+        { Sound.play('branch'); this.renderSoulShop(); this.refreshArsenalViews(); }
       else Sound.play('denied');
     }));
     this.bindTowerPreviews(body);
     $$('[data-unlock]', body).forEach(b => b.addEventListener('click', () => {
-      if (Meta.unlockTower(b.dataset.unlock)) { Sound.play('branch'); this.renderSoulShop(); this.renderTitle(); }
+      if (Meta.unlockTower(b.dataset.unlock))
+        { Sound.play('branch'); this.renderSoulShop(); this.refreshArsenalViews(); }
       else Sound.play('denied');
     }));
   },
@@ -730,15 +795,15 @@ const UI = {
    * nothing at all.
    */
   gxBackdrop(p) {
-    const V = GX_VIEW, mx = V.x + V.w / 2, my = V.y + V.h / 2;
-    const stars = [];
-    for (let i = 0; i < GX_BACKDROP_STARS; i++) {
-      /* Golden-angle scatter: even coverage of the frame with no lattice. */
-      const a = i * 2.399963, r = 2 + (i / GX_BACKDROP_STARS) * (V.w / 2 - 2);
-      const sx = mx + Math.cos(a) * r, sy = my + Math.sin(a) * r * (V.h / V.w);
-      stars.push(`<circle cx="${sx.toFixed(2)}" cy="${sy.toFixed(2)}" r="${(0.1 + (i % 3) * 0.055).toFixed(2)}"
-                 fill="rgba(255,255,255,${(0.10 + (i % 5) * 0.035).toFixed(2)})"/>`);
-    }
+    const V = GX_WORLD;
+    /* The nebula clouds are placed as FRACTIONS of the frame, not as the
+       literal coordinates they used to be. Those literals were pitched at a
+       137x99 frame; painted into a 620x400 one they would both have sat in the
+       top-left eighth of the galaxy, which is how the map came to have art
+       hanging off its own edge the last time the frame moved. */
+    const f = (fx, fy, rx, ry) => ({ cx: (V.x + V.w * fx).toFixed(1), cy: (V.y + V.h * fy).toFixed(1),
+                                     rx: (V.w * rx).toFixed(1), ry: (V.h * ry).toFixed(1) });
+    const c1 = f(0.26, 0.24, 0.32, 0.22), c2 = f(0.72, 0.70, 0.30, 0.19);
     return `<defs>
       <radialGradient id="${p}neb" cx="50%" cy="50%" r="50%">
         <stop offset="0%" stop-color="rgba(150,120,255,.20)"/>
@@ -759,9 +824,52 @@ const UI = {
       </radialGradient>
     </defs>
     <rect x="${V.x}" y="${V.y}" width="${V.w}" height="${V.h}" fill="url(#${p}neb)"/>
-    <ellipse cx="30" cy="20" rx="44" ry="21" fill="#5b4ee0" filter="url(#${p}nebNoise)" opacity=".5"/>
-    <ellipse cx="95" cy="62" rx="40" ry="18" fill="#0e7490" filter="url(#${p}nebNoise)" opacity=".45"/>
-    ${stars.join('')}`;
+    <ellipse cx="${c1.cx}" cy="${c1.cy}" rx="${c1.rx}" ry="${c1.ry}" fill="#5b4ee0" filter="url(#${p}nebNoise)" opacity=".5"/>
+    <ellipse cx="${c2.cx}" cy="${c2.cy}" rx="${c2.rx}" ry="${c2.ry}" fill="#0e7490" filter="url(#${p}nebNoise)" opacity=".45"/>
+    <g class="gx-bd"></g>`;
+  },
+
+  /**
+   * The in-world starfield, built ONCE and cloned in afterwards.
+   *
+   * At the density GX_WORLD is tuned to this is 4287 stars. Emitted as one
+   * <circle> each inside the innerHTML string that is 4287 elements the
+   * browser re-parses on every click, on a screen that re-renders whenever a
+   * course is set. Four pooled <path>s built once and cloned costs one parse
+   * for the whole session -- and the stars are decoration, so nothing about
+   * them needs to be addressable.
+   */
+  gxStarfield() {
+    if (this._gxStars) return this._gxStars.cloneNode(true);
+    const V = GX_WORLD, B = 4;
+    /* R2, the two-dimensional low-discrepancy sequence off the plastic
+       constant: uniform over the whole RECTANGLE with no lattice. The old
+       golden-angle spiral only covered the ellipse inscribed in the frame and
+       packed its middle -- on a frame this size that leaves four empty
+       corners and a visible band, which reads as a bug rather than as space. */
+    const g = 1.32471795724474602596, a1 = 1 / g, a2 = 1 / (g * g);
+    const buckets = [];
+    for (let b = 0; b < B; b++) buckets.push([]);
+    for (let i = 1; i <= GX_BACKDROP_STARS; i++) {
+      const sx = V.x + ((0.5 + a1 * i) % 1) * V.w;
+      const sy = V.y + ((0.5 + a2 * i) % 1) * V.h;
+      const k = i % B, r = (0.10 + k * 0.028).toFixed(3), d = (0.20 + k * 0.056).toFixed(3);
+      buckets[k].push('M' + sx.toFixed(1) + ' ' + (sy - (0.10 + k * 0.028)).toFixed(2) +
+                      'a' + r + ' ' + r + ' 0 1 0 0 ' + d + 'a' + r + ' ' + r + ' 0 1 0 0 -' + d + 'z');
+    }
+    const g2 = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g2.setAttribute('class', 'gx-bd');
+    g2.innerHTML = buckets.map((b, k) =>
+      '<path d="' + b.join('') + '" fill="rgba(255,255,255,' + (0.11 + k * 0.05).toFixed(2) + ')"/>').join('');
+    this._gxStars = g2;
+    return g2.cloneNode(true);
+  },
+
+  /** Swap the starfield placeholder for the built one. Called by both maps, so
+      neither can be the one that quietly forgets its stars. */
+  gxPaintStars(root) {
+    const slot = root && root.querySelector('.gx-bd');
+    if (slot) slot.replaceWith(this.gxStarfield());
   },
 
   /**
@@ -816,15 +924,74 @@ const UI = {
       hint, which a static map cannot advertise for itself. Both maps come
       through here, so the viewport can never again be something only one of
       them has. */
-  mountGalaxyViewport(wrap) {
+  mountGalaxyViewport(wrap, key) {
     if (!wrap || typeof GalaxyFX === 'undefined') return;
-    GalaxyFX.mount(wrap);
+    GalaxyFX.mount(wrap, key);
+    if (!wrap.querySelector('.gx-nav')) {
+      /* The map is bigger than the window now, so every way of moving it needs
+         a control a coarse pointer and a keyboard can both reach. Wheel zoom
+         is a mouse affordance and nothing else; RECENTRE is the answer to
+         "where am I", which is a question a pannable map has to be able to
+         answer or it is just a place to get lost in. */
+      const nav = document.createElement('div');
+      nav.className = 'gx-nav';
+      nav.innerHTML =
+        '<button type="button" class="gx-nav-btn" data-gx="in" aria-label="Zoom in">+</button>' +
+        '<button type="button" class="gx-nav-btn" data-gx="out" aria-label="Zoom out">\u2212</button>' +
+        '<button type="button" class="gx-nav-btn gx-home" data-gx="home">\u25CE RECENTRE</button>';
+      wrap.appendChild(nav);
+      nav.addEventListener('click', ev => {
+        const b = ev.target.closest('[data-gx]');
+        if (!b) return;
+        ev.stopPropagation();
+        if (b.dataset.gx === 'in') GalaxyFX.zoomBy(1.25);
+        else if (b.dataset.gx === 'out') GalaxyFX.zoomBy(1 / 1.25);
+        else GalaxyFX.home();
+        Sound.play('click');
+      });
+    }
     if (!wrap.querySelector('.gx-hint')) {
       const h = document.createElement('div');
       h.className = 'gx-hint';
-      h.textContent = 'DRAG TO PAN · SCROLL TO ZOOM';
+      h.textContent = 'DRAG OR ARROWS TO PAN · SCROLL OR ± TO ZOOM · HOME RECENTRES';
       wrap.appendChild(h);
     }
+  },
+
+  /**
+   * WHERE THE PLAYER IS: the first world, in campaign order, that is open and
+   * not yet conquered. On a fresh galaxy that is the first world of the first
+   * system -- which is what note 19.3 asks the map to open on -- and it moves
+   * forward by itself as systems fall.
+   *
+   * Setting a COURSE deliberately does not move it. A camera that flies to
+   * whatever was last clicked is the jumpiness the owner called cheap, and it
+   * takes the "where am I" answer away at the moment it is most wanted.
+   */
+  gxAnchorWorld(gx, prog) {
+    for (const sys of gx.systems) {
+      if (!isSystemOpen(gx, sys, prog)) continue;
+      for (const w of sys.worlds)
+        if (isWorldOpen(sys, w, prog) && !isConquered(prog, w.id)) return w;
+    }
+    return gx.systems[0].worlds[0];
+  },
+
+  /** Every world you could actually set course to next: open under the unlock
+      rules AND not already three-starred. The courses are drawn off this list
+      rather than off a distance of their own, so a dashed line can never
+      promise a world the rules refuse -- and CONQUERED is excluded because a
+      line to a world with nothing left to take is not a destination, it is
+      history. MEASURED: without that term a late campaign drew 28 courses,
+      23 of them to worlds already held. */
+  gxReachable(gx, prog) {
+    const out = [];
+    for (const sys of gx.systems) {
+      if (!isSystemOpen(gx, sys, prog)) continue;
+      for (const w of sys.worlds)
+        if (isWorldOpen(sys, w, prog) && !isConquered(prog, w.id)) out.push(w);
+    }
+    return out;
   },
 
   renderTheatre() {
@@ -862,17 +1029,60 @@ const UI = {
       </div>`;
     this.bindChipTips($('#campaign-trail'));
 
+    const anchor = this.gxAnchorWorld(gx, prog);
+    const reach = this.gxReachable(gx, prog);
+    const ax = anchor.x, ay = anchor.y * GX_RENDER_SQUASH;
+
     const svg = [];
-    svg.push(`<svg class="galaxy" viewBox="${GX_VIEWBOX}" role="img"
+    svg.push(`<svg class="galaxy" viewBox="${GX_WORLD_VIEWBOX}" role="img"
                    aria-label="Galaxy map, ${gx.systems.length} solar systems">`);
     svg.push(this.gxBackdrop('gx'));
     for (let i = 1; i < gx.systems.length; i++) {
       const a = gx.systems[i - 1], b = gx.systems[i];
       const open = isSystemOpen(gx, b, prog);
-      const mx = (a.x + b.x) / 2, my = ((a.y + b.y) / 2) * GX_RENDER_SQUASH - 6;
+      const mx = (a.x + b.x) / 2, my = ((a.y + b.y) / 2) * GX_RENDER_SQUASH - GX_LINK_LIFT;
       svg.push(`<path class="gx-link ${open ? 'on' : ''}" fill="none"
         d="M${a.x.toFixed(2)} ${(a.y * GX_RENDER_SQUASH).toFixed(2)} Q ${mx.toFixed(2)} ${my.toFixed(2)}
            ${b.x.toFixed(2)} ${(b.y * GX_RENDER_SQUASH).toFixed(2)}"/>`);
+    }
+    /* THE TRAVEL RANGE, under the worlds so it can never swallow a click.
+       The RING is a LOCAL mark: sized off the destinations inside the anchor's
+       OWN system, floored so it always clears that system's outer orbit, and
+       capped at half a window so it can never outgrow the screen it is drawn
+       on. Sizing it off EVERY reachable world was measured and rejected -- the
+       moment a second system opens the radius runs to 460 world units (three
+       and a half windows across), which puts the label 166 units ABOVE the
+       viewBox, where a <text> is simply not drawn, and draws a disc with up to
+       thirty LOCKED worlds inside it. One circle cannot describe a set
+       scattered over five systems.
+       The dashed COURSES can and do: one per destination the rules actually
+       allow, however far away, and every world the rules refuse is greyed flat
+       by .gx-world.shut. Those two carry the reachable/locked read; the ring
+       only says where you are standing. */
+    {
+      let rr = Math.max(GX_RANGE_MIN, GX_RING_OUTER + GX_RANGE_PAD);
+      const lines = [];
+      for (const w of reach) {
+        const wy = w.y * GX_RENDER_SQUASH;
+        if (w.si === anchor.si)
+          rr = Math.max(rr, Math.hypot(w.x - ax, wy - ay) + GX_RANGE_PAD);
+        if (w !== anchor)
+          lines.push(`<line class="gx-course" x1="${ax.toFixed(2)}" y1="${ay.toFixed(2)}"
+                       x2="${w.x.toFixed(2)}" y2="${wy.toFixed(2)}"/>`);
+      }
+      rr = Math.min(rr, GX_VIEW.w / 2);
+      /* The caption rides the top of the ring but never off the top of the
+         world. A world sits as little as 72 units down and the ring is at most
+         61 across, so this clamp is a guard rather than a shaper -- but it is
+         the guard that was missing when the radius was unbounded. */
+      const lblY = Math.max(GX_WORLD.y + 3.4, ay - rr - 2.2);
+      svg.push(`<g class="gx-reach" aria-hidden="true">${lines.join('')}
+        <circle class="gx-range" cx="${ax.toFixed(2)}" cy="${ay.toFixed(2)}" r="${rr.toFixed(2)}"/>
+        <text class="gx-range-lbl" x="${ax.toFixed(2)}" y="${lblY.toFixed(2)}"
+              text-anchor="middle">TRAVEL RANGE</text>
+        <circle class="gx-here" cx="${ax.toFixed(2)}" cy="${ay.toFixed(2)}" r="6.4"/>
+        <text class="gx-here-lbl" x="${ax.toFixed(2)}" y="${(ay + 10.4).toFixed(2)}"
+              text-anchor="middle">YOU ARE HERE</text></g>`);
     }
     for (const sys of gx.systems) {
       const open = isSystemOpen(gx, sys, prog);
@@ -880,11 +1090,11 @@ const UI = {
       const hf = FACTIONS[sys.holder];
       const sy = sys.y * GX_RENDER_SQUASH;
       svg.push(`<g class="gx-sys ${open ? '' : 'locked'}">`);
-      svg.push(`<circle class="gx-halo" cx="${sys.x.toFixed(2)}" cy="${sy.toFixed(2)}" r="16"
+      svg.push(`<circle class="gx-halo" cx="${sys.x.toFixed(2)}" cy="${sy.toFixed(2)}" r="${GX_SYS_HALO_R}"
                  style="--fc:${hf.color}"/>`);
-      svg.push(`<text class="gx-sysname" x="${sys.x.toFixed(2)}" y="${(sy - 17.4).toFixed(2)}"
+      svg.push(`<text class="gx-sysname" x="${sys.x.toFixed(2)}" y="${(sy + GX_SYS_NAME_DY).toFixed(2)}"
                  text-anchor="middle">${sys.name}</text>`);
-      svg.push(`<text class="gx-sysmeta" x="${sys.x.toFixed(2)}" y="${(sy + 18.6).toFixed(2)}"
+      svg.push(`<text class="gx-sysmeta" x="${sys.x.toFixed(2)}" y="${(sy + GX_SYS_META_DY).toFixed(2)}"
                  text-anchor="middle">${open ? sp.taken + '/' + sp.total + ' TAKEN' : 'SEALED'}</text>`);
       for (const w of sys.worlds) {
         const stars = starsOn(prog, w.id);
@@ -894,6 +1104,7 @@ const UI = {
         const wy = w.y * GX_RENDER_SQUASH;
         const cls = ['gx-world', canPlay ? 'open' : 'shut', mine ? 'mine' : '',
                      w.seat ? 'seat' : '', planetArtFor(w) ? 'has-planet' : '',
+                     w === anchor ? 'here' : '',
                      (c.chosen && c.chosen.world === w.id) ? 'sel' : ''].join(' ');
         svg.push(`<g class="${cls}" data-world="${w.id}" style="--fc:${of.color}" tabindex="0"
                    role="button" aria-label="${w.name}, ${of.short}, ${stars} stars">`);
@@ -909,14 +1120,22 @@ const UI = {
     $('#worldmap-wrap').innerHTML = svg.join('');
 
     /* Lay the freshly-rendered map on the 2.5D plane before wiring clicks, so
-       the nodes bind inside the structure they will actually live in. */
-    this.mountGalaxyViewport($('#worldmap-wrap'));
+       the nodes bind inside the structure they will actually live in. The KEY
+       is the campaign: re-rendering the SAME galaxy must keep the pan and zoom
+       the player set, while a new campaign must not open scrolled to wherever
+       the last one was left. */
+    this.gxPaintStars($('#worldmap-wrap'));
+    this.mountGalaxyViewport($('#worldmap-wrap'), 'gx:' + c.seed);
     $$('#worldmap-wrap .gx-world').forEach(g => {
       const w = this.worldById(gx, g.dataset.world);
       const sys = gx.systems[w.si];
       const brief = ev => this.showTooltip(ev, this.worldBriefing(gx, sys, w, prog));
       g.addEventListener('mouseenter', brief);
       g.addEventListener('focus', brief);
+      /* A keyboard can now tab to a world that is off the side of the window.
+         Focus without a pan moves the caret to something invisible, which is
+         the one way a bigger map is strictly worse than a smaller one. */
+      g.addEventListener('focus', () => GalaxyFX.bring(g));
       g.addEventListener('mousemove', ev => this.moveTooltip(ev));
       g.addEventListener('mouseleave', () => this.hideTooltip());
       g.addEventListener('blur', () => this.hideTooltip());
@@ -932,9 +1151,19 @@ const UI = {
                      escStart: Math.floor(w.si * 0.8) };
         Meta.save(); Sound.play('click'); this.renderTheatre();
       };
-      g.addEventListener('click', pick);
+      /* Coarse pointers have had no hover in which to read the briefing, so
+         the first tap shows it and only the second sets course -- the rule the
+         universe map has used since Session 16. On a mouse tapArm returns true
+         immediately and this is the plain click it always was. */
+      g.addEventListener('click', ev => { if (this.tapArm(g, () => brief(ev))) pick(); });
       g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); pick(); } });
     });
+
+    /* 19.3 -- open on the world you are standing on, and fly there again when
+       the campaign advances. GalaxyFX only moves when the anchor CHANGES, so
+       the re-render a course selection triggers leaves the camera alone. */
+    GalaxyFX.setAnchor(ax, ay, anchor.id,
+                       $(`#worldmap-wrap .gx-world[data-world="${anchor.id}"]`));
 
     const chosenW = c.chosen && this.worldById(gx, c.chosen.world);
     $('#theatre-detail').innerHTML = (chosenW
@@ -966,6 +1195,12 @@ const UI = {
        sit behind -- and the wrap is still connected, which is the only thing
        the loop checks for itself. */
     if (typeof GalaxyFX !== 'undefined') GalaxyFX.stop();
+    /* And the viewport SHELL with it. The wrap is a fixed-height, block,
+       overflow-hidden window while it holds a map; leaving it that way for the
+       victory panel crops the panel to the map's height and pins it to the
+       top-left corner of it. */
+    $('#worldmap-wrap').classList.remove('gx-viewport', 'gx-far');
+    $('#worldmap-wrap').removeAttribute('style');
     $('#worldmap-wrap').innerHTML = `
       <div class="gv" style="--fc:${f.color}">
         <span class="gv-sigil">${f.icon}</span>
@@ -1005,11 +1240,11 @@ const UI = {
        no 2.5D viewport -- every one of which THE GALAXY has had since Session
        15. It is the same generated galaxy; there was never a reason for it to
        be a poorer picture of one. */
-    const svg = [`<svg class="galaxy" viewBox="${GX_VIEWBOX}" role="img" aria-label="Universe map">`];
+    const svg = [`<svg class="galaxy" viewBox="${GX_WORLD_VIEWBOX}" role="img" aria-label="Universe map">`];
     svg.push(this.gxBackdrop('mv'));
     for (let i = 1; i < gx.systems.length; i++) {
       const a = gx.systems[i - 1], b = gx.systems[i];
-      const mx = (a.x + b.x) / 2, my = ((a.y + b.y) / 2) * GX_RENDER_SQUASH - 6;
+      const mx = (a.x + b.x) / 2, my = ((a.y + b.y) / 2) * GX_RENDER_SQUASH - GX_LINK_LIFT;
       svg.push(`<path class="gx-link on" fill="none"
         d="M${a.x.toFixed(2)} ${(a.y * GX_RENDER_SQUASH).toFixed(2)} Q ${mx.toFixed(2)} ${my.toFixed(2)}
            ${b.x.toFixed(2)} ${(b.y * GX_RENDER_SQUASH).toFixed(2)}"/>`);
@@ -1018,11 +1253,11 @@ const UI = {
       const hf = FACTIONS[sys.holder];
       const sy = sys.y * GX_RENDER_SQUASH;
       svg.push(`<g class="gx-sys">`);
-      svg.push(`<circle class="gx-halo" cx="${sys.x.toFixed(2)}" cy="${sy.toFixed(2)}" r="16"
+      svg.push(`<circle class="gx-halo" cx="${sys.x.toFixed(2)}" cy="${sy.toFixed(2)}" r="${GX_SYS_HALO_R}"
                  style="--fc:${hf.color}"/>`);
-      svg.push(`<text class="gx-sysname" x="${sys.x.toFixed(2)}" y="${(sy - 17.4).toFixed(2)}"
+      svg.push(`<text class="gx-sysname" x="${sys.x.toFixed(2)}" y="${(sy + GX_SYS_NAME_DY).toFixed(2)}"
                  text-anchor="middle">${sys.name}</text>`);
-      svg.push(`<text class="gx-sysmeta" x="${sys.x.toFixed(2)}" y="${(sy + 18.6).toFixed(2)}"
+      svg.push(`<text class="gx-sysmeta" x="${sys.x.toFixed(2)}" y="${(sy + GX_SYS_META_DY).toFixed(2)}"
                  text-anchor="middle">${sys.worlds.length} WORLDS OPEN</text>`);
       for (const w of sys.worlds) {
         const of = FACTIONS[w.owner];
@@ -1042,7 +1277,8 @@ const UI = {
     }
     svg.push(`</svg><p class="wm-hint">Drag to pan &middot; click a world to look for another commander fighting over it</p>`);
     $('#multiverse-wrap').innerHTML = svg.join('');
-    this.mountGalaxyViewport($('#multiverse-wrap'));
+    this.gxPaintStars($('#multiverse-wrap'));
+    this.mountGalaxyViewport($('#multiverse-wrap'), 'mv');
 
     $$('#multiverse-wrap .gx-world').forEach(g => {
       const w = this.worldById(gx, g.dataset.mv);
@@ -1060,6 +1296,7 @@ const UI = {
           <span>Click to challenge — the relay searches for another commander here.</span></div></div></div>`);
       g.addEventListener('mouseenter', brief);
       g.addEventListener('focus', brief);
+      g.addEventListener('focus', () => GalaxyFX.bring(g));
       g.addEventListener('mousemove', ev => this.moveTooltip(ev));
       g.addEventListener('mouseleave', () => this.hideTooltip());
       g.addEventListener('blur', () => this.hideTooltip());
@@ -2091,7 +2328,25 @@ const UI = {
     if (s.slow) rows.push(['Slow', Math.round(s.slow * t.effStatus * 100) + '%']);
     if (s.burn) rows.push(['Burn', Math.round(s.burn * t.effStatus) + '/s']);
     if (s.bleed) rows.push(['Bleed', Math.round(s.bleed * t.effStatus) + '/s']);
-    if (s.poisonDps) rows.push(['Venom', `${Math.round(s.poisonDps * t.effStatus)}+${(s.poisonPct * 100).toFixed(1)}%×${s.maxStacks}`]);
+    if (s.poisonDps) {
+      /* TWO different clouds now, and the row has to say which -- CANISTER
+         burns a share of MAX health and TOXIN a share of CURRENT health, and a
+         player who cannot tell them apart cannot choose between them.
+         Both halves are printed through effStatus because that is what the
+         engine applies (applyRiders scales every status figure by it); the
+         percentage used to be printed raw beside a status-scaled flat figure,
+         which is the same quiet desync this file's header exists to prevent.
+         The max-health figure comes back through maxHpVenomFrac, so the
+         ceiling is visible on the panel the moment it starts biting. */
+      const st = t.effStatus;
+      const tail = s.poisonMaxPct
+        ? (maxHpVenomFrac(s.poisonMaxPct * st, s.maxStacks || 1, false) * 100).toFixed(2) + '% max hp/s'
+        : (s.poisonPct * st * 100).toFixed(1) + '%×' + s.maxStacks;
+      rows.push([s.poisonMaxPct ? 'Gas' : 'Venom', `${Math.round(s.poisonDps * st)}+${tail}`]);
+    }
+    /* applyRiders shreds by shredPerStack x the stacks standing, so full
+       stacks is the honest headline figure rather than the per-stack one. */
+    if (s.shredPerStack) rows.push(['Armour strip', '−' + (s.shredPerStack * (s.maxStacks || 1)) + ' at full stacks']);
     if (t.effPierce) rows.push(['Pierce', Math.round(t.effPierce * 100) + '%']);
     const crit = (s.crit || 0) + t.sideMods.crit;
     if (crit > 0) rows.push(['Crit', Math.round(crit * 100) + '%']);
@@ -2408,6 +2663,15 @@ const UI = {
     const pct = Math.min(S.musterIncome || 0, MUSTER_INCOME_CAP_PCT);
     const capped = (S.musterIncome || 0) >= MUSTER_INCOME_CAP_PCT;
     const vic = Game.musterVictims(0)[0];
+    /* 19.16 is already inside the health figure above, because that figure
+       comes from Game.musterHpMul. It is SAID here as well so the number is
+       explicable rather than merely correct -- and it is read from the same
+       function the spawn reads, never re-derived. */
+    const earlyPen = Math.round((1 - spawnHpPenaltyMul(Math.max(1, Game.wave))) * 100);
+    const earlyTxt = earlyPen > 0
+      ? ', and a summoned body is ' + earlyPen + '% lighter again this early — that fades to nothing by wave '
+        + SPAWN_HP_PENALTY_END
+      : '';
     const rows = Game.musterTiers(0).map(tier => {
       const base = ENEMY_TYPES[tier.type];
       const cost = Game.musterCost(0, tier);
@@ -2431,7 +2695,7 @@ const UI = {
         data-tt="MUSTER — ${tier.name}|Send ${sent} × ${base.name} at ${hpTxt} health each, and add ${
           addPct}% of every wave reward to your income for the rest of the battle — worth ◈${
           formatNum(gain)} on the next wave. Sent units are damped to ${
-          Math.round(MUSTER_DAMP * 100)}% and can never be reanimated again. The bonus is flat additive, capped at +${
+          Math.round(MUSTER_DAMP * 100)}% and can never be reanimated again${earlyTxt}. The bonus is flat additive, capped at +${
           Math.round(MUSTER_INCOME_CAP_PCT * 100)}%.">
         <span class="mu-ic">${tier.icon}</span>
         <span class="mu-body"><b>${sent}× ${base.name.toUpperCase()} · ◈${formatNum(cost)}</b>
@@ -2766,10 +3030,17 @@ const UI = {
   showTowerPreview(ev, id) {
     const t = TOWER_TYPES[id];
     const el = ELEMENTS[t.element];
+    /* The mark in the corner has to say what THIS profile would actually pay.
+       A flat constant was printed here while the shop charged a surcharged
+       price, and a machine has no price at all -- it is issued. */
+    const story = Meta.towerStoryLock(id);
+    const mark = Meta.isTowerUnlocked(id) ? 'IN ARSENAL'
+               : story ? '✦ ' + story.systems + ' MORE SYSTEM' + (story.systems === 1 ? '' : 'S')
+               : '◉ ' + Meta.towerUnlockCost();
     this.showTooltip(ev, `
       <div class="tp">
         <div class="tt-head" style="color:${t.color}">${t.name}
-          <span class="tt-cost">◉ ${Meta.towerUnlockCost()}</span></div>
+          <span class="tt-cost">${mark}</span></div>
         <div class="tt-role">${t.role} · <span style="color:${el.color}">${el.icon} ${el.name}</span></div>
         <div class="tt-origin" style="--og:${originOf(id).color}">${originOf(id).icon} <b>${
           originOf(id).name}</b> · ${originOf(id).rule}</div>
@@ -2782,19 +3053,66 @@ const UI = {
     if (cv) this.runTowerPreview(cv, id);
   },
 
+  /**
+   * Cancel the loop WITHOUT touching the tooltip.
+   *
+   * These were one function, and runTowerPreview opened with it -- so
+   * showTowerPreview un-hid the tooltip, built the canvas, and then the first
+   * line of the loop it started hid the tooltip again. The card flashed and
+   * vanished, moveTooltip bailed on every later mousemove because it early-
+   * returns while hidden, and the loop went on drawing at 60fps into a canvas
+   * nobody could see. That is the whole "glitchy hover preview".
+   *
+   * The generation counter is the other half: it invalidates any frame
+   * already in flight, so a burst of hovers across many cards can never leave
+   * two loops alive competing for one `_tpRaf` handle.
+   */
+  cancelTowerPreview() {
+    if (this._tpRaf) { cancelAnimationFrame(this._tpRaf); this._tpRaf = 0; }
+    this._tpGen = (this._tpGen || 0) + 1;
+  },
+
   runTowerPreview(cv, id) {
-    this.stopTowerPreview();
+    this.cancelTowerPreview();
+    const gen = this._tpGen;
     const ctx = cv.getContext('2d');
     const t = TOWER_TYPES[id];
     const el = ELEMENTS[t.element];
-    const W = cv.width, H = cv.height;
+    /* The authored size is the DRAWING size and is remembered on the node,
+       because the backing store below is about to stop matching it. Without
+       the device-pixel backing store the whole preview was drawn at CSS
+       resolution and rescaled -- soft edges on every sprite on a display
+       Windows ships scaled by default. */
+    const W = cv._tpW || (cv._tpW = cv.width);
+    const H = cv._tpH || (cv._tpH = cv.height);
+    const d = Math.min(2, window.devicePixelRatio || 1);
+    if (cv.width !== Math.round(W * d)) {
+      cv.style.width = W + 'px'; cv.style.height = H + 'px';
+      cv.width = Math.round(W * d); cv.height = Math.round(H * d);
+    }
     const tx = 52, ty = H - 26;
     const stub = this.towerStub(id);
-    let mark = 0, shots = [], age = 0, cd = 0;
+    /* The cadence the card PRINTS, so what the eye counts matches the number
+       two lines above it. */
+    const period = 1 / Math.max(TP_MIN_RATE, t.base.rate || 1);
+    let shots = [], age = 0, cd = 0, sinceShot = period, last = 0;
     const targets = [{ x: 150, r: 9 }, { x: 214, r: 8 }, { x: 268, r: 7 }];
 
-    const frame = () => {
-      age += 1 / 60; cd -= 1 / 60;
+    const frame = (now) => {
+      /* A newer preview has started, or the card this canvas lived in was
+         re-rendered out from under the cursor -- which is exactly what
+         renderSoulShop does after a purchase, and mouseleave never fires for
+         a node that has already been removed. Measured: 63 frames drawn into
+         a detached canvas in half a second, and it never stopped. */
+      if (gen !== this._tpGen) return;
+      if (!cv.isConnected ||
+          (this.el.tooltip.contains(cv) && this.el.tooltip.classList.contains('hidden'))) {
+        this._tpRaf = 0; return;
+      }
+      const dt = last ? Math.min(TP_MAX_DT, (now - last) / 1000) : 1 / 60;
+      last = now;
+      age += dt; cd -= dt; sinceShot += dt;
+      ctx.setTransform(d, 0, 0, d, 0, 0);
       ctx.clearRect(0, 0, W, H);
       /* lane */
       ctx.strokeStyle = 'rgba(120,160,200,.14)'; ctx.lineWidth = 22;
@@ -2802,25 +3120,29 @@ const UI = {
 
       /* marching dummies */
       for (const g of targets) {
-        g.x -= 22 / 60;
+        g.x -= TP_MARCH_PPS * dt;
         if (g.x < 96) g.x = W + 14;
         ctx.fillStyle = '#e05555';
         ctx.beginPath(); ctx.arc(g.x, ty - 26, g.r, 0, TAU); ctx.fill();
       }
-      /* the tower, drawn by its real routine */
+      /* the tower, drawn by its real routine. Recoil is TIME SINCE THE SHOT
+         decayed at the engine's own rate: the old expression assumed every
+         tower had a half-second cadence, so a mortar drew at recoil 6.3 and a
+         railgun at 7.0 against a contract of 0 to 1. */
       ctx.save(); ctx.translate(tx, ty);
-      stub.age = age; stub.angle = -0.42; stub.recoil = Math.max(0, 1 - (0.5 - cd) * 4);
+      stub.age = age; stub.angle = -0.42;
+      stub.recoil = Math.max(0, 1 - sinceShot * TP_RECOIL_DECAY);
       try { Tower.prototype['draw_' + id].call(stub, ctx); } catch (e) {}
       ctx.restore();
 
       /* fire on the tower's own cadence */
       if (cd <= 0) {
-        cd = 1 / Math.max(0.5, t.base.rate || 1);
+        cd = period; sinceShot = 0;
         shots.push({ x: tx + 12, y: ty - 20, tx: targets[0].x, ty: ty - 26, t: 0 });
       }
       ctx.fillStyle = el.color;
       for (let i = shots.length - 1; i >= 0; i--) {
-        const s2 = shots[i]; s2.t += 1 / 18;
+        const s2 = shots[i]; s2.t += TP_SHOT_SPEED * dt;
         const x = s2.x + (s2.tx - s2.x) * s2.t, y = s2.y + (s2.ty - s2.y) * s2.t;
         ctx.beginPath(); ctx.arc(x, y, 3.2, 0, TAU); ctx.fill();
         if (s2.t >= 1) {
@@ -2832,10 +3154,12 @@ const UI = {
       }
       this._tpRaf = requestAnimationFrame(frame);
     };
-    frame();
+    /* First paint synchronously so the card is never blank for a frame. */
+    frame(performance.now());
   },
+  /** Leaving a card: stop the loop AND put the tooltip away. */
   stopTowerPreview() {
-    if (this._tpRaf) { cancelAnimationFrame(this._tpRaf); this._tpRaf = 0; }
+    this.cancelTowerPreview();
     this.hideTooltip();
   },
 
@@ -3253,6 +3577,11 @@ const UI = {
             `<span style="--tc:${ENEMY_TYPES[id].color}">${ENEMY_TYPES[id].name}</span>`).join('')}
             <em>freed from the fallen garrison — now available to your muster detachment</em></div>` : ''}
 
+        ${st && st.storyTower ? `
+          <div class="rw-saved"><b>MACHINE LINE</b>
+            <span style="--tc:${TOWER_TYPES[st.storyTower].color}">${TOWER_TYPES[st.storyTower].name}</span>
+            <em>issued for taking the system — it is in your arsenal now, not for sale to anyone</em></div>` : ''}
+
         ${Game.rivalMoves && Game.rivalMoves.length ? `
           <div class="rw-rivals"><b>WHILE YOU FOUGHT</b>${Game.rivalMoves.map(mv =>
             `<span style="--fc:${FACTIONS[mv.faction].color}">${FACTIONS[mv.faction].icon} ${FACTIONS[mv.faction].short} took ${mv.world} in ${mv.system}</span>`).join('')}</div>` : ''}
@@ -3569,6 +3898,16 @@ const UI = {
         <p>Sent units count as <b>reanimated</b>: they arrive damped, cost half as many lives on a leak,
            and cannot be reanimated a second time. On the Confluence one purchase marches on
            <b>both</b> rivals, exactly as a kill does there.</p>
+        <p><b>A summoned body is not a wave body.</b> On top of that damping, anything you
+           <em>summon</em> — a mustered detachment, a tower's minions, a carrier's brood — arrives
+           lighter for the first ${SPAWN_HP_PENALTY_END} waves, because the wave curve is flat that
+           early and a bought body would otherwise be worth very nearly a scripted one against a
+           defence that is still two towers. It is
+           <b>${Math.round((1 - spawnHpPenaltyMul(1)) * 100)}%</b> lighter on wave 1,
+           <b>${Math.round((1 - spawnHpPenaltyMul(SPAWN_HP_PENALTY_MID_WAVE)) * 100)}%</b> on wave
+           ${SPAWN_HP_PENALTY_MID_WAVE}, and nothing at all from wave
+           <b>${SPAWN_HP_PENALTY_END}</b> on. Early aggression is a tempo play; it is not a kill.
+           Reanimates and charms are untouched — those convert a body the wave already paid for.</p>
       </div></section>
       <section><h3>The ground</h3><div class="codex-note">
         <p><b>Rubble.</b> On some maps half the board is scenery — and scenery is purchasable. Any rubble
@@ -3789,25 +4128,34 @@ const TitleFX = {
    which is an input, not an animation.
    ========================================================================== */
 const GalaxyFX = {
-  wrap: null, plane: null, cv: null, cx: null,
-  x: 0, y: 0, z: 1,              /* pan offset and zoom            */
-  vx: 0, vy: 0,                  /* momentum                       */
+  wrap: null, plane: null, cv: null, ctx: null,
+  camX: 0, camY: 0, z: GX_ZOOM_HOME,   /* the camera: a WORLD centre and a zoom */
+  vx: 0, vy: 0,                        /* coasting velocity, world units/second */
+  base: 1,                             /* px per world unit at zoom 1           */
   dragging: false, moved: 0, raf: 0, stars: [], last: 0,
-
-  MIN_Z: 0.75, MAX_Z: 2.4, TILT: 16,
+  key: null, anchor: null, fly: null, pts: null,
 
   /** Restructure the wrap into starfield + tilted plane, once per render. */
-  mount(wrap) {
+  mount(wrap, key) {
     if (!wrap) return;
     const svg = wrap.querySelector('svg');
     if (!svg) return;
-    /* TWO maps mount this now. Re-rendering the SAME map must keep the pan the
-       player set -- the campaign map re-renders on every click -- while
-       arriving on a DIFFERENT one must not inherit it, or THE UNIVERSE opens
-       scrolled to wherever THE GALAXY was left. */
-    if (this.wrap !== wrap) { this.x = 0; this.y = 0; this.z = 1; this.vx = 0; this.vy = 0; }
-    this.wrap = wrap;
+    /* TWO maps mount this, and one of them re-renders on every click. Re-
+       rendering the SAME map must keep the pan and zoom the player set, while
+       arriving on a DIFFERENT map -- or a different campaign, which is what
+       the key adds -- must not inherit it, or the map opens scrolled to
+       wherever the last one was left. */
+    key = key || 'gx';
+    const fresh = this.wrap !== wrap || this.key !== key;
+    this.wrap = wrap; this.key = key;
     wrap.classList.add('gx-viewport');
+    /* The viewport is a control now: arrows pan it and Home recentres it, and
+       none of that reaches an element that cannot hold focus. */
+    if (!wrap.hasAttribute('tabindex')) {
+      wrap.setAttribute('tabindex', '0');
+      wrap.setAttribute('aria-label', 'Galaxy map. Drag or use the arrow keys to pan, ' +
+                                      'plus and minus to zoom, Home to recentre.');
+    }
 
     /* A CLASS, not an id: two wraps each need their own canvas and two
        elements answering to #gx-stars is a document with a duplicate id in
@@ -3826,19 +4174,31 @@ const GalaxyFX = {
     }
     if (svg.parentElement !== plane) plane.appendChild(svg);
 
-    this.cv = cv; this.cx = cv.getContext('2d'); this.plane = plane;
+    this.cv = cv; this.ctx = cv.getContext('2d'); this.plane = plane;
     if (!this.stars.length) this.seed();
     this.bind(wrap);
+    if (fresh) {
+      this.z = GX_ZOOM_HOME; this.vx = 0; this.vy = 0; this.fly = null;
+      this.camX = GX_WORLD.x + GX_WORLD.w / 2;
+      this.camY = GX_WORLD.y + GX_WORLD.h / 2;
+      this.anchor = null; this._anchorId = null;
+    }
     this.resize();
+    this._bw = wrap.clientWidth; this._bh = wrap.clientHeight;
+    this.clamp();
     this.apply();
     this.start();
   },
 
   seed() {
-    /* Three depths. Deeper stars are dimmer, smaller and pan least. */
+    /* Three depths. Deeper stars are dimmer, smaller and pan least. The counts
+       keep their old 150:90:40 proportions and are scaled off one config
+       number, so the layering survives a re-tune. */
     const rnd = (i, k) => { const v = Math.sin(i * 91.7 + k * 47.3) * 43758.5453; return v - Math.floor(v); };
+    const k = GX_STARFIELD_STARS / 280;
     this.stars = [];
     [[150, 0.12, 0.8], [90, 0.28, 1.3], [40, 0.5, 1.9]].forEach(([n, depth, size], li) => {
+      n = Math.round(n * k);
       for (let i = 0; i < n; i++)
         this.stars.push({ u: rnd(i, li * 5 + 1), v: rnd(i, li * 5 + 2), depth,
                           r: size * (0.5 + rnd(i, li * 5 + 3)),
@@ -3858,22 +4218,39 @@ const GalaxyFX = {
   bind(wrap) {
     if (!this._wired) {
       this._wired = true;
+      this.pts = new Map();
       window.addEventListener('pointermove', (e) => {
-        if (!this.dragging) return;
-        const dx = e.clientX - this.px, dy = e.clientY - this.py;
-        this.px = e.clientX; this.py = e.clientY;
+        const p = this.pts.get(e.pointerId);
+        if (!p) return;
+        const now = performance.now();
+        const dt = Math.max(0.008, (now - p.t) / 1000);
+        const dx = e.clientX - p.x, dy = e.clientY - p.y;
+        p.x = e.clientX; p.y = e.clientY; p.t = now;
         this.moved += Math.abs(dx) + Math.abs(dy);
-        this.x += dx; this.y += dy;
-        this.vx = dx; this.vy = dy;
+        /* Two fingers down is a pinch, not two drags. Falling through to the
+           pan below would move the map by the SUM of both fingers. */
+        if (this.pts.size >= 2) { this.vx = 0; this.vy = 0; this.pinch(); return; }
+        const s = this.base * this.z;
+        this.camX -= dx / s; this.camY -= dy / s;
+        /* Velocity is world units per SECOND, smoothed, so the glide is the
+           same on a 60Hz and a 144Hz screen -- the old per-frame delta was
+           silently twice as fast on the faster one. */
+        this.vx = this.vx * 0.55 + (-dx / s / dt) * 0.45;
+        this.vy = this.vy * 0.55 + (-dy / s / dt) * 0.45;
         this.clamp(); this.apply();
       }, { passive: true });
-      window.addEventListener('pointerup', () => {
-        if (!this.dragging) return;
-        this.dragging = false;
-        if (this.wrap) this.wrap.classList.remove('dragging');
-      });
+      const release = (e) => {
+        if (!this.pts.delete(e.pointerId)) return;
+        this._pinchD = 0;
+        if (!this.pts.size) {
+          this.dragging = false;
+          if (this.wrap) this.wrap.classList.remove('dragging');
+        }
+      };
+      window.addEventListener('pointerup', release);
+      window.addEventListener('pointercancel', release);
       window.addEventListener('resize', () => {
-        if (this.wrap && this.wrap.isConnected) { this.resize(); this.apply(); }
+        if (this.wrap && this.wrap.isConnected) { this.resize(); this.clamp(); this.apply(); }
       });
     }
     if (wrap._gxWired) return;
@@ -3881,52 +4258,231 @@ const GalaxyFX = {
     wrap.addEventListener('pointerdown', (e) => {
       if (e.button !== undefined && e.button !== 0) return;
       if (this.wrap !== wrap) return;
+      /* The nav buttons sit inside the viewport. Starting a drag under them
+         leaves `moved` high, and the capture-phase guard below would then eat
+         the very click that was aimed at RECENTRE. */
+      if (e.target.closest && e.target.closest('.gx-nav')) return;
       this.dragging = true; this.moved = 0;
-      this.px = e.clientX; this.py = e.clientY;
+      this.fly = null;                    /* a hand on the map outranks a flight */
       this.vx = 0; this.vy = 0;
+      this.pts.set(e.pointerId, { x: e.clientX, y: e.clientY, t: performance.now() });
       wrap.classList.add('dragging');
     });
     /* A drag that travelled must not also count as a click on a world. */
     wrap.addEventListener('click', (e) => {
+      if (e.target.closest && e.target.closest('.gx-nav')) return;
       if (this.moved > 6) { e.stopPropagation(); e.preventDefault(); }
     }, true);
     wrap.addEventListener('wheel', (e) => {
       if (this.wrap !== wrap) return;
       e.preventDefault();
-      const r = wrap.getBoundingClientRect();
-      const ox = e.clientX - r.left - r.width / 2, oy = e.clientY - r.top - r.height / 2;
-      const z0 = this.z;
-      this.z = Math.max(this.MIN_Z, Math.min(this.MAX_Z, this.z * (e.deltaY < 0 ? 1.12 : 1 / 1.12)));
-      /* Keep the point under the cursor fixed while zooming. */
-      const k = this.z / z0;
-      this.x = ox - (ox - this.x) * k;
-      this.y = oy - (oy - this.y) * k;
-      this.clamp(); this.apply();
+      this.fly = null;
+      this.zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.12 : 1 / 1.12);
     }, { passive: false });
+    /* KEYBOARD PARITY. A map several windows across that only a mouse can move
+       is a map a keyboard player cannot see most of. */
+    wrap.addEventListener('keydown', (e) => {
+      if (this.wrap !== wrap || e.altKey || e.ctrlKey || e.metaKey) return;
+      const s = this.base * this.z;
+      const stepX = wrap.clientWidth * GX_KEY_PAN / s, stepY = wrap.clientHeight * GX_KEY_PAN / s;
+      switch (e.key) {
+        case 'ArrowLeft':  this.camX -= stepX; break;
+        case 'ArrowRight': this.camX += stepX; break;
+        case 'ArrowUp':    this.camY -= stepY; break;
+        case 'ArrowDown':  this.camY += stepY; break;
+        case '+': case '=': this.zoomBy(1.18); e.preventDefault(); return;
+        case '-': case '_': this.zoomBy(1 / 1.18); e.preventDefault(); return;
+        case 'Home': this.home(); e.preventDefault(); return;
+        default: return;
+      }
+      this.fly = null; this.vx = 0; this.vy = 0;
+      this.clamp(); this.apply();
+      e.preventDefault();
+    });
   },
 
-  /** Never let the map be dragged entirely off its own viewport. */
+  /** Two fingers: zoom about the point between them. */
+  pinch() {
+    const ps = [];
+    this.pts.forEach(p => ps.push(p));
+    const d = Math.hypot(ps[0].x - ps[1].x, ps[0].y - ps[1].y);
+    if (this._pinchD > 4 && d > 4) this.zoomAt((ps[0].x + ps[1].x) / 2, (ps[0].y + ps[1].y) / 2, d / this._pinchD);
+    this._pinchD = d;
+  },
+
+  /** Zoom about a CLIENT point, keeping the world under it where it is. */
+  zoomAt(px, py, k) {
+    if (!this.wrap) return;
+    const r = this.wrap.getBoundingClientRect();
+    if (!r.width) return;
+    const ox = px - r.left - r.width / 2, oy = py - r.top - r.height / 2;
+    const s0 = this.base * this.z;
+    const wx = this.camX + ox / s0, wy = this.camY + oy / s0;
+    this.z = Math.max(GX_ZOOM_MIN, Math.min(GX_ZOOM_MAX, this.z * k));
+    const s1 = this.base * this.z;
+    this.camX = wx - ox / s1; this.camY = wy - oy / s1;
+    this.clamp(); this.apply();
+  },
+
+  zoomBy(k) {
+    if (!this.wrap) return;
+    const r = this.wrap.getBoundingClientRect();
+    this.zoomAt(r.left + r.width / 2, r.top + r.height / 2, k);
+  },
+
+  /**
+   * THE CAMERA CANNOT LEAVE THE WORLD. The bound is on the camera CENTRE, in
+   * world units -- the old bound was a fraction of the viewport in pixels,
+   * which is a different rule at every zoom and every window size, and on a
+   * map the size of its own window it did nothing at all.
+   */
   clamp() {
     if (!this.wrap) return;
     const r = this.wrap.getBoundingClientRect();
-    const lim = Math.max(0, (this.z - 1) * 0.5 * r.width) + r.width * 0.28;
-    const limY = Math.max(0, (this.z - 1) * 0.5 * r.height) + r.height * 0.28;
-    this.x = Math.max(-lim, Math.min(lim, this.x));
-    this.y = Math.max(-limY, Math.min(limY, this.y));
+    const s = this.base * this.z;
+    if (!r.width || !s) return;
+    const hw = (r.width / 2) / s, hh = (r.height / 2) / s;
+    const midX = GX_WORLD.x + GX_WORLD.w / 2, midY = GX_WORLD.y + GX_WORLD.h / 2;
+    let lo = GX_WORLD.x + hw, hi = GX_WORLD.x + GX_WORLD.w - hw;
+    /* Zoomed out past both edges there is no pan left to give: pinning to the
+       middle beats letting the whole galaxy drift off one side. */
+    this.camX = lo > hi ? midX : Math.max(lo, Math.min(hi, this.camX));
+    lo = GX_WORLD.y + hh; hi = GX_WORLD.y + GX_WORLD.h - hh;
+    this.camY = lo > hi ? midY : Math.max(lo, Math.min(hi, this.camY));
   },
 
   apply() {
     if (!this.plane) return;
+    const s = this.base * this.z;
+    const x = (GX_WORLD.x + GX_WORLD.w / 2 - this.camX) * s;
+    const y = (GX_WORLD.y + GX_WORLD.h / 2 - this.camY) * s;
     this.plane.style.transform =
-      `translate3d(${this.x.toFixed(1)}px, ${this.y.toFixed(1)}px, 0) scale(${this.z.toFixed(3)})`;
+      `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) scale(${this.z.toFixed(4)})`;
+    if (this.wrap) {
+      this.wrap.classList.toggle('gx-far', this.z < GX_ZOOM_FAR);
+      /* Labels are compensated back up as the marks shrink, so an overview
+         still names its systems. Capped: uncapped, the minimum zoom would
+         print them at nearly three times their authored size and they would
+         collide with the very worlds they label. */
+      this.wrap.style.setProperty('--gxlab', Math.min(GX_LABEL_MAX, 1 / this.z).toFixed(3));
+    }
   },
 
   resize() {
     if (!this.wrap || !this.cv) return;
     const r = this.wrap.getBoundingClientRect();
     const d = Math.min(2, window.devicePixelRatio || 1);
-    this.cv.width = Math.max(1, Math.round(r.width * d));
-    this.cv.height = Math.max(1, Math.round(r.height * d));
+    /* clientWidth is the CONTENT box; the rect is the BORDER box. The wrap has
+       a 1px border under border-box sizing and the canvas is inset:0 inside it,
+       which lays it out in the content box -- so sizing the backing store off
+       the rect made a 689x381 buffer for a 687x379 display area. The browser
+       downscaled the whole starfield by ~0.3%: a faint blur on every star, and
+       the parallax drifting against the plane by the same fraction. These two
+       now agree by construction rather than by coincidence. */
+    const cw = this.wrap.clientWidth || r.width;
+    const ch = this.wrap.clientHeight || r.height;
+    this.cv.width = Math.max(1, Math.round(cw * d));
+    this.cv.height = Math.max(1, Math.round(ch * d));
+    /* Pixels per world unit at zoom 1 comes off the WINDOW, not off GX_WORLD.
+       Sizing to fit the WORLD would have shrunk every mark, label and pip by
+       the same factor the galaxy grew by, which is the map that already
+       existed with extra steps.
+
+       MAX, not min: it makes the wrap COVER the window, so the world span on
+       screen is never wider than GX_VIEW.w nor taller than GX_VIEW.h whatever
+       shape the box is. That is the invariant the world margins are sized
+       against -- with min, a 420px-wide window showed 189 world units of
+       height, the vertical clamp collapsed, and MEASURED, the top and bottom
+       worlds could no longer be centred (56px out). Every world is centreable
+       at every window shape only because of this line. */
+    this.base = Math.max(0.01, r.width / GX_VIEW.w, r.height / GX_VIEW.h);
+    if (this.plane) {
+      const pw = GX_WORLD.w * this.base, ph = GX_WORLD.h * this.base;
+      this.plane.style.width = pw.toFixed(1) + 'px';
+      this.plane.style.height = ph.toFixed(1) + 'px';
+      this.plane.style.marginLeft = (-pw / 2).toFixed(1) + 'px';
+      this.plane.style.marginTop = (-ph / 2).toFixed(1) + 'px';
+    }
+  },
+
+  /**
+   * Fly the camera to a world point.
+   *
+   * `el` is the node that has to end up under the middle of the screen, and
+   * it is not optional decoration: the map lies on a tilted plane under a CSS
+   * perspective, so the analytic centre is several pixels out and only a
+   * MEASURED correction closes it. Measuring at the DESTINATION and then
+   * animating to the corrected camera means the flight lands exactly, rather
+   * than landing near and then twitching.
+   */
+  focus(x, y, animate, el) {
+    if (!this.wrap) return;
+    const r0 = this.wrap.getBoundingClientRect();
+    /* A hidden screen has no box to measure against, and centring against a
+       zero-width one silently lands the map anywhere. Hold the request and let
+       the frame loop spend it the moment the screen actually has a size. */
+    if (!r0.width || !r0.height) { this._pending = { x, y, el: el || null }; return; }
+    /* The world's CENTRE is its dot, not the bounding box of its group: that
+       box also holds the contested mark above the world and the star pips
+       below it, so centring on it would sit every world a little high. */
+    const mark = (el && el.querySelector && el.querySelector('.gx-dot')) || el;
+    const from = { x: this.camX, y: this.camY };
+    this.camX = x; this.camY = y; this.clamp();
+    if (mark && mark.isConnected) {
+      this.apply();
+      for (let i = 0; i < 3; i++) {
+        const r = this.wrap.getBoundingClientRect(), b = mark.getBoundingClientRect();
+        const dx = (b.left + b.width / 2) - (r.left + r.width / 2);
+        const dy = (b.top + b.height / 2) - (r.top + r.height / 2);
+        if (Math.abs(dx) < 0.4 && Math.abs(dy) < 0.4) break;
+        const s = this.base * this.z;
+        this.camX += dx / s; this.camY += dy / s;
+        this.clamp(); this.apply();
+      }
+    }
+    const to = { x: this.camX, y: this.camY };
+    this.vx = 0; this.vy = 0;
+    if (!animate || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this.fly = null; this.apply(); return;
+    }
+    this.camX = from.x; this.camY = from.y; this.apply();
+    this.fly = { from, to, t0: performance.now() };
+  },
+
+  /**
+   * Where the player is standing, and the only thing RECENTRE and Home mean.
+   * The camera moves when the anchor CHANGES, never on a bare re-render --
+   * the campaign map re-renders on every click, and a camera that re-centres
+   * each time is the "cheap and buggy" note 19.3 is about.
+   */
+  setAnchor(x, y, id, el) {
+    this.anchor = { x, y, el: el || null };
+    if (this._anchorId === id && this._anchorKey === this.key) return;
+    this._anchorId = id; this._anchorKey = this.key;
+    this.focus(x, y, true, el);
+  },
+
+  home() {
+    if (this.anchor) this.focus(this.anchor.x, this.anchor.y, true, this.anchor.el);
+    else this.focus(GX_WORLD.x + GX_WORLD.w / 2, GX_WORLD.y + GX_WORLD.h / 2, true, null);
+  },
+
+  /** Pan only as far as it takes to bring a node inside the window. What a
+      keyboard needs the moment the map outgrew the screen: focus without a pan
+      puts the caret on something the player cannot see. */
+  bring(el, animate) {
+    if (!this.wrap || !el || !el.isConnected) return;
+    const r = this.wrap.getBoundingClientRect(), b = el.getBoundingClientRect();
+    if (!r.width) return;
+    const pad = Math.min(110, r.width * 0.14);
+    let dx = 0, dy = 0;
+    if (b.left < r.left + pad) dx = b.left - (r.left + pad);
+    else if (b.right > r.right - pad) dx = b.right - (r.right - pad);
+    if (b.top < r.top + pad) dy = b.top - (r.top + pad);
+    else if (b.bottom > r.bottom - pad) dy = b.bottom - (r.bottom - pad);
+    if (!dx && !dy) return;
+    const s = this.base * this.z;
+    this.focus(this.camX + dx / s, this.camY + dy / s, animate !== false, el);
   },
 
   start() {
@@ -3938,10 +4494,33 @@ const GalaxyFX = {
           || !this.cv || !this.cv.isConnected) { this._running = false; return; }
       const dt = Math.min(0.05, (t - this.last) / 1000 || 0.016);
       this.last = t;
-      /* Momentum after release, with a firm decay so it settles quickly. */
-      if (!this.dragging && (Math.abs(this.vx) > 0.05 || Math.abs(this.vy) > 0.05)) {
-        this.x += this.vx; this.y += this.vy;
-        const k = Math.pow(0.0016, dt);
+      /* The window can change size without the WINDOW resizing: opening the
+         screen, the sidebar reflowing, a font arriving. The plane is sized in
+         pixels off this box, so a stale box is a map drawn at the wrong scale
+         -- and a box that was zero when the map mounted is a map that never
+         centred on anything at all. */
+      const bw = this.wrap.clientWidth, bh = this.wrap.clientHeight;
+      if (bw && bh && (bw !== this._bw || bh !== this._bh)) {
+        this._bw = bw; this._bh = bh;
+        this.resize(); this.clamp(); this.apply();
+      }
+      if (this._pending && bw && bh) {
+        const p = this._pending; this._pending = null;
+        this.focus(p.x, p.y, true, p.el);
+      }
+      if (this.fly) {
+        const k = Math.min(1, (t - this.fly.t0) / GX_FLY_MS);
+        /* easeInOutCubic: it leaves and arrives slowly, which is what makes a
+           long pan read as travel rather than as a cut. */
+        const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+        this.camX = this.fly.from.x + (this.fly.to.x - this.fly.from.x) * e;
+        this.camY = this.fly.from.y + (this.fly.to.y - this.fly.from.y) * e;
+        this.clamp(); this.apply();
+        if (k >= 1) this.fly = null;
+      } else if (!this.dragging && (Math.abs(this.vx) > 0.2 || Math.abs(this.vy) > 0.2)) {
+        /* Momentum after release, with a firm decay so it settles quickly. */
+        this.camX += this.vx * dt; this.camY += this.vy * dt;
+        const k = Math.pow(GX_GLIDE_DECAY, dt);
         this.vx *= k; this.vy *= k;
         this.clamp(); this.apply();
       }
@@ -3957,25 +4536,30 @@ const GalaxyFX = {
   toggle(on) { if (on) this.start(); else this.stop(); },
 
   draw(t) {
-    const { cx, cv } = this;
-    if (!cx || !cv.width) return;
+    const { ctx, cv } = this;
+    if (!ctx || !cv.width) return;
     /* A hidden screen reports a zero-width box and the parallax below divides
        by it, which puts NaN into every star position for good. */
     const cw = this.wrap.clientWidth, ch = this.wrap.clientHeight;
     if (!cw || !ch) return;
     const W = cv.width, H = cv.height;
-    cx.clearRect(0, 0, W, H);
+    ctx.clearRect(0, 0, W, H);
+    /* The plane's own screen offset, so the parallax is driven by exactly what
+       the player sees the map do rather than by a second copy of the sum. */
+    const s = this.base * this.z;
+    const px = (GX_WORLD.x + GX_WORLD.w / 2 - this.camX) * s;
+    const py = (GX_WORLD.y + GX_WORLD.h / 2 - this.camY) * s;
     const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    for (const s of this.stars) {
+    for (const st of this.stars) {
       /* Parallax: a star at depth d moves d of the plane's pan. */
-      let x = (s.u * W + this.x * s.depth * (W / cw)) % W;
-      let y = (s.v * H + this.y * s.depth * (H / ch)) % H;
+      let x = (st.u * W + px * st.depth * (W / cw)) % W;
+      let y = (st.v * H + py * st.depth * (H / ch)) % H;
       if (x < 0) x += W; if (y < 0) y += H;
-      const tw = still ? 0.8 : 0.6 + 0.4 * Math.sin(t * s.tw + s.u * 9);
-      cx.fillStyle = `hsla(${s.hue}, 88%, ${58 + 18 * tw}%, ${(0.18 + 0.42 * tw) * (0.4 + s.depth)})`;
-      cx.beginPath();
-      cx.arc(x, y, Math.max(0.4, s.r * (W / 1400) * (0.85 + 0.3 * tw)), 0, Math.PI * 2);
-      cx.fill();
+      const tw = still ? 0.8 : 0.6 + 0.4 * Math.sin(t * st.tw + st.u * 9);
+      ctx.fillStyle = `hsla(${st.hue}, 88%, ${58 + 18 * tw}%, ${(0.18 + 0.42 * tw) * (0.4 + st.depth)})`;
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(0.4, st.r * (W / 1400) * (0.85 + 0.3 * tw)), 0, Math.PI * 2);
+      ctx.fill();
     }
   }
 };

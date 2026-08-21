@@ -340,10 +340,9 @@ def build_jobs():
                  'singularity blazing at the centre of the frame dragging streams of debris '
                  'inward, nothing in the foreground, no interior, no rooms, no walls, '
                  f'enormous emptiness around it. {STYLE}', 1024, 480, 'wide'))
-    jobs.append(('galaxy_bg',
-                 'a deep space vaporwave starfield with a faint spiral galaxy arm, very dark and '
-                 f'atmospheric, a dim backdrop with no focal point, no planets. {STYLE}',
-                 1024, 768, 'wide'))
+    # galaxy_bg was dropped in Session 19 (note 19.4): the galaxy map's backdrop
+    # is procedural now, so re-rendering a plate nothing reads is a minute of
+    # GPU and a megabyte of art pack spent on an image the game cannot show.
     for aid, desc in ABILITIES.items():
         jobs.append((f'abil_{aid}',
                      f'{desc}. A single bold centered emblem, minimal, high contrast, glowing, '

@@ -1095,6 +1095,44 @@ function appliedGrowth(def, mul) {
   return 1 + (def.costGrowth - 1) * (mul || 1) * COST_GROWTH_STEEPEN;
 }
 
+/* ── MAX-HEALTH VENOM (roadmap 19.18) ─────────────────────────────────────
+   CANISTER burns a share of what the target STARTED with. That is the one
+   damage form in the game which does not care about the wave health curve at
+   all: a fixed fraction per second is a fixed TIME-TO-KILL however large the
+   number over the health bar has grown, so left unbounded it would eventually
+   be the only thing worth building and would delete bosses outright. Three
+   bounds sit on it and all three are load-bearing.
+
+   PCT_CAP ceilings the whole stack AFTER talents, statusMul, node attunement
+   and surge, so nothing multiplies its way past it -- the floor on
+   time-to-kill from gas alone is 1 / PCT_CAP = 20 seconds.
+
+   ELITE_MUL cuts it against bosses and minibosses, whose entire design is a
+   long health bar. 20 / 0.30 = 67 seconds against an AI_ENRAGE_WINDOW of 26,
+   so a canister cannot gas an elite down inside the wave that brought it; it
+   softens the elite for the rest of the board, which is the role the tower is
+   supposed to have.
+
+   And the gas is a 4-second refreshing DoT on a GROUND-ONLY tower, so none of
+   it runs unless a canister is alive, in range, and still firing. */
+const MAXHP_DOT_PCT_CAP = 0.05;    /* share of max health per second, all stacks */
+const MAXHP_DOT_ELITE_MUL = 0.30;  /* ...against a boss or a miniboss            */
+/* An UNSCALED body near the roster's non-boss median health, used only so
+   estimateDps can express a share-of-health effect in damage units. Without a
+   term there CANISTER reads to AI.effectiveness as a 9-damage tower and the
+   rival -- which drafts it in the human line -- would never build it. */
+const MAXHP_DOT_REF_HP = 230;
+
+/** THE share of a target's MAX health one second of gas removes, ceiling and
+    elite reduction included. The engine tick, the inspector row and the DPS
+    estimate all read this one function, so the figure the panel prints and the
+    figure the enemy takes cannot drift apart. `perStack` arrives already
+    scaled by the tower's effStatus, exactly as applyRiders scales it. */
+function maxHpVenomFrac(perStack, stacks, elite) {
+  const f = Math.min((perStack || 0) * (stacks || 0), MAXHP_DOT_PCT_CAP);
+  return elite ? f * MAXHP_DOT_ELITE_MUL : f;
+}
+
 const TOWER_TYPES = {
 
   bolt: {
@@ -1506,28 +1544,35 @@ const TOWER_TYPES = {
      specialisation and ascension path as everything else. */
 
   canister: {
-    id: 'canister', element: 'venom', origin: 'human', name: 'CANISTER', role: 'Lobbed gas barrage', cost: 214, costGrowth: 1.64,
+    id: 'canister', element: 'venom', origin: 'human', name: 'CANISTER', role: 'Armour-stripping gas', cost: 214, costGrowth: 1.64,
     color: '#bef264', dark: '#3f5f0b', attack: 'lobbed', groundOnly: true, glyph: '◍',
-    desc: 'Standard-issue gas shells on a standard-issue tube. No cleverness anywhere in it — an area of the lane simply becomes somewhere nothing wants to stand.',
+    desc: 'Standard-issue gas shells on a standard-issue tube. The gas eats plate — every stack strips armour with no talent spent on it — and it burns a share of what the target STARTED with rather than what it has left, so it keeps working on a giant that venom has already given up on. It buys that with damage: a third of TOXIN\'s percentage, and nothing at all against a flier.',
+    /* poisonMaxPct is a share of MAX health per stack per second, and the rung
+       figures are set so (pct x maxStacks) lands at ~1/3 of TOXIN's
+       (poisonPct x maxStacks) at the matching rung -- 0.0034 vs 0.010 at base,
+       0.016 vs 0.048 at tier 3, 0.025 vs 0.075 at the wide branch. The third
+       that is missing is what pays for the armour strip below, which TOXIN can
+       only reach by spending NECROSIS or its whole tier-4 CORROSION branch.
+       maxHpVenomFrac ceilings the total; see MAXHP_DOT_PCT_CAP. */
     base: { damage: 9, range: 3.7, rate: 0.6, projSpeed: 8, dmgType: 'magic', splash: 1.5,
-            poisonDps: 4.0, poisonPct: 0.004, poisonDur: 4.0, maxStacks: 2 },
+            poisonDps: 4.0, poisonMaxPct: 0.0017, poisonDur: 4.0, maxStacks: 2, shredPerStack: 3 },
     levels: [
-      { cost: 120, name: 'CHOKING', mods: { damage: 26, poisonDps: 6.5, splash: 1.65 } },
-      { cost: 215, name: 'BLISTER', mods: { damage: 40, poisonDps: 9.5, poisonPct: 0.007, splash: 1.85, range: 4.1 } }
+      { cost: 120, name: 'CHOKING', mods: { damage: 26, poisonDps: 6.5, poisonMaxPct: 0.0027, splash: 1.65, shredPerStack: 4 } },
+      { cost: 215, name: 'BLISTER', mods: { damage: 40, poisonDps: 9.5, poisonMaxPct: 0.0080, splash: 1.85, range: 4.1, shredPerStack: 5 } }
     ],
     talents: [
       { id:'cn_wide',  row:0, col:0, name:'WIDE PATTERN', desc:'+40% blast radius.',              mods:{ splashMul:1.40 } },
       { id:'cn_dose',  row:0, col:1, name:'HEAVY DOSE',   desc:'+45% gas potency.',               mods:{ statusMul:1.45 } },
       { id:'cn_shell', row:1, col:0, name:'HE FILLER',    desc:'+45% impact damage.',             mods:{ damageMul:1.45 } },
-      { id:'cn_lung',  row:1, col:1, name:'CAUSTIC',      desc:'Gas strips 2 armour per stack.',  mods:{ shredPerStack:2 } },
+      { id:'cn_lung',  row:1, col:1, name:'CAUSTIC',      desc:'+2 armour stripped per gas stack.', mods:{ shredPerStack:2 } },
       { id:'cn_rate',  row:2, col:0, name:'QUICK LOADER', desc:'+35% fire rate.',                 mods:{ rateMul:1.35 } },
       { id:'cn_deep',  row:2, col:1, name:'DEEP STOCK',   desc:'+2 gas stacks and 20% slow.',     mods:{ maxStacks:2, corrodeSlow:0.20 } }
     ],
     branches: [
-      { id: 'saturation', name: 'SATURATION', cost: 350, mods: { damage: 58, splash: 2.4, poisonDps: 13.0, maxStacks: 5, rate: 0.66 },
-        surge: { splash: 0.16 }, note: 'The whole approach becomes uninhabitable.' },
-      { id: 'concentrate', name: 'CONCENTRATE', cost: 350, mods: { damage: 96, splash: 1.5, poisonDps: 15.0, poisonPct: 0.014, maxStacks: 3, corrodeSlow: 0.22 },
-        surge: { poisonDps: 3.0 }, note: 'A smaller cloud that eats what it touches.' }
+      { id: 'saturation', name: 'SATURATION', cost: 350, mods: { damage: 58, splash: 2.4, poisonDps: 13.0, poisonMaxPct: 0.0050, maxStacks: 5, shredPerStack: 4, rate: 0.66 },
+        surge: { splash: 0.16 }, note: 'The whole approach becomes uninhabitable, and nothing crossing it keeps its plate — 20 armour off at full stacks.' },
+      { id: 'concentrate', name: 'CONCENTRATE', cost: 350, mods: { damage: 96, splash: 1.5, poisonDps: 15.0, poisonMaxPct: 0.0050, maxStacks: 3, shredPerStack: 6, corrodeSlow: 0.22 },
+        surge: { poisonDps: 3.0 }, note: 'A smaller cloud that strips 18 armour and eats a fixed share of whatever walks into it.' }
     ]
   },
 
@@ -1587,6 +1632,58 @@ const TOWER_ORDER = ['bolt', 'cryo', 'mortar', 'arc', 'pyre', 'railgun', 'toxin'
                      'canister', 'reclaimer', 'quartermaster'];
 
 const LOADOUT_SIZE = 5;
+
+/* --------------------------------------------------------------------------
+   UNLOCK LAW — what souls buy, what the story issues, and what one purchase
+   costs the next one.
+-------------------------------------------------------------------------- */
+
+/* The machine line is EARNED, never sold. Robotic hardware is the reward for
+   finishing a solar system, so the shop has to refuse it outright rather than
+   price it: an entry carrying a price nobody can legally pay is the same lie
+   as a wrong price. `robotic` stays an UNGATED origin all the same --
+   AI.rivalArsenal reads `gated` to decide what a rival may hold, and
+   narrowing it there would hand the player a shelf the rival cannot mirror. */
+const STORY_TOWER_ORIGIN = 'robotic';
+
+/* The order they are issued in, one per solar system conquered. DRONE BAY is
+   first because it is the only machine that reads at a glance -- something
+   leaves the building and kills things. RAILGUN is the plain second. ECHO
+   teaches adjacency and PYLON pays it off, which is the whole robotic rule.
+   FOUNDRY, QUAKE and SINGULARITY reshape a board and want a board to reshape.
+   VAULT is last: an economy tower only pays a player who already has
+   somewhere to spend. */
+const ROBOTIC_UNLOCK_ORDER = ['dronebay', 'railgun', 'echo', 'pylon',
+                              'foundry', 'quake', 'singularity', 'vault'];
+
+/* Every soul-shop purchase raises the next one on that banner by this much.
+   It stops a hoarded bank buying the whole arsenal in one sitting, which is
+   what turned the shop into a single shopping trip instead of a decision made
+   again across a campaign. Per banner, not per install, because the shelves
+   are per banner too -- a second profile must not inherit the first's bill. */
+const SOUL_INFLATION_STEP = 1;
+
+/* --------------------------------------------------------------------------
+   TOWER FIRING PREVIEW (soul shop card + loadout card)
+
+   The preview is a real animation, so it needs real time. Fixed 1/60 steps
+   ran it at whatever the display refreshes at -- 2.4x too fast on a 144Hz
+   panel, which also put the cadence on screen at odds with the fire rate
+   printed two lines above it.
+-------------------------------------------------------------------------- */
+/* A tab restored from the background hands back one enormous delta; without a
+   ceiling the dummies teleport the length of the lane on the first frame. */
+const TP_MAX_DT = 1 / 20;
+/* Dummies march at this many canvas pixels per second. */
+const TP_MARCH_PPS = 22;
+/* A shot crosses to its target in 1/this seconds. */
+const TP_SHOT_SPEED = 3.3;
+/* Recoil decays at the SAME rate the engine uses (Tower.step, entities.js),
+   so the gun in the shop kicks the way the gun on the board does. */
+const TP_RECOIL_DECAY = 5;
+/* Cadence floor. A tower slower than this sits still long enough for the
+   preview to read as broken rather than as slow. */
+const TP_MIN_RATE = 0.5;
 
 /* --------------------------------------------------------------------------
    PROGRESSIVE TOWER CARDS (loadout grid)
@@ -2475,11 +2572,73 @@ const MUSTER_DAMP = 0.6;              /* matches reanimate() exactly          */
    of a wave body. Named here so the next reader can see the three dampings
    sit at the same value on purpose. BATCH-A/numbers */
 const SUMMON_DAMP = 0.6;              /* carrier/harbinger spawn, vs a wave body */
-const MUSTER_INCOME_CAP_PCT = 1.00;   /* ceiling on the additive percent -- the
-                                         sole bound now that stacking is flat.
-                                         At the cap a committed sender doubles
-                                         its wave income, which is the payoff
-                                         the owner asked the mechanic to have. */
+
+/* ── SPAWNED-UNIT HEALTH PENALTY (roadmap 19.16) ──────────────────────────
+   A body that is SUMMONED onto the board -- a mustered detachment, a
+   FOUNDRY minion, a carrier's brood -- inherits the wave curve, and the wave
+   curve is flat and generous in its first few steps. That made a purchase at
+   wave 2 worth very nearly a whole wave body while the defence that had to
+   answer it was still two towers, which is the owner's report: summoned units
+   are too strong early. So a penalty rides on top of the damping, and it
+   DECAYS, because by wave 10 the same body is a rounding error against the
+   curve and taking anything off it would delete the mechanic instead of
+   pricing it.
+
+   THE OWNER'S THREE ANCHOR POINTS ARE THE DEFINITION:
+       wave 1  -> -50%      wave 5 -> -25%      wave 10 and after -> 0%
+   SHAPE is DERIVED from them rather than typed, so the curve cannot drift
+   away from the anchors it is documented by: it is the exponent that makes
+   the midpoint land exactly on -25%. The curve is smooth, not stepped, and
+   its slope is zero where it meets wave 10, so the last wave of the penalty
+   is not a cliff a player can feel.
+
+   It applies to a body that is CREATED. It deliberately does NOT apply to a
+   reanimate or to a SIREN charm: those convert a corpse or a live attacker
+   that the wave already paid for, they are not a second body, and halving
+   them would rewrite the core attrition loop rather than price a summon. */
+const SPAWN_HP_PENALTY_MAX = 0.50;       /* the penalty on wave 1              */
+const SPAWN_HP_PENALTY_MID = 0.25;       /* ...and on SPAWN_HP_PENALTY_MID_WAVE */
+const SPAWN_HP_PENALTY_MID_WAVE = 5;
+const SPAWN_HP_PENALTY_END = 10;         /* nothing from here on               */
+const SPAWN_HP_PENALTY_SHAPE =
+  Math.log(SPAWN_HP_PENALTY_MID / SPAWN_HP_PENALTY_MAX) /
+  Math.log((SPAWN_HP_PENALTY_END - SPAWN_HP_PENALTY_MID_WAVE) / (SPAWN_HP_PENALTY_END - 1));
+
+/** THE health multiplier a summoned body carries for `wave`.
+    ONE definition, read by Game.musterHpMul (and so by the muster bar, the
+    dossier tooltip and AI.bestAction, which all price a send through it), by
+    Game.summonFrom and by the FOUNDRY minion. Anything that PRINTS a summoned
+    unit's health calls this or a function that calls it -- a preview that
+    re-derives a multiplier is the desync class this project has already paid
+    for seven times. */
+function spawnHpPenaltyMul(wave) {
+  const w = Math.max(1, Math.min(SPAWN_HP_PENALTY_END, wave || 1));
+  const x = (SPAWN_HP_PENALTY_END - w) / (SPAWN_HP_PENALTY_END - 1);
+  return 1 - SPAWN_HP_PENALTY_MAX * Math.pow(x, SPAWN_HP_PENALTY_SHAPE);
+}
+const MUSTER_INCOME_CAP_PCT = 1.80;   /* ceiling on the additive percent -- the
+   sole HARD bound now that stacking is flat, and it must never be removed.
+   OWNER-SET (roadmap 19.17): the per-purchase percent below roughly doubled,
+   so a ceiling of 1.00 would have been reached by the THIRD buy and the
+   control would have gone dead in the middle of the match it is supposed to
+   be played across. 1.80 keeps the ceiling about six purchases away, which
+   with MUSTER_PER_WAVE = 2 is three waves of total commitment.
+
+   WHAT STILL STOPS A RUNAWAY, now that the number is larger -- five things,
+   and the cap is only the last of them:
+     1. MUSTER_PER_WAVE = 2. The ceiling cannot be bought in one build phase;
+        it takes three waves of spending nothing on defence to reach.
+     2. MUSTER_COST_GROWTH for MUSTER_COST_STEPS buys. The sixth purchase
+        costs 1.76x the first and the plateau sits at 3.11x, so the gold that
+        reaches the ceiling is ~3.4 wave rewards that did not become towers.
+     3. The income is FLAT and is a share of a reward EVERYONE already earns.
+        It never compounds -- unlike interest, it does not pay on itself --
+        so it is a bounded additive stream, not an exponential one.
+     4. Roadmap 19.16 lands in the same patch: the aggression half of the
+        purchase is at its WEAKEST (-50% health) over exactly the early waves
+        in which a snowball would have to start.
+     5. This ceiling. At the cap a committed sender earns 2.8x the wave
+        reward and not one gold more, however many further sends it buys. */
 const MUSTER_COST_GROWTH = 1.12;      /* and each buy costs 12% more          */
 /* ...but only for the first COST_GROWTH_STEPS buys. Unbounded, 1.12^buys with
    MUSTER_PER_WAVE=2 compounds at 1.25x per WAVE against an economy that grows
@@ -2539,12 +2698,27 @@ const MUSTER_COUNT_MAX = 6;
    proportion, so no pick is a strictly dominant buy. Anchored at the crawler. */
 const MUSTER_COST_BASE = 0.40;          /* share of next wave reward at 0 mass */
 const MUSTER_COST_PER_MASS = 0.00065;   /* crawler pack (248) -> 0.56x         */
-/* OWNER-SET (Session 16): "adjust the bonus to income they give to be much
-   more ... it should feel more rewarding and offer way more income". Roughly
-   tripled -- a crawler pack moves from +5.0% to +14.9% of a wave reward. The
-   ceiling rises with it, or the third purchase would buy nothing. */
-const MUSTER_INCOME_BASE = 0.09;        /* percent points at 0 mass             */
-const MUSTER_INCOME_PER_MASS = 0.00024; /* crawler pack (248) -> +14.9%         */
+/* OWNER-SET (roadmap 19.17): "the econ generated from summoning your own
+   troops is way too small ... make it much more rewarding". The Session-16
+   pass raised the percent but left the PAYBACK bad, and payback is what the
+   player actually feels. At +14.9% a crawler pack cost 0.56 of a wave reward
+   and returned 0.149 per wave: 3.8 waves to break even on the FIRST buy and
+   11.7 on the plateau, against matches that resolve around wave 16-28. Every
+   muster after the fourth was a pure tempo purchase whose income half was
+   decoration, which is exactly what "too small" describes.
+
+   Roughly doubled again, and now anchored on payback rather than on the
+   percent: a crawler pack pays +32.4% of a wave reward and breaks even in
+   1.7 waves at the first buy and 5.4 at the plateau, so a send is worth
+   buying for its economy at ANY point in a match rather than only in the
+   opening. Both halves stay LINEAR in mass, so no pick is a dominant buy --
+   a bulwark pair (mass 660) pays +53% for a proportionally larger price.
+
+   RIVAL PARITY: the rival prices a send through Game.musterGain, the same
+   post-ceiling delta the player's button prints, so the whole of this raise
+   reaches the AI under the same rules and the same MUSTER_PER_WAVE limit. */
+const MUSTER_INCOME_BASE = 0.20;        /* percent points at 0 mass             */
+const MUSTER_INCOME_PER_MASS = 0.00050; /* crawler pack (248) -> +32.4%         */
 /* Display bands by mass keep the three familiar names; nothing reads them
    but the sidebar and the floater. */
 const MUSTER_BAND_ASSAULT_MASS = 400;
@@ -2780,32 +2954,114 @@ const TARGET_MODES = [
   { id:'close',  name:'CLOSE',  desc:'Nearest to this tower. Minimises projectile travel.' }
 ];
 
-/* ══════════════════════════ THE GALAXY MAP FRAME ═══════════════════════════
-   Read by the GENERATOR (js/galaxy.js, which must never place a world outside
-   the frame) and by BOTH renderers (THE GALAXY and THE UNIVERSE, which paint
-   their backdrop to exactly this rectangle). One definition, because the two
-   drifting apart is precisely what happened: slots pitched at one frame were
-   drawn into another, nine of thirty-five worlds were squashed flat onto the
-   clamp -- three of them collinear -- and two system names hung outside the
-   viewBox entirely.
+/* ═════════════════ THE GALAXY: WORLD SPACE AND THE WINDOW ═════════════════
+   TWO rectangles, and the whole of the Session 19 map complaint is that they
+   used to be the SAME one. GX_VIEW is the WINDOW -- how much galaxy a screen
+   shows at zoom 1. GX_WORLD is the galaxy. Session 16 gave the map a drag
+   viewport but went on drawing the entire galaxy at exactly window size, so
+   there was nothing to pan over and the drag read as leftovers from the
+   version before it.
 
-   The frame is larger than the old "-4 -2 108 76" because five systems of
-   round three-ring orbits genuinely need the room, and the map is a
-   drag-panned viewport now rather than a diagram that had to be legible at a
-   glance. The aspect stays near the old 1.42 so the viewport letterboxes it
-   exactly as before. */
+   GX_VIEW keeps the old frame's SIZE deliberately. It is what fixes the
+   pixels-per-world-unit the map is drawn at, so a world mark, a system name
+   and a star pip all keep the on-screen size they were tuned at while the
+   galaxy around them grows. BOTH dimensions are load-bearing: the scale covers
+   the window rather than fitting it, so the world span on screen is never
+   wider than .w nor taller than .h whatever shape the box is, and that is the
+   promise the margin below is measured against. Its ORIGIN is now inert --
+   where the window sits is the camera's business, not a constant's. */
 const GX_VIEW = { x: -6, y: -11, w: 137, h: 99 };
-const GX_VIEWBOX = GX_VIEW.x + ' ' + GX_VIEW.y + ' ' + GX_VIEW.w + ' ' + GX_VIEW.h;
 
-/* Hand-placed system centres -- a spiral collapsed them into a centre knot
-   whatever the radii were. Four corners and a middle, in the order the links
-   chain them. MEASURED on these: no world clamped on either axis, and the
-   closest pair of worlds anywhere on the map is 8.33 apart against a combined
-   dot-plus-ring width of ~4.7 (it was 5.83, with eleven worlds pinned to an
-   edge). Move one and re-measure both numbers. */
-const GX_SYSTEM_SLOTS = [[18, 26.5], [106, 26.5], [62, 61], [18, 95], [106, 95]];
+/* WORLD SPACE, in RENDERED units (y already squashed -- see
+   GX_RENDER_SQUASH). Four and a half windows wide and five tall, so crossing
+   the galaxy is navigation rather than a glance.
 
-/* Stars scattered behind the map, held at the density the old frame had (110
-   over 108x76). A bigger frame at the same COUNT reads as emptier space
-   rather than as more of it. */
-const GX_BACKDROP_STARS = 180;
+   The MARGIN between the content and this box is load-bearing, not padding.
+   The camera cannot be panned past a world edge, so a world sitting closer to
+   an edge than HALF A WINDOW could never be centred -- which is exactly what
+   note 19.3 asks for. Keep (GX_WORLD.w - world span) / 2 >= GX_VIEW.w / 2 and
+   (GX_WORLD.h - world span) / 2 >= GX_VIEW.h / 2, or opening on an edge world
+   lands off-centre and no amount of tweening hides it.
+   MEASURED: 84.3 of margin across against the 68.5 needed, and 68.8 down
+   against 49.5. */
+const GX_WORLD = { x: 0, y: 0, w: 620, h: 400 };
+const GX_WORLD_VIEWBOX = GX_WORLD.x + ' ' + GX_WORLD.y + ' ' + GX_WORLD.w + ' ' + GX_WORLD.h;
+
+/* Hand-placed system centres, in RENDERED world units -- a spiral collapsed
+   them into a centre knot whatever the radii were tuned to, and that has been
+   tried twice. MEASURED on these:
+     * closest two SYSTEMS       174.2 apart, against a footprint of ~37
+     * closest two WORLDS         11.11 apart, against a combined dot-plus-ring
+                                  width of ~4.7 (it was 8.33)
+     * nearest world to an edge   84.3 across, 60.9 down -- both comfortably
+                                  over the half-window (68.5 / 37.8) that
+                                  centring on an edge world needs
+     * worlds clamped             0
+   Move one and re-measure all four. */
+const GX_SYSTEM_SLOTS = [[104, 300], [214, 98], [346, 268], [468, 100], [516, 306]];
+
+/* A system's furniture, pitched against GX_RING_OUTER in js/galaxy.js so the
+   three move together. The labels sit OUTSIDE the orbits now: inside them (the
+   old -17.4 against a 19.5 outer ring) printed a system's name across its own
+   worlds, which is half of what made the grouping unreadable.
+   MEASURED: the furthest a world's drawn box reaches from its system centre is
+   32.1 up (a contested world, whose ⚔ sits above it) and 30.4 down (the star
+   pips). These clear both by about 2.5 units. */
+const GX_SYS_HALO_R = 22;
+const GX_SYS_NAME_DY = -35;
+const GX_SYS_META_DY = 35;
+/* How far the link between two systems bows off the straight line. Scaled with
+   the map -- the old flat 6 units was invisible across a 230-unit gap, so the
+   chain read as a straight line through the middle of everything. */
+const GX_LINK_LIFT = 26;
+
+/* THE TRAVEL-RANGE RING drawn around the world you are standing on. Its radius
+   is DERIVED from the worlds you can actually open, so it describes the
+   existing unlock rule instead of inventing a second one that could disagree
+   with it. PAD is the air between the furthest reachable world and the ring.
+   MIN is an absolute floor: on a fresh campaign the only world you can open is
+   the one you are standing on, and a ring drawn at that radius is a dot. The
+   floor actually used is the larger of this and GX_RING_OUTER + PAD, so the
+   ring always clears the system it is standing in. */
+const GX_RANGE_PAD = 9;
+const GX_RANGE_MIN = 34;
+
+/* Stars behind the map, held at the DENSITY the old map put ON SCREEN rather
+   than at its COUNT: a five-times-bigger world at the same count reads as
+   emptier space rather than as more of it, which is the exact failure this
+   round is about.
+
+   The divisor is what one WINDOW actually shows -- 137 across by about 76 down
+   at the aspect the map is played at -- not GX_VIEW's nominal 137x99. Dividing
+   by the nominal box is the mistake that looks right and measures wrong: it
+   lands ~137 stars on screen where the old map put 180, and the missing
+   quarter is exactly the emptiness the note complains about. MEASURED after:
+   179 stars in view at zoom 1, against 180 before.
+
+   They are pooled into four <path>s and built once -- four thousand <circle>
+   elements re-parsed out of an innerHTML string is a real cost on a map that
+   re-renders on every click. */
+const GX_BACKDROP_STAR_DENSITY = 180 / (137 * 76);
+const GX_BACKDROP_STARS = Math.round(GX_WORLD.w * GX_WORLD.h * GX_BACKDROP_STAR_DENSITY);
+
+/* The Canvas parallax layer behind the plane. It lives in SCREEN space, so its
+   density does not change when the world grows -- but the pan range it has to
+   cover does, so it gets a modest raise to keep the depth reading when the map
+   is thrown across the galaxy. */
+const GX_STARFIELD_STARS = 360;
+
+/* ZOOM. MIN is an overview, not a fit-to-world: fitting 620 units into a
+   1000px window is a scale of 0.24, at which a 2.6-unit system name is two
+   pixels tall. Below GX_ZOOM_FAR the map switches to its overview reading --
+   pips, arena marks and system meta drop out -- and label sizes are
+   compensated back up, capped at GX_LABEL_MAX so the compensation cannot
+   itself become the thing that overlaps. */
+const GX_ZOOM_MIN = 0.36, GX_ZOOM_MAX = 2.6, GX_ZOOM_HOME = 1;
+const GX_ZOOM_FAR = 0.72, GX_LABEL_MAX = 2.2;
+/* How long the camera takes to fly to a world, the keyboard's pan step as a
+   fraction of the window, and how much coasting velocity survives one second
+   after release. The decay is per-second and applied as pow(k, dt) so the
+   glide is the same on a 60Hz and a 144Hz screen. */
+const GX_FLY_MS = 560;
+const GX_KEY_PAN = 0.18;
+const GX_GLIDE_DECAY = 0.0022;
