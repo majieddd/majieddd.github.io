@@ -585,9 +585,19 @@ Tower.prototype.drawExpansionField = function (ctx) {
    make the tier harder, it deletes RAMPART and FOUNDRY from the roster. The
    tier is meant to raise the whole board, not retire two archetypes. */
 function waveScaled(v) {
-  return v * waveHpMultiplier(Math.max(1, Game.wave))
-           * (Game.difficulty ? Game.difficulty.hp : 1) * UNIT_HP_SCALE
-           * (1 + 0.3 * ((Game && Game.galaxyTier) || 0));
+  /* Calls THE definition rather than restating it. This function used to
+     re-derive waveHpMultiplier x difficulty.hp x UNIT_HP_SCALE x galaxy tier
+     by hand, which was numerically identical to Game.waveHpMul and therefore
+     invisible -- and that is exactly the shape of the bug that has shipped
+     seven times here, most recently when this very expression was missing the
+     galaxy-tier term and walls fell 1.9x behind by tier IV.
+
+     The guard survives because minions and walls can be constructed before a
+     difficulty is installed, which waveHpMul does not tolerate. Rage is
+     deliberately not passed: a wall's health is set once at build time and
+     does not inherit the wave's RESONANT FIELD bid. */
+  if (!Game.difficulty) return v * waveHpMultiplier(Math.max(1, Game.wave)) * UNIT_HP_SCALE;
+  return v * Game.waveHpMul(Math.max(1, Game.wave));
 }
 
 const _estimateDps = Tower.prototype.estimateDps;
