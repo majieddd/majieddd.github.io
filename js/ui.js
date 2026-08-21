@@ -14,6 +14,50 @@
 const $  = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
+/* -- THE FOUR-COLUMN LOADOUT (roadmap 19.12 / 19.15) ----------------------
+   House rule puts every tunable in config.js. These live here for one round
+   only because the units data model owns that file in parallel; move them
+   across when it lands. */
+
+/* Under this width the four columns cannot all hold a legible minimum.
+   MEASURED, not guessed: two detail columns at 272 plus two pickers holding
+   their two 138px tracks (2x138 + 9 gap + 28 padding = 313) plus three 14px
+   gaps is 1212 of content, and .setup-wrap spends 48 more on its own padding
+   -- 1260. 1280 is that with a little headroom.
+
+   Below it the two DETAIL columns leave the grid for a drawer and the two
+   PICKERS keep both tracks. Reflowing the pickers instead would stack the two
+   decisions this screen exists to pair, which is a worse loss than the
+   detail. Must stay equal to the media query in polish.css -- the drawer is
+   opened from here and laid out from there, so a disagreement is a drawer
+   that opens invisibly. */
+const LO_FOUR_COL_MIN_PX = 1280;
+
+/* The detail stage. Wider than the retired in-card stage (286) because it now
+   has a column to itself, and a unit preview needs the run-up for a blink or
+   a split to land on screen instead of starting off the left edge. */
+const LO_STAGE_W = 300;
+const LO_STAGE_H = 104;
+
+/* Enemy radii are authored up to 18 (Broodmother), which is a third of the
+   stage height before anything it carries is drawn. */
+const UNIT_PREVIEW_MAX_R = 13;
+/* Lane speed in px/sec, deliberately NOT the unit's own `speed`: a Luminark
+   at its authored 0.62 crosses the stage in eleven seconds and nobody hovers
+   that long. The card is a demonstration; the printed SPEED stat beside it is
+   still the engine's number, which is the half that has to be true. */
+const UNIT_PREVIEW_PPS = 46;
+/* Traits are authored on a battle clock -- a Broodmother births every 4.0s, a
+   Scrapjack jams every 6.8s -- so at authored cadence a hovering player sees
+   neither happen. The stage runs them faster and the panel prints the
+   authored interval next to it. */
+const UNIT_TRAIT_TEMPO = 0.34;
+const UNIT_BLINK_PX = 54;      /* one grapple, at stage scale               */
+const UNIT_DOWN_S = 0.75;      /* how long a reviver stays down             */
+const UNIT_PULSE_S = 0.85;     /* healer / aura pulse cadence               */
+const UNIT_WARD_HIT_S = 1.9;   /* how often something breaks a ward         */
+const UNIT_AURA_PX = 34;       /* aura ring at stage scale, not radius*TILE */
+
 const UI = {
 
   sel: { commander: COMMANDERS[0].id, map: MAPS[0].id, difficulty: 'contested', loadout: [] },
@@ -1763,155 +1807,687 @@ const UI = {
     const idx = sel.indexOf(id);
     return `<div class="lo-slot" data-slot="${id}">
       <button class="lo-card ${idx >= 0 ? 'on' : ''}" data-lo="${id}"
-              style="--tc:${t.color}; --cc:${o.color}" aria-expanded="false">
+              style="--tc:${t.color}; --cc:${o.color}"
+              aria-pressed="${idx >= 0 ? 'true' : 'false'}">
         <span class="lo-rest">
           <span class="lo-figure">${this.towerIconHTML(id, 40)}${
             idx >= 0 ? `<span class="lo-num">${idx + 1}</span>` : ''}</span>
           <span class="lo-id">
             <span class="lo-top"><b>${t.name}</b></span>
             <span class="lo-meta"><span class="lo-og" style="--og:${o.color}">${
-              o.icon} ${o.short}</span><em>◈${t.cost}</em></span>
+              o.icon} ${o.short}</span><em><i class="lo-el" style="--el:${el.color}">${el.icon}</i>◈${t.cost}</em></span>
           </span>
         </span>
-        <span class="lo-detail"><span class="lo-detail-in">
-          <span class="lo-role">${t.role}</span>
-          <span class="lo-chips"><span class="elem-badge" style="--el:${el.color}">${
-            el.icon} ${el.name}</span>${this.originBadge(id)}</span>
-          <span class="lo-stats">${this.towerStatRows(id).map(r =>
-            `<i><span>${r[0]}</span><b>${r[1]}</b></i>`).join('')}</span>
-          <span class="lo-desc">${t.desc}</span>
-          <canvas class="lo-stage" data-stage="${id}" width="286" height="86"></canvas>
-        </span></span>
       </button>
     </div>`;
   },
 
-  /** Expand one card, over the top of the grid rather than inside it. */
-  openLoadoutCard(slot) {
-    if (!slot || this._loOpen === slot) return;
-    this.closeLoadoutCard();
-    this._loOpen = slot;
-    /* Open UPWARD when opening downward would run off the bottom of the
-       window: on the last row the panel otherwise lands on the DEPLOY button.
-       A collapsed panel still reports its full content height through
-       scrollHeight, so the direction is decided before the animation starts
-       rather than halfway through it. */
-    const inner = slot.querySelector('.lo-detail-in');
-    const grow = (inner ? inner.scrollHeight : 0) + LO_CARD_EDGE_PAD;
-    const r = slot.getBoundingClientRect();
-    slot.classList.toggle('up',
-      r.bottom + grow > window.innerHeight && r.top - grow > LO_CARD_EDGE_PAD);
-    slot.classList.add('open');
-    const card = slot.querySelector('.lo-card');
-    if (card) card.setAttribute('aria-expanded', 'true');
-    /* The soul shop's firing preview, hosted inside the card. A tooltip that
-       follows the pointer would land on top of the very card it describes. */
-    const cv = slot.querySelector('.lo-stage');
-    if (cv) this.runTowerPreview(cv, slot.dataset.slot);
+  /* ============================================ THE UNITS ACCESSOR ==== */
+
+  /**
+   * The ONE place this screen reads the unit roster through.
+   *
+   * The units data model (19.10/19.11) lands in a parallel change that owns
+   * factions.js, config.js and commanders.js. Every reader below asks for the
+   * shape that change is expected to publish and falls back to the muster
+   * roster shipping today, so this screen works standalone AND picks up the
+   * real roster the moment it exists without another edit here. Nothing else
+   * in this file may reach past these -- a second reader is exactly how the
+   * two would come to disagree about what a unit is.
+   */
+  unitDef(id) {
+    const U = (typeof UNIT_TYPES !== 'undefined' && UNIT_TYPES) || null;
+    const E = (typeof ENEMY_TYPES !== 'undefined' && ENEMY_TYPES) || null;
+    const u = U && U[id], e = E && E[id];
+    if (!u) return e || null;
+    if (!e) return u;
+    /* A unit lives in two tables ON PURPOSE: the stat block and the drawing
+       shape are the body it is fielded as, the identity, doctrine and talents
+       are what the units model added on top. Merged once and cached, because
+       every card, every icon and every preview frame asks for it. Both tables
+       are authored, never mutated, so the cache can never go stale. */
+    const c = this._unitDefs || (this._unitDefs = {});
+    return c[id] || (c[id] = Object.assign({}, e, u));
+  },
+  /** First Meta method that exists, bound. Named preferences first. */
+  metaFn() {
+    if (typeof Meta === 'undefined') return null;
+    for (let i = 0; i < arguments.length; i++) {
+      const n = arguments[i];
+      if (typeof Meta[n] === 'function') return Meta[n].bind(Meta);
+    }
+    return null;
+  },
+  unitCap() {
+    if (typeof UNIT_LOADOUT_SIZE !== 'undefined') return UNIT_LOADOUT_SIZE;
+    if (typeof MUSTER_LOADOUT_SIZE !== 'undefined') return MUSTER_LOADOUT_SIZE;
+    return 3;
+  },
+  unitUnlocked() {
+    const f = this.metaFn('unitUnlocked', 'musterUnlocked');
+    return (f ? f() : []).filter(id => this.unitDef(id));
+  },
+  unitPicked() {
+    const f = this.metaFn('unitLoadout', 'musterLoadout');
+    return (f ? f() : []).filter(id => this.unitDef(id));
+  },
+  unitToggle(id) {
+    const f = this.metaFn('toggleUnit', 'toggleMuster');
+    return f ? !!f(id) : false;
+  },
+  /** Pack size, price and wave income. `musterTierFor` is the SAME derivation
+      the spawn, the muster bar and the rival brain read; a second one here is
+      the desync class this project has shipped seven times. */
+  unitTier(id) {
+    const f = (typeof unitTierFor === 'function') ? unitTierFor
+            : (typeof musterTierFor === 'function') ? musterTierFor : null;
+    return f ? f(id) : null;
+  },
+  unitSendable(id) {
+    const f = (typeof unitSendable === 'function') ? unitSendable
+            : (typeof musterSendable === 'function') ? musterSendable : null;
+    return f ? !!f(id) : !!this.unitDef(id);
+  },
+  /**
+   * Locked, but reachable in THIS playthrough.
+   *
+   * The unit track if the model publishes one, plus whatever the maps still
+   * declare -- `m.units` is read beside `m.denizens` so a second per-map track
+   * costs nothing here. Then the 19.14 campaign gate: a Pirate campaign can
+   * never rescue a Votary, so a Votary is NOT a card in this column; it is a
+   * Soul Shop purchase exactly as a locked tower is. That keeps the two
+   * columns siblings in policy as well as in shape.
+   */
+  unitRescuable() {
+    const pref = this.metaFn('unitRescuable');
+    const have = this.unitUnlocked();
+    const track = pref ? pref()
+      : (typeof unitTrackIds === 'function' ? unitTrackIds() : []);
+    const dens = (typeof MAPS !== 'undefined' ? MAPS : [])
+      .reduce((a, m) => a.concat(m.denizens || [], m.units || []), []);
+    return [...new Set(track.concat(dens))].filter(id =>
+      this.unitDef(id) && this.unitSendable(id) &&
+      have.indexOf(id) < 0 && !this.unitFactionLock(id));
+  },
+  /** The power that owns a unit this campaign may not rescue, or null. */
+  unitFactionLock(id) {
+    const f = this.metaFn('unitRescueLock');
+    return f ? f(id) : null;
+  },
+  /** Everything the campaign gate holds back, for the Soul Shop note. */
+  unitGated() {
+    const have = this.unitUnlocked();
+    const track = typeof unitTrackIds === 'function' ? unitTrackIds() : [];
+    return track.filter(id => have.indexOf(id) < 0 && this.unitFactionLock(id));
+  },
+  unitSoulCost(id) {
+    const f = this.metaFn('unitUnlockCost');
+    return f ? f(id) : null;
+  },
+  /** The unit's own doctrine, when the model authors one. The tower detail
+      prints its ORIGIN rule in the same slot; these are the same promise made
+      to the two columns. */
+  unitDoctrine(id) {
+    if (typeof unitDoctrineOf !== 'function') return null;
+    try { return unitDoctrineOf(id) || null; } catch (e) { return null; }
+  },
+  unitHomes(id) {
+    return (typeof MAPS !== 'undefined' ? MAPS : [])
+      .filter(m => [].concat(m.denizens || [], m.units || []).indexOf(id) >= 0)
+      .map(m => m.name).join(' or ');
+  },
+  /** Whoever fields it. No allegiance means a Vigil machine, which is the
+      rule factions.js already applies when it stamps `faction: null`. */
+  unitHost(id) {
+    const def = this.unitDef(id);
+    const f = def && def.faction;
+    return (f && typeof FACTIONS !== 'undefined' && FACTIONS[f]) || MACHINE_HOST;
+  },
+  /** Talent nodes, when the model has them (19.13). Absent today, so the
+      panel prints the dossier instead of an empty section. */
+  unitTalents(id) {
+    const def = this.unitDef(id);
+    return (def && Array.isArray(def.talents)) ? def.talents : [];
   },
 
-  closeLoadoutCard() {
-    const slot = this._loOpen;
-    this._loOpen = null;
-    if (!slot) return;
-    slot.classList.remove('open', 'up');
-    const card = slot.querySelector('.lo-card');
-    if (card) card.setAttribute('aria-expanded', 'false');
-    /* The preview draws into a canvas this card owns; left running past the
-       collapse it costs a frame every frame for nothing on screen. */
-    this.stopTowerPreview();
+  /**
+   * The one thing this unit DOES, read off its definition rather than
+   * authored a second time. A unit the parallel model adds gets the right
+   * badge and the right preview without a line changing here -- and a trait
+   * nobody reads cannot ship, because the badge and the animation are driven
+   * from the same call.
+   */
+  unitTrait(id) {
+    const d = this.unitDef(id);
+    if (!d) return { key: 'march', label: 'MARCHES' };
+    const nm = t => ((this.unitDef(t) || {}).name || t).toUpperCase();
+    const f1 = v => (v || 0).toFixed(1);
+    if (d.summon)   return { key: 'summon', label: 'BIRTHS ' + nm(d.summon.type) + ' EVERY ' + f1(d.summon.interval) + 's' };
+    if (d.splitInto) return { key: 'split', label: 'SPLITS INTO ' + d.splitCount + ' ' + nm(d.splitInto) };
+    if (d.teleport) return { key: 'blink',  label: 'GRAPPLES ' + f1(d.teleport.tiles) + ' TILES EVERY ' + f1(d.teleport.interval) + 's' };
+    if (d.jam)      return { key: 'jam',    label: 'JAMS TOWERS FOR ' + f1(d.jam.duration) + 's' };
+    if (d.revive)   return { key: 'revive', label: 'RISES ONCE AT ' + Math.round(d.revive * 100) + '%' };
+    if (d.healRate) return { key: 'heal',   label: 'HEALS ' + d.healRate + '/s AHEAD OF IT' };
+    if (d.aura)     return { key: 'aura',   label: (d.aura.label || 'AURA') + ' — ' + f1(d.aura.radius) + ' TILES' };
+    if (d.shield)   return { key: 'ward',   label: 'WARD ' + d.shield + ', REFORMS IN ' + f1(d.shieldDelay) + 's' };
+    if (d.phase)    return { key: 'phase',  label: 'PHASES OUT OF REACH' };
+    if (d.flying)   return { key: 'fly',    label: 'FLIES THE MAZE' };
+    if (d.pullImmune || d.slowResist) return { key: 'anchor', label: 'ANCHORED — BARELY SLOWED' };
+    if (d.splashResist) return { key: 'plate', label: 'SPLASH-RESIST ' + Math.round(d.splashResist * 100) + '%' };
+    return { key: 'march', label: 'HOLDS FORMATION' };
   },
 
-  /** Hover, keyboard focus and touch all reach the same expansion. */
-  bindLoadoutCards() {
-    const grid = $('#loadout-grid');
-    if (!grid) return;
-    $$('.lo-slot', grid).forEach(slot => {
-      const card = slot.querySelector('.lo-card');
-      const id = slot.dataset.slot;
-      card.addEventListener('mouseenter', () => { Sound.play('hover'); this.openLoadoutCard(slot); });
-      card.addEventListener('mouseleave', () => { if (!card.matches(':focus')) this.closeLoadoutCard(); });
-      card.addEventListener('focus', () => this.openLoadoutCard(slot));
-      /* A re-render detaches the focused card; a blur from a node that is no
-         longer in the document must not close the card that replaced it. */
-      card.addEventListener('blur', () => {
-        if (card.isConnected && !card.matches(':hover')) this.closeLoadoutCard();
-      });
-      /* Touch has no hover, so the FIRST tap opens the card and only the
-         second commits the pick -- otherwise a phone player selects a tower
-         whose detail they were given no way to read. */
-      card.addEventListener('pointerdown', ev => {
-        const coarse = ev.pointerType === 'touch' || ev.pointerType === 'pen';
-        this._loTapPending = (coarse && this._loOpen !== slot) ? slot : null;
-        if (coarse) this.openLoadoutCard(slot);
-      });
-      card.addEventListener('click', ev => {
-        if (this._loTapPending === slot) { this._loTapPending = null; return; }
-        if (!Meta.isTowerUnlocked(id)) { Sound.play('denied'); return; }
-        const i = this.sel.loadout.indexOf(id);
-        if (i >= 0) this.sel.loadout.splice(i, 1);
-        else if (this.sel.loadout.length < this.loadoutTarget()) this.sel.loadout.push(id);
-        else { Sound.play('denied'); return; }
-        /* The whole grid is rebuilt below. Without this the card under the
-           cursor sits collapsed until the pointer happens to move again. */
-        this._loKeep = id;
-        /* A KEYBOARD pick has the same problem and worse: the re-render
-           destroys the focused button, focus falls back to the document body,
-           and the next Tab restarts at the top of the page -- so picking five
-           towers by keyboard means walking the whole grid five times. Only a
-           keyboard pick asks for focus back; a mouse user would just be given
-           a focus ring they never asked for. */
-        this._loRefocus = ev.detail === CLICK_DETAIL_KEYBOARD;
-        Sound.play('click'); this.renderLoadout();
-      });
+  /* ================================= FOCUS AND THE DETAIL COLUMNS ===== */
+
+  /** What each detail column is currently explaining. */
+  loFocus() { return this._loFocus || (this._loFocus = { tower: null, unit: null }); },
+
+  /**
+   * Point one detail column at one card. Hover, keyboard focus, the chosen
+   * strip and the first tap of a touch all arrive HERE, so the four input
+   * routes cannot drift into showing four different things.
+   */
+  focusDetail(kind, id, force) {
+    const f = this.loFocus();
+    if (f[kind] === id && !force) return;
+    f[kind] = id;
+    const grid = $(kind === 'unit' ? '#unit-grid' : '#loadout-grid');
+    if (grid) $$('.lo-card', grid).forEach(c =>
+      c.classList.toggle('focus', c.dataset.lo === id || c.dataset.unit === id));
+    if (kind === 'unit') this.renderUnitDetail(); else this.renderTowerDetail();
+  },
+
+  /* ========================================== THE NARROW DRAWER ======= */
+
+  /** True while the viewport cannot hold four columns. */
+  loNarrow() {
+    return typeof window.matchMedia === 'function' &&
+           window.matchMedia('(max-width: ' + (LO_FOUR_COL_MIN_PX - 1) + 'px)').matches;
+  },
+  /**
+   * Each detail column becomes a drawer entering from the side its column
+   * lives on, so the motion says WHICH picker it belongs to rather than
+   * merely appearing. Returns false on a wide viewport, where both panels are
+   * already on screen and there is nothing to open.
+   */
+  openLoadoutDrawer(kind) {
+    const cols = $('#lo-columns');
+    if (!cols || !this.loNarrow()) return false;
+    cols.classList.add('drawer-open');
+    cols.classList.toggle('drawer-unit', kind === 'unit');
+    cols.classList.toggle('drawer-tower', kind === 'tower');
+    this._loDrawer = kind;
+    this.syncLoadoutLayout();
+    const x = $((kind === 'unit' ? '#unit-detail' : '#tower-detail') + ' .lo-drawer-x');
+    if (x && x.focus) x.focus();
+    return true;
+  },
+  closeLoadoutDrawer() {
+    const cols = $('#lo-columns');
+    if (cols) cols.classList.remove('drawer-open', 'drawer-unit', 'drawer-tower');
+    const kind = this._loDrawer;
+    if (!kind) return;
+    this._loDrawer = null;
+    this.syncLoadoutLayout();
+    /* Focus was inside a panel that is now off-canvas and inert. Handed back
+       to the control that opened it, or the next Tab restarts at the top of
+       the page -- the same failure the keyboard pick already had to fix.
+       Skipped when the screen itself has gone away (offsetParent is null
+       under .hidden), because that call comes from UI.show. */
+    const b = $((kind === 'unit' ? '#unit-column' : '#tower-column') + ' .lo-detail-open');
+    if (b && !b.hidden && cols && cols.offsetParent && b.focus) b.focus();
+  },
+  /**
+   * Reconcile the layout with the viewport. An off-canvas drawer is still in
+   * the accessibility tree, so without `inert` a screen reader walks a closed
+   * drawer as ordinary page content sitting between the two pickers.
+   */
+  syncLoadoutLayout() {
+    const cols = $('#lo-columns');
+    if (!cols) return;
+    const narrow = this.loNarrow();
+    cols.classList.toggle('narrow', narrow);
+    if (!narrow && this._loDrawer) {
+      this._loDrawer = null;
+      cols.classList.remove('drawer-open', 'drawer-unit', 'drawer-tower');
+    }
+    [['unit', '#unit-detail'], ['tower', '#tower-detail']].forEach(pair => {
+      const p = $(pair[1]);
+      if (!p) return;
+      const shut = narrow && this._loDrawer !== pair[0];
+      if (shut) p.setAttribute('inert', ''); else p.removeAttribute('inert');
+      p.setAttribute('aria-hidden', shut ? 'true' : 'false');
     });
-    const keep = this._loKeep; this._loKeep = '';
-    const refocus = this._loRefocus; this._loRefocus = false;
+    $$('.lo-detail-open', cols).forEach(b => { b.hidden = !narrow; });
+  },
+  /** The header control that reaches the drawer names what it will show, so
+      a narrow player is never asked to open an unlabelled panel. */
+  syncDetailOpeners() {
+    const f = this.loFocus();
+    [['unit', '#unit-column'], ['tower', '#tower-column']].forEach(pair => {
+      const b = $(pair[1] + ' .lo-detail-open');
+      if (!b) return;
+      const id = f[pair[0]];
+      const d = pair[0] === 'unit' ? this.unitDef(id) : (id && TOWER_TYPES[id]);
+      b.innerHTML = '◫ <b>' + (d ? d.name : 'DETAIL') + '</b>';
+      b.setAttribute('aria-label', 'Open ' + (d ? d.name : pair[0]) + ' detail');
+    });
+  },
+
+  /* =============================================== ONE PICKER BINDER == */
+
+  /**
+   * Units and towers are the same decision made twice, so they are the same
+   * component twice: one binder, five input routes -- hover, keyboard focus,
+   * arrow keys, the first tap and the second tap. Two implementations of this
+   * would drift within a session.
+   */
+  bindPickerCards(grid, kind) {
+    if (!grid) return;
+    const attr = kind === 'unit' ? 'unit' : 'lo';
+    $$('.lo-card', grid).forEach(card => {
+      const id = card.dataset[attr];
+      if (!id) return;
+      card.addEventListener('mouseenter', () => { Sound.play('hover'); this.focusDetail(kind, id); });
+      card.addEventListener('focus', () => this.focusDetail(kind, id));
+      /* Touch has no hover, so the FIRST tap only READS the card -- it points
+         the detail column, and opens the drawer when the panel is off-canvas
+         -- and the SECOND commits. Otherwise a phone player picks something
+         whose detail they were given no way to see. UI.tapArm is the same
+         rule the universe map has used since Session 16, and it returns true
+         immediately on a fine pointer, which hovered first. */
+      card.addEventListener('click', ev => {
+        const armed = this.tapArm(card, () => {
+          this.focusDetail(kind, id);
+          this.openLoadoutDrawer(kind);
+        });
+        if (!armed) return;
+        this.focusDetail(kind, id);
+        this.commitPick(kind, id, ev.detail === CLICK_DETAIL_KEYBOARD);
+      });
+      card.addEventListener('keydown', ev => this.pickerKey(ev, grid, kind, card));
+    });
+
+    /* The pick destroyed the button that was focused. A KEYBOARD pick asks
+       for its replacement back; a mouse user would only be handed a focus
+       ring they never asked for. */
+    const keepKey = kind === 'unit' ? '_loKeepUnit' : '_loKeep';
+    const refKey = kind === 'unit' ? '_loRefocusUnit' : '_loRefocus';
+    const keep = this[keepKey]; this[keepKey] = '';
+    const refocus = this[refKey]; this[refKey] = false;
     if (keep) {
-      const slot = grid.querySelector('.lo-slot[data-slot="' + keep + '"]');
-      this.openLoadoutCard(slot);
-      /* The REPLACEMENT for the button the pick destroyed. Focused after the
-         open, so the focus handler finds the card already expanded and does
-         nothing. Plain focus(), not preventScroll: the re-render also reset
-         the grid's scroll, and scrolling the card back under the reader's eye
-         is the other half of not losing their place. */
-      const card = slot && slot.querySelector('.lo-card');
+      this.focusDetail(kind, keep, true);
+      const card = grid.querySelector('.lo-card[data-' + attr + '="' + keep + '"]');
       if (refocus && card && card.focus) card.focus();
     }
   },
 
-  renderLoadout() {
-    /* The grid is about to be replaced wholesale, so a card left open -- and
-       the preview loop drawing into its canvas -- is holding nodes that will
-       not exist a line from now. */
-    this._loOpen = null;
+  /** One commit path for both columns, so "denied" means the same thing in
+      both and neither can start toggling by a different rule. */
+  commitPick(kind, id, byKeyboard) {
+    if (kind === 'unit') {
+      if (!this.unitToggle(id)) { Sound.play('denied'); return; }
+      Sound.play('click');
+      this._loKeepUnit = id; this._loRefocusUnit = !!byKeyboard;
+      this.renderUnits();
+      return;
+    }
+    if (!Meta.isTowerUnlocked(id)) { Sound.play('denied'); return; }
+    const i = this.sel.loadout.indexOf(id);
+    if (i >= 0) this.sel.loadout.splice(i, 1);
+    else if (this.sel.loadout.length < this.loadoutTarget()) this.sel.loadout.push(id);
+    else { Sound.play('denied'); return; }
+    this._loKeep = id; this._loRefocus = !!byKeyboard;
+    Sound.play('click');
+    this.renderLoadout();
+  },
+
+  /** Track count MEASURED off the laid-out grid, never assumed: both pickers
+      are auto-fill and the count changes with the viewport. */
+  pickerCols(grid) {
+    const slots = $$('.lo-slot', grid);
+    if (!slots.length) return 1;
+    const top = slots[0].offsetTop;
+    let n = 0;
+    for (const s of slots) { if (s.offsetTop !== top) break; n++; }
+    return Math.max(1, n);
+  },
+
+  /**
+   * Arrows walk a picker, and running off the INNER edge crosses into the
+   * sibling picker. The layout claims these two columns are a pair; this is
+   * that claim made true for a keyboard as well as for an eye.
+   */
+  pickerKey(ev, grid, kind, card) {
+    const k = ev.key;
+    if (k !== 'ArrowLeft' && k !== 'ArrowRight' && k !== 'ArrowUp' && k !== 'ArrowDown') return;
+    const cards = $$('.lo-card', grid);
+    const i = cards.indexOf(card);
+    if (i < 0) return;
+    ev.preventDefault();
+    const cols = this.pickerCols(grid);
+    const j = i + (k === 'ArrowRight' ? 1 : k === 'ArrowLeft' ? -1 : k === 'ArrowDown' ? cols : -cols);
+    if (j >= 0 && j < cards.length) { cards[j].focus(); return; }
+    /* UNITS sit left of TOWERS, so exactly two of the eight edge cases are a
+       crossing and the other six are the ends of the list. */
+    const cross = (kind === 'unit' && k === 'ArrowRight') ? $('#loadout-grid')
+                : (kind === 'tower' && k === 'ArrowLeft') ? $('#unit-grid') : null;
+    if (!cross) return;
+    const sib = $$('.lo-card', cross);
+    if (sib.length) (kind === 'unit' ? sib[0] : sib[sib.length - 1]).focus();
+  },
+
+  /* Retained names. UI.show closes the screen through closeLoadoutCard, and
+     what it used to close -- an expansion inside the card -- is now the
+     detail column and its drawer. */
+  openLoadoutCard(slot) {
+    if (!slot) return;
+    const uid = slot.dataset.uslot;
+    const id = slot.dataset.slot || uid;
+    if (id) this.focusDetail(uid ? 'unit' : 'tower', id, true);
+  },
+  closeLoadoutCard() {
+    this.closeLoadoutDrawer();
+    /* Returns on its first line unless a preview is actually running, which
+       is what makes it free to call on every screen change. */
+    if (!this._loPreviewOn) return;
+    this._loPreviewOn = false;
     this.stopTowerPreview();
+  },
+  bindLoadoutCards() { this.bindPickerCards($('#loadout-grid'), 'tower'); },
+
+  /* ============================================= THE CHOSEN STRIP ===== */
+
+  /**
+   * What you have taken so far, in order, in the header of the column that
+   * took it. The empty slots say how many more you may take without a
+   * sentence saying it, and both columns get the same strip because both
+   * columns are the same kind of promise.
+   */
+  chosenStripHTML(kind, picks, cap) {
+    const out = [];
+    for (let i = 0; i < cap; i++) {
+      const id = picks[i];
+      if (!id) { out.push('<span class="lo-chip empty" aria-hidden="true"></span>'); continue; }
+      const d = kind === 'unit' ? (this.unitDef(id) || {}) : (TOWER_TYPES[id] || {});
+      out.push('<button class="lo-chip" type="button" data-chosen="' + kind + ':' + id +
+               '" style="--tc:' + d.color + '" title="' + d.name + '"><i>' + (i + 1) +
+               '</i><b>' + d.name + '</b></button>');
+    }
+    return out.join('');
+  },
+  bindChosenStrip(strip) {
+    $$('[data-chosen]', strip).forEach(b => {
+      const parts = b.dataset.chosen.split(':');
+      b.addEventListener('mouseenter', () => this.focusDetail(parts[0], parts[1]));
+      b.addEventListener('focus', () => this.focusDetail(parts[0], parts[1]));
+      b.addEventListener('click', () => {
+        Sound.play('click');
+        this.focusDetail(parts[0], parts[1], true);
+        this.openLoadoutDrawer(parts[0]);
+      });
+    });
+  },
+
+  /* ============================================ THE DETAIL COLUMNS ==== */
+
+  /** Eyebrow plus the drawer's close control. One helper, so the two panels
+      cannot grow different chrome. */
+  detailChromeHTML(kind, eyebrow) {
+    return '<div class="lo-d-top"><span class="lo-d-eyebrow">' +
+      (kind === 'unit' ? 'DETACHMENT' : 'ARSENAL') + ' · ' + eyebrow +
+      '</span><button class="lo-drawer-x icon-btn sm" type="button" aria-label="Close detail">✕</button></div>';
+  },
+  detailEmptyHTML(kind, msg) {
+    return this.detailChromeHTML(kind, 'NOTHING SELECTED') + '<p class="hint">' + msg + '</p>';
+  },
+  bindDetailChrome(panel) {
+    const x = panel.querySelector('.lo-drawer-x');
+    if (x) x.addEventListener('click', () => { Sound.play('click'); this.closeLoadoutDrawer(); });
+    this.bindChipTips(panel);
+  },
+
+  /**
+   * THE RIGHT COLUMN -- the tower the towers column is currently offering.
+   * Every statistic comes from towerStatRows, the same formatter the shop
+   * tooltip prints from, so the two panels cannot drift apart.
+   */
+  renderTowerDetail() {
+    const panel = $('#tower-detail');
+    if (!panel) return;
+    const id = this.loFocus().tower;
+    const t = id && TOWER_TYPES[id];
+    if (!t) {
+      panel.innerHTML = this.detailEmptyHTML('tower', 'Hover or focus a tower to read it.');
+      this.bindDetailChrome(panel);
+      return;
+    }
+    const o = originOf(id), el = ELEMENTS[t.element];
+    const at = this.sel.loadout.indexOf(id);
+    panel.innerHTML = this.detailChromeHTML('tower', o.name) + `
+      <div class="lo-d-head" style="--tc:${t.color}; --og:${o.color}">
+        <span class="lo-d-fig">${this.towerIconHTML(id, 46)}</span>
+        <span class="lo-d-name"><b>${t.name}</b><span class="lo-role">${t.role}</span></span>
+        <span class="lo-d-cost">◈${t.cost}</span>
+      </div>
+      <div class="lo-chips">
+        <span class="elem-badge" style="--el:${el.color}">${el.icon} ${el.name}</span>
+        ${this.originBadge(id)}
+        ${at >= 0 ? `<span class="lo-d-in">IN LOADOUT · ${at + 1}</span>` : ''}
+      </div>
+      <canvas class="lo-stage" data-stage="${id}" width="${LO_STAGE_W}" height="${LO_STAGE_H}"></canvas>
+      <p class="lo-desc">${t.desc}</p>
+      <div class="lo-stats">${this.towerStatRows(id).map(r =>
+        `<i><span>${r[0]}</span><b>${r[1]}</b></i>`).join('')}</div>
+      <p class="lo-d-rule" style="--og:${o.color}"><b>${o.icon} ${o.rule}</b>${o.desc}</p>
+      <div class="lo-d-sep"><span>TALENTS</span></div>
+      <div id="tower-talents"></div>`;
+    this.paintTowerIcons(panel);
+    this.renderTowerTalents();
+    this.bindDetailChrome(panel);
+    const cv = panel.querySelector('.lo-stage');
+    if (cv) { this._loPreviewOn = true; this.runTowerPreview(cv, id); }
+    this.syncDetailOpeners();
+  },
+
+  /**
+   * THE LEFT COLUMN -- the unit the units column is currently offering.
+   *
+   * Pack size, price and wave income come from unitTier, which is
+   * musterTierFor: the same derivation the muster bar, the spawn and the
+   * rival brain read. Health, speed, armour and the leak cost are printed off
+   * the definition unscaled and labelled as base, because wave scaling is a
+   * battle fact and this screen is not in one.
+   */
+  renderUnitDetail() {
+    const panel = $('#unit-detail');
+    if (!panel) return;
+    const id = this.loFocus().unit;
+    const def = id && this.unitDef(id);
+    if (!def) {
+      panel.innerHTML = this.detailEmptyHTML('unit', 'Hover or focus a unit to read it.');
+      this.bindDetailChrome(panel);
+      return;
+    }
+    const host = this.unitHost(id);
+    const tier = this.unitTier(id);
+    const trait = this.unitTrait(id);
+    const doc = this.unitDoctrine(id);
+    const at = this.unitPicked().indexOf(id);
+    const owned = this.unitUnlocked().indexOf(id) >= 0;
+    const homes = this.unitHomes(id);
+    const gate = this.unitFactionLock(id);
+    const cost = this.unitSoulCost(id);
+    const lives = def.lives || 1;
+    const rows = [
+      ['Base health', formatNum(Math.round(def.hp))],
+      ['Speed', (def.speed || 0).toFixed(2)],
+      ['Armour', def.armor || 0],
+      ['Costs on a leak', lives + (lives === 1 ? ' life' : ' lives')]
+    ];
+    if (tier) rows.push(
+      ['Pack', tier.count + ' × ' + def.name],
+      ['Price', Math.round(tier.cost * 100) + '% of a wave reward'],
+      ['Wave income', '+' + Math.round(tier.incomePct * 100) + '% per muster']);
+    const els = (obj, sign) => obj
+      ? Object.keys(obj).map(k => `<span class="ei-el" style="--el:${ELEMENTS[k].color}">${
+          ELEMENTS[k].icon} ${ELEMENTS[k].name} ${sign}${Math.round(obj[k] * 100)}%</span>`).join('')
+      : '';
+    const marks = els(def.elemWeak, '+') + els(def.elemResist, '−');
+    panel.innerHTML = this.detailChromeHTML('unit', host.name) + `
+      <div class="lo-d-head" style="--tc:${def.color}; --og:${host.color}">
+        <span class="lo-d-fig">${this.unitIconHTML(id, 46)}</span>
+        <span class="lo-d-name"><b>${def.name}</b><span class="lo-role">${host.short || host.name}</span></span>
+        ${tier ? `<span class="lo-d-cost">${tier.icon} ×${tier.count}</span>` : ''}
+      </div>
+      <div class="lo-chips">
+        <span class="lo-d-trait" style="--tc:${def.color}">${trait.label}</span>
+        ${at >= 0 ? `<span class="lo-d-in">IN DETACHMENT · ${at + 1}</span>` : ''}
+      </div>
+      <canvas class="lo-stage" data-ustage="${id}" width="${LO_STAGE_W}" height="${LO_STAGE_H}"></canvas>
+      <p class="lo-desc">${def.desc || ''}</p>
+      <div class="lo-stats">${rows.map(r =>
+        `<i><span>${r[0]}</span><b>${r[1]}</b></i>`).join('')}</div>
+      ${marks ? `<div class="lo-chips">${marks}</div>` : ''}
+      ${doc ? `<p class="lo-d-rule" style="--og:${doc.color || host.color}"><b>${
+          host.icon} ${doc.name}</b>${doc.desc}</p>` : ''}
+      ${owned ? '' : `<p class="lo-d-gate">${gate
+          ? 'A <b>' + gate.name + '</b> soldier. A campaign rescues only its own power’s units and neutral machines' +
+            (cost != null ? ' — bought outright with <b>◉ ' + cost + '</b> it is install-wide, and any commander may field it.' : '.')
+          : 'Not yet rescued. ' + (homes
+              ? 'Conquer (★★★) a world fought on <b>' + homes + '</b> to bring it home.'
+              : 'No world in this galaxy garrisons it.')}</p>`}
+      ${this.unitTalents(id).length
+        ? '<div class="lo-d-sep"><span>TALENTS</span></div><div id="unit-talents"></div>'
+        : ''}`;
+    this.paintUnitIcons(panel);
+    this.renderUnitTalents();
+    this.bindDetailChrome(panel);
+    const cv = panel.querySelector('.lo-stage');
+    if (cv) { this._loPreviewOn = true; this.runUnitPreview(cv, id); }
+    this.syncDetailOpeners();
+  },
+
+  /* ================================================ ONE TALENT GRID == */
+
+  /**
+   * The talent grid for ANY definition carrying `talents` -- towers today,
+   * units when 19.13 lands. The Meta calls are the tower tree's own, so a
+   * unit tree inherits the pick-one-per-row rule, the mastery gate and the
+   * stock-build merge rather than growing a parallel system beside them.
+   *
+   * If the allocator has not learned about a definition yet the nodes still
+   * render, read-only: an empty section is how a shipped feature comes to
+   * read as missing.
+   */
+  talentGridHTML(id, def) {
+    const nodes = Array.isArray(def.talents) ? def.talents : [];
+    if (!nodes.length) return '';
+    let live = false;
+    try {
+      live = typeof Meta.talentLockReason === 'function' &&
+             Meta.talentLockReason(id, nodes[0].id) !== undefined;
+    } catch (e) { live = false; }
+    const rowIds = [...new Set(nodes.map(t => t.row))].sort();
+    return rowIds.map(row => {
+      const cols = [...new Set(nodes.filter(t => t.row === row).map(t => t.col))].sort();
+      const cells = cols.map(col => {
+        const n = nodes.find(t => t.row === row && t.col === col);
+        if (!n) return '<div class="tt-cell empty"></div>';
+        const owned = live && Meta.hasTalent(id, n.id);
+        const reason = live ? Meta.talentLockReason(id, n.id) : 'not allocatable yet';
+        const can = live && reason === null;
+        const mReq = Meta.talentMasteryReq(n);
+        const mLock = live && Meta.masteryOf(id) < mReq;
+        return `<button class="tal-node sm ${owned ? 'owned' : can ? 'can' : 'locked'}"
+                  data-talent="${id}:${n.id}" ${owned || !can ? 'disabled' : ''} style="--cc:${def.color}"
+                  title="${n.desc}${owned ? '' : reason ? ' — ' + reason : ''}">
+            <span class="tal-rank">${owned ? '1/1' : mLock ? 'M' + mReq : '0/1'}</span>
+            <span class="tal-tname">${mLock && !owned ? '🔒 ' : ''}${n.name}</span>
+            <span class="tal-tdesc">${n.desc}</span>
+          </button>`;
+      }).join('');
+      /* A row needs a point invested in the row directly above it. */
+      const gated = live && row > 0 &&
+        !nodes.filter(t => t.row === row - 1).some(t => Meta.hasTalent(id, t.id));
+      return `<div class="tt-row ${gated ? 'row-locked' : ''}" style="--tt-cols:${cols.length}">${cells}</div>`;
+    }).join('');
+  },
+
+  /** Head row and grid together. Every Meta reader is guarded because the
+      unit half of this only became allocatable when the units model landed;
+      a tree that throws is worse than one that renders read-only. */
+  talentTreeHTML(id, def) {
+    const grid = this.talentGridHTML(id, def);
+    if (!grid) return '';
+    let spent = 0, stock = false, lvl = 0;
+    try { spent = Meta.talentSpent(id); } catch (e) {}
+    try { stock = Meta.usingDefaults(id); } catch (e) {}
+    try { lvl = Meta.masteryProgress(id).level; } catch (e) {}
+    return `<div class="tt-tree" style="--tc:${def.color}">
+      <div class="tt-head-row">
+        <b>${def.name}</b>
+        <span class="tt-mastery" data-tt="MASTERY ${lvl}|Earned by fighting with this, never bought. Higher mastery unlocks the deeper rows.">M${lvl}</span>
+        ${stock ? '<span class="tt-stock">stock build</span>' : ''}
+        <span class="tt-pts ${spent === TALENT_POINTS ? 'full' : ''}">${spent}/${TALENT_POINTS}</span>
+        <button class="icon-btn sm" data-clear-talent="${id}" title="Clear">↺</button>
+      </div>
+      ${grid}
+    </div>`;
+  },
+  /** `after` is what re-renders. A UNIT talent changes its pack size through
+      unitFieldMods, which musterTierFor folds -- so a unit tree must redraw
+      the numbers beside it, not just itself, or the panel starts quoting a
+      pack the engine will not march. */
+  bindTalents(wrap, after) {
+    this.bindChipTips(wrap);
+    $$('[data-talent]', wrap).forEach(b => b.addEventListener('click', () => {
+      const parts = b.dataset.talent.split(':');
+      if (Meta.takeTalent(parts[0], parts[1])) { Sound.play('tech'); after(); }
+      else Sound.play('denied');
+    }));
+    $$('[data-clear-talent]', wrap).forEach(b => b.addEventListener('click', () => {
+      Meta.clearTalents(b.dataset.clearTalent); Sound.play('sell'); after();
+    }));
+  },
+
+
+  /**
+   * THE TOWERS COLUMN, plus everything the screen shares.
+   *
+   * The grid is the picker only. Statistics, description, the firing preview
+   * and the talent tree all moved to the detail column beside it, which is
+   * what lets the two pickers hold one card shape and one fixed row height --
+   * the thing that makes them read as a pair rather than as two lists that
+   * happen to be adjacent.
+   */
+  renderLoadout() {
+    /* Both grids and both panels are about to be replaced wholesale, so a
+       preview drawing into a canvas any of them owns is holding a node that
+       will not exist a line from now. */
+    this.stopTowerPreview();
+    this._loPreviewOn = false;
     /* A stale selection (another profile, an earlier campaign, a tower no
        longer owned) must never wedge the deploy button. */
     this.sel.loadout = this.sel.loadout.filter(id => Meta.isTowerUnlocked(id));
     const sel = this.sel.loadout;
-    /* Only what you actually own. Rendering the locked two-thirds of the roster
-       filled the grid with cards whose lock badge collided with their own title,
-       and offered nothing but a wall of things you cannot pick. What you can
-       unlock belongs in the Soul Shop, which is where you spend souls. */
+    /* Only what you actually own. What you can unlock belongs in the Soul
+       Shop, which is where souls are spent. */
     const owned = TOWER_ORDER.filter(id => Meta.isTowerUnlocked(id));
     const lockedCount = TOWER_ORDER.length - owned.length;
     /* Grouped by TECH ORIGIN so 39 towers read as five arsenals instead of
-       one list. Order, colour, glyph and rule all come from factions.js --
-       an origin you own nothing from prints no heading at all. */
+       one list -- the same shape the units column uses for allegiance. */
     const byOrigin = {};
     for (const id of owned) {
       const oid = originOf(id).id;
       (byOrigin[oid] = byOrigin[oid] || []).push(id);
     }
     const grid = $('#loadout-grid');
-    /* The three geometry numbers live in config.js and reach the CSS from
-       here, so the height the layout reserves and the height the open/close
-       maths measures against are the same number by construction. (The word
+    /* The row height reaches the CSS from here, so the height the grid
+       reserves and the height the card is pinned to are one number. (The word
        for a linked .css file is banned in these sources: build.js aborts the
        bundle if it survives into the output.) */
     grid.style.setProperty('--lo-rest-h', LO_CARD_REST_H + 'px');
-    grid.style.setProperty('--lo-expand', LO_CARD_EXPAND_MS + 'ms');
     grid.innerHTML = ORIGIN_ORDER.filter(oid => byOrigin[oid]).map(oid => {
       const o = TOWER_ORIGINS[oid], n = byOrigin[oid].length;
       return `<div class="lo-family" style="--og:${o.color}">
@@ -1927,22 +2503,38 @@ const UI = {
          </div>`
       : '');
     this.paintTowerIcons(grid);
-    /* The note used to name a screen ("on the title screen") and the shop had
-       already moved twice. A control that OPENS the overlay cannot go stale,
-       and the grid redraws so a purchase appears immediately. */
+    /* A control that OPENS the overlay cannot go stale the way copy naming a
+       screen did, and the grid redraws so a purchase appears immediately. */
     const loSouls = $('#btn-loadout-souls');
     if (loSouls) loSouls.addEventListener('click', () => this.openSoulShop(() => this.renderLoadout()));
-    this.bindLoadoutCards();
+
+    /* The detail column must survive a re-render pointed at something that
+       still exists, and a column pointed at nothing explains the first thing
+       a player would read anyway. */
+    const f = this.loFocus();
+    if (owned.indexOf(f.tower) < 0) f.tower = sel[0] || owned[0] || null;
+
+    this.bindPickerCards(grid, 'tower');
+
+    const target = this.loadoutTarget();
+    const count = $('#loadout-count');
+    count.textContent = `${sel.length} / ${target}`;
+    count.className = sel.length === target ? 'lo-col-n ready' : 'lo-col-n';
+    const strip = $('#tower-chosen');
+    if (strip) {
+      strip.innerHTML = this.chosenStripHTML('tower', sel, target);
+      this.bindChosenStrip(strip);
+    }
+    $('#btn-deploy').disabled = sel.length !== target;
+
     const unlockedCount = Meta.unlockedTowers().length;
     $('#loadout-unlocked').innerHTML =
       `<span class="chip" data-tt="ARSENAL|You have unlocked ${unlockedCount} of ${TOWER_ORDER.length} towers. Unlock more with souls in the SOUL SHOP — the button below the grid opens it, and the commander screen carries the same one.">▲ ${unlockedCount}/${TOWER_ORDER.length} unlocked</span>` +
       `<span class="chip" data-tt="SOULS|Souls buy three things in the SOUL SHOP: recruit a commander, unlock a commander's second ability, and add a tower to your arsenal. Tower mastery is earned in battle, never bought.">◉ ${Meta.souls()}</span>`;
     this.bindChipTips($('#loadout-unlocked'));
-    $('#loadout-count').textContent = `${sel.length} / ${this.loadoutTarget()}`;
-    $('#loadout-count').className = sel.length === this.loadoutTarget() ? 'lo-count ready' : 'lo-count';
-    $('#btn-deploy').disabled = sel.length !== this.loadoutTarget();
-    this.renderTowerTalents();
-    this.renderMusterLoadout();
+
+    this.renderTowerDetail();
+    this.renderUnits();
 
     /* Warn about the two coverage holes that actually lose games. */
     const hasAir = sel.some(id => !TOWER_TYPES[id].groundOnly);
@@ -1964,8 +2556,7 @@ const UI = {
       if (combo && !pairs.some(p => p.id === combo.id)) pairs.push(combo);
     }
 
-    /* Warnings are only meaningful once something is actually selected -- they
-       used to all fire at 0/5, before the player had picked anything. */
+    /* Warnings are only meaningful once something is actually selected. */
     $('#loadout-warn').innerHTML = !sel.length
       ? '<div class="lo-hint">Pick five towers. Warnings about coverage gaps appear as you build the set.</div>'
       : (warn.length
@@ -1978,125 +2569,179 @@ const UI = {
                 ? '<div class="lo-hint">No elemental reactions — these towers share elements, or their partners are missing. Overlap two DIFFERENT marking elements on the same stretch of lane to trigger one.</div>'
                 : '<div class="lo-hint">Nothing here marks. Kinetic and Radiant deal straight damage and never trigger reactions.</div>'));
     this.bindChipTips($('#loadout-warn'));
+
+    this.bindLoadoutColumns();
   },
 
-  /**
-   * MUSTER DETACHMENT — which saved denizens deploy with you. Unlocked mobs
-   * are picks (up to MUSTER_LOADOUT_SIZE); locked ones are greyed and name
-   * the battlefields whose worlds save them. Every number shown is produced
-   * by musterTierFor, the SAME derivation the battle uses — a preview that
-   * disagrees with the engine is the bug class this project shipped 3 times.
-   */
-  renderMusterLoadout() {
-    const wrap = $('#muster-loadout');
-    if (!wrap) return;
-    const unlocked = Meta.musterUnlocked();
-    const picked = Meta.musterLoadout();
-    /* A locked entry is only shown when some world can actually save it. */
-    const savable = [...new Set(MAPS.flatMap(m => m.denizens || []))]
-      .filter(id => musterSendable(id) && !unlocked.includes(id));
-    const byHp = (a, b) => ENEMY_TYPES[a].hp - ENEMY_TYPES[b].hp;
-    unlocked.sort(byHp); savable.sort(byHp);
-    const homes = id => MAPS.filter(m => (m.denizens || []).includes(id)).map(m => m.name).join(' or ');
-
-    const card = (id, locked) => {
-      const def = ENEMY_TYPES[id];
-      const tier = musterTierFor(id);
-      const on = picked.includes(id);
-      if (locked) {
-        return `<div class="mlo-card lockd" data-tt="${def.name} — LOCKED|Conquer (★★★) a world fought on ${homes(id)} to save its denizens for your own musters.">
-          <span class="mlo-dot" style="--tc:${def.color}"></span>
-          <span class="mlo-name">${def.name}</span><em>save ${homes(id)} worlds</em></div>`;
-      }
-      return `<button class="mlo-card ${on ? 'on' : ''}" data-mlo="${id}"
-        data-tt="${def.name} — ${tier.name}|Sends ${tier.count} at a time for roughly ${Math.round(tier.cost * 100)}% of a wave reward, adding +${Math.round(tier.incomePct * 100)}% wave income per muster.">
-        ${on ? `<span class="mlo-num">${picked.indexOf(id) + 1}</span>` : ''}
-        <span class="mlo-dot" style="--tc:${def.color}"></span>
-        <span class="mlo-name">${def.name}</span>
-        <em>${tier.count}× · +${Math.round(tier.incomePct * 100)}% · ${tier.name}</em>
-      </button>`;
-    };
-    wrap.innerHTML = `<div class="mlo-head"><b>MUSTER DETACHMENT</b>
-        <span>${picked.length} / ${Math.min(MUSTER_LOADOUT_SIZE, unlocked.length)} picked</span>
-        <em>saved denizens march for you — conquer worlds to save more</em>
-      </div>
-      <div class="mlo-grid">${unlocked.map(id => card(id, false)).join('')}${savable.map(id => card(id, true)).join('')}</div>`;
-    wrap.querySelectorAll('[data-mlo]').forEach(b => {
-      b.addEventListener('click', () => {
-        if (!Meta.toggleMuster(b.dataset.mlo)) { Sound.play('denied'); return; }
-        Sound.play('click');
-        this.renderMusterLoadout();
+  /** One-time listeners for the four-column frame, then a layout reconcile.
+      Bound on the container rather than per card, so a re-render of either
+      grid cannot multiply them. */
+  bindLoadoutColumns() {
+    const cols = $('#lo-columns');
+    if (!cols) return;
+    if (!cols._loBound) {
+      cols._loBound = true;
+      cols.addEventListener('keydown', ev => {
+        if (ev.key === 'Escape' && this._loDrawer) { ev.stopPropagation(); this.closeLoadoutDrawer(); }
       });
-      b.addEventListener('mouseenter', () => Sound.play('hover'));
-    });
-    this.bindChipTips(wrap);
+      /* The scrim is this element's own ::after, so a click that lands on the
+         scrim reports the container as its target and nothing else does. */
+      cols.addEventListener('click', ev => {
+        if (ev.target === cols && this._loDrawer) this.closeLoadoutDrawer();
+      });
+      $$('.lo-detail-open', cols).forEach(b => b.addEventListener('click', () => {
+        Sound.play('click'); this.openLoadoutDrawer(b.dataset.opens);
+      }));
+      window.addEventListener('resize', () => {
+        const scr = $('#screen-loadout');
+        if (scr && !scr.classList.contains('hidden')) this.syncLoadoutLayout();
+      });
+    }
+    this.syncDetailOpeners();
+    this.syncLoadoutLayout();
   },
 
   /**
-   * A miniature talent tree per selected tower, prepared before the match.
-   * Two points each, and the lower row needs a point in the upper row first.
+   * THE UNITS COLUMN -- your detachment, picked exactly the way towers are.
+   *
+   * Same card, same slot height, same grid rule, same binder: this IS the
+   * towers column with a different roster in it, which is why it cannot
+   * quietly become a different component. Grouped by ALLEGIANCE the way the
+   * towers column groups by tech origin, so both columns read as families of
+   * things rather than as one list and one table.
+   *
+   * Every number printed here comes from unitTier -- musterTierFor -- which
+   * is the same derivation the muster bar, the spawn and the rival brain use.
+   */
+  renderUnits() {
+    const grid = $('#unit-grid');
+    if (!grid) return;
+    const unlocked = this.unitUnlocked();
+    const rescuable = this.unitRescuable();
+    const gated = this.unitGated();
+    const picked = this.unitPicked();
+    const cap = Math.min(this.unitCap(), Math.max(1, unlocked.length));
+    const byHp = (a, b) => (this.unitDef(a).hp - this.unitDef(b).hp);
+    unlocked.sort(byHp); rescuable.sort(byHp);
+
+    const groups = {};
+    for (const id of unlocked.concat(rescuable)) {
+      const k = this.unitHost(id).id;
+      (groups[k] = groups[k] || []).push(id);
+    }
+    /* Fixed order, machines first: the day-one unlock is a machine, and an
+       order that shuffled with your faction would move the card under the
+       cursor between visits. */
+    const order = [MACHINE_HOST.id].concat(typeof FACTION_ORDER !== 'undefined' ? FACTION_ORDER : []);
+    grid.style.setProperty('--lo-rest-h', LO_CARD_REST_H + 'px');
+    grid.innerHTML = order.filter(k => groups[k]).map(k => {
+      const h = this.unitHost(groups[k][0]);
+      const n = groups[k].length;
+      return `<div class="lo-family" style="--og:${h.color}">
+          <span class="lo-fam-mark">${h.icon}</span><b>${h.name}</b>
+          <span class="lo-fam-rule">${k === MACHINE_HOST.id ? 'NEUTRAL MACHINES' : 'SOLDIERS OF THIS POWER'}</span>
+          <span class="lo-fam-n">${n} ${n === 1 ? 'unit' : 'units'}</span>
+        </div>` + groups[k].map(id =>
+          this.unitCardHTML(id, picked, unlocked.indexOf(id) >= 0)).join('');
+    }).join('') + (gated.length
+      ? `<div class="lo-locked-note">
+           <b>${gated.length} ${gated.length === 1 ? 'unit belongs' : 'units belong'} to other powers</b>
+           <p>A campaign rescues only its own power&rsquo;s soldiers and neutral machines.
+              A unit bought outright with souls is install-wide &mdash; any commander may field it.</p>
+           <button class="btn" id="btn-units-souls">&#9673; SOUL SHOP</button>
+         </div>`
+      : '');
+    this.paintUnitIcons(grid);
+    const unSouls = $('#btn-units-souls');
+    if (unSouls) unSouls.addEventListener('click', () => this.openSoulShop(() => this.renderLoadout()));
+
+    const f = this.loFocus();
+    const all = unlocked.concat(rescuable);
+    if (all.indexOf(f.unit) < 0) f.unit = picked[0] || unlocked[0] || all[0] || null;
+
+    this.bindPickerCards(grid, 'unit');
+
+    const count = $('#unit-count');
+    if (count) {
+      count.textContent = `${picked.length} / ${cap}`;
+      count.className = picked.length === cap ? 'lo-col-n ready' : 'lo-col-n';
+    }
+    const strip = $('#unit-chosen');
+    if (strip) {
+      strip.innerHTML = this.chosenStripHTML('unit', picked, cap);
+      this.bindChosenStrip(strip);
+    }
+    this.renderUnitDetail();
+  },
+
+  /* The old name. UI.renderLoadout and the screen teardown both reached for
+     it, and a detachment IS the muster loadout -- one renderer, two names, so
+     nothing has to be renamed in a file this patch does not own. */
+  renderMusterLoadout() { this.renderUnits(); },
+
+  /**
+   * One unit card. Deliberately the SAME element tree as loadoutCardHTML --
+   * .lo-slot > .lo-card > .lo-rest > (.lo-figure + .lo-id) -- so the two
+   * pickers are styled by one rule and cannot be pulled apart by a later
+   * edit to either one.
+   */
+  unitCardHTML(id, picked, owned) {
+    const def = this.unitDef(id);
+    const h = this.unitHost(id);
+    const tier = this.unitTier(id);
+    const idx = picked.indexOf(id);
+    const homes = this.unitHomes(id);
+    return `<div class="lo-slot" data-uslot="${id}">
+      <button class="lo-card ${idx >= 0 ? 'on' : ''} ${owned ? '' : 'locked'}" data-unit="${id}"
+              style="--tc:${def.color}; --cc:${h.color}"
+              aria-pressed="${idx >= 0 ? 'true' : 'false'}"${owned ? '' : ' aria-disabled="true"'}>
+        <span class="lo-rest">
+          <span class="lo-figure">${this.unitIconHTML(id, 40)}${
+            idx >= 0 ? `<span class="lo-num">${idx + 1}</span>` : ''}</span>
+          <span class="lo-id">
+            <span class="lo-top"><b>${def.name}</b></span>
+            <span class="lo-meta"><span class="lo-og" style="--og:${h.color}">${
+              h.icon} ${h.short || h.name}</span><em>${owned
+                ? (tier ? `<i class="lo-el" style="--el:${def.color}">${tier.icon}</i>×${tier.count}` : '')
+                : '✦ ' + (homes ? homes.split(' or ')[0] : 'unclaimed')}</em></span>
+          </span>
+        </span>
+      </button>
+    </div>`;
+  },
+
+  /**
+   * The FOCUSED tower's tree, inside the detail column.
+   *
+   * Scoped to one tower now that there is a column to put it in: five stacked
+   * trees was the old screen's answer to having nowhere else for them, and it
+   * buried the tower a player was actually reading under four they were not.
+   * The grid itself is talentGridHTML, shared with units.
    */
   renderTowerTalents() {
-    const sel = this.sel.loadout;
     const wrap = $('#tower-talents');
-    if (!sel.length) {
-      wrap.innerHTML = '<p class="hint">Select towers above to prepare their talents.</p>';
-      return;
-    }
-    wrap.innerHTML = sel.map(id => {
-      const def = TOWER_TYPES[id];
-      const spent = Meta.talentSpent(id);
-      /* Render every row the tower actually defines, not a fixed two. */
-      const rowIds = [...new Set(def.talents.map(t => t.row))].sort();
-      const rows = rowIds.map(row => {
-        const cols = [...new Set(def.talents.filter(t => t.row === row).map(t => t.col))].sort();
-        const cells = cols.map(col => {
-          const n = def.talents.find(t => t.row === row && t.col === col);
-          if (!n) return '<div class="tt-cell empty"></div>';
-          const owned = Meta.hasTalent(id, n.id);
-          const reason = Meta.talentLockReason(id, n.id);
-          const can = reason === null;
-          const mReq = Meta.talentMasteryReq(n);
-          const mLock = Meta.masteryOf(id) < mReq;
-          return `<button class="tal-node sm ${owned ? 'owned' : can ? 'can' : 'locked'}"
-                    data-talent="${id}:${n.id}" ${owned || !can ? 'disabled' : ''} style="--cc:${def.color}"
-                    title="${n.desc}${owned ? '' : reason ? ' — ' + reason : ''}">
-              <span class="tal-rank">${owned ? '1/1' : mLock ? 'M' + mReq : '0/1'}</span>
-              <span class="tal-tname">${mLock && !owned ? '🔒 ' : ''}${n.name}</span>
-              <span class="tal-tdesc">${n.desc}</span>
-            </button>`;
-        }).join('');
-        /* A row needs a point invested in the row directly above it. */
-        const gated = row > 0 && !def.talents.filter(t => t.row === row - 1).some(t => Meta.hasTalent(id, t.id));
-        /* The grid follows the ROW. A hard two columns orphaned RAMPART's
-           third middle-row talent onto a line of its own, half-width and
-           adrift from the pair it belongs to. */
-        return `<div class="tt-row ${gated ? 'row-locked' : ''}" style="--tt-cols:${cols.length}">${cells}</div>`;
-      }).join('');
-      const stock = Meta.usingDefaults(id);
-      const mp = Meta.masteryProgress(id);
-      return `<div class="tt-tree" style="--tc:${def.color}">
-        <div class="tt-head-row">
-          <span class="tt-icon">${this.towerIconHTML(id, 30)}</span>
-          <b>${def.name}</b>
-          <span class="tt-mastery" data-tt="MASTERY ${mp.level}|Earn mastery by fighting with this tower. Higher mastery unlocks deeper talents.">M${mp.level}</span>
-          ${stock ? '<span class="tt-stock">stock build</span>' : ''}
-          <span class="tt-pts ${spent === TALENT_POINTS ? 'full' : ''}">${spent}/${TALENT_POINTS}</span>
-          <button class="icon-btn sm" data-clear-talent="${id}" title="Clear">↺</button>
-        </div>
-        ${rows}
-      </div>`;
-    }).join('');
+    if (!wrap) return;
+    const id = this.loFocus().tower;
+    const def = id && TOWER_TYPES[id];
+    if (!def) { wrap.innerHTML = '<p class="hint">Select a tower to prepare its talents.</p>'; return; }
+    wrap.innerHTML = this.talentTreeHTML(id, def);
+    /* Only the tree redraws: towerStatRows reads `t.base`, which no talent
+       moves, so nothing else on the panel can fall out of step -- and not
+       redrawing the panel is what keeps the firing preview from restarting
+       under the cursor on every point spent. */
+    this.bindTalents(wrap, () => this.renderTowerTalents());
+  },
 
-    this.paintTowerIcons(wrap);
-    $$('[data-talent]').forEach(b => b.addEventListener('click', () => {
-      const [tower, tid] = b.dataset.talent.split(':');
-      if (Meta.takeTalent(tower, tid)) { Sound.play('tech'); this.renderTowerTalents(); }
-      else Sound.play('denied');
-    }));
-    $$('[data-clear-talent]').forEach(b => b.addEventListener('click', () => {
-      Meta.clearTalents(b.dataset.clearTalent); Sound.play('sell'); this.renderTowerTalents();
-    }));
+  /** The unit tree. Unlike a tower's, a point here moves numbers printed
+      above it, so the whole column redraws. */
+  renderUnitTalents() {
+    const wrap = $('#unit-talents');
+    if (!wrap) return;
+    const id = this.loFocus().unit;
+    const def = id && this.unitDef(id);
+    if (!def) { wrap.innerHTML = ''; return; }
+    wrap.innerHTML = this.talentTreeHTML(id, def);
+    this.bindTalents(wrap, () => this.renderUnits());
   },
 
   /* ═══════════════════════════════════════════════════════ BATTLE UI ═══ */
@@ -2272,16 +2917,44 @@ const UI = {
     const mine = t.side === 0;
     const s = t.stats;
     const rows = [];
-    const buffed = t.aura.dmg > 0 || t.aura.rate > 0 || t.aura.range > 0;
+    const buffed = t.aura.dmg > 0 || t.aura.rate > 0 || t.aura.range > 0
+                || t.focusDmgAmt > 0 || t.focusRateAmt > 0 || t.focusRangeAmt > 0;
 
     if (t.def.attack === 'economy') {
       rows.push(['Income', '◈' + Math.round((s.income || 0) * t.ascDamage * (t.traits.vaultBonus || 1)) + '/' + s.incomeEvery + 's', 1]);
       rows.push(['Kill skim', '◈' + Math.round((s.killCut || 0) * t.ascDamage * (t.traits.vaultBonus || 1)), 1]);
       rows.push(['Earned', this.liveFigure('earned', t), 1, 'earned']);
+    } else if (t.def.attack === 'depot') {
+      /* A depot mints nothing, so an Income row would be a lie by omission of
+         zero. It sells the discount and the lump, and the discount is printed
+         through the SAME ceiling Tower.upgradeCost applies -- a panel quoting
+         the authored figure past REQUISITION_MAX is precisely the desync this
+         file's header exists to prevent. */
+      rows.push(['Requisition', '−' + Math.round(Math.min(REQUISITION_MAX, s.requisition || 0) * 100) + '% on upgrades in range', 1]);
+      rows.push(['Per wave', '◈' + Math.round((s.waveBonus || 0) * t.ascDamage), 1]);
+      rows.push(['Earned', this.liveFigure('earned', t), 1, 'earned']);
+    } else if (t.def.attack === 'vigil') {
+      rows.push(['Wardens', (t.vigilLeft === undefined ? Math.round(s.vigilHold || 0) : t.vigilLeft)
+                            + ' / ' + Math.round(s.vigilHold || 0), 1]);
+      rows.push(['Relief', (s.vigilEvery || 10).toFixed(1) + 's per warden']);
+      rows.push(['Breaches stopped', t.livesRestored || 0, 1]);
+      if (s.vigilGold) rows.push(['Tithe', '◈' + s.vigilGold + ' per warden']);
     } else if (t.def.attack === 'aura') {
-      rows.push(['Damage aura', '+' + Math.round(s.auraDmg * 100) + '%', 1]);
-      rows.push(['Rate aura', '+' + Math.round(s.auraRate * 100) + '%', 1]);
-      if (s.auraRange) rows.push(['Range aura', '+' + Math.round(s.auraRange * 100) + '%', 1]);
+      /* BEACON lights ONE tower; PYLON runs a flat field. Both arrive here,
+         and printing an aura figure for a Beacon that no longer carries one
+         would read as +NaN%. */
+      if (s.focusDmg) {
+        rows.push(['Lends damage', '+' + Math.round(s.focusDmg * t.ascDamage * 100) + '%', 1]);
+        rows.push(['Lends rate', '+' + Math.round((s.focusRate || 0) * 100) + '%', 1]);
+        if (s.focusRange) rows.push(['Lends range', '+' + Math.round(s.focusRange * 100) + '%', 1]);
+        rows.push(['Relights', (s.focusEvery || 3).toFixed(1) + 's'
+                             + (Math.round(s.focusCount || 1) > 1 ? ' — ' + Math.round(s.focusCount) + ' towers' : '')]);
+        rows.push(['Lit now', (t.lit && t.lit.length) ? t.lit.map(x => x.def.name).join(', ') : 'nothing in range', 1]);
+      } else {
+        rows.push(['Damage aura', '+' + Math.round((s.auraDmg || 0) * 100) + '%', 1]);
+        rows.push(['Rate aura', '+' + Math.round((s.auraRate || 0) * 100) + '%', 1]);
+        if (s.auraRange) rows.push(['Range aura', '+' + Math.round(s.auraRange * 100) + '%', 1]);
+      }
     } else if (t.def.attack === 'barricade') {
       /* A barricade sells wall health and HOLD CAPACITY, not damage: the wall
          stops a fixed NUMBER of attackers and the overflow squeezes past. The
@@ -2311,14 +2984,34 @@ const UI = {
       }
     } else {
       rows.push(['DPS', formatNum(t.estimateDps()), 1]);
-      if (s.damage) rows.push([['cone', 'beam'].includes(t.def.attack) ? 'Damage/s' : 'Damage', formatNum(t.effDamage), t.aura.dmg > 0]);
+      if (s.damage) rows.push([['cone', 'beam'].includes(t.def.attack) ? 'Damage/s' : 'Damage', formatNum(t.effDamage), t.aura.dmg > 0 || t.focusDmgAmt > 0]);
       if (s.droneDamage) rows.push(['Drones', formatNum(t.effDamageFor(s.droneDamage)) + ' ×' + s.drones, 1]);
-      if (s.rate && !['cone', 'beam'].includes(t.def.attack)) rows.push(['Rate', t.effRate.toFixed(2) + '/s', t.aura.rate > 0]);
+      if (s.rate && !['cone', 'beam'].includes(t.def.attack)) rows.push(['Rate', t.effRate.toFixed(2) + '/s', t.aura.rate > 0 || t.focusRateAmt > 0]);
     }
-    rows.push(['Range', t.effRange.toFixed(2), t.aura.range > 0]);
+    rows.push(['Range', t.effRange.toFixed(2), t.aura.range > 0 || t.focusRangeAmt > 0]);
+    /* MORTAR bills its fire mission as a SEPARATE reach, not as range: the
+       tube's own circle is what it can hit unaided, and the extra tiles only
+       exist over ground another of your weapons is holding. Printing one
+       merged number would promise coverage the engine does not give. */
+    if (s.spotting) rows.push(['Spotted reach', (t.effRange + s.spotting).toFixed(2) + ' on a spotter call']);
     if (s.dmgType && s.dmgType !== 'none') rows.push(['Type', s.dmgType]);
     if (t.effSplash) rows.push(['Splash', t.effSplash.toFixed(2)]);
     if (s.chains) rows.push(['Chains', s.chains + '×' + Math.round((s.falloff || .75) * 100) + '%']);
+    if (s.runTiles) rows.push(['Runs the lane', '±' + s.runTiles.toFixed(1) + ' tiles at '
+                                              + Math.round((s.runFalloff || .85) * 100) + '%/tile']);
+    if (s.killReload) rows.push(['Kill refund', Math.round(Math.min(1, s.killReload) * 100) + '% of the reload']);
+    if (s.downFor) rows.push(['Grounds for', Math.min(FLAK_DOWNED_CAP, s.downFor * t.effStatus).toFixed(1) + 's']);
+    if (s.scrapline) rows.push(['Reclaim', '−' + s.scrapline.toFixed(2) + 's of forge per kill']);
+    if (s.overheat) rows.push(['Tank', 'blows after ' + s.overheat.toFixed(1) + 's for '
+                                     + formatNum(t.effDamageFor((s.blowDmg || 0) * (s.blowDmgMul || 1)))
+                                     + ', then ' + PYRE_VENT_SECONDS.toFixed(1) + 's offline']);
+    if (s.digest) {
+      /* Printed through digestFrac at the reference wound the estimate uses,
+         so the row, the DPS figure and the tick all quote one function. */
+      const st = t.effStatus;
+      rows.push(['Digest', (digestFrac(s.digest * st, DIGEST_REF_WOUND, false) * 100).toFixed(2)
+                         + '% max hp/s at half health']);
+    }
     if (s.pull) rows.push(['Pull', (s.pull * t.effStatus).toFixed(1)]);
     if (s.ramp) rows.push(['Ramp', `+${Math.round(s.ramp * 100)}%/s →×${s.rampMax}`]);
     if (s.split) rows.push(['Beams', s.split]);
@@ -2389,7 +3082,9 @@ const UI = {
       }
     }
 
-    const modes = (t.isSupport || !mine) ? '' : `
+    /* A depot and a watch have nothing to aim, so a TARGETING row on either
+       would offer a choice the engine never reads. */
+    const modes = (t.isSupport || !mine || t.def.attack === 'depot' || t.def.attack === 'vigil') ? '' : `
       <div class="section-label">TARGETING</div>
       <div class="mode-row">${TARGET_MODES.map(m =>
         `<button class="mode-btn ${t.targetMode === m.id ? 'active' : ''}" data-mode="${m.id}" title="${m.desc}">${m.name}</button>`).join('')}</div>`;
@@ -3070,19 +3765,30 @@ const UI = {
   cancelTowerPreview() {
     if (this._tpRaf) { cancelAnimationFrame(this._tpRaf); this._tpRaf = 0; }
     this._tpGen = (this._tpGen || 0) + 1;
+    /* Every registered stage goes with it. The register is what lets one loop
+       drive the two detail columns at once; leaving entries behind would have
+       the next pump quietly resurrect stages the caller just stopped. */
+    if (this._tpStages) this._tpStages.clear();
   },
 
-  runTowerPreview(cv, id) {
-    this.cancelTowerPreview();
-    const gen = this._tpGen;
-    const ctx = cv.getContext('2d');
-    const t = TOWER_TYPES[id];
-    const el = ELEMENTS[t.element];
+  /**
+   * THE PREVIEW HARNESS -- device-pixel backing store, the generation guard,
+   * the detached-node guard, the dt clamp, and ONE rAF handle for every stage
+   * on screen.
+   *
+   * 19.8's fix was that two preview loops must never both own `_tpRaf`. The
+   * four-column screen has two stages visible at once, so the answer is not a
+   * second loop but a REGISTRY: one handle, one teardown, N canvases. A stage
+   * leaves the register the moment its canvas is detached, which is what a
+   * re-render does to it -- measured before that guard existed: 63 frames
+   * drawn into a canvas nobody could see, and it never stopped.
+   */
+  runPreview(cv, step) {
+    const reg = this._tpStages || (this._tpStages = new Map());
     /* The authored size is the DRAWING size and is remembered on the node,
        because the backing store below is about to stop matching it. Without
-       the device-pixel backing store the whole preview was drawn at CSS
-       resolution and rescaled -- soft edges on every sprite on a display
-       Windows ships scaled by default. */
+       it the whole preview draws at CSS resolution and rescales -- soft edges
+       on every sprite on a display Windows ships scaled by default. */
     const W = cv._tpW || (cv._tpW = cv.width);
     const H = cv._tpH || (cv._tpH = cv.height);
     const d = Math.min(2, window.devicePixelRatio || 1);
@@ -3090,30 +3796,56 @@ const UI = {
       cv.style.width = W + 'px'; cv.style.height = H + 'px';
       cv.width = Math.round(W * d); cv.height = Math.round(H * d);
     }
-    const tx = 52, ty = H - 26;
+    const s = { step: step, ctx: cv.getContext('2d'), W: W, H: H, d: d, last: 0 };
+    reg.set(cv, s);
+    /* Painted now, so a stage is never blank for a frame -- including the
+       second stage registered in a tick where the loop is already running. */
+    this.drawStage(cv, s, performance.now());
+    this.pumpPreviews();
+  },
+
+  /** One stage, one frame. Returns false when the stage is dead and should
+      leave the register: detached by a re-render, or hidden along with the
+      tooltip hosting it, for which mouseleave never fires. */
+  drawStage(cv, s, now) {
+    if (!cv.isConnected ||
+        (this.el.tooltip.contains(cv) && this.el.tooltip.classList.contains('hidden'))) return false;
+    const dt = s.last ? Math.min(TP_MAX_DT, (now - s.last) / 1000) : 1 / 60;
+    s.last = now;
+    s.ctx.setTransform(s.d, 0, 0, s.d, 0, 0);
+    s.ctx.clearRect(0, 0, s.W, s.H);
+    try { s.step(s.ctx, dt, s.W, s.H); } catch (e) { return false; }
+    return true;
+  },
+
+  /** ONE loop for every registered stage. Asks for another frame only while
+      at least one stage is left, so an empty register costs nothing. */
+  pumpPreviews() {
+    if (this._tpRaf) return;
+    const gen = (this._tpGen = (this._tpGen || 0) + 1);
+    const tick = (now) => {
+      /* A cancel landed while this frame was in flight. */
+      if (gen !== this._tpGen) return;
+      const reg = this._tpStages;
+      reg.forEach((s, cv) => { if (!this.drawStage(cv, s, now)) reg.delete(cv); });
+      this._tpRaf = reg.size ? requestAnimationFrame(tick) : 0;
+    };
+    this._tpRaf = requestAnimationFrame(tick);
+  },
+
+  runTowerPreview(cv, id) {
+    const t = TOWER_TYPES[id];
+    const el = ELEMENTS[t.element];
     const stub = this.towerStub(id);
-    /* The cadence the card PRINTS, so what the eye counts matches the number
+    /* The cadence the panel PRINTS, so what the eye counts matches the number
        two lines above it. */
     const period = 1 / Math.max(TP_MIN_RATE, t.base.rate || 1);
-    let shots = [], age = 0, cd = 0, sinceShot = period, last = 0;
+    let shots = [], age = 0, cd = 0, sinceShot = period;
     const targets = [{ x: 150, r: 9 }, { x: 214, r: 8 }, { x: 268, r: 7 }];
 
-    const frame = (now) => {
-      /* A newer preview has started, or the card this canvas lived in was
-         re-rendered out from under the cursor -- which is exactly what
-         renderSoulShop does after a purchase, and mouseleave never fires for
-         a node that has already been removed. Measured: 63 frames drawn into
-         a detached canvas in half a second, and it never stopped. */
-      if (gen !== this._tpGen) return;
-      if (!cv.isConnected ||
-          (this.el.tooltip.contains(cv) && this.el.tooltip.classList.contains('hidden'))) {
-        this._tpRaf = 0; return;
-      }
-      const dt = last ? Math.min(TP_MAX_DT, (now - last) / 1000) : 1 / 60;
-      last = now;
+    this.runPreview(cv, (ctx, dt, W, H) => {
+      const tx = 52, ty = H - 26;
       age += dt; cd -= dt; sinceShot += dt;
-      ctx.setTransform(d, 0, 0, d, 0, 0);
-      ctx.clearRect(0, 0, W, H);
       /* lane */
       ctx.strokeStyle = 'rgba(120,160,200,.14)'; ctx.lineWidth = 22;
       ctx.beginPath(); ctx.moveTo(0, ty - 26); ctx.lineTo(W, ty - 26); ctx.stroke();
@@ -3152,10 +3884,283 @@ const UI = {
           ctx.fillStyle = el.color;
         }
       }
-      this._tpRaf = requestAnimationFrame(frame);
-    };
-    /* First paint synchronously so the card is never blank for a frame. */
-    frame(performance.now());
+    });
+  },
+
+  /* ================================================= UNIT SPRITES ==== */
+
+  /**
+   * A drawable that is NOT an Enemy but draws as one: the prototype supplies
+   * every shape routine, and the fields below are the ones Enemy.draw reads.
+   * hp === maxHp and no shield means drawHealthBar returns on its first line,
+   * which is what keeps a card sprite from wearing a battle readout.
+   *
+   * The aura is stripped from a preview-local COPY of the definition, never
+   * from the table: Enemy.draw paints it at `radius * TILE`, which is more
+   * than the whole height of a card. The ring the stage draws instead is
+   * sized to the stage, and every number printed beside it still comes off
+   * the real definition.
+   */
+  unitStub(id) {
+    const def = this.unitDef(id);
+    if (!def || typeof Enemy === 'undefined') return null;
+    const pdef = def.aura ? Object.assign({}, def, { aura: null }) : def;
+    return Object.assign(Object.create(Enemy.prototype), {
+      def: pdef, type: id, x: 0, y: 0, age: 0,
+      radius: Math.min(UNIT_PREVIEW_MAX_R, def.radius || 10),
+      ux: 1, uy: 0, flash: 0, hp: 1, maxHp: 1, shield: 0, maxShield: 0,
+      armor: 0, shredAmt: 0, poisonStacks: 0, boss: false, miniboss: false,
+      flying: !!def.flying, reanimated: false, owner: -1, phaseOn: false,
+      freezeTimer: 0, slowTimer: 0, vulnTimer: 0, vulnAmt: 0, burnTimer: 0,
+      markEl: null, markT: 0, auraTint: null
+    });
+  },
+
+  unitIconHTML(id, size) {
+    size = size || 44;
+    return '<canvas class="unit-icon" data-unit-icon="' + id + '" width="' + size + '" height="' + size + '"></canvas>';
+  },
+
+  /** The static tile, mirroring paintTowerIcons exactly. */
+  paintUnitIcons(root) {
+    $$('[data-unit-icon]', root || document).forEach(cv => {
+      if (cv._painted) return;
+      cv._painted = true;
+      const stub = this.unitStub(cv.dataset.unitIcon);
+      if (!stub) return;
+      const ctx = cv.getContext('2d');
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const css = cv.width;
+      cv.width = css * dpr; cv.height = css * dpr;
+      cv.style.width = css + 'px'; cv.style.height = css + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      /* Normalised to the tile rather than drawn at the authored radius, so
+         a Chitling and a Broodmother read at the same size in the grid and
+         the card compares what they DO, not how big the sprite is. */
+      const s = (css * 0.40) / Math.max(6, stub.radius);
+      ctx.save(); ctx.translate(css / 2, css / 2); ctx.scale(s, s);
+      stub.age = 1.2;
+      try { Enemy.prototype.draw.call(stub, ctx); } catch (e) {}
+      ctx.restore();
+    });
+  },
+
+  /**
+   * ONE unit, moving, using the one thing that unit does (19.15).
+   *
+   * Runs on runPreview: the same harness, the same generation counter and the
+   * same single rAF handle as the tower preview. Direction is the argument --
+   * the tower stage marches dummies RIGHT to LEFT into your guns, this one
+   * marches the unit LEFT to RIGHT out of them, because a muster is something
+   * you send. The trait comes from unitTrait, the same call that prints the
+   * badge above the canvas, so the picture and the words cannot disagree.
+   */
+  runUnitPreview(cv, id) {
+    const def = this.unitDef(id);
+    const stub = this.unitStub(id);
+    if (!def || !stub) return;
+    const trait = this.unitTrait(id);
+    const host = this.unitHost(id);
+    const R = stub.radius;
+    let x = -R * 2, t = 0, cd = 0, blink = 0, down = 0, fell = false, ward = 1, hit = 0;
+    const spawn = [], ghosts = [], rings = [];
+    /* Escorts exist only for the two traits that act on somebody else. */
+    const escorts = (trait.key === 'heal' || trait.key === 'aura') ? [-30, 26] : [];
+    let escortHp = 0.35;
+
+    this.runPreview(cv, (ctx, dt, W, H) => {
+      t += dt; cd -= dt;
+      const ly = H - 30;
+
+      /* The lane, and the direction of travel. A send crosses left to right;
+         nothing on this card has to say so in words. */
+      ctx.strokeStyle = 'rgba(120,160,200,.13)'; ctx.lineWidth = 26;
+      ctx.beginPath(); ctx.moveTo(0, ly); ctx.lineTo(W, ly); ctx.stroke();
+      ctx.strokeStyle = 'rgba(120,160,200,.20)'; ctx.lineWidth = 1.2;
+      for (let i = 0; i < 7; i++) {
+        const gx = ((t * 16 + i * 48) % (W + 48)) - 24;
+        ctx.beginPath();
+        ctx.moveTo(gx, ly - 8); ctx.lineTo(gx + 6, ly); ctx.lineTo(gx, ly + 8);
+        ctx.stroke();
+      }
+
+      let speed = UNIT_PREVIEW_PPS, alpha = 1;
+
+      /* ---------------- the signature trait, before the sprite ---------- */
+      switch (trait.key) {
+        case 'blink':
+          blink -= dt;
+          if (blink <= 0 && x > 8 && x < W - 70) {
+            blink = def.teleport.interval * UNIT_TRAIT_TEMPO;
+            ghosts.push({ x: x, a: 1 });
+            x += UNIT_BLINK_PX;
+          }
+          break;
+        case 'summon':
+          if (cd <= 0 && x > 0) {
+            cd = def.summon.interval * UNIT_TRAIT_TEMPO;
+            for (let i = 0; i < (def.summon.count || 1); i++)
+              spawn.push({ x: x - R, y: ly + (i - 1) * 7, vx: -6, a: 1, r: 4 });
+          }
+          break;
+        case 'split':
+          if (x > W * 0.58) {
+            const n = def.splitCount || 2;
+            for (let i = 0; i < n; i++)
+              spawn.push({ x: x, y: ly + (i - (n - 1) / 2) * 7, vx: 24 + i * 6, a: 1, r: 4.5 });
+            x = -R * 2;   /* the split IS the end of its run */
+          }
+          break;
+        case 'jam':
+          if (cd <= 0 && x > 0) { cd = def.jam.interval * UNIT_TRAIT_TEMPO; rings.push({ x: x, r: 2 }); }
+          break;
+        case 'heal':
+          if (cd <= 0) { cd = UNIT_PULSE_S; rings.push({ x: x, r: 2, heal: true }); }
+          escortHp = Math.max(0.2, escortHp - dt * 0.28);
+          break;
+        case 'aura':
+          ctx.save();
+          ctx.globalAlpha = 0.15 + Math.sin(t * 2) * 0.05;
+          ctx.fillStyle = def.aura.tint || def.color;
+          ctx.beginPath(); ctx.arc(x, ly, UNIT_AURA_PX, 0, TAU); ctx.fill();
+          ctx.globalAlpha = 0.55; ctx.lineWidth = 1.6;
+          ctx.strokeStyle = def.aura.tint || def.color;
+          ctx.setLineDash([5, 6]); ctx.lineDashOffset = -t * 12;
+          ctx.beginPath(); ctx.arc(x, ly, UNIT_AURA_PX, 0, TAU); ctx.stroke();
+          ctx.setLineDash([]); ctx.restore();
+          break;
+        case 'revive':
+          if (!fell && x > W * 0.5) { fell = true; down = UNIT_DOWN_S; }
+          if (down > 0) {
+            down -= dt; speed = 0;
+            alpha = down > UNIT_DOWN_S * 0.45 ? 0.22 : 0.85;
+          }
+          break;
+        case 'ward':
+          hit -= dt;
+          if (hit <= 0) { hit = UNIT_WARD_HIT_S; ward = 0; rings.push({ x: x, r: 26, in: true }); }
+          ward = Math.min(1, ward + dt / Math.max(0.4, def.shieldDelay || 1));
+          break;
+        case 'anchor': {
+          /* A frost wash sweeps back down the lane. The escort ghost is
+             visibly dragged by it; the unit is not, which is the trait. */
+          const fx = W - ((t * 62) % (W + 90));
+          ctx.save();
+          ctx.fillStyle = 'rgba(138,184,255,.16)';
+          ctx.fillRect(fx, ly - 15, 46, 30);
+          ctx.globalAlpha = 0.75; ctx.fillStyle = 'rgba(150,190,240,.7)';
+          const gx2 = x - 34 - Math.max(0, 26 - Math.abs(fx + 23 - x)) * 0.5;
+          ctx.beginPath(); ctx.arc(gx2, ly, 5, 0, TAU); ctx.fill();
+          ctx.restore();
+          if (Math.abs(fx + 23 - x) < 30) {
+            ctx.save(); ctx.strokeStyle = 'rgba(180,225,255,.8)'; ctx.lineWidth = 1.6;
+            ctx.beginPath(); ctx.arc(x, ly, R + 5, 0, TAU); ctx.stroke(); ctx.restore();
+          }
+          break;
+        }
+        case 'plate': {
+          /* A blast lands on it and most of it does not arrive. */
+          if (cd <= 0 && x > W * 0.3) { cd = 1.4; rings.push({ x: x + 6, r: 3, blast: true }); }
+          break;
+        }
+        case 'phase':
+          stub.phaseOn = (t % (def.phase.on + def.phase.off)) < def.phase.on;
+          break;
+        default: break;
+      }
+
+      /* ---------------- escorts, spawn, ghosts and rings ---------------- */
+      for (const off of escorts) {
+        const ex = x + off;
+        ctx.save();
+        ctx.fillStyle = 'rgba(190,210,235,.75)';
+        ctx.beginPath(); ctx.arc(ex, ly, 6, 0, TAU); ctx.fill();
+        if (trait.key === 'heal') {
+          ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(ex - 8, ly - 14, 16, 3);
+          ctx.fillStyle = escortHp > 0.55 ? '#4ade80' : escortHp > 0.3 ? '#fbbf24' : '#ef4444';
+          ctx.fillRect(ex - 8, ly - 14, 16 * escortHp, 3);
+        } else if (trait.key === 'aura') {
+          ctx.strokeStyle = def.aura.tint || def.color; ctx.lineWidth = 1.4;
+          ctx.beginPath(); ctx.arc(ex, ly, 9, 0, TAU); ctx.stroke();
+        }
+        ctx.restore();
+      }
+      for (let i = spawn.length - 1; i >= 0; i--) {
+        const s = spawn[i];
+        s.x += s.vx * dt; s.a -= dt * 0.32;
+        if (s.a <= 0 || s.x > W + 12 || s.x < -12) { spawn.splice(i, 1); continue; }
+        ctx.save(); ctx.globalAlpha = Math.max(0, s.a);
+        ctx.fillStyle = def.color; ctx.shadowColor = def.color; ctx.shadowBlur = 7;
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, TAU); ctx.fill();
+        ctx.restore();
+      }
+      for (let i = ghosts.length - 1; i >= 0; i--) {
+        const g = ghosts[i]; g.a -= dt * 2.4;
+        if (g.a <= 0) { ghosts.splice(i, 1); continue; }
+        ctx.save(); ctx.globalAlpha = g.a * 0.5;
+        ctx.strokeStyle = def.color; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(g.x, ly); ctx.lineTo(x, ly); ctx.stroke();
+        ctx.beginPath(); ctx.arc(g.x, ly, R * 0.8, 0, TAU); ctx.stroke();
+        ctx.restore();
+      }
+      for (let i = rings.length - 1; i >= 0; i--) {
+        const r = rings[i];
+        r.r += (r.in ? -46 : 78) * dt;
+        if (r.r > 62 || r.r < 1) { rings.splice(i, 1); if (r.heal) escortHp = 1; continue; }
+        ctx.save();
+        ctx.globalAlpha = r.in ? 0.8 : Math.max(0, 1 - r.r / 62);
+        ctx.strokeStyle = r.heal ? '#8ef0b0' : r.blast ? '#ff9a4d' : r.in ? '#e05555' : def.color;
+        ctx.lineWidth = r.blast ? 2.4 : 1.8;
+        ctx.beginPath(); ctx.arc(r.x, ly, Math.abs(r.r), 0, TAU); ctx.stroke();
+        ctx.restore();
+      }
+
+      /* ---------------- the jammed tower a Scrapjack silences ---------- */
+      if (trait.key === 'jam') {
+        const jx = W - 34;
+        const silenced = rings.some(r => Math.abs(jx - r.x) < r.r + 6);
+        ctx.save();
+        ctx.globalAlpha = silenced ? 0.35 : 1;
+        ctx.strokeStyle = silenced ? '#7e94aa' : '#38e8ff'; ctx.lineWidth = 2;
+        ctx.strokeRect(jx - 8, ly - 20, 16, 20);
+        ctx.beginPath(); ctx.moveTo(jx, ly - 20); ctx.lineTo(jx, ly - 28); ctx.stroke();
+        ctx.restore();
+        if (silenced) {
+          ctx.save(); ctx.fillStyle = '#f87171'; ctx.font = 'bold 10px ui-monospace, monospace';
+          ctx.textAlign = 'center'; ctx.fillText('⊘', jx, ly - 30); ctx.restore();
+        }
+      }
+
+      /* ---------------- the unit ---------------------------------------- */
+      x += speed * dt;
+      if (x > W + R * 2) {
+        x = -R * 2; fell = false; down = 0; ward = 1; hit = 0;
+        spawn.length = 0; ghosts.length = 0; rings.length = 0;
+      }
+      stub.age = t; stub.x = x; stub.y = ly;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      try { Enemy.prototype.draw.call(stub, ctx); } catch (e) {}
+      ctx.restore();
+
+      /* The ward is drawn OVER the sprite, at the fraction it has reformed --
+         the same thing shieldDelay buys in a battle. */
+      if (trait.key === 'ward' && ward > 0.02) {
+        ctx.save();
+        ctx.strokeStyle = `rgba(96,165,250,${0.3 + ward * 0.5})`;
+        ctx.fillStyle = `rgba(96,165,250,${0.06 + ward * 0.12})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(x, ly, R + 5 + ward * 3, 0, TAU); ctx.fill(); ctx.stroke();
+        ctx.restore();
+      }
+      /* Allegiance, bottom-left, so the stage says whose soldier this is even
+         when the sprite is off the left edge mid-loop. */
+      ctx.save();
+      ctx.fillStyle = host.color; ctx.globalAlpha = 0.55;
+      ctx.font = '11px ui-monospace, monospace'; ctx.textAlign = 'left';
+      ctx.fillText(host.icon, 6, H - 6);
+      ctx.restore();
+    });
   },
   /** Leaving a card: stop the loop AND put the tooltip away. */
   stopTowerPreview() {

@@ -1133,30 +1133,117 @@ function maxHpVenomFrac(perStack, stacks, elite) {
   return elite ? f * MAXHP_DOT_ELITE_MUL : f;
 }
 
+/* ── SIGNATURES FOR THE THREE STAT BLOCKS (roadmap 19.20) ─────────────────
+   BOLT, MORTAR and FLAK are the towers a new commander is handed, so the
+   baseline they set has to stay readable at a glance. Each now carries ONE
+   rule beyond its stat block, and all three are the same human idea in a
+   different key: the hardware is not better than what it fights, it is kept
+   working. Save the case, borrow somebody else's eyes, and refuse to let the
+   thing stay in the air.
+
+   BOLT's refund is bounded by arithmetic rather than by a constant: the
+   engine can only ever hand back what is LEFT on the clock, and the clock is
+   set to a full reload before any kill can be credited, so a Bolt cannot
+   chain past double its printed rate however many bodies one round drops.
+   STAT_CEIL holds the stat itself at 1.
+
+   MORTAR's spotting is weapons-only and skips a jammed tower, which is what
+   stops a sabotaged line quietly extending an artillery piece's reach. */
+
+/* FLAK. A downed flyer is crippled, not merely low -- without the slow the
+   window closes before a ground gun has traversed onto it. */
+const FLAK_DOWNED_SLOW = 0.45;
+/* Seconds, hard ceiling on one grounding. A stacked FLAK battery would
+   otherwise hold a flight on the deck permanently, which does not counter
+   air, it deletes it. */
+const FLAK_DOWNED_CAP = 2.6;
+
+/* ── PYRE'S TANK ──────────────────────────────────────────────────────────
+   Seconds the crew needs to fit another tank after a blowout. This is the
+   entire price of the mechanic: without a vent the tank is a free area burst
+   on a timer rather than a gamble, and PYRE stops being a pirate weapon. */
+const PYRE_VENT_SECONDS = 2.2;
+
+/* ── ICHOR: MISSING-HEALTH VENOM ──────────────────────────────────────────
+   The exact inverse of CANISTER's max-health gas, and it needs the same two
+   bounds for the same reason. A share of the WOUND is a fixed time-to-kill
+   on anything already hurt, so left unbounded a pair of Ichors would finish
+   every elite the moment the rest of the board opened it.
+
+   PCT_CAP ceilings the whole effect AFTER talents, statusMul, node
+   attunement and surge -- the floor on time-to-kill from bile alone is
+   1 / PCT_CAP seconds from the wound it started at.
+
+   ELITE_MUL cuts it against bosses and minibosses, whose entire design is a
+   long health bar that spends most of its life half gone. */
+const DIGEST_PCT_CAP = 0.035;     /* share of max health per second, at any wound */
+const DIGEST_ELITE_MUL = 0.35;    /* ...against a boss or a miniboss             */
+/* An UNSCALED body near the roster's non-boss median, and the wound a second
+   tower actually finds a body in. Used only so estimateDps can express a
+   share-of-the-wound in damage units -- without a term there the rival reads
+   ICHOR as a 9-damage tower and never drafts the thing in its own xeno line,
+   which is exactly what happened to CANISTER before MAXHP_DOT_REF_HP. */
+const DIGEST_REF_HP = 230;
+const DIGEST_REF_WOUND = 0.5;
+
+/** THE share of a target's MAX health one second of bile removes, ceiling
+    and elite reduction included. The engine tick, the inspector row and the
+    DPS estimate all read this one function, so the figure the panel prints
+    and the figure the enemy takes cannot drift apart. `per` arrives already
+    scaled by the tower's effStatus, exactly as the cone scales it. */
+function digestFrac(per, wound, elite) {
+  const f = Math.min((per || 0) * Math.max(0, wound || 0), DIGEST_PCT_CAP);
+  return elite ? f * DIGEST_ELITE_MUL : f;
+}
+
+/* ── ARC: A CURRENT THAT RUNS THE ROAD ────────────────────────────────────
+   How many bodies a tile of lane actually carries at the densities the wave
+   tables produce. Read only by estimateDps, which is the rival's whole view
+   of a tower: without it ARC reads as a single-target gun and the rival
+   under-drafts the tower whose entire point is a packed column. */
+const ARC_RUN_BODIES_PER_TILE = 0.35;
+
+/* ── QUARTERMASTER: REQUISITION ───────────────────────────────────────────
+   Hard ceiling on the discount after talents, branch and every surge. A
+   CONVOY surge adds a flat share per ascension and surges do not pass
+   through STAT_CEIL, so without a ceiling in the reader a deep enough
+   Quartermaster eventually buys ascensions for nothing. */
+const REQUISITION_MAX = 0.45;
+
+/* ── CUSTODIAN: THE OATH ──────────────────────────────────────────────────
+   A nominal body, heavily discounted, used only so estimateDps can price a
+   life SAVED in damage units. The discount is the point: a warden is spent
+   only on an actual breach and most waves produce none, so the honest figure
+   is far below the health of the unit it stops. Same trick, same reason, as
+   MAXHP_DOT_REF_HP -- AI.projectedUpgrade reads estimateDps and nothing
+   else, so a zero here means the rival builds a Custodian and then never
+   upgrades one. */
+const VIGIL_REF_HP = 40;
+
 const TOWER_TYPES = {
 
   bolt: {
     id: 'bolt', element: 'kinetic', origin: 'human', name: 'BOLT', role: 'Rapid single-target', cost: 115, costGrowth: 1.50,
     color: '#3ee0ff', dark: '#0b5d75', attack: 'projectile',
-    desc: 'Cheap, fast, reliable. The gentlest price curve in the arsenal — a wall of Bolts is a real strategy.',
-    base: { damage: 6, range: 3.2, rate: 1.5, projSpeed: 15, dmgType: 'physical', splash: 0 },
+    desc: 'Cheap, fast, reliable, and it feeds itself: a Bolt that kills has the case out before the body drops, so most of the next round is already paid for. EARLY-GAME by design — the refund is worth most in the waves where one round is enough. The gentlest price curve in the arsenal is what makes a wall of Bolts a real strategy; the breech is what makes the wall keep pace.',
+    base: { damage: 6, range: 3.2, rate: 1.5, projSpeed: 15, dmgType: 'physical', splash: 0, killReload: 0.15 },
     levels: [
-      { cost: 60,  name: 'MK II',  mods: { damage: 21, rate: 1.7 } },
-      { cost: 125, name: 'MK III', mods: { damage: 34, rate: 1.9, range: 3.6 } }
+      { cost: 60,  name: 'MK II',  mods: { damage: 21, rate: 1.7, killReload: 0.19 } },
+      { cost: 125, name: 'MK III', mods: { damage: 34, rate: 1.9, range: 3.6, killReload: 0.23 } }
     ],
     talents: [
       { id:'t_hollow', row:0, col:0, name:'HOLLOWPOINT', desc:'+45% damage, −15% fire rate.', mods:{ damageMul:1.45, rateMul:0.85 } },
       { id:'t_auto',   row:0, col:1, name:'AUTOLOADER',  desc:'+35% fire rate.',              mods:{ rateMul:1.35 } },
       { id:'t_long',   row:1, col:0, name:'LONG BARREL', desc:'+30% range, +12% damage.',     mods:{ rangeMul:1.30, damageMul:1.12 } },
       { id:'t_ap',     row:1, col:1, name:'AP CORE',     desc:'Ignores 40% of armour.',       mods:{ pierce:0.40 } },
-      { id:'t_twin', row:2, col:0, name:'TWIN RAILS', desc:'+25% fire rate and +12% range.', mods:{ rateMul:1.25, rangeMul:1.12 } },
+      { id:'t_twin', row:2, col:0, name:'BRASS CATCHER', desc:'A kill returns 12% more of the reload.', mods:{ killReload:0.12 } },
       { id:'t_kinetic', row:2, col:1, name:'KINETIC SLUG', desc:'+55% damage but −20% fire rate.', mods:{ damageMul:1.55, rateMul:0.80 } }
     ],
     branches: [
-      { id: 'volley', name: 'VOLLEY', cost: 230, mods: { damage: 30, rate: 2.0, multishot: 3, spread: 0.20 },
-        surge: { multishot: 1 }, note: 'A three-bolt fan. Ascension adds another bolt every second tier.' },
-      { id: 'piercer', name: 'PIERCER', cost: 230, mods: { damage: 88, rate: 1.4, pierce: 0.5, pierceCount: 4, shred: 3, projSpeed: 22 },
-        surge: { pierceCount: 2, shred: 2 }, note: 'A lance through four enemies, stripping armour as it goes.' }
+      { id: 'volley', name: 'VOLLEY', cost: 230, mods: { damage: 30, rate: 2.0, multishot: 3, spread: 0.20, killReload: 0.13 },
+        surge: { multishot: 1 }, note: 'A three-bolt fan. Each bolt is small, so few of them finish anything and the breech stays hungry.' },
+      { id: 'piercer', name: 'PIERCER', cost: 230, mods: { damage: 88, rate: 1.4, pierce: 0.5, pierceCount: 4, shred: 3, projSpeed: 22, killReload: 0.50 },
+        surge: { pierceCount: 2, shred: 2 }, note: 'A lance through four enemies, stripping armour as it goes — and a lance that kills is very nearly free.' }
     ]
   },
 
@@ -1188,61 +1275,61 @@ const TOWER_TYPES = {
   mortar: {
     id: 'mortar', element: 'fire', origin: 'human', name: 'MORTAR', role: 'Ground splash artillery', cost: 223, costGrowth: 1.66,
     color: '#ff9b3d', dark: '#7a4210', attack: 'lobbed', groundOnly: true,
-    desc: 'Arcing shells that detonate on impact. Devastating into packed ground — and blind to anything airborne.',
-    base: { damage: 16, range: 3.9, rate: 0.55, projSpeed: 8, dmgType: 'physical', splash: 1.25 },
+    desc: 'Arcing shells, and no sight of its own worth the name. It does not need one: anything another of your weapons currently holds, the Mortar will drop a shell on, well past its own reach. LATE-GAME by design — on a bare board it is a short bombard, and it grows with every gun you build in front of it. Still blind to anything airborne.',
+    base: { damage: 16, range: 3.9, rate: 0.55, projSpeed: 8, dmgType: 'physical', splash: 1.25, spotting: 0.9 },
     levels: [
-      { cost: 115, name: 'HEAVY',   mods: { damage: 52, splash: 1.45 } },
-      { cost: 210, name: 'BATTERY', mods: { damage: 82, splash: 1.6, range: 4.3, rate: 0.62 } }
+      { cost: 115, name: 'HEAVY',   mods: { damage: 52, splash: 1.45, spotting: 1.3 } },
+      { cost: 210, name: 'BATTERY', mods: { damage: 82, splash: 1.6, range: 4.3, rate: 0.62, spotting: 1.8 } }
     ],
     talents: [
       { id:'t_heavy', row:0, col:0, name:'HEAVY SHELL', desc:'+40% damage, −12% fire rate.', mods:{ damageMul:1.40, rateMul:0.88 } },
       { id:'t_quick', row:0, col:1, name:'QUICK FUSE',  desc:'+40% fire rate.',              mods:{ rateMul:1.40 } },
       { id:'t_blast', row:1, col:0, name:'WIDE BLAST',  desc:'+45% splash radius.',          mods:{ splashMul:1.45 } },
       { id:'t_shrap', row:1, col:1, name:'SHRAPNEL',    desc:'Blasts strip 5 armour.',       mods:{ shred:5 } },
-      { id:'t_airburst', row:2, col:0, name:'AIRBURST', desc:'+25% splash and +18% damage.', mods:{ splashMul:1.25, damageMul:1.18 } },
+      { id:'t_airburst', row:2, col:0, name:'FORWARD OBSERVER', desc:'Reaches 0.9 tiles further on a spotter call.', mods:{ spotting:0.9 } },
       { id:'t_barrage', row:2, col:1, name:'BARRAGE', desc:'+2 submunitions on impact.', mods:{ submunitions:2, scatter:1.1 } }
     ],
     branches: [
-      { id: 'siege', name: 'SIEGE', cost: 360, mods: { damage: 175, splash: 2.3, rate: 0.5, range: 5.0, stun: 0.45 },
-        surge: { splash: 0.18, stun: 0.08 }, note: 'One enormous shell with a concussive stun.' },
-      { id: 'cluster', name: 'CLUSTER', cost: 360, mods: { damage: 72, splash: 1.3, rate: 0.7, submunitions: 4, scatter: 1.5 },
+      { id: 'siege', name: 'SIEGE', cost: 360, mods: { damage: 175, splash: 2.3, rate: 0.5, range: 5.0, stun: 0.45, spotting: 2.2 },
+        surge: { splash: 0.18, stun: 0.08, spotting: 0.15 }, note: 'One enormous shell with a concussive stun, dropped wherever the line is looking.' },
+      { id: 'cluster', name: 'CLUSTER', cost: 360, mods: { damage: 72, splash: 1.3, rate: 0.7, submunitions: 4, scatter: 1.5, spotting: 1.5 },
         surge: { submunitions: 1 }, note: 'Airbursts into scattered bomblets.' }
     ]
   },
 
   arc: {
-    id: 'arc', element: 'storm', origin: 'human', name: 'ARC', role: 'Chain lightning', cost: 256, costGrowth: 1.74,
-    color: '#c084fc', dark: '#4c1d95', attack: 'chain',
-    desc: 'Lightning that leaps between enemies, losing power per jump. Magic damage — armour is irrelevant.',
-    base: { damage: 10, range: 3.1, rate: 0.95, dmgType: 'magic', chains: 3, chainRange: 2.2, falloff: 0.75 },
+    id: 'arc', element: 'storm', origin: 'human', name: 'ARC', role: 'Current that runs the lane', cost: 256, costGrowth: 1.74,
+    color: '#c084fc', dark: '#4c1d95', attack: 'grounding',
+    desc: 'An alien capacitor on a human mast, earthed straight into the road. The discharge does not hop from body to body — it RUNS along the lane from where it struck, forward and back, through everything standing on that stretch of it. CONDITIONAL: devastating against a column, nearly wasted on a crowd that has spread out, so the shape of your maze decides what it is worth. Magic damage — armour is irrelevant.',
+    base: { damage: 12, range: 3.1, rate: 0.95, dmgType: 'magic', runTiles: 2.4, runFalloff: 0.80 },
     levels: [
-      { cost: 135, name: 'CONDUIT', mods: { damage: 31, chains: 4 } },
-      { cost: 245, name: 'DYNAMO',  mods: { damage: 46, chains: 5, range: 3.4, falloff: 0.8 } }
+      { cost: 135, name: 'CONDUIT', mods: { damage: 34, runTiles: 3.2 } },
+      { cost: 245, name: 'DYNAMO',  mods: { damage: 52, runTiles: 4.2, range: 3.4, runFalloff: 0.85 } }
     ],
     talents: [
-      { id:'t_super', row:0, col:0, name:'SUPERCONDUCTOR', desc:'Chains lose only 10% per jump.', mods:{ falloff:0.90 } },
+      { id:'t_super', row:0, col:0, name:'SUPERCONDUCTOR', desc:'The current loses only 10% per tile.', mods:{ runFalloff:0.90 } },
       { id:'t_cap',   row:0, col:1, name:'CAPACITOR',      desc:'+40% damage.',                   mods:{ damageMul:1.40 } },
-      { id:'t_fork',  row:1, col:0, name:'FORKED ARC',     desc:'+2 chains, +35% chain reach.',   mods:{ chains:2, chainRangeMul:1.35 } },
-      { id:'t_ion',   row:1, col:1, name:'IONISE',         desc:'Struck targets take +20% damage.', mods:{ vuln:0.20, vulnDur:3 } },
+      { id:'t_fork',  row:1, col:0, name:'EARTH SPIKES',   desc:'The current runs 2 tiles further.', mods:{ runTiles:2.0 } },
+      { id:'t_ion',   row:1, col:1, name:'GROUNDING RODS', desc:'The current strips 4 armour.',   mods:{ shred:4 } },
       { id:'t_overvolt', row:2, col:0, name:'OVERVOLT', desc:'+35% damage, −10% fire rate.', mods:{ damageMul:1.35, rateMul:0.90 } },
-      { id:'t_relay', row:2, col:1, name:'RELAY GRID', desc:'+3 chain targets.', mods:{ chains:3 } }
+      { id:'t_relay', row:2, col:1, name:'SECOND EARTH', desc:'The current runs 2.6 tiles further.', mods:{ runTiles:2.6 } }
     ],
     branches: [
-      { id: 'storm', name: 'STORM', cost: 415, mods: { damage: 58, chains: 9, falloff: 0.92, chainRange: 2.8, rate: 1.1 },
-        surge: { chains: 2 }, note: 'Nine near-lossless jumps. Clears a swarm wave alone.' },
-      { id: 'overload', name: 'OVERLOAD', cost: 415, mods: { damage: 145, chains: 3, falloff: 0.7, rate: 0.8, vuln: 0.3, vulnDur: 3.0 },
-        surge: { vuln: 0.07 }, note: 'Heavy strikes that leave targets CONDUCTIVE.' }
+      { id: 'storm', name: 'STORM', cost: 415, mods: { damage: 62, runTiles: 6.0, runFalloff: 0.87, rate: 1.05 },
+        surge: { runTiles: 1.2 }, note: 'The whole column, end to end, at almost no loss.' },
+      { id: 'overload', name: 'OVERLOAD', cost: 415, mods: { damage: 155, runTiles: 2.0, runFalloff: 0.68, rate: 0.8, shred: 6 },
+        surge: { damage: 22 }, note: 'A short, brutal earth directly under whoever is leading.' }
     ]
   },
 
   pyre: {
-    id: 'pyre', element: 'fire', origin: 'pirate', name: 'PYRE', role: 'Sustained cone burn', cost: 189, costGrowth: 1.62,
+    id: 'pyre', element: 'fire', origin: 'pirate', name: 'PYRE', role: 'Cone burn on a tank that blows', cost: 189, costGrowth: 1.62,
     color: '#ff6b4a', dark: '#7c2410', attack: 'cone',
-    desc: 'Scrap tanks, a salvaged igniter, and no interlock anywhere in it. A continuous cone of flame — no travel time, hits everything in front at once, leaves targets burning.',
-    base: { damage: 12, range: 2.3, rate: 1, dmgType: 'magic', cone: 0.62, burn: 9, burnDur: 2.2 },
+    desc: 'Scrap tanks, a salvaged igniter, and no interlock anywhere in it. A continuous cone of flame that hits everything in front at once and leaves targets burning — and, if you hold the trigger long enough, puts its own fuel tank across the lane and then stands there useless while the crew fits another. CONDITIONAL: the blowout is only worth its downtime where there is a crowd in front of it.',
+    base: { damage: 12, range: 2.3, rate: 1, dmgType: 'magic', cone: 0.62, burn: 9, burnDur: 2.2, overheat: 4.5, blowDmg: 40, blowRadius: 1.6 },
     levels: [
-      { cost: 100, name: 'STOKED',        mods: { damage: 40, burn: 16 } },
-      { cost: 185, name: 'BLAST FURNACE', mods: { damage: 62, burn: 25, range: 2.6, cone: 0.68 } }
+      { cost: 100, name: 'STOKED',        mods: { damage: 40, burn: 16, blowDmg: 120 } },
+      { cost: 185, name: 'BLAST FURNACE', mods: { damage: 62, burn: 25, range: 2.6, cone: 0.68, blowDmg: 220, blowRadius: 1.8 } }
     ],
     talents: [
       { id:'t_jet',  row:0, col:0, name:'WIDE JET',   desc:'+35% cone width, +20% range.',   mods:{ coneMul:1.35, rangeMul:1.20 } },
@@ -1250,13 +1337,13 @@ const TOWER_TYPES = {
       { id:'t_stick',row:1, col:0, name:'STICKY FUEL',desc:'+70% burn damage and duration.', mods:{ statusMul:1.70 } },
       { id:'t_oxy',  row:1, col:1, name:'OXIDISER',   desc:'Burning targets take +30% damage.', mods:{ burnVuln:0.30 } },
       { id:'t_bellows', row:2, col:0, name:'BELLOWS', desc:'+30% fire cone and +15% damage.', mods:{ coneMul:1.30, damageMul:1.15 } },
-      { id:'t_pyroclast', row:2, col:1, name:'PYROCLAST', desc:'Burn also strips 3 armour.', mods:{ shred:3, statusMul:1.25 } }
+      { id:'t_pyroclast', row:2, col:1, name:'TANK RUPTURE', desc:'The blowout hits 60% harder and half a tile wider.', mods:{ blowDmgMul:1.60, blowRadius:0.5 } }
     ],
     branches: [
-      { id: 'inferno', name: 'INFERNO', cost: 320, mods: { damage: 105, burn: 48, burnDur: 3.0, range: 3.1, cone: 0.75 },
-        surge: { cone: 0.05 }, note: 'Raw throughput — a vast cone and a punishing burn.' },
-      { id: 'napalm', name: 'NAPALM', cost: 320, mods: { damage: 68, burn: 32, burnDur: 2.6, range: 2.9, cone: 0.7, puddle: true, puddleDmg: 34, puddleDur: 4.5, puddleRadius: 1.15 },
-        surge: { puddleDmg: 18, puddleRadius: 0.08 }, note: 'Coats the lane in burning fuel.' }
+      { id: 'inferno', name: 'INFERNO', cost: 320, mods: { damage: 105, burn: 48, burnDur: 3.0, range: 3.1, cone: 0.75, overheat: 6.5, blowDmg: 460 },
+        surge: { cone: 0.05, blowDmg: 90 }, note: 'A vast cone, a punishing burn, and a tank you can hold open far longer before it goes.' },
+      { id: 'napalm', name: 'NAPALM', cost: 320, mods: { damage: 68, burn: 32, burnDur: 2.6, range: 2.9, cone: 0.7, puddle: true, puddleDmg: 34, puddleDur: 4.5, puddleRadius: 1.15, overheat: 3.0, blowDmg: 230 },
+        surge: { puddleDmg: 18, puddleRadius: 0.08 }, note: 'Coats the lane in burning fuel, and goes up early and often.' }
     ]
   },
 
@@ -1313,27 +1400,27 @@ const TOWER_TYPES = {
   },
 
   beacon: {
-    id: 'beacon', element: 'radiant', origin: 'light', name: 'BEACON', role: 'Tower amplification aura', cost: 351, costGrowth: 2.05,
+    id: 'beacon', element: 'radiant', origin: 'light', name: 'BEACON', role: 'Consecrates one tower at a time', cost: 351, costGrowth: 2.05,
     color: '#fbbf24', dark: '#78500a', attack: 'aura',
-    desc: 'Fires nothing. Amplifies damage, rate and range for every tower inside it. Priced so you will only ever field a few.',
-    base: { range: 2.6, dmgType: 'none', auraDmg: 0.16, auraRate: 0.10, auraRange: 0.0 },
+    desc: 'Fires nothing, and spreads nothing. It lights the best gun inside its field and pours everything it has into that ONE emplacement until the beam moves on. LATE-GAME by design: a Beacon is worth exactly what your best tower is worth, so it is dead weight over four cheap emplacements and enormous over one ascended monster — the opposite question a Pylon asks.',
+    base: { range: 2.6, dmgType: 'none', focusDmg: 0.40, focusRate: 0.20, focusEvery: 3.2, focusCount: 1 },
     levels: [
-      { cost: 180, name: 'RESONATOR', mods: { auraDmg: 0.26, auraRate: 0.18, range: 2.9 } },
-      { cost: 320, name: 'HARMONIC',  mods: { auraDmg: 0.40, auraRate: 0.28, auraRange: 0.10, range: 3.3 } }
+      { cost: 180, name: 'RESONATOR', mods: { focusDmg: 0.66, focusRate: 0.30, range: 2.9 } },
+      { cost: 320, name: 'HARMONIC',  mods: { focusDmg: 0.95, focusRate: 0.40, focusRange: 0.12, range: 3.3 } }
     ],
     talents: [
-      { id:'t_broad', row:0, col:0, name:'BROADCAST',   desc:'+35% aura radius.',            mods:{ rangeMul:1.35 } },
-      { id:'t_focus', row:0, col:1, name:'FOCUSED FIELD',desc:'+45% damage aura.',           mods:{ auraDmgMul:1.45 } },
-      { id:'t_tempo', row:1, col:0, name:'TEMPO CORE',  desc:'+50% fire-rate aura.',         mods:{ auraRateMul:1.50 } },
-      { id:'t_latt',  row:1, col:1, name:'LATTICE',     desc:'+12% range to covered towers.',mods:{ auraRange:0.12 } },
-      { id:'t_overtune', row:2, col:0, name:'OVERTUNE', desc:'+35% damage aura and +20% rate aura.', mods:{ auraDmgMul:1.35, auraRateMul:1.20 } },
-      { id:'t_wideband', row:2, col:1, name:'WIDEBAND', desc:'+30% aura radius and +8% range aura.', mods:{ rangeMul:1.30, auraRange:0.08 } }
+      { id:'t_broad', row:0, col:0, name:'BROADCAST',   desc:'+35% field radius.',            mods:{ rangeMul:1.35 } },
+      { id:'t_focus', row:0, col:1, name:'CONSECRATION',desc:'+45% to the damage it lends.',  mods:{ focusDmgMul:1.45 } },
+      { id:'t_tempo', row:1, col:0, name:'TEMPO CORE',  desc:'+50% to the fire rate it lends.', mods:{ focusRateMul:1.50 } },
+      { id:'t_latt',  row:1, col:1, name:'LATTICE',     desc:'The lit tower also gains +14% range.', mods:{ focusRange:0.14 } },
+      { id:'t_overtune', row:2, col:0, name:'OVERTUNE', desc:'+35% lent damage and +20% lent rate.', mods:{ focusDmgMul:1.35, focusRateMul:1.20 } },
+      { id:'t_wideband', row:2, col:1, name:'WIDEBAND', desc:'Lights a second tower as well, at reduced strength.', mods:{ focusCount:1 } }
     ],
     branches: [
-      { id: 'overclock', name: 'OVERCLOCK', cost: 520, mods: { auraDmg: 0.48, auraRate: 0.65, auraRange: 0.08, range: 3.5 },
-        surge: { auraRate: 0.10 }, note: 'A colossal fire-rate aura.' },
-      { id: 'amplifier', name: 'AMPLIFIER', cost: 520, mods: { auraDmg: 0.90, auraRate: 0.16, auraRange: 0.26, range: 3.5 },
-        surge: { auraDmg: 0.14 }, note: 'A huge damage and range aura.' }
+      { id: 'overclock', name: 'OVERCLOCK', cost: 520, mods: { focusDmg: 0.54, focusRate: 0.90, focusEvery: 2.4, range: 3.5 },
+        surge: { focusRate: 0.11 }, note: 'A short, restless beam — the fire rate goes wherever it lands.' },
+      { id: 'amplifier', name: 'AMPLIFIER', cost: 520, mods: { focusDmg: 1.80, focusRate: 0.28, focusRange: 0.24, focusEvery: 4.5, range: 3.5 },
+        surge: { focusDmg: 0.22 }, note: 'One tower, held in the light a long time, and unrecognisable while it is.' }
     ]
   },
 
@@ -1440,7 +1527,7 @@ const TOWER_TYPES = {
   vault: {
     id: 'vault', element: 'radiant', origin: 'robotic', name: 'VAULT', role: 'Economy — generates gold', cost: 324, costGrowth: 2.35,
     color: '#fcd34d', dark: '#78350f', attack: 'economy',
-    desc: 'Mints gold and skims from kills nearby. Priced to be nearly unique — a second one costs more than double.',
+    desc: 'Mints gold on a clock and skims from kills nearby. EARLY-GAME by design: it pays from the moment it is raised and can never be paid for the waves you spent without it. Priced to be nearly unique — a second one costs more than double. The other economy structure mints nothing at all.',
     base: { range: 3.2, dmgType: 'none', income: 9, incomeEvery: 5, killCut: 2 },
     levels: [
       { cost: 165, name: 'STRONGBOX', mods: { income: 15, killCut: 3, range: 3.5 } },
@@ -1463,27 +1550,27 @@ const TOWER_TYPES = {
   },
 
   flak: {
-    id: 'flak', element: 'kinetic', origin: 'human', name: 'FLAK', role: 'Anti-air only', cost: 216, costGrowth: 1.60,
+    id: 'flak', element: 'kinetic', origin: 'human', name: 'FLAK', role: 'Anti-air — brings flyers down', cost: 216, costGrowth: 1.60,
     color: '#5eead4', dark: '#134e4a', attack: 'projectile', airOnly: true,
-    desc: 'CANNOT TARGET GROUND. In exchange it deletes anything airborne — the exact mirror of Mortar.',
-    base: { damage: 23, range: 4.2, rate: 1.1, projSpeed: 17, dmgType: 'physical', splash: 1.4 },
+    desc: 'CANNOT TARGET GROUND. What it does instead is bring things DOWN: a hit flyer is crippled onto the deck for a few seconds, crawling, where every ground-only gun on the board can finally reach it. CONDITIONAL — worth nothing against a wave with no sky, and the reason the exact mirror of Mortar is also its partner.',
+    base: { damage: 23, range: 4.2, rate: 1.1, projSpeed: 17, dmgType: 'physical', splash: 1.4, downFor: 0.6 },
     levels: [
-      { cost: 115, name: 'AUTOCANNON', mods: { damage: 78, rate: 1.2 } },
-      { cost: 205, name: 'BATTERY',    mods: { damage: 128, range: 4.6, splash: 1.6 } }
+      { cost: 115, name: 'AUTOCANNON', mods: { damage: 78, rate: 1.2, downFor: 0.85 } },
+      { cost: 205, name: 'BATTERY',    mods: { damage: 128, range: 4.6, splash: 1.6, downFor: 1.1 } }
     ],
     talents: [
       { id:'t_prox', row:0, col:0, name:'PROXIMITY FUSE',desc:'+45% splash radius.',  mods:{ splashMul:1.45 } },
       { id:'t_velo', row:0, col:1, name:'HIGH VELOCITY', desc:'+45% damage.',         mods:{ damageMul:1.45 } },
       { id:'t_radar',row:1, col:0, name:'RADAR LINK',    desc:'+40% range.',          mods:{ rangeMul:1.40 } },
-      { id:'t_curt', row:1, col:1, name:'FLAK CURTAIN',  desc:'Hits slow flyers 45%.',mods:{ slow:0.45, slowDur:1.6 } },
+      { id:'t_curt', row:1, col:1, name:'FLAK CURTAIN',  desc:'Slows flyers 45%, and holds them down 0.4s longer.', mods:{ slow:0.45, slowDur:1.6, downFor:0.4 } },
       { id:'t_saturation', row:2, col:0, name:'SATURATION', desc:'+35% damage and +25% splash.', mods:{ damageMul:1.35, splashMul:1.25 } },
       { id:'t_interceptor', row:2, col:1, name:'INTERCEPTORS', desc:'+60% fire rate.', mods:{ rateMul:1.60 } }
     ],
     branches: [
-      { id: 'skyshred', name: 'SKYSHRED', cost: 345, mods: { damage: 240, splash: 2.1, rate: 1.15 },
-        surge: { splash: 0.15 }, note: 'One burst clears an entire flight.' },
-      { id: 'seeker', name: 'SEEKER SWARM', cost: 345, mods: { damage: 82, rate: 3.2, splash: 0.9, homing: true, slow: 0.4, slowDur: 1.4 },
-        surge: { rate: 0.4 }, note: 'A stream of homing seekers that cripple flyer speed.' }
+      { id: 'skyshred', name: 'SKYSHRED', cost: 345, mods: { damage: 240, splash: 2.1, rate: 1.15, downFor: 1.3 },
+        surge: { splash: 0.15, downFor: 0.08 }, note: 'One burst clears an entire flight, and grounds whatever lives through it.' },
+      { id: 'seeker', name: 'SEEKER SWARM', cost: 345, mods: { damage: 82, rate: 3.2, splash: 0.9, homing: true, slow: 0.4, slowDur: 1.4, downFor: 0.5 },
+        surge: { rate: 0.4 }, note: 'A stream of homing seekers. Nothing it is shooting at ever regains altitude.' }
     ]
   },
 
@@ -1602,27 +1689,27 @@ const TOWER_TYPES = {
   },
 
   quartermaster: {
-    id: 'quartermaster', element: 'radiant', origin: 'human', name: 'QUARTERMASTER', role: 'Economy — pays per wave', cost: 300, costGrowth: 2.15,
-    color: '#fde68a', dark: '#78500a', attack: 'economy', glyph: '⌸',
-    desc: 'Human logistics, which is to say paperwork with a roof on it. Pays a lump sum when a wave ends rather than a trickle while it runs — worthless in a rout, decisive in a long hold.',
-    base: { range: 3.0, dmgType: 'none', income: 5, incomeEvery: 6, waveBonus: 40 },
+    id: 'quartermaster', element: 'radiant', origin: 'human', name: 'QUARTERMASTER', role: 'Supply — makes gold go further', cost: 300, costGrowth: 2.15,
+    color: '#fde68a', dark: '#78500a', attack: 'depot', glyph: '⌸',
+    desc: 'Human logistics, which is to say paperwork with a roof on it. It mints nothing at all. Every upgrade bought on a tower inside the depot is requisitioned rather than purchased, and a lump sum lands when a wave ends. LATE-GAME by design — a discount is worth what the thing discounted costs, and nothing bought in wave two costs enough to be worth saving on.',
+    base: { range: 3.0, dmgType: 'none', waveBonus: 72, requisition: 0.10 },
     levels: [
-      { cost: 155, name: 'DEPOT',    mods: { income: 8,  waveBonus: 74 } },
-      { cost: 275, name: 'LOGISTICS', mods: { income: 12, waveBonus: 118, range: 3.4 } }
+      { cost: 155, name: 'DEPOT',     mods: { waveBonus: 125, requisition: 0.15 } },
+      { cost: 275, name: 'LOGISTICS', mods: { waveBonus: 190, requisition: 0.20, range: 3.4 } }
     ],
     talents: [
-      { id:'qm_req',  row:0, col:0, name:'REQUISITION', desc:'+70% wave payment.',        mods:{ waveBonus:82 } },
-      { id:'qm_drip', row:0, col:1, name:'STANDING ORDER', desc:'+60% timed income.',     mods:{ incomeMul:1.60 } },
+      { id:'qm_req',  row:0, col:0, name:'REQUISITION', desc:'+70% wave payment.',        mods:{ waveBonus:140 } },
+      { id:'qm_drip', row:0, col:1, name:'FORWARD DEPOT', desc:'A further 5% off upgrades inside it.', mods:{ requisition:0.05 } },
       { id:'qm_wide', row:1, col:0, name:'WIDE DEPOT',  desc:'+40% radius.',              mods:{ rangeMul:1.40 } },
-      { id:'qm_skim', row:1, col:1, name:'SALVAGE TAX', desc:'Skims 3 gold from kills nearby.', mods:{ killCut:3 } },
-      { id:'qm_bulk', row:2, col:0, name:'BULK ORDER',  desc:'+120% wave payment.',       mods:{ waveBonus:140 } },
-      { id:'qm_mix',  row:2, col:1, name:'FULL LEDGER', desc:'+50% timed income and +2 kill skim.', mods:{ incomeMul:1.50, killCut:2 } }
+      { id:'qm_skim', row:1, col:1, name:'FIELD WORKSHOP', desc:'A further 6% off upgrades inside it.', mods:{ requisition:0.06 } },
+      { id:'qm_bulk', row:2, col:0, name:'BULK ORDER',  desc:'+120% wave payment.',       mods:{ waveBonus:240 } },
+      { id:'qm_mix',  row:2, col:1, name:'FULL LEDGER', desc:'+155 wave payment and a further 4% off upgrades.', mods:{ waveBonus:155, requisition:0.04 } }
     ],
     branches: [
-      { id: 'commissary', name: 'COMMISSARY', cost: 440, mods: { income: 10, waveBonus: 330, range: 3.8 },
-        surge: { waveBonus: 78 }, note: 'One payment per wave, and it is a large one.' },
-      { id: 'convoy', name: 'CONVOY', cost: 440, mods: { income: 34, waveBonus: 120, killCut: 5, range: 4.2 },
-        surge: { income: 8 }, note: 'A steady column instead of a single delivery.' }
+      { id: 'commissary', name: 'COMMISSARY', cost: 440, mods: { waveBonus: 540, requisition: 0.12, range: 3.8 },
+        surge: { waveBonus: 125 }, note: 'One payment per wave, and it is a large one.' },
+      { id: 'convoy', name: 'CONVOY', cost: 440, mods: { waveBonus: 250, requisition: 0.32, range: 4.2 },
+        surge: { requisition: 0.02 }, note: 'Nothing inside the column is ever bought at list price.' }
     ]
   }
 };
@@ -2274,7 +2361,7 @@ function sqGold(v) { return Math.max(1, Math.round(v / GOLD_SQUISH)); }
 /** Tower stat keys denominated in absolute GOLD. Their multipliers end in
     Mul and are deliberately absent; execBounty is a fraction and absent too. */
 const GOLD_STAT_KEYS = ['income', 'killCut', 'waveBonus', 'drainGold', 'sabotageGold',
-                        'execGold', 'charmGold', 'transGold', 'flockGold'];
+                        'execGold', 'charmGold', 'transGold', 'flockGold', 'vigilGold'];
 /** Gold per second of prep window surrendered by an early call. Was a bare 5
     inside rushWave; named so the squish reaches it exactly once. */
 const RUSH_GOLD_PER_SEC = 5 / GOLD_SQUISH;
@@ -2291,6 +2378,16 @@ const RELOCATE_MIN_FEE = sqGold(10);
     economy exactly where it was measured -- parity: the rival must not go
     off gold merely because gold got smaller. */
 const AI_ECON_UPGRADE_WEIGHT = 9 * GOLD_SQUISH;
+/* A wave runs about this many VAULT ticks, which is the denominator
+   AI_ECON_UPGRADE_WEIGHT was calibrated against. QUARTERMASTER pays per WAVE
+   rather than per tick, so its lump has to be divided down or the rival
+   prices a depot five times too highly and stops building things that shoot. */
+const DEPOT_TICKS_PER_WAVE = 5;
+/* Upgrade gold a held board actually puts through in one Vault tick. The
+   requisition discount is worth this times its percentage; a percentage with
+   no reference spend behind it is a number the rival cannot compare to
+   anything, which is how a stat ends up read by nobody. */
+const DEPOT_REQ_REF_SPEND = sqGold(120);
 
 /**
  * The one normalisation pass. Called ONCE, from towers2.js, after the
@@ -2348,7 +2445,12 @@ const STAT_CEIL = {
   charmHpBonus: 0.90, minionSlow: 0.85, novaKeep: 0.80, reckonFrac: 0.90,
   pierce: 0.90, crit: 0.75, vuln: 0.60, slow: 0.85, freezeChance: 0.50,
   transmute: 0.50, hold: 0.80, execThreshold: 0.40,
-  flockHp: 1.20, flockSpeed: 0.60
+  flockHp: 1.20, flockSpeed: 0.60,
+  /* runFalloff is authored the way `falloff` already is: the talent states
+     the rate it wants and the ceiling is what delivers it. killReload cannot
+     usefully exceed one whole reload; requisition is ceilinged again inside
+     the reader, because surges bypass this table entirely. */
+  runFalloff: 0.90, killReload: 1.00, requisition: 0.45, digest: 0.30
 };
 function waveCountMultiplier(w) { return 1 + (w - 1) * 0.022; }
 /** Bounty still grows slower than health, but it has to keep enough pace that
@@ -2729,6 +2831,14 @@ const MUSTER_BANDS = [
   { name:'SIEGE',    icon:'›››' }
 ];
 
+/** Every faction unit id, or an empty list before factions.js has run. Every
+    per-unit store in a profile enumerates from this one accessor, so a unit
+    added to a power's roster gains its talent tree and its mastery track by
+    existing rather than by being listed a second time. */
+function unitTrackIds() {
+  return (typeof UNIT_ORDER === 'undefined') ? [] : UNIT_ORDER;
+}
+
 /** True when an enemy id is sane to sell as a send. */
 function musterSendable(id) {
   const def = ENEMY_TYPES[id];
@@ -2737,19 +2847,133 @@ function musterSendable(id) {
   return (def.lives || 1) <= MUSTER_MAX_LIVES;
 }
 
+/* ── FACTION UNITS: THE DOCTRINE TUNABLES (roadmap 19.10-19.14) ───────────
+   A faction unit is an ENEMY record read as a UNIT. Everything a doctrine or a
+   unit talent needs is named here, beside the muster maths it modifies, so no
+   figure the loadout card prints is derived anywhere but where the engine
+   charges it.
+
+   None of these moves either balance pin. MEASURED: both pins run
+   MUSTER_BASE_UNLOCK (crawler) alone -- balance-pins.js writes tower shelves
+   and never touches vault().musterUnlocked -- and neither pin map garrisons
+   faction troops (battleHostFaction returns null without a seat, a contest,
+   a fortress or a nest). unitFieldMods returns the frozen identity for any id
+   outside UNIT_TYPES, so a crawler's tier is byte-identical to before. */
+
+/** Souls for a unit bought outright. Priced under a tower (TOWER_UNLOCK_COST
+    6 plus the surcharge) because a unit is one third of a detachment while a
+    tower is one fifth of a board AND carries a talent tree of its own -- and
+    because the rescue path is free, so the shop must read as the impatient
+    option rather than the only one. Rides soulSurcharge like every other
+    purchase, so it cannot escape the inflation ladder. */
+const UNIT_UNLOCK_COST = 8;
+
+/* SALVAGE (Humanity). Armour taken off any wreck within reach, whoever it
+   belonged to. The CAP is the load-bearing one: without it a human send that
+   walked through a full wave arrived effectively immune to physical damage,
+   which is not "stubborn", it is unanswerable. Nine is a Linebreaker's own
+   plate again -- doubled and no further. */
+const UNIT_SALVAGE_RADIUS = 2.2;    /* tiles from the wreck                    */
+const UNIT_SALVAGE_ARMOR = 1.1;     /* armour per wreck                        */
+const UNIT_SALVAGE_CAP = 9;         /* total, however much wreckage there is   */
+
+/* THE VOW (Federation). A ward outlives its body. SHARE is under half so a
+   column cannot carry one ward end to end undiminished, and OVERCAP bounds
+   how far past its own maximum a single survivor can be stacked -- three
+   deaths onto one Sanctifier was a 600-point ward and an unkillable anchor. */
+const UNIT_VOW_RADIUS = 3.0;        /* tiles the vow reaches                   */
+const UNIT_VOW_SHARE = 0.45;        /* of the dead unit's FULL ward            */
+const UNIT_VOW_OVERCAP = 1.6;       /* ceiling, as a multiple of its own ward  */
+
+/* THE MASS (Xeno). The swarm eats its own dead. SHARE is of the eaten body's
+   MAX health, added to current and maximum alike, so a Xeno send genuinely
+   gets harder the slower you clear it. The radius growth is cosmetic weight
+   with a cap, because an unbounded radius is a hitbox the renderer and the
+   splash maths disagree about. */
+const UNIT_MASS_RADIUS = 2.6;       /* tiles the swarm reaches to feed         */
+const UNIT_MASS_SHARE = 0.35;       /* of the dead body's maximum health       */
+const UNIT_MASS_GROWTH = 0.12;      /* radius gained per meal                  */
+const UNIT_MASS_RADIUS_CAP = 1.5;   /* as a multiple of its authored radius    */
+
+/* SCUTTLE (Pirates). Killing one costs you the guns that killed it. The
+   COOLDOWN is per defending side and is what stops a six-body Cutter pack
+   chain-locking a board for five seconds -- the jam is meant to change WHERE
+   you kill pirates, never whether you can. */
+const UNIT_SCUTTLE_RADIUS = 1.8;    /* tiles of towers taken offline           */
+const UNIT_SCUTTLE_JAM = 0.85;      /* seconds                                 */
+const UNIT_SCUTTLE_COOLDOWN = 3.2;  /* seconds, per defending side             */
+
+/* A death fires one scan of the board. The cap is a guard against a
+   pathological arena seat count, not a balance figure: above it the doctrines
+   simply do not fire rather than the frame budget going with them. */
+const UNIT_DOCTRINE_SCAN_CAP = 320;
+
+/* Mastery a unit earns per body that finishes its march -- killed or landed.
+   Pitched so a detachment reaches the row-1 gate over a handful of matches,
+   the same pace a tower's mastery does off damage and kills. It is the WRITER
+   for p.towerXp[unitId]; without one every unit talent past the first row
+   would be an inert key, which is the failure this codebase is named for. */
+const UNIT_XP_PER_BODY = 26;
+
+/**
+ * The folded doctrine a unit is fielded under: its saved talent build merged
+ * over the identity. Keyed by UNIT id and by nothing else, which is what makes
+ * rival parity STRUCTURAL here rather than mirrored -- both commanders derive
+ * their detachment through musterTiersFor, both land in this function, and a
+ * unit is fielded the same way whoever sends it. The vault it came out of is
+ * install-wide for exactly the same reason.
+ *
+ * Returns the FROZEN identity for anything outside UNIT_TYPES -- a crawler, a
+ * machine, a stale save's id -- so nothing that is not a faction unit can pick
+ * up a doctrine by accident.
+ */
+const _unitFieldCache = new Map();
+function unitFieldMods(id) {
+  if (typeof UNIT_TYPES === 'undefined' || !UNIT_TYPES[id] ||
+      typeof Meta === 'undefined') return UNIT_FIELD_IDENTITY;
+  const picks = Meta.talentMods(id) || [];
+  /* Cached on the BUILD, not the id: the loadout screen re-renders every card
+     on every click and a battle asks once per spawned body. The key is the
+     node ids in order, so taking a talent invalidates it by construction. */
+  const key = id + '|' + picks.map(t => t.id).join(',');
+  const hit = _unitFieldCache.get(key);
+  if (hit) return hit;
+  const out = Object.assign({}, UNIT_FIELD_IDENTITY);
+  for (const t of picks) {
+    const m = t && t.mods;
+    if (!m) continue;
+    for (const k in m) {
+      if (!(k in UNIT_FIELD_IDENTITY)) continue;   /* no reader, no effect */
+      if (UNIT_FIELD_IDENTITY[k] === 1) out[k] *= m[k];
+      else out[k] += m[k];
+    }
+  }
+  _unitFieldCache.set(key, out);
+  return out;
+}
+/** Dropped when a talent is spent, so the next read rebuilds. */
+function clearUnitFieldCache() { _unitFieldCache.clear(); }
+
 /** One derived tier. `id` doubles as the tier id the sidebar and the brain
     hand back to Game.muster. */
 function musterTierFor(id) {
   const def = ENEMY_TYPES[id];
   if (!def) return null;
-  const raw = Math.round(MUSTER_COUNT_K / Math.sqrt(Math.max(1, def.hp)));
+  /* The detachment's doctrine is folded HERE and nowhere else. The loadout
+     card, the muster bar, the rival's valuation and the send all call this one
+     function, and a preview quoting a different pack size from the one the
+     engine marches is the desync class this project has shipped seven times.
+     `hpMul` enters the MASS term because cost and income are linear in mass by
+     design -- a talent that makes each body heavier must pay for it. */
+  const m = unitFieldMods(id);
+  const raw = Math.round(MUSTER_COUNT_K / Math.sqrt(Math.max(1, def.hp)) * m.countMul);
   const count = Math.max(MUSTER_COUNT_MIN, Math.min(MUSTER_COUNT_MAX, raw));
-  const mass = def.hp * count;   /* total health one purchase puts in a lane */
+  const mass = def.hp * m.hpMul * count;   /* total health one purchase puts in a lane */
   const band = MUSTER_BANDS[mass >= MUSTER_BAND_SIEGE_MASS ? 2 : mass >= MUSTER_BAND_ASSAULT_MASS ? 1 : 0];
   return {
     id, type: id, name: band.name, icon: band.icon, count, mass,
-    cost: MUSTER_COST_BASE + mass * MUSTER_COST_PER_MASS,
-    incomePct: MUSTER_INCOME_BASE + mass * MUSTER_INCOME_PER_MASS
+    cost: (MUSTER_COST_BASE + mass * MUSTER_COST_PER_MASS) * m.costMul,
+    incomePct: (MUSTER_INCOME_BASE + mass * MUSTER_INCOME_PER_MASS) * m.incomeMul
   };
 }
 

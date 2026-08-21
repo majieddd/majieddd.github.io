@@ -855,3 +855,194 @@ function makeAbilityConstruct(side, game, def, at) {
   }
   return new AbilityConstruct(side, game, def, (at.gx + 0.5) * TILE, (at.gy + 0.5) * TILE, null);
 }
+
+
+/* ==========================================================================
+   FACTION UNIT DOCTRINES   (roadmap 19.11)
+
+   Four laws, one per power, hung off Enemy.prototype the way everything else
+   in this file is hung off Tower.prototype -- the core simulation is not
+   touched. Each fires off a DEATH and each acts on something DIFFERENT, which
+   is the whole point: a Xeno send and a Federation send must not be the same
+   detachment in another colour.
+
+     HUMANITY  SALVAGE -- takes armour off ANY wreck nearby, the Vigil's too.
+     FEDERATION THE VOW-- a broken ward passes to the nearest sworn survivor.
+     XENO      THE MASS-- the swarm eats its own dead and grows.
+     PIRATES   SCUTTLE -- dying takes the guns that killed it offline.
+
+   The doctrine belongs to the SOLDIER and applies wherever that soldier
+   stands -- in a garrison's wave as much as in a commander's send -- because
+   it is what the power is, not a bonus a commander bought. Unit TALENTS are
+   the opposite: they are how YOU field them, so they are applied only to
+   bodies a commander actually put in a lane.
+   ========================================================================== */
+
+/** Talent-folded field stats, applied once, on the body's first frame. Only a
+    SENT body is touched: a garrison's soldiers standing on a world are not
+    fielded by anybody's talent screen, and letting the player's saved build
+    strengthen the wave that marches at both commanders would be a difficulty
+    setting rather than a doctrine. */
+function applyUnitField(e) {
+  if (!(e.reanimated && e.owner >= 0)) return;
+  const m = unitFieldMods(e.def.id);
+  if (m === UNIT_FIELD_IDENTITY) return;
+  if (m.hpMul !== 1) {
+    const frac = e.maxHp > 0 ? e.hp / e.maxHp : 1;
+    e.maxHp = Math.max(1, Math.round(e.maxHp * m.hpMul));
+    e.hp = e.maxHp * frac;
+  }
+  if (m.shieldMul !== 1 && e.maxShield > 0) {
+    e.maxShield *= m.shieldMul;
+    e.shield = e.maxShield;
+  }
+  if (m.armorAdd) e.armor += m.armorAdd;
+  if (m.speedMul !== 1) e.baseSpeed *= m.speedMul;
+  /* `regen` is a live reader in Enemy.update that until now had no writer at
+     all -- one of the inert keys CONTRIBUTING names. A unit talent is its
+     first. */
+  if (m.regen) e.regen = Math.max(e.regen, m.regen);
+  if (m.slowResistAdd) e.slowResist = Math.min(0.95, e.slowResist + m.slowResistAdd);
+}
+
+/* SALVAGE is armour, and armour is read through a getter. Extending the getter
+   rather than writing `auraArmor` is deliberate: Game.recomputeAuras rebuilds
+   auraArmor from scratch every frame, so anything added there is erased before
+   it is ever read. */
+const _totalArmorGet = Object.getOwnPropertyDescriptor(Enemy.prototype, 'totalArmor').get;
+Object.defineProperty(Enemy.prototype, 'totalArmor', {
+  configurable: true,
+  get() { return _totalArmorGet.call(this) + (this.salvagedArmor || 0); }
+});
+
+/** Per defending side, the clock time a scuttle may next jam. A six-body
+    Cutter pack dying together would otherwise chain-lock a board solid, which
+    is not "changes where you kill pirates", it is "you do not have towers". */
+const _scuttleReady = [];
+
+/** A body's talent-folded doctrine coefficients, or the identity when nobody
+    fielded it. The distinction matters: a garrison's soldiers are standing on
+    a world, not deployed off a loadout screen, and letting the player's own
+    saved build strengthen the doctrine of the troops marching AT them would
+    make the talent screen a difficulty setting. */
+function unitDoctrineMods(e) {
+  return (e && e.reanimated && e.owner >= 0) ? unitFieldMods(e.def.id) : UNIT_FIELD_IDENTITY;
+}
+
+/**
+ * One board scan per death, resolving all four doctrines together. Kept to a
+ * single pass because the alternative -- a per-frame aura for SALVAGE -- costs
+ * a scan per human unit per frame, and deaths are the cheaper clock.
+ */
+function unitDeathDoctrine(e) {
+  const game = Game;
+  if (!game || !game.enemies || game.enemies.length > UNIT_DOCTRINE_SCAN_CAP) return;
+  const doc = unitDoctrineOf(e.def.id);
+  const mine = unitDoctrineMods(e);
+
+  /* SCUTTLE needs nothing but the corpse and a cooldown. Game.jamTowers reads
+     `hostileTo` for the side and refuses jam-immune towers, so a pirate send
+     obeys exactly the rules the Scrapjack's looted jammer already does. */
+  if (doc && doc.id === 'scuttle') {
+    const side = e.hostileTo | 0;
+    /* A new match rewinds Game.clock, so a stamp from the last one would sit
+       in the future and mute the doctrine for the whole battle. */
+    let ready = _scuttleReady[side] || 0;
+    if (ready > game.clock + UNIT_SCUTTLE_COOLDOWN) ready = 0;
+    if (ready <= game.clock) {
+      _scuttleReady[side] = game.clock + UNIT_SCUTTLE_COOLDOWN;
+      game.jamTowers(e, { radius: UNIT_SCUTTLE_RADIUS,
+                          duration: UNIT_SCUTTLE_JAM * mine.scuttleMul });
+    }
+  }
+
+  const salvR2 = (UNIT_SALVAGE_RADIUS * TILE) ** 2;
+  const vowR2 = (UNIT_VOW_RADIUS * TILE) ** 2;
+  const massR2 = (UNIT_MASS_RADIUS * TILE) ** 2;
+  let vowTarget = null, vowBest = Infinity;
+  let massTarget = null, massBest = Infinity;
+
+  for (const o of game.enemies) {
+    if (o === e || o.dead || o.leaked) continue;
+    /* Same LANE. A doctrine looks after the march it is on; it never reaches
+       across the board into the rival's corridor. */
+    if (o.hostileTo !== e.hostileTo) continue;
+    const od = unitDoctrineOf(o.def.id);
+    if (!od) continue;
+    const d2 = dist2(e.x, e.y, o.x, o.y);
+
+    /* SALVAGE fires off ANY death in reach -- a machine's, a rival power's,
+       one of its own -- because what humanity does is bolt whatever it finds
+       onto what it already has. It is the only doctrine that does not care
+       whose the wreck was, and that is the whole of the character. */
+    if (od.id === 'salvage' && d2 <= salvR2) {
+      const gain = UNIT_SALVAGE_ARMOR * unitDoctrineMods(o).salvageMul;
+      o.salvagedArmor = Math.min(UNIT_SALVAGE_CAP, (o.salvagedArmor || 0) + gain);
+      if (game.spawnParticle)
+        game.spawnParticle(o.x, o.y - 6, rand(-8, 8), rand(-30, -12), 0.4, 2.2, '#38e8ff', 'spark');
+    }
+    /* The other three are a power looking after its OWN, so they also need the
+       same detachment: a garrison Votary does not inherit a sent one's ward. */
+    if (!doc || o.owner !== e.owner) continue;
+    if (doc.id === 'vow' && od.id === 'vow' && d2 <= vowR2 && d2 < vowBest)
+      { vowBest = d2; vowTarget = o; }
+    if (doc.id === 'mass' && od.id === 'mass' && d2 <= massR2 && d2 < massBest)
+      { massBest = d2; massTarget = o; }
+  }
+
+  /* THE VOW. The share is of the ward the dead unit was AUTHORED with, not of
+     whatever was left of it -- the vow is the whole life, given once. */
+  if (vowTarget && e.maxShield > 0) {
+    const pass = e.maxShield * UNIT_VOW_SHARE * mine.vowMul;
+    const cap = Math.max(vowTarget.maxShield, 1) * UNIT_VOW_OVERCAP;
+    vowTarget.shield = Math.min(cap, (vowTarget.shield || 0) + pass);
+    vowTarget.shieldCooldown = 0;
+    if (game.spawnBurst) game.spawnBurst(vowTarget.x, vowTarget.y, 8, '#fde68a', 90);
+  }
+
+  /* THE MASS. Added to CURRENT and MAXIMUM alike, so the survivor is genuinely
+     bigger rather than merely topped up -- a Xeno send you clear slowly ends
+     as one thing you cannot. */
+  if (massTarget) {
+    const meal = e.maxHp * UNIT_MASS_SHARE * unitDoctrineMods(massTarget).massMul;
+    massTarget.maxHp += meal;
+    massTarget.hp += meal;
+    const rcap = (ENEMY_TYPES[massTarget.def.id].radius || 10) * UNIT_MASS_RADIUS_CAP;
+    massTarget.radius = Math.min(rcap, massTarget.radius * (1 + UNIT_MASS_GROWTH));
+    if (game.spawnBurst) game.spawnBurst(massTarget.x, massTarget.y, 10, '#a855f7', 100);
+  }
+}
+
+/** A sent body that has finished its march -- killed or landed -- is what the
+    profile learns a unit from. THE writer for p.towerXp[unitId]: without it
+    every unit talent past the first row is a key nothing can ever reach. Only
+    seat 0's sends count, because only seat 0 has a profile. */
+function unitMarchDone(e) {
+  if (!e.reanimated || e.owner !== 0) return;
+  if (typeof UNIT_TYPES === 'undefined' || !UNIT_TYPES[e.def.id]) return;
+  if (typeof Meta !== 'undefined' && Meta.addUnitXp) Meta.addUnitXp(e.def.id, UNIT_XP_PER_BODY);
+}
+
+const _enemyUpdate = Enemy.prototype.update;
+Enemy.prototype.update = function (dt) {
+  if (!this._unitFielded) { this._unitFielded = 1; applyUnitField(this); }
+  const r = _enemyUpdate.call(this, dt);
+  /* A leak is the other way a march ends, and it is set inside update. */
+  if (this.leaked && !this._marchDone) { this._marchDone = 1; unitMarchDone(this); }
+  return r;
+};
+
+const _enemyTakeDamage = Enemy.prototype.takeDamage;
+Enemy.prototype.takeDamage = function (amount, type, opts) {
+  const wasAlive = !this.dead;
+  const dealt = _enemyTakeDamage.call(this, amount, type, opts);
+  /* Death is decided in takeDamage and nowhere else, and revive() runs inside
+     it -- so a Wrecker getting back up never reaches here, which is correct:
+     it has not finished its march and it has not left a wreck. */
+  if (wasAlive && this.dead && !this._doctrineSpent) {
+    this._doctrineSpent = 1;
+    unitDeathDoctrine(this);
+    if (!this._marchDone) { this._marchDone = 1; unitMarchDone(this); }
+  }
+  return dealt;
+};

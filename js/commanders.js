@@ -137,6 +137,10 @@ const Meta = {
                 musterLoadout: [] };
     for (const c of COMMANDERS) p.commanders[c.id] = { xp: 0, unlocked: [] };
     for (const id of TOWER_ORDER) { p.talents[id] = []; p.towerXp[id] = 0; }
+    /* Units share the tower tracks rather than growing their own: one talent
+       store, one mastery store, one set of readers. Enumerated separately only
+       because UNIT_ORDER is built in factions.js, after TOWER_ORDER. */
+    for (const id of unitTrackIds()) { p.talents[id] = []; p.towerXp[id] = 0; }
     return p;
   },
   profileNames() { return Object.keys(this.root().profiles); },
@@ -188,6 +192,13 @@ const Meta = {
     if (!Array.isArray(p.seenEnemies)) p.seenEnemies = [];
     if (typeof p.souls !== 'number') p.souls = 0;
     for (const id of TOWER_ORDER) if (typeof p.towerXp[id] !== 'number') p.towerXp[id] = 0;
+    /* Units arrived after every profile in existence was written, so they are
+       defaulted on READ exactly the way musterUnlocked was -- an old save must
+       gain the tracks, never be rebuilt around them. */
+    for (const id of unitTrackIds()) {
+      if (!Array.isArray(p.talents[id])) p.talents[id] = [];
+      if (typeof p.towerXp[id] !== 'number') p.towerXp[id] = 0;
+    }
     /* The campaign is a profile field too, and it was the ONE this function
        never touched: fifteen fields normalised beside an object that grew
        stars, systemsTaken, defeats and owners long after it first shipped. A
@@ -437,7 +448,7 @@ const Meta = {
     if (stars > prev) c.stars[worldId] = stars;
 
     /* A solar system whose every world is conquered pays a bounty, once. */
-    let systemTaken = null, saved = [], storyTower = null;
+    let systemTaken = null, saved = [], storyTower = null, refusedOffer = null;
     if (souls || stars > prev) {
       const gx = this.galaxy();
       const sys = gx && gx.systems.find(s2 => s2.worlds.some(w => w.id === worldId));
@@ -460,12 +471,31 @@ const Meta = {
         const world = sys.worlds.find(w2 => w2.id === worldId);
         const wMap = world && MAPS.find(m => m.id === world.map);
         if (wMap && wMap.denizens) saved = this.saveDenizens(wMap.denizens);
+        /* THE SECOND RESCUE TRACK (roadmap 19.10 / 19.11). The machines above
+           are the MAP'S; these are the WORLD'S, and which power's soldiers
+           stand on a world is precisely what the galaxy map's ownership colour
+           has been painting and never cashing. The map's tier picks which of
+           that power's five -- early worlds hand you Chitlings, late worlds
+           hand you Broodmothers.
+
+           Two ids, and the difference between them IS the gate. `offer` is
+           whoever held the world; saveDenizens refuses it unless you are sworn
+           to that power, and refusedOffer names it so the summary can say who
+           would not march. `garrison` is your own power's soldiers, who now
+           hold the world you just took -- and they are the reason this feature
+           is not inert: generateGalaxy gives your own banner no world at all,
+           so an offer-only rule would have left every faction unit in the game
+           unreachable by rescue. */
+        const rescue = worldRescueOffer(world, wMap, c.faction || p.faction);
+        refusedOffer = this.refusedDenizens([rescue.offer])[0] || null;
+        saved = saved.concat(this.saveDenizens([rescue.offer, rescue.garrison]));
       }
     }
     if (souls) p.souls += souls;
     this.save();
     return { worldId, stars, previous: prev, improved: stars > prev,
-             conquered: stars >= 3 && prev < 3, souls, systemTaken, saved, storyTower };
+             conquered: stars >= 3 && prev < 3, souls, systemTaken, saved, storyTower,
+             refusedOffer };
   },
   /** 2-3 forks generated deterministically from the campaign seed + depth. */
   campaignOptions() {
@@ -682,17 +712,74 @@ const Meta = {
   isMusterUnlocked(id) { return musterSendable(id) && this.vault().musterUnlocked.includes(id); },
   /** Push newly-saved denizen ids into the shared vault; returns the NEW ones
       so the reward summary can report exactly what this conquest earned. */
+  /** THE RESCUE GATE (roadmap 19.14). The tower origin law applied a second
+      time, deliberately -- `towerOriginLock` above and this read as one rule
+      about who may hold whose hardware, not as two rules that happen to look
+      alike. A neutral machine answers to nobody and is legal to every banner,
+      for the same reason ROBOTIC hardware is. Another power's soldiers are
+      not: a Votary's life is surrendered eternally to the cause, a Xeno body
+      folds back into the mass that grew it, and a pirate keeps no flag long
+      enough to swear a new one.
+
+      Returns the blocking FACTION record, or null when the rescue is legal.
+      Like the tower law it gates what may be TAKEN and never what is owned --
+      a unit already in the vault stays usable by every banner and every
+      commander in the install, which is the whole of the Soul Profile half. */
+  unitRescueLock(id) {
+    const f = unitFactionOf(id);
+    if (!f) return null;
+    return this.faction() === f ? null : (FACTIONS[f] || null);
+  },
+  /** Which of `ids` this banner is forbidden to rescue -- reported so the
+      summary can name the soldiers that would not march rather than silently
+      dropping them, which reads as the reward having been miscounted. */
+  refusedDenizens(ids) {
+    return (ids || []).filter(id => musterSendable(id) && !this.isMusterUnlocked(id) &&
+                                    this.unitRescueLock(id));
+  },
   saveDenizens(ids) {
     const v = this.vault();
     const fresh = [];
     for (const id of (ids || [])) {
       if (!musterSendable(id) || v.musterUnlocked.includes(id)) continue;
+      if (this.unitRescueLock(id)) continue;
       v.musterUnlocked.push(id);
       fresh.push(id);
     }
     if (fresh.length) this.save();
     return fresh;
   },
+
+  /* ---- units bought outright -- the Soul Profile half of 19.14 ---- */
+  /** Bought on the SAME banner law the arsenal is bought on. Once bought the
+      vault is install-wide, so the unit is usable by any faction and any
+      commander from then on -- that asymmetry between the purchase and the
+      use is the point of the two tiers, not an oversight. */
+  unitOriginLock(id) {
+    const f = unitFactionOf(id);
+    if (!f) return null;
+    return this.faction() === f ? null : (FACTIONS[f] || null);
+  },
+  unitUnlockCost() { return UNIT_UNLOCK_COST + this.soulSurcharge(); },
+  canUnlockUnit(id) {
+    return !!(typeof UNIT_TYPES !== 'undefined' && UNIT_TYPES[id]) &&
+           musterSendable(id) && !this.isMusterUnlocked(id) && !this.unitOriginLock(id);
+  },
+  unlockUnit(id) {
+    if (!this.canUnlockUnit(id)) return false;
+    /* The charge reads the SAME cost the shop button printed. */
+    if (!this.chargeSouls(this.unitUnlockCost())) return false;
+    this.vault().musterUnlocked.push(id);
+    this.save(true);
+    return true;
+  },
+
+  /** Mastery a unit earns from the bodies it puts in a lane. Deliberately the
+      same store and the same ladder a tower's mastery uses -- addTowerXp is
+      keyed by id, and masteryOf reads that key -- so the unit talent gate and
+      the tower talent gate cannot drift apart. Called from the Enemy hook in
+      entities2.js, which is the only place a sent body is known to be done. */
+  addUnitXp(id, amount) { return this.addTowerXp(id, amount); },
   /** The profile's picked detachment, normalised: stale ids (another install,
       an edited save) are dropped, and an empty pick falls back to the first
       unlock so a battle always derives at least one tier. */
@@ -912,8 +999,19 @@ const Meta = {
   talentSpent(towerId) { return this.talentsOf(towerId).length; },
   hasTalent(towerId, tid) { return this.talentsOf(towerId).includes(tid); },
 
+  /** The record a talent tree is spent in. Towers and UNITS are the same shape
+      by construction (UNIT_TYPES is authored to it), so one lookup lets the
+      mastery gate, the row gate, the stock build and the partial-allocation
+      merge serve both -- rather than a second allocator drifting out of step
+      with this one, which is what "reuse the tower talent shape" is for. */
+  talentDefOf(id) {
+    return TOWER_TYPES[id] ||
+           ((typeof UNIT_TYPES !== 'undefined' && UNIT_TYPES[id]) || null);
+  },
+
   talentLockReason(towerId, tid) {
-    const def = TOWER_TYPES[towerId];
+    const def = this.talentDefOf(towerId);
+    if (!def) return 'unknown';
     const node = def.talents.find(t => t.id === tid);
     if (!node) return 'unknown';
     if (this.hasTalent(towerId, tid)) return 'owned';
@@ -929,11 +1027,19 @@ const Meta = {
   canTakeTalent(towerId, tid) { return this.talentLockReason(towerId, tid) === null; },
   takeTalent(towerId, tid) {
     if (!this.canTakeTalent(towerId, tid)) return false;
-    this.load().talents[towerId].push(tid);
+    (this.load().talents[towerId] = this.talentsOf(towerId)).push(tid);
+    /* A unit's folded doctrine is cached on its BUILD, and this is the only
+       place a build changes. Dropping it here is what stops the loadout card
+       quoting the pack size the unit had before the click. */
+    if (typeof clearUnitFieldCache === 'function') clearUnitFieldCache();
     this.save();
     return true;
   },
-  clearTalents(towerId) { this.load().talents[towerId] = []; this.save(); },
+  clearTalents(towerId) {
+    this.load().talents[towerId] = [];
+    if (typeof clearUnitFieldCache === 'function') clearUnitFieldCache();
+    this.save();
+  },
 
   /**
    * The resolved talent mods a tower deploys with. A tower the player has
@@ -948,7 +1054,8 @@ const Meta = {
      them. Saved picks now merge OVER the stock build instead of replacing it,
      so a partial allocation is never worse than none. */
   talentMods(towerId) {
-    const def = TOWER_TYPES[towerId];
+    const def = this.talentDefOf(towerId);
+    if (!def) return [];
     const saved = this.talentsOf(towerId)
       .map(tid => def.talents.find(t => t.id === tid))
       .filter(Boolean);
@@ -962,7 +1069,8 @@ const Meta = {
 
   /** One talent per row, taking the first option — a reasonable stock build. */
   defaultTalents(towerId) {
-    const def = TOWER_TYPES[towerId];
+    const def = this.talentDefOf(towerId);
+    if (!def) return [];
     const mastery = this.masteryOf(towerId);
     const out = [];
     for (const row of [0, 1, 2]) {

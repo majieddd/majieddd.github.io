@@ -71,22 +71,22 @@ const TOWER_TYPES_2 = {
   foundry: {
     id:'foundry', element: 'fire', origin:'robotic', name:'FOUNDRY', role:'Spawns fighting minions', cost:300, costGrowth:1.78,
     color:'#f9a8d4', dark:'#6d2044', attack:'minions', glyph:'⚒',
-    desc:'Forges automata that march onto the lane, grapple the first enemy they meet and grind it down. The only structure that fights with BODIES instead of fire.',
-    base:{ range:3.4, dmgType:'physical', minions:2, minionHp:40, minionDps:9, minionSlow:0.4, forgeTime:6 },
-    levels:[ { cost:170, name:'ASSEMBLY', mods:{ minions:3, minionHp:67, minionDps:15 } },
-             { cost:340, name:'WARPLANT', mods:{ minions:4, minionHp:107, minionDps:24, forgeTime:5 } } ],
+    desc:'Forges automata that march onto the lane, grapple the first enemy they meet and grind it down. The only structure that fights with BODIES instead of fire. It is fed by what they kill — every corpse its automata put down goes straight back onto the belt, so a Foundry that is LOSING bodies replaces them markedly faster than one standing idle, and one dropped into a lane already lost never gets started. LATE-GAME by design.',
+    base:{ range:3.4, dmgType:'physical', minions:2, minionHp:40, minionDps:9, minionSlow:0.4, forgeTime:6, scrapline:1.1 },
+    levels:[ { cost:170, name:'ASSEMBLY', mods:{ minions:3, minionHp:67, minionDps:15, scrapline:1.4 } },
+             { cost:340, name:'WARPLANT', mods:{ minions:4, minionHp:107, minionDps:24, forgeTime:5, scrapline:1.8 } } ],
     talents:[
       { id:'fy_alloy', row:0, col:0, name:'HARD ALLOY',  desc:'+60% minion health.',       mods:{ minionHpMul:1.60 } },
       { id:'fy_blade', row:0, col:1, name:'EDGE BLADES', desc:'+50% minion damage.',       mods:{ minionDpsMul:1.50 } },
-      { id:'fy_fast',  row:1, col:0, name:'FAST FORGE',  desc:'Forges 35% faster.',        mods:{ forgeTimeMul:0.65 } },
+      { id:'fy_fast',  row:1, col:0, name:'FAST FORGE',  desc:'Forges 35% faster, and reclaims 0.8s more per kill.', mods:{ forgeTimeMul:0.65, scrapline:0.8 } },
       { id:'fy_grip',  row:1, col:1, name:'VICE GRIP',   desc:'Minion grapple slow +25%.', mods:{ minionSlow:0.25 } },
       { id:'fy_more',  row:2, col:0, name:'TWIN LINES',  desc:'+1 minion.',                mods:{ minions:1 } },
       { id:'fy_burst', row:2, col:1, name:'CORE BREACH', desc:'Dying minions explode for 3x their DPS.', mods:{ minionBlast:3 } } ],
     branches:[
-      { id:'legion',    name:'LEGION',    cost:420, mods:{ minions:7, minionHp:113, minionDps:26, forgeTime:3.2 },
+      { id:'legion',    name:'LEGION',    cost:420, mods:{ minions:7, minionHp:113, minionDps:26, forgeTime:3.2, scrapline:1.0 },
         surge:{ minions:1 }, note:'A constant stream of expendable automata saturating the lane.' },
-      { id:'champions', name:'CHAMPIONS', cost:420, mods:{ minions:2, minionHp:567, minionDps:85, minionSlow:0.75, forgeTime:7 },
-        surge:{ minionHp:147, minionDps:22 }, note:'Two colossal wardens that all but stop what they catch.' } ]
+      { id:'champions', name:'CHAMPIONS', cost:420, mods:{ minions:2, minionHp:567, minionDps:85, minionSlow:0.75, forgeTime:7, scrapline:3.2 },
+        surge:{ minionHp:147, minionDps:22 }, note:'Two colossal wardens that all but stop what they catch, on a belt fed by everything they finish.' } ]
   },
 
   saboteur: {
@@ -409,35 +409,38 @@ const TOWER_TYPES_2 = {
   },
 
   /* Four towers that exist so the thinner origins can field a loadout built
-     entirely from their own power. Each reuses an attack verb the engine
-     already resolves, so nothing here needs a bespoke handler and every one is
-     reachable through the same level/specialisation/ascension path. */
+     entirely from their own power. Three reuse an attack verb the engine
+     already resolves. CUSTODIAN does not, and is the exception on purpose:
+     separating it from FOUNDRY (roadmap 19.20) meant giving up the spawner
+     verb entirely, so it carries its own -- `vigil`, handled in entities.js
+     beside the other core behaviours. All four remain reachable through the
+     same level, specialisation and ascension path as everything else. */
 
   custodian: {
-    id:'custodian', element:'radiant', origin:'light', name:'CUSTODIAN', role:'Warden constructs that hold', cost:286, costGrowth:1.82,
-    color:'#fde68a', dark:'#78500a', attack:'minions', glyph:'⛨',
-    desc:'Federation wardens walk out and stand in the way. They kill almost nothing — they are there so that whatever they have hold of stops moving, and stays stopped while the rest of the line works.',
-    base:{ range:3.2, dmgType:'physical', minions:2, minionHp:78, minionDps:5, minionSlow:0.62, forgeTime:7 },
-    levels:[ { cost:180, name:'SENTINEL', mods:{ minions:3, minionHp:132, minionDps:8 } },
-             { cost:340, name:'PARAGON',  mods:{ minions:3, minionHp:224, minionDps:13, minionSlow:0.70, forgeTime:6 } } ],
+    id:'custodian', element:'radiant', origin:'light', name:'CUSTODIAN', role:'The last line — spends wardens on breaches', cost:286, costGrowth:1.82,
+    color:'#fde68a', dark:'#78500a', attack:'vigil', glyph:'⛨',
+    desc:'Federation wardens who surrendered their lives to the cause years ago and have been waiting since to be told where. It shoots nothing and it blocks nothing. When something finally reaches the line inside its watch, a warden walks into it and both are simply gone: no bounty paid, no corpse sent onward, no life off your counter. CONDITIONAL — worth nothing on a board that holds, and the difference between a bad wave and a lost run on one that does not. A Foundry stops the assault out in the lane; a Custodian answers what got past it.',
+    base:{ range:3.4, dmgType:'none', vigilHold:2, vigilEvery:11 },
+    levels:[ { cost:180, name:'SENTINEL', mods:{ vigilHold:3, vigilEvery:9.5, range:3.7 } },
+             { cost:340, name:'PARAGON',  mods:{ vigilHold:4, vigilEvery:8, range:4.0 } } ],
     talents:[
-      { id:'cu_plate', row:0, col:0, name:'CONSECRATED PLATE', desc:'+70% warden health.',        mods:{ minionHpMul:1.70 } },
-      { id:'cu_hold',  row:0, col:1, name:'STANDING ORDER',    desc:'Warden grapple slow +20%.',  mods:{ minionSlow:0.20 } },
-      { id:'cu_quick', row:1, col:0, name:'QUICK MUSTER',      desc:'Raises wardens 35% faster.', mods:{ forgeTimeMul:0.65 } },
-      { id:'cu_edge',  row:1, col:1, name:'SANCTIFIED EDGE',   desc:'+60% warden damage.',        mods:{ minionDpsMul:1.60 } },
-      { id:'cu_more',  row:2, col:0, name:'FULL WATCH',        desc:'+1 warden.',                 mods:{ minions:1 } },
-      { id:'cu_last',  row:2, col:1, name:'LAST STAND',        desc:'Falling wardens burst for 2x their damage.', mods:{ minionBlast:2 } } ],
+      { id:'cu_plate', row:0, col:0, name:'STANDING OATH',      desc:'+1 warden on watch.',        mods:{ vigilHold:1 } },
+      { id:'cu_hold',  row:0, col:1, name:'READY RELIEF',       desc:'Wardens return 25% sooner.', mods:{ vigilEveryMul:0.75 } },
+      { id:'cu_quick', row:1, col:0, name:'WIDE WATCH',         desc:'+35% radius.',               mods:{ rangeMul:1.35 } },
+      { id:'cu_edge',  row:1, col:1, name:'TITHE OF THE FALLEN',desc:'Each warden spent pays 18 gold.', mods:{ vigilGold:18 } },
+      { id:'cu_more',  row:2, col:0, name:'DEEP MUSTER',        desc:'+2 wardens on watch.',       mods:{ vigilHold:2 } },
+      { id:'cu_last',  row:2, col:1, name:'ETERNAL',            desc:'Wardens return 45% sooner.', mods:{ vigilEveryMul:0.55 } } ],
     branches:[
-      { id:'vigil',   name:'VIGIL',   cost:430, mods:{ minions:2, minionHp:980, minionDps:22, minionSlow:0.85, forgeTime:8 },
-        surge:{ minionHp:240 }, note:'Two wardens that simply do not fall over.' },
-      { id:'cordon',  name:'CORDON',  cost:430, mods:{ minions:6, minionHp:230, minionDps:15, minionSlow:0.55, forgeTime:3.6 },
-        surge:{ minions:1 }, note:'A line of them, wide enough that nothing walks around it.' } ]
+      { id:'vigil',   name:'VIGIL',   cost:430, mods:{ vigilHold:8, vigilEvery:9.5, range:4.2 },
+        surge:{ vigilHold:1 }, note:'A deep bench. Nothing gets through while anyone is left to stand in front of it.' },
+      { id:'cordon',  name:'CORDON',  cost:430, mods:{ vigilHold:3, vigilEvery:3.2, range:4.8 },
+        surge:{ vigilEveryMul:0.94 }, note:'A thin watch that is never left unrelieved for long.' } ]
   },
 
   concord: {
     id:'concord', element:'storm', origin:'light', name:'CONCORD', role:'Harmonic chain, opens targets', cost:268, costGrowth:1.72,
     color:'#fcd34d', dark:'#78500a', attack:'chain', glyph:'♒',
-    desc:'A tuned discharge that walks the crowd. It is not the damage that matters — everything it touches is left open, and every other tower on the board collects.',
+    desc:'A tuned discharge that walks the crowd from body to body, wherever they happen to be standing. It is not the damage that matters — everything it touches is left OPEN, and every other tower on the board collects. A chain asks who else is near THIS ONE; an Arc asks who else is on this ROAD. MID-GAME: worth exactly what the rest of your line can convert.',
     base:{ damage:7, range:3.3, rate:0.85, dmgType:'magic', chains:4, chainRange:2.4, falloff:0.80, vuln:0.16, vulnDur:3 },
     levels:[ { cost:175, name:'ANTIPHON', mods:{ damage:22, chains:5, vuln:0.21 } },
              { cost:315, name:'CHORAL',   mods:{ damage:34, chains:6, vuln:0.26, range:3.6 } } ],
@@ -456,30 +459,30 @@ const TOWER_TYPES_2 = {
   },
 
   ichor: {
-    id:'ichor', element:'fire', origin:'xeno', name:'ICHOR', role:'Digestive spray', cost:232, costGrowth:1.70,
+    id:'ichor', element:'void', origin:'xeno', name:'ICHOR', role:'Digestive spray — eats the wounded', cost:232, costGrowth:1.70,
     color:'#a855f7', dark:'#4a1d6b', attack:'cone', glyph:'☣',
-    desc:'A short spray of living bile that keeps working long after the stream has moved on. It does not care what the target was; only how much of it is left.',
-    base:{ damage:9, range:2.1, rate:1, dmgType:'magic', cone:0.55, burn:14, burnDur:3.0 },
-    levels:[ { cost:150, name:'GORGE',   mods:{ damage:32, burn:24 } },
-             { cost:280, name:'DIGEST',  mods:{ damage:52, burn:38, burnDur:3.6, range:2.4, cone:0.62 } } ],
+    desc:'A short spray of living bile that keeps working long after the stream has moved on. It does not care what the target was; only how much of it is MISSING. On a fresh body it barely registers; on something your line has already opened up it is the fastest thing on the board. LATE-GAME, and the exact mirror of CANISTER, which eats a share of what the target ARRIVED with.',
+    base:{ damage:9, range:2.1, rate:1, dmgType:'magic', cone:0.55, digest:0.018, digestDur:3.0 },
+    levels:[ { cost:150, name:'GORGE',   mods:{ damage:32, digest:0.030 } },
+             { cost:280, name:'DIGEST',  mods:{ damage:52, digest:0.042, digestDur:3.6, range:2.4, cone:0.62 } } ],
     talents:[
-      { id:'ic_thick', row:0, col:0, name:'THICK BILE',  desc:'+65% lingering damage.',       mods:{ statusMul:1.65 } },
+      { id:'ic_thick', row:0, col:0, name:'THICK BILE',  desc:'+65% digestion.',              mods:{ statusMul:1.65 } },
       { id:'ic_hot',   row:0, col:1, name:'RAW ACID',    desc:'+45% direct damage.',          mods:{ damageMul:1.45 } },
       { id:'ic_wide',  row:1, col:0, name:'WIDE MAW',    desc:'+35% spray width, +20% reach.',mods:{ coneMul:1.35, rangeMul:1.20 } },
       { id:'ic_eat',   row:1, col:1, name:'DISSOLVE',    desc:'Spray strips 4 armour.',       mods:{ shred:4 } },
-      { id:'ic_feed',  row:2, col:0, name:'FEEDING',     desc:'Coated targets take +30% damage.', mods:{ burnVuln:0.30 } },
-      { id:'ic_deep',  row:2, col:1, name:'DEEP GULLET', desc:'+50% lingering damage and +15% reach.', mods:{ statusMul:1.50, rangeMul:1.15 } } ],
+      { id:'ic_feed',  row:2, col:0, name:'FEEDING',     desc:'Anything being digested takes +30% damage.', mods:{ digestVuln:0.30 } },
+      { id:'ic_deep',  row:2, col:1, name:'DEEP GULLET', desc:'+50% digestion and +15% reach.', mods:{ statusMul:1.50, rangeMul:1.15 } } ],
     branches:[
-      { id:'devour',  name:'DEVOUR',  cost:390, mods:{ damage:92, burn:60, burnDur:4.2, range:2.8, cone:0.70 },
-        surge:{ burn:14 }, note:'It keeps eating whether or not the spray is still on it.' },
-      { id:'spatter', name:'SPATTER', cost:390, mods:{ damage:56, burn:30, burnDur:2.8, range:2.6, cone:0.66, puddle:true, puddleDmg:30, puddleDur:5.0, puddleRadius:1.1 },
+      { id:'devour',  name:'DEVOUR',  cost:390, mods:{ damage:92, digest:0.055, digestDur:4.2, range:2.8, cone:0.70 },
+        surge:{ digest:0.006 }, note:'It keeps eating whether or not the spray is still on it, and the worse the wound the faster it goes.' },
+      { id:'spatter', name:'SPATTER', cost:390, mods:{ damage:56, digest:0.034, digestDur:2.8, range:2.6, cone:0.66, puddle:true, puddleDmg:30, puddleDur:5.0, puddleRadius:1.1 },
         surge:{ puddleDmg:16 }, note:'What runs off the target stays on the ground and keeps working.' } ]
   },
 
   pylon: {
     id:'pylon', element:'storm', origin:'robotic', name:'PYLON', role:'Lattice keystone', cost:262, costGrowth:1.90,
     color:'#94a3b8', dark:'#1e293b', attack:'aura', glyph:'⬡',
-    desc:'Fires nothing and buffs almost nothing on its own. What it does is LINK — every robotic emplacement inside its field counts the pylon as part of its lattice, which is the only thing robotic hardware has instead of a trick.',
+    desc:'Fires nothing and buffs almost nothing on its own. What it does is LINK — every robotic emplacement inside its field counts the pylon as part of its lattice, which is the only thing robotic hardware has instead of a trick. A wide, shallow field that pays a little to everything standing near it: EARLY-GAME, and the exact opposite of a Beacon, which pays everything to one.',
     base:{ range:2.8, dmgType:'none', auraDmg:0.08, auraRate:0.06, auraRange:0.0, latticeBonus:1 },
     levels:[ { cost:160, name:'RELAY',   mods:{ auraDmg:0.13, auraRate:0.09, range:3.1, latticeBonus:2 } },
              { cost:290, name:'BACKBONE',mods:{ auraDmg:0.18, auraRate:0.12, range:3.4, latticeBonus:2 } } ],

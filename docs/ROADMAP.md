@@ -1050,12 +1050,12 @@ maps, faction-flavoured, individually talented, and presented side by side.
 
 | # | Note | Status |
 |---|---|---|
-| 19.10 | **Units unlock per map.** Different maps rescue different units. | 🔶 spec'd — the mechanic **already exists** (all 15 maps declare `denizens`, `ui.js:1759` builds the savable list). Missing: faction units are never in those pools |
-| 19.11 | **Each faction has its own units**, with effects that read out of its lore. | 🔶 spec'd — **20 faction units already exist** (5 each) in `js/factions.js`, with art. None is currently rescuable |
-| 19.12 | **Loadout becomes four columns.** Middle two are **Units** and **Towers**, visually matched. Outer two are the detail/talent panels for each. | 🔶 spec'd in [`UNITS-AND-BOONS-DESIGN.md`](UNITS-AND-BOONS-DESIGN.md) incl. the narrow-viewport rule |
-| 19.13 | **Every unit gets its own talent set**, chosen like tower talents. | 🔶 spec'd — reuse `Meta.talentMods` shape, incl. the partial-allocation trap |
-| 19.14 | A faction's playthrough may rescue **only its own units, or machine units**. Once the **Soul Profile** owns it, any faction or commander may field it. | 🔶 spec'd — **not blocked after all**: souls are already per-profile (`p.souls`) and the vault already install-wide (`r.vault`), which is exactly what 19.6 + 19.14 describe. Only the purchase gate changes |
-| 19.15 | Units get a **tower-like icon and card**, previewing the unit **moving and using its signature trait**. | ❌ 🎨 |
+| 19.10 | **Units unlock per map.** Different maps rescue different units. | ✅ `worldRescueOffer(world, map, myFaction)` gives every world a **second rescue track** beside its machines |
+| 19.11 | **Each faction has its own units**, with effects that read out of its lore. | ✅ which power a world offers follows the **world's owner** and the map's tier — the galaxy's ownership colours finally cash out. Four doctrines, one per power. 20/20 checks |
+| 19.12 | **Loadout becomes four columns.** Middle two are **Units** and **Towers**, visually matched. Outer two are the detail/talent panels for each. | ✅ measured at 1680px: columns at x=24/310/842/1374, pickers 518px each. The two pickers are **one component**, not two lookalikes — same card, grid rule, binder and input routes; card box measured identical at 189.5×72. Collapses to a drawer below `LO_FOUR_COL_MIN_PX` |
+| 19.13 | **Every unit gets its own talent set**, chosen like tower talents. | ✅ reuses the tower talent shape — three rows of two, mastery-gated, stock-build fallback intact. 16/16 checks |
+| 19.14 | A faction's playthrough may rescue **only its own units, or machine units**. Once the **Soul Profile** owns it, any faction or commander may field it. | ✅ 15/15 — a Pirate campaign proven unable to rescue a Votary; a soul-bought unit proven usable by every commander. Storage untouched, as predicted |
+| 19.15 | Units get a **tower-like icon and card**, previewing the unit **moving and using its signature trait**. | ✅ reuses the 19.8 preview rather than building a second one. Both 300×104 stages proved animating — **8 distinct frames of 8 sampled**, one shared loop |
 
 ## D. Balance
 
@@ -1073,7 +1073,7 @@ faction plus a 10-strong robotic line = 50**, so **11 new towers** minimum.
 | # | Note | Status |
 |---|---|---|
 | 19.19 | Audit all 39 for genuine uniqueness. Shared *categories* (splash, beam) are fine; shared *identity* is not. | ✅ [`docs/TOWER-AUDIT.md`](TOWER-AUDIT.md) — **36 of 39 already unique**; 3 pure stat blocks (bolt/mortar/flak) and 6 genuine overlapping pairs named |
-| 19.20 | Invent genuinely new mechanics — buffing your own army, **a tower that spawns troops which body-block the lane until they die**, and others. | 🔶 the body-blocker **already exists** — FOUNDRY (`towers2.js:71`) grapples and grinds. The real job is differentiating it from CUSTODIAN, which duplicates it; proposal in the audit |
+| 19.20 | Invent genuinely new mechanics — buffing your own army, **a tower that spawns troops which body-block the lane until they die**, and others. | ✅ all five pairs separated; the three stat blocks given signatures (`killReload`, `spotting`, `downFor`). **My own CUSTODIAN proposal was rejected on measurement** — SHEPHERD already owns `flockHp`/`flockSpeed`, so buffing musters would have closed the fifth overlap by opening a sixth. It became THE OATH (`vigilHold`) instead. 288/288 checks |
 | 19.21 | Bring every faction to **10 towers**; generate whatever new content that needs. | ❌ 🎨 |
 | 19.22 | **Distinct balance curves.** Some towers early-game, some late — via price, difficulty, or a mechanic that needs time on the field. Unique, but fair. | ❌ |
 

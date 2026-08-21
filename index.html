@@ -168,17 +168,42 @@
       <p class="tagline">You may take <b>five</b> towers into battle. Everything else stays home.</p>
     </header>
     <div class="loadout-bar">
-      <span id="loadout-count" class="lo-count">0 / 5</span>
       <span id="loadout-unlocked" class="lo-unlocked"></span>
       <div id="loadout-warn" class="loadout-warn"></div>
     </div>
-    <div id="muster-loadout" class="muster-lo"></div>
-    <div class="loadout-split">
-      <div id="loadout-grid" class="loadout-grid"></div>
-      <aside class="talent-panel">
-        <h2 class="section-label">TOWER TALENTS — prepared before deployment</h2>
-        <div id="tower-talents"></div>
-      </aside>
+    <!-- UNIT DETAIL | UNITS | TOWERS | TOWER DETAIL. The two middle columns
+         are the pickers and share one card, one grid rule and one binder;
+         the two outer ones explain whatever is focused beside them. Under
+         1280px the outer two become a drawer -- see .lo-columns in
+         polish.css and LO_FOUR_COL_MIN_PX in ui.js. -->
+    <div id="lo-columns" class="lo-columns">
+      <aside id="unit-detail" class="lo-col lo-detail-col" data-detail="unit"
+             aria-label="Unit detail"></aside>
+
+      <section id="unit-column" class="lo-col lo-pick-col" aria-label="Units">
+        <header class="lo-col-head">
+          <span class="lo-col-kind">DETACHMENT</span>
+          <h2 class="lo-col-name">UNITS</h2>
+          <span id="unit-count" class="lo-col-n">0 / 3</span>
+          <button class="lo-detail-open" type="button" data-opens="unit" hidden></button>
+          <div id="unit-chosen" class="lo-chosen"></div>
+        </header>
+        <div id="unit-grid" class="lo-pick-body"></div>
+      </section>
+
+      <section id="tower-column" class="lo-col lo-pick-col" aria-label="Towers">
+        <header class="lo-col-head">
+          <span class="lo-col-kind">ARSENAL</span>
+          <h2 class="lo-col-name">TOWERS</h2>
+          <span id="loadout-count" class="lo-col-n">0 / 5</span>
+          <button class="lo-detail-open" type="button" data-opens="tower" hidden></button>
+          <div id="tower-chosen" class="lo-chosen"></div>
+        </header>
+        <div id="loadout-grid" class="lo-pick-body"></div>
+      </section>
+
+      <aside id="tower-detail" class="lo-col lo-detail-col" data-detail="tower"
+             aria-label="Tower detail"></aside>
     </div>
     <footer class="setup-foot">
       <button id="btn-back-theatre" class="btn">← THEATRE</button>

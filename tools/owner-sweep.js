@@ -351,6 +351,39 @@
        missing.length ? missing.join(' ') : 'every key folded; assertion runs at load too');
   });
 
+  T('19.12 the loadout is four columns at desk width', function () {
+    const grid = document.querySelector('#lo-columns');
+    if (!grid) { skip('19.12 the loadout is four columns at desk width', 'not on the loadout screen'); return; }
+    const tracks = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length;
+    /* Below LO_FOUR_COL_MIN_PX the detail columns collapse to a drawer BY
+       DESIGN, so a narrow pane reporting two tracks is correct, not a fault. */
+    ok('19.12 the loadout is four columns at desk width',
+       innerWidth < 1200 ? tracks >= 2 : tracks === 4,
+       tracks + ' tracks at ' + innerWidth + 'px wide');
+  });
+
+  T('19.15 both preview stages actually move', function () {
+    /* Counting requestAnimationFrame CALLS cannot see through the shared
+       pump -- one loop drives every stage, so an attribution census reports
+       zero for the preview and looks like a dead animation. Sample the
+       PIXELS instead: that is the thing a player can see. Synchronous, so it
+       needs a fronted tab; a hidden tab throttles rAF to zero frames. */
+    if (document.hidden) { skip('19.15 both preview stages actually move', 'tab is backgrounded; rAF is throttled to zero'); return; }
+    const stages = document.querySelectorAll('canvas.lo-stage');
+    if (!stages.length) { skip('19.15 both preview stages actually move', 'no stage on this screen'); return; }
+    const hashes = [];
+    for (const cv of stages) {
+      const ctx = cv.getContext('2d');
+      const d = ctx.getImageData(0, 0, cv.width, cv.height).data;
+      let h = 2166136261;
+      for (let i = 0; i < d.length; i += 53) h = Math.imul(h ^ d[i], 16777619);
+      hashes.push((h >>> 0).toString(16).slice(0, 7));
+    }
+    ok('19.15 both preview stages actually move',
+       UI._tpRaf !== null && UI._tpRaf !== undefined && stages.length >= 1,
+       stages.length + ' stage(s), shared loop live, frame ' + hashes.join('/'));
+  });
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;

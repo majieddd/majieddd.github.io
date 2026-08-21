@@ -121,7 +121,11 @@ const FACTION_ENEMY_TYPES = {
                  aura:{ radius:3.0, armor:8, tint:'#facc15', label:'ORIFLAMME' },
                  elemWeak:{ void:0.3 },
                  desc:'AURA \u2014 the standard grants +8 armour within 3 tiles, and carries a ward of its own. Break the banner first.' },
-  luminark:    { id:'luminark', faction:'light', name:'Luminark', hp:520, speed:0.62, armor:12, bounty:59, lives:4, radius:17,
+  /* THREE lives, not four. MUSTER_MAX_LIVES refuses anything heavier as a
+     send, so at four this was a garrison heavy no commander could ever
+     field -- a rung of the Federation ladder that existed only to be
+     looked at. Nothing else non-boss in the theatre sits above three. */
+  luminark:    { id:'luminark', faction:'light', name:'Luminark', hp:520, speed:0.62, armor:12, bounty:59, lives:3, radius:17,
                  color:'#fef08a', shape:'jugger', shield:300, shieldRegen:56, shieldDelay:3.2, slowResist:0.4,
                  elemWeak:{ void:0.3 },
                  desc:'A cathedral engine on treads. Three hundred points of ward before you reach the hull.' },
@@ -142,7 +146,9 @@ const FACTION_ENEMY_TYPES = {
                  color:'#7c3aed', shape:'hivelord',
                  aura:{ radius:3.0, speed:0.30, tint:'#7c3aed', label:'FRENZY' },
                  desc:'AURA \u2014 everything within 3 tiles moves 30% faster. The swarm feeds faster than your board can clear it.' },
-  broodmother: { id:'broodmother', faction:'xeno', name:'Broodmother', hp:530, speed:0.62, armor:8, bounty:60, lives:4, radius:18,
+  /* Three for the same reason the Luminark is: the top rung of a ladder
+     nobody may climb is not content, it is a promise the shop cannot keep. */
+  broodmother: { id:'broodmother', faction:'xeno', name:'Broodmother', hp:530, speed:0.62, armor:8, bounty:60, lives:3, radius:18,
                  color:'#a78bfa', shape:'carrier', summon:{ type:'chitling', count:3, interval:4.0 },
                  elemWeak:{ fire:0.3 },
                  desc:'Births Chitlings continuously the whole way down the lane. The lane is a nursery until she stops.' },
@@ -210,6 +216,260 @@ for (const id in ENEMY_TYPES) {
 }
 for (const f in FACTION_ENEMIES)
   FACTION_ENEMIES[f].sort((a, b) => ENEMY_TYPES[a].hp - ENEMY_TYPES[b].hp);
+
+/* ==========================================================================
+   SESSION 19 -- THE UNITS DATA MODEL   (roadmap 19.10, 19.11, 19.13, 19.14)
+
+   The twenty records above were authored as ENEMIES a garrison fields. Nothing
+   below re-authors any of them. One record is read as an ENEMY when a world
+   garrisons it and as a UNIT when you take it home, because two definitions of
+   one soldier is how a dossier and a battle come to disagree.
+
+   Three laws, in the order they apply:
+
+     THE LADDER  -- which of a power's five a world can offer (19.10 / 19.11).
+     THE DOCTRINE-- what makes a power's five read as ONE army (19.11).
+     THE GATE    -- whether what you took will march for you (19.14), which
+                    lives in commanders.js beside the tower origin law it is
+                    deliberately a second application of.
+   ========================================================================== */
+
+/* THE LADDER. Derived from FACTION_ENEMIES -- already sorted lightest-first --
+   so a unit joins its power's ladder by carrying a `faction` and nothing else,
+   and filtered through musterSendable so a ladder can never offer a body
+   Game.muster would refuse to send. That filter is the reason the two
+   four-life heavies were brought to three above: a rescue you cannot muster is
+   a reward that does nothing, which is this codebase's signature bug wearing a
+   different hat. */
+const FACTION_UNITS = {};
+for (const f of FACTION_ORDER) FACTION_UNITS[f] = FACTION_ENEMIES[f].filter(musterSendable);
+
+/** Every unit id, in power order then ladder order. The talent trees, the
+    profile normalisation and the soul shop all enumerate from this one list. */
+const UNIT_ORDER = FACTION_ORDER.reduce((a, f) => a.concat(FACTION_UNITS[f]), []);
+
+/** The power a body answers to, or null for a neutral machine. The gate reads
+    this, so a machine -- which answers to nobody -- is legal to everyone. */
+function unitFactionOf(id) {
+  const d = ENEMY_TYPES[id];
+  return (d && d.faction) || null;
+}
+
+/**
+ * Which of a power's units a world of `tier` garrisons. MAPS are authored at
+ * tiers 1-5 and every ladder is five long, so the mapping is direct; the clamp
+ * is a guard against a map authored off the scale rather than a shaper.
+ */
+function factionUnitFor(faction, tier) {
+  const ladder = FACTION_UNITS[faction];
+  if (!ladder || !ladder.length) return null;
+  return ladder[Math.min(ladder.length - 1, Math.max(0, (tier || 1) - 1))];
+}
+
+/**
+ * What a world's survivors offer whoever takes it.
+ *
+ * `offer` is the unit of the power that HELD the world. That is the promise
+ * the galaxy map has been painting all along and never cashing: an ownership
+ * colour now names, concretely, which power's soldiers you will meet there and
+ * could take home. The GATE refuses it unless it is your own power's -- a
+ * Votary's life is surrendered eternally to the cause and will not be
+ * re-sworn to a pirate.
+ *
+ * `garrison` is the unit YOUR power leaves standing once the world is yours.
+ * It exists because generateGalaxy gives the player's own banner no world at
+ * all (`rivalFactionsOf` excludes you by construction), so an offer-only rule
+ * would have made every faction unit in the game unreachable by rescue -- the
+ * feature would have shipped inert. Taking a world cleanly is what puts your
+ * own power on the ground, and that is what the ladder unlocks against.
+ */
+function worldRescueOffer(world, map, myFaction) {
+  const tier = (map && map.tier) || 1;
+  return {
+    offer: factionUnitFor(world && world.owner, tier),
+    garrison: factionUnitFor(myFaction, tier)
+  };
+}
+
+/* --------------------------------------------------------------------------
+   THE DOCTRINES
+
+   One law per power, and the four are deliberately different SHAPES rather
+   than one shape at four strengths -- a Xeno send and a Federation send must
+   not be the same detachment in another colour. Each fires off a DEATH, but
+   each acts on something else: Humanity on itself, the Federation on its
+   sworn, the Xeno on its own dead, the Pirates on your towers.
+
+   Every coefficient is a named const in config.js. The readers are in
+   entities2.js (Enemy.prototype hooks) and config.js (musterTierFor).
+-------------------------------------------------------------------------- */
+const UNIT_DOCTRINES = {
+  human: {
+    id: 'salvage', faction: 'human', name: 'SALVAGE', color: '#38e8ff',
+    /* "bolts alien technology onto human frames and makes it work" -- the one
+       doctrine that feeds on ANYBODY'S wreck, the Vigil's included. It is why
+       a human detachment must be killed early or not at all: let it walk
+       through a wave and it arrives wearing the wave. */
+    desc: 'Anything that dies within reach is bolted on. Every wreck nearby ' +
+          'is armour, whoever it belonged to.'
+  },
+  light: {
+    id: 'vow', faction: 'light', name: 'THE VOW', color: '#fbbf24',
+    /* "a member surrenders their life ETERNALLY to the cause" -- so the ward
+       does not die with the body. Kill a Federation column front-to-back and
+       every ward you break reappears further down it. */
+    desc: 'A ward outlives the body that carried it: on death it passes to ' +
+          'the nearest sworn survivor.'
+  },
+  xeno: {
+    id: 'mass', faction: 'xeno', name: 'THE MASS', color: '#7c3aed',
+    /* "fold what they consume into their own mass" -- including their own.
+       A Xeno send is the only one that gets HARDER the longer you take. */
+    desc: 'The swarm eats its own dead. Every body you drop feeds the ' +
+          'nearest survivor, which grows.'
+  },
+  pirate: {
+    id: 'scuttle', faction: 'pirate', name: 'SCUTTLE', color: '#ef4444',
+    /* "escaped experiments, refusals" -- nothing pirate is worth capturing
+       intact, so killing one costs you the guns that killed it. It changes
+       WHERE you want to kill rather than how much you have to. */
+    desc: 'Nothing is taken intact. A pirate that dies takes the guns that ' +
+          'killed it offline for a moment.'
+  }
+};
+
+/** The doctrine a body obeys, or null for a neutral machine. */
+function unitDoctrineOf(id) { return UNIT_DOCTRINES[unitFactionOf(id)] || null; }
+
+/* --------------------------------------------------------------------------
+   UNIT TALENTS (19.13)
+
+   The SAME shape a tower tree is, because Meta.talentMods, defaultTalents,
+   talentMasteryReq and the row gate are asked to serve both -- one system, not
+   a parallel one. That is what buys the documented trap for free: a PARTIAL
+   allocation merges OVER the stock build instead of replacing it, so spending
+   one point on a unit can never leave it worse than never touching it.
+
+   Rows 0 and 1 are the POWER'S rows, shared by its five, because that is where
+   a doctrine is sharpened and a doctrine belongs to the power. Row 2 is the
+   UNIT'S own, and it is the deepest row for the same reason a tower's is: it
+   is the choice you only reach by committing.
+
+   Every `mods` key below has exactly one reader, listed here so a key without
+   one cannot be added by accident:
+
+     countMul / costMul / incomeMul   -> musterTierFor            (config.js)
+     hpMul / armorAdd / speedMul /
+     shieldMul / regen / slowResistAdd-> applyUnitField          (entities2.js)
+     salvageMul / vowMul / massMul /
+     scuttleMul                       -> the doctrine hooks      (entities2.js)
+-------------------------------------------------------------------------- */
+const UNIT_DOCTRINE_TALENTS = {
+  human: [
+    { id:'u_h0a', row:0, col:0, name:'SCAVENGE',     desc:'Takes half again as much off every wreck.', mods:{ salvageMul:1.5 } },
+    { id:'u_h0b', row:0, col:1, name:'QUARTERMASTER',desc:'A muster costs 15% less.',                  mods:{ costMul:0.85 } },
+    { id:'u_h1a', row:1, col:0, name:'PLATE SHOP',   desc:'+3 armour before a wreck is even found.',   mods:{ armorAdd:3 } },
+    { id:'u_h1b', row:1, col:1, name:'ATTRITION',    desc:'+25% bodies per muster.',                   mods:{ countMul:1.25 } }
+  ],
+  light: [
+    { id:'u_l0a', row:0, col:0, name:'CONSECRATION', desc:'+35% ward.',                                mods:{ shieldMul:1.35 } },
+    { id:'u_l0b', row:0, col:1, name:'TITHING',      desc:'+30% of the income a muster adds.',         mods:{ incomeMul:1.30 } },
+    { id:'u_l1a', row:1, col:0, name:'UNENDING VOW', desc:'A passed ward carries 70% further.',        mods:{ vowMul:1.70 } },
+    { id:'u_l1b', row:1, col:1, name:'PROCESSION',   desc:'+15% march speed.',                         mods:{ speedMul:1.15 } }
+  ],
+  xeno: [
+    { id:'u_x0a', row:0, col:0, name:'BROOD',        desc:'+35% bodies per muster.',                   mods:{ countMul:1.35 } },
+    { id:'u_x0b', row:0, col:1, name:'CARRION',      desc:'The swarm takes 70% more off its own dead.',mods:{ massMul:1.70 } },
+    { id:'u_x1a', row:1, col:0, name:'THICK HIDE',   desc:'+3 armour.',                                mods:{ armorAdd:3 } },
+    { id:'u_x1b', row:1, col:1, name:'METABOLISE',   desc:'Regrows 4.5% of its health a second.',      mods:{ regen:0.045 } }
+  ],
+  pirate: [
+    { id:'u_p0a', row:0, col:0, name:'RIGGED CHARGES',desc:'A scuttle jams 80% longer.',               mods:{ scuttleMul:1.80 } },
+    { id:'u_p0b', row:0, col:1, name:'FENCE',        desc:'+35% of the income a muster adds.',         mods:{ incomeMul:1.35 } },
+    { id:'u_p1a', row:1, col:0, name:'CUT ENGINES',  desc:'+20% march speed.',                         mods:{ speedMul:1.20 } },
+    { id:'u_p1b', row:1, col:1, name:'PRESS-GANG',   desc:'+30% bodies per muster.',                   mods:{ countMul:1.30 } }
+  ]
+};
+
+/* Row 2, one pair per unit. Authored against what the unit ALREADY does --
+   the Boarder's grapple, the Scrapjack's looted jammer, the Bloatpod's burst
+   -- so the deepest choice reads as that soldier rather than as a number. */
+const UNIT_SIGNATURE_TALENTS = {
+  trooper:     [{ name:'DRILLED',        desc:'+30% bodies per muster.',              mods:{ countMul:1.30 } },
+                { name:'FIELD KIT',      desc:'Salvages twice as fast.',              mods:{ salvageMul:2.00 } }],
+  gunskiff:    [{ name:'SKIRMISH SCREEN',desc:'+18% march speed.',                    mods:{ speedMul:1.18 } },
+                { name:'SPOTTER',        desc:'+60% salvage and +1 armour.',          mods:{ salvageMul:1.60, armorAdd:1 } }],
+  linebreaker: [{ name:'BOLTED PLATE',   desc:'+4 armour.',                           mods:{ armorAdd:4 } },
+                { name:'HEATED CORE',    desc:'+25% slow resistance.',                mods:{ slowResistAdd:0.25 } }],
+  dragoon:     [{ name:'ANCHOR DRIVE',   desc:'+20% health.',                         mods:{ hpMul:1.20 } },
+                { name:'REQUISITION',    desc:'A muster costs 18% less.',             mods:{ costMul:0.82 } }],
+  vanguard:    [{ name:'DEEPER RANKS',   desc:'+25% bodies per muster.',              mods:{ countMul:1.25 } },
+                { name:'STANDING ORDERS',desc:'Salvages twice as fast.',              mods:{ salvageMul:2.00 } }],
+
+  votary:      [{ name:'LESSER OATH',    desc:'+50% ward.',                           mods:{ shieldMul:1.50 } },
+                { name:'ALMS',           desc:'+40% of the income a muster adds.',    mods:{ incomeMul:1.40 } }],
+  censer:      [{ name:'LONGER LITANY',  desc:'Regrows 4% of its health a second.',   mods:{ regen:0.040 } },
+                { name:'SHARED BREATH',  desc:'A passed ward carries 80% further.',   mods:{ vowMul:1.80 } }],
+  sanctifier:  [{ name:'REFORGED WARD',  desc:'+35% ward.',                           mods:{ shieldMul:1.35 } },
+                { name:'UNBROKEN',       desc:'A passed ward carries 60% further.',   mods:{ vowMul:1.60 } }],
+  oriflamme:   [{ name:'BANNER HELD HIGH',desc:'+18% health.',                        mods:{ hpMul:1.18 } },
+                { name:'PILGRIMAGE',     desc:'+40% bodies per muster.',              mods:{ countMul:1.40 } }],
+  luminark:    [{ name:'CATHEDRAL PLATE',desc:'+45% ward and +3 armour.',             mods:{ shieldMul:1.45, armorAdd:3 } },
+                { name:'RELIQUARY',      desc:'A passed ward carries twice as far.',  mods:{ vowMul:2.00 } }],
+
+  chitling:    [{ name:'SPAWN GLUT',     desc:'+50% bodies per muster.',              mods:{ countMul:1.50 } },
+                { name:'RAVENOUS',       desc:'Takes 80% more off its own dead.',     mods:{ massMul:1.80 } }],
+  gnawling:    [{ name:'HARD CHITIN',    desc:'+3 armour.',                           mods:{ armorAdd:3 } },
+                { name:'GORGE',          desc:'Takes 50% more off its own dead.',     mods:{ massMul:1.50 } }],
+  bloatpod:    [{ name:'RIPE',           desc:'+25% health.',                         mods:{ hpMul:1.25 } },
+                { name:'BILE',           desc:'Regrows 5% of its health a second.',   mods:{ regen:0.050 } }],
+  hivelord:    [{ name:'WIDER FRENZY',   desc:'+15% march speed.',                    mods:{ speedMul:1.15 } },
+                { name:'DOMINANCE',      desc:'Takes twice as much off its own dead.',mods:{ massMul:2.00 } }],
+  broodmother: [{ name:'PROLIFIC',       desc:'+25% bodies per muster.',              mods:{ countMul:1.25 } },
+                { name:'ENGORGED',       desc:'+30% health.',                         mods:{ hpMul:1.30 } }],
+
+  cutter:      [{ name:'STRIPPED HULL',  desc:'+25% march speed.',                    mods:{ speedMul:1.25 } },
+                { name:'PRIZE MONEY',    desc:'+40% of the income a muster adds.',    mods:{ incomeMul:1.40 } }],
+  boarder:     [{ name:'LONGER LINE',    desc:'+20% health.',                         mods:{ hpMul:1.20 } },
+                { name:'GRAPNEL CHARGE', desc:'A scuttle jams 80% longer.',           mods:{ scuttleMul:1.80 } }],
+  scrapjack:   [{ name:'LOOTED COILS',   desc:'A scuttle jams twice as long.',        mods:{ scuttleMul:2.00 } },
+                { name:'SPARES',         desc:'Regrows 5% of its health a second.',   mods:{ regen:0.050 } }],
+  wrecker:     [{ name:'MORE SPARES',    desc:'+25% health.',                         mods:{ hpMul:1.25 } },
+                { name:'POWDER',         desc:'A scuttle jams 60% longer.',           mods:{ scuttleMul:1.60 } }],
+  ironhulk:    [{ name:'WELDED LAYERS',  desc:'+5 armour.',                           mods:{ armorAdd:5 } },
+                { name:'BALLAST',        desc:'+30% slow resistance.',                mods:{ slowResistAdd:0.30 } }]
+};
+
+/**
+ * UNIT_TYPES. Authored to the shape TOWER_TYPES already has -- `{ id, name,
+ * talents: [{ id, row, col, name, desc, mods }] }` -- because Meta looks a
+ * tree up by id and does not care which of the two tables it came from. That
+ * is the whole of "reuse the tower talent shape": no second allocator, no
+ * second mastery ladder, no second stock-build fallback to keep in step.
+ */
+const UNIT_TYPES = {};
+for (const id of UNIT_ORDER) {
+  const def = ENEMY_TYPES[id];
+  const doc = unitDoctrineOf(id);
+  const rows = (UNIT_DOCTRINE_TALENTS[def.faction] || []).slice();
+  const sig = UNIT_SIGNATURE_TALENTS[id] || [];
+  const talents = rows.concat(sig.map((t, i) => ({
+    id: 'u_' + id + '_' + i, row: 2, col: i, name: t.name, desc: t.desc, mods: t.mods
+  })));
+  UNIT_TYPES[id] = {
+    id, name: def.name, faction: def.faction, color: def.color,
+    doctrine: doc, desc: def.desc, talents
+  };
+}
+
+/** Every mod key a unit talent may carry, with its identity value. The
+    resolver in config.js starts from this, so a key nothing folds -- the
+    inert-stat failure this project is named for -- cannot reach a reader. */
+const UNIT_FIELD_IDENTITY = Object.freeze({
+  countMul: 1, costMul: 1, incomeMul: 1,
+  hpMul: 1, armorAdd: 0, speedMul: 1, shieldMul: 1, regen: 0, slowResistAdd: 0,
+  salvageMul: 1, vowMul: 1, massMul: 1, scuttleMul: 1
+});
 
 /**
  * Who has troops on THIS world. Holding a world on paper is not the same as

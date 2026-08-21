@@ -123,6 +123,12 @@ class Enemy {
     this.maxShield = (def.shield || 0) * (o.hpMul || 1);
     this.shield = this.maxShield;
     this.shieldCooldown = 0;
+    /* FLAK's doing: a flyer on the deck. `flying` itself is left alone so the
+       unit keeps its air lane and FLAK can keep shooting it -- what changes is
+       that ground-only weapons stop refusing it. */
+    this.groundedT = 0; this.grounded = false;
+    /* ICHOR's bile: a share of the WOUND per second, the inverse of the gas. */
+    this.digestPer = 0; this.digestTimer = 0; this.digestSrc = null;
 
     this.slowResist = def.slowResist || 0;
     this.slowCap = def.slowCap !== undefined ? def.slowCap : 0.85;
@@ -288,6 +294,21 @@ class Enemy {
     if (src) this.poisonSrc = src;
   }
   applyVuln(a, dur) { this.vulnAmt = Math.max(this.vulnAmt, a); this.vulnTimer = Math.max(this.vulnTimer, dur); }
+  /** ICHOR. Strongest coat wins rather than stacking, exactly as burn does. */
+  applyDigest(frac, dur, src) {
+    if (frac >= this.digestPer) { this.digestPer = frac; this.digestTimer = dur; this.digestSrc = src; }
+  }
+  /**
+   * FLAK. Elites are never brought down, for the same reason CYCLONE cannot
+   * lift them: an elite that can be controlled has no design left. Non-flyers
+   * are untouched, so a mixed splash does nothing strange to the ground wave.
+   */
+  applyGrounded(dur) {
+    if (!this.flying || this.stunImmune) return;
+    this.groundedT = Math.min(FLAK_DOWNED_CAP, Math.max(this.groundedT, dur));
+    this.grounded = true;
+    this.applySlow(FLAK_DOWNED_SLOW, this.groundedT);
+  }
   applyShred(a, dur = 4) { this.shredAmt = Math.max(this.shredAmt, a); this.shredTimer = Math.max(this.shredTimer, dur); }
   applyFreeze(dur) {
     if (this.stunImmune) return;
@@ -431,6 +452,22 @@ class Enemy {
         rand(-6, 6), rand(-24, -6), rand(0.3, 0.6), rand(1.5, 3), '#a3e635', 'spark');
       if (this.poisonTimer <= 0) { this.poisonStacks = 0; this.poisonDps = 0; this.poisonPct = 0; this.poisonMaxPct = 0; }
     }
+    if (this.digestTimer > 0) {
+      this.digestTimer -= dt;
+      /* Share of the WOUND, not of what is left and not of what arrived. The
+         ceiling and the elite reduction live in digestFrac, the same function
+         the inspector prints from, so the row and the tick cannot drift. */
+      const wound = 1 - Math.max(0, this.hp) / Math.max(1, this.maxHp);
+      const per = this.maxHp * digestFrac(this.digestPer, wound, this.boss || this.miniboss);
+      this.credit(this.digestSrc, this.takeDamage(per * dt, 'pure', { dot: true }));
+      if (Math.random() < dt * 6) Game.spawnParticle(this.x + rand(-7, 7), this.y + rand(-7, 7),
+        rand(-6, 6), rand(-20, -4), rand(0.3, 0.6), rand(1.5, 3), '#a855f7', 'spark');
+      if (this.digestTimer <= 0) this.digestPer = 0;
+    }
+    if (this.groundedT > 0) {
+      this.groundedT -= dt;
+      if (this.groundedT <= 0) this.grounded = false;
+    }
 
     if (this.regen > 0 && this.hp < this.maxHp && !this.dead)
       this.hp = Math.min(this.maxHp, this.hp + this.maxHp * this.regen * dt);
@@ -481,7 +518,19 @@ class Enemy {
     }
     const spd = this.effectiveSpeed;
     if (spd > 0) { this.dist += spd * TILE * dt; this.updatePosition(); this.crossNode(); }
-    if (this.dist >= this.path.total) this.leaked = true;
+    if (this.dist >= this.path.total && !this.leaked) {
+      /* THE OATH -- CUSTODIAN. Resolved here because this is the only frame
+         in which the choice exists: the reap downstream knows exactly two
+         endings, `dead` (which pays a bounty, credits a kill and sends the
+         corpse at a rival) and `leaked` (which costs at least one life, since
+         the cost is floored at 1 however small it rounds). A warden's
+         interception is neither. `charmed` is the engine's REMOVED-NOT-KILLED
+         flag -- Game.killEnemy returns on it before any of that -- and the
+         Oath is simply the second thing that removes a unit without killing
+         it. */
+      if (vigilSpend(this)) { this.dead = true; this.charmed = true; }
+      else this.leaked = true;
+    }
   }
 
   /* ---------------------------------------------------------- rendering */
@@ -491,7 +540,7 @@ class Enemy {
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    if (this.flying) {
+    if (this.flying && !this.grounded) {
       ctx.save();
       ctx.globalAlpha = 0.26; ctx.fillStyle = '#000';
       ctx.beginPath(); ctx.ellipse(4, 12, this.radius * 0.8, this.radius * 0.34, 0, 0, TAU); ctx.fill();
@@ -1057,6 +1106,62 @@ Enemy._glyphs = Object.create(null);
 
 /* ------------------------------------------------------------------ TOWER */
 
+/* Share of the beam a Beacon's SECOND light carries. WIDEBAND buys reach at
+   the cost of depth, so the extra tower is lit but never as brightly -- a
+   second light at full strength would make one talent worth two Beacons. */
+const BEACON_SECOND_LIGHT = 0.6;
+
+/**
+ * The share a QUARTERMASTER takes off an upgrade bought inside its depot.
+ *
+ * The STRONGEST depot in reach applies and they do not stack: a pair of
+ * Convoys would otherwise buy ascensions for nothing. A depot never
+ * discounts its own upgrades, and a jammed one issues nothing.
+ */
+function requisitionFor(tower) {
+  const S = Game.sides && Game.sides[tower.side];
+  if (!S || !S.towers) return 0;
+  let best = 0;
+  for (const t of S.towers) {
+    const r = t.stats && t.stats.requisition;
+    if (!r || t === tower || t.jammed) continue;
+    if (dist2(t.x, t.y, tower.x, tower.y) > t.rangePx * t.rangePx) continue;
+    if (r > best) best = r;
+  }
+  return Math.min(REQUISITION_MAX, best);
+}
+
+/**
+ * THE OATH — spend a Custodian warden on a breach. True when one was spent.
+ *
+ * The deepest bench goes first so a thin watch is held in reserve, which is
+ * what stops a CORDON being drained by a wave a VIGIL beside it could have
+ * absorbed. Called from Enemy.update, once, in the frame the unit arrives.
+ */
+function vigilSpend(e) {
+  const S = Game.sides && Game.sides[e.hostileTo];
+  if (!S || !S.towers) return false;
+  let best = null;
+  for (const t of S.towers) {
+    if (!t.stats.vigilHold || t.jammed || (t.vigilLeft || 0) < 1) continue;
+    if (dist2(t.x, t.y, e.x, e.y) > t.rangePx * t.rangePx) continue;
+    if (!best || t.vigilLeft > best.vigilLeft) best = t;
+  }
+  if (!best) return false;
+  best.vigilLeft--;
+  best.vigilT = 0;
+  /* A warden did save a life, so it books against the figure the inspector
+     already prints for lives saved rather than inventing a second one. */
+  best.livesRestored = (best.livesRestored || 0) + 1;
+  if (best.stats.vigilGold) Game.awardGold(best.side, best.stats.vigilGold, best);
+  Game.spawnBurst(e.x, e.y, 18, best.def.color, 150);
+  if (best.side === Game.viewSide) {
+    Sound.play('shieldBreak');
+    Game.addFloater(e.x, e.y - 14, 'OATH KEPT', false, best.def.color, 14);
+  }
+  return true;
+}
+
 class Tower {
   constructor(type, gx, gy, side) {
     this.def = TOWER_TYPES[type];
@@ -1096,6 +1201,14 @@ class Tower {
     this.puddleTimer = 0;
     /* SABOTEUR CASCADE: a rate debuff that outlives the blackout itself. */
     this.sabLingerAmt = 0; this.sabLingerT = 0;
+    /* BEACON's beam, held on the LIT tower rather than recomputed from the
+       carrier. A grant that expires on its own cannot dangle: a Beacon that
+       is sold, relocated or jammed simply stops relighting and the light
+       fades on schedule, with nothing to clean up in recomputeAuras. */
+    this.focusT = 0; this.focusDmgAmt = 0; this.focusRateAmt = 0; this.focusRangeAmt = 0;
+    /* CUSTODIAN's bench of oath-bound wardens, and PYRE's fuel tank. */
+    this.vigilLeft = undefined; this.vigilT = 0;
+    this.heatT = 0; this.ventT = 0;
 
     this.kills = 0; this.damageDealt = 0; this.goldMade = 0; this.livesRestored = 0;
     this.aura = { dmg: 0, rate: 0, range: 0 };
@@ -1242,16 +1355,16 @@ class Tower {
     /* CASCADE's lingering sabotage. In rateMul rather than effRate so the
        drone cadence (which reads rateMul directly) is slowed too. */
     const sab = 1 - (this.sabLingerAmt || 0);
-    return (1 + this.aura.rate) * this.ascRate * this.sideMods.rate * deep * pulse * sab;
+    return (1 + this.aura.rate + (this.focusRateAmt || 0)) * this.ascRate * this.sideMods.rate * deep * pulse * sab;
   }
   get effDamage() {
     const alch = (this.alchStacks || 0) * ((this.stats.transmute || 0) * (this.stats.transmuteMul || 1));
-    return ((this.stats.damage || 0) + alch) * (1 + this.aura.dmg) * this.ascDamage * this.sideMods.damage * this.commanderDamage * GLOBAL_DAMAGE_TUNE;
+    return ((this.stats.damage || 0) + alch) * (1 + this.aura.dmg + (this.focusDmgAmt || 0)) * this.ascDamage * this.sideMods.damage * this.commanderDamage * GLOBAL_DAMAGE_TUNE;
   }
-  effDamageFor(v) { return v * (1 + this.aura.dmg) * this.ascDamage * this.sideMods.damage * this.commanderDamage * GLOBAL_DAMAGE_TUNE; }
+  effDamageFor(v) { return v * (1 + this.aura.dmg + (this.focusDmgAmt || 0)) * this.ascDamage * this.sideMods.damage * this.commanderDamage * GLOBAL_DAMAGE_TUNE; }
   get effRate()   { return (this.stats.rate || 1) * this.rateMul; }
   get effRange()  { const S = Game.sides[this.side];
-                    return (this.stats.range || 1) * (1 + this.aura.range) * this.ascRange * this.sideMods.range
+                    return (this.stats.range || 1) * (1 + this.aura.range + (this.focusRangeAmt || 0)) * this.ascRange * this.sideMods.range
                            * ((S && S.pulse && S.pulse.range) || 1); }
   get rangePx()   { return this.effRange * TILE; }
   get effSplash() { return (this.stats.splash || 0) * this.sideMods.splash; }
@@ -1300,6 +1413,12 @@ class Tower {
     let c = raw * this.sideMods.upCost;
     if (kind === 'ascend') c *= (t ? t.ascCostMul : 1);
     else c *= UPGRADE_COST_SCALE;
+    /* QUARTERMASTER's requisition lands HERE and nowhere else, for the same
+       reason the free owed branch above does: this is the one definition
+       Game.upgrade, the inspector and the rival's scorer all already read, so
+       the price on the button, the gold actually taken and the denominator
+       the AI divides by cannot disagree. */
+    c *= (1 - requisitionFor(this));
     return Math.max(1, Math.round(c));
   }
   get sellValue() { return Math.floor(this.invested * Game.sides[this.side].mods.sellRate); }
@@ -1308,7 +1427,39 @@ class Tower {
     const s = this.stats;
     if (this.isSupport) return 0;
     const a = this.def.attack;
-    if (a === 'cone') return this.effDamage + (s.burn || 0);
+    if (a === 'cone') {
+      let d = this.effDamage + (s.burn || 0);
+      /* ICHOR's bile has no damage figure of its own -- it is a share of the
+         WOUND -- so it is priced the way CANISTER's share-of-health effect
+         is: against a nominal body, through Game.waveHpMul, which is THE
+         definition of the curve rather than a second copy of it. */
+      if (s.digest)
+        d += DIGEST_REF_HP * Game.waveHpMul(Math.max(1, Game.wave))
+             * digestFrac(s.digest * this.effStatus, DIGEST_REF_WOUND, false);
+      /* PYRE's tank pays over the whole cycle it costs -- the hold plus the
+         vent -- because a blowout the emplacement is offline for is not free
+         throughput and the rival must not price it as though it were. */
+      if (s.overheat)
+        d += this.effDamageFor((s.blowDmg || 0) * (s.blowDmgMul || 1))
+             / Math.max(1, (s.overheat || 5) + PYRE_VENT_SECONDS);
+      return d;
+    }
+    if (a === 'vigil') {
+      /* A life SAVED has no damage figure. Priced against a nominal body on
+         the live wave curve at the rate the bench can be spent, because
+         AI.projectedUpgrade reads exactly this and a zero would leave the
+         rival building one Custodian and never touching it again. */
+      return VIGIL_REF_HP * Game.waveHpMul(Math.max(1, Game.wave))
+             * (Math.max(0, s.vigilHold || 0) / Math.max(1, s.vigilEvery || 10));
+    }
+    if (a === 'depot') {
+      /* Supply has no damage figure either, so it is converted on the scale
+         the rival already uses for gold: per VAULT tick, times the weight
+         that was calibrated against `income`. */
+      const perTick = (s.waveBonus || 0) * this.ascDamage / DEPOT_TICKS_PER_WAVE
+                    + (s.requisition || 0) * DEPOT_REQ_REF_SPEND;
+      return perTick * AI_ECON_UPGRADE_WEIGHT;
+    }
     if (a === 'beam') return this.effDamage * (1 + (s.rampMax || 1) * 0.5) * (s.split || 1);
     if (a === 'mines') return this.effDamage * (s.maxMines || 1) / Math.max(3, (s.mineDelay || 3) * (s.maxMines || 1) * 0.5);
     if (a === 'drones') return this.effDamageFor(s.droneDamage || 0) * (s.droneRate || 1) * (s.drones || 0) * this.rateMul;
@@ -1317,6 +1468,15 @@ class Tower {
     if (s.multishot) d *= s.multishot;
     if (s.submunitions) d *= s.submunitions;
     if (s.chains) { let m = 0, c = 1; for (let i = 0; i < s.chains; i++) { m += c; c *= (s.falloff || 0.75); } d = this.effDamage * m * this.effRate; }
+    /* ARC. The current hits everything on its stretch of road in BOTH
+       directions, so its worth is the stretch times how densely a column
+       actually stands -- summed exactly the way the chain above is. */
+    if (s.runTiles) {
+      let m = 1, step = 1;
+      const hops = Math.round((s.runTiles || 0) * ARC_RUN_BODIES_PER_TILE);
+      for (let i = 0; i < hops; i++) { step *= (s.runFalloff || 0.85); m += step * 2; }
+      d = this.effDamage * m * this.effRate;
+    }
     const crit = (s.crit || 0) + this.sideMods.crit;
     if (crit > 0) d *= (1 + crit * (Math.max(s.critMult || 0, 2.5) - 1));
     if (s.poisonDps) d += s.poisonDps * (s.maxStacks || 1) * 0.6 * this.effStatus;
@@ -1339,15 +1499,22 @@ class Tower {
   acquire(enemies, rangeOverride) {
     const R = rangeOverride || this.rangePx;
     const r2 = R * R;
+    /* MORTAR's fire mission. Indirect fire does not have to SEE the target --
+       somebody on this side does -- so the tube reaches this much further,
+       but only onto ground one of your own weapons is currently holding. */
+    const spot = (this.stats.spotting || 0) * TILE;
+    const sr2 = spot > 0 ? (R + spot) * (R + spot) : r2;
     const groundOnly = this.def.groundOnly, airOnly = this.def.airOnly;
     let best = null, bestScore = -Infinity;
     for (let i = 0; i < enemies.length; i++) {
       const e = enemies[i];
       if (e.dead || e.leaked || e.hostileTo !== this.side) continue;
-      if (groundOnly && e.flying) continue;
+      /* A FLAK-downed flyer is on the deck and every ground gun may have it. */
+      if (groundOnly && e.flying && !e.grounded) continue;
       if (airOnly && !e.flying) continue;
       const d2 = dist2(this.x, this.y, e.x, e.y);
-      if (d2 > r2) continue;
+      if (d2 > sr2) continue;
+      if (d2 > r2 && !this.spottedFor(e)) continue;
       let score;
       switch (this.targetMode) {
         case 'last':   score = e.remaining; break;
@@ -1367,11 +1534,31 @@ class Tower {
     const out = [];
     for (const e of enemies) {
       if (e.dead || e.hostileTo !== this.side) continue;
-      if (this.def.groundOnly && e.flying) continue;
+      if (this.def.groundOnly && e.flying && !e.grounded) continue;
       if (this.def.airOnly && !e.flying) continue;
       if (dist2(this.x, this.y, e.x, e.y) <= r2) out.push(e);
     }
     return out;
+  }
+
+  /**
+   * MORTAR — is anything on this side currently holding `e`?
+   *
+   * WEAPONS only: a Beacon is not an observation post, and a jammed tower has
+   * no radio, which is what stops a sabotaged line quietly extending an
+   * artillery piece's reach. The spotter must itself be able to engage the
+   * target, so a board of Flak cannot call fire onto ground.
+   */
+  spottedFor(e) {
+    const S = Game.sides && Game.sides[this.side];
+    if (!S || !S.towers) return false;
+    for (const t of S.towers) {
+      if (t === this || t.isSupport || t.jammed) continue;
+      if (t.def.groundOnly && e.flying && !e.grounded) continue;
+      if (t.def.airOnly && !e.flying) continue;
+      if (dist2(t.x, t.y, e.x, e.y) <= t.rangePx * t.rangePx) return true;
+    }
+    return false;
   }
 
   predict(target, projSpeed) {
@@ -1386,6 +1573,13 @@ class Tower {
   update(dt, game) {
     this.age += dt;
     if (this.recoil > 0) this.recoil = Math.max(0, this.recoil - dt * 5);
+    /* The Beacon's light decays ABOVE the jam gate on purpose: a lit tower
+       that is then sabotaged loses the beam on schedule instead of holding it
+       for as long as it is offline. */
+    if (this.focusT > 0) {
+      this.focusT -= dt;
+      if (this.focusT <= 0) { this.focusDmgAmt = 0; this.focusRateAmt = 0; this.focusRangeAmt = 0; }
+    }
     if (this.sabLingerT > 0) {
       this.sabLingerT -= dt;
       if (this.sabLingerT <= 0) this.sabLingerAmt = 0;
@@ -1403,7 +1597,9 @@ class Tower {
     if (ext) return ext.call(this, dt, game);
 
     switch (this.def.attack) {
-      case 'aura':    return;
+      case 'aura':    return this.updateAura(dt, game);
+      case 'depot':   return;
+      case 'vigil':   return this.updateVigil(dt, game);
       case 'economy': return this.updateEconomy(dt, game);
       case 'mines':   return this.updateMines(dt, game);
       case 'drones':  return this.updateDrones(dt, game);
@@ -1430,6 +1626,7 @@ class Tower {
       case 'chain':      this.fireChain(target, game); break;
       case 'hitscan':    this.fireHitscan(target, game); break;
       case 'tether':     this.fireTether(target, game); break;
+      case 'grounding':  this.fireGrounding(target, game); break;
     }
   }
 
@@ -1629,6 +1826,114 @@ class Tower {
     if (s.splash) { game.shake(4); game.spawnExplosion(this.x, this.y, this.rangePx * 0.55, this.def.color); }
   }
 
+  /**
+   * BEACON — consecrate the best gun inside the field, then the next.
+   *
+   * The grant is written onto the LIT tower with a lifetime rather than
+   * recomputed from here every frame, so nothing has to be unwound when the
+   * carrier goes away. Chosen by estimateDps, which is the same measure the
+   * rival prices a tower with, so the beam lands on the emplacement both
+   * sides agree is the best one.
+   */
+  updateAura(dt, game) {
+    const s = this.stats;
+    if (!s.focusDmg) return;                       /* PYLON: a flat field, no beam */
+    this.focusCd = (this.focusCd || 0) - dt;
+    if (this.focusCd > 0) return;
+    const dur = Math.max(0.5, s.focusEvery || 3);
+    this.focusCd = dur;
+    const S = Game.sides[this.side];
+    if (!S || !S.towers) return;
+    const r2 = this.rangePx * this.rangePx;
+    /* Scored ONCE per candidate, not once per comparison: estimateDps walks
+       the whole stat block and a comparator would call it O(n log n) times. */
+    const pool = [];
+    for (const t of S.towers) {
+      if (t === this || t.isSupport) continue;
+      if (dist2(this.x, this.y, t.x, t.y) <= r2) pool.push({ t: t, v: t.estimateDps() });
+    }
+    if (!pool.length) { this.lit = null; return; }
+    pool.sort((a, b) => b.v - a.v);
+    const n = Math.max(1, Math.round(s.focusCount || 1));
+    const lit = [];
+    for (let i = 0; i < n && i < pool.length; i++) {
+      const share = i === 0 ? 1 : BEACON_SECOND_LIGHT;
+      const t = pool[i].t;
+      /* Math.max, not +=, so two Beacons over one tower are the stronger of
+         the pair rather than the sum -- the rule WARD's fields already use,
+         and the reason a Beacon wall cannot multiply itself. */
+      t.focusT = Math.max(t.focusT || 0, dur);
+      t.focusDmgAmt = Math.max(t.focusDmgAmt || 0, (s.focusDmg || 0) * share * this.ascDamage);
+      t.focusRateAmt = Math.max(t.focusRateAmt || 0, (s.focusRate || 0) * share);
+      t.focusRangeAmt = Math.max(t.focusRangeAmt || 0, (s.focusRange || 0) * share);
+      lit.push(t);
+      /* The beam lasts the WHOLE consecration, not a flash: a player who
+         cannot see which emplacement is lit cannot play around the one
+         mechanic the tower has. */
+      if (this.side === Game.viewSide)
+        game.beams.push({ points: [{ x: this.x, y: this.y }, { x: t.x, y: t.y }],
+                          life: dur, maxLife: dur, color: this.def.color, width: 2 });
+    }
+    this.lit = lit;
+  }
+
+  /**
+   * CUSTODIAN — keep the bench full.
+   *
+   * The interception itself lives in Enemy.update, at the only moment it can
+   * happen: the step a unit reaches the line. All this does is raise wardens
+   * back, and a jammed Custodian never gets here, so a blackout stops the
+   * relief exactly as it stops a gun.
+   */
+  updateVigil(dt, game) {
+    const s = this.stats;
+    const cap = Math.max(0, Math.round(s.vigilHold || 0));
+    if (this.vigilLeft === undefined) this.vigilLeft = cap;
+    if (this.vigilLeft >= cap) { this.vigilLeft = cap; this.vigilT = 0; return; }
+    this.vigilT = (this.vigilT || 0) + dt;
+    const every = Math.max(0.5, s.vigilEvery || 10);
+    if (this.vigilT >= every) {
+      this.vigilT -= every;
+      this.vigilLeft++;
+      if (this.side === Game.viewSide) game.spawnBurst(this.x, this.y, 6, this.def.color, 60);
+    }
+  }
+
+  /**
+   * ARC — earth the discharge into the lane and let it run.
+   *
+   * Selection is by distance ALONG the path, not by proximity, which is the
+   * whole separation from a chain: CONCORD asks who else is near this body,
+   * ARC asks who else is on this road. Falloff is per tile of road travelled,
+   * so a spread-out crowd on the same lane still costs the current its power.
+   */
+  fireGrounding(target, game) {
+    const s = this.stats;
+    Sound.play('arc');
+    const reach = (s.runTiles || 0) * TILE;   /* no stat, no run */
+    const fall = s.runFalloff || 0.85;
+    const points = [{ x: this.x, y: this.y - 8 }];
+    const hit = [];
+    for (const e of game.enemies) {
+      if (e.dead || e.hostileTo !== this.side || e.path !== target.path) continue;
+      const d = Math.abs(e.dist - target.dist);
+      if (d > reach) continue;
+      hit.push({ e: e, d: d });
+    }
+    hit.sort((a, b) => a.d - b.d);
+    for (const h of hit) {
+      const mul = Math.pow(fall, h.d / TILE);
+      const crit = this.rollCrit();
+      const dealt = h.e.takeDamage(this.effDamage * mul * crit.mult, s.dmgType,
+                                  { shred: s.shred || 0 });
+      this.registerDamage(dealt, h.e, game, crit.isCrit);
+      game.spawnBurst(h.e.x, h.e.y, 3, this.def.color, 50);
+      points.push({ x: h.e.x, y: h.e.y });
+    }
+    game.beams.push({ points: points, life: 0.18, maxLife: 0.18,
+                      color: this.def.color, width: 3, jagged: true });
+  }
+
   /** VAULT — mints gold on a timer; the kill skim is paid by Game.killEnemy. */
   updateEconomy(dt, game) {
     const s = this.stats;
@@ -1645,9 +1950,17 @@ class Tower {
 
   updateCone(dt, game) {
     const s = this.stats;
+    /* PYRE's tank, resolved BEFORE acquisition so a venting emplacement is
+       genuinely offline rather than merely quiet -- the downtime is the whole
+       price of the blowout. */
+    if (s.overheat && this.ventT > 0) {
+      this.ventT -= dt;
+      this.firing = false;
+      return;
+    }
     const target = this.acquire(game.enemies);
     this.firing = !!target;
-    if (!target) return;
+    if (!target) { this.heatT = Math.max(0, (this.heatT || 0) - dt); return; }
     this.angle = angleLerp(this.angle, Math.atan2(target.y - this.y, target.x - this.x), Math.min(1, dt * 14));
     Sound.play('pyre');
 
@@ -1663,6 +1976,32 @@ class Tower {
       if (s.burn) e.applyBurn(s.burn * this.effStatus, (s.burnDur || 2) * this.effStatus, this);
       if (s.burnVuln && e.burnTimer > 0)
         e.applyVuln(s.burnVuln, (s.burnDur || 2) * this.effStatus);
+      /* ICHOR. Scaled by effStatus here, which is what makes THICK BILE and
+         DEEP GULLET reach it -- the panel prints the same product. */
+      if (s.digest) e.applyDigest(s.digest * this.effStatus, (s.digestDur || 3) * this.effStatus, this);
+      if (s.digestVuln && e.digestTimer > 0)
+        e.applyVuln(s.digestVuln, (s.digestDur || 3) * this.effStatus);
+    }
+
+    /* PYRE. Heat builds only while the trigger is actually held. */
+    if (s.overheat) {
+      this.heatT = (this.heatT || 0) + dt;
+      if (this.heatT >= s.overheat) {
+        this.heatT = 0;
+        this.ventT = PYRE_VENT_SECONDS;
+        const br = (s.blowRadius || 1.5) * TILE, br2 = br * br;
+        const blow = this.effDamageFor((s.blowDmg || 0) * (s.blowDmgMul || 1));
+        for (const e of game.enemies) {
+          if (e.dead || e.hostileTo !== this.side) continue;
+          if (dist2(this.x, this.y, e.x, e.y) > br2) continue;
+          const dealt = e.takeDamage(blow, s.dmgType, { splash: true });
+          this.registerDamage(dealt, e, game);
+          if (s.burn) e.applyBurn(s.burn * this.effStatus, (s.burnDur || 2) * this.effStatus, this);
+        }
+        game.spawnExplosion(this.x, this.y, br, this.def.color);
+        game.shake(6);
+        if (this.side === Game.viewSide) Sound.play('explosion');
+      }
     }
 
     if (s.puddle) {
@@ -1692,6 +2031,22 @@ class Tower {
     if (!quiet && dealt > 0 && this.side === Game.viewSide)
       game.addFloater(enemy.x, enemy.y, Math.round(dealt), crit);
     if (enemy.dead && !enemy._counted) { enemy._counted = true; this.kills++; }
+
+    if (enemy.dead) {
+      const k = this.stats;
+      /* BOLT. A kill returns a share of the reload -- the case is already out.
+         Math.min against what is LEFT on the clock is the bound: update() sets
+         cooldown to a full reload before any kill can be credited here, so a
+         splash of four deaths still cannot buy more than one free round, and
+         a Bolt in a swarm tops out at double its printed rate. */
+      if (k.killReload && this.cooldown > 0)
+        this.cooldown -= Math.min(this.cooldown, (1 / Math.max(0.01, this.effRate)) * k.killReload);
+      /* FOUNDRY. Every corpse the line puts down is scrap back on the belt --
+         including the ones its own automata finish, which reach this same
+         funnel through Minion.update. */
+      if (k.scrapline && this.forgeT > 0)
+        this.forgeT = Math.max(0, this.forgeT - k.scrapline);
+    }
 
     /* TECH ORIGIN riders. ONE hook, placed here because registerDamage is
        the single point every attack path -- projectile, lobbed, chain,
@@ -1779,6 +2134,12 @@ class Tower {
 
   draw(ctx, game) {
     const d = this.def;
+    /* Game.draw paints support fields in the ground layer for isSupport
+       towers only. The depot and the watch are deliberately NOT isSupport --
+       the rival prices both through estimateDps, which isSupport short-
+       circuits to zero -- so they paint their own radius here instead of
+       shipping a tower whose entire mechanic is a circle nobody can see. */
+    if (this.stats.requisition || this.stats.vigilHold) this.drawAuraField(ctx);
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.fillStyle = 'rgba(8,12,20,0.85)';
@@ -2081,7 +2442,7 @@ class Tower {
   }
 
   drawAuraField(ctx) {
-    const isVault = this.def.attack === 'economy';
+    const isVault = this.def.attack === 'economy' || this.def.attack === 'depot';
     const col = isVault ? '252,211,77' : '251,191,36';
     const r = this.rangePx, p = (this.age * 0.4) % 1;
     const g = ctx.createRadialGradient(this.x, this.y, r * 0.15, this.x, this.y, r);
@@ -2118,7 +2479,7 @@ class Projectile {
   }
   hostile(e) {
     if (e.dead || this.hits.has(e) || e.hostileTo !== this.side) return false;
-    if (this.groundOnly && e.flying) return false;
+    if (this.groundOnly && e.flying && !e.grounded) return false;
     if (this.airOnly && !e.flying) return false;
     return true;
   }
@@ -2204,6 +2565,9 @@ class Projectile {
     if (s.burnVuln && enemy.burnTimer > 0)
       enemy.applyVuln(s.burnVuln, (s.burnDur || 2) * st);
     if (s.vuln) enemy.applyVuln(s.vuln * st, (s.vulnDur || 2) * st);
+    /* FLAK. Every hit re-cripples the flyer onto the deck; the ceiling is in
+       applyGrounded so a battery cannot hold a flight down for ever. */
+    if (s.downFor) enemy.applyGrounded(s.downFor * st);
     if (this.stun) enemy.applyFreeze(this.stun);
   }
   detonate(game) {
@@ -2215,7 +2579,7 @@ class Projectile {
       const r2 = r * r;
       for (const e of game.enemies) {
         if (e.dead || e.hostileTo !== this.side) continue;
-        if (this.groundOnly && e.flying) continue;
+        if (this.groundOnly && e.flying && !e.grounded) continue;
         if (this.airOnly && !e.flying) continue;
         const d2 = dist2(this.x, this.y, e.x, e.y);
         if (d2 > r2) continue;

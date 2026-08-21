@@ -1222,6 +1222,9 @@ body.tri-field #hud { gap: 8px; padding: 8px 10px; }
 /* ═════════════════ MUSTER DETACHMENT (loadout strip + battle header) ════ */
 /* The battle header now carries two readouts; the second label needs air. */
 .muster-head .mu-sep { margin-left: 6px; }
+/* RETIRED by the four-column loadout: the detachment is now the UNITS picker
+   and is built from .lo-card like the towers beside it. Kept until 19.13
+   settles what a unit panel owns, then deleted with its renderer. */
 .muster-lo { display: flex; flex-direction: column; gap: 7px; margin: 0 0 12px; padding: 9px 12px;
   border: 1px solid rgba(249, 115, 22, .24); border-radius: 10px; background: rgba(249, 115, 22, .05); }
 .muster-lo:empty { display: none; }
@@ -1598,4 +1601,251 @@ body:not(.arena-field) .arena-ladder { display: none; }
 @media (prefers-reduced-motion: reduce) {
   /* Instant, never absent -- the information is the point of the expansion. */
   .lo-detail { transition: none; }
+}
+
+
+/* ═══════════════ THE FOUR-COLUMN LOADOUT — 19.12 / 19.15 ═══════════════ */
+/*
+     UNIT DETAIL │ UNITS │ TOWERS │ TOWER DETAIL
+
+   The two middle columns are the same decision made twice, so they share ONE
+   grid rule, ONE header rule and ONE card (the card itself is .lo-card, in
+   style.css, unchanged). They cannot be styled apart by a later edit to
+   either one, which is the point — a player has to read them as a pair.
+
+   The two outer columns are the opposite register: no frame, no hairline
+   grid, longer leading, quieter ground. Density on the inside, calm on the
+   outside, so the eye knows which two columns it is being asked to act in.
+   The rhythm is the composition; four equal panels would be a table.
+*/
+
+/* THE ONE SCREEN THAT GENUINELY WANTS THE WIDTH. At the shared 1400 wrap each
+   picker holds exactly two tracks and the towers column becomes twenty rows of
+   scrolling; at 1720 it holds three and the two columns still end level. Every
+   other screen keeps 1400 — this is a property of four columns, not a taste. */
+#screen-loadout .setup-wrap { max-width: 1720px; }
+
+.lo-columns {
+  /* 2×272 + 2×(2×138 + 9 + 28) + 3×14 = 1212 of content, inside a wrap that
+     spends 48 more on padding — which is where LO_FOUR_COL_MIN_PX (1280,
+     with headroom) comes from. Keep the two in step. */
+  --lo-detail-w: 272px;
+  --lo-card-min: 138px;
+  --lo-col-gap: 14px;
+  display: grid;
+  grid-template-columns: var(--lo-detail-w) minmax(0, 1fr) minmax(0, 1fr) var(--lo-detail-w);
+  gap: var(--lo-col-gap);
+  align-items: start;
+}
+
+/* ---- the two pickers: one rule, both columns -------------------------- */
+.lo-pick-col {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 12px 12px 13px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .045);
+}
+.lo-col-head {
+  display: grid; grid-template-columns: auto 1fr auto auto;
+  align-items: baseline; gap: 9px;
+  padding-bottom: 9px; margin-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.lo-col-kind { font-size: 9px; letter-spacing: .24em; color: var(--text-mute); }
+.lo-col-name {
+  font-family: var(--display); font-size: 16px; letter-spacing: .24em;
+  margin: 0; color: var(--text);
+}
+.lo-col-n { font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em;
+            color: var(--text-mute); font-variant-numeric: tabular-nums; }
+.lo-col-n.ready { color: var(--green); text-shadow: 0 0 14px rgba(74, 222, 128, .45); }
+
+/* THE SAME GRID, BOTH COLUMNS. auto-fill rather than a hand-set count, so at
+   any viewport the two carry the same number of tracks — a fixed count would
+   let one column show three cards and the other two, and the pairing would be
+   a claim the layout was not honouring. */
+.lo-pick-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--lo-card-min, 138px), 1fr));
+  gap: 9px;
+  max-height: 58vh; overflow-y: auto; overscroll-behavior: contain;
+  padding-right: 4px;
+}
+
+/* Which card the detail column beside it is currently explaining. A ring
+   would fight the focus-visible ring; a lit pip does not. */
+.lo-card.focus { border-color: color-mix(in srgb, var(--tc) 55%, var(--line)); }
+.lo-card.focus::after {
+  content: ''; position: absolute; right: 8px; top: 50%;
+  width: 5px; height: 5px; margin-top: -2.5px; border-radius: 50%;
+  background: var(--tc); box-shadow: 0 0 10px var(--tc);
+}
+/* The element mark and the pack-size mark, one glyph each, tucked into the
+   price so .lo-meta keeps its two flex children. */
+.lo-el { font-style: normal; color: var(--el, var(--tc)); margin-right: 4px; }
+
+/* ---- the chosen strip: what you have taken, where you took it --------- */
+.lo-chosen { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.lo-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em;
+  padding: 2px 7px 2px 3px; border-radius: 20px; cursor: pointer;
+  color: var(--text-dim); background: rgba(255, 255, 255, .04);
+  border: 1px solid color-mix(in srgb, var(--tc) 45%, transparent);
+  transition: background .14s var(--e-tap), transform .14s var(--e-tap);
+}
+.lo-chip:hover { background: color-mix(in srgb, var(--tc) 16%, transparent); transform: translateY(-1px); }
+.lo-chip i {
+  font-style: normal; width: 14px; height: 14px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 8.5px; font-weight: 800;
+  background: var(--tc); color: #04121a;
+}
+.lo-chip b { color: var(--tc); font-weight: 600; }
+/* An unfilled slot is a shape, not a word. */
+.lo-chip.empty {
+  width: 22px; height: 20px; border-radius: 20px;
+  border: 1px dashed var(--line-2); background: none;
+}
+
+/* ---- the two detail columns: the calm register ------------------------ */
+.lo-detail-col {
+  position: sticky; top: 12px;
+  max-height: calc(100vh - 168px); overflow-y: auto; overscroll-behavior: contain;
+  padding: 13px 14px 16px;
+  border-radius: var(--r);
+  background: linear-gradient(180deg, rgba(9, 14, 24, .60), rgba(7, 11, 19, .34));
+  /* An engraved rule in the focused thing's own colour instead of a frame:
+     the pickers own the frames, and two framed panels either side would make
+     four boxes where the design wants two and two. */
+  border-top: 1px solid color-mix(in srgb, var(--og, var(--line-2)) 55%, transparent);
+}
+.lo-d-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.lo-d-eyebrow {
+  flex: 1; font-family: var(--mono); font-size: 8.5px; letter-spacing: .26em;
+  color: var(--text-mute); text-transform: uppercase;
+}
+/* `transition: none` is load-bearing, not tidiness. .icon-btn carries
+   `transition: all .13s`, and `all` includes the visibility this button
+   INHERITS from the drawer -- so on opening, the button computed as
+   `visibility: hidden` for the first 130ms while its parent was already
+   visible, and an element that is not visible cannot take focus. MEASURED:
+   openLoadoutDrawer's focus() left activeElement on the document element, so
+   a keyboard user opened a drawer they were never put inside. (Spelling the
+   tag out here would abort build.js, which refuses document-level tags in the
+   artifact bundle -- and CSS comments are inlined into it verbatim.) */
+.lo-drawer-x { display: none; transition: none; }
+
+.lo-d-head { display: grid; grid-template-columns: auto 1fr auto; align-items: center;
+             gap: 10px; margin-bottom: 9px; }
+.lo-d-fig { line-height: 0; }
+.lo-d-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.lo-d-name b {
+  font-family: var(--display); font-size: 19px; letter-spacing: .1em;
+  line-height: 1.05; color: var(--tc);
+}
+.lo-d-cost { font-family: var(--mono); font-size: 13px; color: var(--gold); white-space: nowrap; }
+.lo-d-in {
+  font-size: 9px; letter-spacing: .16em; padding: 2px 8px; border-radius: 20px;
+  color: var(--green); border: 1px solid rgba(74, 222, 128, .45);
+  background: rgba(74, 222, 128, .09);
+}
+.lo-d-trait {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em;
+  padding: 3px 9px; border-radius: 4px; color: var(--tc);
+  background: color-mix(in srgb, var(--tc) 11%, transparent);
+  border-left: 2px solid var(--tc);
+}
+.lo-detail-col .lo-stage { margin: 9px 0 10px; }
+.lo-detail-col .lo-desc { margin: 0 0 10px; }
+.lo-d-rule {
+  margin: 11px 0 0; font-size: 11px; line-height: 1.6; color: var(--text-mute);
+  border-left: 2px solid color-mix(in srgb, var(--og) 60%, transparent);
+  padding-left: 9px;
+}
+.lo-d-rule b { display: block; color: var(--og); letter-spacing: .16em;
+               font-size: 9.5px; margin-bottom: 3px; }
+.lo-d-gate {
+  margin: 11px 0 0; font-size: 11.5px; line-height: 1.6; color: var(--text-mute);
+  border: 1px dashed var(--line-2); border-radius: 8px; padding: 8px 10px;
+}
+.lo-d-gate b { color: var(--text-dim); }
+/* A hairline with a word sitting in it — the engraved-linework half of the
+   identity, doing the work a second heading would otherwise do. */
+.lo-d-sep { display: flex; align-items: center; gap: 9px; margin: 14px 0 9px; }
+.lo-d-sep::before, .lo-d-sep::after {
+  content: ''; height: 1px; flex: 1; background: var(--line);
+}
+.lo-d-sep span { font-family: var(--mono); font-size: 8.5px;
+                 letter-spacing: .26em; color: var(--text-mute); }
+.lo-detail-col .tt-tree { border-left-width: 3px; }
+.lo-detail-col .lo-chips { margin-bottom: 2px; }
+
+/* The header control that reaches the drawer. Only ever narrow; JS also sets
+   [hidden], and this rule deliberately does not fight it. */
+.lo-detail-open {
+  display: none; align-items: center; gap: 5px; cursor: pointer;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em;
+  padding: 3px 9px; border-radius: 20px; color: var(--text-dim);
+  background: rgba(255, 255, 255, .05); border: 1px solid var(--line-2);
+}
+.lo-detail-open b { color: var(--text); font-weight: 600; }
+.lo-detail-open:hover { background: rgba(255, 255, 255, .1); }
+
+/* ═══ NARROW: the detail columns become a drawer, the pickers do not move ═══
+   Must stay equal to LO_FOUR_COL_MIN_PX in ui.js — the drawer is opened from
+   there and laid out here, and a disagreement is a drawer that opens
+   invisibly. Reflowing the PICKERS to one column was the alternative and it
+   is worse: it stacks the two decisions the screen exists to pair, which
+   destroys the only thing the layout is arguing. So the detail goes and the
+   pairing stays. */
+@media (max-width: 1279px) {
+  .lo-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .lo-detail-col {
+    position: fixed; z-index: 60; top: 0; bottom: 0;
+    width: min(400px, 92vw); max-height: none; border-radius: 0;
+    padding: 16px 16px 24px;
+    background: linear-gradient(180deg, rgba(10, 16, 24, .97), rgba(7, 11, 19, .98));
+    box-shadow: var(--shadow-deep);
+    /* `visibility` keeps a parked drawer out of hit-testing. It is switched
+       with a ZERO-length transition delayed to the END of the slide out, and
+       to zero delay on the way IN -- a plain `visibility .28s` leaves the
+       panel computing as hidden for the whole opening slide, and an element
+       that is not visible cannot take focus, so openLoadoutDrawer's focus()
+       silently did nothing and a keyboard user opened a drawer they were
+       never put inside. MEASURED: activeElement stayed on the document
+       element for 350ms. */
+    visibility: hidden;
+    transition: transform .28s var(--e-enter), visibility 0s linear .28s;
+  }
+  /* Each drawer enters from the side its column lives on, so the motion says
+     WHICH picker it belongs to instead of merely appearing. */
+  #unit-detail  { left: 0;  transform: translateX(-101%); border-right: 1px solid var(--line-2); }
+  #tower-detail { right: 0; transform: translateX(101%);  border-left: 1px solid var(--line-2); }
+  .lo-columns.drawer-unit  #unit-detail,
+  .lo-columns.drawer-tower #tower-detail {
+    transform: none; visibility: visible;
+    transition: transform .28s var(--e-enter), visibility 0s linear 0s;
+  }
+  .lo-columns.drawer-open::after {
+    content: ''; position: fixed; inset: 0; z-index: 55;
+    background: rgba(3, 6, 12, .58);
+    backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  }
+  .lo-drawer-x { display: grid; }
+  .lo-detail-open:not([hidden]) { display: inline-flex; }
+  .lo-pick-body { max-height: 62vh; }
+}
+/* One picker track is legible before the card is; below this the grid gives
+   up the second column on its own and the pairing is already gone with the
+   viewport, not with a decision made here. */
+@media (max-width: 620px) {
+  .lo-columns { --lo-card-min: 126px; --lo-col-gap: 10px; }
+  .lo-col-name { font-size: 14px; letter-spacing: .18em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Instant, never absent — the panel is the information. */
+  .lo-detail-col { transition: none; }
+  .lo-chip { transition: none; }
 }
