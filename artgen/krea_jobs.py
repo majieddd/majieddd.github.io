@@ -62,7 +62,7 @@ NEG = ('text, letters, words, watermark, signature, logo, user interface, frame,
 # while the invented 'xeno violet' and 'raider crimson' were DEAD TOKENS, and
 # purple only survives an organic subject when named as EMITTED light, which
 # is why the xeno line pays two tokens for 'bioluminescence'.
-COMMANDER_DUOTONE = {
+TROOP_DUOTONE = {
     'human':  'Duotone neon cyan and hot magenta',
     'light':  'Monochrome radiant gold',
     'xeno':   'Duotone glowing purple bioluminescence and hot magenta',
@@ -76,7 +76,7 @@ COMMANDER_DUOTONE = {
 # The counter-medieval clause, and it must stay INSIDE the window. 'comic'
 # rather than 'comic book': the longer form pulls panel borders and lettering,
 # and 'no text' now sits in CMD_STYLE, past the cliff, where it cannot help.
-COMMANDER_REGISTER = ('cyberpunk comic portrait, inked cel shading, halftone screen-print, '
+TROOP_REGISTER = ('cyberpunk comic portrait, inked cel shading, halftone screen-print, '
                       'heavy black shadows, never medieval')
 
 # Stated last before the cliff, so every token here is taken off the subject.
@@ -103,11 +103,16 @@ CMD_STYLE = ('stylised painted game cutscene illustration, bold flat expressive 
 # with the bare word 'armour', which with no material qualifier inside the
 # window resolves to plate. Not one of these says 'armour'.
 FACTION_LOOK = {
-    'human':  'chrome exosuit, cabled neck seals, holographic visor',
-    'light':  'panels of solid hard light, glowing seams',
-    'xeno':   'lit implants under wet carapace, too many joints',
-    'pirate': 'salvage plating, aftermarket cybernetics, neon trim',
-    None:     'unmarked grey tactical rig, subdued neon trim',
+    'human':  ('cyan-lit chrome exosuit with holographic HUD elements, cabled neck seals, '
+               'practical military hardware, disciplined bearing'),
+    'light':  ('golden holographic armour of hard-light panels, luminous circuitry halos, '
+               'serene ceremonial bearing, glowing seams'),
+    'xeno':   ('deep violet biomechanical carapace fused with neon-lit implants, too many '
+               'joints, unsettling asymmetry, bioluminescent veins'),
+    'pirate': ('crimson neon-trimmed salvage plating, aftermarket cybernetics, jagged '
+               'trophies, brutal improvised tech'),
+    None:     ('grey-steel tactical suit with subdued neon trim, unmarked, professional '
+               'and anonymous'),
 }
 
 # Each subject is ONE silhouette and ONE prop nobody else in the catalogue has,
@@ -119,27 +124,47 @@ FACTION_LOOK = {
 # wreckage / torn hull plating, trophy bones -> a hooded carapace. The
 # character survives the edit; the armoury does not.
 COMMANDERS = [
-    ('cadre',   None,     'a career soldier behind a plain mirrored visor, no insignia'),
-    ('vanta',   'human',  'a tactician reading a data-visor, archive filaments at the temples'),
-    ('korrin',  'human',  'a quartermaster hung with ammunition drums and supply rigging'),
-    ('nyx',     'human',  'an overclocker venting coolant, conduits arcing at the seams'),
-    ('orin',    'human',  'an engineer under servo-arms, welding glare lighting the face'),
-    ('vess',    'human',  'a trench officer in mud-streaked entrenchment gear, immovable'),
-    ('seraph',  'light',  'a commander behind six wings of projected hard light, serene'),
-    ('aurelia', 'light',  'a chorister mid-song, light pouring from throat and eyes'),
-    ('lumen',   'light',  'a sentinel holding an enormous circular light barrier, calm'),
-    ('cantor',  'light',  'a preacher wired into a rig of vox horns, sound drawn as rings'),
-    ('halder',  'light',  'a bulwark locked behind interlocking light plates, immovable'),
-    ('sevra',   'xeno',   'a puppeteer working reanimated husks on dark filaments'),
-    ('mawlord', 'xeno',   'a devourer whose torso splits into a vast toothed maw'),
-    ('thrax',   'xeno',   'a hivemind in a cloud of drone spawn, every eye forward'),
-    ('vorn',    'xeno',   'a plague host leaking luminous spores through cracked chitin'),
-    ('ulgrim',  'xeno',   'an apex predator with immense jaws and a hooked carapace'),
-    ('rake',    'pirate', 'a corsair with a plasma cutter and an insolent grin, long coat'),
-    ('scarlet', 'pirate', 'a reaver in war paint, teeth bared, twin power cutters'),
-    ('grist',   'pirate', 'a scrapper welded into mismatched salvage, one arm a hydraulic claw'),
-    ('cinder',  'pirate', 'an arsonist in heat shimmer behind an igniter rig, delighted'),
-    ('dregg',   'pirate', 'a warlord on a heap of wreckage, torn hull plating on the shoulders'),
+    ('cadre',   None,     'a stoic unaligned career soldier, plain visored helm, no insignia'),
+    ('vanta',   'human',  'a scholarly tactician wearing a data-visor, thin archive filaments '
+                          'trailing from the temples, cold analytical stare'),
+    ('korrin',  'human',  'a burly quartermaster hung with supply rigging, ammunition drums and '
+                          'ration crates, weathered and pragmatic'),
+    ('nyx',     'human',  'an overclocker wreathed in crackling energy conduits, coolant vapour, '
+                          'reckless grin, armour glowing at the seams'),
+    ('orin',    'human',  'a field engineer with articulated servo-arms over the shoulders, '
+                          'welding glare lighting the face from below'),
+    ('vess',    'human',  'a grim marshal in heavy entrenchment armour, immovable stance, '
+                          'trench-worn and mud-streaked'),
+    ('seraph',  'light',  'a radiant winged commander haloed in golden light, six wings of '
+                          'hard light, serene and terrible'),
+    ('aurelia', 'light',  'a serene choral commander mid-song, light pouring from the throat '
+                          'and eyes, robes of woven luminance'),
+    ('lumen',   'light',  'a warden bearing an enormous circular energy shield, calm, '
+                          'immovable, light refracting across the barrier'),
+    ('cantor',  'light',  'a preacher wearing an amplifying vox-horn crown, arms raised, '
+                          'sound made visible as golden rings'),
+    ('halder',  'light',  'a colossal bulwark commander, shield-locked, utterly immovable, '
+                          'armour like a fortress wall'),
+    ('sevra',   'xeno',   'a necrotic commander trailing reanimated husks on dark filaments, '
+                          'puppeteer gestures, hollow glowing eyes'),
+    ('mawlord', 'xeno',   'a bloated devourer with a vast toothed maw splitting the torso, '
+                          'gluttonous, dripping'),
+    ('thrax',   'xeno',   'a hivemind commander, many-eyed, surrounded by a cloud of drone '
+                          'spawn, every eye focused forward'),
+    ('vorn',    'xeno',   'a plague commander leaking luminous spores and creeping rot, '
+                          'chitin cracked and weeping light'),
+    ('ulgrim',  'xeno',   'an apex predator commander with immense jaws and trophy bones '
+                          'lashed to the carapace, coiled to strike'),
+    ('rake',    'pirate', 'a rakish corsair with a plasma cutlass and a insolent grin, '
+                          'long coat, scavenged breastplate'),
+    ('scarlet', 'pirate', 'a savage reaver drenched in war paint, teeth bared, twin blades, '
+                          'braided hair full of trophies'),
+    ('grist',   'pirate', 'a scrapper welded into mismatched salvaged plate, one arm a '
+                          'hydraulic claw, goggles pushed up'),
+    ('cinder',  'pirate', 'an arsonist haloed in flame and heat shimmer, flamethrower rig, '
+                          'delighted expression'),
+    ('dregg',   'pirate', 'a hulking warlord enthroned on a heap of wreckage, crowned with '
+                          'torn hull plating, contemptuous'),
 ]
 
 # Crests are STRICT MONOCHROME: one faction hue on void black, engraved like a
@@ -441,10 +466,14 @@ def build_jobs():
     # Worst case across the 21: the frame clause closes at token 71 (cadre 68,
     # vanta 71, sevra 71, lumen 56). Verified by scratchpad portraits_test.js.
     for cid, fac, desc in COMMANDERS:
+        # RESTORED (Session 20). The owner approved these portraits as they
+        # were -- only the TROOPS read wrong. This composition is the one that
+        # produced the approved art, and the FNV seed means the same prompt
+        # renders the same picture, so this is a restore and not a re-roll.
         jobs.append((f'cmd_{cid}',
-                     f'{COMMANDER_DUOTONE[fac]}. {COMMANDER_REGISTER}. '
-                     f'{desc}, {FACTION_LOOK[fac]}. {CMD_FRAME} {CMD_STYLE}',
-                     1024, 320, 'square'))
+                     f'Head-and-shoulders portrait of {desc}. Wearing {FACTION_LOOK[fac]}. '
+                     f'Facing the viewer, centered bust composition, shallow depth of field, '
+                     f'dark background. {STYLE}', 1024, 320, 'square'))
     for fid, desc in FACTIONS.items():
         jobs.append((f'fac_{fid}',
                      f'{desc}. A single centered symmetrical heraldic insignia, glowing softly, '
@@ -481,7 +510,7 @@ def build_jobs():
         # bust, a troop is a full-body model, which is the Session 19 note
         # "keep their model style, similar to the towers".
         jobs.append((f'foe_{tid}',
-                     f'{COMMANDER_DUOTONE[fac]}. {COMMANDER_REGISTER}. {desc}. '
+                     f'{TROOP_DUOTONE[fac]}. {TROOP_REGISTER}. {desc}. '
                      f'{TROOP_FRAME} {CMD_STYLE}',
                      1024, 224, 'square'))
     for pid, variants in PLANET_VARIANTS.items():

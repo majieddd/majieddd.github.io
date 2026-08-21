@@ -1139,7 +1139,7 @@ seven parallel teams, per the owner's preference for maximum concurrency.
 
 | # | Note | Status |
 |---|---|---|
-| 20.4 | Portraits still read **medieval / fantasy armoury**. They must be **vaporwave duotone or monochrome** (by faction) in a **cyberpunk comic** register drawn from Tyranny. Build a **LOOKBOOK** of reference assets. | ✅ cause was mechanical: prompts ran **164-185 tokens against a 77-token window**, so `{STYLE}` opened at token 92-113 and **"cyberpunk science fiction" was never encoded for any of the 21**; the negative prompt naming "medieval, fantasy armour, sword" has **never had any effect on either path**. Rewritten to close at 56-71. **Troops brought onto the same register** and 7 armoury nouns removed from their subjects. Rendered and measured: **mean 1.5 hue families** across commanders and troops — duotone/monochrome achieved. [`docs/LOOKBOOK.md`](LOOKBOOK.md) |
+| 20.4 | Portraits read **medieval / fantasy armoury**. Should be **vaporwave duotone or monochrome** (by faction), **cyberpunk comic**, Tyranny lineage. Build a **LOOKBOOK**. | ✅ **TROOPS only** — owner clarified the commanders were fine. The twenty troops carried no comic register, never said *never medieval*, and **seven subjects were written in armoury nouns** (plate, armour, shield) with no working negative prompt anywhere to argue with them (NEG is inert on both paths). Re-rendered: **pixel RMSE 62-88** vs the old art, mean **1.5 hue families** = duotone/monochrome. **Commanders restored to the approved art** — 21/21 prompts byte-identical, pixel RMSE 2.19 (one lossy re-encode). [`docs/LOOKBOOK.md`](LOOKBOOK.md) |
 
 ## D. Multiplayer
 
@@ -1167,4 +1167,5 @@ timestep the engine already runs on is what makes lockstep feasible.
 | 20.7g | Rival parity for BLOOD PRICE: `ai.js` scores it through `towerCost` (which returns 0) rather than a life-aware bid. | ⏳ |
 | 20.7h | **A jammed NULL FIELD stops suppressing**, so a Jammer inside one can jam the field off and free itself. Flagged as interaction, not bug — owner call. | ⏳ |
 | 20.7i | Soul-shop inflation never re-modelled at ten towers per faction. | ⏳ |
+| 20.7k | **Every `--pack` re-encodes every cached webp**, so each repack costs one more lossy generation. Measured: a byte-identical source round-trips to RMSE ~2.2. Harmless once, cumulative forever. | ⏳ |
 | 20.7j | Ten pre-existing player-facing talent-name collisions (PERMAFROST, WIDE FIELD, BATTERY, CAPACITOR, CONCENTRATE, WINDLASS, TRIBUTE, SATURATION, CLARITY, BACKBONE). | ⏳ |

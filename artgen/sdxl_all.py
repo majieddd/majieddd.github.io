@@ -91,18 +91,6 @@ PREFIX_BY_CLASS = {
     'planet': 'engraved gothic line-art planet portrait on pure black, restrained vaporwave '
               'accents, painted cutscene style, science fiction, ',
 
-    # DELIBERATELY EMPTY (Session 20.4). Commanders used to fall through to
-    # SDXL_PREFIX, whose 'neon magenta cyan violet palette' names three hues to
-    # every faction at once -- the exact opposite of the owner's duotone brief,
-    # and 32 tokens of a 77-token window spent saying it. The commander prompt
-    # in krea_jobs.build_jobs() now leads with its own per-faction duotone and
-    # the comic register, so a prefix here could only push that off the cliff.
-    #
-    # Empty also means the SDXL and Krea paths are handed the SAME string, which
-    # is the whole point of a single catalogue -- key-for-key comparison between
-    # the two models is meaningless when one of them is silently given 32 extra
-    # tokens the other never sees.
-    'cmd':    '',
 }
 
 def prefix_for(key):
