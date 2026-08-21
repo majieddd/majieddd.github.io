@@ -256,8 +256,6 @@ body {
 .brief.inline { width: 100%; }
 .br-head { display: flex; justify-content: space-between; align-items: center; }
 .br-head b { font-size: 16px; letter-spacing: 0.11em; }
-.br-thumb { border: 1px solid var(--line); border-radius: 9px; overflow: hidden; background: #0b1018; }
-.br-thumb svg { display: block; width: 100%; height: auto; }
 .br-trait { font-size: 11px; letter-spacing: 0.07em; color: var(--cyan); }
 .br-rows { display: flex; flex-direction: column; gap: 6px; }
 .br-row { display: flex; gap: 8px; font-size: 11.5px; color: var(--text-dim); line-height: 1.45; align-items: baseline; }
@@ -829,7 +827,10 @@ h1, .logo, .title-logo, .cd-name, .gv h2, .rw-verdict b, .end-title { font-weigh
 .gx-link { stroke-width: .32; stroke-dasharray: 1.1 1.5; }
 .gx-ring { fill: none; stroke: var(--fc); stroke-width: .35; opacity: .8; }
 .gx-world .gx-dot { fill: #0d1622; stroke: none; }
-.gx-world.mine .gx-ring { stroke: #fff; stroke-width: .5; }
+/* Session 20.3: a conquered world used to paint its ring WHITE, throwing away
+   the one thing the node had left to say -- whose it is NOW. --fc is already
+   the player's faction on a claimed world; wearing it is the whole note. */
+.gx-world.mine .gx-ring { stroke: var(--fc); stroke-width: .55; opacity: 1; }
 .gx-world.open:hover .gx-ring { stroke-width: .7; }
 .gx-world.has-planet.open:hover .gx-dot { r: 2.0; filter: none; }
 .gx-world.has-planet.seat.open:hover .gx-dot { r: 2.7; }
@@ -1305,18 +1306,77 @@ body.tri-field #hud { gap: 8px; padding: 8px 10px; }
 .gx-nav-btn:focus-visible { outline: 1px solid rgba(120,220,255,.7); outline-offset: 1px; }
 .gx-home { font-size: 9.5px; letter-spacing: .16em; }
 
-/* THE TRAVEL RANGE: the ring marks the system you are standing in; the dashed
-   COURSES are the exact set of worlds the unlock rules currently allow, one
-   line each. The ring deliberately does NOT try to enclose that set -- it is
-   scattered over five systems and a circle drawn round it swallows most of the
-   galaxy. Both are under the worlds, and inert, so neither can take a click
-   meant for a destination. */
-.gx-reach { pointer-events: none; }
-.gx-range { fill: none; stroke: rgba(120, 220, 255, .28); stroke-width: .45;
-  stroke-dasharray: 3.4 3.4; }
-.gx-range-lbl { font-family: var(--display); font-size: calc(2.3px * var(--gxlab, 1));
-  letter-spacing: .3px; fill: rgba(120, 220, 255, .6); }
-.gx-course { stroke: rgba(120, 220, 255, .34); stroke-width: .3; stroke-dasharray: 1.6 2.4; }
+/* THE ROUTE GRAPH. Every arc is an edge of gx.routes, which is the same list
+   isWorldOpen consults, so a drawn line can never offer a crossing the rules
+   refuse. Under the worlds and inert: neither can take a click meant for a
+   destination.
+
+   STATE IS CARRIED BY THE DASH, not by the hue. Solid means travelled, a broad
+   dash means open now, fine dots mean sealed -- an ordering that also reads as
+   ink, so the more of a line there is the more of it you hold. That is what
+   makes the map legible without colour, and it is the engraved register the
+   rest of the theatre is drawn in rather than three neon wires.
+
+   Every width and dash is multiplied by --gxlab (1/zoom, set by GalaxyFX.apply
+   and capped at GX_LABEL_MAX) so an arc keeps the same weight ON SCREEN at
+   every zoom. Without it the arcs go from invisible hairlines at the overview
+   to ropes zoomed in, and worse, the dash gaps collapse into a solid line at
+   exactly the zoom where "sealed" most needs to read as sealed. The plain
+   declaration in front of each calc is the fallback for an engine that will
+   not calc a dash list -- it loses the compensation, not the state. */
+.gx-routes { pointer-events: none; }
+.gx-route { fill: none; stroke-linecap: round; }
+.gx-route.sealed {
+  stroke: rgba(150, 172, 200, .34);
+  stroke-width: .22; stroke-width: calc(.22px * var(--gxlab, 1));
+  stroke-dasharray: .3 2.3;
+  stroke-dasharray: calc(.3px * var(--gxlab, 1)) calc(2.3px * var(--gxlab, 1)); }
+.gx-route.live {
+  stroke: rgba(140, 215, 255, .60);
+  stroke-width: .32; stroke-width: calc(.32px * var(--gxlab, 1));
+  stroke-dasharray: 1.5 1.9;
+  stroke-dasharray: calc(1.5px * var(--gxlab, 1)) calc(1.9px * var(--gxlab, 1)); }
+.gx-route.taken {
+  stroke: rgba(196, 214, 234, .42);
+  stroke-width: .3; stroke-width: calc(.3px * var(--gxlab, 1));
+  stroke-dasharray: none; }
+/* The crossings out of the world you are standing on. Heavier, brighter, and
+   the only ones that march -- a marching dash is a second, non-colour channel
+   for "this is the decision in front of you", and restricting it to the two or
+   three arcs that qualify is what keeps it a signal instead of a light show
+   over sixty paths. */
+.gx-route.next {
+  stroke: rgba(190, 232, 255, .95);
+  stroke-width: .5; stroke-width: calc(.5px * var(--gxlab, 1)); }
+@media (prefers-reduced-motion: no-preference) {
+  #worldmap-wrap .gx-route.next { animation: gxMarch 1.9s linear infinite; }
+}
+@keyframes gxMarch { to { stroke-dashoffset: -6.8; } }
+
+/* THE KEY, in the map's one free corner. Both existing captions are parked in
+   the bottom two and the nav owns the top right, so this takes the top left --
+   stacked rather than laid in a row, because a 317px row is a caption that
+   collides with the nav the first time the window narrows.
+
+   The swatches carry the .gx-route classes themselves, so they inherit the
+   exact strokes above and a re-tuned route cannot leave its own key describing
+   the previous one. Only the SCALE is restated: a 30-unit swatch viewBox is
+   not the galaxy's 620, so a dash authored for the map would be a solid line
+   here and the key would contradict itself. */
+.gx-viewport > .gx-legend { position: absolute; left: 12px; top: 10px; z-index: 3;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  pointer-events: none; font-family: var(--display); font-size: 9px;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--text-mute);
+  opacity: .74; }
+.gx-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.gx-legend svg { width: 30px; height: 6px; overflow: visible; }
+.gx-legend .gx-route { stroke-width: 1.1; }
+.gx-legend .gx-route.sealed { stroke-dasharray: 1 4; }
+.gx-legend .gx-route.live { stroke-dasharray: 5 4; }
+
+/* The count in the header names the same set the arcs do. */
+.gx-open { font-size: 11.5px; color: var(--text-dim); }
+
 .gx-here { fill: none; stroke: #7dd3fc; stroke-width: .5; opacity: .85; }
 .gx-here-lbl { font-family: var(--display); font-size: calc(2.1px * var(--gxlab, 1));
   letter-spacing: .28px; fill: rgba(125, 211, 252, .75); }
@@ -1342,6 +1402,16 @@ body.tri-field #hud { gap: 8px; padding: 8px 10px; }
 .gx-viewport.gx-far .gx-pip,
 .gx-viewport.gx-far .gx-tri,
 .gx-viewport.gx-far .gx-here-lbl { display: none; }
+/* ROUTES AT THE FAR ZOOM. Sixty arcs inside five systems, seen at 0.36, is a
+   scribble rather than a map -- the world span on screen is nearly four
+   windows wide and the local traffic collapses into hatching over the very
+   worlds it connects. Local routes that are settled or sealed drop out; the
+   GATEWAYS stay, along with any local crossing that is live, which is the only
+   route reading an overview can use: which system reaches which, and where the
+   next move is. Zoom back in and the detail returns, exactly as the pips and
+   the system meta do. */
+.gx-viewport.gx-far .gx-route.local.sealed,
+.gx-viewport.gx-far .gx-route.local.taken { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .gx-viewport .gx-plane > svg { transform: none; }
@@ -1869,3 +1939,173 @@ body:not(.arena-field) .arena-ladder { display: none; }
   margin: 8px 0 2px;
   border: 1px solid rgba(110, 165, 210, 0.18);
 }
+
+
+/* ═════════════ 20.3 — A CLAIMED WORLD WEARS YOUR FACTION'S COLOUR ══════
+   Four channels, deliberately redundant, because one of them is hue and hue
+   is the channel that fails first. HUE says WHOSE (--yc, straight out of
+   FACTIONS). FILL says HOW MUCH — the tide rises a third of the disc per
+   star. SHAPE says DONE — the claim ring is an open arc until it closes.
+   WEIGHT and a SIGIL say it a fourth time for the far-out zoom, where every
+   hue on this map washes to the same pale grey and a colour-blind player has
+   nothing else left to read. */
+.gx-tide rect { fill: var(--yc, var(--fc)); opacity: .5; }
+.gx-tide.full rect { opacity: .72; }
+/* The waterline is what makes one star legible at all: at r=2 world units a
+   third of a disc is a smear, and a bright edge on top of it is an EDGE. */
+.gx-tideline { stroke: var(--yc, var(--fc)); stroke-width: .32; opacity: .95; }
+.gx-tide.full .gx-tideline { display: none; }   /* a full disc has no waterline */
+.gx-claim { fill: none; stroke: var(--yc, var(--fc)); stroke-width: .5;
+            stroke-linecap: butt; opacity: .9; }
+.gx-claim.full { stroke-width: .78; opacity: 1; }
+.gx-world.mine .gx-dot { stroke: none; }
+/* A seat you have taken stops advertising itself as somebody's seat: solid,
+   in your colour, rather than the holder's dashed picket. */
+.gx-world.mine .gx-seat { stroke: var(--fc); stroke-dasharray: none; opacity: .95; }
+.gx-sigil-bg { fill: rgba(6,11,18,.86); stroke: var(--yc, var(--fc)); stroke-width: .18; }
+.gx-sigil { fill: var(--yc, var(--fc)); font-family: var(--sans, sans-serif); }
+/* On an overview the sigil is a two-pixel glyph — noise, not information —
+   and the tide and the closed ring carry the read there without it. */
+.gx-viewport.gx-far .gx-claimed-mark { display: none; }
+/* A world already yours is not a destination, so it does not breathe with the
+   reachable ones. A closed ring should read as settled. */
+#worldmap-wrap .gx-world.mine.open .gx-ring { animation: none; }
+
+/* THE KEY, over the top-left of the map. Absolute so it costs the column no
+   height: the theatre screen does not scroll, and a row added under a 72vh
+   map is how a screen starts to. */
+.gx-legend {
+  position: absolute; left: 12px; top: 10px; z-index: 3;
+  display: flex; flex-wrap: wrap; gap: 3px 9px; max-width: 44%;
+  padding: 6px 9px; border: 1px solid var(--line);
+  background: rgba(8,13,21,.74); pointer-events: none;
+}
+.gx-legend .lg { display: inline-flex; align-items: center; gap: 4px; font-style: normal; }
+.gx-legend svg { width: 15px; height: 15px; display: block; overflow: visible; }
+.gx-legend b { font-family: var(--display); font-weight: 700; font-size: 8.5px;
+               letter-spacing: .13em; color: var(--text-mute); }
+.gx-legend .lg-dot { fill: #0d1622; stroke: #64748b; stroke-width: .8; }
+.gx-legend .lg-dot.mine { fill: var(--yc); opacity: .72; stroke: var(--yc); }
+.gx-legend .lg-ring { fill: none; stroke: #64748b; stroke-width: .9; }
+.gx-legend .lg-ring2 { fill: none; stroke: #fca5a5; stroke-width: .9; }
+.gx-legend .lg-claim { fill: none; stroke: var(--yc); stroke-width: 1.6; }
+.gx-legend .lg-seat { fill: none; stroke: #64748b; stroke-width: .8; stroke-dasharray: 2 1.6; }
+.gx-legend .lg-locked svg { filter: grayscale(.9); opacity: .4; }
+.gx-legend .lg-locked b { opacity: .55; }
+@media (max-width: 1180px) { .gx-legend { max-width: 62%; } }
+
+
+/* ═════════════════ THE BATTLEFIELD MINIMAP ══════════════════════════════
+   Geometry lives in the SVG in tile units, so this file only sizes the BOX.
+   A fixed height plus xMidYMid meet is deliberate: `height: auto` would let a
+   47x47 arena run to 320px tall inside a 320px tooltip and shove the rest of
+   the briefing off the bottom of the screen, while a 28x15 duel stayed 170px.
+   One height, and every card keeps its rhythm whatever board it shows. */
+.br-pv { border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+         background: #05080e; height: 170px; }
+/* A near-square board is letterboxed hard by a wide box -- at twenty seats
+   that is the difference between lanes three pixels apart and lanes five. */
+.br-pv.tall { height: 224px; }
+/* THE TOOLTIP BOX IS A BUDGET, not a taste. #tooltip is 320px wide, cannot
+   scroll (pointer-events: none) and is positioned by moveTooltip, which pins
+   a card taller than the window with its HEAD off the top of the screen.
+   MEASURED on a contested world -- the tallest card the galaxy can produce,
+   because it carries the three-way warning as well as the star block: 702px
+   before this preview, 901px at the briefing's own box sizes, 877px at these.
+   A three-way board is exactly the one whose preview wants to be square, so
+   the two constraints meet here and the window wins. */
+.br-pv.tip { height: 122px; }
+.br-pv.tip.tall { height: 152px; }
+.br-pv .pv-svg { display: block; width: 100%; height: 100%; }
+/* Sized to hold FOUR facts on ONE line inside a 320px tooltip. A caption
+   that wraps under a picture stops being scanned and becomes a paragraph. */
+.pv-cap { font-family: var(--num); font-size: 9.5px; letter-spacing: 0;
+          color: var(--text-mute); text-align: center; margin-top: -4px; }
+
+.pv-board   { fill: #0d1522; }
+.pv-neutral { fill: #ffffff; fill-opacity: .055; }
+.pv-build   { fill: #7fd7ee; fill-opacity: .13; }
+/* Territory is CONTEXT, not the subject. At .2 the third seat's amber wedge
+   was the largest mass on every three-way card and the lanes read as marks on
+   top of it; the board itself paints its tints at alpha .030 for the same
+   reason. Low enough to be a hint, high enough to hold an edge. */
+.pv-own     { fill-opacity: .11; }
+/* The stroke reads only where tiles are large -- duel and three-way boards,
+   which are the only ones that author rubble ("the arena authors no rubble"),
+   so it costs nothing where it would be sub-pixel. */
+.pv-rubble  { fill: #02040a; stroke: rgba(150,175,205,.28); stroke-width: .08; }
+.pv-lane-case { fill: none; stroke: #000; stroke-opacity: .8;
+                stroke-linejoin: round; stroke-linecap: round; }
+.pv-lane      { fill: none; stroke-opacity: .95;
+                stroke-linejoin: round; stroke-linecap: round; }
+.pv-gate    { fill: none; stroke: rgba(226,238,255,.5); stroke-width: .16; }
+.pv-node    { fill-opacity: .35; stroke-width: .13; }
+.pv-node.lane { fill-opacity: .95; }
+.pv-base    { fill: rgba(3,6,11,.72); stroke-width: .22; }
+.pv-horizon { fill: rgba(167,139,250,.18); stroke: rgba(196,181,253,.6); stroke-width: .18; }
+.pv-horizon-max { fill: none; stroke: rgba(196,181,253,.42); stroke-width: .16;
+                  stroke-dasharray: .9 .9; }
+
+/* `.mv-lobby` centres its children; the preview is a block that wants the
+   whole column, exactly as `.mv-seats` does. */
+.mv-lobby .br-pv, .mv-lobby .pv-cap { align-self: stretch; width: 100%; }
+
+/* ================================================= 20.5 LEVEL-UP ====== */
+
+/* The end screen's call to action. It ARRIVES, like every other reward on
+   this screen: the summary is a sequence, not a scoreboard. The button it
+   points at is named honestly from the first frame -- only the explanation
+   waits for the experience bar that earned it. */
+.rw-levelup { display: grid; grid-template-columns: auto 1fr; align-items: baseline;
+              gap: 4px 12px; margin: -4px 0 2px; padding: 9px 13px;
+              border: 1px solid color-mix(in srgb, var(--cc) 50%, transparent);
+              border-left-width: 3px; border-radius: 9px;
+              background: color-mix(in srgb, var(--cc) 9%, transparent);
+              opacity: 0; transform: translateY(-6px);
+              transition: opacity .34s var(--e-tap), transform .34s var(--e-tap); }
+.rw-levelup.show { opacity: 1; transform: none; }
+.rw-levelup b { font-size: 11.5px; letter-spacing: .12em; color: var(--cc); white-space: nowrap; }
+.rw-levelup span { font-size: 11.5px; color: var(--text-dim); line-height: 1.45; }
+
+/* The same sentence again on the screen it sent you to, because a player
+   who arrives on a new screen should not have to remember why. */
+.cd-spend { margin: 10px 0 -2px; padding: 10px 14px;
+            border: 1px solid color-mix(in srgb, var(--cc) 50%, transparent);
+            border-left-width: 3px; border-radius: 9px;
+            background: color-mix(in srgb, var(--cc) 10%, transparent); }
+.cd-spend b { display: block; font-size: 12.5px; letter-spacing: .12em; color: var(--cc); }
+.cd-spend span { display: block; margin-top: 3px; font-size: 11.5px; color: var(--text-dim); line-height: 1.5; }
+
+/* A talent you can take on THIS visit. Deliberately not applied whenever a
+   point happens to be spare -- a chart that always pulses says nothing. The
+   inner 1px ring repeats .tal-node.can's, so the pulse adds to the resting
+   state instead of replacing it for half of every cycle. */
+.tal-node.ready { animation: talReady 1.9s var(--e-tap) infinite; }
+@keyframes talReady {
+  0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--cc) 40%, transparent),
+                         0 0 0 0 color-mix(in srgb, var(--cc) 46%, transparent); }
+  60%      { box-shadow: 0 0 0 1px color-mix(in srgb, var(--cc) 40%, transparent),
+                         0 0 0 7px color-mix(in srgb, var(--cc) 0%, transparent); }
+}
+/* Anything that pulses stops pulsing for anyone who asked it to. */
+@media (prefers-reduced-motion: reduce) {
+  .tal-node.ready { animation: none; box-shadow: 0 0 0 2px color-mix(in srgb, var(--cc) 55%, transparent); }
+  .rw-levelup { transition: none; }
+}
+
+
+/* ═════════ THE MAP'S TWO KEYS, STACKED ═══════════════════════════════════
+   20.1 wrote a route key and 20.3 wrote an allegiance key, and both were
+   authored absolutely against the same corner -- measured landing on top of
+   each other at (177,180). Both are earned; the map carries enough state now
+   that a player needs to be told how to read routes AND how to read holdings.
+   So the corner becomes a column, and the two keys stop being positioned
+   individually. */
+.gx-keys {
+  position: absolute; top: 10px; left: 12px; z-index: 3;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+  pointer-events: none;
+}
+/* Inside the stack the keys are laid out BY the stack, so they must give up
+   the absolute placement each of them was written with. */
+.gx-keys .gx-legend { position: static; top: auto; left: auto; }

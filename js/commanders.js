@@ -939,6 +939,26 @@ const Meta = {
     return c.unlocked.reduce((s, tid) => s + (cmd.tech.find(t => t.id === tid) || { cost: 0 }).cost, 0);
   },
   pointsAvailable(id) { return this.levelOf(id) - this.spentIn(id); },
+  /** Every talent this commander could legally take RIGHT NOW. */
+  spendableTech(id) {
+    const cmd = COMMANDERS.find(x => x.id === id);
+    return cmd ? cmd.tech.filter(t => this.canUnlock(id, t.id)) : [];
+  },
+  /* A level is only worth sending the player to the chart for if the chart
+     can accept it. Routing on `pointsAvailable` alone would drag a maxed
+     commander to a screen with nothing to click after every single run --
+     the tree is finished, the levels still pay, and the points are banked
+     for a prestige that resets them. Asking what is UNLOCKABLE answers the
+     question the route is actually about, and one call answers it for both
+     the end screen and the button that leads there, so the count printed
+     and the count the tree will honour cannot drift apart. */
+  levelUpAward(id, levelsGained) {
+    const levels = Math.max(0, levelsGained | 0);
+    const spendable = this.spendableTech(id).length;
+    return { commander: id, levels, level: this.levelOf(id),
+             points: this.pointsAvailable(id), spendable,
+             route: levels > 0 && spendable > 0 };
+  },
   isUnlocked(id, techId) { return this.load().commanders[id].unlocked.includes(techId); },
 
   /** The node directly above this one, which acts as its prerequisite. */

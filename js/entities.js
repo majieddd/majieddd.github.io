@@ -1656,6 +1656,16 @@ class Tower {
     const crit = (s.crit || 0) + this.sideMods.crit;
     if (crit > 0) d *= (1 + crit * (Math.max(s.critMult || 0, 2.5) - 1));
     if (s.poisonDps) d += s.poisonDps * (s.maxStacks || 1) * 0.6 * this.effStatus;
+    /* TOXIN's percentage. The tick charges `hp * poisonPct * stacks`, so the
+       estimate is that expression against a nominal body on the LIVE wave
+       curve -- through Game.waveHpMul, which is THE definition, never a
+       second copy of it. Uncapped and unreduced against elites because the
+       tick applies neither: the ceiling and the boss cut belong to the
+       max-health gas below, not to this one. 0.6 is the same uptime discount
+       the flat half above already carries. */
+    if (s.poisonPct)
+      d += POISON_PCT_REF_HP * Game.waveHpMul(Math.max(1, Game.wave))
+           * s.poisonPct * this.effStatus * (s.maxStacks || 1) * 0.6;
     /* A share-of-health effect has no damage figure of its own, so it is
        priced against a nominal wave body -- through Game.waveHpMul, which is
        THE definition of the curve, never a second copy of it. Without this
@@ -1766,6 +1776,16 @@ class Tower {
     if (this.jamTimer > 0) {
       this.jamTimer -= dt;
       this.firing = false;
+      /* A NULL FIELD is a VOLUME, and a volume is geometry rather than
+         uptime. Taken fully offline it could be switched off by the very
+         thing it exists to suppress: a Jammer inside one jammed the field,
+         the 0.25s mark lapsed, and the pulse after that kept the field down
+         for good. Enemy.update already reads `if (!this.nulled)` before it
+         jams, so jamming is an ability this tower ANSWERS -- a Jammer that
+         frees itself from inside the volume is a contradiction in that rule,
+         not a counter to it. What a jam takes is the field's RIDERS. What it
+         cannot take is the ground. */
+      if (this.def.attack === 'null') { this.atk_null(dt, game, true); return; }
       if (this.def.attack !== 'economy') return;
     }
 
@@ -3075,6 +3095,10 @@ Tower.prototype.atk_sepulchre = function (dt, game) {
     if (dist2(this.x, this.y, rec.x, rec.y) > r2) continue;
     this.wards.push({
       x: rec.x, y: rec.y, r: rec.r, dps: rec.dps, color: rec.color,
+      /* Carried so the inspector can name what is standing on the chapel.
+         The census already snapshots it for the floater; without it the
+         panel could only ever print a count. */
+      name: rec.name,
       /* A ward that carried no damage type of its own strikes as magic
          rather than as `none`, which takeDamage treats as unmitigated. */
       dmgType: (rec.dmgType && rec.dmgType !== 'none') ? rec.dmgType : 'magic',
@@ -3350,6 +3374,72 @@ Tower.prototype.atk_veil = function (dt, game) {
     }
     if (Math.random() < 0.5)
       game.spawnParticle(e.x + rand(-6, 6), e.y + rand(-6, 6), rand(-5, 5), rand(-26, -8), rand(0.3, 0.6), rand(1.5, 3), '#c084fc', 'spark');
+  }
+};
+
+
+/* ==========================================================================
+   THE SIX -- WHAT TO PRINT
+
+   ONE statement of every figure the inspector shows for these six towers,
+   defined here beside the verbs that move them rather than inside the panel
+   that shows them.
+
+   Every one of the seven UI/engine desyncs this project has shipped was a
+   second copy of an engine expression living in ui.js -- a ceiling applied in
+   the tick and not in the panel, or an authored figure quoted where a charged
+   one was meant. The six towers below are all ceilinged somewhere, so each
+   ceiling is stated once, here, and ui.js calls it.
+   ========================================================================== */
+const SixRead = {
+  /* The ward cap atk_sepulchre actually enforces, SEPULCHRE_WARDS_MAX and all. */
+  wardCap(t) {
+    return Math.min(SEPULCHRE_WARDS_MAX, Math.max(1, Math.round(t.stats.sepulchreWards || 1)));
+  },
+  /* The share a ward keeps. Through SEPULCHRE_FRAC_MAX because branches and
+     ascension surges bypass STAT_CEIL entirely, so the authored figure can
+     exceed what the tick will ever pay out. */
+  wardShare(t) { return Math.min(SEPULCHRE_FRAC_MAX, t.stats.sepulchreFrac || 0); },
+  /* What the wards STANDING are dealing per second: each departed tower's own
+     captured estimateDps, times that share. Same two terms the tick uses. */
+  wardOutput(t) {
+    let held = 0;
+    for (const w of (t.wards || [])) held += w.dps;
+    return held * this.wardShare(t);
+  },
+  offeringLives(t) { return Math.min(ORISON_LIVES_MAX, Math.round(t.stats.offeringLives || 0)); },
+  answerCap(t) { return Math.max(1, t.stats.antiphonBank || 4); },
+  volley(t) { return Math.max(1, Math.round(t.stats.antiphonVolley || 1)); },
+  gestaltCap(t) { return Math.max(1, Math.round(t.stats.gestaltMax || 20)); },
+  /* Seconds before the WHOLE stack goes, or null when there is nothing to
+     forget. Never negative: the tick zeroes the stack on the frame it would
+     otherwise pass zero. */
+  gestaltForget(t) {
+    if (!(t.gestaltStacks > 0)) return null;
+    return Math.max(0, (t.stats.gestaltDecay || 9) - (Game.clock - (t.gestaltLast || 0)));
+  },
+  mawYield(t) { return Math.min(MAW_YIELD_MAX, t.stats.mawYield || 1); },
+  mawDigestDur(t) { return Math.max(0.5, t.stats.mawDigest || 6); },
+  mawOwed(t) { return Math.max(0, t.digestLeft || 0); },
+  /* Seconds until the mouth opens. mawT is seeded to half the cooldown the
+     first time the verb runs, so a Maw that has never opened reports the wait
+     it is actually serving rather than the full cooldown it never had. */
+  mawNext(t) {
+    return Math.max(0, t.mawT === undefined ? (t.stats.mawCd || 18) * 0.5 : t.mawT);
+  },
+  /* Every point of healing standing inside the veil right now, over the same
+     hostility and range tests atk_veil walks. Called at panel cadence (0.12s),
+     never per frame. */
+  veilDebt(t, game) {
+    const g = game || Game;
+    const r2 = t.rangePx * t.rangePx;
+    let debt = 0, bodies = 0;
+    for (const e of g.enemies) {
+      if (e.dead || e.leaked || e.hostileTo !== t.side) continue;
+      if (dist2(t.x, t.y, e.x, e.y) > r2) continue;
+      if ((e.healDebt || 0) > 0) { debt += e.healDebt; bodies++; }
+    }
+    return { debt: debt, bodies: bodies };
   }
 };
 
@@ -3681,25 +3771,30 @@ Tower.prototype.replicateOnce = function (game) {
  * is the only arrangement in which the field cannot quietly miss an ability:
  * there is no list here to keep up to date.
  */
-Tower.prototype.atk_null = function (dt, game) {
+Tower.prototype.atk_null = function (dt, game, ridersOff) {
   const s = this.stats;
   const r2 = this.rangePx * this.rangePx;
   /* HARD LOCK extends the mark past the boundary. NULL_MARK_SECONDS alone is
      just enough slack to survive a long frame. */
   const hold = NULL_MARK_SECONDS + (s.nullLinger || 0);
-  const vuln = s.nullVuln || 0, slow = s.nullSlow || 0;
+  /* JAMMED. The mark still lands -- see the jam clause in Tower.update -- but
+     everything the field ADDS to it is silenced, and so is the backfire. */
+  const vuln = ridersOff ? 0 : (s.nullVuln || 0);
+  const slow = ridersOff ? 0 : (s.nullSlow || 0);
   let held = 0;
   for (const e of game.enemies) {
     if (e.dead || e.hostileTo !== this.side) continue;
     if (dist2(this.x, this.y, e.x, e.y) > r2) continue;
     e.nullT = Math.max(e.nullT || 0, hold);
     e.nullSrc = this;
-    e.nullBackfire = s.nullBackfire || 0;
+    e.nullBackfire = ridersOff ? 0 : (s.nullBackfire || 0);
     if (vuln) e.applyVuln(vuln, NULL_MARK_SECONDS + 0.1);
     if (slow) e.applySlow(slow * this.effStatus, NULL_MARK_SECONDS + 0.1);
     held++;
   }
-  this.firing = held > 0;
+  /* A jammed emitter is not firing however much ground it still holds, so the
+     dimmed sprite and the panel's own banner keep agreeing with each other. */
+  this.firing = !ridersOff && held > 0;
   this.nullHeld = held;
 };
 

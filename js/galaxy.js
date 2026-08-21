@@ -196,6 +196,10 @@ function generateGalaxy(seed, playerFaction) {
            takes the VALUE, never the generator. */
         boon: boonFor(worldOwner, kindId, false, rnd()).id,
         tier: si,
+        /* Filled by buildRoutes() once every world exists. Declared here so a
+           world is never a shape that has links on some code paths and not on
+           others -- `links` is read on every galaxy-map frame. */
+        links: [], entry: false,
         si, wi
       });
     }
@@ -231,7 +235,191 @@ function generateGalaxy(seed, playerFaction) {
       x: cx, y: cy, holder, boss: boss.id, worlds
     });
   }
-  return { seed, playerFaction, raider, systems };
+  const galaxy = { seed, playerFaction, raider, systems };
+  /* AFTER every world exists, and drawing NOTHING from rnd(). See the route
+     section below for why that ordering is not negotiable. */
+  buildRoutes(galaxy);
+  return galaxy;
+}
+
+/* --------------------------------------------------------------------------
+   THE ROUTE GRAPH
+
+   Which worlds a fleet can cross between, and the dotted arcs the map draws to
+   say so. Built from nothing but the positions and indices already sitting on
+   the worlds: it consumes NO rnd() call, which is what lets it be added to a
+   generator whose stream must not move. MEASURED over 180 seed/faction pairs,
+   the galaxy fingerprint -- ids, names, positions, kinds, owners, maps,
+   arenas, boons, seats, contested slots and their contestants -- is
+   byte-identical with and without this section.
+
+   THE CONNECTIVITY RULE, in four parts. Each one exists to guarantee a
+   property the campaign would otherwise only have by luck:
+
+     1. Inside a system, the graph is the UNION of a minimum spanning tree over
+        its ORDINARY worlds and every world's GX_ROUTE_NEAR_K nearest
+        neighbours. The tree is what guarantees no orphan; the nearest pass is
+        what guarantees at least two ways out of every world, because a world
+        contributes K edges of its own before anybody else's are counted.
+
+     2. The tree deliberately EXCLUDES the seat. A seat opens only once most of
+        its system has fallen, so a world whose only path from the door ran
+        through the seat could never be opened at all -- the seat would need
+        four conquests that needed the seat. Spanning the six ordinary worlds
+        and hanging the seat off them by its own nearest links makes that
+        deadlock structurally impossible rather than unlikely.
+
+     3. Between systems, only ADJACENT tiers are ever joined
+        (GX_ROUTE_MAX_TIER_SPAN), by the GX_ROUTE_GATEWAYS shortest links
+        between two ordinary worlds. No edge in the galaxy spans more than one
+        tier, so no route can carry a fleet past a system it has not taken.
+
+     4. The far end of every gateway is an ENTRY -- the door a newly opened
+        system is entered by. Two gateways means two doors that land in
+        different corners, so arriving in a system is a choice. System 0 has
+        nothing behind it, so it names its landfall pair outright.
+
+   Distance is measured in RENDERED space -- y multiplied by GX_RENDER_SQUASH
+   before the hypotenuse -- because "near" has to mean near ON SCREEN. Ranking
+   neighbours in generation space is the same double-squash mistake that once
+   bunched the worlds themselves into a flat ellipse: the map would link worlds
+   that look far apart and skip the ones sitting next to each other.
+-------------------------------------------------------------------------- */
+
+/** An ORDINARY world: neither a commander's seat nor a three-way war. Only
+    these are eligible to be a door into a system -- a door that lands you in
+    a three-way war, or on the seat you are supposed to finish at, is not a way
+    in, it is the wall the system ends at. */
+function isOrdinaryWorld(w) { return !w.seat && !w.contested; }
+
+/** Centre-to-centre distance between two worlds AS DRAWN. */
+function routeDist(a, b) {
+  return Math.hypot(a.x - b.x, (a.y - b.y) * GX_RENDER_SQUASH);
+}
+
+/**
+ * Lay the route graph over a finished galaxy. Mutates the worlds (`links`,
+ * `entry`) and hangs the edge list on `galaxy.routes` for the renderer.
+ */
+function buildRoutes(galaxy) {
+  const routes = [];
+  const seen = new Set();
+  /* The graph is UNDIRECTED. A tree edge that the nearest-neighbour pass finds
+     again must not become a second arc drawn on top of the first, and must not
+     count twice toward a world's degree -- an inflated degree is exactly the
+     kind of number that reads as a guarantee and is not one. */
+  const link = (a, b, kind) => {
+    if (a === b) return false;
+    const k = a.id < b.id ? a.id + '>' + b.id : b.id + '>' + a.id;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    a.links.push(b.id);
+    b.links.push(a.id);
+    /* THREE keys, and every one has a reader: `a`/`b` are looked up by
+       UI.gxRoutes to place the arc, `kind` picks which way it bows and whether
+       the far zoom keeps it. A tier span was written here too and deleted
+       again -- nothing consulted it, and an unread key is this project's
+       signature defect. The span is Math.abs(a.tier - b.tier) for anyone who
+       needs it. */
+    routes.push({ a: a.id, b: b.id, kind: kind });
+    return true;
+  };
+  /* Nearest neighbours of `w` within `pool`, ties broken by world index so the
+     graph is a function of the seed alone and not of sort stability. */
+  const nearest = (w, pool) => pool
+    .filter(o => o !== w)
+    .map(o => ({ o: o, d: routeDist(w, o) }))
+    .sort((p, q) => p.d - q.d || p.o.wi - q.o.wi);
+
+  for (const sys of galaxy.systems) {
+    const ordinary = sys.worlds.filter(w => !w.seat);
+    /* PRIM over the non-seat worlds -- part 1 and part 2 of the rule. */
+    if (ordinary.length) {
+      const inTree = [ordinary[0]];
+      const rest = ordinary.slice(1);
+      while (rest.length) {
+        let bi = 0, bj = 0, bd = Infinity;
+        for (let i = 0; i < inTree.length; i++)
+          for (let j = 0; j < rest.length; j++) {
+            const d = routeDist(inTree[i], rest[j]);
+            if (d < bd - 1e-9 ||
+                (Math.abs(d - bd) <= 1e-9 && rest[j].wi < rest[bj].wi)) {
+              bd = d; bi = i; bj = j;
+            }
+          }
+        link(inTree[bi], rest[bj], 'local');
+        inTree.push(rest[bj]);
+        rest.splice(bj, 1);
+      }
+    }
+    /* K NEAREST over ALL of them, seat included: this is the clause that turns
+       a spanning tree into a map with choices in it, and it is also how the
+       seat acquires its own two approaches. */
+    for (const w of sys.worlds) {
+      const near = nearest(w, sys.worlds);
+      for (let i = 0; i < GX_ROUTE_NEAR_K && i < near.length; i++)
+        link(w, near[i].o, 'local');
+    }
+  }
+
+  /* GATEWAYS -- part 3. The loop is written against MAX_TIER_SPAN rather than
+     hard-coded to i+1 so the tier law has exactly one statement in the code
+     and the test can measure the spans it actually produces. */
+  for (let i = 0; i < galaxy.systems.length; i++)
+    for (let j = i + 1;
+         j <= i + GX_ROUTE_MAX_TIER_SPAN && j < galaxy.systems.length; j++) {
+      const from = galaxy.systems[i].worlds.filter(isOrdinaryWorld);
+      const to = galaxy.systems[j].worlds.filter(isOrdinaryWorld);
+      const pairs = [];
+      for (const a of from) for (const b of to)
+        pairs.push({ a: a, b: b, d: routeDist(a, b) });
+      pairs.sort((p, q) => p.d - q.d || p.a.wi - q.a.wi || p.b.wi - q.b.wi);
+      const usedA = new Set(), usedB = new Set();
+      let made = 0;
+      for (const p of pairs) {
+        if (made >= GX_ROUTE_GATEWAYS) break;
+        /* DISTINCT worlds at both ends. Two gateways sharing a far endpoint
+           are one door drawn twice, and the choice they exist to create would
+           not exist -- which is the failure this whole note is about. */
+        if (usedA.has(p.a.id) || usedB.has(p.b.id)) continue;
+        usedA.add(p.a.id);
+        usedB.add(p.b.id);
+        link(p.a, p.b, 'gate');
+        p.b.entry = true;
+        made++;
+      }
+    }
+
+  /* LANDFALL -- part 4, for the one system with nothing behind it. The first
+     world stays a door, as it has been since the campaign existed, and the
+     ordinary world nearest to it becomes the second, so even the opening move
+     is a choice of two rather than the only legal click on the map. */
+  const first = galaxy.systems[0];
+  if (first && first.worlds.length) {
+    const head = first.worlds[0];
+    head.entry = true;
+    const near = nearest(head, first.worlds.filter(isOrdinaryWorld));
+    if (near.length) near[0].o.entry = true;
+  }
+
+  galaxy.routes = routes;
+  return routes;
+}
+
+/** The worlds INSIDE this system that a route joins to `world`.
+
+    Cross-tier gateways are deliberately not returned. What opens a world is a
+    landing already made in its own system; what lets you into the system at
+    all is isSystemOpen, one tier gate above. Answering both questions from one
+    list is how a route would come to skip a tier. */
+function routeNeighbours(system, world) {
+  const out = [];
+  if (!world || !world.links) return out;
+  for (const id of world.links) {
+    const n = system.worlds.find(w => w.id === id);
+    if (n) out.push(n);
+  }
+  return out;
 }
 
 /**
@@ -276,14 +464,30 @@ function systemProgress(system, progress) {
 }
 
 /**
- * A world can be attacked if it is the first in its system, or if something
- * adjacent to it has already been played. The seat needs most of the system.
+ * A world can be attacked if it is a DOOR into its system, or if a world a
+ * route joins it to has already been played. The seat still needs most of the
+ * system.
+ *
+ * This is the reader for the route graph, and the only one. The arcs the map
+ * draws are that same graph, so a dotted line can never promise a crossing
+ * this function refuses -- the previous map drew a straight ruler from where
+ * you stood to every legal world in the galaxy, twelve orbits away included,
+ * which described the rule without ever being it.
+ *
+ * The old rule was `wi === 0 || stars on wi - 1`: a single-file queue through
+ * a system in generation order, which is what note 20.1 is about.
  */
 function isWorldOpen(system, world, progress) {
   if (world.seat) return systemProgress(system, progress).seatOpen;
-  if (world.wi === 0) return true;
-  const prev = system.worlds[world.wi - 1];
-  return starsOn(progress, prev.id) > 0;
+  if (world.entry) return true;
+  const near = routeNeighbours(system, world);
+  /* A galaxy assembled by something other than generateGalaxy -- a harness, a
+     future editor -- has no graph to read. Falling back to the old linear rule
+     keeps such a galaxy playable; sealing it would be a blank map. */
+  if (!near.length)
+    return world.wi === 0 ||
+           starsOn(progress, system.worlds[world.wi - 1].id) > 0;
+  return near.some(n => starsOn(progress, n.id) > 0);
 }
 
 /** A system is open once the previous system's seat has fallen. */
@@ -291,6 +495,92 @@ function isSystemOpen(galaxy, system, progress) {
   if (system.index === 0) return true;
   const prev = galaxy.systems[system.index - 1];
   return isConquered(progress, prev.worlds[prev.worlds.length - 1].id);
+}
+
+/* --------------------------------------------------------------------------
+   ALLEGIANCE -- what a world READS as
+
+   A campaign is a record of who holds what, and until Session 20 the map that
+   exists to show it said almost none of it: a world painted in its ORIGINAL
+   power's colour whatever you had done to it, and the only trace of a conquest
+   was a star count three pixels tall. Everything a node paints itself from now
+   comes out of worldAllegiance(), so the map, the class list and the
+   accessible name cannot disagree about who holds a world.
+-------------------------------------------------------------------------- */
+
+/* Three stars is the claim. isConquered() is the LAW; this const exists so the
+   paint divides the claim ring by the same number ownership actually transfers
+   on -- a ring that closes at two while the rule transfers at three is exactly
+   the UI/engine desync this project has shipped seven times. */
+const GX_CLAIM_STARS = 3;
+
+/* How far outside the world disc the claim ring is drawn. Deliberately under
+   GX_MARK_HALF - r on BOTH world sizes (2.0 ordinary, 2.7 seat), so the widest
+   mark on the map is still the seat ring: GX_MARK_HALF is baked into
+   generation's x-clamp, and a mark that outgrew it would start dragging worlds
+   back off their own orbits. */
+const GX_CLAIM_RING_PAD = 1.15;
+
+/* Where the claim sigil sits, as fractions of the world radius: the offset of
+   its centre from the world's, then its own radius. Fractions rather than
+   absolutes so a seat and an ordinary world wear the same badge at their own
+   scale and neither one crosses its claim ring. */
+const GX_SIGIL_OFF = 0.62, GX_SIGIL_R = 0.46;
+
+/* One word per state, for the node's accessible name. The map has to say in
+   text whatever it says in paint or the colour work is decoration for the
+   people who can see it and nothing at all for everyone else. */
+const GX_STATE_LABEL = {
+  claimed:   'held by you',
+  foothold:  'claim in progress',
+  contested: 'contested',
+  seat:      'commander seat',
+  locked:    'sealed',
+  held:      'held'
+};
+
+/**
+ * What a world reads as, in one call. `faction` is whose colour the node
+ * WEARS; `you` is whose colour the claim is painted in. Those are two
+ * different things at one and two stars -- the world still belongs to its
+ * holder while a third of your ring is already drawn on it -- and conflating
+ * them is what made a partial claim invisible.
+ *
+ * @returns {{stars:number, claimed:boolean, open:boolean, state:string,
+ *            faction:string, holder:string, you:string, claim:number,
+ *            seat:boolean, contested:boolean}}
+ */
+function worldAllegiance(galaxy, system, world, progress) {
+  const stars = Math.max(0, Math.min(GX_CLAIM_STARS, starsOn(progress, world.id)));
+  const claimed = stars >= GX_CLAIM_STARS;
+  /* A world you have played is open under today's unlock rule, so LOCKED
+     cannot currently hide a claim in progress. Ordered anyway, rather than
+     assumed, so a future unlock rule cannot silently grey out your own work. */
+  const open = isSystemOpen(galaxy, system, progress) &&
+               isWorldOpen(system, world, progress);
+  const state = claimed ? 'claimed'
+              : !open ? 'locked'
+              : stars > 0 ? 'foothold'
+              : world.seat ? 'seat'
+              : world.contested ? 'contested'
+              : 'held';
+  return {
+    stars, claimed, open, state,
+    faction: claimed ? galaxy.playerFaction : world.owner,
+    holder: world.owner,
+    you: galaxy.playerFaction,
+    claim: stars / GX_CLAIM_STARS,
+    seat: !!world.seat,
+    /* Contested is a fight between two OTHER powers. Once the world is yours
+       there is no fight left to advertise, and leaving the split ring up made
+       a conquered world read as still up for grabs. */
+    contested: !!world.contested && !claimed
+  };
+}
+
+/** The state in words, for the node's accessible name and the map key. */
+function allegianceLabel(al) {
+  return GX_STATE_LABEL[al && al.state] || GX_STATE_LABEL.held;
 }
 
 /**

@@ -33,6 +33,14 @@ const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
    that opens invisibly. */
 const LO_FOUR_COL_MIN_PX = 1280;
 
+/* How long after the souls counter settles the level-up call to action
+   arrives on the end screen. It exists to stop the reward summary saying
+   "points to spend" before the experience bar that earned them has moved:
+   the punch has to follow the thing it is punching about. Same one-round
+   exception as the constants above -- config.js is owned in parallel this
+   session; move it across when that lands. */
+const RW_SPEND_DELAY_MS = 1400;
+
 /* The detail stage. Wider than the retired in-card stage (286) because it now
    has a column to itself, and a unit preview needs the run-up for a blink or
    a split to land on screen instead of starting off the left edge. */
@@ -239,9 +247,22 @@ const UI = {
     $('#profile-name').addEventListener('keydown', e => {
       if (e.key === 'Enter') { e.preventDefault(); $('#btn-new-profile').click(); }
     });
-    $('#btn-back-title').addEventListener('click', () => { Sound.play('click'); this.renderTitle(); this.show('screen-title'); });
+    $('#btn-back-title').addEventListener('click', () => { Sound.play('click');
+      /* Walking out of the commander screen abandons the post-match detour
+         with it. Left standing, a skirmish's pending route would divert the
+         NEXT press of SELECT THEATRE to the multiverse. */
+      this.clearLevelRoute();
+      this.renderTitle(); this.show('screen-title'); });
 
     $('#btn-to-theatre').addEventListener('click', () => { Sound.resume(); Sound.play('click');
+      /* A post-match level-up borrows this button for exactly one press: it
+         is the way off the commander screen, so resuming the route here
+         costs the detour no extra click and cannot strand a skirmish on the
+         campaign map -- renderTheatre OPENS a campaign for any sworn profile
+         that has none, which is the ledger a skirmish promises not to touch. */
+      const lr = this._levelRoute;
+      this.clearLevelRoute();
+      if (lr && lr.dest === 'multiverse') { this.show('screen-multiverse'); this.renderMultiverse(); return; }
       if (!Meta.campaign()) { this.show('screen-faction'); this.renderFactions(); }
       else { this.show('screen-theatre'); this.renderTheatre(); } });
     $('#btn-faction-back').addEventListener('click', () => { Sound.play('click'); this.show('screen-title'); this.renderTitle(); });
@@ -287,6 +308,30 @@ const UI = {
     $('#btn-end-menu').addEventListener('click', () => { this.el.endOverlay.classList.add('hidden'); this.toMenu(); });
     $('#btn-end-retry').addEventListener('click', () => {
       this.el.endOverlay.classList.add('hidden');
+      /* 20.5 -- a run that earned points the chart can accept goes to the
+         CHART first and to its real destination after. The destination is
+         decided HERE, while Game._skirmish is still true, and carried on
+         _levelRoute; the condition is Game.lastLevelUp.route, the same one
+         endRetryLabel names the button after, so the label cannot promise a
+         place the click does not go. Win or lose: a defeat pays the XP too. */
+      const lu = Game.lastLevelUp;
+      if (lu && lu.route) {
+        this._levelRoute = { dest: Game._skirmish ? 'multiverse' : 'theatre',
+                             commander: lu.commander, points: lu.points };
+        /* The chart that opens must be the chart that levelled. Without the
+           touched flag buildCommanderScreen re-defaults an unaligned CADRE
+           back to a commander of your own faction, which is the one screen
+           this route must never land on. */
+        this.sel.commander = lu.commander; this._cmdTouched = true;
+        const foot = $('#btn-to-theatre');
+        if (foot) {
+          if (this._cmdFootLabel === undefined) this._cmdFootLabel = foot.textContent;
+          foot.textContent = this._levelRoute.dest === 'multiverse'
+            ? 'TO THE MULTIVERSE →' : 'TO THE GALAXY →';
+        }
+        this.show('screen-command'); this.buildCommanderScreen();
+        return;
+      }
       /* A skirmish has no galaxy behind it. Sending one there did not merely
          land on the wrong screen: renderTheatre OPENS a campaign for any sworn
          profile that has none, so finishing an arena run silently rolled a
@@ -297,6 +342,15 @@ const UI = {
       /* Win or lose, the road leads back to the galaxy. */
       this.show('screen-theatre'); this.renderTheatre();
     });
+  },
+
+  /** Retire a pending post-match detour and put the footer button's own
+      name back. One place, because two would eventually disagree. */
+  clearLevelRoute() {
+    if (!this._levelRoute) return;
+    this._levelRoute = null;
+    const foot = $('#btn-to-theatre');
+    if (foot && this._cmdFootLabel !== undefined) foot.textContent = this._cmdFootLabel;
   },
 
   /**
@@ -679,6 +733,11 @@ const UI = {
     const c = COMMANDERS.find(x => x.id === this.sel.commander) || COMMANDERS[0];
     const p = Meta.progress(c.id);
     const pts = Meta.pointsAvailable(c.id);
+    /* Live, not the count the end screen quoted: the banner has to vanish on
+       the click that spends the last legal point rather than sit there
+       announcing work already done. */
+    const spendNow = (this._levelRoute && this._levelRoute.commander === c.id)
+      ? Meta.spendableTech(c.id).length : 0;
 
     $('#commander-detail').innerHTML = `
       <div class="cd-head" style="--cc:${c.color}">
@@ -698,6 +757,13 @@ const UI = {
         <b>${c.trait.name}</b>
         <span>${c.trait.desc}</span>
       </div>
+      ${spendNow ? `
+        <div class="cd-spend" role="status" style="--cc:${c.color}">
+          <b>${pts} POINT${pts === 1 ? '' : 'S'} TO SPEND</b>
+          <span>Earned in your last battle. ${spendNow === 1
+            ? 'One talent can be taken now' : spendNow + ' talents can be taken now'} — they are the lit ones.
+            ${this._levelRoute.dest === 'multiverse' ? 'The multiverse' : 'The galaxy'} is one press away when you are done.</span>
+        </div>` : ''}
       <div class="cd-techhead">
         <h3 class="section-label">TECHNOLOGY CHART</h3>
         <span class="pts ${pts > 0 ? 'has' : ''}">${pts} point${pts === 1 ? '' : 's'} available</span>
@@ -744,6 +810,10 @@ const UI = {
    */
   renderTechChart(c) {
     const spent = Meta.spentIn(c.id);
+    /* Only while a post-match detour is standing on THIS commander. A chart
+       that pulses every time it has a spare point would stop meaning
+       anything, and the point of the route is that this visit is different. */
+    const lit = !!(this._levelRoute && this._levelRoute.commander === c.id);
     const grid = [];
     for (let row = 0; row < 3; row++) {
       const gate = TALENT_ROW_GATE[row] || 0;
@@ -760,7 +830,7 @@ const UI = {
           ? `<span class="tal-arrow ${Meta.isUnlocked(c.id, parent.id) ? 'lit' : ''}">▲</span>` : '';
         cells.push(`<div class="tal-cell">
           ${arrow}
-          <button class="tal-node ${owned ? 'owned' : can ? 'can' : 'locked'}"
+          <button class="tal-node ${owned ? 'owned' : can ? 'can' : 'locked'}${lit && !owned && can ? ' ready' : ''}"
                   data-tech="${n.id}" ${owned || !can ? 'disabled' : ''} style="--cc:${c.color}"
                   title="${n.desc}${owned ? '' : reason ? ' — ' + reason : ''}">
             <span class="tal-icon">${n.icon}</span>
@@ -917,10 +987,46 @@ const UI = {
   },
 
   /**
+   * THE KEY. Six states drawn in four channels is a private language without
+   * one, and a map whose whole job is showing progress cannot afford to be
+   * read wrong. Every swatch is drawn from the same marks the worlds use, so
+   * the key cannot drift away from the thing it explains. Campaign map only:
+   * the universe map has one state and needs no key for it.
+   */
+  gxLegend(myF) {
+    const sw = inner => `<svg viewBox="0 0 16 16" aria-hidden="true">${inner}</svg>`;
+    const dot = '<circle class="lg-dot" cx="8" cy="8" r="4"/>';
+    const ring = '<circle class="lg-ring" cx="8" cy="8" r="5.6"/>';
+    const rows = [
+      ['held', 'HELD', sw(dot + ring)],
+      ['partial', 'TAKING', sw(dot + ring +
+        '<circle class="lg-claim" cx="8" cy="8" r="7.2" pathLength="100" ' +
+        'stroke-dasharray="33 100" transform="rotate(-90 8 8)"/>')],
+      ['claimed', 'YOURS', sw('<circle class="lg-dot mine" cx="8" cy="8" r="4"/>' +
+        '<circle class="lg-claim" cx="8" cy="8" r="7.2"/>')],
+      ['contested', 'CONTESTED', sw(dot +
+        '<circle class="lg-ring" cx="8" cy="8" r="5.6" pathLength="100" stroke-dasharray="50 50"/>' +
+        '<circle class="lg-ring2" cx="8" cy="8" r="5.6" pathLength="100" ' +
+        'stroke-dasharray="50 50" stroke-dashoffset="-50"/>')],
+      ['seat', 'SEAT', sw(dot + '<circle class="lg-seat" cx="8" cy="8" r="7.2"/>')],
+      ['locked', 'SEALED', sw(dot + ring)]
+    ];
+    return `<div class="gx-legend" style="--yc:${myF.color}" aria-hidden="true">` +
+      rows.map(r => `<i class="lg lg-${r[0]}">${r[2]}<b>${r[1]}</b></i>`).join('') +
+      `</div>`;
+  },
+
+  /**
    * ONE world, painted. Paint order bottom to top: dot, painted planet clipped
-   * to the disc, core shading, owner ring(s), the contested ⚔, then the star
-   * pips. The ring and the ⚔ stay ABOVE the picture -- they are the ownership
-   * read and the picture is decoration.
+   * to the disc, core shading, YOUR CLAIM RISING UP THE DISC, owner ring(s),
+   * the contested ⚔, the claim ring, your sigil, then the star pips. The rings
+   * and the marks stay ABOVE the picture -- they are the ownership read and the
+   * picture is decoration.
+   *
+   * `opts.claim` is 0..1 (stars / GX_CLAIM_STARS) and `opts.claimed` is the
+   * third star landing; `opts.sigil` is the player faction's glyph. The
+   * universe map passes none of them, because a relay keeps no star ledger and
+   * a claim mark there would be a claim about a record that does not exist.
    *
    * THE UNIVERSE drew a bare dot and had never received any of this. Both maps
    * call it now, so the next thing added to a world arrives on both.
@@ -944,6 +1050,22 @@ const UI = {
                  clip-path="url(#${cid})" preserveAspectRatio="xMidYMid slice" pointer-events="none"/>`);
     }
     out.push(`<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#${p}worldCore)" pointer-events="none" opacity="${pl ? 0.35 : 1}"/>`);
+    /* THE TIDE. Your faction's colour rises up the world as you take it, a
+       third of the disc per star, so a claim reads as IN PROGRESS instead of
+       flipping all at once on the third. It reads without hue as well: a disc
+       two-thirds full is a different SHAPE from an empty one at any zoom and
+       to any eye. Clipped to the disc so the painted planet keeps its edge. */
+    const claim = Math.max(0, Math.min(1, o.claim || 0));
+    if (claim > 0) {
+      const tid = p + 'ct_' + String(w.id).replace(/[^a-z0-9]/gi, '');
+      const th = r * 2 * claim, top = wy + r - th;
+      out.push(`<clipPath id="${tid}"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>`);
+      out.push(`<g class="gx-tide${o.claimed ? ' full' : ''}" clip-path="url(#${tid})" pointer-events="none">
+                 <rect x="${(w.x - r).toFixed(2)}" y="${top.toFixed(2)}"
+                       width="${(r * 2).toFixed(2)}" height="${th.toFixed(2)}"/>
+                 <line class="gx-tideline" x1="${(w.x - r).toFixed(2)}" y1="${top.toFixed(2)}"
+                       x2="${(w.x + r).toFixed(2)}" y2="${top.toFixed(2)}"/></g>`);
+    }
     if (o.contested) {
       const c2 = FACTIONS[w.contestedBy && w.contestedBy[1]] || FACTIONS.pirate;
       out.push(`<circle class="gx-ring" cx="${cx}" cy="${cy}" r="${r + 0.7}"
@@ -954,6 +1076,26 @@ const UI = {
                  text-anchor="middle">⚔</text>`);
     } else {
       out.push(`<circle class="gx-ring" cx="${cx}" cy="${cy}" r="${r + 0.7}"/>`);
+    }
+    /* THE CLAIM RING closes as the stars land -- a third of a circle each, in
+       your colour, outside the holder's own ring. OPEN ARC versus CLOSED
+       CIRCLE is the read that survives the far-out zoom, where every hue on
+       this map washes to the same pale grey and hue alone says nothing. */
+    if (claim > 0) {
+      out.push(`<circle class="gx-claim${o.claimed ? ' full' : ''}" cx="${cx}" cy="${cy}"
+                 r="${(r + GX_CLAIM_RING_PAD).toFixed(2)}" pathLength="100"
+                 stroke-dasharray="${(claim * 100).toFixed(1)} 100"
+                 transform="rotate(-90 ${cx} ${cy})" pointer-events="none"/>`);
+    }
+    /* And your own sigil once it is actually yours. Four powers, four distinct
+       glyphs out of FACTIONS: the one channel on this map that says WHOSE
+       without asking anyone to tell four colours apart. */
+    if (o.claimed && o.sigil) {
+      const bx = (w.x + r * GX_SIGIL_OFF).toFixed(2), by = (wy - r * GX_SIGIL_OFF).toFixed(2);
+      out.push(`<g class="gx-claimed-mark" pointer-events="none">
+                 <circle class="gx-sigil-bg" cx="${bx}" cy="${by}" r="${(r * GX_SIGIL_R).toFixed(2)}"/>
+                 <text class="gx-sigil" x="${bx}" y="${(wy - r * GX_SIGIL_OFF + r * 0.24).toFixed(2)}"
+                       text-anchor="middle" font-size="${(r * 0.66).toFixed(2)}">${o.sigil}</text></g>`);
     }
     if (o.pips !== null && o.pips !== undefined) {
       for (let i = 0; i < 3; i++)
@@ -1038,6 +1180,89 @@ const UI = {
     return out;
   },
 
+  /**
+   * THE ROUTES, drawn. One arc per edge of the galaxy's own route graph --
+   * `gx.routes`, the same list isWorldOpen reads -- laid under the worlds and
+   * inert, so an arc can never swallow a click meant for a destination.
+   *
+   * Three states, and every one of them is legible WITHOUT COLOUR, because a
+   * map that says "you may go here" in hue alone says it to only some players:
+   *
+   *   travelled  SOLID       both ends have been fought on
+   *   open       DASHED      a crossing the rules allow right now
+   *   sealed     FINE DOTS   the route exists, but its tier or the neighbour
+   *                          it depends on has not fallen
+   *
+   * The ordering also reads as ink -- the more line there is, the more of it
+   * is yours -- which is the engraved register the rest of the map is in, and
+   * is why this is dashes rather than three neon colours.
+   *
+   * Arcs out of the world you are STANDING on are drawn heavier again and
+   * march away from it, because "where do I go next" is the question the whole
+   * screen exists to answer.
+   */
+  gxRoutes(gx, prog, anchor) {
+    const routes = (gx && gx.routes) || [];
+    if (!routes.length) return '';
+    const byId = {}, sysOpen = {};
+    for (const sys of gx.systems) {
+      sysOpen[sys.index] = isSystemOpen(gx, sys, prog);
+      for (const w of sys.worlds) byId[w.id] = w;
+    }
+    /* Playable is asked of the ENGINE, never re-derived here. The click
+       handler gates on exactly these three terms; a fourth definition of them
+       is how a line comes to promise a world the rules refuse. */
+    const playable = w => sysOpen[w.si] &&
+                          isWorldOpen(gx.systems[w.si], w, prog) &&
+                          !isConquered(prog, w.id);
+    /* A crossing needs BOTH ends to be somewhere you have standing: ground you
+       have already fought on, or a world you may attack right now.
+
+       MEASURED, and the reason this is not `playable(A) || playable(B)`: with
+       either-end, both gateways out of the opening system were drawn as OPEN
+       routes on a fresh galaxy -- long, bright, marching arcs pointing at a
+       system that isSystemOpen refuses until a seat falls. They were the
+       loudest marks on the whole map and every one of them was a lie. A line
+       that promises a crossing the rules refuse is the exact failure the ring
+       and its straight courses were removed for. */
+    const standing = w => starsOn(prog, w.id) > 0 || playable(w);
+    const out = [];
+    for (const r of routes) {
+      let A = byId[r.a], B = byId[r.b];
+      if (!A || !B) continue;
+      const travelled = starsOn(prog, A.id) > 0 && starsOn(prog, B.id) > 0;
+      const live = !travelled && standing(A) && standing(B);
+      const state = travelled ? 'taken' : live ? 'live' : 'sealed';
+      /* Draw from the end you HOLD toward the end you do not, so the marching
+         dash always flows in the direction the fleet would travel. Swapping is
+         safe: both bows below are symmetric about the chord's midpoint. */
+      if (B === anchor ||
+          (A !== anchor && starsOn(prog, B.id) > starsOn(prog, A.id))) {
+        const t = A; A = B; B = t;
+      }
+      const next = live && A === anchor ? ' next' : '';
+      const ax = A.x, ay = A.y * GX_RENDER_SQUASH;
+      const bx = B.x, by = B.y * GX_RENDER_SQUASH;
+      const mx = (ax + bx) / 2, my = (ay + by) / 2;
+      const len = Math.hypot(bx - ax, by - ay) || 1;
+      let cx, cy;
+      if (r.kind === 'gate') {
+        /* A gateway bows UP, the way the old system chain did -- it is the
+           same crossing, said in worlds instead of in system blobs. */
+        cx = mx; cy = my - len * GX_ROUTE_BOW;
+      } else {
+        const sys = gx.systems[A.si];
+        const dx = mx - sys.x, dy = my - sys.y * GX_RENDER_SQUASH;
+        const d = Math.hypot(dx, dy) || 1;
+        cx = mx + dx / d * len * GX_ROUTE_BOW;
+        cy = my + dy / d * len * GX_ROUTE_BOW;
+      }
+      out.push(`<path class="gx-route ${r.kind === 'gate' ? 'gate' : 'local'} ${state}${next}"
+        d="M${ax.toFixed(2)} ${ay.toFixed(2)} Q ${cx.toFixed(2)} ${cy.toFixed(2)} ${bx.toFixed(2)} ${by.toFixed(2)}"/>`);
+    }
+    return `<g class="gx-routes" aria-hidden="true">${out.join('')}</g>`;
+  },
+
   renderTheatre() {
     let c = Meta.campaign();
     /* A defeat no longer ends a campaign, so this branch is reached only after
@@ -1055,6 +1280,12 @@ const UI = {
     const hold = galaxyHoldings(gx, prog);
     const total = gx.systems.reduce((a, s) => a + s.worlds.length, 0);
     const myF = FACTIONS[gx.playerFaction];
+    /* Hoisted above the header because the header now PRINTS the size of this
+       set. One computation, one number: the count in the status strip, the
+       arcs drawn under the worlds and the click handler's own gate are all the
+       same isWorldOpen, so none of the three can quote a different galaxy. */
+    const anchor = this.gxAnchorWorld(gx, prog);
+    const reach = this.gxReachable(gx, prog);
 
     $('#campaign-trail').innerHTML = `
       <div class="gx-status">
@@ -1062,6 +1293,7 @@ const UI = {
         <span class="gx-flag" style="--fc:${myF.color}">${myF.icon} ${myF.name}</span>
         <span class="gx-hold">${hold[gx.playerFaction]} / ${total} worlds held</span>
         <span class="gx-seats" data-tt="COMMANDER SEATS|Take every seat and the galaxy is yours. A seat opens once you hold most of its system.">⚔ ${seatsRemaining(gx, prog)} seats standing</span>
+        <span class="gx-open" data-tt="OPEN WORLDS|Worlds you may attack next. Every one is at the far end of a route out of ground you already hold.">⇢ ${reach.length} world${reach.length === 1 ? '' : 's'} open</span>
         <span class="gx-bar">${FACTION_ORDER.map(f =>
           `<i style="--fc:${FACTIONS[f].color};flex:${Math.max(0.001, hold[f])}"
               data-tt="${FACTIONS[f].name}|${hold[f]} worlds held"></i>`).join('')}</span>
@@ -1073,61 +1305,33 @@ const UI = {
       </div>`;
     this.bindChipTips($('#campaign-trail'));
 
-    const anchor = this.gxAnchorWorld(gx, prog);
-    const reach = this.gxReachable(gx, prog);
     const ax = anchor.x, ay = anchor.y * GX_RENDER_SQUASH;
 
     const svg = [];
     svg.push(`<svg class="galaxy" viewBox="${GX_WORLD_VIEWBOX}" role="img"
                    aria-label="Galaxy map, ${gx.systems.length} solar systems">`);
     svg.push(this.gxBackdrop('gx'));
-    for (let i = 1; i < gx.systems.length; i++) {
-      const a = gx.systems[i - 1], b = gx.systems[i];
-      const open = isSystemOpen(gx, b, prog);
-      const mx = (a.x + b.x) / 2, my = ((a.y + b.y) / 2) * GX_RENDER_SQUASH - GX_LINK_LIFT;
-      svg.push(`<path class="gx-link ${open ? 'on' : ''}" fill="none"
-        d="M${a.x.toFixed(2)} ${(a.y * GX_RENDER_SQUASH).toFixed(2)} Q ${mx.toFixed(2)} ${my.toFixed(2)}
-           ${b.x.toFixed(2)} ${(b.y * GX_RENDER_SQUASH).toFixed(2)}"/>`);
-    }
-    /* THE TRAVEL RANGE, under the worlds so it can never swallow a click.
-       The RING is a LOCAL mark: sized off the destinations inside the anchor's
-       OWN system, floored so it always clears that system's outer orbit, and
-       capped at half a window so it can never outgrow the screen it is drawn
-       on. Sizing it off EVERY reachable world was measured and rejected -- the
-       moment a second system opens the radius runs to 460 world units (three
-       and a half windows across), which puts the label 166 units ABOVE the
-       viewBox, where a <text> is simply not drawn, and draws a disc with up to
-       thirty LOCKED worlds inside it. One circle cannot describe a set
-       scattered over five systems.
-       The dashed COURSES can and do: one per destination the rules actually
-       allow, however far away, and every world the rules refuse is greyed flat
-       by .gx-world.shut. Those two carry the reachable/locked read; the ring
-       only says where you are standing. */
-    {
-      let rr = Math.max(GX_RANGE_MIN, GX_RING_OUTER + GX_RANGE_PAD);
-      const lines = [];
-      for (const w of reach) {
-        const wy = w.y * GX_RENDER_SQUASH;
-        if (w.si === anchor.si)
-          rr = Math.max(rr, Math.hypot(w.x - ax, wy - ay) + GX_RANGE_PAD);
-        if (w !== anchor)
-          lines.push(`<line class="gx-course" x1="${ax.toFixed(2)}" y1="${ay.toFixed(2)}"
-                       x2="${w.x.toFixed(2)}" y2="${wy.toFixed(2)}"/>`);
-      }
-      rr = Math.min(rr, GX_VIEW.w / 2);
-      /* The caption rides the top of the ring but never off the top of the
-         world. A world sits as little as 72 units down and the ring is at most
-         61 across, so this clamp is a guard rather than a shaper -- but it is
-         the guard that was missing when the radius was unbounded. */
-      const lblY = Math.max(GX_WORLD.y + 3.4, ay - rr - 2.2);
-      svg.push(`<g class="gx-reach" aria-hidden="true">${lines.join('')}
-        <circle class="gx-range" cx="${ax.toFixed(2)}" cy="${ay.toFixed(2)}" r="${rr.toFixed(2)}"/>
-        <text class="gx-range-lbl" x="${ax.toFixed(2)}" y="${lblY.toFixed(2)}"
-              text-anchor="middle">TRAVEL RANGE</text>
+    /* The single curve that used to run between system CENTRES is gone. It
+       joined two blobs of empty space and named no world at either end, which
+       made it decoration sitting on top of the one relationship the map has to
+       carry. The gateway arcs inside gxRoutes are the same connection said
+       properly: they land on the two worlds you would actually arrive at, and
+       they are the same edges isWorldOpen consults. */
+    svg.push(this.gxRoutes(gx, prog, anchor));
+    /* WHERE YOU ARE STANDING, and nothing else.
+
+       The TRAVEL RANGE ring and its fan of straight courses are gone. Between
+       them they were one circle and up to thirty rulers trying to describe a
+       set of destinations scattered over five systems -- and a ruler drawn
+       from here to a world twelve orbits away in another system is not a
+       route, it is a claim that the two are adjacent. The route graph above
+       makes the same statement exactly and once: one arc per crossing the
+       rules allow, along the line a fleet would actually travel. All that is
+       left for this mark to say is which world the arcs lead out of. */
+    svg.push(`<g class="gx-reach" aria-hidden="true">
         <circle class="gx-here" cx="${ax.toFixed(2)}" cy="${ay.toFixed(2)}" r="6.4"/>
         <text class="gx-here-lbl" x="${ax.toFixed(2)}" y="${(ay + 10.4).toFixed(2)}"
               text-anchor="middle">YOU ARE HERE</text></g>`);
-    }
     for (const sys of gx.systems) {
       const open = isSystemOpen(gx, sys, prog);
       const sp = systemProgress(sys, prog);
@@ -1141,26 +1345,42 @@ const UI = {
       svg.push(`<text class="gx-sysmeta" x="${sys.x.toFixed(2)}" y="${(sy + GX_SYS_META_DY).toFixed(2)}"
                  text-anchor="middle">${open ? sp.taken + '/' + sp.total + ' TAKEN' : 'SEALED'}</text>`);
       for (const w of sys.worlds) {
-        const stars = starsOn(prog, w.id);
-        const mine = stars >= 3;
+        /* ONE source for who this world reads as. The paint, the class list
+           and the accessible name all come out of the same call, so the map
+           can never again say one thing in colour and another in words. */
+        const al = worldAllegiance(gx, sys, w, prog);
+        const stars = al.stars, mine = al.claimed;
         const canPlay = open && isWorldOpen(sys, w, prog);
-        const of = FACTIONS[mine ? gx.playerFaction : w.owner];
+        const of = FACTIONS[al.faction];
         const wy = w.y * GX_RENDER_SQUASH;
         const cls = ['gx-world', canPlay ? 'open' : 'shut', mine ? 'mine' : '',
+                     'gx-' + al.state, (stars > 0 && !mine) ? 'partial' : '',
                      w.seat ? 'seat' : '', planetArtFor(w) ? 'has-planet' : '',
                      w === anchor ? 'here' : '',
                      (c.chosen && c.chosen.world === w.id) ? 'sel' : ''].join(' ');
-        svg.push(`<g class="${cls}" data-world="${w.id}" style="--fc:${of.color}" tabindex="0"
-                   role="button" aria-label="${w.name}, ${of.short}, ${stars} stars">`);
+        /* --fc is whose world it IS, --yc is whose claim is being painted on
+           it. They resolve to the same colour only once the world is yours,
+           which is precisely the moment the note is about. */
+        svg.push(`<g class="${cls}" data-world="${w.id}" data-state="${al.state}"
+                   data-stars="${stars}" style="--fc:${of.color};--yc:${myF.color}" tabindex="0"
+                   role="button" aria-label="${w.name}, ${of.short}, ${allegianceLabel(al)}, ${stars} of ${GX_CLAIM_STARS} stars">`);
         if (w.seat) svg.push(`<circle class="gx-seat" cx="${w.x.toFixed(2)}" cy="${wy.toFixed(2)}" r="4.1"/>`);
         const wr2 = w.seat ? 2.7 : 2.0;
         svg.push(this.gxWorldPaint('gx', w, wy, wr2,
-                  { contested: w.contested && !mine, pips: stars }));
+                  { contested: al.contested, pips: stars, claim: al.claim,
+                    claimed: al.claimed, sigil: myF.icon }));
         svg.push(`</g>`);
       }
       svg.push(`</g>`);
     }
-    svg.push(`</svg><p class="wm-hint">Hover a world for its briefing &middot; click to set course &middot; three stars conquers it</p>`);
+    svg.push(`</svg><div class="gx-keys">
+      <div class="gx-legend" role="note" aria-label="Route key">
+        <span><svg viewBox="0 0 30 6" aria-hidden="true"><path class="gx-route taken" d="M1 3 H29"/></svg>travelled</span>
+        <span><svg viewBox="0 0 30 6" aria-hidden="true"><path class="gx-route live" d="M1 3 H29"/></svg>open route</span>
+        <span><svg viewBox="0 0 30 6" aria-hidden="true"><path class="gx-route sealed" d="M1 3 H29"/></svg>sealed</span>
+      </div>
+      ${this.gxLegend(myF)}</div><p class="wm-hint">Hover a world for its briefing &middot; click to set course &middot; three stars conquers it</p>
+`);
     $('#worldmap-wrap').innerHTML = svg.join('');
 
     /* Lay the freshly-rendered map on the 2.5D plane before wiring clicks, so
@@ -1500,7 +1720,9 @@ const UI = {
     const tip = ev => this.showTooltip(ev, '<div class="brief"><div class="br-head">' +
       '<b>THE MAELSTROM</b><span class="tag">ARENA</span></div>' +
       '<div class="br-trait">A singularity at the centre of the universe · up to ' +
-      MAELSTROM_MAX_SEATS + ' seats</div><div class="br-rows"><div class="br-row">' +
+      MAELSTROM_MAX_SEATS + ' seats</div>' +
+      this.mapPreviewBlock(maelstromMap(MAELSTROM_MAX_SEATS), { size: 'tip' }) +
+      '<div class="br-rows"><div class="br-row">' +
       '<span class="br-ic">&#9673;</span><span>Every commander holds their own lane and their own base. ' +
       'Nothing you kill comes back to you — you send by muster alone.</span></div></div></div>');
     /* The label used to be lit by a sibling selector, which the split above
@@ -1574,6 +1796,9 @@ const UI = {
         'to send. You send by <b>MUSTER</b>, and every reanimation bonus you hold still rides ' +
         'what you send. The horizon contracts every ' + MAELSTROM_CONTRACT_WAVES +
         ' waves and keeps whatever is standing inside it.</p>' +
+        /* Redrawn with the seat count, because the seat count is the only
+           thing that decides this board and the ring visibly grows with it. */
+        this.mapPreviewBlock(m, { size: 'brief' }) +
         '<div class="mv-seats">' + seats.map(n =>
           '<button class="btn seat-btn' + (n === this._mvSeats ? ' active' : '') +
           '" data-seats="' + n + '">' + n + '</button>').join('') + '</div>' +
@@ -1672,6 +1897,7 @@ const UI = {
         <span class="tag" style="color:${of.color}">${of.short}</span></div>
       <div class="br-trait">${sys.name} &middot; ${kind.icon} ${kind.label}${w.seat ? ' &middot; COMMANDER SEAT' : ''}</div>
       ${m ? `<div class="br-map"><b>${m.name}</b> &mdash; ${m.trait}</div>` : ''}
+      ${m ? this.mapPreviewBlock(m, { size: inline ? 'brief' : 'tip' }) : ''}
       ${m && m.blurb ? `<p class="br-blurb">${m.blurb}</p>` : ''}
       ${w.contested ? `<div class="br-contested">
         <b>⚔ CONTESTED — THREE-WAY WAR</b>
@@ -1708,7 +1934,7 @@ const UI = {
     const df = DIFFICULTIES.find(x => x.id === o.difficulty);
     return '<div class="brief ' + (inline ? 'inline' : '') + '">' +
       '<div class="br-head"><b>' + m.name + '</b><span class="tag">' + df.name + '</span></div>' +
-      '<div class="br-thumb">' + this.mapThumb(m) + '</div>' +
+      this.mapPreviewBlock(m, { size: inline ? 'brief' : 'tip' }) +
       '<div class="br-trait">' + m.trait + '</div>' +
       (mapNodeChips(m).length ? '<div class="br-nodes">' + mapNodeChips(m).map(nd =>
         '<span class="brn" style="--nc:' + ELEMENTS[nd.el].color + '">' + ELEMENTS[nd.el].icon +
@@ -1728,35 +1954,183 @@ const UI = {
     '</div>';
   },
 
-  /** Miniature of a battlefield: every lane on both sides, plus terrain. */
-  mapThumb(m) {
+  /* ══════════════════════════════════════ BATTLEFIELD MINIMAP ═══ */
+
+  /**
+   * THE MINIMAP MODEL: the board a card is about to show, solved once.
+   *
+   * Everything on the preview comes out of `buildField(map)` -- the same call
+   * `Game.start` makes -- and the unbuildable set is recomputed the way
+   * `Game.start` recomputes it: authored terrain UNION every tile a lane or a
+   * send route runs through. Nothing here is authored a second time, so
+   * nothing here can drift from the board. Fifteen hand-kept thumbnails would
+   * have guaranteed the opposite.
+   *
+   * MEMOISED because the arena's field runs a 200-pass ownership balance over
+   * ~2,200 tiles and a tooltip fires on every mouseenter. Keyed on seat count
+   * as well as id: the arena is a genuinely different board at four seats and
+   * at twenty.
+   */
+  previewModel(m) {
+    if (!this._pvModel) this._pvModel = {};
+    const k = m.id + (m.maelstrom ? ':' + m.maelstrom : '');
+    if (!this._pvModel[k]) this._pvModel[k] = this.buildPreview(m);
+    return this._pvModel[k];
+  },
+
+  /**
+   * Renders one board into an SVG whose viewBox is the board's own grid, so
+   * every width inside it is a fraction of a TILE and the SAME renderer serves
+   * a duel, a three-way board and the twenty-seat arena at any card size.
+   */
+  buildPreview(m) {
     const f = buildField(m);
-    const w = 300, h = Math.round(300 * m.rows / m.cols);
-    const sx = w / m.cols, sy = h / m.rows;
-    const line = (pts, col, wid) => `<path d="${pts.map(([x, y], i) =>
-      `${i ? 'L' : 'M'}${((x + 0.5) * sx).toFixed(1)},${((y + 0.5) * sy).toFixed(1)}`).join(' ')}"
-      fill="none" stroke="${col}" stroke-width="${wid}" stroke-linejoin="round" stroke-linecap="round"/>`;
-    /* lanes[side] is an ARRAY of lanes — a map may fork, and a tri board has
-       a third side whose lane used to be left off the thumbnail entirely. */
-    const lanes = f.lanes.map((side, i) => side.map(l =>
-      line(l, LANE_TINTS[i] || LANE_TINTS[LANE_TINTS.length - 1], 6)).join('')).join('');
-    const rubble = [...f.terrain].map(k => {
-      const [gx, gy] = k.split(',').map(Number);
-      return `<rect x="${(gx * sx).toFixed(1)}" y="${(gy * sy).toFixed(1)}"
-        width="${sx.toFixed(1)}" height="${sy.toFixed(1)}" fill="#1b2230"/>`;
-    }).join('');
-    return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">
-      <rect width="${w}" height="${h}" fill="#0b1018"/>
-      ${rubble}
-      ${f.tri ? '' : `<rect x="${f.neutral.from * sx}" y="0"
-            width="${(f.neutral.to - f.neutral.from + 1) * sx}"
-            height="${h}" fill="#1a1430" opacity="0.75"/>`}
-      ${lanes}
-      ${(f.nodes || []).map(n => `<circle cx="${((n.gx + 0.5) * sx).toFixed(1)}" cy="${((n.gy + 0.5) * sy).toFixed(1)}"
-        r="${(Math.min(sx, sy) * (n.kind === 'lane' ? 0.30 : 0.44)).toFixed(1)}"
-        fill="${ELEMENTS[n.el].color}" fill-opacity="${n.kind === 'lane' ? 0.9 : 0.35}"
-        stroke="${ELEMENTS[n.el].color}" stroke-width="1.6"/>`).join('')}
-    </svg>`;
+    const cols = f.cols, rows = f.rows, seats = f.lanes.length;
+    const q = v => Math.round(v * 100) / 100;
+
+    /* THE ENGINE'S OWN UNBUILDABLE SET, by the engine's own rule. A tile a
+       lane passes through is not ground, and a preview that painted it as
+       ground would be offering placements `Game.canBuild` refuses. */
+    const laneTiles = new Set();
+    const lanes = [];
+    f.lanes.forEach((side, si) => side.forEach(pts => {
+      lanes.push({ si: si, pts: pts });
+      for (const k of new Path(pts).blockedTiles()) laneTiles.add(k);
+    }));
+    for (const sp of (f.sendPaths || []))
+      for (const k of new Path(sp).blockedTiles()) laneTiles.add(k);
+
+    /* The arena is a diamond inside a square field; everything outside the L1
+       rim is not board at all and must not be painted as ground. */
+    const isVoid = f.voidTiles ? (x, y) => f.voidTiles.has(x + ',' + y) : () => false;
+    /* Exactly Game.ownsTile: an ownerGrid where the board has one, the
+       buildMax columns where it does not. */
+    const ownerAt = f.ownerGrid
+      ? (x, y) => { const r = f.ownerGrid[y]; const v = r ? r[x] : undefined; return v === undefined ? -1 : v; }
+      : (x, y) => x <= f.buildMax[0] ? 0 : (x >= f.buildMax[1] ? 1 : -1);
+    const rubble = (x, y) => f.terrain.has(x + ',' + y);
+    const ground = (x, y) => !isVoid(x, y) && !rubble(x, y) && !laneTiles.has(x + ',' + y);
+
+    /* Tiles merge into horizontal runs before they become geometry. The arena
+       is 47x47 and one <rect> a tile is 2,209 nodes in a card that opens on
+       hover; this is one <path> per layer instead. */
+    const runs = pred => {
+      let d = '';
+      for (let y = 0; y < rows; y++) {
+        let x0 = -1;
+        for (let x = 0; x <= cols; x++) {
+          if (x < cols && pred(x, y)) { if (x0 < 0) x0 = x; }
+          else if (x0 >= 0) { d += 'M' + x0 + ' ' + y + 'h' + (x - x0) + 'v1h' + (x0 - x) + 'z'; x0 = -1; }
+        }
+      }
+      return d;
+    };
+    const layer = (d, cls, extra) => d ? '<path class="' + cls + '" d="' + d + '"' + (extra || '') + '/>' : '';
+
+    const g = [];
+    g.push(layer(runs((x, y) => !isVoid(x, y)), 'pv-board'));
+    g.push(layer(runs((x, y) => ground(x, y) && ownerAt(x, y) < 0), 'pv-neutral'));
+    if (seats <= MAP_PV_TINT_MAX_SEATS) {
+      for (let i = 0; i < seats; i++)
+        g.push(layer(runs((x, y) => ground(x, y) && ownerAt(x, y) === i),
+                     'pv-own', ' fill="' + previewSeatTint(i) + '"'));
+    } else {
+      g.push(layer(runs((x, y) => ground(x, y) && ownerAt(x, y) >= 0), 'pv-build'));
+    }
+    g.push(layer(runs(rubble), 'pv-rubble'));
+
+    /* THE HORIZON, arena only. That the board SHRINKS is the mode's whole
+       identity, and it is the one thing a lane drawing cannot say. Both rings
+       are read off the built field, so the card cannot promise a contraction
+       the engine will not run. */
+    if (f.centre) {
+      const dia = r => [[0, -r], [r, 0], [0, r], [-r, 0]]
+        .map(p => q(f.centre[0] + 0.5 + p[0]) + ',' + q(f.centre[1] + 0.5 + p[1])).join(' ');
+      g.push('<polygon class="pv-horizon-max" points="' + dia(f.horizonMax) + '"/>');
+      g.push('<polygon class="pv-horizon" points="' + dia(f.core) + '"/>');
+    }
+
+    /* Lanes: every casing first, then every core, so a road crossing another
+       road is not outlined over the top of it. The polyline IS the authored
+       lane at tile centres -- the identical points `new Path(lane)` builds its
+       segments from, divided by TILE. */
+    const poly = pts => pts.map((p, i) =>
+      (i ? 'L' : 'M') + q(p[0] + 0.5) + ' ' + q(p[1] + 0.5)).join(' ');
+    for (const L of lanes)
+      g.push('<path class="pv-lane-case" d="' + poly(L.pts) +
+             '" stroke-width="' + MAP_PV_LANE_CASE_W + '"/>');
+    for (const L of lanes)
+      g.push('<path class="pv-lane" data-lane="' + L.si + '" d="' + poly(L.pts) +
+             '" stroke="' + previewSeatTint(L.si) + '" stroke-width="' + MAP_PV_LANE_W + '"/>');
+
+    /* Where a wave enters. On THE LATTICE that is three separate gates and the
+       blurb spends a sentence on it; on a tri board it is the shared hub. */
+    const gates = new Set();
+    for (const L of lanes) gates.add(L.pts[0][0] + ',' + L.pts[0][1]);
+    for (const key of gates) {
+      const p = key.split(',').map(Number);
+      g.push('<circle class="pv-gate" cx="' + q(p[0] + 0.5) + '" cy="' + q(p[1] + 0.5) +
+             '" r="' + MAP_PV_SPAWN_R + '"/>');
+    }
+
+    for (const nd of (f.nodes || [])) {
+      const el = ELEMENTS[nd.el];
+      g.push('<circle class="pv-node' + (nd.kind === 'lane' ? ' lane' : '') +
+             '" cx="' + q(nd.gx + 0.5) + '" cy="' + q(nd.gy + 0.5) +
+             '" r="' + (nd.kind === 'lane' ? MAP_PV_NODE_LANE_R : MAP_PV_NODE_R) +
+             '" fill="' + el.color + '" stroke="' + el.color + '"/>');
+    }
+
+    f.bases.forEach((b, i) => {
+      g.push('<circle class="pv-base" data-base="' + i + '" cx="' + q(b[0] + 0.5) +
+             '" cy="' + q(b[1] + 0.5) + '" r="' + MAP_PV_BASE_R +
+             '" stroke="' + previewSeatTint(i) + '"/>');
+      g.push('<circle class="pv-base-dot" cx="' + q(b[0] + 0.5) + '" cy="' + q(b[1] + 0.5) +
+             '" r="' + q(MAP_PV_BASE_R * 0.34) + '" fill="' + previewSeatTint(i) + '"/>');
+    });
+
+    /* Ground SEAT 0 can actually build on, counted with the predicates above
+       rather than estimated -- the caption prints this number, and a number
+       the UI prints has to be the one the engine computes. */
+    let own = 0;
+    for (let y = 0; y < rows; y++)
+      for (let x = 0; x < cols; x++) if (ground(x, y) && ownerAt(x, y) === 0) own++;
+
+    const pad = MAP_PV_PAD;
+    const svg = '<svg class="pv-svg" viewBox="' + q(-pad) + ' ' + q(-pad) + ' ' +
+      q(cols + pad * 2) + ' ' + q(rows + pad * 2) + '" preserveAspectRatio="xMidYMid meet" ' +
+      'role="img" aria-label="' + m.name + ' battlefield: ' + cols + ' by ' + rows +
+      ' tiles, ' + seats + ' seats, ' + lanes.length + ' lanes">' + g.join('') + '</svg>';
+
+    return { svg: svg, field: f, cols: cols, rows: rows, seats: seats,
+             lanes: lanes.length, perSide: f.lanes[0].length, ground: own,
+             tall: rows / cols >= MAP_PV_TALL_ASPECT };
+  },
+
+  /** The minimap alone. `mapThumb`, the name this replaces, is deliberately
+      NOT kept as an alias: its one caller moves to mapPreviewBlock below, and
+      a method with no reader is this repository's signature defect. */
+  mapPreview(m) { return m ? this.previewModel(m).svg : ''; },
+
+  /**
+   * The minimap plus the one line of fact under it.
+   *
+   * `size` picks the box, not the drawing: a tooltip and a briefing show the
+   * IDENTICAL board, because a preview that said two different things about
+   * one map would be the eighth desync.
+   */
+  mapPreviewBlock(m, o) {
+    if (!m) return '';
+    o = o || {};
+    const p = this.previewModel(m);
+    /* Kept to one line at 320px, the tooltip's width -- a caption that wraps
+       under a picture reads as a paragraph and stops being scanned. */
+    const cap = [p.cols + '\u00d7' + p.rows,
+                 p.seats + ' seats',
+                 p.perSide + (p.perSide === 1 ? ' lane' : ' lanes') + ' a side',
+                 p.ground + ' buildable'];
+    return '<div class="br-pv' + (o.size === 'tip' ? ' tip' : '') + (p.tall ? ' tall' : '') +
+           '">' + p.svg + '</div><div class="pv-cap">' + cap.join(' \u00b7 ') + '</div>';
   },
 
   /* ══════════════════════════════════════════════ SCREEN 3 — LOADOUT ═══ */
@@ -2770,7 +3144,8 @@ const UI = {
             originOf(id).icon}</i></span>
           <span class="tc-role">${t.role}</span>
         </span>
-        <span class="tc-cost" data-cost="${id}">◈${t.cost}</span>
+        <span class="tc-cost" data-cost="${id}">${Game.towerLifeCost(0, id)
+          ? '♥' + Game.towerLifeCost(0, id) : '◈' + t.cost}</span>
       </button>`;
     }).join('');
     this.paintTowerIcons(this.el.shop);
@@ -2798,9 +3173,15 @@ const UI = {
     if (b.dmgType && b.dmgType !== 'none') rows.push(['Type', b.dmgType]);
     if (b.splash) rows.push(['Splash', b.splash.toFixed(2)]);
     if (b.income) rows.push(['Income', `◈${b.income}/${b.incomeEvery}s`]);
-    rows.push(['Owned', owned + ' — next costs ◈' + Game.towerCost(0, id)]);
+    /* THE PRICE IN ITS OWN CURRENCY. BLOOD PRICE takes no gold at all, so
+       Game.towerCost truthfully returns 0 and a ◈0 here reads as FREE -- the
+       one thing this purchase is not. towerLifeCost is the only statement of
+       what it costs, and the radial already quotes it that way. */
+    const life = Game.towerLifeCost(0, id);
+    rows.push(['Owned', owned + ' — next costs ' + (life ? '♥' + life : '◈' + Game.towerCost(0, id))]);
     const el = ELEMENTS[t.element];
-    return `<div class="tt-head" style="color:${t.color}">${t.name}<span class="tt-cost">◈${Game.towerCost(0, id)}</span></div>
+    return `<div class="tt-head" style="color:${t.color}">${t.name}<span class="tt-cost">${
+        life ? '♥' + life : '◈' + Game.towerCost(0, id)}</span></div>
       <div class="tt-figure">${this.towerIconHTML(id, 54)}
         <span class="elem-badge" style="--el:${el.color}">${el.icon} ${el.name}</span>
         ${this.originBadge(id)}</div>
@@ -2810,7 +3191,9 @@ const UI = {
       <div class="tt-stats">${rows.map(r => `<div><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}</div>
       ${t.groundOnly ? '<div class="tt-warn">⚠ Cannot target flying enemies</div>' : ''}
       ${t.airOnly ? '<div class="tt-warn">⚠ Can ONLY target flying enemies</div>' : ''}
-      <div class="tt-foot">Price rises <b>×${appliedGrowth(t, Game.sides[0].traits.costGrowthMul).toFixed(2)}</b> with each copy you own.</div>`;
+      <div class="tt-foot">${life
+        ? `The life price rises <b>×${BLOOD_PRICE_GROWTH.toFixed(2)}</b> with each copy you own, and never below ♥${BLOOD_PRICE_FLOOR} left.`
+        : `Price rises <b>×${appliedGrowth(t, Game.sides[0].traits.costGrowthMul).toFixed(2)}</b> with each copy you own.`}</div>`;
   },
 
   /* ---- inspector: rebuilt only when its signature changes ------------- */
@@ -2834,6 +3217,55 @@ const UI = {
     earned: t => t ? '◈' + formatNum(t.goldMade) : null,
     drain:  t => (t && t.stats.drainPer)
                  ? Math.round(t.drainMeter || 0) + '/' + t.stats.drainPer : null,
+    /* THE SIX. Every one of these reads a field the ENGINE writes, through
+       SixRead in entities.js, which is also what the tick reads -- so there
+       is no second copy of a ceiling or a cap anywhere in this file. A row
+       that is not on the panel returns null and the refresher skips it. */
+    wards:  t => (t && t.def.attack === 'sepulchre')
+                 ? (t.wards || []).length + ' / ' + SixRead.wardCap(t) : null,
+    wardDps: t => (t && t.def.attack === 'sepulchre')
+                 ? formatNum(Math.round(SixRead.wardOutput(t))) + '/s' : null,
+    holding: t => {
+      if (!t || t.def.attack !== 'sepulchre') return null;
+      const w = t.wards || [];
+      return w.length ? w.map(x => x.name).join(', ')
+                      : 'nothing — it catches the next tower you give up';
+    },
+    offering: t => {
+      if (!t || t.def.attack !== 'orison') return null;
+      const e = t.offering;
+      if (!e) return t.orisonNamed ? 'settled — one rite a wave' : 'nothing named yet';
+      return e.def.name + ' — ' + formatNum(Math.max(0, Math.round(e.hp)))
+             + ' / ' + formatNum(Math.round(e.maxHp));
+    },
+    answers: t => (t && t.def.attack === 'antiphon')
+                 ? Math.floor(t.answers || 0) + ' / ' + SixRead.answerCap(t) : null,
+    gestalt: t => (t && t.def.attack === 'gestalt')
+                 ? Math.round(t.gestaltStacks || 0) + ' / ' + SixRead.gestaltCap(t) : null,
+    forget: t => {
+      if (!t || t.def.attack !== 'gestalt') return null;
+      const s = SixRead.gestaltForget(t);
+      return s === null ? 'nothing to forget' : s.toFixed(1) + 's without a body';
+    },
+    mawNext: t => (t && t.def.attack === 'maw')
+                 ? SixRead.mawNext(t).toFixed(1) + 's' : null,
+    digest: t => {
+      if (!t || t.def.attack !== 'maw') return null;
+      const owed = SixRead.mawOwed(t);
+      return owed > 0 ? '◈' + formatNum(Math.ceil(owed)) + ' of ◈'
+                        + formatNum(Math.round(t.digestTotal || 0))
+                        + ' over ' + SixRead.mawDigestDur(t).toFixed(1) + 's'
+                      : 'nothing in the gullet';
+    },
+    debt:   t => {
+      if (!t || t.def.attack !== 'veil') return null;
+      const r = SixRead.veilDebt(t);
+      return r.bodies ? formatNum(Math.round(r.debt)) + ' across ' + r.bodies
+                        + (r.bodies === 1 ? ' body' : ' bodies')
+                      : 'nothing owed in the field';
+    },
+    tithe:  t => (t && t.def.attack === 'veil' && t.stats.veilTithe)
+                 ? Math.round(t.titheAcc || 0) + '/' + VEIL_TITHE_PER : null,
     /* Interest is credited through awardGold like everything else, so the
        preview runs the same transform or it under-reports the bank. */
     bank:   () => '+' + formatNum(Game.previewGold(0,
@@ -2887,6 +3319,13 @@ const UI = {
     return [t.gx, t.gy, t.side, t.level, t.branch ? t.branch.id : '-', t.asc,
             t.rolls.length, t.targetMode, t.pendingBranch ? 'pb' : '-',
             t.livesRestored || 0,
+            /* THE SIX. Each of these changes which ROWS exist or what a row
+               that no in-place refresh can create says, so the panel has to
+               rebuild on it. Bucketed to whole units -- none of them moves
+               more than a few times a wave. */
+            (t.wards || []).length, t.offering ? t.offering.def.id : '-',
+            Math.floor(t.answers || 0), Math.round(t.gestaltStacks || 0),
+            (t.digestLeft || 0) > 0 ? 'dg' : '-',
             /* the origin riders are LIVE state -- a lattice link formed by the
                tower next door, or a pirate heat bank filling, must repaint the
                panel or it reads as the origin doing nothing. */
@@ -2988,13 +3427,82 @@ const UI = {
       } else {
         rows.push(['Standing', t.wallT > 0 ? 'rebuilding ' + Math.ceil(t.wallT) + 's' : 'no lane in reach']);
       }
+    } else if (t.def.attack === 'sepulchre') {
+      /* A chapel over empty ground is worth nothing and a chapel over a line
+         you are about to sell is transformative, so the ward count IS the
+         tower. Falling through to the generic DPS block printed one number
+         that answered neither question. */
+      rows.push(['Wards standing', this.liveFigure('wards', t), 1, 'wards']);
+      rows.push(['Wards dealing', this.liveFigure('wardDps', t), 1, 'wardDps']);
+      rows.push(['Holding', this.liveFigure('holding', t), (t.wards || []).length, 'holding']);
+      rows.push(['Keeps', Math.round(SixRead.wardShare(t) * 100) + '% of what the tower was', 1]);
+      rows.push(['Each ward stands', (s.sepulchreDur || 16).toFixed(1) + 's, or until the wave turns']);
+      if (s.sepulchreGold) rows.push(['Grave goods', '◈' + s.sepulchreGold + ' per ward raised']);
+    } else if (t.def.attack === 'orison') {
+      rows.push(['Offering', this.liveFigure('offering', t), 1, 'offering']);
+      rows.push(['Lends damage', '+' + Math.round((s.offeringDmg || 0) * 100)
+                               + '% to every tower you own', 1]);
+      if (s.offeringRate) rows.push(['Lends rate', '+' + Math.round(s.offeringRate * 100) + '%', 1]);
+      const lives = SixRead.offeringLives(t);
+      rows.push(['Pays', lives + (lives === 1 ? ' life' : ' lives')
+                       + ' when the offering is killed', 1]);
+      if (s.offeringGold) rows.push(['Alms', '◈' + s.offeringGold + ' as well']);
+      if (s.offeringGuard) rows.push(['Sanctified',
+        'the offering takes ' + Math.round(s.offeringGuard * 100) + '% less, so it lasts']);
+      rows.push(['Names', 'one creature a wave, ' + ORISON_NAMING_DELAY.toFixed(0)
+                        + 's after it starts arriving']);
+      rows.push(['Lapses', 'if it leaks, is charmed or is swallowed — nothing is owed']);
+    } else if (t.def.attack === 'maw') {
+      rows.push(['Opens in', this.liveFigure('mawNext', t), 1, 'mawNext']);
+      rows.push(['Then every', (s.mawCd || 18).toFixed(1) + 's']);
+      rows.push(['Digesting', this.liveFigure('digest', t), (t.digestLeft || 0) > 0, 'digest']);
+      rows.push(['A meal pays', '×' + SixRead.mawYield(t).toFixed(2) + ' of the bounty', 1]);
+      rows.push(['Swallows', s.mawBoss ? 'anything walking, a boss included'
+                                       : 'anything but a boss', s.mawBoss ? 1 : 0]);
+      rows.push(['Removed, not killed', 'no bounty, no corpse, one fewer on the wave']);
+    } else if (t.def.attack === 'veil') {
+      rows.push(['Debt in reach', this.liveFigure('debt', t), 1, 'debt']);
+      rows.push(['Bills', (s.veilHealTax || 0).toFixed(2) + ' damage per point ever healed', 1]);
+      rows.push(['Calls in', Math.round(VEIL_COLLECT_RATE * 100) + '% of a body\'s ledger per second']);
+      rows.push(['Ledger cap', VEIL_DEBT_CAP + '× a body\'s own health']);
+      if (s.veilSlow) rows.push(['Drags', Math.round(s.veilSlow * t.effStatus * 100)
+                                        + '% inside the field']);
+      if (s.veilVuln) rows.push(['In arrears', '+' + Math.round(s.veilVuln * 100)
+                                             + '% damage while it still owes']);
+      if (s.veilTithe) rows.push(['Collections', '◈' + s.veilTithe + ' per ' + VEIL_TITHE_PER
+                                               + ' — ' + this.liveFigure('tithe', t), 1, 'tithe']);
     } else {
       rows.push(['DPS', formatNum(t.estimateDps()), 1]);
       if (s.damage) rows.push([['cone', 'beam'].includes(t.def.attack) ? 'Damage/s' : 'Damage', formatNum(t.effDamage), t.aura.dmg > 0 || t.focusDmgAmt > 0]);
       if (s.droneDamage) rows.push(['Drones', formatNum(t.effDamageFor(s.droneDamage)) + ' ×' + s.drones, 1]);
       if (s.rate && !['cone', 'beam'].includes(t.def.attack)) rows.push(['Rate', t.effRate.toFixed(2) + '/s', t.aura.rate > 0 || t.focusRateAmt > 0]);
     }
-    rows.push(['Range', t.effRange.toFixed(2), t.aura.range > 0 || t.focusRangeAmt > 0]);
+    /* ANTIPHON and GESTALT are GUNS. They keep the DPS/Damage/Rate block
+       above and take their own rows on top of it -- a second copy of that
+       block inside a branch of their own is exactly how two figures for one
+       thing start to drift. */
+    if (t.def.attack === 'antiphon') {
+      rows.push(['Answers banked', this.liveFigure('answers', t), 1, 'answers']);
+      rows.push(['Per body lost', (s.antiphonPerLoss || 1)
+                                + ' — your PAID dead, on rival ground only', 1]);
+      rows.push(['Each answer', SixRead.volley(t) + ' shots']);
+    }
+    if (t.def.attack === 'gestalt') {
+      rows.push(['Bodies folded in', this.liveFigure('gestalt', t), 1, 'gestalt']);
+      /* Through effDamageFor, because the tick adds the stack to stats.damage
+         BEFORE the aura/ascension/commander chain -- which is precisely what
+         effDamageFor applies. */
+      rows.push(['Each body adds', formatNum(t.effDamageFor((s.gestaltPerKill || 0)
+                                   * (s.gestaltPerKillMul || 1)))
+                                 + ' damage, ' + (s.gestaltRange || 0).toFixed(3) + ' tiles', 1]);
+      rows.push(['Forgets the lot', this.liveFigure('forget', t),
+                 (t.gestaltStacks || 0) > 0, 'forget']);
+    }
+    /* ORISON's range is 99 on purpose -- it names one creature out of the
+       whole wave and never shoots. Printing "Range 99.00" beside a tower with
+       no gun reads as a bug in the number rather than as the rule it is. */
+    if (t.def.attack === 'orison') rows.push(['Reach', 'the whole board — it names, it does not shoot']);
+    else rows.push(['Range', t.effRange.toFixed(2), t.aura.range > 0 || t.focusRangeAmt > 0]);
     /* MORTAR bills its fire mission as a SEPARATE reach, not as range: the
        tube's own circle is what it can hit unaided, and the extra tiles only
        exist over ground another of your weapons is holding. Printing one
@@ -3110,7 +3618,8 @@ const UI = {
         <div class="tier-pips">${[1, 2, 3, 4].map(i => `<i class="${i <= Math.min(4, t.branch ? 4 : t.level) ? 'on' : ''}"></i>`).join('')}
           ${t.asc ? `<b class="asc-badge">+${t.asc}</b>` : ''}</div>
       </div>
-      ${t.jammed ? '<div class="warn-flag">⊘ JAMMED — offline</div>' : ''}
+      ${t.jammed ? `<div class="warn-flag">⊘ JAMMED — ${t.def.attack === 'null'
+        ? 'riders offline, the volume still suppresses' : 'offline'}</div>` : ''}
       ${!t.jammed && t.sabLingerT > 0 ? `<div class="warn-flag">⊘ SABOTAGED — ${Math.round(t.sabLingerAmt * 100)}% rate for ${Math.ceil(t.sabLingerT)}s</div>` : ''}
       ${t.node ? `<div class="node-flag" style="--nc:${ELEMENTS[t.node.el].color}">${
         ELEMENTS[t.node.el].icon} ${ELEMENTS[t.node.el].name} NODE — ${
@@ -3474,10 +3983,15 @@ const UI = {
 
     $$('[data-tower]').forEach(b => {
       const type = b.dataset.tower;
+      /* BOTH CURRENCIES, through the same two calls the radial and Game.build
+         already use. A card greyed on GOLD for a tower bought with LIVES is a
+         refusal the player cannot read, and canAffordBuild is THE test -- a
+         greyed option and a refused purchase can never disagree. */
+      const life = Game.towerLifeCost(0, type);
       const cost = Game.towerCost(0, type);
-      b.classList.toggle('poor', me.gold < cost);
+      b.classList.toggle('poor', !Game.canAffordBuild(0, type));
       const c = $(`[data-cost="${type}"]`, b);
-      if (c) c.textContent = '◈' + formatNum(cost);
+      if (c) c.textContent = life ? '♥' + life : '◈' + formatNum(cost);
     });
 
     /* Refresh the panel only when its content signature actually changed. */
@@ -4532,6 +5046,11 @@ const UI = {
     const towers = [...me.towers].sort((a, b) => b.damageDealt - a.damageDealt).slice(0, 6);
     const total = me.towers.reduce((s, t) => s + t.damageDealt, 0) || 1;
     const xp = Game.lastXp || { gained: 0, levelsGained: 0, level: 1 };
+    /* endMatch always writes this, on a defeat exactly as on a win. The
+       fallback exists for any caller that opens the end screen without
+       having gone through endMatch, and it deliberately routes nowhere:
+       an absent record is not a level-up. */
+    const lu = Game.lastLevelUp || { route: false, points: 0, level: xp.level, spendable: 0 };
     const p = Meta.progress(me.commander.id);
     const st = Game.lastStars;
     const stars = st ? st.stars : 0;
@@ -4569,6 +5088,15 @@ const UI = {
           <div class="rw-foot"><span id="rw-xpnum">+0 XP</span>
             <span id="rw-lvlup" class="rw-lvlup"></span></div>
         </div>
+
+        ${lu.route ? `
+          <div class="rw-levelup" id="rw-spend" style="--cc:${me.commander.color}">
+            <b>${lu.points} POINT${lu.points === 1 ? '' : 'S'} TO SPEND</b>
+            <span>${me.commander.name} ${lu.levels === 1
+              ? `reached level ${lu.level}`
+              : `gained ${lu.levels} levels, to ${lu.level}`}. ${lu.spendable === 1
+              ? 'One talent' : lu.spendable + ' talents'} can be taken now — continue opens the technology chart.</span>
+          </div>` : ''}
 
         <div class="rw-track" id="rw-souls">
           <div class="rw-head"><span>◉ SOULS</span>
@@ -4622,14 +5150,25 @@ const UI = {
        the one condition, in one place, so they cannot drift apart. */
     this.endRetryLabel();
     this.el.endOverlay.classList.remove('hidden');
-    this.playRewardTimeline({ stars, xp, p, soulsEarned, soulsTotal: Meta.souls() });
+    this.playRewardTimeline({ stars, xp, p, soulsEarned, soulsTotal: Meta.souls(), spend: lu.route });
   },
 
   /** Name the continue button after wherever it is actually about to go. */
   endRetryLabel() {
     const b = $('#btn-end-retry');
-    if (b) b.textContent = Game._skirmish ? 'TO THE MULTIVERSE →'
-                                          : 'TO THE GALAXY →';
+    if (!b) return;
+    /* Label and destination come off the ONE condition, together, for the
+       same reason the skirmish label does: a button reading TO THE GALAXY
+       that opens the technology chart is the drift this method exists to
+       prevent. So the name is honest from the first frame and the reward
+       timeline only reveals the EXPLANATION beneath it a beat later -- the
+       timeline never gets a vote on where the button goes, which is what
+       keeps an impatient click truthful. */
+    const lu = Game.lastLevelUp;
+    b.textContent = (lu && lu.route)
+      ? 'SPEND ' + lu.points + ' POINT' + (lu.points === 1 ? '' : 'S') + ' →'
+      : Game._skirmish ? 'TO THE MULTIVERSE →'
+                       : 'TO THE GALAXY →';
   },
 
   /** Staged reward reveal. Every step is a timeout so the whole thing is skippable. */
@@ -4682,6 +5221,14 @@ const UI = {
       if (m) m.classList.add('show');
     });
 
+    /* The level-up lands last, after the bar that earned it has filled. */
+    const revealSpend = () => {
+      if (!d.spend) return;
+      const s = q('#rw-spend');
+      if (s) s.classList.add('show');
+    };
+    at(soulStart + RW_SPEND_DELAY_MS, revealSpend);
+
     const skipAll = () => {
       this._rwTimers.forEach(clearTimeout); this._rwTimers = [];
       for (let i = 1; i <= d.stars; i++) { const el = q(`.rw-star[data-i="${i}"]`); if (el) el.classList.add('on'); }
@@ -4693,6 +5240,7 @@ const UI = {
       const sn = q('#rw-soulnum'); if (sn) sn.textContent = formatNum(d.soulsTotal);
       const sd = q('#rw-souldelta'); if (sd && d.soulsEarned) sd.textContent = '+' + d.soulsEarned + ' banked';
       const m = q('#rw-mastery'); if (m) m.classList.add('show');
+      revealSpend();
       const sk = q('#rw-skip'); if (sk) sk.remove();
     };
     const wrap = this.el.endBody.querySelector('.rw');

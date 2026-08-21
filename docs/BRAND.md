@@ -171,3 +171,82 @@ greyscale machine is *allowed*. Collapsing them is how this got confused before.
 Keys are unchanged (`foe_<id>`), so no game-side art lookup had to move —
 `prefix_for()` consults the troop roster instead, which is the only thing that
 can tell a soldier from a specimen.
+
+
+---
+
+## Amendment (Session 20.4, owner): the commander class is duotone or monochrome
+
+The owner's note:
+
+> I noticed a lot of profile pictures look medieval armory/fantasy. It should be
+> a Vaporwave Duotone or monochrome (depending on faction associations)
+> Cyberpunk comic look inspired by Tyranny.
+
+**Neon Reliquary is not replaced.** The commander row of the treatment table
+above said *"Full vaporwave palette, painted bust, faction armour language —
+THE APPROVED LOOK"*. That row is what changes, and only that row. The world
+plates, key art and nebula keep the full three-hue vaporwave palette; the
+crests keep strict monochrome; the dossiers keep greyscale-plus-one-accent;
+the troops keep their power's paint. See [`LOOKBOOK.md`](LOOKBOOK.md) for the
+full anatomy, the palettes as hex, and the acceptance test.
+
+### What changed, and why it was mechanical rather than a matter of taste
+
+Measured with SDXL-Turbo's own CLIP tokenizer, on the prompt as composed
+(`sdxl_all.prefix_for` + `krea_jobs.build_jobs`):
+
+| Measurement | Before | After |
+|---|---:|---:|
+| Prompt length (tokens) | 164–185 | 123–138 |
+| Tokens discarded per prompt | 98–99 | 48–63 |
+| `{STYLE}` / `cyberpunk science fiction` opens at | 92–113 | *(tail only)* |
+| Faction material clause closes at | 74–95 (**cut on 20 of 21**) | 47–62 |
+| Whole direction closes by | never | **71** |
+| Medieval-coded nouns inside the window | 39 | 9, each bound to a sci-fi qualifier |
+
+Three of those rows are the whole diagnosis:
+
+1. **The style spine was never encoded on a single commander.** `{STYLE}` — the
+   clause holding *cyberpunk science fiction* and *vaporwave neon palette* —
+   opened at token 92 at best. The window closes at 77. Twenty-one for
+   twenty-one, the model was never told the setting.
+2. **`FACTION_LOOK` was cut mid-clause on 20 of 21.** Rake lost
+   *"…cybernetics, jagged trophies, brutal improvised tech"*; Halder lost
+   *"…circuitry halos, serene ceremonial bearing, glowing seams"*. The generic
+   half survived and the sci-fi half did not.
+3. **The negative prompt is inert on BOTH paths.** `guidance_scale=0` on SDXL
+   makes it a no-op, and `krea_gen.py` imports `NEG` and never passes it to the
+   pipeline. `NEG` lists *medieval, fantasy armour, sword, castle*. None of it
+   has ever had any effect. **You cannot subtract; you can only lead.**
+
+So thirty-nine medieval nouns — *shield, breastplate, cutlass, robes, crown,
+enthroned, halo, trophy, bones, plate* — sat inside the window at full strength
+with no counterweight of any kind. Nine survive the rewrite, and every one of
+them is bound to a science-fiction qualifier in its own clause (*six **wings**
+of projected hard light*, *interlocking light **plates***, *salvage **plating***). The `foe` class prefix already ends with
+`never medieval,` inside its window and stopped regressing to knights. The
+commander class carried that phrase nowhere.
+
+### The commander palettes
+
+Duotone where the power is a *technology*; monochrome where the power is an
+*absolute* and a second hue would dilute it.
+
+| Faction | Treatment | Prompt phrase | Ground | Shadow | Light | Spark |
+|---|---|---|---|---|---|---|
+| Humanity | **Duotone** | `Duotone neon cyan and hot magenta` | `#0a0e17` | `#164e63` | `#38e8ff` | `#ff2fd6` |
+| Federation of Light | **Monochrome** | `Monochrome radiant gold` | `#0a0e17` | `#78350f` | `#fbbf24` | `#fff7e0` |
+| The Xeno | **Duotone** | `Duotone glowing purple bioluminescence and hot magenta` | `#0a0e17` | `#3b0764` | `#a855f7` | `#ff2fd6` |
+| The Pirates | **Monochrome** | `Monochrome bright red` | `#0a0e17` | `#7f1d1d` | `#ef4444` | `#ff6b6b` |
+| Unaligned (`cadre`) | **Greyscale** | `No colour at all, pure blacks whites and chrome greys` | `#0a0e17` | `#1e293b` | `#94a3b8` | `#e2e8f0` |
+
+The prompt phrases are not free choices — they are the words the Session 18
+dossier sweep measured as *live*. `radiant gold` landed 18/18 and `bright red`
+took crimson from 2/6 to 6/6, while `xeno violet` and `raider crimson` were dead
+tokens, and purple only survives an organic subject when named as emitted light,
+which is why the xeno line pays two tokens for `bioluminescence`.
+
+**Hue still cannot be pinned by prompting.** The hexes above are the target and
+the reference for any authored or derived asset. If an exact hue is ever
+required on a portrait, force it in code the way `derive_crests.py` does.

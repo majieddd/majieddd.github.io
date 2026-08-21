@@ -1625,6 +1625,14 @@ const Game = {
        as a win. BATCH-C/nside */
     this.lastXp = Meta.addXp(this.sides[0].commander.id,
       Meta.xpForRun(this, won) * (boons.xpMul || 1));
+    /* 20.5 -- levels were paid here and then forgotten. Nothing routed the
+       player to the chart, so points piled up unspent and unnoticed. The
+       end screen reads this to decide where its continue button leads. It
+       is computed HERE, on the line after the award, so the number the
+       button prints is the number the tree will honour -- and it is paid on
+       a DEFEAT exactly as the XP above is, because the XP above is. */
+    this.lastLevelUp = Meta.levelUpAward(this.sides[0].commander.id,
+                                         this.lastXp.levelsGained);
     /* Tower mastery: every deployed tower learns from the battle. */
     this.lastMastery = [];
     for (const type of this.sides[0].loadout) {

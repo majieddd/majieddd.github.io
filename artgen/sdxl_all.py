@@ -49,15 +49,21 @@ FACTION_COLOUR = { 'human': 'neon cyan', 'light': 'radiant gold',
 # study on flat black, which is right for a neutral machine dossier and wrong
 # for somebody's soldiers. The owner's note: the army units "don't quite match
 # the same artstyle aesthetic as the profile pictures for the commanders".
-# They were correct, and this is why: commanders fall through to SDXL_PREFIX
+# They were correct, and this is why: commanders fell through to SDXL_PREFIX
 # (painted, coloured, brushwork) while troops were rendered as lab exhibits.
+# (Session 20.4: commanders now carry their own per-faction duotone and take an
+# explicitly EMPTY prefix; troops keep the painted treatment described here.)
 #
 # Troops now get the commanders' PAINTED treatment, kept at full body so they
 # still read as a model on a card rather than a portrait bust -- which is the
 # rest of the note: "keep their model style, similar to the towers".
-TROOP_PREFIX = ('painted cutscene illustration, bold flat brushwork, cinematic '
-                'key light, gothic engraved linework, a single soldier of the far '
-                'future standing alone on flat black, ')
+# EMPTY, for the same reason the commander prefix is. A class prefix cannot
+# see WHICH faction it is prefixing, so any palette or register it names is
+# wrong for three of the four powers -- and this one spent 32 of the 77 CLIP
+# slots saying a painterly register that the per-faction duotone then had to
+# argue with. The register now lives in krea_jobs.COMMANDER_REGISTER, where it
+# is composed per troop alongside that power's own two inks.
+TROOP_PREFIX = ''
 
 PREFIX_BY_CLASS = {
     # Tower plates are ARCHITECTURE, and each belongs to a power whose palette
@@ -84,6 +90,19 @@ PREFIX_BY_CLASS = {
               'medieval, ',
     'planet': 'engraved gothic line-art planet portrait on pure black, restrained vaporwave '
               'accents, painted cutscene style, science fiction, ',
+
+    # DELIBERATELY EMPTY (Session 20.4). Commanders used to fall through to
+    # SDXL_PREFIX, whose 'neon magenta cyan violet palette' names three hues to
+    # every faction at once -- the exact opposite of the owner's duotone brief,
+    # and 32 tokens of a 77-token window spent saying it. The commander prompt
+    # in krea_jobs.build_jobs() now leads with its own per-faction duotone and
+    # the comic register, so a prefix here could only push that off the cliff.
+    #
+    # Empty also means the SDXL and Krea paths are handed the SAME string, which
+    # is the whole point of a single catalogue -- key-for-key comparison between
+    # the two models is meaningless when one of them is silently given 32 extra
+    # tokens the other never sees.
+    'cmd':    '',
 }
 
 def prefix_for(key):

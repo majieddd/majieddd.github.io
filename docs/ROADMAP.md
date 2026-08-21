@@ -1125,21 +1125,21 @@ seven parallel teams, per the owner's preference for maximum concurrency.
 
 | # | Note | Status |
 |---|---|---|
-| 20.1 | **Dotted travel lines** between near worlds, so the route to your next world reads at a glance — and **multiple paths** between worlds, so the next mission is a genuine choice rather than a queue. | ⏳ |
-| 20.3 | **A claimed world takes your faction's colour.** Conquest should be visible on the map, not only in a stars count. | ⏳ |
+| 20.1 | **Dotted travel lines** between near worlds, so the route to your next world reads at a glance — and **multiple paths** between worlds, so the next mission is a genuine choice rather than a queue. | ✅ **56 routes** rendering, classed `taken` / `live` / `sealed` / `local` / `gate`, with a key |
+| 20.3 | **A claimed world takes your faction's colour.** Conquest should be visible on the map, not only in a stars count. | ✅ `worldAllegiance()` is the one source; four redundant channels (hue / fill / shape / ring) so it survives colour-blindness and the far zoom. States: held, taking, yours, contested, locked |
 
 ## B. Legibility
 
 | # | Note | Status |
 |---|---|---|
-| 20.2 | **Every map preview shows the actual map** — its lanes and shape, not just a painted plate. | ⏳ |
-| 20.5 | **A level-up routes you to the commander screen** so the points can be spent when they are earned, rather than discovered later. | ⏳ |
+| 20.2 | **Every map preview shows the actual map** — its lanes and shape, not just a painted plate. | ✅ derived from the same data the board is built from, so it cannot drift |
+| 20.5 | **A level-up routes you to the commander screen** so the points can be spent when they are earned, rather than discovered later. | ✅ routes only when there are points to spend; skirmish and defeat cases handled |
 
 ## C. Art direction — the style, properly nailed
 
 | # | Note | Status |
 |---|---|---|
-| 20.4 | Portraits still read **medieval / fantasy armoury**. They must be **vaporwave duotone or monochrome** (by faction) in a **cyberpunk comic** register drawn from Tyranny. Build a **LOOKBOOK** of reference assets — both to nail the style and as a durable internal record. | ⏳ 🎨 |
+| 20.4 | Portraits still read **medieval / fantasy armoury**. They must be **vaporwave duotone or monochrome** (by faction) in a **cyberpunk comic** register drawn from Tyranny. Build a **LOOKBOOK** of reference assets. | ✅ cause was mechanical: prompts ran **164-185 tokens against a 77-token window**, so `{STYLE}` opened at token 92-113 and **"cyberpunk science fiction" was never encoded for any of the 21**; the negative prompt naming "medieval, fantasy armour, sword" has **never had any effect on either path**. Rewritten to close at 56-71. **Troops brought onto the same register** and 7 armoury nouns removed from their subjects. Rendered and measured: **mean 1.5 hue families** across commanders and troops — duotone/monochrome achieved. [`docs/LOOKBOOK.md`](LOOKBOOK.md) |
 
 ## D. Multiplayer
 

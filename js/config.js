@@ -502,6 +502,66 @@ const TRI_CORE_RADIUS = 3.2;
 const LANE_TINTS = ['#38e8ff', '#ff6b9d', '#ffd166'];
 const LANE_FLOW_TINTS = ['rgba(56,232,255,0.26)', 'rgba(255,107,157,0.26)', 'rgba(255,209,102,0.26)'];
 
+/* ── MAP PREVIEW ──────────────────────────────────────────────────────────
+   The battlefield minimap that heads a world briefing and its tooltip. Every
+   number below is in TILES, never in pixels: the preview's viewBox IS the
+   board's grid, so one set of widths reads the same on a 22-wide duel, a
+   35-wide three-way board and the 47-wide twenty-seat arena. Fixing them in
+   pixels is what would need three sets and let two of them rot. */
+
+/* Board tiles of margin round the play area. A duel base sits at x = -1 --
+   one tile OFF the grid, exactly where buildField puts it -- so a viewBox
+   clipped to the grid would drop both base markers off the card and the
+   preview would be missing the thing it is most asked about. */
+const MAP_PV_PAD = 1.5;
+
+/* Lane width and its casing, as a fraction of a tile. The engine paints its
+   roads TILE-2 wide inside a TILE+5 casing (Game.paintBackground); the
+   preview keeps that ratio so a choke point looks as tight on the card as it
+   does on the board. The casing is also what stops twenty arena lanes
+   meeting at one hub from fusing into a single blob. */
+const MAP_PV_LANE_W = 0.86;
+const MAP_PV_LANE_CASE_W = 1.2;
+
+/* Base ring and the wave gate. Guards against a marker so small it reads as
+   a node, and one so large it hides the lane bend beneath it. */
+const MAP_PV_BASE_R = 0.85;
+const MAP_PV_SPAWN_R = 0.9;
+
+/* Element node discs. A lane node is smaller and solid, a build node wider
+   and hollow -- the same read the board itself gives them. */
+const MAP_PV_NODE_R = 0.55;
+const MAP_PV_NODE_LANE_R = 0.4;
+
+/* Above this many seats the preview stops tinting ground per seat and paints
+   one buildable ground instead. Guards against: twenty translucent wedges at
+   roughly three pixels a tile, which is not twenty territories but one field
+   of noise. The seat colours still carry on the lanes and the base rings,
+   where the ring's shape is what has to read. */
+const MAP_PV_TINT_MAX_SEATS = 6;
+
+/* Boards at least this tall relative to their width get the taller preview
+   box. Guards against the arena -- 47x47 -- being letterboxed into a wide
+   card until every lane is two pixels apart. */
+const MAP_PV_TALL_ASPECT = 0.72;
+
+/** One seat's colour in a map preview.
+ *
+ *  Seats 0-2 take the board's own LANE_TINTS. Past that, Game.start deals
+ *  `FACTION_ORDER[i % FACTION_ORDER.length]` round the ring, and the arena
+ *  board paints those seats with their faction colour (Game.seatTint) -- so
+ *  the preview deals the same colours in the same order. A card that showed a
+ *  ring the battle will not is the desync this whole feature exists to avoid.
+ */
+function previewSeatTint(i) {
+  if (i < LANE_TINTS.length) return LANE_TINTS[i];
+  /* FACTIONS and FACTION_ORDER live in factions.js, which loads AFTER this
+     file; they are only ever read at call time, never at module evaluation. */
+  const f = (typeof FACTIONS !== 'undefined' && typeof FACTION_ORDER !== 'undefined')
+    ? FACTIONS[FACTION_ORDER[i % FACTION_ORDER.length]] : null;
+  return (f && f.color) || LANE_TINTS[LANE_TINTS.length - 1];
+}
+
 function buildTriField(map) {
   const L = map.triLanes;                       // one authored lane per commander
   const bases = L.map(l => l[l.length - 1]);
@@ -1123,6 +1183,15 @@ const MAXHP_DOT_ELITE_MUL = 0.30;  /* ...against a boss or a miniboss           
    rival -- which drafts it in the human line -- would never build it. */
 const MAXHP_DOT_REF_HP = 230;
 
+/* The same trick for the OTHER venom. TOXIN charges a share of CURRENT
+   health, which estimateDps did not price at all -- the rival read a
+   PANDEMIC Toxin as its flat 8.5 poisonDps and drafted it as a 20-damage
+   tower. Lower than MAXHP_DOT_REF_HP for the same median body on purpose:
+   `hp` is falling for the whole time the venom is on the target, so pricing
+   a current-health effect against a full bar would over-rate the tower by
+   exactly the margin its own description disclaims. */
+const POISON_PCT_REF_HP = 140;
+
 /** THE share of a target's MAX health one second of gas removes, ceiling and
     elite reduction included. The engine tick, the inspector row and the DPS
     estimate all read this one function, so the figure the panel prints and the
@@ -1398,7 +1467,7 @@ const TOWER_TYPES = {
       { id:'t_snap',  row:1, col:0, name:'COLD SNAP',   desc:'10% chance to freeze solid.',         mods:{ freezeChance:0.10, freezeDur:0.7 } },
       { id:'t_brittle',row:1,col:1, name:'FROSTBITE',   desc:'Chilled targets take +25% damage.',   mods:{ chillVuln:0.25 } },
       { id:'t_glacial', row:2, col:0, name:'GLACIAL CORE', desc:'+30% damage and +20% slow.', mods:{ damageMul:1.30, statusMul:1.20 } },
-      { id:'t_permafrost', row:2, col:1, name:'PERMAFROST', desc:'Slow duration +80%.', mods:{ slowDur:1.6 } }
+      { id:'t_permafrost', row:2, col:1, name:'LINGERING FROST', desc:'Slow duration +80%.', mods:{ slowDur:1.6 } }
     ],
     branches: [
       { id: 'glacier', name: 'GLACIER', cost: 275, mods: { damage: 26, slow: 0.68, slowDur: 2.8, splash: 1.6, freezeChance: 0.22, freezeDur: 0.9 },
@@ -1444,7 +1513,7 @@ const TOWER_TYPES = {
     ],
     talents: [
       { id:'t_super', row:0, col:0, name:'SUPERCONDUCTOR', desc:'The current loses only 10% per tile.', mods:{ runFalloff:0.90 } },
-      { id:'t_cap',   row:0, col:1, name:'CAPACITOR',      desc:'+40% damage.',                   mods:{ damageMul:1.40 } },
+      { id:'t_cap',   row:0, col:1, name:'HIGH TENSION',   desc:'+40% damage.',                   mods:{ damageMul:1.40 } },
       { id:'t_fork',  row:1, col:0, name:'EARTH SPIKES',   desc:'The current runs 2 tiles further.', mods:{ runTiles:2.0 } },
       { id:'t_ion',   row:1, col:1, name:'GROUNDING RODS', desc:'The current strips 4 armour.',   mods:{ shred:4 } },
       { id:'t_overvolt', row:2, col:0, name:'OVERVOLT', desc:'+35% damage, −10% fire rate.', mods:{ damageMul:1.35, rateMul:0.90 } },
@@ -1519,7 +1588,7 @@ const TOWER_TYPES = {
       { cost: 200, name: 'PANDEMIC', mods: { damage: 18, poisonDps: 8.5, poisonPct: 0.012, maxStacks: 4, range: 3.6 } }
     ],
     talents: [
-      { id:'t_conc',  row:0, col:0, name:'CONCENTRATE', desc:'+50% venom damage per stack.',  mods:{ statusMul:1.50 } },
+      { id:'t_conc',  row:0, col:0, name:'DISTILLATE',  desc:'+50% venom damage per stack.',  mods:{ statusMul:1.50 } },
       { id:'t_aero',  row:0, col:1, name:'AEROSOL',     desc:'+45% splash.',                  mods:{ splashMul:1.45 } },
       { id:'t_stacks',row:1, col:0, name:'DEEP STACKS', desc:'+2 maximum venom stacks.',      mods:{ maxStacks:2 } },
       { id:'t_necro', row:1, col:1, name:'NECROSIS',    desc:'Venom strips 2 armour per stack.', mods:{ shredPerStack:2 } },
@@ -1692,14 +1761,14 @@ const TOWER_TYPES = {
     base: { damage: 23, range: 4.2, rate: 1.1, projSpeed: 17, dmgType: 'physical', splash: 1.4, downFor: 0.6 },
     levels: [
       { cost: 115, name: 'AUTOCANNON', mods: { damage: 78, rate: 1.2, downFor: 0.85 } },
-      { cost: 205, name: 'BATTERY',    mods: { damage: 128, range: 4.6, splash: 1.6, downFor: 1.1 } }
+      { cost: 205, name: 'SKY BATTERY', mods: { damage: 128, range: 4.6, splash: 1.6, downFor: 1.1 } }
     ],
     talents: [
       { id:'t_prox', row:0, col:0, name:'PROXIMITY FUSE',desc:'+45% splash radius.',  mods:{ splashMul:1.45 } },
       { id:'t_velo', row:0, col:1, name:'HIGH VELOCITY', desc:'+45% damage.',         mods:{ damageMul:1.45 } },
       { id:'t_radar',row:1, col:0, name:'RADAR LINK',    desc:'+40% range.',          mods:{ rangeMul:1.40 } },
       { id:'t_curt', row:1, col:1, name:'FLAK CURTAIN',  desc:'Slows flyers 45%, and holds them down 0.4s longer.', mods:{ slow:0.45, slowDur:1.6, downFor:0.4 } },
-      { id:'t_saturation', row:2, col:0, name:'SATURATION', desc:'+35% damage and +25% splash.', mods:{ damageMul:1.35, splashMul:1.25 } },
+      { id:'t_saturation', row:2, col:0, name:'CURTAIN FIRE', desc:'+35% damage and +25% splash.', mods:{ damageMul:1.35, splashMul:1.25 } },
       { id:'t_interceptor', row:2, col:1, name:'INTERCEPTORS', desc:'+60% fire rate.', mods:{ rateMul:1.60 } }
     ],
     branches: [
@@ -3314,6 +3383,22 @@ const AI_BASELEVEL_WEIGHT = 1.0;
 const AI_BASELEVEL_LIVES_WEIGHT = 55;
 const AI_BASELEVEL_LOOKAHEAD = 4;   /* reach the level-4 specialisation rung */
 
+/* RE-MEASURED, Session 20, after the income buff and with the twenty faction
+   units landed: HELD AT 5.
+
+   The Session-15 failure mode is sends bought in waves 4-6 instead of depth,
+   so that band is what was counted -- eight seeded maxed runs per horizon,
+   mirror-AI, loadout pinned to the five cores, galaxy tier 0. The rival's
+   sends inside the band do not move with this constant:
+
+       horizon   4     5     6     8
+       sends    41    41    40    47      (waves 4-6, 8 runs each)
+
+   because the MUSTER_AI_MIN_WAVE / MIN_TOWERS / SAFE_LIVES gate above is
+   consulted BEFORE the horizon is, and it is what actually holds the early
+   game. There is therefore no over-buying to correct and nothing measurable
+   to gain by moving it -- and moving it is what took the maxed pin 27 -> 23.
+   Re-measure both pins if you touch it. */
 const MUSTER_AI_HORIZON_WAVES = 5;     /* waves the income is expected to pay */
 const MUSTER_AI_INCOME_WEIGHT = 0.275; /* per gold of horizon income          */
 const MUSTER_AI_PRESSURE = 0.028;      /* per point of health put in a lane   */
@@ -3527,17 +3612,6 @@ const GX_SYS_META_DY = 35;
    chain read as a straight line through the middle of everything. */
 const GX_LINK_LIFT = 26;
 
-/* THE TRAVEL-RANGE RING drawn around the world you are standing on. Its radius
-   is DERIVED from the worlds you can actually open, so it describes the
-   existing unlock rule instead of inventing a second one that could disagree
-   with it. PAD is the air between the furthest reachable world and the ring.
-   MIN is an absolute floor: on a fresh campaign the only world you can open is
-   the one you are standing on, and a ring drawn at that radius is a dot. The
-   floor actually used is the larger of this and GX_RING_OUTER + PAD, so the
-   ring always clears the system it is standing in. */
-const GX_RANGE_PAD = 9;
-const GX_RANGE_MIN = 34;
-
 /* Stars behind the map, held at the DENSITY the old map put ON SCREEN rather
    than at its COUNT: a five-times-bigger world at the same count reads as
    emptier space rather than as more of it, which is the exact failure this
@@ -3577,3 +3651,40 @@ const GX_ZOOM_FAR = 0.72, GX_LABEL_MAX = 2.2;
 const GX_FLY_MS = 560;
 const GX_KEY_PAN = 0.18;
 const GX_GLIDE_DECAY = 0.0022;
+
+/* THE ROUTE GRAPH -- which worlds a dotted line joins, and therefore which
+   world opens next. `buildRoutes()` in js/galaxy.js is the only writer and
+   `isWorldOpen()` the only reader, so the line drawn on the map and the rule
+   the click is judged against cannot disagree. Seven desyncs have shipped on
+   this project from a second definition of a number; there is one here.
+
+   NEAR_K is what makes the map a CHOICE rather than a queue. Every world
+   links to its K nearest neighbours, so every world has at least K ways out
+   before any other world's links are counted -- that lower bound is the whole
+   guarantee, and it is why K is not merely decorative. At 1 the graph
+   degenerates to the spanning tree underneath it: one road in, one road out,
+   which is the single-file queue this replaces. Past 3 a seven-world system is
+   nearly complete and a route stops carrying information.
+
+   GATEWAYS is the same guarantee across a tier boundary: this many links join
+   a system to the next one out, and the far end of each is a DOOR, so which
+   corner of a newly opened system you land in is a decision. At 1 every
+   campaign enters every system at the same world.
+
+   MAX_TIER_SPAN is the tier law, and it is a guard rather than a taste: a
+   system may only ever be joined to its immediate neighbour, so there is no
+   edge anywhere in the galaxy that could carry a fleet past a system it has
+   not taken. Raising it to 2 would let a route skip a whole tier and
+   trivialise the campaign -- which is the thing this number exists to make
+   impossible. */
+const GX_ROUTE_NEAR_K = 2;
+const GX_ROUTE_GATEWAYS = 2;
+const GX_ROUTE_MAX_TIER_SPAN = 1;
+/* How far a route arc bows off its own straight chord, as a fraction of its
+   length. A quadratic control point is pulled twice as far as the curve
+   actually travels, so the drawn bow is HALF this -- the number that looks
+   like a tenth is a tenth. Straight chords between seven worlds on three
+   orbits cross into a star burst; bowing each arc away from its system centre
+   reads as a transfer orbit instead, and keeps two routes through the same
+   neighbourhood from being drawn on top of one another. */
+const GX_ROUTE_BOW = 0.22;

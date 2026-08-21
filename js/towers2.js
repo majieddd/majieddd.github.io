@@ -166,7 +166,7 @@ const TOWER_TYPES_2 = {
     talents:[
       { id:'ch_deep', row:0, col:0, name:'DEEP REWIND', desc:'+30% rewind distance.',           mods:{ rewindSecMul:1.30 } },
       { id:'ch_fast', row:0, col:1, name:'FAST CYCLE',  desc:'Pulses 30% more often.',          mods:{ rateMul:1.30 } },
-      { id:'ch_wide', row:1, col:0, name:'WIDE FIELD',  desc:'+30% radius.',                    mods:{ rangeMul:1.30 } },
+      { id:'ch_wide', row:1, col:0, name:'DILATION FIELD', desc:'+30% radius.',                 mods:{ rangeMul:1.30 } },
       { id:'ch_wear', row:1, col:1, name:'TIME WEAR',   desc:'Rewound enemies take +15% damage for 3s.', mods:{ rewindVuln:0.15 } },
       { id:'ch_still',row:2, col:0, name:'STILLFRAME',  desc:'Rewound enemies are held 0.4s.',  mods:{ rewindHold:0.4 } },
       { id:'ch_echo', row:2, col:1, name:'DOUBLE EXPOSURE', desc:'20% chance to rewind twice.', mods:{ rewindTwice:0.20 } } ],
@@ -232,7 +232,7 @@ const TOWER_TYPES_2 = {
       { id:'si_far',  row:1, col:0, name:'CARRYING CRY',desc:'+35% range.',                mods:{ rangeMul:1.35 } },
       { id:'si_iron', row:1, col:1, name:'IRON WILL',  desc:'Converts arrive with +40% health.', mods:{ charmHpBonus:0.40 } },
       { id:'si_deep', row:2, col:0, name:'DEEP TRANCE',desc:'Capacity +80%.',              mods:{ charmMaxHpMul:1.80 } },
-      { id:'si_gold', row:2, col:1, name:'TRIBUTE',    desc:'Each convert pays 25 gold.',  mods:{ charmGold:25 } } ],
+      { id:'si_gold', row:2, col:1, name:'SPOILS',     desc:'Each convert pays 25 gold.',  mods:{ charmGold:25 } } ],
     branches:[
       { id:'choir',    name:'CHOIR',    cost:560, mods:{ charmEvery:8.5, charmMaxHp:1400 },
         surge:{ charmEveryMul:0.94 }, note:'A recruiting drive. Converts flow constantly.' },
@@ -356,7 +356,7 @@ const TOWER_TYPES_2 = {
       { id:'wd_wide',  row:0, col:0, name:'BROAD AEGIS', desc:'+30% field radius.',     mods:{ rangeMul:1.30 } },
       { id:'wd_sharp', row:0, col:1, name:'ZEAL',        desc:'+8% damage to warded towers.', mods:{ wardDmg:0.08 } },
       { id:'wd_swift', row:1, col:0, name:'BLESSED HANDS',desc:'Warded towers +10% rate.',mods:{ wardRate:0.10 } },
-      { id:'wd_calm',  row:1, col:1, name:'CLARITY',     desc:'Warded towers +8% range.', mods:{ wardRange:0.08 } },
+      { id:'wd_calm',  row:1, col:1, name:'FAR WATCH',   desc:'Warded towers +8% range.', mods:{ wardRange:0.08 } },
       { id:'wd_stand', row:2, col:0, name:'LAST LIGHT',  desc:'+12% damage to warded towers.', mods:{ wardDmg:0.12 } },
       { id:'wd_purge', row:2, col:1, name:'PURGE',       desc:'Enemy auras are 50% weaker inside the field.', mods:{ wardPurge:0.5 } } ],
     branches:[
@@ -392,7 +392,7 @@ const TOWER_TYPES_2 = {
     color:'#86efac', dark:'#14532d', attack:'patience', glyph:'➶',
     desc:'A siege bow that winds tighter the longer it holds its shot. Fired hastily it stings; fired after a long quiet, it obliterates. The mirror of every rapid-fire tower.',
     base:{ damage:15, range:5.0, rate:0.5, projSpeed:20, dmgType:'physical', windRate:0.35, windMax:6 },
-    levels:[ { cost:160, name:'WINDLASS', mods:{ damage:26, windMax:8 } },
+    levels:[ { cost:160, name:'CRANEQUIN', mods:{ damage:26, windMax:8 } },
              { cost:300, name:'SIEGEBOW', mods:{ damage:40, windRate:0.45, windMax:10, range:5.6 } } ],
     talents:[
       { id:'ab_spring',row:0, col:0, name:'STIFF SPRING',desc:'Winds 30% faster.',       mods:{ windRateMul:1.30 } },
@@ -489,7 +489,7 @@ const TOWER_TYPES_2 = {
     desc:'Fires nothing and buffs almost nothing on its own. What it does is LINK — every robotic emplacement inside its field counts the pylon as part of its lattice, which is the only thing robotic hardware has instead of a trick. A wide, shallow field that pays a little to everything standing near it: EARLY-GAME, and the exact opposite of a Beacon, which pays everything to one.',
     base:{ range:2.8, dmgType:'none', auraDmg:0.08, auraRate:0.06, auraRange:0.0, latticeBonus:1 },
     levels:[ { cost:160, name:'RELAY',   mods:{ auraDmg:0.13, auraRate:0.09, range:3.1, latticeBonus:2 } },
-             { cost:290, name:'BACKBONE',mods:{ auraDmg:0.18, auraRate:0.12, range:3.4, latticeBonus:2 } } ],
+             { cost:290, name:'MAINLINE',mods:{ auraDmg:0.18, auraRate:0.12, range:3.4, latticeBonus:2 } } ],
     talents:[
       { id:'py_span', row:0, col:0, name:'LONG SPAN',   desc:'+35% field radius.',            mods:{ rangeMul:1.35 } },
       { id:'py_gain', row:0, col:1, name:'LINE GAIN',   desc:'+45% damage field.',            mods:{ auraDmgMul:1.45 } },
@@ -572,7 +572,7 @@ const TOWER_TYPES_2 = {
     base:{ damage:52, range:4.2, rate:0.85, projSpeed:22, dmgType:'physical', splash:1.05,
            lifeCost:2, bloodRate:0.06 },
     levels:[ { cost:190, name:'EXSANGUINE',   mods:{ damage:98, splash:1.20 } },
-             { cost:340, name:'HAEMORRHAGE',  mods:{ damage:172, splash:1.40, range:4.6 } } ],
+             { cost:340, name:'OPEN VEIN',    mods:{ damage:172, splash:1.40, range:4.6 } } ],
     talents:[
       { id:'bp_ledger', row:0, col:0, name:'RED LEDGER',  desc:'+45% damage.',                          mods:{ damageMul:1.45 } },
       { id:'bp_art',    row:0, col:1, name:'ARTERIAL',    desc:'+45% splash.',                          mods:{ splashMul:1.45 } },
@@ -581,7 +581,7 @@ const TOWER_TYPES_2 = {
       { id:'bp_caut',   row:2, col:0, name:'CAUTERISE',   desc:'Hits burn for 18/s over 3s.',           mods:{ burn:18, burnDur:3 } },
       { id:'bp_debt',   row:2, col:1, name:'BLOOD DEBT',  desc:'Every 12 kills returns one life.',      mods:{ bloodTally:12 } } ],
     branches:[
-      { id:'tithe',        name:'TITHE',        cost:460, mods:{ damage:296, rate:1.0, splash:1.55 },
+      { id:'tithe',        name:'EXACTION',     cost:460, mods:{ damage:296, rate:1.0, splash:1.55 },
         surge:{ damageMul:1.06 }, note:'A larger bill was paid, so it is a larger gun.' },
       { id:'exsanguinate', name:'EXSANGUINATE', cost:460, mods:{ damage:158, rate:1.9, bloodRate:0.05, burn:30, burnDur:5 },
         surge:{ burn:6 }, note:'It keeps taking long after the shell has landed.' } ]
@@ -597,7 +597,7 @@ const TOWER_TYPES_2 = {
              { cost:330, name:'ASSEMBLER',  mods:{ damage:33, replicateEvery:3, replicateReach:5, replicateLevel:1 } } ],
     talents:[
       { id:'rp_cycle', row:0, col:0, name:'SHORT CYCLE',      desc:'One wave sooner between builds.',                 mods:{ replicateEvery:-1 } },
-      { id:'rp_arm',   row:0, col:1, name:'LONG ARM',         desc:'+2 tiles of placement reach.',                    mods:{ replicateReach:2 } },
+      { id:'rp_arm',   row:0, col:1, name:'OUTREACH',         desc:'+2 tiles of placement reach.',                    mods:{ replicateReach:2 } },
       { id:'rp_gun',   row:1, col:0, name:'SIDEARM',          desc:'+40% damage.',                                    mods:{ damageMul:1.40 } },
       { id:'rp_seed',  row:1, col:1, name:'SEED STOCK',       desc:'What it builds arrives one mark higher.',         mods:{ replicateLevel:1 } },
       { id:'rp_auth',  row:2, col:0, name:'DESIGN AUTHORITY', desc:'Builds the best thing it can account for rather than any.', mods:{ replicatePick:true } },
@@ -624,7 +624,7 @@ const TOWER_TYPES_2 = {
       { id:'nf_wide',  row:0, col:0, name:'WIDER NULL',  desc:'+30% field radius.',                              mods:{ nullRadiusMul:1.30 } },
       { id:'nf_deco',  row:0, col:1, name:'DECOHERENCE', desc:'Everything inside takes +18% damage.',            mods:{ nullVuln:0.18 } },
       { id:'nf_visc',  row:1, col:0, name:'VISCOUS',     desc:'Everything inside is slowed 25%.',                mods:{ nullSlow:0.25 } },
-      { id:'nf_eras',  row:1, col:1, name:'ERASURE',     desc:'Suppressed regeneration is dealt as damage instead.', mods:{ nullBackfire:1.0 } },
+      { id:'nf_eras',  row:1, col:1, name:'ANNULMENT',   desc:'Suppressed regeneration is dealt as damage instead.', mods:{ nullBackfire:1.0 } },
       { id:'nf_lock',  row:2, col:0, name:'HARD LOCK',   desc:'A unit that leaves stays suppressed 2s longer.',  mods:{ nullLinger:2 } },
       { id:'nf_array', row:2, col:1, name:'FIELD ARRAY', desc:'+20% radius and a further +10% damage taken.',    mods:{ nullRadiusMul:1.20, nullVuln:0.10 } } ],
     branches:[

@@ -369,6 +369,15 @@ const AI = {
 
     /* Venom is the shield answer and scales off max health. */
     if (stats.poisonPct) v *= (1 + prof.shieldShare * 1.1 + (prof.boss ? 0.5 : 0));
+    /* CANISTER stopped carrying poisonPct when its gas moved onto MAX health,
+       and fell out of the clause above entirely. Half of it is still owed:
+       the gas is dealt `pure` and is a share of health, so a shield does not
+       stop it any more than it stops TOXIN. The other half is now wrong --
+       MAXHP_DOT_ELITE_MUL cuts the gas to 30% against a boss or a miniboss,
+       so a boss BONUS here would promise the rival throughput the engine
+       takes straight back. `else if` because a tower carrying both would
+       otherwise be paid the shield term twice. */
+    else if (stats.poisonMaxPct) v *= (1 + prof.shieldShare * 1.1);
 
     /* Area damage scales with how crowded the lane is. */
     const area = (stats.splash || 0) + (stats.chains ? stats.chains * 0.25 : 0) + (stats.cone ? 1 : 0);
