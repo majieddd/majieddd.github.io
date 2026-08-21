@@ -18,6 +18,9 @@ whole game, art and audio in a single document you can email to someone. The
 original single-player version is kept at
 `docs/archive/v1-aegis-protocol-solo.html`.
 
+**What's next?** [`docs/BACKLOG.md`](docs/BACKLOG.md) is the standing list of
+everything unfinished, with the root cause already found for most of it.
+
 **Want to work on it?** Read [CONTRIBUTING.md](CONTRIBUTING.md) first. It carries
 the module map, the branch etiquette that keeps two people out of the same
 4,000-line file, and the traps that have each cost somebody a day.
