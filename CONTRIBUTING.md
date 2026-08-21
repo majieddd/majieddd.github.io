@@ -153,6 +153,20 @@ having eliminated the rival. Compare losses with losses.
 If you touched economy, AI, or anything in a talent tree, re-measure both pins
 and put the numbers in the PR description.
 
+**A third way to mis-measure the maxed pin:** unlocks are shelved per faction
+banner since 19.6, so writing the retired flat `v.unlocked` list leaves the
+"maxed" profile holding a single tower. `tools/balance-pins.js` already writes
+every shelf; if you fork it, keep that.
+
+**Anything animated must be verified in a FRONTED tab.** A backgrounded tab
+throttles `requestAnimationFrame` to *zero* frames — measured: 0 frames in
+400ms hidden, 59 visible. Every rAF-dependent assertion then fails, and it
+fails with entirely plausible messages ("0 frames in 400ms", "got 80 want 0")
+that read exactly like a real animation bug. That cost five spurious failures
+in the 19.8 hover-preview suite before the tab was fronted and all 77 passed.
+Check `document.hidden` first, and treat any all-animation failure cluster as a
+harness question until you have.
+
 ---
 
 ## 6. Art
