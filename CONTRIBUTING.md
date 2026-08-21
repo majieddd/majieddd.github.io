@@ -72,6 +72,10 @@ the served version still works.
 
 - **Branch per change.** `git checkout -b fix/siren-nside`. Never commit to
   `main` directly — `main` is what <https://majieddd.github.io> serves.
+- **Every change ships to all three surfaces.** A change is not done when it
+  works locally: push to `main` (which deploys the site), and republish the
+  Artifact. Landing on one surface and not the others is how the live game
+  quietly falls behind the repository.
 - **Announce the module.** Open a draft PR or an issue the moment you start, with
   the module in the title. That single habit prevents almost every conflict this
   layout can produce.

@@ -954,3 +954,112 @@ served live at <https://majieddd.github.io>. Set up for more than one author:
 ENRAGES` — a different mechanic from the wave bid, which is correctly named
 RESONANT FIELD, but it reuses the exact word. Left alone rather than rewriting
 flavour text unasked.
+
+---
+
+# SESSION 19 — OWNER ROUND: units, uniqueness, and the galaxy redesign
+
+The largest single round so far. Tracked here as the source of truth; every row
+moves to ✅ only with the symbol, file or measurement that proves it, per the
+standing rule in `docs/NOTE-LEDGER.md`.
+
+**Legend:** ✅ done & verified · 🔶 landed, verification pending · ⏳ in flight ·
+❌ not started · 🎨 needs art generation
+
+## Standing process change
+
+| # | Note | Status |
+|---|---|---|
+| 19.0 | **Every update from now on ships to GitHub AND the live site**, not just the Artifact. Three surfaces per change: `main` → Pages → Artifact. | ✅ standing rule, added to `CONTRIBUTING.md` |
+
+## A. The galaxy map — full redesign
+
+The drag viewport landed in Session 16, but the *layout* underneath it never
+changed: `GX_RINGS = [10.5, 15.0, 19.5]` with everything clamped into
+`GX_X_MIN/GX_X_MAX` still sizes the galaxy to fit one screen. Dragging a map
+that already fits is pointless — which is exactly why it reads as leftovers.
+
+| # | Note | Status |
+|---|---|---|
+| 19.1 | Spread worlds **much further apart** so choosing a destination is a real act of navigation, not a glance. The layout must exceed the viewport by design. | ❌ |
+| 19.2 | **Fully redesign and modernise** the map so picking your next world feels like a deliberate, good-looking choice. | ❌ |
+| 19.3 | **Open centred on the first world.** Today it does not, which reads as cheap or broken. | ❌ |
+| 19.4 | **Remove the galaxy backdrop image** — it does not fit. | ❌ 🎨 |
+
+## B. Unlocks, factions and the soul shop
+
+| # | Note | Status |
+|---|---|---|
+| 19.5 | **Robotic towers unlock through the story only** — beat a solar system to earn one. **DRONE BAY is the first.** | ❌ |
+| 19.6 | **No cross-faction buying.** You must be on that faction's profile, spending that profile's souls, to unlock its towers. | ❌ |
+| 19.7 | A tower unlocked in the menu is **immediately selectable** — no restart, no relog. | ❌ |
+| 19.8 | The **hover preview is glitchy** on tower cards. Fix it so it reads as intentional motion. | ❌ |
+| 19.9 | **Soul shop inflation:** each purchase raises every *other* purchase from that faction by **+1 soul**. | ❌ |
+
+## C. Units — the new system
+
+The largest piece. Units become a first-class parallel to towers: unlocked from
+maps, faction-flavoured, individually talented, and presented side by side.
+
+| # | Note | Status |
+|---|---|---|
+| 19.10 | **Units unlock per map.** Different maps rescue different units. | ❌ |
+| 19.11 | **Each faction has its own units**, with effects that read out of its lore. | ❌ |
+| 19.12 | **Loadout becomes four columns.** Middle two are **Units** and **Towers**, visually matched. Outer two are the detail/talent panels for each. | ❌ |
+| 19.13 | **Every unit gets its own talent set**, chosen like tower talents. | ❌ |
+| 19.14 | A faction's playthrough may rescue **only its own units, or machine units**. Once the **Soul Profile** owns it, any faction or commander may field it. | ❌ |
+| 19.15 | Units get a **tower-like icon and card**, previewing the unit **moving and using its signature trait**. | ❌ 🎨 |
+
+## D. Balance
+
+| # | Note | Status |
+|---|---|---|
+| 19.16 | **Spawned-unit HP penalty curve:** −50% early, easing to **−25% at wave 5** and **0% at wave 10**. | ❌ |
+| 19.17 | **Muster income is far too small.** Summoning your own troops must be meaningfully rewarding. | ❌ |
+| 19.18 | **CANISTER rework:** stacks **strip armour** (its identity against TOXIN) and deal **max-health-based** damage at about **⅓ of toxin's total damage percentage** to compensate. | ❌ |
+
+## E. Tower identity — 10 per faction
+
+Today: human 10, light 7, xeno 7, pirate 7, robotic 8 (**39**). Target **10 per
+faction plus a 10-strong robotic line = 50**, so **11 new towers** minimum.
+
+| # | Note | Status |
+|---|---|---|
+| 19.19 | Audit all 39 for genuine uniqueness. Shared *categories* (splash, beam) are fine; shared *identity* is not. | ❌ |
+| 19.20 | Invent genuinely new mechanics — buffing your own army, **a tower that spawns troops which body-block the lane until they die**, and others. | ❌ |
+| 19.21 | Bring every faction to **10 towers**; generate whatever new content that needs. | ❌ 🎨 |
+| 19.22 | **Distinct balance curves.** Some towers early-game, some late — via price, difficulty, or a mechanic that needs time on the field. Unique, but fair. | ❌ |
+
+## F. Victory boons
+
+Today: **8 global** boons in `towers2.js:527`, drawn without regard to world or
+power — which is why every victory feels the same.
+
+| # | Note | Status |
+|---|---|---|
+| 19.23 | **≥5 boons per faction** (20+ total), each reading as a reflection of the planet it came from. | ❌ |
+| 19.24 | In multiplayer the boon depends on **both the planet and the faction you took it from**. | ❌ |
+
+## G. Art direction
+
+| # | Note | Status |
+|---|---|---|
+| 19.25 | **Army unit art does not match the commander portraits.** Units should share the commanders' *portrait* aesthetic while keeping their model style, the way the towers do. | ❌ 🎨 |
+
+## Tooling for this round
+
+- **`huashu-design`** skill — installed at `~/.claude/skills/huashu-design`; use
+  for the galaxy redesign and the loadout's four-column layout.
+- **Krea 2** — `artgen/krea_gen.py`, NF4 on the 4080. ~83 min/image, so upgrade
+  whole classes or not at all; SDXL-Turbo remains the bulk renderer.
+- Every generation obeys `docs/BRAND.md`, including the **77-token rule** that
+  cost the dossiers their accent for several sessions.
+
+## Sequencing
+
+Balance and unlock-gating (**D**, **B**) are self-contained and land first.
+The galaxy redesign (**A**) is independent and can run in parallel. Units (**C**)
+is the tent pole and depends on the loadout restructure, so its data model lands
+before its UI. Tower content (**E**) and boons (**F**) are content generation
+that must be balance-checked against the pins afterward. Art (**G**, 19.4, 19.15,
+19.21) batches into one render pass at the end so the style stays consistent.
