@@ -1110,3 +1110,61 @@ is the tent pole and depends on the loadout restructure, so its data model lands
 before its UI. Tower content (**E**) and boons (**F**) are content generation
 that must be balance-checked against the pins afterward. Art (**G**, 19.4, 19.15,
 19.21) batches into one render pass at the end so the style stays consistent.
+
+---
+
+# SESSION 20 — OWNER ROUND: routes, previews, portraits, and real multiplayer
+
+Six owner notes plus the technical debt carried out of Session 19. Dispatched as
+seven parallel teams, per the owner's preference for maximum concurrency.
+
+**Legend:** ✅ done & verified · 🔶 landed, verification pending · ⏳ in flight ·
+❌ not started · 🎨 needs art generation
+
+## A. The galaxy map
+
+| # | Note | Status |
+|---|---|---|
+| 20.1 | **Dotted travel lines** between near worlds, so the route to your next world reads at a glance — and **multiple paths** between worlds, so the next mission is a genuine choice rather than a queue. | ⏳ |
+| 20.3 | **A claimed world takes your faction's colour.** Conquest should be visible on the map, not only in a stars count. | ⏳ |
+
+## B. Legibility
+
+| # | Note | Status |
+|---|---|---|
+| 20.2 | **Every map preview shows the actual map** — its lanes and shape, not just a painted plate. | ⏳ |
+| 20.5 | **A level-up routes you to the commander screen** so the points can be spent when they are earned, rather than discovered later. | ⏳ |
+
+## C. Art direction — the style, properly nailed
+
+| # | Note | Status |
+|---|---|---|
+| 20.4 | Portraits still read **medieval / fantasy armoury**. They must be **vaporwave duotone or monochrome** (by faction) in a **cyberpunk comic** register drawn from Tyranny. Build a **LOOKBOOK** of reference assets — both to nail the style and as a durable internal record. | ⏳ 🎨 |
+
+## D. Multiplayer
+
+| # | Note | Status |
+|---|---|---|
+| 20.6 | **Make multiplayer actually work.** Today `mpSearch` fakes a 3.6-second relay search, reports "no commander answered … the live relay comes online in a future update", and hands you an AI garrison. There is **no network layer of any kind** in the codebase. | ⏳ |
+
+The hard constraint this must respect: **no external libraries, ever**, and the
+game must run offline from a single inlined HTML file. That rules out any
+signalling service or SDK, and rules in the browser's own APIs — `WebRTC` with
+manual (copy-paste) signalling needs no server at all, and `BroadcastChannel`
+gives genuine two-client play between tabs on one machine. The fixed 1/60
+timestep the engine already runs on is what makes lockstep feasible.
+
+## E. Technical debt carried from Session 19
+
+| # | Item | Status |
+|---|---|---|
+| 20.7a | CANISTER lost an AI heuristic when it stopped carrying `poisonPct` (`ai.js:371`) — half of it is still deserved, half is now wrong for it. | ⏳ |
+| 20.7b | `Tower.estimateDps` ignores `poisonPct` for TOXIN (pre-existing). | ⏳ |
+| 20.7c | `MUSTER_AI_HORIZON_WAVES` still 5 after the income buff — measured as not over-buying, but worth re-checking now units have landed. | ⏳ |
+| 20.7d | `GX_VIEW.x` / `GX_VIEW.y` are inert since the world/viewport split. | ⏳ |
+| 20.7e | **The six light/xeno towers have no bespoke inspector rows** — the biggest legibility gap the Phase 3 agent flagged. No "Wards standing 1/3", "Offering: Ironmarch", "Answers banked 4". | ⏳ |
+| 20.7f | BLOOD PRICE's tooltip prints `◈0`. True — no gold changes hands — but it should show a ♥ price. | ⏳ |
+| 20.7g | Rival parity for BLOOD PRICE: `ai.js` scores it through `towerCost` (which returns 0) rather than a life-aware bid. | ⏳ |
+| 20.7h | **A jammed NULL FIELD stops suppressing**, so a Jammer inside one can jam the field off and free itself. Flagged as interaction, not bug — owner call. | ⏳ |
+| 20.7i | Soul-shop inflation never re-modelled at ten towers per faction. | ⏳ |
+| 20.7j | Ten pre-existing player-facing talent-name collisions (PERMAFROST, WIDE FIELD, BATTERY, CAPACITOR, CONCENTRATE, WINDLASS, TRIBUTE, SATURATION, CLARITY, BACKBONE). | ⏳ |
