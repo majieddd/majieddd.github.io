@@ -1044,7 +1044,7 @@ power — which is why every victory feels the same.
 
 | # | Note | Status |
 |---|---|---|
-| 19.25 | **Army unit art does not match the commander portraits.** Units should share the commanders' *portrait* aesthetic while keeping their model style, the way the towers do. | ❌ 🎨 |
+| 19.25 | **Army unit art does not match the commander portraits.** Units should share the commanders' *portrait* aesthetic while keeping their model style, the way the towers do. | ✅ cause was mechanical — troops and machines share the `foe_` key prefix so troops were rendered with the machine *specimen* prompt. Own painted class added; all 20 re-rendered. **Measured: troops 74.6% coloured / 0.256 sat vs commanders 74.9% / 0.270; machines unchanged at 0% / 0.030** |
 
 ## Tooling for this round
 
