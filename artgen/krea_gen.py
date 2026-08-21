@@ -166,7 +166,11 @@ def write_pack(jobs, source_note):
             f'   Regenerate with artgen/krea_gen.py. Keys: cmd_<id>, fac_<id>, world_<id>,\n'
             f'   foe_<id>, abil_<id>, title, nebula. */\n'
             'const ARTPACK = ' + json.dumps(pack) + ';\n')
-    with open(OUT, 'w', encoding='utf-8') as f:
+    # newline='' pins LF on Windows too. The repo is uniformly LF
+    # (.gitattributes) and CI fails on any CRLF reaching the index, so a
+    # default text-mode write here would make every repack fight the
+    # checkout and show up as a whole-file diff.
+    with open(OUT, 'w', encoding='utf-8', newline='') as f:
         f.write(body)
     print(f'WROTE {OUT}  {total//1024}KB across {len(pack)} images '
           f'({from_fallback} from the SDXL fallback)', flush=True)

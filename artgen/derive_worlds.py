@@ -1,5 +1,5 @@
 """
-Holder-tinted world plates — derived, never generated (../docs/BRAND.md).
+Holder-tinted world plates — derived, never generated (BRAND.md).
 
 Each base plate world_<map>.webp becomes four world_<map>_<faction>.webp
 duotones: luminance mapped onto a void-black -> faction-colour ramp with a

@@ -169,6 +169,14 @@ python artgen/krea_gen.py --pack # assemble js/artpack.js
 node build.js
 ```
 
+The pipeline lives **inside this repository** at `artgen/`, along with its
+`cache/`, `cache_krea/` and the `krea2-turbo/` model checkout (all three
+gitignored — the model alone is 34GB). It used to sit in a sibling directory,
+and that cost a whole session of art work: the Session 19 troop prefix was
+edited there, rendered there, and never reached version control, so the pack
+shipped correct while the source that produced it did not exist in the repo.
+Run the scripts from the repository root and there is only one copy to edit.
+
 `artgen/krea_jobs.py` is the single catalogue for both models. Read
 [`docs/BRAND.md`](docs/BRAND.md) before generating anything — the visual identity
 is locked, and two prompt rules are load-bearing:

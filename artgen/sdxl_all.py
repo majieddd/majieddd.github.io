@@ -21,7 +21,7 @@ CACHE = os.path.join(HERE, 'cache')
 os.makedirs(CACHE, exist_ok=True)
 
 sys.path.insert(0, HERE)
-from krea_jobs import build_jobs, NEG                      # noqa: E402
+from krea_jobs import build_jobs, NEG, FACTION_TROOPS      # noqa: E402
 from krea_gen import fit, quality_for                      # noqa: E402
 
 # CLIP truncates at 77 tokens, and at guidance 0 the negative prompt has no
@@ -35,7 +35,7 @@ SDXL_PREFIX = ('cyberpunk sci-fi vaporwave painted cutscene illustration, neon m
 # Monochrome and greyscale classes must NOT receive the rainbow prefix -- with
 # the negative prompt inert at guidance 0, the prefix would simply win and the
 # owner's monochrome brief would lose. Style still leads; it just names the
-# right palette for the class (../docs/BRAND.md).
+# right palette for the class (BRAND.md).
 # Two measured failures drove this shape: (1) fac_pirate rendered IVORY because
 # the colour name arrived too late in the prompt -- so the crest prefix now
 # names the colour FIRST, per faction; (2) the first greyscale foe prefix
@@ -43,6 +43,21 @@ SDXL_PREFIX = ('cyberpunk sci-fi vaporwave painted cutscene illustration, neon m
 # to medieval knights -- the setting must be in the prefix, not the tail.
 FACTION_COLOUR = { 'human': 'neon cyan', 'light': 'radiant gold',
                    'xeno': 'xeno violet', 'pirate': 'blood crimson' }
+
+# FACTION TROOPS ARE NOT SPECIMENS. Both machines and troops are keyed foe_*,
+# so both were getting the 'foe' prefix below -- a clinical greyscale specimen
+# study on flat black, which is right for a neutral machine dossier and wrong
+# for somebody's soldiers. The owner's note: the army units "don't quite match
+# the same artstyle aesthetic as the profile pictures for the commanders".
+# They were correct, and this is why: commanders fall through to SDXL_PREFIX
+# (painted, coloured, brushwork) while troops were rendered as lab exhibits.
+#
+# Troops now get the commanders' PAINTED treatment, kept at full body so they
+# still read as a model on a card rather than a portrait bust -- which is the
+# rest of the note: "keep their model style, similar to the towers".
+TROOP_PREFIX = ('painted cutscene illustration, bold flat brushwork, cinematic '
+                'key light, gothic engraved linework, a single soldier of the far '
+                'future standing alone on flat black, ')
 
 PREFIX_BY_CLASS = {
     # "cutscene illustration" pulled every dossier into a SCENE -- wide shots
@@ -64,6 +79,11 @@ PREFIX_BY_CLASS = {
 
 def prefix_for(key):
     parts = key.split('_')
+    # Checked BEFORE the class table, because a troop and a machine share the
+    # foe_ prefix and only the roster can tell them apart. Keys are left alone
+    # so no game-side art lookup has to change.
+    if parts[0] == 'foe' and '_'.join(parts[1:]) in FACTION_TROOPS:
+        return TROOP_PREFIX
     if parts[0] == 'fac':
         c = FACTION_COLOUR.get(parts[1], 'neon')
         return (f'strict monochrome {c} engraved gothic emblem on pure black, every line '

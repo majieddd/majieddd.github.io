@@ -13,7 +13,7 @@ Sizes are (generate_px, output_px, aspect). Aspect 'wide' generates 16:9.
 # Tyranny -- bold flat brushwork, hard graphic shapes, strong silhouettes --
 # but the SETTING is cyberpunk sci-fi vaporwave: neon magenta/cyan/violet,
 # chrome, holograms. Explicitly NOT medieval fantasy.
-# LOCKED by the owner (Session 15) — see ../docs/BRAND.md before editing.
+# LOCKED by the owner (Session 15) — see TowerDefense/BRAND.md before editing.
 STYLE = ('stylised painted game cutscene illustration, bold flat expressive brushwork, '
          'hard-edged graphic shapes, strong silhouette, gothic engraved linework, ornamental '
          'filigree, screen-print texture, limited palette, '
@@ -166,8 +166,18 @@ WORLDS.update({
 
 # Enemy dossier art. Small cards, so silhouette and colour matter more than detail.
 # Enemy dossiers are GREYSCALE with at most ONE restrained accent splash by
-# allegiance (../docs/BRAND.md): violet = xeno-flesh, gold = radiant constructs,
+# allegiance (BRAND.md): violet = xeno-flesh, gold = radiant constructs,
 # crimson = raider warbands, cyan = spectral/energy, none = machines and stone.
+# The full colour a troop is PAINTED in, as opposed to FACTION_ACCENT below,
+# which is the single splash a greyscale machine is allowed. Named separately so
+# the two rules can never be confused for one another again.
+FACTION_PALETTE = {
+    'human':  'painted in steel blue and neon cyan with warm highlights',
+    'light':  'painted in radiant gold and ivory with warm holy light',
+    'xeno':   'painted in violet and magenta with iridescent chitin',
+    'pirate':  'painted in blood crimson and rust with scavenged metal',
+}
+
 FACTION_ACCENT = { 'human': 'neon cyan', 'light': 'radiant gold',
                    'xeno': 'bright purple', 'pirate': 'bright red' }
 # Each phrase LEADS with the hue, because on the SDXL path everything after
@@ -293,11 +303,20 @@ def build_jobs():
                      f'{ACCENT[accent]}. {desc}. Full body, three-quarter view, strong '
                      f'readable silhouette, isolated on a plain dark background. {STYLE}',
                      1024, 224, 'square'))
+    # BRAND AMENDMENT (Session 19, owner). Faction troops leave the greyscale
+    # rule that still governs the neutral machines. The owner's note: the army
+    # units "don't quite match the same artstyle aesthetic as the profile
+    # pictures for the commanders... I really want them to look more similar to
+    # the commanders, but keep their model style, similar to the towers."
+    #
+    # So a troop is now PAINTED IN ITS POWER'S COLOURS like a commander, and
+    # still framed full-body like a tower plate. Greyscale-plus-one-splash stays
+    # exactly where it was right: the machines, who belong to nobody.
     for tid, (fac, desc) in FACTION_TROOPS.items():
         jobs.append((f'foe_{tid}',
-                     f'ONE restrained splash of {FACTION_ACCENT[fac]}, everything else '
-                     f'greyscale. {desc}. Full body, three-quarter view, strong readable '
-                     f'silhouette, isolated on a plain dark background. {STYLE}',
+                     f'{FACTION_PALETTE[fac]}. {desc}. Full body, three-quarter view, '
+                     f'strong readable silhouette, isolated on a plain dark background. '
+                     f'{STYLE}',
                      1024, 224, 'square'))
     for pid, variants in PLANET_VARIANTS.items():
         for vi, desc in enumerate(variants):
