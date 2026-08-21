@@ -58,11 +58,32 @@ This mirrors the tower origin law that already exists (`AI.rivalArsenal` relies
 on it), so the two systems should read as one rule applied twice — not two rules
 that happen to look similar.
 
-Note the tension with roadmap **19.6**, which makes tower purchases
-profile-and-faction locked. Souls are currently an **install-wide vault**. Both
-items touch that question, so whichever lands first must settle it explicitly:
-are souls per profile or per install? The rest of both features depends on the
-answer, and getting it wrong silently is how a player loses progress.
+### The souls question, settled
+
+This looked like it needed an owner decision. It does not — the answer is
+already in the note, and it already matches the architecture.
+
+Measured in `js/commanders.js`:
+
+| Thing | Scope today | Where |
+|---|---|---|
+| **Souls** | **per profile** | `p.souls` on the active profile |
+| **Unlock vault** | **install-wide** | `r.vault`, shared by every profile |
+
+And note 19.14 says a Soul Profile unlock is usable *"with any faction/commander
+of course"* — i.e. the vault **stays install-wide**, deliberately. Meanwhile 19.6
+says you must be *"logged into the respective faction's profile, and use those
+souls"* — i.e. souls **stay per profile**, which they already are.
+
+So neither storage model changes. The only thing that changes is the
+**purchase gate**: at the moment of buying, the active profile's faction must
+match the tower's origin (with the human and robotic commons still open to all,
+per the existing origin law). Everything downstream of the purchase keeps
+working exactly as it does now.
+
+That is worth stating explicitly because the tempting "fix" — making the vault
+per-profile so factions feel separate — would directly contradict 19.14 and
+would retroactively strip every profile of unlocks it currently has.
 
 ## 19.12 — the four-column loadout
 

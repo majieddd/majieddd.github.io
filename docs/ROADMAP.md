@@ -1007,7 +1007,7 @@ maps, faction-flavoured, individually talented, and presented side by side.
 | 19.11 | **Each faction has its own units**, with effects that read out of its lore. | 🔶 spec'd — **20 faction units already exist** (5 each) in `js/factions.js`, with art. None is currently rescuable |
 | 19.12 | **Loadout becomes four columns.** Middle two are **Units** and **Towers**, visually matched. Outer two are the detail/talent panels for each. | 🔶 spec'd in [`UNITS-AND-BOONS-DESIGN.md`](UNITS-AND-BOONS-DESIGN.md) incl. the narrow-viewport rule |
 | 19.13 | **Every unit gets its own talent set**, chosen like tower talents. | 🔶 spec'd — reuse `Meta.talentMods` shape, incl. the partial-allocation trap |
-| 19.14 | A faction's playthrough may rescue **only its own units, or machine units**. Once the **Soul Profile** owns it, any faction or commander may field it. | 🔶 spec'd — **blocked on one decision**: souls are an install-wide vault today, and 19.6 depends on the same answer |
+| 19.14 | A faction's playthrough may rescue **only its own units, or machine units**. Once the **Soul Profile** owns it, any faction or commander may field it. | 🔶 spec'd — **not blocked after all**: souls are already per-profile (`p.souls`) and the vault already install-wide (`r.vault`), which is exactly what 19.6 + 19.14 describe. Only the purchase gate changes |
 | 19.15 | Units get a **tower-like icon and card**, previewing the unit **moving and using its signature trait**. | ❌ 🎨 |
 
 ## D. Balance
