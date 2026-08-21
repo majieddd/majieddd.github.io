@@ -21,7 +21,7 @@ Legend: ✅ verified in code · 🔶 landed but unverified · ⏳ in flight · �
 | 13.6 | Remove commander levelling from soul shop | ✅ |
 | 13.7 | Detail star conditions per map | ✅ |
 | 13.8 | Galactic map low quality | ✅ superseded by S16 2.5D map |
-| 13.9 | More unique maps; 3-way Xeno/Light/Human map | ✅ confluence; ⏳ more tri maps in S16 |
+| 13.9 | More unique maps; 3-way Xeno/Light/Human map | ✅ **6 tri boards** now carry `tri: true`, drawn from `TRI_MAP_IDS` so one system never fights the same three-way twice |
 | 13.10 | Splash/slow-resistant mob mechanics | ✅ shardling, basalt |
 | 13.11 | Skill activation animation + sound | ✅ |
 | 13.12 | Commander portraits | ✅ 21 painted |
@@ -40,10 +40,10 @@ Legend: ✅ verified in code · 🔶 landed but unverified · ⏳ in flight · �
 | 14.2 | Krea 2 from HuggingFace, ComfyUI if needed | ✅ pipeline works; SDXL ships (83min/img documented) |
 | 14.3 | Galaxy bubbles overlap | ✅ **re-fixed in S16** — was still overlapping (4.17→5.83) |
 | 14.4 | Tri-battles only on special contested planets, shown on map | ✅ |
-| 14.5 | Soul shop only on commander screen | ✅ — but see gap "loadout copy still says title screen" ⏳ |
+| 14.5 | Soul shop only on commander screen | ✅ closed — the copy that named a screen is gone; `ui.js:1930` carries the comment recording why it must never name one again |
 | 14.6 | Sevra skills not increasing tower damage | ✅ inspectorKey pulse terms |
 | 14.7 | Squish damage/HP numbers, whole numbers, never below 1 | ✅ NUM_SQUISH 2.5 |
-| 14.8 | 3-way: show all 3 commander interactions; fix 3-way UI | ✅ — but stale panel bug ⏳ |
+| 14.8 | 3-way: show all 3 commander interactions; fix 3-way UI | ✅ closed — the battle intro renders seat 2's portrait and VS block (`ui.js:3226-3251`), and the panel reads `Game.sides[2]` live rather than from a cached duo |
 | 14.9 | Remove Extract; souls from stars (doubled); system bonus; shared unlocks | ✅ (formula later revised by 16.5) |
 
 ## Session 15 notes
@@ -68,7 +68,7 @@ Legend: ✅ verified in code · 🔶 landed but unverified · ⏳ in flight · �
 
 | # | Note | Status |
 |---|---|---|
-| 16.1 | Sweep all previous threads for anything unapplied | ✅ 19 gaps found; 4 HIGH fixed; 15 ⏳ |
+| 16.1 | Sweep all previous threads for anything unapplied | ✅ all 19 closed — the remaining 15 became the Session 17 audit, whose 27 findings were closed in Session 18 |
 | 16.2 | Universe map: 2.5D spatial, click-drag scroll, immersive | ✅ CSS-3D plane + parallax + drag/zoom (three.js declined, documented) |
 | 16.3 | Crawler image is not a crawler | ✅ + whole class fixed (scene→specimen, anti-medieval) |
 | 16.4 | New enemy every 2 waves from wave 1; max 8 types per map | ✅ `ROSTER_MAX = 8`, `ROSTER_INTRO_EVERY = 2`, config.js:1733 |
