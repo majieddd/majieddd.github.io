@@ -1084,8 +1084,8 @@ power — which is why every victory feels the same.
 
 | # | Note | Status |
 |---|---|---|
-| 19.23 | **≥5 boons per faction** (20+ total), each reading as a reflection of the planet it came from. | 🔶 spec'd — root cause found: all 8 boons are global and drawn with no reference to world or power (`commanders.js:453`) |
-| 19.24 | In multiplayer the boon depends on **both the planet and the faction you took it from**. | 🔶 spec'd — two-axis matrix: faction picks *what kind* of advantage, `WORLD_KINDS` biases *which of its five* |
+| 19.23 | **≥5 boons per faction** (20+ total), each reading as a reflection of the planet it came from. | ✅ **20 boons, 5 per power**, written out of each power's lore. All 20 proved live — each moves an observable engine value, zero dead. Wakes **five dormant mechanics** (`freeCopies`, `lastStandAt`/`Dmg`, `waveHeal`, `immortalLine`, `siphonRate`) whose engine code was finished but which nothing ever wrote |
+| 19.24 | In multiplayer the boon depends on **both the planet and the faction you took it from**. | ✅ `boonFor(owner, kind, contested, roll)` at the galaxy draw site, which already knew both axes. 4 kinds × 4 powers + an **APEX** paid only by contested worlds. **Galaxy PRNG stream proved unmoved** — 6 seed/faction fingerprints byte-identical before and after, so no saved galaxy shifted |
 
 ## G. Art direction
 

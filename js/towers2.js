@@ -524,13 +524,143 @@ const ARENA_MODS = [
   { id:'frenzy',   name:'FRENZY',         icon:'⚡', desc:'Waves arrive 20% faster.',                 apply:g => g.arenaTempo = 0.8 }
 ];
 
+/* ── VICTORY BOONS ────────────────────────────────────────────────────────
+   Five per power: four keyed to a world KIND, and an APEX paid only by a
+   contested world. The power decides what kind of advantage you carry off;
+   the world decides which of its five. Selected by `boonFor` below, which
+   reads the two fields a world already has.
+
+   `f` is the power you took it from, `k` the world kind it came off.
+   Every key an `apply` writes must appear in BOON_FOLD in game.js -- there
+   is a load-time assertion that says so, because a boon writing a key
+   nothing reads is the exact shape of five talents that shipped inert. */
 const BOONS = [
-  { id:'experience', name:'VETERANCY',  icon:'★', desc:'+25% commander experience earned.',        apply:t => t.xpMul = (t.xpMul||1) + 0.25 },
-  { id:'vitality',   name:'VITALITY',   icon:'♥', desc:'+5 maximum lives in every battle.',        apply:t => t.bonusLives = (t.bonusLives||0) + 5 },
-  { id:'prosperity', name:'PROSPERITY', icon:'◈', desc:'+10% gold from all sources.',              apply:t => t.goldMul = (t.goldMul||1) + 0.10 },
-  { id:'foresight',  name:'FORESIGHT',  icon:'◎', desc:'+1 option on every command draft.',        apply:t => t.bonusDraft = (t.bonusDraft||0) + 1 },
-  { id:'arsenal',    name:'ARSENAL',    icon:'▲', desc:'Towers cost 10% less.',                    apply:t => t.costMul = (t.costMul||1) - 0.10 },
-  { id:'momentum',   name:'MOMENTUM',   icon:'⚑', desc:'Your reanimates arrive with +20% health.', apply:t => t.reanimMul = (t.reanimMul||0) + 0.20 },
-  { id:'mastery',    name:'MASTERY',    icon:'✦', desc:'+50% tower mastery experience earned.',    apply:t => t.masteryMul = (t.masteryMul||1) + 0.50 },
-  { id:'bulwark',    name:'BULWARK',    icon:'⛨', desc:'Every leak costs 1 less life (min 1).',    apply:t => t.leakShield = (t.leakShield||0) + 1 }
+  /* ── HUMANITY ── late to the stars, outnumbered, and unwilling to leave.
+     Bolts alien technology onto human frames and makes it work. */
+  { id:'h_refit', f:'human', k:'standard', name:'FIELD REFIT', icon:'⚒',
+    desc:'The first two of any tower type are built at first-copy price.',
+    lore:'Salvage yards do not care whose hull it was.',
+    apply:t => t.freeCopies = (t.freeCopies||0) + 2 },
+  { id:'h_lastline', f:'human', k:'fortress', name:'LAST OF THE LINE', icon:'⛨',
+    desc:'At or below 40% lives, every tower deals +40% damage.',
+    lore:'Outnumbered is the condition, not the excuse.',
+    apply:t => { t.lastStandAt = Math.max(t.lastStandAt||0, 0.40);
+                 t.lastStandDmg = (t.lastStandDmg||0) + 0.40; } },
+  { id:'h_salvage', f:'human', k:'forge', name:'SALVAGE RIGHTS', icon:'♻',
+    desc:'Selling returns 35% more, and ascension costs 20% less.',
+    lore:'Nothing is scrap. Some of it is just not yours yet.',
+    apply:t => { t.sellRate = (t.sellRate||0) + 0.35;
+                 t.ascCostMul = (t.ascCostMul||1) * 0.80; } },
+  { id:'h_hardpoints', f:'human', k:'nest', name:'HARD POINTS', icon:'✚',
+    desc:'+6 lives, and towers shake off disruption 50% faster.',
+    lore:'Bolt it down. Bolt it down again.',
+    apply:t => { t.bonusLives = (t.bonusLives||0) + 6;
+                 t.jamResist = (t.jamResist||0) + 0.50; } },
+  { id:'h_integration', f:'human', k:'apex', name:'INTEGRATION', icon:'✶',
+    desc:'Command drafts offer one more option, and arrive a wave sooner.',
+    lore:'The whole doctrine, in one sentence: use what works.',
+    apply:t => { t.bonusDraft = (t.bonusDraft||0) + 1;
+                 t.draftSooner = (t.draftSooner||0) + 1; } },
+
+  /* ── FEDERATION OF LIGHT ── a member surrenders their life eternally to
+     the cause. Their allies call it conscience; their critics call it a cult
+     that took everyone's free will and named the loss a gift. */
+  { id:'l_vigil', f:'light', k:'standard', name:'THE VIGIL', icon:'✧',
+    desc:'Each wave you survive restores one life.',
+    lore:'Someone is always awake.',
+    apply:t => t.waveHeal = (t.waveHeal||0) + 1 },
+  { id:'l_oath', f:'light', k:'fortress', name:'THE OATH', icon:'✞',
+    desc:'The first blow that would end you does not.',
+    lore:'Your life was surrendered already. It is only lent back.',
+    apply:t => t.immortalLine = true },
+  { id:'l_reliquary', f:'light', k:'forge', name:'RELIQUARY', icon:'◈',
+    desc:'Ascension costs 25% less and grants half again as much.',
+    lore:'Every relic was somebody, once.',
+    apply:t => { t.ascCostMul = (t.ascCostMul||1) * 0.75;
+                 t.ascDamageMul = (t.ascDamageMul||1) * 1.50; } },
+  { id:'l_aureole', f:'light', k:'nest', name:'AUREOLE', icon:'◎',
+    desc:'Aura range +30%, and every status effect lands 25% harder.',
+    lore:'The light does not stop where you stop.',
+    apply:t => { t.auraRangeMul = (t.auraRangeMul||1) * 1.30;
+                 t.status = (t.status||0) + 0.25; } },
+  { id:'l_eternal', f:'light', k:'apex', name:'ETERNAL SERVICE', icon:'♁',
+    desc:'Your dead return 40% stronger and march a quarter faster.',
+    lore:'Eternally, the tenet says. It was not a figure of speech.',
+    apply:t => { t.reanimMul = (t.reanimMul||0) + 0.40;
+                 t.reanimSpeedMul = (t.reanimSpeedMul||1) * 1.25; } },
+
+  /* ── THE XENO ── not an alliance, an appetite. Everything it meets it has
+     eaten or is still eating, folding the mass into itself. */
+  { id:'x_digest', f:'xeno', k:'standard', name:'DIGESTION', icon:'◑',
+    desc:'Every kill feeds the next: damage climbs as a wave dies.',
+    lore:'Hunger is not a state. It is a method.',
+    apply:t => t.killRamp = (t.killRamp||0) + 0.35 },
+  { id:'x_carapace', f:'xeno', k:'fortress', name:'CARAPACE', icon:'⬢',
+    /* reanimResist is read on the VICTIM (Game.musterHpMul), so this is a
+       DEFENCE against being mustered at, not a buff to your own sends. The
+       first draft of this boon described the opposite, which is the desync
+       class that has shipped seven times here. */
+    desc:'Everything mustered against you arrives 35% weaker.',
+    lore:'It has been eaten before. It grew a lid.',
+    apply:t => t.reanimResist = (t.reanimResist||0) + 0.35 },
+  { id:'x_render', f:'xeno', k:'forge', name:'RENDERING', icon:'⧗',
+    desc:'Siphoning drains half again as fast, and your dead pay a bounty.',
+    lore:'Matter in. Matter out. Nothing wasted between.',
+    apply:t => { t.siphonRate = (t.siphonRate||1) * 1.50;
+                 t.reanimGold = (t.reanimGold||0) + 3; } },
+  { id:'x_brood', f:'xeno', k:'nest', name:'BROODSWELL', icon:'✺',
+    desc:'Everything you muster arrives 50% heavier.',
+    lore:'The nest does not send soldiers. It sends more of itself.',
+    apply:t => t.musterHpMul = (t.musterHpMul||1) * 1.50 },
+  { id:'x_consume', f:'xeno', k:'apex', name:'TOTAL CONSUMPTION', icon:'☣',
+    desc:'The largest creatures take 35% more damage and pay 50% more.',
+    lore:'They ate a world here. Something had to be biggest.',
+    apply:t => { t.eliteDamageMul = (t.eliteDamageMul||1) * 1.35;
+                 t.eliteBountyMul = (t.eliteBountyMul||1) * 1.50; } },
+
+  /* ── THE PIRATES ── no allegiance, enemy of every power, and the
+     creature-swarms that boil out of the dark answer to them. */
+  { id:'p_plunder', f:'pirate', k:'standard', name:'PLUNDER', icon:'◆',
+    desc:'+18% gold from every source.',
+    lore:'It was going somewhere. Now it is going here.',
+    apply:t => t.goldMul = (t.goldMul||1) * 1.18 },
+  { id:'p_scuttle', f:'pirate', k:'fortress', name:'SCUTTLE', icon:'⚑',
+    desc:'Sell for 60% more, and every tower costs 15% less to raise.',
+    lore:'Hold nothing you cannot afford to burn behind you.',
+    apply:t => { t.sellRate = (t.sellRate||0) + 0.60;
+                 t.costMul = (t.costMul||1) * 0.85; } },
+  { id:'p_contraband', f:'pirate', k:'forge', name:'CONTRABAND', icon:'⛃',
+    desc:'Each extra copy of a tower inflates its price far less.',
+    lore:'There is a legitimate supply chain, and there is ours.',
+    apply:t => t.costGrowthMul = (t.costGrowthMul||1) * 0.82 },
+  { id:'p_dark', f:'pirate', k:'nest', name:'THE DARK ANSWERS', icon:'☾',
+    desc:'Musters cost 25% less and march a fifth faster.',
+    lore:'Nobody commands the swarm. It simply agrees with us.',
+    apply:t => { t.musterCostMul = (t.musterCostMul||1) * 0.75;
+                 t.reanimSpeedMul = (t.reanimSpeedMul||1) * 1.20; } },
+  { id:'p_marque', f:'pirate', k:'apex', name:'LETTERS OF MARQUE', icon:'✦',
+    desc:'+15% critical chance and +60% critical damage.',
+    lore:'Signed by nobody. Honoured by everybody, eventually.',
+    apply:t => { t.crit = (t.crit||0) + 0.15;
+                 t.critMult = (t.critMult||0) + 0.60; } }
 ];
+
+/* The two axes a world already carries. `contested` outranks kind: a world two
+   powers were already fighting over pays that power's APEX boon, which is the
+   only place the apex five appear.
+
+   Falls back rather than throwing, because a saved galaxy from before this
+   change can hold an owner or kind this table has never heard of, and a
+   missing boon must not cost somebody their campaign. */
+function boonFor(owner, kind, contested, roll) {
+  const pool = BOONS.filter(b => b.f === owner);
+  /* `roll` is a NUMBER the caller already drew, never the generator itself.
+     galaxy.js documents that its PRNG stream must not move or every saved
+     galaxy's maps, arenas and boons shift, so the draw site keeps making
+     exactly the one call it always made and hands the value in. */
+  if (!pool.length) return BOONS[Math.floor((roll || 0) * BOONS.length) % BOONS.length];
+  const want = contested ? 'apex' : (kind || 'standard');
+  return pool.find(b => b.k === want)
+      || pool.find(b => b.k === 'standard')
+      || pool[0];
+}

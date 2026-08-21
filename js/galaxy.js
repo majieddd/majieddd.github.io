@@ -163,6 +163,12 @@ function generateGalaxy(seed, playerFaction) {
       let kind = kinds[0];
       for (const k of kinds) { roll -= k.weight; if (roll <= 0) { kind = k; break; } }
 
+      /* Hoisted so the boon draw can read the same two values the world
+         is built from. The owner roll is unchanged and still the first
+         rnd() call of this world -- only its line moved. */
+      const worldOwner = isSeat ? holder : (rnd() < 0.2 ? raider : holder);
+      const kindId = isSeat ? 'fortress' : kind.id;
+
       worlds.push({
         id: 's' + si + 'w' + wi,
         name: WORLD_NAMES[(si * WORLDS_PER_SYSTEM + wi) % WORLD_NAMES.length] +
@@ -175,18 +181,20 @@ function generateGalaxy(seed, playerFaction) {
         /* CONTESTED_PER_SYSTEM worlds per system (never the seat): two rival
            powers are already fighting over it, so taking it is a three-way war. */
         contested: false, contestedBy: null,
-        kind: isSeat ? 'fortress' : kind.id,
+        kind: kindId,
         seat: isSeat,
         /* The raider holds roughly a fifth of the ordinary worlds. The roll
            is drawn either way rather than short-circuited, so the PRNG stream
            is identical for every profile and no saved galaxy's maps, arenas
            or boons move. */
-        owner: isSeat ? holder : (rnd() < 0.2 ? raider : holder),
+        owner: worldOwner,
         /* Three-way maps are reserved for CONTESTED worlds only. */
         map: (() => { const pool = MAPS.filter(m => !m.tri);
                       return pool[Math.floor(rnd() * pool.length)].id; })(),
         arena: rnd() < 0.55 ? ARENA_MODS[Math.floor(rnd() * ARENA_MODS.length)].id : null,
-        boon: BOONS[Math.floor(rnd() * BOONS.length)].id,
+        /* Still exactly ONE rnd() call, in the same position: boonFor
+           takes the VALUE, never the generator. */
+        boon: boonFor(worldOwner, kindId, false, rnd()).id,
         tier: si,
         si, wi
       });
@@ -209,6 +217,11 @@ function generateGalaxy(seed, playerFaction) {
            three-way map twice. */
         w.map = TRI_MAP_IDS[(si * CONTESTED_PER_SYSTEM + k) % TRI_MAP_IDS.length];
         w.kind = 'fortress';
+        /* Two powers were already fighting over this one, so it pays the
+           holder's APEX boon -- the only place those five are reachable.
+           Deterministic like the rest of this block: taking a roll here
+           would shift every later world's stream. */
+        w.boon = boonFor(w.owner, w.kind, true, 0).id;
       });
     }
 

@@ -63,6 +63,74 @@ class Side {
   countOf(type) { let n = 0; for (const t of this.towers) if (t.type === type) n++; return n; }
 }
 
+/* ── HOW A BOON REACHES THE ENGINE ────────────────────────────────────────
+   Every key a boon's `apply` may write, and what that key DOES. This table is
+   the whole contract: a key absent from here is a boon that silently does
+   nothing, which is precisely how five talents and six commander traits
+   shipped inert. `assertBoonKeysAreLive` below checks the twenty boons
+   against it at load, so the mistake cannot survive a page refresh.
+
+   Multiplicative keys arrive pre-multiplied (a boon writes `x * 1.18`), so
+   the fold multiplies rather than adds. Additive keys arrive as the delta. */
+const BOON_FOLD = {
+  /* lives and leaks */
+  bonusLives:     (S, v) => { S.maxLives += v; S.lives += v; },
+  leakShield:     (S, v) => { S.traits.leakReduction += v; },
+  waveHeal:       (S, v) => { S.traits.waveHeal += v; },
+  immortalLine:   (S, v) => { if (v) S.traits.immortalLine = true; },
+  lastStandAt:    (S, v) => { S.traits.lastStandAt = Math.max(S.traits.lastStandAt, v); },
+  lastStandDmg:   (S, v) => { S.traits.lastStandDmg += v; },
+  /* economy */
+  goldMul:        (S, v) => { S.mods.gold *= v; },
+  costMul:        () => {},   /* read directly in towerCost -- see below */
+  costGrowthMul:  (S, v) => { S.traits.costGrowthMul *= v; },
+  sellRate:       (S, v) => { S.traits.sellRate += v; },
+  freeCopies:     (S, v) => { S.traits.freeCopies += v; },
+  siphonRate:     (S, v) => { S.traits.siphonRate *= v; },
+  reanimGold:     (S, v) => { S.traits.reanimGold += v; },
+  /* towers */
+  ascCostMul:     (S, v) => { S.traits.ascCostMul *= v; },
+  ascDamageMul:   (S, v) => { S.traits.ascDamage *= v; },
+  auraRangeMul:   (S, v) => { S.traits.auraRangeMul *= v; },
+  jamResist:      (S, v) => { S.traits.jamResist += v; },
+  status:         (S, v) => { S.traits.status += v; },
+  crit:           (S, v) => { S.traits.crit += v; },
+  critMult:       (S, v) => { S.traits.critMult += v; },
+  killRamp:       (S, v) => { S.traits.killRamp += v; },
+  eliteDamageMul: (S, v) => { S.traits.eliteDamage *= v; },
+  eliteBountyMul: (S, v) => { S.traits.eliteBounty *= v; },
+  /* the send */
+  reanimMul:      (S, v) => { S.mods.reanim += v; },
+  reanimSpeedMul: (S, v) => { S.traits.reanimSpeed *= v; },
+  reanimResist:   (S, v) => { S.traits.reanimResist += v; },
+  musterHpMul:    (S, v) => { S.traits.musterHpMul = (S.traits.musterHpMul || 1) * v; },
+  musterCostMul:  (S, v) => { S.traits.musterCostMul = (S.traits.musterCostMul || 1) * v; },
+  /* drafting */
+  bonusDraft:     (S, v) => { S.traits.draftOptions += v; },
+  draftSooner:    (S, v) => { S.traits.draftEvery = Math.max(2, S.traits.draftEvery - v); },
+  /* paid out after the battle rather than during it */
+  xpMul:          () => {},
+  masteryMul:     () => {}
+};
+
+/* Runs once at load. A boon whose key is missing from BOON_FOLD would be a
+   promise the engine never keeps, so it fails loudly here instead of quietly
+   in front of a player. */
+function assertBoonKeysAreLive() {
+  const missing = [];
+  for (const b of BOONS) {
+    const probe = {};
+    try { b.apply(probe); } catch (e) { missing.push(b.id + ' threw: ' + e.message); continue; }
+    for (const k in probe) if (!(k in BOON_FOLD)) missing.push(b.id + ' writes ' + k);
+  }
+  if (missing.length) {
+    console.error('INERT BOON KEYS -- these do nothing:', missing);
+    throw new Error('BOON_FOLD is missing: ' + missing.join(', '));
+  }
+  return BOONS.length;
+}
+assertBoonKeysAreLive();
+
 const Game = {
 
   canvas: null, ctx: null, width: 0, height: 0, dpr: 1, bgCanvas: null,
@@ -473,11 +541,16 @@ const Game = {
       const b = BOONS.find(x => x.id === bid);
       if (b) b.apply(S0.boonMods);
     }
-    if (S0.boonMods.bonusLives) { S0.maxLives += S0.boonMods.bonusLives; S0.lives += S0.boonMods.bonusLives; }
-    if (S0.boonMods.bonusDraft) S0.traits.draftOptions += S0.boonMods.bonusDraft;
-    if (S0.boonMods.goldMul) S0.mods.gold *= S0.boonMods.goldMul;
-    if (S0.boonMods.reanimMul) S0.mods.reanim += S0.boonMods.reanimMul;
-    if (S0.boonMods.leakShield) S0.traits.leakReduction += S0.boonMods.leakShield;
+    /* Folded through BOON_FOLD rather than by a hand-written line per key.
+       The old shape needed one `if` in here for every key any boon might
+       write, so a boon naming a sixth key did nothing AT ALL and did it
+       silently -- the same failure that shipped five inert talents and six
+       inert commander traits. assertBoonKeysAreLive() makes that
+       unshippable rather than merely unlikely. */
+    for (const key in S0.boonMods) {
+      const fold = BOON_FOLD[key];
+      if (fold) fold(S0, S0.boonMods[key]);
+    }
 
     /* Commanders that begin with doctrine already in hand. */
     let openedGround = false;
@@ -1634,6 +1707,10 @@ const Game = {
        estimate and the spawn all read this function -- putting it anywhere
        else is how a preview and a payout disagree. */
     m *= spawnHpPenaltyMul(this.wave);
+    /* The sender's own swell, applied before the victim's resistance so
+       the two read as attack against defence rather than one number. */
+    const mine = this.sides[side].traits;
+    if (mine && mine.musterHpMul) m *= mine.musterHpMul;
     const V = this.sides[victim];
     if (V) m *= (1 - (V.traits.reanimResist || 0));
     return m;
@@ -1655,7 +1732,12 @@ const Game = {
   },
 
   musterCost(side, tier) {
-    return musterCost(tier, this.wave, this.sides[side].musterBuys || 0);
+    /* THE funnel for what a send costs -- canMuster and muster both read it,
+       so a discount applied here cannot show one price and charge another. */
+    const t = this.sides[side].traits;
+    return Math.max(1, Math.round(
+      musterCost(tier, this.wave, this.sides[side].musterBuys || 0)
+      * (t && t.musterCostMul ? t.musterCostMul : 1)));
   },
 
   /**
