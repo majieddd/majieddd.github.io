@@ -16,9 +16,14 @@ Then open <http://127.0.0.1:8471/index.html>.
 
 `file://` will *not* work — the browser blocks the module loads. Use the server.
 
-**Always cache-bust when testing a change:** `index.html?v=2`. The raw `js/*.js`
-files cache hard and you will otherwise spend an hour debugging code that is not
-running.
+**Cache-busting: `index.html?v=2` DOES NOT WORK.** The query is on the document,
+not on the `<script src="js/game.js">` tags inside it, so every module is still
+served from cache and you are testing the previous build while believing you are
+testing this one. It reads as your change having no effect.
+
+To test a change, verify against the **bundle** — `node build.js`, then
+`aegis-protocol.html?v=N` — which inlines all sixteen modules into the document
+the query actually busts. Use `index.html` for hand-play, the bundle for proof.
 
 To produce the single-file build:
 
