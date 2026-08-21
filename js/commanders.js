@@ -1,5 +1,5 @@
 /* ==========================================================================
-   AEGIS PROTOCOL: ATTRITION — Commanders, Talent Trees & Meta Progression
+   COSMIC CONQUEST — Commanders, Talent Trees & Meta Progression
    --------------------------------------------------------------------------
    Commander charts are laid out like a classic MMO talent tree: three columns,
    three rows, vertical prerequisite chains, and rows gated behind total points

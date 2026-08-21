@@ -1,5 +1,5 @@
 /* ==========================================================================
-   AEGIS PROTOCOL: ATTRITION — Expansion Mechanics
+   COSMIC CONQUEST — Expansion Mechanics
    --------------------------------------------------------------------------
    Behaviours for the sixteen expansion towers, plus the Minion and Barricade
    entities they field. Loaded after entities.js; everything here extends the

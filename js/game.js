@@ -1,5 +1,5 @@
 /* ==========================================================================
-   AEGIS PROTOCOL: ATTRITION — Core State, Simulation & World Rendering
+   COSMIC CONQUEST — Core State, Simulation & World Rendering
    ========================================================================== */
 
 'use strict';

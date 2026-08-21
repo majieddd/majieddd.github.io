@@ -1,5 +1,5 @@
 /* ==========================================================================
-   AEGIS PROTOCOL: ATTRITION — Opponent Commander
+   COSMIC CONQUEST — Opponent Commander
    --------------------------------------------------------------------------
    The AI is not a script of "build X on wave Y". It runs the same loop a
    decent human does:

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   AEGIS PROTOCOL — Procedural Audio Engine
+   COSMIC CONQUEST — Procedural Audio Engine
    --------------------------------------------------------------------------
    Every sound in the game is synthesised at runtime with the Web Audio API.
    There are no audio files, which keeps the game a single self-contained

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   AEGIS PROTOCOL: ATTRITION — Configuration & Game Data
+   COSMIC CONQUEST — Configuration & Game Data
    ========================================================================== */
 
 'use strict';

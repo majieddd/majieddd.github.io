@@ -1,5 +1,5 @@
 /* ==========================================================================
-   AEGIS PROTOCOL: ATTRITION — Bootstrap & Keyboard
+   COSMIC CONQUEST — Bootstrap & Keyboard
    ========================================================================== */
 
 'use strict';

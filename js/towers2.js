@@ -1,5 +1,5 @@
 /* ==========================================================================
-   AEGIS PROTOCOL: ATTRITION — Expansion Pack
+   COSMIC CONQUEST — Expansion Pack
    --------------------------------------------------------------------------
    The elemental system, sixteen additional towers (each built on a verb no
    other tower uses), the campaign arena modifiers and campaign boons.

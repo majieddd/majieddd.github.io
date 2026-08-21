@@ -1,5 +1,5 @@
 /* ==========================================================================
-   AEGIS PROTOCOL: ATTRITION — Entities & Simulation
+   COSMIC CONQUEST — Entities & Simulation
    --------------------------------------------------------------------------
    Every unit carries `hostileTo`, the side index it is marching on. Towers
    only ever engage units hostile to their own side, which is what lets both

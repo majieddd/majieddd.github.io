@@ -1,5 +1,5 @@
 /* ==========================================================================
-   AEGIS PROTOCOL: ATTRITION — Interface Layer
+   COSMIC CONQUEST — Interface Layer
    --------------------------------------------------------------------------
    Screens: COMMAND (commander + technology chart) → THEATRE (world map) →
    LOADOUT (five towers) → BATTLE.
