@@ -1025,8 +1025,8 @@ faction plus a 10-strong robotic line = 50**, so **11 new towers** minimum.
 
 | # | Note | Status |
 |---|---|---|
-| 19.19 | Audit all 39 for genuine uniqueness. Shared *categories* (splash, beam) are fine; shared *identity* is not. | ❌ |
-| 19.20 | Invent genuinely new mechanics — buffing your own army, **a tower that spawns troops which body-block the lane until they die**, and others. | ❌ |
+| 19.19 | Audit all 39 for genuine uniqueness. Shared *categories* (splash, beam) are fine; shared *identity* is not. | ✅ [`docs/TOWER-AUDIT.md`](TOWER-AUDIT.md) — **36 of 39 already unique**; 3 pure stat blocks (bolt/mortar/flak) and 6 genuine overlapping pairs named |
+| 19.20 | Invent genuinely new mechanics — buffing your own army, **a tower that spawns troops which body-block the lane until they die**, and others. | 🔶 the body-blocker **already exists** — FOUNDRY (`towers2.js:71`) grapples and grinds. The real job is differentiating it from CUSTODIAN, which duplicates it; proposal in the audit |
 | 19.21 | Bring every faction to **10 towers**; generate whatever new content that needs. | ❌ 🎨 |
 | 19.22 | **Distinct balance curves.** Some towers early-game, some late — via price, difficulty, or a mechanic that needs time on the field. Unique, but fair. | ❌ |
 
