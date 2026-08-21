@@ -74,3 +74,58 @@ The UI reads faction colour from `--fc`/`--cc` custom properties; monochrome ass
 classes must NOT fight them. Motion uses the three named curves (`--e-enter`,
 `--e-pop`, `--e-tap`) in `css/polish.css`. Audio identity: deep vaporwave register —
 `SFX_DEPTH 0.62`, tempo 84 (do not brighten).
+
+---
+
+## The 77-token rule (measured, Session 18)
+
+SDXL's CLIP encoder truncates at **77 tokens**. Everything past that is silently
+discarded — no warning that changes the image, just a different picture than the
+one you asked for.
+
+All 49 enemy dossiers shipped **amber** for several sessions because of it. The
+per-enemy accent instruction sat at CLIP token ~114–163, well past the cliff, so
+the only colour direction that survived was the class prefix's unnamed *"at most
+one restrained accent colour"* — and SDXL's default reading of that is amber.
+
+Two fixes, both now in `artgen/`:
+
+1. **The prefix went from 79 words to 19.** A class prefix that alone overruns
+   the window leaves no budget for the subject, let alone its accent.
+2. **The accent leads the prompt**, before the subject. Worst case is now token
+   ~37, less than half the budget, across all 49.
+
+### Colour words are not equally strong
+
+Measured against each dossier's assigned accent, in the shipping pack:
+
+| Accent | Prompt phrase | Correct |
+|---|---|---:|
+| greyscale | `no colour at all, pure blacks whites and chrome greys` | 10/10 |
+| gold | `ONE restrained splash of radiant gold` | 10/10 |
+| cyan | `ONE restrained splash of spectral cyan` | 8/8 |
+| crimson | `ONE bright red accent glow` | 6/6 |
+| violet | `glowing purple bioluminescence` | 10/15 |
+
+**44 of 49 (90%)**, up from 0.
+
+Three findings worth keeping:
+
+- **`xeno violet` and `raider crimson` were dead tokens.** Twelve of fifteen
+  violet dossiers and four of six crimson came back with no colour at all, while
+  `spectral cyan` and `radiant gold` landed 18 of 18. Plainer, higher-frequency
+  colour words work; invented brand names do not.
+- **`restrained` reads as an instruction to desaturate.** Dropping it is what
+  moved crimson from 2/6 to 6/6.
+- **Purple dies on organic subjects.** The five remaining misses are all
+  undead or insectile — `bone`, `wet carapace`, `dark filament` pull hard toward
+  greyscale. Naming the accent as emitted *light* rather than pigment recovered
+  most of them; the rest would need the deterministic treatment below.
+
+**Where an exact hue is required, force it in code.** Prompting cannot pin a hue.
+`derive_crests.py` tints each crest onto the faction's exact ramp and lands
+within 4.5° — see the crest row in `docs/NOTE-LEDGER.md`.
+
+**Seeds must be stable.** `sdxl_all.py` used Python's `hash()`, which is salted
+per process, so no regeneration was reproducible. It now uses FNV-1a: re-render a
+class and it comes back recognisably itself.

@@ -893,3 +893,64 @@ send bonuses still scale (musterHpMul 1.98 → 3.96 with doubled reanim).
 **Full sweep: 18/18 owner notes verified in the running build**, zero console errors,
 all 15 maps run, seed varies, 0 missing art keys across 178 images.
 Pins: fresh median 6 (every run under 10), maxed 27, step 0.069 ms.
+
+### Session 18 — the closeout, the amber dossiers, and the move to GitHub
+
+**The audit's 27 findings are closed.** Four patches were authored in parallel;
+the workflow then hit a usage limit and **six of its eight agents died, including
+every audit agent**, so all four patches arrived unaudited. That has twice
+shipped real bugs here, so they were audited by hand instead:
+
+- Applied in two opposite orders into separate sandboxes. Both produced
+  **byte-identical** output — the four are fully order-independent.
+- All four confirmed genuinely **two-phase**: every anchor resolved and every
+  problem collected before a single byte is written, with an explicit abort.
+- **Line endings preserved per file**, including the two LF exceptions
+  (`factions.js`, `towers2.js`). `ROADMAP.md` was already mixed before the patch
+  and its counts are unchanged.
+- Behaviour: **248 checks across the four suites, 0 failures.**
+
+The hand audit caught one real gap the patches left: `c-nside` fixed post-match
+*routing* for a skirmish but not the button's **label**, which is static markup —
+so the arena promised "TO THE GALAXY" and then correctly delivered the
+multiverse. Label and destination now derive from the one condition, in one
+place, so they cannot drift apart. `c-nside`'s own test caught it: 57/58 before,
+58/58 after.
+
+**Minibosses.** VESPER and ORACLE were rostered at waves 35 and 45, past a curve
+whose own comment calls ~25 a terminus, because the rota is indexed by SLOT and a
+declined wave burned its slot. `MINIBOSS_EVERY = 5` is now named once and read by
+the rule, the sidebar hint and the Field Manual — which also fixed a desync where
+two strings said "every 5" while the engine ran every 10. Verified: five distinct
+minibosses at 5/10/15/20/25, gaps `5,5,5,5,5`.
+
+**The amber dossiers.** Root cause measured, not guessed: the foe prefix was **79
+words on its own**, already past CLIP's 77-token budget, so the per-enemy accent
+at token ~114–163 was discarded in all 49 cases. Prefix cut to 19 words, accent
+hoisted to lead. Three render passes took the pack from **0% to 90%** correct
+against each dossier's assigned accent. Full findings in `docs/BRAND.md`.
+
+**Balance holds.** Batch B made previously-inert talents and traits live, so both
+pins were re-measured: fresh loss median **7** (baseline 7), maxed tier-0 `spine`
+**wave 28** (baseline 27). The +1 is the live talents and is expected.
+
+**The ledger was lying.** `NOTE-LEDGER.md` listed five items as outstanding that
+had shipped up to three sessions earlier. All five were re-verified against the
+code and the shipping art pack, and the file now carries a standing rule: a row
+moves to done only with the symbol, file or measurement that proves it.
+
+**The project is now a repository.** <https://github.com/majieddd/majieddd.github.io>,
+served live at <https://majieddd.github.io>. Set up for more than one author:
+
+- `.gitattributes` pins the tree to **LF everywhere**, retiring the CRLF hazard.
+- `CONTRIBUTING.md` carries the module map, branch etiquette, the nine traps and
+  the two ways each balance pin has previously been mis-measured.
+- CI parses every module, builds the bundle, proves it is self-contained,
+  verifies `build.js` inlines every module on disk, and fails on any CRLF.
+- Built bundles are ignored (~12MB of churn per edit); the Pages deploy rebuilds
+  the standalone file so the download stays available from the site.
+
+**Outstanding:** one owner call. The boss banner still reads `THE HARBINGER
+ENRAGES` — a different mechanic from the wave bid, which is correctly named
+RESONANT FIELD, but it reuses the exact word. Left alone rather than rewriting
+flavour text unasked.

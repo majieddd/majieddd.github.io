@@ -99,3 +99,31 @@ ledger is read as a true one. Re-verified against the code and the shipping art 
 
 **Standing rule for this file:** a row moves to ✅ only with the symbol, file or measurement
 that proves it, written in the row. "Verified" without evidence is how the list above rotted.
+
+---
+
+## Session 18 re-verification — every note driven against the running engine
+
+`tools/owner-sweep.js` re-checks the owner notes by BEHAVIOUR rather than by
+reading this file. Result: **16 pass, 0 fail, 1 informational.**
+
+| Note | Proof the sweep produced |
+|---|---|
+| 14.1 enrage renamed thematically | RESONANT FIELD present in the shipped bundle |
+| 14.2 relocation costs 33% | `Game.relocateCost` billed 6 on 19 invested — 31.6% after integer rounding |
+| 15.8 losing keeps galaxy progression | galaxy, seed, stars and boons byte-identical across a loss — and the defeat IS recorded (2 → 3) |
+| 16.4 new type every 2 waves, cap 8 | `ROSTER_MAX=8`, `ROSTER_INTRO_EVERY=2`; a real `spine` battle fielded exactly 8 non-boss types |
+| 16.5 souls are twice the stars | first star pays 2, three stars pay 6 |
+| 17.3 arena seats 20, own base each | 20 seats, 20 with lives, **20 distinct base tiles**, every lane 836 long so no seat is cheated |
+| 17.4 rivals use their own faction's hardware | all four arsenals stay on own + human + robotic; no third power's towers |
+| audit#3 minibosses inside the curve | 5 distinct at waves 5/10/15/20/25, gaps `5,5,5,5,5`, matching the advertised `MINIBOSS_EVERY` |
+| desync guard | wave preview equals `Game.waveHpMul` across waves 1-30 |
+| N-side guard | all 20 seats resolve a rival and a send path; 3,600 frames clean |
+
+**The one informational item — an owner call.** Exactly one player-visible string
+still contains the word: `ENEMY_TYPES.harbinger.phases[1].msg` reads
+**"THE HARBINGER ENRAGES"**. That is a boss phase, not the wave-bid mechanic the
+note was about — the mechanic itself is correctly named RESONANT FIELD
+everywhere. Every other occurrence in the codebase is an internal identifier
+(`S.enrage`, `ENRAGE_MAX`) that no player ever sees. Renaming boss flavour text
+is a taste decision, so it was left rather than changed unasked.
