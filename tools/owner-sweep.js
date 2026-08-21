@@ -229,6 +229,128 @@
        threw || '3600 frames clean, reached wave ' + Game.wave);
   });
 
+  /* ═══ SESSION 19 ═════════════════════════════════════════════════════
+     The owner round: galaxy redesign, unlock gating, the balance curve, and
+     twenty faction boons. Checked the same way as everything above -- by
+     driving the engine, never by asserting a symbol exists. */
+
+  T('19.1 the galaxy is bigger than the window it is seen through', function () {
+    const ratio = GX_WORLD.w / GX_VIEW.w;
+    ok('19.1 the galaxy is bigger than the window it is seen through', ratio >= 3,
+       'world ' + GX_WORLD.w + 'x' + GX_WORLD.h + ' vs viewport ' + GX_VIEW.w + 'x' + GX_VIEW.h +
+       ' = ' + ratio.toFixed(2) + 'x wider');
+  });
+
+  T('19.1 no two worlds sit on top of each other', function () {
+    const gx = generateGalaxy('sweepseed', 'human');
+    const ws = [];
+    for (const sy of gx.systems) for (const w of sy.worlds) ws.push(w);
+    let closest = Infinity, pair = '';
+    for (let i = 0; i < ws.length; i++) for (let j = i + 1; j < ws.length; j++) {
+      const dx = ws[i].x - ws[j].x, dy = (ws[i].y - ws[j].y) * GX_RENDER_SQUASH;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d < closest) { closest = d; pair = ws[i].id + '/' + ws[j].id; }
+    }
+    ok('19.1 no two worlds sit on top of each other', closest > 6,
+       ws.length + ' worlds, closest pair ' + pair + ' at ' + closest.toFixed(2));
+  });
+
+  T('19.4 no painted galaxy backdrop survives', function () {
+    const inPack = typeof ARTPACK !== 'undefined' && !!ARTPACK.galaxy_bg;
+    ok('19.4 no painted galaxy backdrop survives', !inPack,
+       inPack ? 'galaxy_bg is STILL in the art pack' : 'plate gone from the pack too');
+  });
+
+  T('19.5 robotic towers are story unlocks, never purchasable', function () {
+    if (typeof ROBOTIC_UNLOCK_ORDER === 'undefined') {
+      skip('19.5 robotic towers are story unlocks, never purchasable', 'no ladder'); return;
+    }
+    const first = ROBOTIC_UNLOCK_ORDER[0];
+    const buyable = ROBOTIC_UNLOCK_ORDER.filter(function (id) {
+      return Meta.canUnlockTower && Meta.canUnlockTower(id) === true;
+    });
+    ok('19.5 robotic towers are story unlocks, never purchasable',
+       first === 'dronebay' && buyable.length === 0,
+       'ladder starts ' + first + '; ' + buyable.length + ' of ' +
+       ROBOTIC_UNLOCK_ORDER.length + ' buyable with souls');
+  });
+
+  T('19.16 the spawned-HP curve hits the owner three anchors exactly', function () {
+    const a = spawnHpPenaltyMul(1), b = spawnHpPenaltyMul(5), c = spawnHpPenaltyMul(10);
+    ok('19.16 the spawned-HP curve hits the owner three anchors exactly',
+       Math.abs(a - 0.5) < 0.005 && Math.abs(b - 0.75) < 0.005 && Math.abs(c - 1) < 0.005,
+       'w1 ' + a.toFixed(3) + '  w5 ' + b.toFixed(3) + '  w10 ' + c.toFixed(3));
+  });
+
+  T('19.18 CANISTER no longer shares the TOXIN identity', function () {
+    const can = TOWER_TYPES.canister && TOWER_TYPES.canister.base || {};
+    const tox = TOWER_TYPES.toxin && TOWER_TYPES.toxin.base || {};
+    /* The audit named four shared keys, but only ONE of them carried the
+       identity. poisonDur and maxStacks are stack MACHINERY -- how long a
+       stack lasts and how many hold -- which two venom towers sharing is no
+       more meaningful than two towers sharing `range`. What had to separate
+       was the damage basis and a mechanic of its own, so that is what is
+       asserted: TOXIN scales off CURRENT health, CANISTER off MAX health,
+       and CANISTER strips armour, which TOXIN cannot do at all. */
+    const identityShared = ('poisonPct' in can) && ('poisonPct' in tox);
+    const canisterOwn = ('poisonMaxPct' in can) && ('shredPerStack' in can);
+    const toxinOwn = ('poisonPct' in tox) && !('shredPerStack' in tox);
+    ok('19.18 CANISTER no longer shares the TOXIN identity',
+       !identityShared && canisterOwn && toxinOwn,
+       'canister: ' + (canisterOwn ? 'maxHP% + armour shred' : 'MISSING ITS OWN') +
+       ' | toxin: ' + (toxinOwn ? 'currentHP%' : 'MISSING ITS OWN') +
+       ' | both on poisonPct: ' + identityShared);
+  });
+
+  T('19.23 twenty boons, five per power', function () {
+    const by = {};
+    for (const b of BOONS) by[b.f] = (by[b.f] || 0) + 1;
+    const counts = Object.keys(by).sort().map(function (k) { return k + ':' + by[k]; });
+    ok('19.23 twenty boons, five per power',
+       BOONS.length === 20 && Object.keys(by).length === 4 &&
+       Object.keys(by).every(function (k) { return by[k] === 5; }),
+       counts.join(' '));
+  });
+
+  T('19.23 not one boon is inert', function () {
+    const PIN2 = ['bolt', 'cryo', 'mortar', 'flak', 'beacon'];
+    const snap = function (boons) {
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN2.slice(), boons: boons });
+      const S = Game.sides[0], t = S.traits;
+      return JSON.stringify([S.maxLives, S.mods.gold, S.mods.reanim, t.freeCopies,
+        t.lastStandAt, t.lastStandDmg, t.sellRate, t.ascCostMul, t.ascDamage, t.jamResist,
+        t.waveHeal, t.immortalLine, t.auraRangeMul, t.status, t.reanimSpeed, t.killRamp,
+        t.reanimResist, t.siphonRate, t.reanimGold, t.musterHpMul, t.musterCostMul,
+        t.eliteDamage, t.eliteBounty, t.costGrowthMul, t.crit, t.critMult,
+        t.draftOptions, t.draftEvery]);
+    };
+    const base = snap([]);
+    const dead = BOONS.filter(function (b) { return snap([b.id]) === base; }).map(function (b) { return b.id; });
+    ok('19.23 not one boon is inert', dead.length === 0,
+       dead.length ? 'DEAD: ' + dead.join(',') : 'all ' + BOONS.length + ' move an engine value');
+  });
+
+  T('19.24 the boon depends on BOTH the power and the world', function () {
+    const a = boonFor('xeno', 'forge', false, 0.5).id;
+    const b = boonFor('pirate', 'forge', false, 0.5).id;
+    const c = boonFor('xeno', 'nest', false, 0.5).id;
+    const apex = boonFor('xeno', 'nest', true, 0).k;
+    ok('19.24 the boon depends on BOTH the power and the world',
+       a !== b && a !== c && apex === 'apex',
+       'xeno/forge=' + a + '  pirate/forge=' + b + '  xeno/nest=' + c + '  contested->' + apex);
+  });
+
+  T('19.24 a boon can never name a key the engine ignores', function () {
+    const missing = [];
+    for (const b of BOONS) {
+      const probe = {};
+      b.apply(probe);
+      for (const k in probe) if (!(k in BOON_FOLD)) missing.push(b.id + ':' + k);
+    }
+    ok('19.24 a boon can never name a key the engine ignores', missing.length === 0,
+       missing.length ? missing.join(' ') : 'every key folded; assertion runs at load too');
+  });
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;

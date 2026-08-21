@@ -1063,7 +1063,7 @@ maps, faction-flavoured, individually talented, and presented side by side.
 |---|---|---|
 | 19.16 | **Spawned-unit HP penalty curve:** −50% early, easing to **−25% at wave 5** and **0% at wave 10**. | ✅ `spawnHpPenaltyMul(wave)` is the single definition; shape **derived** from the owner's three anchors so it cannot drift from its own documentation. Measured **0.500 / 0.750 / 1.000** at waves 1 / 5 / 10 |
 | 19.17 | **Muster income is far too small.** Summoning your own troops must be meaningfully rewarding. | ✅ verified it is the *purchase* that got richer, not the count: deep maxed runs bought **fewer** musters (18/14 vs 26/24) while reaching more income — the Session-15 AI over-buying failure mode explicitly ruled out |
-| 19.18 | **CANISTER rework:** stacks **strip armour** (its identity against TOXIN) and deal **max-health-based** damage at about **⅓ of toxin's total damage percentage** to compensate. | ✅ no longer shares `poisonPct`/`poisonDps` with TOXIN — the overlap named in [`TOWER-AUDIT.md`](TOWER-AUDIT.md) is gone |
+| 19.18 | **CANISTER rework:** stacks **strip armour** (its identity against TOXIN) and deal **max-health-based** damage at about **⅓ of toxin's total damage percentage** to compensate. | ✅ TOXIN scales off **current** health, CANISTER off **max** health (`poisonMaxPct`) and strips armour (`shredPerStack`, unique to it), at ~⅓ of toxin's percentage — measured 0.0034 vs 0.010 at base. They still share stack *machinery* (`poisonDur`, `maxStacks`), which is as meaningful as two towers sharing `range` |
 
 ## E. Tower identity — 10 per faction
 
