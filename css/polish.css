@@ -1,0 +1,1526 @@
+/* ==========================================================================
+   AEGIS PROTOCOL: ATTRITION — Polish Layer
+   --------------------------------------------------------------------------
+   Loaded after style.css. Modernises the base theme — glass surfaces, layered
+   depth, refined motion — and styles the campaign, soul shop, drift readout
+   and expansion components. Overrides win by order, not by !important.
+   ========================================================================== */
+
+:root {
+  --panel:    rgba(13, 19, 32, 0.72);
+  --panel-2:  rgba(19, 27, 45, 0.82);
+  --line:     rgba(110, 165, 210, 0.16);
+  --line-2:   rgba(110, 165, 210, 0.32);
+  --glow-cyan: 0 0 24px rgba(56, 232, 255, 0.25);
+  --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.35), 0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-deep: 0 24px 80px rgba(0, 0, 0, 0.75);
+  /* MOTION. Three curves, each answering "how heavy is this thing?".
+     --e-enter  panels, cards and overlays arriving: fast off the line, long
+                settle, so a screen feels like it lands rather than slides.
+     --e-pop    toggles, buttons and anything that should feel springy; it
+                overshoots by design, so never use it on a moving layout.
+     --e-tap    sub-200ms hover and press feedback; crisp, no overshoot. */
+  --e-enter: cubic-bezier(0.16, 1, 0.30, 1);
+  --e-pop:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --e-tap:   cubic-bezier(0.22, 0.90, 0.30, 1);
+  --ease:    var(--e-tap);          /* legacy alias: every use is tap-scale */
+}
+
+body {
+  background-image:
+    radial-gradient(1200px 700px at 8% 30%,  rgba(56, 232, 255, 0.07), transparent 60%),
+    radial-gradient(1200px 700px at 92% 70%, rgba(255, 107, 157, 0.07), transparent 60%),
+    radial-gradient(900px 500px at 50% 110%, rgba(129, 140, 248, 0.05), transparent 55%),
+    linear-gradient(180deg, #060a12 0%, #05080e 100%);
+}
+
+/* --- glass surfaces with hairline light edges --------------------------- */
+.panel, .setup-main, .setup-rail .cmd-card, .title-panel, .theatre-detail,
+.worldmap-wrap, .modal, .talent-panel, .lo-card, .diff-pill, .fork-card {
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  box-shadow: var(--shadow-lift), inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+.modal { box-shadow: var(--shadow-deep), inset 0 1px 0 rgba(255, 255, 255, 0.06); }
+
+/* --- screens breathe in ------------------------------------------------- */
+.screen:not(.hidden) { animation: screenIn 0.38s var(--ease); }
+@keyframes screenIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.overlay:not(.hidden) .modal { animation: modalIn 0.3s var(--ease); }
+@keyframes modalIn { from { opacity: 0; transform: translateY(14px) scale(0.985); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .screen:not(.hidden), .overlay:not(.hidden) .modal { animation: none; }
+}
+
+/* --- buttons: gradient hairline frames, tactile press ------------------- */
+.btn {
+  position: relative;
+  border-radius: 12px;
+  background:
+    linear-gradient(var(--panel-2), var(--panel-2)) padding-box,
+    linear-gradient(160deg, rgba(110, 165, 210, 0.45), rgba(110, 165, 210, 0.10)) border-box;
+  border: 1px solid transparent;
+  transition: transform 0.12s var(--ease), box-shadow 0.16s var(--e-tap), filter 0.16s var(--e-tap);
+}
+.btn:hover:not(:disabled) { filter: brightness(1.18); box-shadow: var(--glow-cyan); transform: translateY(-1px); }
+.btn:active:not(:disabled) { transform: translateY(1px) scale(0.99); }
+.btn-primary {
+  background:
+    linear-gradient(180deg, rgba(56, 232, 255, 0.26), rgba(56, 232, 255, 0.08)) padding-box,
+    linear-gradient(160deg, rgba(56, 232, 255, 0.9), rgba(56, 232, 255, 0.25)) border-box;
+  border: 1px solid transparent;
+  text-shadow: 0 0 12px rgba(56, 232, 255, 0.5);
+}
+.btn-wave {
+  background:
+    linear-gradient(180deg, rgba(74, 222, 128, 0.22), rgba(74, 222, 128, 0.05)) padding-box,
+    linear-gradient(160deg, rgba(74, 222, 128, 0.8), rgba(74, 222, 128, 0.2)) border-box;
+  border: 1px solid transparent;
+}
+
+/* --- HUD refinement ------------------------------------------------------ */
+#hud {
+  background: linear-gradient(180deg, rgba(16, 24, 40, 0.9), rgba(11, 17, 29, 0.82));
+  backdrop-filter: blur(16px) saturate(1.2);
+  border-bottom: 1px solid rgba(110, 165, 210, 0.22);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+.cmdr { border-radius: 11px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+.bar { height: 5px; border-radius: 3px; }
+.bar i { border-radius: 3px; box-shadow: 0 0 8px currentColor; }
+.prep { height: 6px; border-radius: 3px; }
+.prep i { border-radius: 3px; }
+#game { border-radius: 14px; box-shadow: 0 30px 90px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(110, 165, 210, 0.18); }
+
+/* --- chips: bigger, named, hoverable ------------------------------------ */
+.chip {
+  font-size: 12px; padding: 4px 11px; border-radius: 9px;
+  cursor: default; transition: all 0.15s var(--ease);
+  backdrop-filter: blur(6px);
+}
+.chip b { font-weight: 700; letter-spacing: 0.05em; }
+.chip:hover { transform: translateY(-1px); filter: brightness(1.25); }
+.chip.drift {
+  font-size: 13px; padding: 5px 12px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(110, 165, 210, 0.35);
+}
+.chip.drift b { color: var(--gold); }
+.drift-row { gap: 6px; }
+.chip.bad { font-size: 12px; }
+
+/* --- tooltip as a proper floating card ---------------------------------- */
+#tooltip {
+  border-radius: 13px;
+  background: linear-gradient(180deg, rgba(14, 21, 36, 0.98), rgba(9, 14, 24, 0.98));
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(110, 165, 210, 0.4);
+  box-shadow: var(--shadow-deep), 0 0 30px rgba(56, 232, 255, 0.08);
+  animation: ttIn 0.14s var(--ease);
+}
+@keyframes ttIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ================================================= CAMPAIGN PATH ======== */
+
+#campaign-trail { display: flex; flex-direction: column; gap: 8px; }
+.cp-meta { display: flex; align-items: center; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.cp-depth { font-size: 13px; letter-spacing: 0.18em; color: var(--text-mute); }
+.cp-depth b { font-size: 19px; color: var(--cyan); letter-spacing: 0; }
+.cp-line { display: flex; align-items: center; gap: 2px; }
+.cp-line em { color: rgba(110, 165, 210, 0.3); font-style: normal; font-size: 10px; }
+.cp-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.cp-dot.done { background: var(--green); box-shadow: 0 0 8px rgba(74, 222, 128, 0.6); }
+.cp-dot.here { background: var(--cyan); box-shadow: 0 0 12px var(--cyan); width: 12px; height: 12px; }
+.cp-dot.next { background: rgba(255, 255, 255, 0.12); border: 1px dashed var(--line-2); }
+.cp-inf { color: var(--text-mute); font-size: 15px; }
+.cp-souls { font-size: 14px; color: #c4b5fd; font-weight: 700; }
+.cp-boons { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+
+.fork-row {
+  display: grid; gap: 14px; width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  align-items: stretch;
+}
+.fork-card {
+  font-family: var(--mono); text-align: left; color: var(--text);
+  display: flex; flex-direction: column;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+  overflow: hidden; cursor: pointer; padding: 0;
+  transition: transform 0.18s var(--ease), box-shadow 0.2s var(--e-tap), border-color 0.15s var(--e-tap);
+}
+.fork-card:hover { transform: translateY(-4px); border-color: var(--line-2); box-shadow: var(--shadow-deep); }
+.fork-card.on {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 1px var(--cyan), 0 16px 50px rgba(56, 232, 255, 0.18);
+}
+.fc-thumb { border-bottom: 1px solid var(--line); }
+.fc-thumb svg { display: block; width: 100%; height: auto; }
+.fc-body { padding: 13px 15px 15px; display: flex; flex-direction: column; gap: 8px; }
+.fc-head { display: flex; justify-content: space-between; align-items: center; }
+.fc-head b { font-size: 16px; letter-spacing: 0.11em; }
+.fc-trait { font-size: 11px; letter-spacing: 0.08em; color: var(--cyan); }
+.fc-rows { display: flex; flex-direction: column; gap: 6px; }
+.fc-row { display: flex; gap: 9px; font-size: 11.5px; color: var(--text-dim); line-height: 1.45; align-items: baseline; }
+.fc-row b { color: var(--text); }
+.fc-ic { flex-shrink: 0; width: 16px; text-align: center; }
+.fc-row.arena .fc-ic { color: var(--gold); }
+.fc-row.boon .fc-ic { color: var(--green); }
+.fc-row.esc { color: #fca5a5; }
+.fc-row.esc b { color: var(--red); }
+
+/* ==================================================== SOUL SHOP ========= */
+
+.soul-bank {
+  text-align: center; font-size: 17px; color: #c4b5fd;
+  background: rgba(196, 181, 253, 0.08); border: 1px solid rgba(196, 181, 253, 0.4);
+  border-radius: 12px; padding: 12px; margin-bottom: 18px;
+}
+.soul-bank b { font-size: 22px; }
+.soul-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-bottom: 18px; }
+.soul-grid.towers { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+.soul-item {
+  font-family: var(--mono); color: var(--text); text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: rgba(255, 255, 255, 0.035); border: 1px solid var(--line);
+  border-top: 3px solid var(--cc); border-radius: 11px; padding: 11px 8px;
+  cursor: pointer; transition: all 0.15s var(--ease);
+}
+.soul-item:hover:not(:disabled) { background: color-mix(in srgb, var(--cc) 14%, transparent); transform: translateY(-2px); }
+.soul-item:disabled { opacity: 0.4; cursor: not-allowed; }
+.si-ic { font-size: 21px; color: var(--cc); }
+.si-name { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; }
+.si-lvl { font-size: 10.5px; color: var(--text-mute); }
+.si-cost { font-size: 12.5px; color: #c4b5fd; font-weight: 700; }
+
+.souls-banner {
+  text-align: center; font-size: 14px; letter-spacing: 0.08em; color: #c4b5fd;
+  background: rgba(196, 181, 253, 0.09); border: 1px solid rgba(196, 181, 253, 0.45);
+  border-radius: 11px; padding: 12px; margin-bottom: 16px;
+}
+.ub-boon { display: block; margin-top: 5px; font-size: 12px; color: var(--text-dim); }
+.mastery-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 14px; }
+.tt-mastery {
+  font-size: 10.5px; font-weight: 700; color: var(--gold);
+  border: 1px solid rgba(251, 191, 36, 0.45); border-radius: 7px; padding: 1px 7px;
+}
+
+/* --- element badges in the codex/inspector ------------------------------ */
+.elem-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10.5px; letter-spacing: 0.08em; font-weight: 700;
+  border-radius: 7px; padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--el) 55%, transparent);
+  color: var(--el); background: color-mix(in srgb, var(--el) 10%, transparent);
+}
+
+/* --- title screen lift --------------------------------------------------- */
+.title-logo { letter-spacing: 0.18em; }
+.title-panel { border-radius: 18px; }
+.profile-row { border-radius: 11px; transition: all 0.15s var(--ease); }
+.profile-row:hover { transform: translateX(3px); }
+#profile-name { border-radius: 10px; }
+
+/* --- inspector & shop polish -------------------------------------------- */
+.tower-card { border-radius: 10px; transition: all 0.14s var(--ease); }
+.tower-card:hover { transform: translateX(2px); }
+.tower-card.active { box-shadow: 0 0 0 1px var(--tc), 0 6px 22px -6px var(--tc); }
+.stat-grid { border-radius: 10px; }
+.upgrade-btn, .branch-btn, .asc-btn { border-radius: 11px; }
+.tal-node { border-radius: 11px; transition: all 0.15s var(--ease); }
+.choice-card { border-radius: 15px; backdrop-filter: blur(10px); }
+.toast { border-radius: 12px; backdrop-filter: blur(12px); }
+
+::-webkit-scrollbar-thumb { background: rgba(110, 165, 210, 0.3); border-radius: 6px; border: 2px solid transparent; background-clip: content-box; }
+
+/* ================================================= WORLD MAP =========== */
+
+.worldmap-wrap { position: relative; padding: 10px; }
+.wm-travelled { stroke: #4ade80; stroke-width: 0.55; stroke-dasharray: 2 1.6; opacity: 0.55; }
+.wm-road { stroke: #38e8ff; stroke-width: 0.5; stroke-dasharray: 1.8 1.8; opacity: 0.45;
+           animation: roadFlow 2.4s linear infinite; }
+.wm-road.on { opacity: 0.95; stroke-width: 0.8; }
+@keyframes roadFlow { to { stroke-dashoffset: -7.2; } }
+.wm-ping { animation: pingOut 2.6s ease-out infinite; transform-origin: center; }
+@keyframes pingOut { 0% { opacity: 0.75; } 70%,100% { opacity: 0; } }
+.wm-dest .wm-pin { transition: r 0.16s var(--ease), fill 0.16s var(--e-tap); }
+.wm-dest:hover .wm-pin { fill: #1d4a63; r: 3.6; }
+.wm-hint { text-align: center; font-size: 11.5px; color: var(--text-mute); margin-top: 4px; }
+@media (prefers-reduced-motion: reduce) { .wm-road, .wm-ping { animation: none; } }
+
+.theatre-body { display: grid; grid-template-columns: 1fr 296px; gap: 12px; align-items: start; }
+@media (max-width: 1050px) { .theatre-body { grid-template-columns: 1fr; } }
+.course-set { font-size: 11px; letter-spacing: 0.2em; color: var(--cyan); margin-bottom: 9px; text-align: center; }
+
+.brief { display: flex; flex-direction: column; gap: 9px; }
+.brief.inline { width: 100%; }
+.br-head { display: flex; justify-content: space-between; align-items: center; }
+.br-head b { font-size: 16px; letter-spacing: 0.11em; }
+.br-thumb { border: 1px solid var(--line); border-radius: 9px; overflow: hidden; background: #0b1018; }
+.br-thumb svg { display: block; width: 100%; height: auto; }
+.br-trait { font-size: 11px; letter-spacing: 0.07em; color: var(--cyan); }
+.br-rows { display: flex; flex-direction: column; gap: 6px; }
+.br-row { display: flex; gap: 8px; font-size: 11.5px; color: var(--text-dim); line-height: 1.45; align-items: baseline; }
+.br-row b { color: var(--text); }
+.br-ic { flex-shrink: 0; width: 15px; text-align: center; }
+.br-ic.gold { color: var(--gold); } .br-ic.green { color: var(--green); }
+.br-row.esc { color: #fca5a5; } .br-row.esc b { color: var(--red); }
+#tooltip .brief { width: 100%; }
+
+/* ============================================ TOWER SPRITE PREVIEWS ==== */
+
+.tower-icon { display: block; image-rendering: auto; }
+/* The card is a column of two blocks: `.lo-rest` is the row you always see,
+   `.lo-detail` the block that stays collapsed until you ask for it. */
+.lo-rest { display: flex; flex-direction: row; align-items: center; gap: 10px; }
+.lo-figure { position: relative; flex-shrink: 0; line-height: 0; }
+.lo-id { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.lo-card.locked { opacity: 0.5; filter: grayscale(0.7); cursor: not-allowed; }
+.lo-card.locked:hover { transform: none; }
+.lo-unlocked { display: flex; gap: 6px; }
+.tc-mini { flex-shrink: 0; display: block; }
+.tt-figure { display: flex; align-items: center; gap: 10px; margin: 8px 0 4px; }
+.tt-icon { flex-shrink: 0; }
+.si-fig { display: block; margin-bottom: 2px; }
+.si-el { font-size: 9.5px; color: var(--el); }
+.soul-item.unlock { gap: 2px; }
+.soul-grid.unlocks { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }
+
+/* ====================================== ELEMENTAL REACTIONS IN LOADOUT === */
+.lo-hint { font-size: 12px; color: var(--text-mute); line-height: 1.55; padding: 6px 0; }
+.lo-combos { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px;
+             padding-top: 8px; border-top: 1px solid var(--line); }
+.lo-combos b { font-size: 10px; letter-spacing: .14em; color: var(--text-mute); margin-right: 4px; }
+.lo-combos .chip { background: rgba(216,180,254,.12); border: 1px solid rgba(216,180,254,.4);
+                   color: #e9d5ff; font-size: 10.5px; letter-spacing: .06em; cursor: help; }
+
+/* ================================================== EXTRACT (world map) == */
+.extract-box { margin-top: 14px; padding: 14px; border: 1px solid rgba(74,222,128,.35);
+               border-radius: 10px; background: rgba(74,222,128,.06); }
+.extract-box b { display: block; font-size: 11px; letter-spacing: .18em; color: var(--green);
+                 margin-bottom: 6px; }
+.extract-box p { font-size: 11.5px; color: var(--text-dim); line-height: 1.55; margin: 0 0 10px; }
+.ex-souls { color: var(--gold); font-weight: 700; }
+#btn-extract { width: 100%; border-color: rgba(74,222,128,.5); color: #bbf7d0; }
+
+/* ============================== LOADOUT: owned-only grid ================ */
+.lo-locked-note {
+  grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px;
+  align-items: center;
+  padding: 14px 16px; border: 1px dashed var(--line-2); border-radius: 10px;
+  background: rgba(255,255,255,.015); text-align: center;
+}
+.lo-locked-note b { font-size: 12px; letter-spacing: .1em; color: var(--text-dim); }
+.lo-locked-note p { font-size: 11.5px; color: var(--text-mute); margin: 0; }
+
+/* ================================================== COMMANDER ABILITIES == */
+.ability-bar { display: flex; flex-direction: column; gap: 6px; }
+.abil {
+  position: relative; display: flex; align-items: center; gap: 9px;
+  padding: 7px 10px; border-radius: 9px; overflow: hidden; cursor: pointer;
+  border: 1px solid var(--line-2); background: rgba(255,255,255,.02);
+  color: var(--text-dim); text-align: left; width: 100%;
+  transition: border-color .15s var(--ease), background .15s var(--ease), transform .1s var(--ease);
+}
+.abil:hover { transform: translateY(-1px); }
+.abil .ab-sweep {
+  position: absolute; inset: 0; transform-origin: left center; transform: scaleX(0);
+  background: linear-gradient(90deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
+  pointer-events: none;
+}
+.abil .ab-icon { font-size: 17px; width: 22px; text-align: center; flex-shrink: 0; z-index: 1; }
+.abil .ab-body { display: flex; flex-direction: column; line-height: 1.2; flex: 1; min-width: 0; z-index: 1; }
+.abil .ab-body b { font-size: 11px; letter-spacing: .09em; color: var(--text); }
+.abil .ab-body em { font-style: normal; font-size: 9.5px; letter-spacing: .16em; color: var(--text-mute); }
+.abil .ab-cd { font-family: var(--mono, ui-monospace, monospace); font-size: 12px;
+               color: var(--text-mute); z-index: 1; min-width: 22px; text-align: right; }
+.abil.offense.ready { border-color: rgba(251,191,36,.55); background: rgba(251,191,36,.08); }
+.abil.offense.ready .ab-icon { color: #fbbf24; }
+.abil.defense.ready { border-color: rgba(125,211,252,.55); background: rgba(125,211,252,.08); }
+.abil.defense.ready .ab-icon { color: #7dd3fc; }
+.abil.live { border-color: #fff; box-shadow: 0 0 18px rgba(255,255,255,.18); }
+.abil:not(.ready):not(.live) { opacity: .55; cursor: default; }
+.abil-none { font-size: 11px; color: var(--text-mute); text-align: center; padding: 8px; }
+
+/* ══════════════════════════════════════════════ FACTION SELECT ═════════ */
+.faction-wrap { max-width: 1180px; margin: 0 auto; padding: 26px 20px 18px;
+                display: flex; flex-direction: column; gap: 18px; height: 100%; }
+.faction-head { text-align: center; }
+.eyebrow-sm { font-size: 10.5px; letter-spacing: .3em; color: var(--text-mute); margin-bottom: 8px; }
+.faction-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; flex: 1; min-height: 0; }
+@media (max-width: 1080px) { .faction-grid { grid-template-columns: repeat(2, 1fr); } }
+.fac-card {
+  display: flex; flex-direction: column; gap: 7px; text-align: left; cursor: pointer;
+  padding: 16px 15px; border-radius: 12px; overflow-y: auto;
+  border: 1px solid var(--line-2); background: linear-gradient(170deg, rgba(255,255,255,.03), rgba(0,0,0,.2));
+  transition: border-color .16s var(--ease), transform .16s var(--ease), box-shadow .16s var(--ease);
+}
+.fac-card:hover { transform: translateY(-3px); border-color: var(--fc); }
+.fac-card.on { border-color: var(--fc); box-shadow: 0 0 0 1px var(--fc), 0 14px 40px rgba(0,0,0,.5);
+               background: linear-gradient(170deg, color-mix(in srgb, var(--fc) 14%, transparent), rgba(0,0,0,.28)); }
+.fac-sigil { font-size: 30px; color: var(--fc); line-height: 1; }
+.fac-name { font-size: 14px; font-weight: 800; letter-spacing: .1em; color: var(--fc); }
+.fac-creed { font-size: 11px; font-style: italic; color: var(--fa); opacity: .85; }
+.fac-blurb { font-size: 11.5px; line-height: 1.55; color: var(--text-dim); }
+.fac-bonus { margin-top: auto; padding-top: 9px; border-top: 1px solid var(--line);
+             font-size: 11.5px; color: var(--text-dim); line-height: 1.5; }
+.fac-bonus b { display: block; font-size: 10px; letter-spacing: .16em; color: var(--fc); margin-bottom: 3px; }
+.fac-cmd { font-size: 10.5px; color: var(--text-mute); }
+.fac-cmd b { color: var(--text-dim); }
+
+/* ══════════════════════════════════════════════════ GALAXY MAP ═════════ */
+/* The map is the campaign -- it gets the screen. 56vh read as a postage stamp. */
+.galaxy { width: 100%; height: auto; max-height: 72vh; display: block; }
+.gx-status { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+             padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px;
+             background: rgba(255,255,255,.02); }
+.gx-flag { font-size: 12px; font-weight: 800; letter-spacing: .12em; color: var(--fc); }
+.gx-hold { font-size: 11.5px; color: var(--text-dim); }
+.gx-souls { font-size: 12px; color: var(--gold); margin-left: auto; }
+.gx-bar { display: flex; flex: 1; min-width: 140px; height: 7px; border-radius: 4px;
+          overflow: hidden; border: 1px solid var(--line); }
+.gx-bar i { background: var(--fc); opacity: .8; }
+.gx-link { stroke: rgba(140,170,220,.16); stroke-width: .35; stroke-dasharray: 1.4 1.4; }
+.gx-link.on { stroke: rgba(120,220,255,.5); }
+.gx-halo { fill: color-mix(in srgb, var(--fc) 10%, transparent); stroke: var(--fc);
+           stroke-width: .3; opacity: .5; }
+.gx-sys.locked { opacity: .35; }
+.gx-sysname { font-family: var(--sans, sans-serif); font-size: 2.6px; font-weight: 800;
+              letter-spacing: .32px; fill: var(--text); }
+.gx-sysmeta { font-family: var(--sans, sans-serif); font-size: 2px; letter-spacing: .26px;
+              fill: var(--text-mute); }
+.gx-world { cursor: pointer; }
+.gx-world .gx-dot { fill: var(--fc); stroke: rgba(0,0,0,.6); stroke-width: .25; }
+.gx-world.shut { opacity: .3; cursor: not-allowed; }
+.gx-world.open:hover .gx-dot { r: 2.9; filter: brightness(1.5); }
+.gx-world.mine .gx-dot { stroke: #fff; stroke-width: .4; }
+.gx-world.sel .gx-dot { stroke: #fff; stroke-width: .6; }
+.gx-seat { fill: none; stroke: var(--fc); stroke-width: .3; opacity: .7;
+           stroke-dasharray: .9 .7; }
+.gx-stars { font-size: 2.1px; fill: #fbbf24; letter-spacing: .1px; }
+.gx-world:focus { outline: none; }
+.gx-world:focus .gx-dot { stroke: #fff; stroke-width: .55; }
+.br-stars { display: flex; align-items: center; gap: 2px; font-size: 14px; color: #3b4757; }
+.br-stars .on { color: #fbbf24; }
+.br-stars em { font-style: normal; font-size: 10px; letter-spacing: .14em; color: var(--text-mute); margin-left: 7px; }
+.br-foot { font-size: 10.5px; color: var(--text-mute); line-height: 1.5; padding-top: 8px;
+           border-top: 1px solid var(--line); }
+
+/* ═══════════════════════════════════════════ REWARD SUMMARY ════════════ */
+.rw { display: flex; flex-direction: column; gap: 14px; cursor: pointer; }
+.rw-verdict { display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; }
+.rw-flag { font-size: 30px; color: var(--fc); line-height: 1; }
+.rw-verdict b { font-size: 27px; font-weight: 800; letter-spacing: .12em; }
+.rw-verdict.win b { color: var(--green); text-shadow: 0 0 26px rgba(74,222,128,.4); }
+.rw-verdict.lose b { color: var(--red); text-shadow: 0 0 26px rgba(239,68,68,.35); }
+.rw-verdict em { font-style: normal; font-size: 12.5px; color: var(--text-dim); }
+
+.rw-stars { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.rw-star { font-size: 40px; color: #26313f; line-height: 1;
+           transition: transform .28s var(--e-pop), color .28s var(--e-tap), text-shadow .28s var(--e-tap); }
+.rw-star.on { color: #fbbf24; transform: scale(1.16); text-shadow: 0 0 26px rgba(251,191,36,.6); }
+.rw-starnote { width: 100%; text-align: center; font-size: 11.5px; color: var(--text-mute); }
+
+.rw-track { border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px;
+            background: rgba(255,255,255,.02); display: flex; flex-direction: column; gap: 7px; }
+.rw-head { display: flex; justify-content: space-between; align-items: baseline;
+           font-size: 12px; letter-spacing: .1em; color: var(--text-dim); }
+.rw-lvl b { color: var(--cc, var(--cyan)); font-size: 15px; display: inline-block; }
+.rw-lvl b.pop { animation: rwPop .4s var(--e-pop); }
+@keyframes rwPop { 0% { transform: scale(1); } 45% { transform: scale(1.6); color: #fff; } 100% { transform: scale(1); } }
+.rw-bar { height: 9px; border-radius: 5px; background: rgba(0,0,0,.45);
+          border: 1px solid var(--line); overflow: hidden; }
+.rw-bar i { display: block; height: 100%; width: 0;
+            background: linear-gradient(90deg, var(--cc, var(--cyan)), #fff);
+            transition: width 1s var(--e-tap); }
+#rw-soulfill { background: linear-gradient(90deg, var(--gold), #fff7d6); }
+.rw-foot { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-mute); }
+.rw-lvlup { opacity: 0; color: var(--green); font-weight: 800; letter-spacing: .16em;
+            transition: opacity .3s var(--e-tap); }
+.rw-lvlup.show { opacity: 1; }
+
+.rw-mastery { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+              opacity: 0; transform: translateY(6px); transition: opacity .4s var(--e-tap), transform .4s var(--e-tap); }
+.rw-mastery.show { opacity: 1; transform: none; }
+.rw-mchip { font-size: 10.5px; letter-spacing: .06em; padding: 3px 9px; border-radius: 6px;
+            border: 1px solid var(--line-2); color: var(--text-mute); cursor: help; }
+.rw-mchip b { color: var(--green); }
+
+.rw-rivals { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px;
+             border: 1px solid rgba(239,68,68,.28); border-radius: 9px; background: rgba(239,68,68,.05); }
+.rw-rivals b { font-size: 10px; letter-spacing: .18em; color: var(--red); }
+.rw-rivals span { font-size: 11.5px; color: var(--fc); }
+
+.rw-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+            background: var(--line); border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+.rw-stats div { background: var(--panel, #0d1420); padding: 9px 6px; text-align: center; }
+.rw-stats b { display: block; font-size: 18px; color: var(--text); }
+.rw-stats span { font-size: 9.5px; letter-spacing: .12em; color: var(--text-mute); }
+
+.rw-damage { display: flex; flex-direction: column; gap: 4px; }
+.rw-dmg { display: grid; grid-template-columns: 140px 1fr 62px; gap: 8px; align-items: center; font-size: 11px; }
+.rw-dname { color: var(--tc); letter-spacing: .05em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rw-dbar { height: 6px; background: rgba(0,0,0,.4); border-radius: 3px; overflow: hidden; }
+.rw-dbar i { display: block; height: 100%; background: var(--tc); opacity: .8; }
+.rw-dnum { text-align: right; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.rw-skip { text-align: center; font-size: 10px; letter-spacing: .18em; color: var(--text-mute); opacity: .6; }
+@media (prefers-reduced-motion: reduce) {
+  .rw-star, .rw-bar i, .rw-mastery { transition: none !important; animation: none !important; }
+}
+
+/* ═══════════════════════════════════════ TOWER PREVIEW (soul shop) ═════ */
+.tp { display: flex; flex-direction: column; gap: 7px; }
+.tp-stage { width: 100%; height: auto; border-radius: 8px; display: block;
+            background: linear-gradient(180deg, #0a1018, #0d141f);
+            border: 1px solid var(--line); }
+.soul-grid.cmds { grid-template-columns: repeat(auto-fill, minmax(122px, 1fr)); }
+.soul-item.cmd .si-ic { font-size: 21px; }
+
+/* ═════════════════════════════ HUD DENSITY (huashu: quiet chrome) ══════ */
+/* The header was consuming 185px of a 768px viewport -- a quarter of the
+   screen for chrome, which is what squeezed the board. Everything below is
+   the same information at a density that leaves the battlefield the space. */
+#hud { padding: 5px 12px; gap: 10px; }
+.cmdr { padding: 4px 10px; min-width: 190px; gap: 2px; border-left-width: 3px; }
+.cmdr.right { border-right-width: 3px; }
+.cmdr-tag { font-size: 8.5px; letter-spacing: .2em; }
+.cmdr-stats { gap: 10px; }
+.cmdr-stats b { font-size: 15px; }
+.s-tow b { font-size: 12px; }
+.hud-centre { gap: 4px; }
+.wave-badge { padding: 2px 10px; }
+.wave-name { font-size: 10px; letter-spacing: .13em; }
+.drift, .chip-rows, .chip-row { gap: 4px; }
+.drift-row .chip, .chip-row .chip { font-size: 9.5px; padding: 1px 6px; }
+#drift-strip, #mod-strip { gap: 4px; }
+.ctl-group { gap: 4px; }
+.ctl-group .icon-btn, .speed-btn { padding: 2px 7px; font-size: 11px; }
+#stage { padding: 6px 10px; gap: 9px; }
+#sidebar { gap: 7px; }   /* width lives in style.css: 292px / 580px two-column */
+.panel { padding: 8px 10px; }
+.section-label { font-size: 9.5px; letter-spacing: .16em; margin-bottom: 5px; }
+.tower-card { padding: 5px 8px; gap: 8px; }
+.tc-name { font-size: 11.5px; }
+.tc-role { font-size: 9.5px; }
+.btn-wave { padding: 7px 12px; }
+@media (max-height: 820px) {
+  .cmdr-stats b { font-size: 14px; }
+  .tower-card .tc-role { display: none; }
+}
+.cmd-fac { font-size: 9.5px; letter-spacing: .1em; color: var(--fc); }
+.cmd-more { font-size: 11px; color: var(--text-mute); padding: 10px 12px; line-height: 1.5;
+            border: 1px dashed var(--line-2); border-radius: 9px; text-align: center; }
+
+/* ═════════════════════════════════════════ GALAXY VICTORY ══════════════ */
+.gv { display: flex; flex-direction: column; align-items: center; gap: 14px;
+      text-align: center; padding: 44px 24px; }
+.gv-sigil { font-size: 62px; color: var(--fc); line-height: 1;
+            text-shadow: 0 0 50px color-mix(in srgb, var(--fc) 55%, transparent); }
+.gv h2 { font-size: clamp(26px, 5vw, 40px); font-weight: 800; letter-spacing: .12em; color: var(--fc); }
+.gv-sub { font-size: 14px; color: var(--text-dim); max-width: 54ch; line-height: 1.6; }
+.gv-sub b { color: var(--text); }
+.gv-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line);
+            border: 1px solid var(--line); border-radius: 10px; overflow: hidden; min-width: 340px; }
+.gv-stats div { background: rgba(255,255,255,.02); padding: 13px 10px; }
+.gv-stats b { display: block; font-size: 24px; color: var(--fc); }
+.gv-stats span { font-size: 10px; letter-spacing: .12em; color: var(--text-mute); }
+.gv-next { font-size: 12px; color: var(--text-mute); font-style: italic; }
+.gx-seats { font-size: 11.5px; color: var(--text-dim); cursor: help; }
+
+/* ═════════════════════════════════ CODEX: lore, factions, elements ═════ */
+.lore-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
+.lore-entry { border: 1px solid var(--line); border-radius: 9px; padding: 12px 14px;
+              background: rgba(255,255,255,.015); }
+.lore-entry b { display: block; font-size: 12px; letter-spacing: .14em; color: var(--cyan);
+                margin-bottom: 6px; }
+.lore-entry p { font-size: 12px; line-height: 1.62; color: var(--text-dim); margin: 0; }
+.codex-entry.fac .fx-creed { display: block; font-style: italic; font-size: 11px;
+                             color: var(--tc); opacity: .85; margin-bottom: 5px; }
+.codex-entry .fx-bonus { display: block; margin-top: 7px; padding-top: 7px;
+                         border-top: 1px solid var(--line); font-size: 11px; color: var(--text-dim); }
+.codex-entry .fx-bonus b { color: var(--tc); }
+.codex-entry .el-towers, .codex-entry .cb-recipe, .codex-entry .ab-kind,
+.codex-entry .cx-title, .codex-entry .cx-abil {
+  display: block; font-size: 10.5px; color: var(--text-mute); margin-top: 4px; letter-spacing: .04em; }
+.codex-entry .cb-recipe, .codex-entry .cx-abil { color: var(--tc); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ACCENT TREATMENT — replacing the left-rail card
+
+   huashu-design explicitly lists "rounded corners with left border accents" as
+   an AI-slop tell, and it was the dominant motif here: ten separate card types
+   were a rounded rectangle with a 4px coloured rail down one edge.
+
+   The replacement is chosen for the subject rather than for novelty. These are
+   military readouts on alien hardware, so panels are CHAMFERED — one corner
+   cut, the way a bezel is machined — and the accent becomes a thin rule across
+   the top edge plus a faint wash pulled from the same colour. It reads as a
+   fabricated component instead of a web card, and it costs nothing to render.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.cmdr, .cd-head, .tt-tree, .tower-card, .codex-entry, .toast,
+.soul-item, .lo-card, .cmd-card, .fac-card, .abil, .profile-row {
+  border-left: 1px solid var(--line) !important;
+  border-right: 1px solid var(--line);
+  position: relative;
+  /* one machined corner, top-left, sized so no content ever falls inside it */
+  clip-path: polygon(9px 0, 100% 0, 100% 100%, 0 100%, 0 9px);
+  border-radius: 0 8px 8px 8px;
+}
+.cmdr::before, .cd-head::before, .tt-tree::before, .tower-card::before,
+.codex-entry::before, .soul-item::before, .lo-card::before,
+.cmd-card::before, .fac-card::before, .abil::before, .profile-row::before {
+  content: ""; position: absolute; left: 9px; right: 0; top: 0; height: 2px;
+  background: var(--cc, var(--tc, var(--fc, var(--line-2))));
+  opacity: .85; pointer-events: none;
+}
+/* the rival panel is a mirror image, so its chamfer is on the other side */
+.cmdr.right {
+  border-right: 1px solid var(--line) !important;
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%);
+  border-radius: 8px 0 8px 8px;
+}
+.cmdr.right::before { left: 0; right: 9px; }
+
+/* the accent wash: colour pulled from the card's own variable, kept very low */
+.cmd-card, .fac-card, .soul-item, .lo-card, .tower-card {
+  background-image: linear-gradient(180deg,
+    color-mix(in srgb, var(--cc, var(--tc, var(--fc, transparent))) 7%, transparent),
+    transparent 42%);
+}
+
+/* keep the reward summary and lore panels plain — they are documents, not
+   components, and chamfering everything would flatten the distinction */
+.rw-track, .lore-entry, .extract-box, .gv-stats, .rw-stats { clip-path: none; border-radius: 10px; }
+.rw-track::before, .lore-entry::before, .extract-box::before { content: none; }
+
+/* the active profile keeps its identity through the top rule, not a left rail */
+.profile-row { --cc: var(--line-2); }
+.profile-row.active { --cc: var(--cyan); border-left-color: var(--line) !important; }
+
+/* ═══════════════════════════════ MAIN MENU (SP / MP / OPTIONS) ═════════ */
+.menu-main { display: flex; flex-direction: column; gap: 10px; width: min(340px, 86vw);
+             margin: 18px auto 0; }
+.menu-btn { font-size: 15px; letter-spacing: .22em; padding: 13px 18px; }
+.menu-panel { width: min(460px, 92vw); margin: 14px auto 0; display: flex;
+              flex-direction: column; gap: 12px; }
+.title-logo span { color: inherit !important; background: none !important;
+                   -webkit-text-fill-color: currentColor !important; }
+.title-sub { color: var(--cyan) !important; letter-spacing: .5em; font-size: 12px; }
+
+/* faction crests */
+.fac-crest { display: block; width: 46px; height: 46px; color: var(--fc); }
+.fac-crest svg { width: 100%; height: 100%; display: block;
+                 filter: drop-shadow(0 0 10px color-mix(in srgb, var(--fc) 55%, transparent)); }
+
+/* prestige */
+.pstars { font-style: normal; color: var(--gold); letter-spacing: .05em;
+          text-shadow: 0 0 8px rgba(251,191,36,.6); }
+.prestige-btn { border-color: rgba(251,191,36,.6); color: #fde68a; }
+.prestige-btn:hover { background: rgba(251,191,36,.12); }
+.prestige-tag { font-size: 10.5px; letter-spacing: .08em; color: var(--gold);
+                padding: 4px 9px; border: 1px solid rgba(251,191,36,.35);
+                border-radius: 7px; cursor: help; }
+
+/* galaxy tier chip */
+.gx-tier { font-size: 11px; font-weight: 800; letter-spacing: .14em; color: var(--gold);
+           cursor: help; }
+
+/* multiverse matchmaking */
+.mv-body { display: flex; flex-direction: column; align-items: center; gap: 13px;
+           padding: 26px 22px; text-align: center; min-width: 300px; }
+.mv-title { font-size: 15px; letter-spacing: .24em; color: var(--cyan); }
+.mv-text { font-size: 12.5px; color: var(--text-dim); line-height: 1.6; max-width: 40ch; }
+.mv-spin { width: 34px; height: 34px; border-radius: 50%;
+           border: 3px solid rgba(56,232,255,.18); border-top-color: var(--cyan);
+           animation: mvspin 0.9s linear infinite; }
+@keyframes mvspin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .mv-spin { animation: none; } }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DESIGN PASS — typography, states, motion
+   (huashu / hyperframes / taste digests: two faces + numeric mono, modular
+    scale, 60-30-10 colour, all interactive states, 150-250ms ease-out motion,
+    nothing animated that fights the canvas loop)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+body { letter-spacing: .01em; }
+
+/* the condensed display voice, only where a heading speaks */
+h1, h2, h3, .logo, .title-logo, .section-label, .menu-btn, .btn-big,
+.cd-name, .cmd-name, .fac-name, .rw-verdict b, .gv h2, .mv-title,
+.wave-name, .tt-head, .br-head b, .gx-sysname, .end-title, .branch-title {
+  font-family: var(--display);
+  letter-spacing: .12em;
+}
+
+/* genuine monospace survives ONLY where digits align */
+.cmdr-stats, .cmdr-stats b, .xp-num, .ub-cost, .tc-cost, .bb-cost, .si-cost,
+.tt-stats, .rw-stats b, .rw-dnum, .gx-souls, .gx-sysmeta, .gx-stars,
+.ab-cd, .lo-stats b, .pr-meta, .soul-bank, .rw-foot, .bb-main i {
+  font-family: var(--num);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── interactive states: hover lift, pressed drop, visible focus ───────── */
+.btn, .abil, .tower-card, .lo-card, .cmd-card, .fac-card, .soul-item,
+.profile-row, .gx-world {
+  transition: transform .16s var(--e-tap), border-color .16s var(--e-tap), background-color .16s var(--e-tap), box-shadow .16s var(--e-tap);
+}
+.btn:active, .tower-card:active, .lo-card:active, .cmd-card:active,
+.fac-card:active, .soul-item:active, .profile-row:active {
+  transform: translateY(1px) scale(.995);
+}
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 4px; }
+.btn { min-height: 34px; }
+
+/* ── screen + menu motion, honest 200ms ease-out ───────────────────────── */
+.screen:not(.hidden) { animation: scrIn .22s var(--e-tap); }
+@keyframes scrIn { from { opacity: 0; transform: translateY(6px); } }
+.menu-main .menu-btn { animation: menuRise .32s var(--e-tap) backwards; }
+.menu-main .menu-btn:nth-child(1) { animation-delay: .05s; }
+.menu-main .menu-btn:nth-child(2) { animation-delay: .11s; }
+.menu-main .menu-btn:nth-child(3) { animation-delay: .17s; }
+@keyframes menuRise { from { opacity: 0; transform: translateY(10px); } }
+
+/* ── the wordmark and emblem ───────────────────────────────────────────── */
+.title-logo { font-size: clamp(44px, 7.5vw, 76px); line-height: .95;
+              letter-spacing: .16em; }
+.title-logo span { display: block; font-weight: 300; letter-spacing: .34em;
+                   font-size: .62em; color: var(--text-dim) !important; }
+.title-emblem { width: min(340px, 70vw); margin: 6px auto 10px; }
+.title-emblem svg { width: 100%; height: auto; display: block;
+                    filter: drop-shadow(0 0 26px rgba(56,232,255,.14)); }
+.em-ring { transform-origin: 110px 55px; animation: emOrbit 44s linear infinite; }
+@keyframes emOrbit { to { transform: rotate(360deg); } }
+
+/* ── confirm modal ─────────────────────────────────────────────────────── */
+.modal.cfm { display: flex; flex-direction: column; gap: 12px; padding: 22px 24px;
+             min-width: 320px; max-width: 420px; }
+.modal.cfm > b { font-family: var(--display); font-size: 17px; letter-spacing: .16em;
+                 color: var(--text); }
+#cfm-body p { font-size: 13.5px; color: var(--text-dim); line-height: 1.6; margin: 0; }
+.cfm-list { list-style: none; padding: 6px 0 0; margin: 0; display: flex;
+            flex-direction: column; gap: 5px; }
+.cfm-list li { font-size: 13px; color: var(--text-dim); }
+.cfm-list b { color: var(--gold); }
+
+/* ── the base-level button ─────────────────────────────────────────────── */
+.base-btn { display: flex; justify-content: space-between; align-items: center;
+            gap: 10px; width: 100%; padding: 8px 12px;
+            border-color: rgba(125,211,252,.4); }
+.base-btn .bb-main { display: flex; align-items: baseline; gap: 7px; }
+.base-btn .bb-main b { font-family: var(--display); font-size: 12px;
+                       letter-spacing: .12em; color: #bae6fd; }
+.base-btn .bb-main i { font-style: normal; }
+.base-btn .bb-main em { font-style: normal; font-size: 10.5px; color: var(--text-mute); }
+.base-btn .bb-cost { color: var(--gold); font-size: 12px; }
+.base-btn.poor { opacity: .55; }
+
+@media (prefers-reduced-motion: reduce) {
+  .screen:not(.hidden), .menu-main .menu-btn, .em-ring { animation: none !important; }
+}
+
+/* ═════════════ DESIGN PASS II — digest refinements ═════════════════════ */
+/* One motion curve everywhere (taste-skill: 0.16,1,0.3,1), transform/opacity only */
+.btn, .abil, .tower-card, .lo-card, .cmd-card, .fac-card, .soul-item,
+.profile-row, .gx-world, .menu-btn {
+  transition-timing-function: var(--e-enter);
+}
+.screen:not(.hidden) { animation-timing-function: var(--e-enter); }
+
+/* Weight contrast: featherweight eyebrows against heavy heads (Segoe UI
+   Variable spans 100-900 on Win11; the spread is what reads as designed) */
+h1, .logo, .title-logo, .cd-name, .gv h2, .rw-verdict b, .end-title { font-weight: 800; }
+.section-label, .eyebrow-sm, .cmdr-tag, .tt-role, .cd-title, .cmd-title,
+.wm-hint, .gx-sysmeta, .fac-creed {
+  font-weight: 300; letter-spacing: .18em;
+}
+
+/* Neutral chrome: faction colour is game DATA, not decoration. Labels and
+   plumbing go slate; cyan/gold/purple/red stay on faction-owned elements. */
+.section-label { color: var(--text-mute); }
+.logo span, .title-logo span { color: var(--text-dim) !important; }
+.gx-link { stroke: rgba(148,170,195,.18); }
+.gx-link.on { stroke: rgba(168,189,208,.55); }
+.wm-hint { color: var(--text-mute); }
+
+/* Glow discipline: ONE meaningful glow — the thing you have selected. */
+.title-emblem svg { filter: drop-shadow(0 0 18px rgba(56,232,255,.10)); }
+.fac-crest svg { filter: none; }
+.fac-card.on .fac-crest svg {
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--fc) 60%, transparent));
+}
+
+/* star requirements + boons on the galaxy */
+.br-starreq { display: flex; flex-direction: column; gap: 3px; margin: 2px 0 4px; }
+.br-starreq div { display: flex; gap: 8px; align-items: baseline; font-size: 11px; color: var(--text-mute); }
+.br-starreq span { color: #4b5a6b; min-width: 34px; letter-spacing: .05em; }
+.br-starreq .got span { color: var(--gold); }
+.br-starreq .got em { color: var(--text-dim); }
+.br-starreq em { font-style: normal; }
+.gx-boons { display: flex; gap: 5px; align-items: center; }
+.gx-boon { font-style: normal; font-size: 13px; cursor: help; padding: 1px 5px;
+           border: 1px solid rgba(74,222,128,.35); border-radius: 6px; color: var(--green); }
+.gx-noboon { font-style: normal; font-size: 10.5px; color: var(--text-mute); }
+
+/* ═══════════════════════════ ENEMY DOSSIER ═════════════════════════════ */
+.modal.dossier { min-width: 340px; max-width: 420px; padding: 20px 22px; }
+.ei-eyebrow { font-family: var(--display); font-weight: 300; font-size: 10px;
+              letter-spacing: .3em; color: var(--text-mute); margin-bottom: 4px; }
+.ei-name { font-family: var(--display); font-weight: 800; font-size: 26px;
+           letter-spacing: .1em; margin-bottom: 10px; }
+.ei-stage-wrap { border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+                 background: linear-gradient(180deg,#0a1018,#0c1420); margin-bottom: 10px; }
+.ei-stage { width: 100%; height: auto; display: block; }
+.ei-desc { font-size: 13px; color: var(--text-dim); line-height: 1.55; margin-bottom: 10px; }
+.ei-traits { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+.ei-traits span { font-family: var(--display); font-weight: 300; font-size: 9.5px;
+                  letter-spacing: .14em; padding: 2px 8px; border: 1px solid var(--line-2);
+                  border-radius: 5px; color: var(--text-dim); }
+.ei-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px;
+            background: var(--line); border: 1px solid var(--line); border-radius: 8px;
+            overflow: hidden; margin-bottom: 10px; }
+.ei-stats div { background: rgba(255,255,255,.02); padding: 8px 6px; text-align: center; }
+.ei-stats span { display: block; font-size: 8.5px; letter-spacing: .16em; color: var(--text-mute); }
+.ei-stats b { font-family: var(--num); font-size: 15px; color: var(--text); }
+.ei-elems { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.ei-elems > div { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; font-size: 11px; }
+.ei-elems span:first-child { font-size: 9px; letter-spacing: .16em; color: var(--text-mute); min-width: 56px; }
+.ei-el { color: var(--el); border: 1px solid color-mix(in srgb, var(--el) 40%, transparent);
+         padding: 1px 7px; border-radius: 5px; font-size: 10.5px; }
+.ei-none { color: var(--text-mute); font-size: 10.5px; }
+#ei-go { width: 100%; }
+
+/* ══════════════════════════ ABILITY FLASH + DIALOGUE ═══════════════════ */
+#abil-flash { position: fixed; top: 64px; left: 50%; z-index: 240; pointer-events: none;
+  display: flex; align-items: center; gap: 10px; padding: 8px 16px;
+  border: 1px solid var(--line-2); border-radius: 10px;
+  background: rgba(10,15,24,.94); opacity: 0;
+  transform: translateX(-50%) translateY(-8px); transition: opacity .2s var(--e-tap), transform .25s var(--e-enter); }
+#abil-flash.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#abil-flash.offense { box-shadow: 0 0 24px rgba(251,191,36,.25); }
+#abil-flash.defense { box-shadow: 0 0 24px rgba(125,211,252,.25); }
+#abil-flash .af-port svg { display: block; border-radius: 6px; }
+#abil-flash .af-body { display: flex; flex-direction: column; line-height: 1.25; }
+#abil-flash .af-body b { font-family: var(--display); font-size: 12px; letter-spacing: .14em; }
+#abil-flash .af-body em { font-style: normal; font-size: 11px; color: var(--text-dim); }
+
+.modal.vs { min-width: 380px; max-width: 480px; padding: 22px 24px; }
+.bi-where { font-family: var(--display); font-weight: 300; font-size: 10px;
+            letter-spacing: .3em; color: var(--text-mute); text-align: center; margin-bottom: 12px; }
+.bi-heads { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 14px; }
+.bi-side { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.bi-side b { font-family: var(--display); font-size: 13px; letter-spacing: .14em; }
+.bi-side svg { border-radius: 8px; }
+.bi-vs { font-family: var(--display); font-weight: 300; font-size: 15px;
+         letter-spacing: .2em; color: var(--text-mute); }
+.bi-lines { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.bi-line { font-size: 13px; line-height: 1.55; color: var(--text-dim); margin: 0;
+           opacity: 0; animation: biLine .4s var(--e-enter) forwards; }
+.bi-line.foe { padding-right: 18px; }
+.bi-line.you { padding-left: 18px; }
+@keyframes biLine { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
+#bi-go { width: 100%; }
+.cmd-icon svg, .cd-icon svg { display: block; }
+@media (prefers-reduced-motion: reduce) { .bi-line { animation: none; opacity: 1; } }
+
+/* ══════════════════════════ GALAXY MAP II — depth + routes ═════════════ */
+.gx-link { stroke-width: .32; stroke-dasharray: 1.1 1.5; }
+.gx-ring { fill: none; stroke: var(--fc); stroke-width: .35; opacity: .8; }
+.gx-world .gx-dot { fill: #0d1622; stroke: none; }
+.gx-world.mine .gx-ring { stroke: #fff; stroke-width: .5; }
+.gx-world.open:hover .gx-ring { stroke-width: .7; }
+.gx-world.has-planet.open:hover .gx-dot { r: 2.0; filter: none; }
+.gx-world.has-planet.seat.open:hover .gx-dot { r: 2.7; }
+.gx-world.has-planet.open:hover .gx-planet { filter: brightness(1.45); }
+.gx-pip { fill: #26313f; }
+.gx-pip.on { fill: var(--gold); }
+.gx-halo { stroke-dasharray: .5 1.1; opacity: .4; }
+
+/* ════════════ GLOBAL BACKDROP — the whole app sits in space ════════════ */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(58% 42% at 18% 12%, rgba(64,46,140,.16), transparent 70%),
+    radial-gradient(50% 40% at 84% 78%, rgba(14,116,144,.13), transparent 70%),
+    radial-gradient(30% 26% at 68% 22%, rgba(120,60,160,.08), transparent 70%),
+    var(--bg);
+}
+.setup-wrap, .title-wrap, .faction-wrap { position: relative; z-index: 0; }
+
+/* screen headers share one voice: light eyebrow rule under a heavy title */
+.setup-head { padding-bottom: 10px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.setup-head .tagline { font-weight: 300; letter-spacing: .12em; }
+
+/* HUD as one cockpit strip: hairlines, not floating cards */
+.cmdr { clip-path: none !important; border: none !important; background: transparent !important; }
+.cmdr::before { content: none !important; }
+.hud-side .cmdr { border-left: 2px solid var(--cc, var(--cyan)) !important; padding-left: 12px; }
+.cmdr.right { border-left: none !important; border-right: 2px solid var(--rose) !important; padding-right: 12px; }
+#hud { background: linear-gradient(180deg, rgba(13,19,30,.96), rgba(9,14,22,.92)); }
+
+/* ═══════════════════ CONTESTED WORLDS + THREE-WAY HUD ══════════════════ */
+.gx-ring2 { stroke: var(--fc); }
+.gx-tri { font-size: 2.6px; fill: #fca5a5; }
+.br-contested { border: 1px solid rgba(239,68,68,.35); border-radius: 8px;
+                background: rgba(239,68,68,.06); padding: 8px 10px; display: flex;
+                flex-direction: column; gap: 4px; }
+.br-contested b { font-family: var(--display); font-size: 10.5px; letter-spacing: .14em; color: #fca5a5; }
+.br-contested span { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+.br-contested i { font-style: normal; font-weight: 600; }
+#hud-rivals { display: flex; align-items: center; gap: 8px; }
+/* Belt and braces for a panel that JS creates lazily: if any future path
+   forgets to remove it, the field's own body class still takes it out. This
+   sets no width and no height -- it only removes the box from the flow, so it
+   cannot resize one axis of a box the base rule sized. */
+body:not(.tri-field) #rival3 { display: none; }
+.cmdr.third { border-right-width: 2px !important; opacity: .95; }
+/* Widened from `.cmdr.third.down`: the third commander's panel is built at
+   runtime and carried the class, the static RIVAL panel beside it never
+   could, so a fallen first rival stayed at full brightness. BATCH-C/nside */
+.cmdr.down { opacity: .45; filter: grayscale(.7); }
+.bi-heads.tri .bi-side b { font-size: 11px; }
+.bi-heads.tri { gap: 10px; }
+.rw-sysbounty { color: var(--gold); font-size: 11px; }
+.insp.boosted { box-shadow: inset 0 0 0 1px rgba(251,191,36,.35); }
+.insp-boost { font-family: var(--display); font-size: 10px; letter-spacing: .12em;
+              color: #fde68a; background: rgba(251,191,36,.10);
+              border-bottom: 1px solid rgba(251,191,36,.3); padding: 4px 8px; margin: -1px -1px 6px; }
+
+/* ════════════════ PAINTED ART PACK (present only when generated) ═══════ */
+.cmd-portrait.art { display: inline-block; position: relative; border-radius: 8px;
+  overflow: hidden; border: 1px solid color-mix(in srgb, var(--cc) 45%, transparent);
+  box-shadow: inset 0 -18px 26px -14px rgba(0,0,0,.85); }
+.cmd-portrait.art img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cmd-portrait.art::after { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgba(4,8,14,.55));
+  pointer-events: none; }
+.fac-crest img { display: block; width: 100%; height: auto; object-fit: contain;
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--fc) 55%, transparent)); }
+body.has-artpack::before { background-image: var(--art-nebula); background-size: cover;
+  background-position: center; opacity: .55; }
+/* With key art present the painting IS the title screen: full bleed behind a
+   scrim heavy enough for the menu to stay readable, the starfield canvas
+   between the two, and the redundant SVG emblem withdrawn. */
+/* TITLE BACKDROP (owner-set, Session 16): the painted key art is GONE. The
+   screen is a pure nebula gradient with the live starfield over it, which
+   reads deeper than a photograph and lets the stars be the whole event.
+   Four overlapping radial clouds in the brand hues, drifting slowly against
+   each other so the field never sits still, over a void-black ground. */
+#screen-title { position: relative; overflow: hidden auto;
+  background: radial-gradient(60% 48% at 18% 22%, rgba(124, 58, 237, .30), transparent 68%),
+              radial-gradient(52% 44% at 84% 28%, rgba(255, 47, 214, .22), transparent 66%),
+              radial-gradient(70% 52% at 62% 88%, rgba(56, 232, 255, .18), transparent 70%),
+              radial-gradient(46% 38% at 30% 74%, rgba(251, 191, 36, .10), transparent 68%),
+              linear-gradient(180deg, #070b14 0%, #05070e 55%, #04060b 100%); }
+/* The drifting cloud layer: the same palette offset and animated, multiplied
+   over the base so the two never separate into visible bands. */
+#screen-title::before { content: ""; position: absolute; inset: -20%;
+  background: radial-gradient(38% 30% at 30% 40%, rgba(168, 85, 247, .22), transparent 70%),
+              radial-gradient(34% 28% at 72% 62%, rgba(56, 232, 255, .16), transparent 70%),
+              radial-gradient(30% 26% at 52% 20%, rgba(255, 47, 214, .14), transparent 70%);
+  filter: blur(38px); z-index: 0; animation: nebulaDrift 46s ease-in-out infinite alternate; }
+/* A fine vignette so the menu keeps its contrast at every viewport size. */
+#screen-title::after { content: ""; position: absolute; inset: 0;
+  background: radial-gradient(88% 68% at 50% 44%, rgba(4, 6, 11, 0) 0%, rgba(4, 6, 11, .42) 66%, rgba(4, 6, 11, .84) 100%);
+  z-index: 1; }
+@keyframes nebulaDrift {
+  0%   { transform: translate3d(-2.5%, -1.5%, 0) scale(1.04); }
+  50%  { transform: translate3d(1.5%, 2%, 0)     scale(1.10); }
+  100% { transform: translate3d(3%, -2%, 0)      scale(1.05); }
+}
+@media (prefers-reduced-motion: reduce) { #screen-title::before { animation: none; } }
+/* The emblem stays retired: the nebula and the starfield are the composition. */
+.title-emblem { display: none; }
+.title-wrap { position: relative; z-index: 3; }
+#title-stars { position: absolute; inset: 0; width: 100%; height: 100%;
+  z-index: 2; pointer-events: none; }
+.soul-note { margin-top: 14px; padding: 12px 14px; border: 1px solid rgba(251,191,36,.28);
+             border-radius: 10px; background: rgba(251,191,36,.05); }
+.soul-note b { display: block; font-family: var(--display); font-size: 10.5px;
+               letter-spacing: .18em; color: var(--gold); margin-bottom: 5px; }
+.soul-note p { font-size: 11.5px; color: var(--text-dim); line-height: 1.6; margin: 0; }
+.soul-note p b { display: inline; font-family: var(--num); color: var(--gold); letter-spacing: 0; }
+
+/* ═════════════════ PAINTED ART SURFACES (world / foe / ability) ══════════
+   Each rule is inert until the art pack supplies the matching key, so the
+   procedural fallbacks keep working when a plate is missing. */
+
+/* the battlefield plate that heads a world briefing */
+.br-plate { position: relative; margin: -14px -14px 10px; border-radius: 12px 12px 0 0;
+            overflow: hidden; aspect-ratio: 16 / 7; }
+.br-plate .br-art { width: 100%; height: 100%; object-fit: cover; display: block;
+                    filter: saturate(.92) contrast(1.04); }
+/* fade the plate into the card so it reads as one surface, not a pasted photo */
+.br-plate::after { content: ''; position: absolute; inset: 0;
+                   background: linear-gradient(180deg, rgba(5,8,14,0) 38%, rgba(5,8,14,.92) 100%),
+                               linear-gradient(90deg, color-mix(in srgb, var(--fc) 22%, transparent), transparent 55%); }
+.brief.has-art .br-head { position: relative; margin-top: -34px; z-index: 1; }
+.brief.inline.has-art .br-plate { aspect-ratio: 16 / 5; }
+
+/* enemy dossier: painted plate left, live sprite right */
+.ei-stage-wrap.has-art { display: flex; align-items: center; justify-content: center;
+                         gap: 12px; }
+.ei-art { width: 112px; height: 112px; border-radius: 12px; object-fit: cover;
+          border: 1px solid var(--line-2); box-shadow: var(--shadow-lift); flex: 0 0 auto; }
+
+/* painted ability emblems sit in the same box the glyph used */
+.ab-art { width: 100%; height: 100%; object-fit: contain; display: block;
+          filter: drop-shadow(0 0 6px rgba(0,0,0,.6)); }
+.abil .ab-icon:has(.ab-art) { padding: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .br-plate .br-art { filter: none; }
+}
+
+/* ═════════════════ ENRAGE + BANKED CAPITAL ══════════════════════════════ */
+.enrage-wrap { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.enrage-btn { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 10px;
+  border-radius: 11px; cursor: pointer; text-align: left;
+  border: 1px solid rgba(239, 68, 68, .34);
+  background: linear-gradient(180deg, rgba(239, 68, 68, .14), rgba(239, 68, 68, .05));
+  transition: transform .12s var(--e-tap), border-color .14s var(--e-tap),
+              box-shadow .16s var(--e-tap), filter .14s var(--e-tap); }
+.enrage-btn:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(239, 68, 68, .7);
+  box-shadow: 0 0 18px rgba(239, 68, 68, .22); }
+.enrage-btn:active:not(:disabled) { transform: translateY(1px) scale(.99); }
+.enrage-btn:disabled { cursor: default; filter: grayscale(.55); opacity: .55; }
+.enrage-btn.maxed { border-color: rgba(239, 68, 68, .8); opacity: 1; filter: none; }
+.er-ic { font-size: 17px; color: #fca5a5; text-shadow: 0 0 10px rgba(239, 68, 68, .7); }
+.er-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+.er-body b { font-family: var(--display); font-size: 10.5px; letter-spacing: .13em; color: #fecaca; }
+.er-body em { font-style: normal; font-size: 10.5px; color: var(--text-dim);
+  font-variant-numeric: tabular-nums; }
+.er-stacks { font-family: var(--display); font-size: 13px; color: #ef4444;
+  text-shadow: 0 0 12px rgba(239, 68, 68, .8); }
+.enrage.live { margin-top: 10px; padding: 7px 10px; border-radius: 10px; text-align: center;
+  font-family: var(--display); font-size: 10px; letter-spacing: .14em; color: #fecaca;
+  border: 1px solid rgba(239, 68, 68, .4); background: rgba(239, 68, 68, .1); }
+.wave-name.enraged { color: #fca5a5; text-shadow: 0 0 16px rgba(239, 68, 68, .5); }
+.bank-row { display: flex; align-items: baseline; gap: 7px; padding: 6px 10px; border-radius: 10px;
+  border: 1px solid rgba(251, 191, 36, .22); background: rgba(251, 191, 36, .06); }
+.bank-row span { font-family: var(--display); font-size: 9.5px; letter-spacing: .13em; color: #fde68a; }
+.bank-row b { font-size: 12px; color: var(--gold); font-variant-numeric: tabular-nums; }
+.bank-row em { font-style: normal; font-size: 10px; color: var(--text-mute); margin-left: auto; }
+
+/* ═════════════════ ESCALATION BID + RELOCATION ══════════════════════════ */
+.modal.escal { max-width: 720px; }
+.ec-eyebrow { font-family: var(--display); font-size: 10px; letter-spacing: .2em;
+  color: #fca5a5; margin-bottom: 4px; }
+.ec-title { font-family: var(--display); font-size: 22px; letter-spacing: .1em;
+  color: #fecaca; margin: 0 0 6px; text-wrap: balance; }
+.ec-sub { font-size: 12px; color: var(--text-dim); line-height: 1.55; margin: 0 0 14px; }
+.ec-hard { color: #fca5a5; }
+.ec-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.ec-card { display: flex; flex-direction: column; align-items: flex-start; gap: 5px;
+  padding: 13px; border-radius: 13px; cursor: pointer; text-align: left;
+  border: 1px solid var(--line-2); background: var(--panel-2);
+  transition: transform .16s var(--e-enter), border-color .16s var(--e-tap),
+              box-shadow .18s var(--e-tap); }
+.ec-card:hover { transform: translateY(-3px); border-color: rgba(239, 68, 68, .6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5), 0 0 20px rgba(239, 68, 68, .14); }
+.ec-card.hard { border-color: rgba(239, 68, 68, .38); background:
+  linear-gradient(180deg, rgba(239, 68, 68, .1), rgba(239, 68, 68, .03)); }
+.ec-ic { font-size: 22px; color: #fca5a5; }
+.ec-card b { font-family: var(--display); font-size: 12px; letter-spacing: .1em; color: var(--text); }
+.ec-card em { font-style: normal; font-size: 11.5px; color: var(--text-dim); line-height: 1.5; }
+.ec-tag { margin-top: auto; padding-top: 6px; font-family: var(--display); font-size: 9px;
+  letter-spacing: .14em; color: var(--text-mute); }
+.ec-card.hard .ec-tag { color: #fca5a5; }
+.ec-owed { margin: 12px 0 0; font-size: 11px; color: var(--text-mute); text-align: center; }
+
+.insp-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.move-btn { font-size: 10.5px; }
+.move-btn.armed { border-color: var(--cyan); color: var(--cyan);
+  box-shadow: 0 0 16px rgba(56, 232, 255, .3); }
+
+/* ═════════════════ RUBBLE CLEARANCE ═════════════════════════════════════ */
+.rubble { display: flex; flex-direction: column; gap: 9px; }
+.rb-art { font-size: 40px; text-align: center; color: #64748b; line-height: 1;
+  text-shadow: 0 0 24px rgba(148, 163, 184, .3); }
+.rb-foot { display: flex; justify-content: space-between; gap: 8px; font-size: 10px;
+  color: var(--text-mute); font-variant-numeric: tabular-nums; }
+
+/* ═════════════════ FACTION SCREEN — compact, centred ═══════════════════ */
+/* height:100% (polish.css:347) pins the wrap to the viewport, so once the
+   screen became scrollable the content still could not grow past the fold and
+   BEGIN CONQUEST stayed 6px under it. min-height lets the wrap stretch with
+   its content while keeping the centring whenever it does fit. */
+.faction-wrap { justify-content: center; height: auto; min-height: 100%; }
+/* `margin: auto 0` splits the leftover space above and below the grid evenly,
+   whatever the header and footer occupy -- true optical centring. */
+.faction-grid { flex: 0 0 auto; align-content: center; margin: auto 0; }
+.fac-card { gap: 6px; padding: 14px 15px 13px; overflow-y: visible; }
+/* The base rule sizes the crest 46x46 for the small inline SVG. Growing it to
+   128 wide WITHOUT also growing the height left a 128px image inside a 46px
+   box: `height:auto` on the img made it overflow 58px and paint straight over
+   the faction name and creed. Width and height move together here, and the
+   image fills the box rather than sizing itself. */
+.fac-crest { align-self: center; width: 128px; height: 128px; margin: 2px 0 6px; }
+.fac-crest img { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; }
+.fac-blurb { line-height: 1.5; }
+.fac-bonus { margin-top: 4px; padding-top: 8px; }
+@media (max-height: 820px) { .fac-crest { width: 104px; height: 104px; } }
+
+
+/* ═════════════════ MUSTER ═══════════════════════════════════════════════ */
+/* Orange, deliberately between the gold of the economy readouts and the red
+   of enrage: the control is both of those things at once. */
+.muster-bar { display: flex; flex-direction: column; gap: 5px; }
+.muster-bar:empty { display: none; }
+.muster-head { display: flex; align-items: baseline; gap: 7px; padding: 5px 9px; border-radius: 9px;
+  border: 1px solid rgba(249, 115, 22, .24); background: rgba(249, 115, 22, .07); }
+.muster-head span { font-family: var(--display); font-size: 9.5px; letter-spacing: .16em; color: #fdba74; }
+.muster-head b { font-size: 11.5px; color: #fb923c; font-variant-numeric: tabular-nums; }
+.muster-head b.capped { color: var(--text-mute); }
+.muster-head em { font-style: normal; font-size: 9.5px; color: var(--text-mute); margin-left: auto; }
+.muster-btn { display: flex; align-items: center; gap: 9px; width: 100%; padding: 6px 9px;
+  border-radius: 10px; cursor: pointer; text-align: left;
+  border: 1px solid rgba(249, 115, 22, .28);
+  background: linear-gradient(180deg, rgba(249, 115, 22, .12), rgba(249, 115, 22, .04));
+  transition: transform .12s var(--e-tap), border-color .14s var(--e-tap),
+              box-shadow .16s var(--e-tap), filter .14s var(--e-tap); }
+.muster-btn:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(249, 115, 22, .66);
+  box-shadow: 0 0 16px rgba(249, 115, 22, .2); }
+.muster-btn:active:not(:disabled) { transform: translateY(1px) scale(.99); }
+.muster-btn:disabled, .muster-btn.poor { cursor: default; filter: grayscale(.5); opacity: .5; }
+.mu-ic { font-family: var(--display); font-size: 13px; color: #fdba74; letter-spacing: -.04em;
+  text-shadow: 0 0 10px rgba(249, 115, 22, .6); }
+.mu-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+.mu-body b { font-family: var(--display); font-size: 10px; letter-spacing: .12em; color: #fed7aa; }
+.mu-body em { font-style: normal; font-size: 10px; color: var(--text-dim);
+  font-variant-numeric: tabular-nums; }
+
+
+/* ═════════════════ AIMED ABILITIES ══════════════════════════════════════ */
+/* An aimed ability is a different verb from a fired one, so the button has to
+   say so before it is pressed and again while it is armed. */
+.abil.aimed .ab-body em { color: #7dd3fc; letter-spacing: .12em; }
+/* An armed ability is always a READY one, so `.abil.offense.ready` (three
+   classes) is the rule actually in play and a two-class `.abil.aiming` would
+   lose the cascade and paint nothing. The armed state is spelled out per kind
+   so it OUT-SPECIFIES that rule instead of tying it and relying on file order. */
+.abil.offense.ready.aiming,
+.abil.defense.ready.aiming { border-color: #7dd3fc; background: rgba(125, 211, 252, .14);
+  box-shadow: 0 0 22px rgba(125, 211, 252, .32); }
+.abil.offense.ready.aiming .ab-icon,
+.abil.defense.ready.aiming .ab-icon { color: #7dd3fc; }
+.abil.aiming .ab-body em::after { content: ' ▸ PICK A TILE'; color: var(--text-mute); }
+
+/* ── TERRAIN NODES ────────────────────────────────────────────────────────
+   Seven elements would be seven near-identical rules, so the element colour
+   is passed in as --nc and these rules stay element-agnostic. */
+.node-flag {
+  display: flex; align-items: center; gap: 6px;
+  margin: 6px 0; padding: 5px 8px;
+  border: 1px solid color-mix(in srgb, var(--nc) 55%, transparent);
+  border-left: 3px solid var(--nc);
+  background: color-mix(in srgb, var(--nc) 9%, transparent);
+  color: var(--nc);
+  font: 700 10.5px/1.3 var(--display, sans-serif);
+  letter-spacing: .06em; text-transform: uppercase;
+}
+
+.nodep { display: flex; flex-direction: column; gap: 8px; }
+.nodep .np-art {
+  align-self: center; font-size: 34px; line-height: 1;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--nc) 60%, transparent));
+}
+.nodep .np-el {
+  align-self: center; color: var(--nc);
+  font: 800 15px/1 var(--display, sans-serif); letter-spacing: .12em;
+}
+.nodep .np-rules { display: flex; flex-direction: column; gap: 5px; }
+.nodep .np-rules > div {
+  display: grid; grid-template-columns: 74px 1fr; gap: 8px;
+  padding: 5px 7px;
+  background: rgba(255, 255, 255, .028);
+  border-left: 2px solid color-mix(in srgb, var(--nc) 45%, transparent);
+}
+.nodep .np-rules b {
+  color: var(--nc);
+  font: 700 9.5px/1.5 var(--display, sans-serif); letter-spacing: .09em;
+}
+.nodep .np-rules span { font-size: 11px; color: var(--dim, #93a4bb); line-height: 1.45; }
+.nodep .np-foot {
+  padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, .06);
+  font-size: 10.5px; color: var(--dim, #93a4bb); letter-spacing: .03em;
+}
+
+/* Node roster on a world briefing: what the ground itself brings to the fight. */
+.br-nodes { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 2px; }
+.br-nodes .brn {
+  padding: 2px 6px;
+  border: 1px solid color-mix(in srgb, var(--nc) 42%, transparent);
+  background: color-mix(in srgb, var(--nc) 8%, transparent);
+  color: var(--nc);
+  font: 700 9px/1.5 var(--display, sans-serif); letter-spacing: .07em;
+}
+
+/* ═════════════════ LAYOUT REGRESSION FIXES (audited) ════════════════════ */
+
+/* The machined-corner clip-path on the card surfaces clips the element's whole
+   rendering -- outline included -- and the global focus ring sits 2px OUTSIDE
+   the border box, so keyboard focus was invisible on every card button in the
+   game. A negative offset draws the ring inside the clip, where it survives. */
+.tower-card:focus-visible, .fac-card:focus-visible, .lo-card:focus-visible,
+.soul-item:focus-visible, .cmd-card:focus-visible, .abil:focus-visible,
+.profile-row:focus-visible, .cd-head:focus-visible, .tt-tree:focus-visible,
+.codex-entry:focus-visible { outline-offset: -2px; }
+
+/* THREE-WAY HUD. Two 232px-min commander panels plus a third rival panel plus
+   the centre controls need 1172px of min-content; at 1024px the RIVAL II panel
+   was simply cut off the right edge. Let the panels shrink on a tri field --
+   they hold four short numbers and read fine narrower. */
+/* The grid tracks and flex rows must be ALLOWED to shrink; only the three-way
+   field actually lowers the commander panel's own floor. Two-sided battles keep
+   the designed 232px so nothing changes on the common path. */
+#hud { min-width: 0; }
+.hud-side { min-width: 0; }
+body.tri-field .cmdr { min-width: 148px; padding: 6px 9px; }
+body.tri-field .cmdr-tag { font-size: 9px; letter-spacing: .14em; }
+body.tri-field #hud { gap: 8px; padding: 8px 10px; }
+
+/* The third rival's rail took a hard-coded rose; give it the faction colour
+   the panel already carries, like the other two. */
+.cmdr.third { border-right-color: var(--cc, var(--rose)) !important; }
+
+/* BATTLE SIDEBAR. The muster bar added ~162px of unshrinkable content, which
+   pushed the inspector 343px below the fold at 680px tall. The sidebar's
+   growable panel already scrolls; the fixed-height children above it now have
+   a shrink budget so the panel keeps a usable share of the column. In the
+   two-column grid the same min-height:0 + overflow:hidden is what lets the
+   muster and ability rows give ground before the inspector does. */
+#ability-bar { flex: 0 1 auto; min-height: 0; overflow: hidden; }
+/* The muster bar keeps its header plus its first row: on a fresh profile one
+   derived tier IS the whole control, and proportional shrink clipped it below
+   the fold while the (scrolling) inspector kept most of the column. */
+#muster-bar { flex: 0 1 auto; min-height: 62px; overflow: hidden; }
+#sidebar > .panel-grow { min-height: 120px; }
+@media (max-height: 780px) {
+  .muster-btn { padding: 5px 8px; }
+  .mu-body em { display: none; }          /* the per-tier blurb, not the price */
+}
+
+/* The MUSTER rows stair-stepped because the icon column had no width, so each
+   row's text started wherever its glyph happened to end. */
+.mu-ic { width: 20px; text-align: center; flex: 0 0 20px; }
+
+/* ═════════════════ GALACTIC MAP ART ═════════════════════════════════════ */
+/* The painted starfield sits behind the SVG, dimmed so owner rings, star
+   pips and system names keep their contrast. Inert without the pack key. */
+body.has-galaxyart .worldmap-wrap { position: relative; }
+body.has-galaxyart .worldmap-wrap::before { content: ""; position: absolute; inset: 0;
+  background: var(--art-galaxy) center/cover no-repeat; opacity: .42; border-radius: inherit;
+  pointer-events: none; z-index: 0; }
+body.has-galaxyart .worldmap-wrap > * { position: relative; z-index: 1; }
+
+/* ═════════════════ MUSTER DETACHMENT (loadout strip + battle header) ════ */
+/* The battle header now carries two readouts; the second label needs air. */
+.muster-head .mu-sep { margin-left: 6px; }
+.muster-lo { display: flex; flex-direction: column; gap: 7px; margin: 0 0 12px; padding: 9px 12px;
+  border: 1px solid rgba(249, 115, 22, .24); border-radius: 10px; background: rgba(249, 115, 22, .05); }
+.muster-lo:empty { display: none; }
+.mlo-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.mlo-head b { font-family: var(--display); font-size: 11px; letter-spacing: .16em; color: #fdba74; }
+.mlo-head span { font-size: 11px; color: #fb923c; font-variant-numeric: tabular-nums; }
+.mlo-head em { font-style: normal; font-size: 10.5px; color: var(--text-mute); }
+.mlo-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.mlo-card { position: relative; display: flex; align-items: center; gap: 6px; padding: 5px 10px;
+  background: rgba(249, 115, 22, .05); border: 1px solid rgba(249, 115, 22, .22); border-radius: 8px;
+  color: var(--text); font-size: 11px; cursor: pointer;
+  transition: border-color .16s var(--e-tap), background .16s var(--e-tap), transform .16s var(--e-tap); }
+.mlo-card:hover:not(.lockd) { border-color: rgba(249, 115, 22, .6); transform: translateY(-1px); }
+.mlo-card.on { background: rgba(249, 115, 22, .16); border-color: rgba(249, 115, 22, .8); }
+.mlo-card.lockd { cursor: default; opacity: .45; filter: grayscale(.6); }
+.mlo-card em { font-style: normal; font-size: 9.5px; color: var(--text-mute); }
+.mlo-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--tc, #e05555); flex: 0 0 9px; }
+.mlo-num { position: absolute; top: -6px; left: -6px; width: 15px; height: 15px; border-radius: 50%;
+  background: #f97316; color: #16100a; font-size: 9.5px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; }
+.mlo-name { font-weight: 600; }
+
+/* Reward summary: denizens a conquest saved for the muster vault. */
+.rw-saved { display: flex; flex-wrap: wrap; align-items: baseline; gap: 7px; padding: 7px 10px;
+  border: 1px solid rgba(249, 115, 22, .3); border-radius: 9px; background: rgba(249, 115, 22, .07); }
+.rw-saved b { font-family: var(--display); font-size: 9.5px; letter-spacing: .15em; color: #fdba74; }
+.rw-saved span { font-size: 10.5px; color: var(--tc, #e05555); }
+.rw-saved em { font-style: normal; font-size: 9px; color: var(--text-mute); width: 100%; }
+
+/* ═════════════════ GALAXY 2.5D VIEWPORT ════════════════════════════════ */
+.gx-viewport { position: relative; overflow: hidden; cursor: grab;
+  perspective: 1400px; perspective-origin: 50% 42%; touch-action: none; }
+.gx-viewport.dragging { cursor: grabbing; }
+.gx-stars-cv { position: absolute; inset: 0; width: 100%; height: 100%;
+  z-index: 0; pointer-events: none; }
+/* The map plane itself: tilted away from the viewer so the field recedes.
+   transform-style must stay flat -- the SVG is 2D and only the PLANE is
+   rotated, which keeps text crisp and hit-testing exact. */
+.gx-plane { position: relative; z-index: 1; width: 100%; height: 100%;
+  transform-origin: 50% 50%; will-change: transform; }
+.gx-viewport .gx-plane > svg { display: block; width: 100%; height: 100%;
+  transform: rotateX(16deg); transform-origin: 50% 55%; }
+/* A horizon wash so the receding edge fades into the starfield instead of
+   ending on a hard rectangle. */
+.gx-viewport::after { content: ""; position: absolute; inset: 0; z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(4,6,11,.55) 0%, rgba(4,6,11,0) 22%,
+                              rgba(4,6,11,0) 72%, rgba(4,6,11,.5) 100%); }
+.gx-hint { position: absolute; left: 10px; bottom: 8px; z-index: 3;
+  font-family: var(--display); font-size: 9px; letter-spacing: .14em;
+  color: var(--text-mute); opacity: .65; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .gx-viewport .gx-plane > svg { transform: none; }
+}
+
+/* ── TECH ORIGIN CHIPS ──────────────────────────────────────────────────
+   New selectors only. Nothing here touches the size of a box some earlier
+   rule already sized -- an append that changes ONE dimension of an existing
+   box has shipped two overlap bugs, so origins get their own boxes. */
+/* Mirrors .elem-badge exactly, in the origin's hue, because the two sit on
+   consecutive lines of the same card and any difference in metrics reads as
+   a mistake rather than a distinction. */
+.origin-badge,
+.si-og {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10.5px; letter-spacing: 0.08em; font-weight: 700;
+  border-radius: 7px; padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--og) 55%, transparent);
+  color: var(--og); background: color-mix(in srgb, var(--og) 10%, transparent);
+}
+.si-og { font-size: 9.5px; padding: 1px 6px; }
+/* The battle shop rides a shrink budget, so the origin is a pip INSIDE the
+   name line rather than a badge under it -- no new row, no new height. */
+.tc-og { font-style: normal; font-size: 10px; color: var(--og); margin-left: 6px; vertical-align: 1px; }
+.tt-origin {
+  margin: 5px 0 0;
+  padding: 5px 7px;
+  border-left: 2px solid var(--og);
+  background: color-mix(in srgb, var(--og) 9%, transparent);
+  color: var(--fg-2, #b8c6d6);
+  font-size: 10.5px; line-height: 1.45;
+}
+.tt-origin b { color: var(--og); letter-spacing: .07em; }
+.origin-flag {
+  margin: 6px 0 0;
+  padding: 4px 8px;
+  border: 1px solid color-mix(in srgb, var(--og) 40%, transparent);
+  border-left-width: 3px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--og) 10%, transparent);
+  color: var(--og);
+  font: 600 10px/1.4 var(--display, system-ui), system-ui, sans-serif;
+  letter-spacing: .06em;
+}
+/* A locked shop entry stays legible and stays visible -- it is information,
+   not an error. Dimmed, not hidden, and never colour-coded as a failure. */
+.soul-item.origin-locked { opacity: .58; filter: saturate(.55); cursor: not-allowed; }
+.soul-item.origin-locked:hover { opacity: .78; filter: saturate(.8); }
+.si-lock {
+  display: block;
+  color: var(--cc);
+  font: 600 9px/1.4 var(--display, system-ui), system-ui, sans-serif;
+  letter-spacing: .1em; text-transform: uppercase;
+}
+
+/* ═════════════════ PRE-BATTLE EXCHANGE — paced, not clumped ════════════ */
+.bi-sit { margin: 2px 0 12px; padding: 9px 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: rgba(255,255,255,.02);
+  display: flex; flex-direction: column; gap: 4px; }
+.bi-sit-flavour { margin: 0; font-size: 12px; color: var(--text-dim); line-height: 1.55; }
+.bi-sit-vigil { margin: 0; font-size: 11.5px; color: var(--text-mute); font-style: italic; }
+/* Lines start hidden and are revealed by the sequencer, not by a CSS delay. */
+.bi-lines.seq .bi-line { opacity: 0; transform: translateY(6px);
+  animation: none; transition: opacity .45s var(--e-enter), transform .45s var(--e-enter); }
+.bi-lines.seq .bi-line.in { opacity: 1; transform: none; }
+/* The speaker lifts; everyone else recedes. */
+.bi-side { transition: opacity .35s var(--e-tap), transform .35s var(--e-enter),
+                       filter .35s var(--e-tap); }
+.bi-heads:has(.speaking) .bi-side:not(.speaking) { opacity: .42; filter: grayscale(.5); }
+.bi-side.speaking { transform: translateY(-3px) scale(1.04); }
+#bi-go.ready { box-shadow: 0 0 22px rgba(56,232,255,.30); }
+@media (prefers-reduced-motion: reduce) {
+  .bi-lines.seq .bi-line { transition: none; }
+  .bi-side { transition: none; }
+}
+
+/* ═════════════════ THE BOARD, ON THE BRIEFING CARD ═════════════════════
+   `blurb` and `sigNote` are authored on all fifteen maps and had never been
+   rendered anywhere. NEW selectors only: nothing here touches the size of a
+   box an earlier rule already sized. */
+.br-map { font-size: 11px; letter-spacing: .05em; color: var(--text-mute); }
+.br-map b { color: var(--text-dim); letter-spacing: .09em; }
+.br-blurb { margin: 0; font-size: 11.5px; line-height: 1.55; color: var(--text-dim); }
+
+
+/* ═══════════════════════════════ THE MAELSTROM ═══════════════════════
+   The singularity on the universe map, the seat lobby, and the seat ladder.
+   Every box below sizes BOTH axes where it sizes either: a late override that
+   resized one dimension of a box the base rule had already sized has shipped
+   two overlap bugs in this file. */
+
+.mv-hole { pointer-events: none; }
+.mv-hole .mv-disc {
+  fill: none;
+  stroke: rgba(167, 139, 250, 0.30);
+  stroke-width: 0.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mv-spin 46s linear infinite;
+}
+.mv-hole .mv-disc.in {
+  stroke: rgba(56, 232, 255, 0.26);
+  animation-duration: 27s;
+  animation-direction: reverse;
+}
+.mv-hole .mv-rim {
+  fill: none;
+  stroke: rgba(216, 180, 254, 0.85);
+  stroke-width: 0.4;
+  filter: drop-shadow(0 0 1.6px rgba(167, 139, 250, 0.9));
+}
+.mv-hole .mv-core { fill: #05030b; }
+/* The painted plate sits UNDER the vector rings, so the spin, the hover glow
+   and the label all still work. Held below full opacity because the hole is
+   deliberately buried behind the systems -- a plate at 1 would put a bright
+   accretion disc in front of the halo of whatever system stands on it. */
+.mv-hole .mv-hole-art { opacity: 0.82; }
+/* Painted last, over every system, so the door is not behind the halo of the
+   system that stands on it. `fill` rather than `none`, because an unfilled
+   circle is hit only on its stroke. */
+.mv-hit { fill: transparent; pointer-events: auto; cursor: pointer; }
+.mv-hole.lit .mv-hole-label { opacity: 1; }
+.mv-hole .mv-hole-label {
+  font: 700 2.1px/1 var(--font-ui, ui-monospace, monospace);
+  letter-spacing: 0.12em;
+  fill: rgba(216, 180, 254, 0.75);
+  opacity: 0.8;
+  pointer-events: none;
+}
+@keyframes mv-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .mv-hole .mv-disc { animation: none; } }
+
+/* The arena world plate. `.br-plate` is NOT reusable here: its -14px bleed is
+   tuned to `.brief`'s 14px padding and `.mv-body` pads 26/22, so the class
+   bare would drag the image past the modal edge. */
+.mv-plate { align-self: stretch; position: relative; margin: -26px -22px 0;
+            aspect-ratio: 16 / 5; overflow: hidden; border-radius: 12px 12px 0 0; }
+.mv-plate .mv-art { width: 100%; height: 100%; object-fit: cover; display: block;
+                    filter: saturate(.92) contrast(1.04); }
+.mv-plate::after { content: ''; position: absolute; inset: 0;
+                   background: linear-gradient(180deg, rgba(5,8,14,0) 40%, rgba(5,8,14,.94) 100%); }
+/* The lobby carries the column gap `.mv-body` used to hand its children: the
+   plate is hoisted out of the redraw, so everything below it is one child
+   now rather than five and the parent gap no longer reaches them. */
+.mv-lobby { display: flex; flex-direction: column; align-items: center; gap: 13px; }
+
+.mv-seats { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 14px 0 6px; }
+.mv-seats .seat-btn { min-width: 58px; padding: 8px 10px; font-weight: 700; }
+.mv-seats .seat-btn.active {
+  border-color: rgba(167, 139, 250, 0.9);
+  color: #ede9fe;
+  box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.5) inset;
+}
+.mv-note { margin: 4px 0 2px; font-size: 12px; opacity: 0.7; text-align: center; }
+
+/* The arena spends RIVAL II's slot on the ladder rather than adding a fourth
+   box to a row that is already tight at 1180px. Like the rule above it this
+   sets no width and no height — it only takes the box out of the flow, so it
+   cannot resize one axis of a box the base rule sized. */
+body.arena-field #rival3 { display: none; }
+
+/* Sized to a tri-board .cmdr (min-width 148px) so the rival row comes out the
+   width it already is on a three-way board. Both axes are the box's own: the
+   width band here, the height from the two stacked rows inside it. */
+.arena-ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  justify-content: center;
+  min-width: 132px;
+  max-width: 152px;
+  padding: 4px 9px;
+  border-left: 1px solid rgba(148, 163, 184, 0.18);
+}
+body:not(.arena-field) .arena-ladder { display: none; }
+.arena-ladder .al-head { font-size: 11px; letter-spacing: 0.08em; opacity: 0.82; white-space: nowrap; }
+.arena-ladder .al-head b { color: #ede9fe; }
+.arena-ladder .al-pips { display: flex; flex-wrap: wrap; gap: 3px; }
+.arena-ladder .pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cc, #94a3b8);
+  box-shadow: 0 0 4px var(--cc, #94a3b8);
+}
+.arena-ladder .pip.me { box-shadow: 0 0 0 1.5px rgba(237, 233, 254, 0.9); }
+.arena-ladder .pip.out { background: #1e293b; box-shadow: none; opacity: 0.5; }
+
+
+/* ═════════════ PROGRESSIVE TOWER CARDS — the loadout grid ══════════════ */
+/* Thirty-nine towers across five origins is a wall on first glance, so a card
+   rests as glyph + name + cost + origin mark and reveals the rest only when
+   hovered, focused or tapped. The geometry that makes this safe is in
+   style.css (fixed .lo-slot, positioned .lo-card); what follows is the look of
+   the two states and the motion between them. */
+
+/* FAMILIES. Cards are ordered and coloured by TOWER_ORIGINS so the grid reads
+   as five arsenals rather than one undifferentiated list. */
+.lo-family {
+  grid-column: 1 / -1; display: flex; align-items: baseline; gap: 9px;
+  margin: 8px 0 0; padding: 3px 2px 5px;
+  border-bottom: 1px solid color-mix(in srgb, var(--og) 38%, transparent);
+}
+.lo-family:first-child { margin-top: 0; }
+.lo-family b { font-family: var(--display); font-size: 11.5px; letter-spacing: .2em; color: var(--og); }
+.lo-fam-mark { font-size: 13px; color: var(--og); line-height: 1; }
+.lo-fam-rule { font-size: 9.5px; letter-spacing: .16em; color: var(--text-mute); }
+.lo-fam-n { margin-left: auto; font-size: 10px; letter-spacing: .1em; color: var(--text-mute); }
+
+/* The resting origin mark: colour and glyph, no sentence. */
+.lo-og { display: inline-flex; align-items: center; gap: 4px; font-size: 9.5px;
+         letter-spacing: .12em; color: var(--og); }
+
+/* THE EXPANSION. A grid row interpolated from 0fr to 1fr grows the panel to
+   exactly its own content height without anyone having to guess that height
+   in advance, and the inner box clips itself while the row is short. */
+.lo-detail {
+  display: grid; grid-template-rows: 0fr; opacity: 0; margin-top: 0;
+  transition: grid-template-rows var(--lo-expand, 240ms) var(--e-enter),
+              margin-top var(--lo-expand, 240ms) var(--e-enter),
+              opacity 160ms var(--e-tap);
+}
+.lo-detail-in { overflow: hidden; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+.lo-slot.open .lo-detail { grid-template-rows: 1fr; opacity: 1; margin-top: 9px; }
+
+/* Raised, and opaque enough to read over whatever it now covers. */
+.lo-slot.open .lo-card {
+  border-color: var(--tc); background-color: #0b1220f5;
+  box-shadow: var(--shadow-lift), 0 0 0 1px color-mix(in srgb, var(--tc) 50%, transparent);
+}
+.lo-slot.open .lo-card.on { background-color: color-mix(in srgb, var(--tc) 20%, #0b1220); }
+
+/* A name too long for the resting line is ellipsised there; the expansion is
+   the moment the card stops being short, so it gets its whole name back. Only
+   ever visible below ~190px cards, which is past every shipped breakpoint. */
+.lo-slot.open .lo-top b { white-space: normal; overflow: visible; text-overflow: clip; }
+
+.lo-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+/* One row per statistic, label left and value right -- the same readout shape
+   the inspector and the shop tooltip use. Two columns were tried and are too
+   narrow at three-column widths: every value wrapped under its own label. */
+.lo-stats { display: flex; flex-direction: column; gap: 1px; }
+.lo-stats i { display: flex; justify-content: space-between; gap: 10px;
+              font-style: normal; font-size: 10.5px; }
+.lo-stats span { color: var(--text-mute); }
+.lo-stats b { color: var(--text-dim); }
+/* The same firing preview the soul shop runs, hosted in the card rather than
+   in a floating panel that would land on top of the card it describes. */
+.lo-stage { display: block; width: 100%; height: auto; border-radius: 7px;
+            border: 1px solid var(--line); background: rgba(0, 0, 0, .28); }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Instant, never absent -- the information is the point of the expansion. */
+  .lo-detail { transition: none; }
+}

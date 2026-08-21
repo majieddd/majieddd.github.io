@@ -1,0 +1,904 @@
+/* ==========================================================================
+   AEGIS PROTOCOL: ATTRITION — Commanders, Talent Trees & Meta Progression
+   --------------------------------------------------------------------------
+   Commander charts are laid out like a classic MMO talent tree: three columns,
+   three rows, vertical prerequisite chains, and rows gated behind total points
+   spent in the tree. Deeper rows cost more, so a full column is a real
+   commitment rather than a shopping list.
+   ========================================================================== */
+
+'use strict';
+
+/** Points that must be spent in the tree before a row unlocks. */
+const TALENT_ROW_GATE = [0, 2, 5];
+
+/* Towers must be UNLOCKED with souls before they can be deployed. Five core
+   towers are issued free so a legal loadout always exists, and a new profile
+   is granted enough souls to unlock three more immediately. */
+/* You begin with a single tower. The loop the game is built around is losing,
+   unlocking one more thing, and going back in -- which only works if the first
+   unlock is a real event rather than the fifth of five. */
+const STARTER_TOWERS = ['bolt'];
+const TOWER_UNLOCK_COST = 6;
+const STARTING_SOULS = TOWER_UNLOCK_COST;   /* exactly one extra tower */
+
+function freshTraits() {
+  return {
+    draftEvery: 5, draftOptions: 3, startingMods: 0, perModDamage: 0,
+    costGrowthMul: 1, freeCopies: 0,
+    ascCostMul: 1, ascDamage: ASCENSION.damage, surgeEvery: ASCENSION.surgeEvery, surgeMul: 1,
+    reanimSpeed: 1, reanimGold: 0, siphonRate: 1,
+    leakReduction: 0, lastStandAt: 0, lastStandDmg: 0, waveHeal: 0,
+    /* HOOKS, NOT BUGS. `freeCopies`, `siphonRate`, `lastStandAt` and
+       `lastStandDmg` are read by live engine code -- the copy count in
+       Game, the siphon drain and the last-stand check in Enemy -- but no
+       commander, faction or tech node writes any of them, so every read
+       sits on the default above and is inert. Kept because the mechanics
+       behind them are finished and wired; deleting the keys would throw
+       that work away and save nothing. Grant one from a chart node to
+       turn the mechanic on. */
+    ascendBonusRate: 0, perAscDamage: 0, immortalLine: false, vaultBonus: 1,
+
+    /* Accumulators the twenty-commander roster writes into. They are folded
+       into `side.mods` once every trait and tech node has applied, so a chart
+       can add to the same statistic from three different columns without each
+       node needing to know about the others. */
+    dmg: 0, rate: 0, rng: 0, splash: 0, pierce: 0, crit: 0, critMult: 0, status: 0,
+    reanimResist: 0,
+    goldMul: 0, upgradeMul: 1, sellRate: 0,
+    reanimHp: 1, dotMul: 1, slowVuln: 0, killRamp: 0,
+    eliteDamage: 1, eliteBounty: 1, startLevel: 0, lifeRegen: 0, lifeGainMul: 0,
+    jamResist: 0, jamImmune: false, immortal: false,
+    leakReduce: 0, auraRangeMul: 1
+  };
+}
+
+/**
+ * Fold the roster's trait accumulators into the side's live modifier set.
+ * Called once, after the commander trait and every unlocked tech node has run.
+ */
+function foldTraits(side) {
+  const t = side.traits, m = side.mods;
+  /* Prestige: every numeric talent value is worth 20% more per star, rounded
+     to the nearest whole percent. Applied to the accumulators before they are
+     folded, so a value authored as +7% reads +8%/+10%/... at 1/2/... stars. */
+  const stars = side.prestigeStars || 0;
+  if (stars > 0) {
+    const f = 1 + 0.2 * stars;
+    const pct = v => Math.round(v * f * 100) / 100;
+    t.dmg = pct(t.dmg); t.rate = pct(t.rate); t.rng = pct(t.rng);
+    t.splash = pct(t.splash); t.status = pct(t.status); t.goldMul = pct(t.goldMul);
+    t.pierce = Math.min(0.9, pct(t.pierce)); t.crit = Math.min(0.75, pct(t.crit));
+    t.critMult = pct(t.critMult); t.slowVuln = pct(t.slowVuln);
+    t.perModDamage = pct(t.perModDamage); t.perAscDamage = pct(t.perAscDamage);
+    t.lifeGainMul = pct(t.lifeGainMul); t.reanimResist = Math.min(0.6, pct(t.reanimResist));
+    t.reanimHp = 1 + pct(t.reanimHp - 1);
+    t.dotMul = 1 + pct(t.dotMul - 1);
+  }
+  m.damage *= (1 + t.dmg);
+  m.rate   *= (1 + t.rate);
+  m.range  *= (1 + t.rng);
+  m.splash *= (1 + t.splash);
+  m.status *= (1 + t.status);
+  m.gold   *= (1 + t.goldMul);
+  m.upCost *= t.upgradeMul;
+  m.pierce += t.pierce;
+  m.crit   += t.crit;
+  m.reanim *= t.reanimHp;
+  if (t.sellRate) m.sellRate = t.sellRate;
+  if (t.leakReduce) t.leakReduction = Math.max(t.leakReduction, t.leakReduce);
+  if (t.immortal) t.immortalLine = true;
+}
+
+/* The roster now lives in roster.js: twenty commanders across four factions,
+   one free per faction and the rest bought with souls. */
+const COMMANDERS = COMMANDER_ROSTER;
+
+/* --------------------------------------------------------------------------
+   META PROGRESSION
+-------------------------------------------------------------------------- */
+const Meta = {
+  KEY: 'aegis-attrition-profiles-v1',
+  _root: null,
+
+  /* ---------------------------------------------------------- profiles ---
+     Everything below operates on the ACTIVE profile. Progression, talents,
+     unlocked maps and records are all per-profile; only audio settings are
+     shared. No passwords — this is a local roster, not an account system. */
+
+  root() {
+    if (this._root) return this._root;
+    let d = {};
+    try { d = JSON.parse(localStorage.getItem(this.KEY)) || {}; } catch (e) { d = {}; }
+    d.profiles = d.profiles || {};
+    d.settings = d.settings || {};
+    if (!Object.keys(d.profiles).length) { d.profiles['COMMANDER'] = this.blankProfile(); d.active = 'COMMANDER'; }
+    if (!d.active || !d.profiles[d.active]) d.active = Object.keys(d.profiles)[0];
+    this._root = d;
+    return d;
+  },
+  blankProfile() {
+    const p = { commanders: {}, talents: {}, best: {}, created: 0, runs: 0,
+                towerXp: {}, souls: STARTING_SOULS,
+                unlocked: STARTER_TOWERS.slice(), campaign: null,
+                faction: null, galaxyTier: 0, prestige: {}, seenEnemies: [],
+                /* One commander per faction is free; the rest are bought. */
+                /* Only CADRE at the start. Each faction's base commander is
+                   granted the moment you swear to that faction. */
+                cmdUnlocked: alwaysUnlocked(),
+                abilUnlocked: [],
+                /* Muster detachment: which SAVED denizens deploy with you.
+                   Empty means "the first unlocked" -- resolved on read. */
+                musterLoadout: [] };
+    for (const c of COMMANDERS) p.commanders[c.id] = { xp: 0, unlocked: [] };
+    for (const id of TOWER_ORDER) { p.talents[id] = []; p.towerXp[id] = 0; }
+    return p;
+  },
+  profileNames() { return Object.keys(this.root().profiles); },
+  activeName() { return this.root().active; },
+  setActive(name) { const r = this.root(); if (r.profiles[name]) { r.active = name; this.save(); } },
+  createProfile(name) {
+    name = String(name || '').trim().toUpperCase().slice(0, 14);
+    if (!name) return null;
+    const r = this.root();
+    if (r.profiles[name]) return null;
+    r.profiles[name] = this.blankProfile();
+    r.active = name;
+    this.save();
+    return name;
+  },
+  deleteProfile(name) {
+    const r = this.root();
+    if (Object.keys(r.profiles).length <= 1) return false;
+    delete r.profiles[name];
+    if (r.active === name) r.active = Object.keys(r.profiles)[0];
+    this.save();
+    return true;
+  },
+
+  /** The active profile, normalised so new fields appear on old saves. */
+  load() {
+    const r = this.root();
+    const p = r.profiles[r.active];
+    p.commanders = p.commanders || {};
+    /* Normalise IN PLACE — recreating these objects would orphan any
+       reference taken from an earlier load() call mid-transaction. */
+    for (const c of COMMANDERS) {
+      if (!p.commanders[c.id]) p.commanders[c.id] = { xp: 0, unlocked: [] };
+      if (typeof p.commanders[c.id].xp !== 'number') p.commanders[c.id].xp = 0;
+      if (!Array.isArray(p.commanders[c.id].unlocked)) p.commanders[c.id].unlocked = [];
+    }
+    p.talents = p.talents || {};
+    for (const id of TOWER_ORDER) p.talents[id] = p.talents[id] || [];
+    p.best = p.best || {};
+    p.towerXp = p.towerXp || {};
+    if (!Array.isArray(p.unlocked)) p.unlocked = STARTER_TOWERS.slice();
+    if (!Array.isArray(p.cmdUnlocked)) p.cmdUnlocked = alwaysUnlocked();
+    for (const id of alwaysUnlocked()) if (!p.cmdUnlocked.includes(id)) p.cmdUnlocked.push(id);
+    if (!Array.isArray(p.abilUnlocked)) p.abilUnlocked = [];
+    if (!Array.isArray(p.musterLoadout)) p.musterLoadout = [];
+    if (p.faction === undefined) p.faction = null;
+    if (typeof p.galaxyTier !== 'number') p.galaxyTier = 0;
+    if (!p.prestige || typeof p.prestige !== 'object') p.prestige = {};
+    if (!Array.isArray(p.seenEnemies)) p.seenEnemies = [];
+    if (typeof p.souls !== 'number') p.souls = 0;
+    for (const id of TOWER_ORDER) if (typeof p.towerXp[id] !== 'number') p.towerXp[id] = 0;
+    /* The campaign is a profile field too, and it was the ONE this function
+       never touched: fifteen fields normalised beside an object that grew
+       stars, systemsTaken, defeats and owners long after it first shipped. A
+       campaign written before any of those existed reached campaignAdvance
+       with no boons array and recordWorld with no stars map, and threw --
+       losing the whole galaxy to a save that was merely OLD. */
+    this.migrateCampaign(p.campaign, p);
+    return p;
+  },
+
+  /** Default every field campaign code reads, IN PLACE.
+
+     In place because a caller may already be holding this object --
+     campaignAdvance takes it out of p.campaign and mutates it -- so handing
+     back a replacement would orphan the write. Anything the reader already
+     guards (systemsTaken, defeats) is defaulted here anyway: a guard at one
+     of two call sites is how these fields came to be missing at the other. */
+  migrateCampaign(c, p) {
+    if (!c || typeof c !== 'object') return null;
+    /* A galaxy is REBUILT from its seed, so a campaign without one has no
+       galaxy at all. Pinned rather than re-rolled: a fixed fallback at least
+       gives the same galaxy on every later load, where Math.random would hand
+       the player a different one each time they opened the map. */
+    if (c.seed === undefined || c.seed === null) c.seed = 1;
+    if (typeof c.depth !== 'number' || !isFinite(c.depth)) c.depth = 0;
+    if (typeof c.totalWaves !== 'number' || !isFinite(c.totalWaves)) c.totalWaves = 0;
+    if (typeof c.defeats !== 'number' || !isFinite(c.defeats)) c.defeats = 0;
+    if (typeof c.tier !== 'number' || !isFinite(c.tier)) c.tier = 0;
+    if (typeof c.system !== 'number' || !isFinite(c.system)) c.system = 0;
+    if (!Array.isArray(c.boons)) c.boons = [];
+    if (!Array.isArray(c.systemsTaken)) c.systemsTaken = [];
+    if (!Array.isArray(c.log)) c.log = [];
+    if (!Array.isArray(c.options)) c.options = [];
+    if (!c.stars || typeof c.stars !== 'object') c.stars = {};
+    /* Where the rivals' expansion lives between sessions. */
+    if (!c.owners || typeof c.owners !== 'object') c.owners = {};
+    if (c.chosen === undefined) c.chosen = null;
+    /* The campaign's own banner. Falling back to the profile's keeps the
+       galaxy pointed at the right rivals; 'human' is the last resort, and it
+       is the same fallback galaxy() has always used. */
+    if (!c.faction) c.faction = (p && p.faction) || 'human';
+    return c;
+  },
+
+  /* Audio/accessibility settings belong to the INSTALL, not to a profile. They
+     used to be copied from root onto the profile on every load while the writer
+     only ever wrote the profile copy, so muting the music silently un-muted
+     itself the next time any screen rendered. */
+  getSettings() { const r = this.root(); r.settings = r.settings || {}; return r.settings; },
+
+  /* ─────────────────────────────── SHARED UNLOCK VAULT ────────────────────
+     Anything bought in the Soul Shop belongs to the INSTALL, not to one
+     profile: unlock a tower once and every commander file can field it.
+     Migrated on first read from the union of whatever the profiles held. */
+  vault() {
+    const r = this.root();
+    if (!r.vault) {
+      r.vault = { unlocked: [], cmdUnlocked: [], abilUnlocked: [] };
+      for (const name in r.profiles) {
+        const p = r.profiles[name];
+        for (const k of ['unlocked', 'cmdUnlocked', 'abilUnlocked'])
+          for (const id of (p[k] || [])) if (!r.vault[k].includes(id)) r.vault[k].push(id);
+      }
+      for (const id of STARTER_TOWERS) if (!r.vault.unlocked.includes(id)) r.vault.unlocked.push(id);
+      for (const id of alwaysUnlocked()) if (!r.vault.cmdUnlocked.includes(id)) r.vault.cmdUnlocked.push(id);
+      this.save();
+    }
+    /* musterUnlocked arrived after vault() first shipped, so an EXISTING
+       root.vault predates it and the init above never runs again. Default it
+       on read -- the same migration pattern unlocked/cmdUnlocked used. */
+    if (!Array.isArray(r.vault.musterUnlocked)) {
+      r.vault.musterUnlocked = MUSTER_BASE_UNLOCK.slice();
+      this.save();
+    }
+    return r.vault;
+  },
+  setSettings(s) { const r = this.root(); r.settings = Object.assign(r.settings || {}, s); this.save(); },
+  /* Saving used to serialise the WHOLE root synchronously on every mutation --
+     measured at 1.93 ms per call against a 253 KB blob, and the blob only grows
+     as a player accumulates profiles and tower XP. Dozens of little writes
+     (a talent pick, an XP award, a mastery tick) turned into dozens of
+     main-thread stalls, which is why sessions got progressively less responsive.
+     Writes are now coalesced; anything urgent can force one. */
+  save(immediate) {
+    this._dirty = true;
+    if (immediate) return this.flush();
+    if (this._saveT) return;
+    this._saveT = setTimeout(() => { this._saveT = 0; this.flush(); }, 400);
+  },
+  flush() {
+    if (!this._dirty) return;
+    this._dirty = false;
+    if (this._saveT) { clearTimeout(this._saveT); this._saveT = 0; }
+    try { localStorage.setItem(this.KEY, JSON.stringify(this.root())); } catch (e) {}
+  },
+
+  /* ================================================== TOWER MASTERY ====
+     Playing a tower earns it experience. Mastery levels gate its talents:
+     the first column of each row unlocks at levels 1/3/5, the second at
+     2/4/6. Soul-bought levels stack on top. */
+  masteryXpFor(n) { return n <= 1 ? 0 : Math.round(320 * Math.pow(n - 1, 1.55)); },
+  masteryOf(towerId) {
+    const p = this.load();
+    const xp = p.towerXp[towerId] || 0;
+    let lvl = 1;
+    while (lvl < 20 && xp >= this.masteryXpFor(lvl + 1)) lvl++;
+    /* Mastery is fight-earned and nothing else: the soul-bought levels that
+       used to stack here had no writer after Session 11 made the soul shop
+       unlocks-only, so the term was reading an object nothing ever filled. */
+    return lvl;
+  },
+  masteryProgress(towerId) {
+    const p = this.load();
+    const xp = p.towerXp[towerId] || 0;
+    let lvl = 1;
+    while (lvl < 20 && xp >= this.masteryXpFor(lvl + 1)) lvl++;
+    const cur = this.masteryXpFor(lvl), next = this.masteryXpFor(lvl + 1);
+    return { level: this.masteryOf(towerId), into: xp - cur, need: next - cur,
+             frac: clamp((xp - cur) / Math.max(1, next - cur), 0, 1) };
+  },
+  addTowerXp(towerId, amount) {
+    const p = this.load();
+    const before = this.masteryOf(towerId);
+    p.towerXp[towerId] = (p.towerXp[towerId] || 0) + Math.max(0, Math.round(amount));
+    this.save();
+    return { gained: Math.round(amount), levels: this.masteryOf(towerId) - before, level: this.masteryOf(towerId) };
+  },
+  /** Mastery level a talent needs before it can even be selected. */
+  talentMasteryReq(node) { return node.row * 2 + 1 + node.col; },
+
+  /* ================================================== CAMPAIGN =========
+     An endless forking path. Each node is a battlefield with an arena
+     modifier, a named rival commander, and a boon you keep on victory.
+     A DEFEAT keeps the campaign: a lost battle pays no stars and the rivals
+     move, but the galaxy and every star survive (campaignDefeat). Only a
+     voluntary abandon resolves a campaign (campaignEnd). */
+  _rng(seed) {
+    let x = seed | 0 || 1;
+    return () => { x ^= x << 13; x ^= x >>> 17; x ^= x << 5; return ((x >>> 0) / 4294967296); };
+  },
+  campaign() { return this.load().campaign; },
+  campaignStart(factionId) {
+    const p = this.load();
+    if (factionId) {
+      p.faction = factionId;
+      /* Swearing to a faction hands you its base commander, permanently. */
+      const base = freeCommanderOf(factionId);
+      const v = this.vault();
+      if (base && !v.cmdUnlocked.includes(base)) v.cmdUnlocked.push(base);
+    }
+    const seed = (p.runs * 7919 + 104729 + Math.floor(Math.random() * 1e6)) | 0;
+    /* A campaign is a galaxy. Only the seed and the star progress are stored;
+       the galaxy itself is regenerated from the seed, so a save stays tiny and
+       a given campaign is always the same campaign. */
+    p.campaign = { seed, depth: 0, boons: [], totalWaves: 0, options: null,
+                   faction: p.faction || 'human', tier: p.galaxyTier || 0,
+                   stars: {}, chosen: null, system: 0, log: [] };
+    p.campaign.options = this.campaignOptions();
+    this.save();
+    return p.campaign;
+  },
+
+  /** The galaxy for the live campaign, rebuilt from its seed -- and then
+      re-taken by whatever the rivals seized while it was not loaded. */
+  galaxy() {
+    const c = this.campaign();
+    if (!c) return null;
+    if (!this._gx || this._gxSeed !== c.seed) {
+      this._gx = generateGalaxy(c.seed, c.faction || 'human');
+      this._gxSeed = c.seed;
+      /* Generation is PURE: it derives every world's owner from the seed, so
+         it always hands back the galaxy as it stood on day one. advanceRivals
+         moves owners on the live object only, which meant every world the
+         rivals took came back to them on the next load and the campaign's
+         opposing-pressure loop silently did nothing across sessions. Replay
+         the takes here -- the one place a galaxy is ever built. */
+      this.applyRivalHoldings(this._gx, c);
+    }
+    return this._gx;
+  },
+
+  /** Stamp the banked rival takes back onto a freshly generated galaxy.
+      Unknown ids and unknown factions are ignored rather than trusted: this
+      map is player-writable storage, and a bad owner would paint a world in a
+      colour FACTIONS has no entry for. Returns how many worlds moved. */
+  applyRivalHoldings(gx, c) {
+    const owners = c && c.owners;
+    if (!gx || !owners) return 0;
+    let n = 0;
+    for (const sys of gx.systems)
+      for (const w of sys.worlds) {
+        const f = owners[w.id];
+        if (f && FACTIONS[f] && f !== w.owner) { w.owner = f; n++; }
+      }
+    return n;
+  },
+
+  /** Bank the rivals' move so it outlives the session that rolled it. */
+  recordRivalMoves(moves) {
+    const c = this.campaign();
+    if (!c || !moves || !moves.length) return 0;
+    c.owners = c.owners || {};
+    let n = 0;
+    for (const mv of moves)
+      if (mv && mv.worldId && FACTIONS[mv.faction])
+        { c.owners[mv.worldId] = mv.faction; n++; }
+    /* Forced, not coalesced. This runs as the end-of-battle screen appears,
+       which is exactly the screen a player closes the tab from -- and the
+       400 ms write window is more than enough to lose the whole move. */
+    if (n) this.save(true);
+    return n;
+  },
+  /** Record a result on a world; returns what changed. */
+  recordWorld(worldId, stars) {
+    const c = this.campaign();
+    if (!c) return null;
+    const p = this.load();
+    const prev = c.stars[worldId] || 0;
+    let souls = 0;
+    for (let n = prev + 1; n <= stars; n++) souls += this.soulsForStar(n);
+    if (stars > prev) c.stars[worldId] = stars;
+
+    /* A solar system whose every world is conquered pays a bounty, once. */
+    let systemTaken = null, saved = [];
+    if (souls || stars > prev) {
+      const gx = this.galaxy();
+      const sys = gx && gx.systems.find(s2 => s2.worlds.some(w => w.id === worldId));
+      if (sys && sys.worlds.every(w => (c.stars[w.id] || 0) >= 3)) {
+        c.systemsTaken = c.systemsTaken || [];
+        if (!c.systemsTaken.includes(sys.id)) {
+          c.systemsTaken.push(sys.id);
+          souls += this.SYSTEM_BOUNTY;
+          systemTaken = sys.name;
+        }
+      }
+      /* Conquest SAVES the world's denizens: its map's roster joins the
+         shared muster vault, so every profile can send them from now on.
+         Bosses and heavy multi-life mobs are filtered inside saveDenizens. */
+      if (stars >= 3 && prev < 3 && sys) {
+        const world = sys.worlds.find(w2 => w2.id === worldId);
+        const wMap = world && MAPS.find(m => m.id === world.map);
+        if (wMap && wMap.denizens) saved = this.saveDenizens(wMap.denizens);
+      }
+    }
+    if (souls) p.souls += souls;
+    this.save();
+    return { worldId, stars, previous: prev, improved: stars > prev,
+             conquered: stars >= 3 && prev < 3, souls, systemTaken, saved };
+  },
+  /** 2-3 forks generated deterministically from the campaign seed + depth. */
+  campaignOptions() {
+    const c = this.campaign();
+    if (!c) return [];
+    const rng = this._rng(c.seed + c.depth * 2654435761);
+    const count = 2 + (rng() < 0.5 ? 1 : 0);
+    const opts = [];
+    const usedMaps = new Set();
+    for (let i = 0; i < count; i++) {
+      let m = MAPS[Math.floor(rng() * MAPS.length)];
+      let guard = 0;
+      while (usedMaps.has(m.id) && guard++ < 8) m = MAPS[Math.floor(rng() * MAPS.length)];
+      usedMaps.add(m.id);
+      const diff = c.depth < 2 ? DIFFICULTIES[0] : c.depth < 5 ? DIFFICULTIES[1] : DIFFICULTIES[2];
+      opts.push({
+        map: m.id,
+        arena: c.depth === 0 ? null : ARENA_MODS[Math.floor(rng() * ARENA_MODS.length)].id,
+        rival: COMMANDERS[Math.floor(rng() * COMMANDERS.length)].id,
+        boon: BOONS[Math.floor(rng() * BOONS.length)].id,
+        difficulty: diff.id,
+        escStart: Math.floor(c.depth / 3)
+      });
+    }
+    return opts;
+  },
+  /** Victory: bank the node's boon, deepen the path, fork again. */
+  campaignAdvance(game) {
+    const p = this.load();
+    const c = p.campaign;
+    if (!c) return null;
+    const node = c.chosen;
+    if (node && node.boon) c.boons.push(node.boon);
+    c.depth++;
+    c.totalWaves += game.wave;
+    c.options = this.campaignOptions();
+    c.chosen = null;
+    /* Victory used to bank NOTHING. campaignEnd was reachable only from defeat,
+       so a player twenty nodes deep still had their starting souls. A dividend
+       on every win means progress accrues from playing well, not only from
+       finally losing. */
+    const dividend = 0;   /* souls come from stars now, paid in recordWorld */
+    this.save();
+    return { advanced: true, depth: c.depth, souls: dividend,
+             boon: node && BOONS.find(b => b.id === node.boon) };
+  },
+
+  /** Defeat: the galaxy SURVIVES. Losing used to null the campaign, which
+      threw away a whole map of stars for one bad battle -- owner decision
+      (Session 15): a defeat is a setback ON the map, not a reset OF it. The
+      loss still costs: no stars, the wave payouts stop, and Game.endMatch
+      lets the rivals take their move just as it does after a victory. The
+      plotted course is cleared so the galaxy screen offers the choice again
+      (the world's holder may just have changed hands). */
+  campaignDefeat(game) {
+    const p = this.load();
+    const c = p.campaign;
+    if (!c) return null;
+    c.defeats = (c.defeats || 0) + 1;
+    c.chosen = null;
+    this.save();
+    return { ended: false, kept: true, souls: 0, depth: c.depth,
+             defeats: c.defeats, wave: game ? game.wave : 0 };
+  },
+
+  /** Souls a campaign would pay if it ended right now. */
+  campaignPayout(waveNow = 0) {
+    const c = this.load().campaign;
+    if (!c) return 0;
+    /* Depth dominates. The old formula was depth*4 + (waves)/3, and because
+       waves are endless while depth below 2 is pinned to the easiest tier, it
+       paid a player to park on the safest node and grind -- 90 waves at depth 0
+       out-earned three real victories. The grind term is now capped relative to
+       depth so advancing is always the better play. */
+    const grind = Math.min(c.totalWaves + waveNow, 25 * (c.depth + 1));
+    /* Stars are the real measure of a campaign -- depth alone under-counted a
+       player who took worlds cleanly, and a fully conquered galaxy could pay
+       out a single soul. Each star is worth banking; a conquered world (three
+       of them) is worth noticeably more than three scrappy wins. */
+    let stars = 0, conquered = 0;
+    for (const k in (c.stars || {})) { stars += c.stars[k]; if (c.stars[k] >= 3) conquered++; }
+    return Math.max(1, c.depth * c.depth + c.depth * 6 +
+                       stars * 2 + conquered * 3 + Math.round(grind / 3));
+  },
+
+  /* Souls are paid the moment a star is EARNED, plus a bounty for every solar
+     system taken. There is nothing to bank later, so extraction no longer
+     exists. */
+  /* OWNER-SET (Session 16): a map pays TWICE the stars you earned — flat 2 per
+     star, so a clean sweep is 6 rather than the old doubling ladder's 21. That
+     lands one fully-conquered world on exactly one TOWER_UNLOCK_COST, which is
+     the pace the shop was priced for. */
+  soulsForStar(n) { return 2; },
+  /* Scaled with it: the bounty was ~1.9 worlds' worth under the old ladder and
+     stays ~2 worlds' worth under the new one, instead of dwarfing every world. */
+  SYSTEM_BOUNTY: 12,
+
+  /** Voluntary retirement: kept only so old saves mid-flight still resolve. */
+  campaignExtract() {
+    const p = this.load();
+    if (!p.campaign) return null;
+    const souls = this.campaignPayout(0);
+    const depth = p.campaign.depth;
+    p.souls += souls;
+    p.campaign = null;
+    p.runs++;
+    this.save();
+    return { extracted: true, souls, depth };
+  },
+  /** VOLUNTARY abandon only (the battle's close button, through confirmBox):
+      the campaign, its galaxy and every star on it are forfeited and the next
+      campaign rolls a fresh galaxy. A battlefield defeat no longer comes here
+      -- see campaignDefeat. */
+  campaignEnd(game) {
+    const p = this.load();
+    const c = p.campaign;
+    if (!c) return null;
+    const souls = 0;      /* stars already paid; abandoning costs the campaign, not souls */
+    p.campaign = null;
+    p.runs++;
+    this.save();
+    return { ended: true, souls, depth: c.depth };
+  },
+  souls() { return this.load().souls; },
+
+  /* ---- tower unlocks ---- */
+  isTowerUnlocked(id) { return this.vault().unlocked.includes(id); },
+  unlockedTowers() { return this.vault().unlocked.slice(); },
+  towerUnlockCost() { return TOWER_UNLOCK_COST; },
+
+  /** ORIGIN GATING. A tower built by one of the three POWERS may only be
+      bought while you are sworn to that power -- their arsenals are the point
+      of swearing. HUMAN and ROBOTIC are open to everybody, permanently; the
+      reasoning is written out in full beside TOWER_ORIGINS in factions.js.
+      Returns the blocking origin record, or null when the buy is legal. */
+  towerOriginLock(id) {
+    const def = TOWER_TYPES[id];
+    const o = def && TOWER_ORIGINS[def.origin];
+    if (!o || !o.gated) return null;
+    const f = this.faction();
+    return (f && f === o.faction) ? null : o;
+  },
+  /** Gating decides what may be BOUGHT and never what you already own: an
+      unlock made under a previous banner is kept for good, which is also why
+      the shared vault is never filtered on read. */
+  canUnlockTower(id) { return !this.isTowerUnlocked(id) && !this.towerOriginLock(id); },
+
+  /* ---- muster (saved denizen) unlocks -- conquest-fed, shared vault ---- */
+  /** Filtered on read so a stale save can never surface an unsendable id. */
+  musterUnlocked() { return this.vault().musterUnlocked.filter(musterSendable); },
+  isMusterUnlocked(id) { return musterSendable(id) && this.vault().musterUnlocked.includes(id); },
+  /** Push newly-saved denizen ids into the shared vault; returns the NEW ones
+      so the reward summary can report exactly what this conquest earned. */
+  saveDenizens(ids) {
+    const v = this.vault();
+    const fresh = [];
+    for (const id of (ids || [])) {
+      if (!musterSendable(id) || v.musterUnlocked.includes(id)) continue;
+      v.musterUnlocked.push(id);
+      fresh.push(id);
+    }
+    if (fresh.length) this.save();
+    return fresh;
+  },
+  /** The profile's picked detachment, normalised: stale ids (another install,
+      an edited save) are dropped, and an empty pick falls back to the first
+      unlock so a battle always derives at least one tier. */
+  musterLoadout() {
+    const p = this.load();
+    const pool = this.musterUnlocked();
+    let picks = (p.musterLoadout || []).filter(id => pool.includes(id)).slice(0, MUSTER_LOADOUT_SIZE);
+    if (!picks.length) picks = pool.slice(0, 1);
+    return picks;
+  },
+  setMusterLoadout(ids) {
+    const p = this.load();
+    const pool = this.musterUnlocked();
+    p.musterLoadout = [...new Set((ids || []).filter(id => pool.includes(id)))].slice(0, MUSTER_LOADOUT_SIZE);
+    this.save();
+    return p.musterLoadout.slice();
+  },
+  /** Toggle one pick. The last pick may not be removed: an empty detachment
+      would silently fall back to the base unlock, which reads as the click
+      doing nothing. Returns true when something changed. */
+  toggleMuster(id) {
+    if (!this.isMusterUnlocked(id)) return false;
+    const cur = this.musterLoadout();
+    const i = cur.indexOf(id);
+    if (i >= 0) { if (cur.length <= 1) return false; cur.splice(i, 1); }
+    else if (cur.length < MUSTER_LOADOUT_SIZE) cur.push(id);
+    else return false;
+    this.setMusterLoadout(cur);
+    return true;
+  },
+
+  /* ============================== FACTION / COMMANDER / ABILITY UNLOCKS == */
+
+  faction() { return this.load().faction; },
+  setFaction(id) { const p = this.load(); p.faction = id; this.save(); return id; },
+
+  isCommanderUnlocked(id) { return this.vault().cmdUnlocked.includes(id); },
+  commanderCost(id) {
+    const c = COMMANDER_ROSTER.find(x => x.id === id);
+    /* A commander outside your own faction costs more -- you are recruiting
+       across a line that is supposed to mean something. */
+    return c && c.faction === this.faction() ? 12 : 18;
+  },
+  unlockCommander(id) {
+    const p = this.load(), v = this.vault();
+    if (v.cmdUnlocked.includes(id)) return false;
+    const cost = this.commanderCost(id);
+    if (p.souls < cost) return false;
+    p.souls -= cost;
+    v.cmdUnlocked.push(id);
+    this.save(true);
+    return true;
+  },
+
+  /** The second (defensive) ability unlocks with a full chart, or with souls. */
+  hasSecondAbility(cmdId) {
+    if (this.vault().abilUnlocked.includes(cmdId)) return true;
+    const c = COMMANDER_ROSTER.find(x => x.id === cmdId);
+    if (!c) return false;
+    return c.tech.every(t => this.isUnlocked(cmdId, t.id));
+  },
+  abilityCost() { return ABILITY_UNLOCK_COST; },
+
+  /** First encounter with an enemy type. Returns true exactly once, forever. */
+  markSeen(type) {
+    const p = this.load();
+    if (p.seenEnemies.includes(type)) return false;
+    p.seenEnemies.push(type);
+    this.save();
+    return true;
+  },
+
+  /* ========================================================= PRESTIGE ====
+     A MAXED commander (every node on their technology chart unlocked) can be
+     prestiged: their level and chart reset, they gain a permanent star (five
+     at most), a stacking flat bonus keyed to their faction, and every numeric
+     talent value they will ever take is worth 20% more per star. */
+  prestigeOf(id) { return (this.load().prestige || {})[id] || 0; },
+  canPrestige(id) {
+    const c = COMMANDER_ROSTER.find(x => x.id === id);
+    if (!c || this.prestigeOf(id) >= 5) return false;
+    return c.tech.every(t => this.isUnlocked(id, t.id));
+  },
+  doPrestige(id) {
+    if (!this.canPrestige(id)) return null;
+    const p = this.load();
+    p.prestige[id] = (p.prestige[id] || 0) + 1;
+    p.commanders[id].unlocked = [];
+    p.commanders[id].xp = 0;
+    this.save(true);
+    return { stars: p.prestige[id] };
+  },
+  unlockAbility(cmdId) {
+    const p = this.load(), v = this.vault();
+    if (v.abilUnlocked.includes(cmdId) || p.souls < ABILITY_UNLOCK_COST) return false;
+    p.souls -= ABILITY_UNLOCK_COST;
+    v.abilUnlocked.push(cmdId);
+    this.save(true);
+    return true;
+  },
+  unlockTower(id) {
+    const p = this.load(), v = this.vault();
+    if (v.unlocked.includes(id) || p.souls < TOWER_UNLOCK_COST) return false;
+    /* Refused at the store, not merely hidden in the shop -- the shop SHOWS
+       locked entries, so the button exists and has to be honest. */
+    if (this.towerOriginLock(id)) return false;
+    p.souls -= TOWER_UNLOCK_COST;
+    v.unlocked.push(id);
+    this.save();
+    return true;
+  },
+  /* SOUL LEVELS RETIRED. `soulCmdCost` / `soulTowerCost` / `soulLevels` /
+     `soulPower` / `buySoulCmd` / `buySoulTower` lived here until this patch.
+     Session 11 made the soul shop unlocks-only and deleted every call site,
+     so `p.soulTower` had no writer, `soulLevels()` returned {} for every
+     profile made since, and `soulPower`'s +7.5% damage / +3.5% rate was
+     unreachable -- including the rival's mirror of it, which averaged an
+     empty dictionary and made half of ROADMAP:204's parity clause vacuous on
+     both sides. The path is deleted rather than re-homed onto (fight-earned)
+     mastery: re-homing is a live balance change to both calibrated pins, not
+     a dead-code fix. Souls buy commanders, second abilities and arsenal
+     slots; mastery gates talents. Both are weight the engine reads. */
+
+  xpForLevel(n) { return n <= 1 ? 0 : Math.round(190 * Math.pow(n - 1, 1.45)); },
+  levelOf(id) {
+    const xp = this.load().commanders[id].xp;
+    let lvl = 1;
+    while (lvl < 40 && xp >= this.xpForLevel(lvl + 1)) lvl++;
+    return lvl;
+  },
+  progress(id) {
+    const xp = this.load().commanders[id].xp;
+    const lvl = this.levelOf(id);
+    const cur = this.xpForLevel(lvl), next = this.xpForLevel(lvl + 1);
+    return { level: lvl, xp, into: xp - cur, need: next - cur, frac: (xp - cur) / Math.max(1, next - cur) };
+  },
+
+  spentIn(id) {
+    const c = this.load().commanders[id];
+    const cmd = COMMANDERS.find(x => x.id === id);
+    return c.unlocked.reduce((s, tid) => s + (cmd.tech.find(t => t.id === tid) || { cost: 0 }).cost, 0);
+  },
+  pointsAvailable(id) { return this.levelOf(id) - this.spentIn(id); },
+  isUnlocked(id, techId) { return this.load().commanders[id].unlocked.includes(techId); },
+
+  /** The node directly above this one, which acts as its prerequisite. */
+  parentOf(cmd, node) {
+    return node.row === 0 ? null : cmd.tech.find(t => t.col === node.col && t.row === node.row - 1);
+  },
+
+  /** Gated by points available, by the node above, and by total points spent. */
+  lockReason(id, techId) {
+    const cmd = COMMANDERS.find(x => x.id === id);
+    const node = cmd.tech.find(t => t.id === techId);
+    if (!node) return 'unknown';
+    if (this.isUnlocked(id, techId)) return 'owned';
+    const gate = TALENT_ROW_GATE[node.row] || 0;
+    if (this.spentIn(id) < gate) return `requires ${gate} points spent`;
+    const parent = this.parentOf(cmd, node);
+    if (parent && !this.isUnlocked(id, parent.id)) return `requires ${parent.name}`;
+    if (this.pointsAvailable(id) < node.cost) return 'not enough points';
+    return null;
+  },
+  canUnlock(id, techId) { return this.lockReason(id, techId) === null; },
+
+  unlock(id, techId) {
+    if (!this.canUnlock(id, techId)) return false;
+    this.load().commanders[id].unlocked.push(techId);
+    this.save();
+    return true;
+  },
+  resetTree(id) { this.load().commanders[id].unlocked = []; this.save(); },
+
+  addXp(id, amount) {
+    const d = this.load();
+    const before = this.levelOf(id);
+    d.commanders[id].xp += Math.max(0, Math.round(amount));
+    this.save();
+    return { gained: Math.round(amount), levelsGained: this.levelOf(id) - before, level: this.levelOf(id) };
+  },
+  /* The 700 is the bonus for TAKING the world, and the world is taken when
+     no rival still stands -- not when seat 1 happens to be dead. On a tri
+     board or in the arena the ordinary path (you eliminate one rival, another
+     kills you) satisfied the old test, so a defeat was paid the full victory
+     bonus: a measured wave-10 arena loss with eighteen seats still standing
+     banked 1320 XP, byte-identical to a genuine twenty-seat win. `won` comes
+     from Game.endMatch, which is the one place the result is decided; the
+     fallback keeps the reading honest for any caller that does not know it,
+     and on a duel every form of the test agrees. BATCH-C/nside */
+  xpForRun(game, won) {
+    const s = game.sides[0];
+    const took = won === undefined
+      ? game.sides.slice(1).every(x => x.defeated || x.lives <= 0)
+      : !!won;
+    return game.wave * 62 + s.stats.kills * 1.1 + s.stats.sent * 0.7 + (took ? 700 : 0);
+  },
+
+  /* ---- per-tower talent allocation (pre-match, 2 points each) ---- */
+
+  talentsOf(towerId) { return this.load().talents[towerId] || []; },
+  talentSpent(towerId) { return this.talentsOf(towerId).length; },
+  hasTalent(towerId, tid) { return this.talentsOf(towerId).includes(tid); },
+
+  talentLockReason(towerId, tid) {
+    const def = TOWER_TYPES[towerId];
+    const node = def.talents.find(t => t.id === tid);
+    if (!node) return 'unknown';
+    if (this.hasTalent(towerId, tid)) return 'owned';
+    const req = this.talentMasteryReq(node);
+    if (this.masteryOf(towerId) < req) return 'mastery ' + req;
+    if (this.talentSpent(towerId) >= TALENT_POINTS) return 'no points left';
+    if (node.row > 0) {
+      const above = def.talents.filter(t => t.row === node.row - 1).map(t => t.id);
+      if (!above.some(u => this.hasTalent(towerId, u))) return 'row above first';
+    }
+    return null;
+  },
+  canTakeTalent(towerId, tid) { return this.talentLockReason(towerId, tid) === null; },
+  takeTalent(towerId, tid) {
+    if (!this.canTakeTalent(towerId, tid)) return false;
+    this.load().talents[towerId].push(tid);
+    this.save();
+    return true;
+  },
+  clearTalents(towerId) { this.load().talents[towerId] = []; this.save(); },
+
+  /**
+   * The resolved talent mods a tower deploys with. A tower the player has
+   * never touched deploys with a sensible DEFAULT build rather than nothing —
+   * the rival always brings a full allocation, so an empty tree would quietly
+   * handicap anyone who skipped the talent screen.
+   */
+  /* Spending your FIRST talent point used to make a tower WEAKER: an untouched
+     tower deployed with a three-node stock build, but the moment one point was
+     spent the stock build was discarded entirely and the tower deployed with
+     one. The trap landed squarely on the curious player, and nothing warned
+     them. Saved picks now merge OVER the stock build instead of replacing it,
+     so a partial allocation is never worse than none. */
+  talentMods(towerId) {
+    const def = TOWER_TYPES[towerId];
+    const saved = this.talentsOf(towerId)
+      .map(tid => def.talents.find(t => t.id === tid))
+      .filter(Boolean);
+    if (!saved.length) return this.defaultTalents(towerId);
+    const out = saved.slice();
+    const rows = new Set(out.map(t => t.row || 0));
+    for (const t of this.defaultTalents(towerId))
+      if (!rows.has(t.row || 0) && out.length < TALENT_POINTS) { out.push(t); rows.add(t.row || 0); }
+    return out;
+  },
+
+  /** One talent per row, taking the first option — a reasonable stock build. */
+  defaultTalents(towerId) {
+    const def = TOWER_TYPES[towerId];
+    const mastery = this.masteryOf(towerId);
+    const out = [];
+    for (const row of [0, 1, 2]) {
+      const opt = def.talents.find(t => t.row === row && t.col === 0);
+      if (opt && out.length < TALENT_POINTS &&
+          mastery >= this.talentMasteryReq(opt)) out.push(opt);
+    }
+    return out;
+  },
+  /** True when the player has not customised this tower's tree. */
+  usingDefaults(towerId) { return this.talentSpent(towerId) === 0; },
+
+  /** Total tech points the player has actually committed on a commander. */
+  techSpent(commanderId) {
+    const cmd = COMMANDERS.find(c => c.id === commanderId);
+    if (!cmd) return 0;
+    let n = 0;
+    for (const t of cmd.tech) if (this.isUnlocked(cmd.id, t.id)) n += t.cost;
+    return n;
+  },
+
+  applyTo(side, commanderId) {
+    const cmd = COMMANDERS.find(c => c.id === commanderId) || COMMANDERS[0];
+    side.commander = cmd;
+    side.traits = freshTraits();
+    side.prestigeStars = this.prestigeOf(cmd.id);
+    cmd.trait.apply(side.traits, side, side.mods);
+    for (const t of cmd.tech) if (this.isUnlocked(cmd.id, t.id)) t.apply(side.traits, side, side.mods);
+    foldTraits(side);
+    applyPrestigeBonus(side, cmd.faction || this.faction() || 'human', side.prestigeStars);
+    initAbilities(side, cmd, this.hasSecondAbility(cmd.id));
+    return cmd;
+  },
+
+  applyToAI(side, commanderId, techDepth) {
+    const cmd = COMMANDERS.find(c => c.id === commanderId) || COMMANDERS[1];
+    side.commander = cmd;
+    side.traits = freshTraits();
+    cmd.trait.apply(side.traits, side, side.mods);
+    /* Walk columns top-down so prerequisites are always satisfied. */
+    const sorted = cmd.tech.slice().sort((a, b) => a.row - b.row || a.col - b.col);
+    let budget = techDepth;
+    for (const t of sorted) {
+      if (budget < t.cost) continue;
+      t.apply(side.traits, side, side.mods);
+      budget -= t.cost;
+    }
+    foldTraits(side);
+    /* The rival gets both abilities once it is deep enough to have earned them. */
+    initAbilities(side, cmd, techDepth >= 10);
+    return cmd;
+  }
+};

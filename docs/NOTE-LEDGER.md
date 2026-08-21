@@ -1,0 +1,101 @@
+# Owner Note Ledger — every note given, and where it stands
+
+Compiled for the final completeness sweep. Status is filled by VERIFICATION against the
+shipped code, not by recollection. Sessions 7–12 are covered by the roadmap audit
+(wf_a8769cbf-e0e) which checked those claims line-by-line; this ledger tracks the notes
+given in Sessions 13–16 directly, plus the audit's own findings.
+
+Legend: ✅ verified in code · 🔶 landed but unverified · ⏳ in flight · ❌ not started
+
+---
+
+## Session 13 notes
+
+| # | Note | Status |
+|---|---|---|
+| 13.1 | Apply the redesign to the rest of the game | ✅ |
+| 13.2 | Tower placement cost +50%, per-tower rate doubled | ✅ |
+| 13.3 | Base level raises all tower levels beneath it (retrofit) | ✅ |
+| 13.4 | Graphics/design bland — use another AI / KREA 2 | ✅ 118-image pack |
+| 13.5 | Finishing a map returns to world map | ✅ |
+| 13.6 | Remove commander levelling from soul shop | ✅ |
+| 13.7 | Detail star conditions per map | ✅ |
+| 13.8 | Galactic map low quality | ✅ superseded by S16 2.5D map |
+| 13.9 | More unique maps; 3-way Xeno/Light/Human map | ✅ confluence; ⏳ more tri maps in S16 |
+| 13.10 | Splash/slow-resistant mob mechanics | ✅ shardling, basalt |
+| 13.11 | Skill activation animation + sound | ✅ |
+| 13.12 | Commander portraits | ✅ 21 painted |
+| 13.13 | New-enemy dossier card on first encounter | ✅ |
+| 13.14 | Brief pre-battle dialogue | ✅ — but see 16.11 (feels clumped) |
+| 13.15 | Galaxy map shows active boons | ✅ |
+| 13.16 | Base level price +10% compounding | ✅ |
+| 13.17 | Element strength/weakness per enemy | ✅ elemWeak/elemResist |
+| 13.18 | Research highly-rated TD games | ✅ dossier mined, 10 shipped, 15 optioned |
+
+## Session 14 notes
+
+| # | Note | Status |
+|---|---|---|
+| 14.1 | Revoke design digests, use AI illustrative art; install huashu | ✅ |
+| 14.2 | Krea 2 from HuggingFace, ComfyUI if needed | ✅ pipeline works; SDXL ships (83min/img documented) |
+| 14.3 | Galaxy bubbles overlap | ✅ **re-fixed in S16** — was still overlapping (4.17→5.83) |
+| 14.4 | Tri-battles only on special contested planets, shown on map | ✅ |
+| 14.5 | Soul shop only on commander screen | ✅ — but see gap "loadout copy still says title screen" ⏳ |
+| 14.6 | Sevra skills not increasing tower damage | ✅ inspectorKey pulse terms |
+| 14.7 | Squish damage/HP numbers, whole numbers, never below 1 | ✅ NUM_SQUISH 2.5 |
+| 14.8 | 3-way: show all 3 commander interactions; fix 3-way UI | ✅ — but stale panel bug ⏳ |
+| 14.9 | Remove Extract; souls from stars (doubled); system bonus; shared unlocks | ✅ (formula later revised by 16.5) |
+
+## Session 15 notes
+
+| # | Note | Status |
+|---|---|---|
+| 15.1 | Monochrome faction symbols, same art style | 🔶 regenerated — **audit says hue is off: human green, xeno pink** |
+| 15.2 | Lock vaporwave + gothic cathedral line art (Tyranny) | ✅ BRAND.md |
+| 15.3 | Mob pics grey/black/white + hint of faction colour | ✅ ACCENT table |
+| 15.4 | Some enemies missing pictures | ✅ 7 found and painted; 0 missing |
+| 15.5 | Muster loadouts, unlocked by saving denizens | ✅ verified live |
+| 15.6 | Show baseline income; musters add % additively | ✅ verified live |
+| 15.7 | Squish economy to near single digits, same curve | ✅ GOLD_SQUISH 8 |
+| 15.8 | Right panel 2 columns | ✅ 580px grid |
+| 15.9 | Losing must not reset galaxy progression | ✅ campaignDefeat |
+| 15.10 | Map banner diversity; faction-held maps in faction duotone | ✅ 36 derived plates |
+| 15.11 | Galactic map generated backdrop + planets | ✅ galaxy_bg + 4 planet kinds |
+| 15.12 | Find anything else missing images | ✅ every UI art lookup checked |
+| 15.13 | Maintain art style; make a brand kit | ✅ BRAND.md |
+
+## Session 16 notes (current)
+
+| # | Note | Status |
+|---|---|---|
+| 16.1 | Sweep all previous threads for anything unapplied | ✅ 19 gaps found; 4 HIGH fixed; 15 ⏳ |
+| 16.2 | Universe map: 2.5D spatial, click-drag scroll, immersive | ✅ CSS-3D plane + parallax + drag/zoom (three.js declined, documented) |
+| 16.3 | Crawler image is not a crawler | ✅ + whole class fixed (scene→specimen, anti-medieval) |
+| 16.4 | New enemy every 2 waves from wave 1; max 8 types per map | ✅ `ROSTER_MAX = 8`, `ROSTER_INTRO_EVERY = 2`, config.js:1733 |
+| 16.5 | Souls = 2× stars earned | ✅ verified 1★→2, 3★→6 |
+| 16.6 | Complete map reformation for diversity | ✅ 15 battle boards + the arena; 4 of them tri |
+| 16.7 | Title bg → space nebula gradient, keep star interaction | ✅ verified |
+| 16.8 | Muster income much higher; reanimation stacks | ✅ +5%→+14.9%, cap 100%, gold+doubling stack |
+| 16.9 | Faction-specific enemies; neutral = semi-sentient robotic protectors | ✅ `FACTION_TROOPS` replace machine slots on a garrisoned world |
+| 16.10 | Tower tech origins (5), soul-shop gated by faction playthrough | ✅ all 39 towers carry `origin:`; shop gated |
+| 16.11 | Dialogue more immersive, less clumped/random | ✅ 21 per-commander openers, per-faction replies, authored rivalry pairs (dialogue.js) |
+| 16.12 | Universe map: drag-scroll, varied planets, fix clumping, 2+ tri per system, bigger tri maps | ✅ drag + clumping; `CONTESTED_PER_SYSTEM = 2` drawing distinct boards from `TRI_MAP_IDS` |
+
+---
+
+## Outstanding at compile time
+
+**None.** Every item above is closed. This section listed five open items for three
+sessions after they had actually shipped, which is worse than listing nothing — a stale
+ledger is read as a true one. Re-verified against the code and the shipping art pack:
+
+| Was listed open | Actually |
+|---|---|
+| 16.11 dialogue immersion | Shipped. `DIALOGUE` carries 21 per-commander openers, four per-faction replies and hand-authored rivalry pairs — the opposite of the clumped random pool the note objected to. |
+| 15.1 crest hue | Fixed, and not by regeneration. Prompting cannot pin a hue, so `derive_crests.py` tints each crest onto the faction's exact ramp. Measured in the SHIPPING pack: human 187.8° vs 186.9°, xeno 260.9° vs 262.1°, pirate 1.4° vs 0.0°, light 38.8° vs 43.3° — worst deviation 4.5°, and that one is the mean-hue estimator being pulled by the dark end of a gold ramp. |
+| 16.4 / 16.6 / 16.9 / 16.10 | All four shipped in the content workflow — see the rows above for the symbol that proves each. |
+| The 15 audit gaps | Closed, then re-audited. The follow-up audit raised 27 fresh findings, tracked separately. |
+| Planet variety | `planetArtFor` draws from up to three painted variants per kind, chosen deterministically from the world id, so a system reads as distinct places rather than four repeated stamps. |
+
+**Standing rule for this file:** a row moves to ✅ only with the symbol, file or measurement
+that proves it, written in the row. "Verified" without evidence is how the list above rotted.

@@ -1,0 +1,79 @@
+name: Verify
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Cheapest possible gate, and it catches the most common breakage.
+      - name: Every module parses
+        run: |
+          fail=0
+          for f in js/*.js tools/*.js build.js; do
+            node --check "$f" || { echo "::error file=$f::syntax error"; fail=1; }
+          done
+          exit $fail
+
+      - name: The bundle builds
+        run: node build.js
+
+      # build.js has its own guard for these, but a clear CI message beats a
+      # process exit with no explanation.
+      - name: The bundle is self-contained
+        run: |
+          if grep -q '<script src=' aegis-protocol.html; then
+            echo "::error::external <script src=> survived into the bundle"; exit 1
+          fi
+          if ! head -c 200 aegis-artifact.html | grep -q 'charset="utf-8"'; then
+            echo "::error::the artifact bundle lost its charset prefix — the host will mojibake every glyph"
+            exit 1
+          fi
+
+      # Every module named in build.js must exist, in order. A module added to
+      # the folder but not the list works when served and breaks when bundled,
+      # which is the worst possible failure shape.
+      - name: build.js lists every module that exists
+        run: |
+          node -e '
+            const fs = require("fs");
+            const listed = (fs.readFileSync("build.js", "utf8")
+              .match(/const js\s*=\s*\[([^\]]*)\]/) || [,""])[1]
+              .match(/[a-zA-Z0-9_]+/g) || [];
+            const onDisk = fs.readdirSync("js")
+              .filter(f => f.endsWith(".js"))
+              .map(f => f.replace(/\.js$/, ""));
+            const missing = onDisk.filter(m => !listed.includes(m));
+            if (missing.length) {
+              console.error("::error::js/ contains modules build.js never inlines: " + missing.join(", "));
+              process.exit(1);
+            }
+            console.log("all " + onDisk.length + " modules are listed");
+          '
+
+      # Line endings are a live hazard here; see .gitattributes.
+      - name: No CRLF crept into a tracked text file
+        run: |
+          bad=$(git ls-files --eol | grep -E 'i/crlf|i/mixed' || true)
+          if [ -n "$bad" ]; then
+            echo "::error::these files carry CRLF or mixed endings in the index:"
+            echo "$bad"
+            exit 1
+          fi
+          echo "index is uniformly LF"
+
+      - name: The art pack is present and non-trivial
+        run: |
+          test -f js/artpack.js || { echo "::error::js/artpack.js is missing — the game will render no art"; exit 1; }
+          keys=$(grep -o '"[a-z0-9_]*":' js/artpack.js | wc -l)
+          echo "artpack carries $keys keys"
+          [ "$keys" -ge 100 ] || { echo "::error::only $keys art keys — expected ~178"; exit 1; }

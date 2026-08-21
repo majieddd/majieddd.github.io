@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cosmic Conquest</title>
+<meta name="description" content="A PvPvE tower defense: neutral waves attack both commanders, and everything you kill is reanimated and sent at your rival.">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0e17'/><path d='M16 5l9 4v7c0 6-4 9.5-9 11-5-1.5-9-5-9-11V9z' fill='none' stroke='%2338e8ff' stroke-width='2.5'/></svg>">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ SCREEN 0 — TITLE ═════════ -->
+<div id="screen-title" class="screen">
+  <div class="title-wrap">
+    <h1 class="title-logo">COSMIC<span>CONQUEST</span></h1>
+    <div class="title-emblem" aria-hidden="true">
+      <svg viewBox="0 0 220 110">
+        <defs>
+          <radialGradient id="emPlanet" cx="38%" cy="32%" r="75%">
+            <stop offset="0%" stop-color="#173a4d"/>
+            <stop offset="55%" stop-color="#0b1d2c"/>
+            <stop offset="100%" stop-color="#060d16"/>
+          </radialGradient>
+          <linearGradient id="emRing" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#38e8ff" stop-opacity="0"/>
+            <stop offset="30%" stop-color="#38e8ff" stop-opacity=".9"/>
+            <stop offset="70%" stop-color="#fbbf24" stop-opacity=".9"/>
+            <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- opposing lanes: the war arrives from both sides -->
+        <path d="M6 55h55" stroke="#38e8ff" stroke-width="2" opacity=".7"/>
+        <path d="M18 47h34M18 63h34" stroke="#38e8ff" stroke-width="1" opacity=".3"/>
+        <path d="M159 55h55" stroke="#ef4444" stroke-width="2" opacity=".7"/>
+        <path d="M168 47h34M168 63h34" stroke="#ef4444" stroke-width="1" opacity=".3"/>
+        <path d="M56 50l8 5-8 5z" fill="#38e8ff" opacity=".85"/>
+        <path d="M164 60l-8-5 8-5z" fill="#ef4444" opacity=".85"/>
+        <!-- the contested world -->
+        <circle cx="110" cy="55" r="30" fill="url(#emPlanet)" stroke="rgba(120,180,220,.35)" stroke-width="1"/>
+        <path d="M85 47c10-7 40-9 50 2M83 60c12 9 44 8 54-2" stroke="rgba(120,190,230,.25)" stroke-width="1" fill="none"/>
+        <!-- orbit ring, slowly turning -->
+        <g class="em-ring">
+          <ellipse cx="110" cy="55" rx="52" ry="15" fill="none" stroke="url(#emRing)" stroke-width="1.6"/>
+          <circle cx="58" cy="55" r="2.4" fill="#38e8ff"/>
+          <circle cx="162" cy="55" r="2.4" fill="#fbbf24"/>
+        </g>
+        <!-- the four powers on station -->
+        <circle cx="110" cy="18" r="2" fill="#7c3aed"/>
+        <circle cx="110" cy="92" r="2" fill="#ef4444"/>
+      </svg>
+    </div>
+
+    <div id="menu-main" class="menu-main">
+      <button id="btn-menu-sp" class="btn btn-primary btn-big menu-btn">SINGLEPLAYER</button>
+      <button id="btn-menu-mp" class="btn btn-big menu-btn">MULTIPLAYER</button>
+      <button class="btn btn-big menu-btn" data-open="settings">OPTIONS</button>
+    </div>
+
+    <div id="menu-sp" class="menu-panel hidden">
+      <h2 class="section-label">SELECT PROFILE</h2>
+      <div id="profile-list" class="profile-list"></div>
+      <div class="profile-new">
+        <input id="profile-name" type="text" maxlength="14" placeholder="NEW PROFILE NAME" aria-label="New profile name">
+        <button id="btn-new-profile" class="btn btn-sm">CREATE</button>
+      </div>
+      <div class="title-actions">
+        <button id="btn-title-play" class="btn btn-primary btn-big">BEGIN CAMPAIGN</button>
+        <button class="btn" data-open="codex">FIELD MANUAL</button>
+        <button id="btn-menu-back-sp" class="btn btn-sm">← BACK</button>
+      </div>
+    </div>
+
+    <div id="menu-mp" class="menu-panel hidden">
+      <h2 class="section-label">SELECT PROFILE</h2>
+      <div id="profile-list-mp" class="profile-list"></div>
+      <div class="title-actions">
+        <button id="btn-enter-mp" class="btn btn-primary btn-big">ENTER MULTIPLAYER</button>
+        <button id="btn-menu-back-mp" class="btn btn-sm">← BACK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ SCREEN 1 — COMMAND ═══════ -->
+<div id="screen-command" class="screen hidden">
+  <div class="setup-wrap">
+    <header class="setup-head">
+      <h1 class="logo">COSMIC<span>CONQUEST</span></h1>
+    </header>
+    <div class="setup-body">
+      <aside class="setup-rail">
+        <h2 class="section-label">COMMANDER</h2>
+        <div id="commander-list"></div>
+        <div class="rail-actions">
+          <button class="btn" data-open="codex">FIELD MANUAL</button>
+          <button class="btn" data-open="settings">AUDIO</button>
+        </div>
+      </aside>
+      <main id="commander-detail" class="setup-main"></main>
+    </div>
+    <footer class="setup-foot">
+      <button id="btn-back-title" class="btn">← TITLE</button>
+      <button id="btn-soul-shop" class="btn">◉ SOUL SHOP</button>
+      <span class="step-dots"><i class="on"></i><i></i><i></i></span>
+      <button id="btn-to-theatre" class="btn btn-primary">SELECT THEATRE →</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ SCREEN 2 — THEATRE ═══════ -->
+
+<div id="screen-multiverse" class="screen hidden">
+  <div class="setup-wrap">
+    <header class="setup-head compact">
+      <h1 class="logo sm">THE UNIVERSE</h1>
+      <p class="tagline">Contested sectors. Choose a world — the relay will look for another commander fighting over it.</p>
+    </header>
+    <div id="multiverse-wrap" class="worldmap-wrap"></div>
+    <footer class="setup-foot">
+      <button id="btn-mv-back" class="btn">← MENU</button>
+    </footer>
+    <div id="mv-search" class="overlay hidden"><div class="modal"><div id="mv-search-body" class="mv-body"></div></div></div>
+    <div id="mv-maelstrom" class="overlay hidden"><div class="modal"><div id="mv-maelstrom-body" class="mv-body"></div></div></div>
+  </div>
+</div>
+
+<div id="screen-faction" class="screen hidden">
+  <div class="faction-wrap">
+    <header class="faction-head">
+      <p class="eyebrow-sm">CHOOSE YOUR ALLEGIANCE</p>
+      <h1 class="logo">COSMIC CONQUEST</h1>
+      <p class="tagline">The galaxy is already taken. Decide whose side you take it back for.</p>
+    </header>
+    <div id="faction-grid" class="faction-grid"></div>
+    <footer class="setup-foot">
+      <button id="btn-faction-back" class="btn">← BACK</button>
+      <button id="btn-faction-go" class="btn btn-primary" disabled>BEGIN CONQUEST →</button>
+    </footer>
+  </div>
+</div>
+
+<div id="screen-theatre" class="screen hidden">
+  <div class="setup-wrap">
+    <header class="setup-head compact">
+      <h1 class="logo sm">THE GALAXY</h1>
+      <p class="tagline">Five solar systems, thirty-five worlds, three rival powers. Take them one at a time.</p>
+    </header>
+    <div id="campaign-trail"></div>
+    <div class="theatre-body">
+      <div id="worldmap-wrap" class="worldmap-wrap"></div>
+      <aside id="theatre-detail" class="theatre-detail"></aside>
+    </div>
+    <footer class="setup-foot">
+      <button id="btn-back-command" class="btn">← COMMANDER</button>
+      <span class="step-dots"><i></i><i class="on"></i><i></i></span>
+      <button id="btn-to-loadout" class="btn btn-primary">SELECT LOADOUT →</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ SCREEN 3 — LOADOUT ═══════ -->
+<div id="screen-loadout" class="screen hidden">
+  <div class="setup-wrap">
+    <header class="setup-head compact">
+      <h1 class="logo sm">DEPLOYMENT LOADOUT</h1>
+      <p class="tagline">You may take <b>five</b> towers into battle. Everything else stays home.</p>
+    </header>
+    <div class="loadout-bar">
+      <span id="loadout-count" class="lo-count">0 / 5</span>
+      <span id="loadout-unlocked" class="lo-unlocked"></span>
+      <div id="loadout-warn" class="loadout-warn"></div>
+    </div>
+    <div id="muster-loadout" class="muster-lo"></div>
+    <div class="loadout-split">
+      <div id="loadout-grid" class="loadout-grid"></div>
+      <aside class="talent-panel">
+        <h2 class="section-label">TOWER TALENTS — prepared before deployment</h2>
+        <div id="tower-talents"></div>
+      </aside>
+    </div>
+    <footer class="setup-foot">
+      <button id="btn-back-theatre" class="btn">← THEATRE</button>
+      <span class="step-dots"><i></i><i></i><i class="on"></i></span>
+      <button id="btn-deploy" class="btn btn-primary" disabled>DEPLOY</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════ BATTLE ══════════ -->
+<div id="screen-game" class="screen hidden">
+  <header id="hud">
+    <div class="hud-side">
+      <button id="btn-quit" class="icon-btn" title="Abandon match">✕</button>
+      <div class="cmdr">
+        <span class="cmdr-tag">YOU</span>
+        <div class="cmdr-stats">
+          <span class="s-lives">♥<b id="my-lives">20</b></span>
+          <span class="s-gold">◈<b id="my-gold">0</b></span>
+          <span class="s-tow">▲<b id="my-towers">0</b></span>
+        </div>
+        <span class="bar"><i id="my-bar"></i></span>
+      </div>
+    </div>
+
+    <div class="hud-centre">
+      <div class="wave-badge">WAVE <b id="stat-wave">0</b></div>
+      <div id="phase-label" class="phase">BUILD</div>
+      <span class="prep"><i id="prep-bar"></i></span>
+      <div class="chip-rows">
+        <div id="drift-strip" class="chip-row drift-row"></div>
+        <div id="mod-strip" class="chip-row"></div>
+        <div id="esc-strip" class="chip-row"></div>
+      </div>
+    </div>
+
+    <div class="hud-side rival" id="hud-rivals">
+      <!-- The id is read by UI.init so syncLive can dim this panel when the
+           rival behind it is eliminated. BATCH-C/nside -->
+      <div class="cmdr right" id="hud-rival1">
+        <span class="cmdr-tag rival-tag">RIVAL</span>
+        <div class="cmdr-stats">
+          <span class="s-tow">▲<b id="ai-towers">0</b></span>
+          <span class="s-gold">◈<b id="ai-gold">0</b></span>
+          <span class="s-lives">♥<b id="ai-lives">20</b></span>
+        </div>
+        <span class="bar"><i id="ai-bar"></i></span>
+      </div>
+      <div class="ctl-group">
+        <button id="btn-pause" class="icon-btn" aria-label="Pause">❚❚</button>
+        <button class="speed-btn active" data-speed="1">1×</button>
+        <button class="speed-btn" data-speed="2">2×</button>
+        <button class="speed-btn" data-speed="3">3×</button>
+        <button class="icon-btn" data-open="codex" title="Field manual">?</button>
+        <button class="icon-btn" data-open="settings" title="Audio">♪</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="stage">
+    <div id="canvas-wrap"><canvas id="game" width="1064" height="570" aria-label="Battlefield"></canvas></div>
+    <aside id="sidebar">
+      <button id="btn-rush" class="btn btn-wave"><span>RUSH WAVE 1</span><em>▶</em></button>
+      <div id="muster-bar" class="muster-bar"></div>
+      <div id="ability-bar" class="ability-bar"></div>
+      <button id="btn-baselvl" class="btn base-btn" data-tt="UPGRADE BASE|+2 max lives, reanimates +5%, and every tower you place arrives at the new base level — specialisation included past level 3, ascensions past level 4.">
+        <span class="bb-main"><b>⌂ BASE LEVEL <i id="bb-lvl">1</i></b><em id="bb-next">→ 2</em></span>
+        <span class="bb-cost" id="bb-cost">◈ —</span>
+      </button>
+      <div class="panel panel-shop">
+        <h2 class="section-label">LOADOUT</h2>
+        <div id="shop-list"></div>
+      </div>
+      <div class="panel panel-grow"><div id="inspector"></div></div>
+    </aside>
+  </div>
+</div>
+
+<div id="tooltip" class="hidden"></div>
+<div id="toasts"></div>
+
+<div id="overlay-choice" class="overlay hidden">
+  <div class="modal modal-wide"><div id="choice-body"></div></div>
+</div>
+
+<div id="overlay-end" class="overlay hidden">
+  <div class="modal modal-wide modal-scroll">
+    <div id="end-body"></div>
+    <div class="modal-actions">
+      <button id="btn-end-retry" class="btn btn-primary">TO THE GALAXY →</button>
+      <button id="btn-end-menu" class="btn">MAIN MENU</button>
+    </div>
+  </div>
+</div>
+
+<div id="overlay-souls" class="overlay hidden">
+  <div class="modal modal-wide modal-scroll">
+    <div class="modal-head"><h2>SOUL SHOP</h2><button class="icon-btn" data-close="souls" aria-label="Close">✕</button></div>
+    <div id="souls-body"></div>
+  </div>
+</div>
+
+<div id="overlay-codex" class="overlay hidden">
+  <div class="modal modal-wide modal-scroll">
+    <div class="modal-head"><h2>FIELD MANUAL</h2><button class="icon-btn" data-close="codex" aria-label="Close">✕</button></div>
+    <div id="codex-body"></div>
+  </div>
+</div>
+
+<div id="overlay-settings" class="overlay hidden">
+  <div class="modal">
+    <div class="modal-head"><h2>AUDIO</h2><button class="icon-btn" data-close="settings" aria-label="Close">✕</button></div>
+    <div class="settings-body">
+      <label class="set-row"><span>Sound effects</span><input type="checkbox" id="set-sfx-on" checked></label>
+      <label class="set-row"><span>Effects volume</span><input type="range" id="set-sfx" min="0" max="100" value="70"></label>
+      <label class="set-row"><span>Music</span><input type="checkbox" id="set-music-on" checked></label>
+      <label class="set-row"><span>Music volume</span><input type="range" id="set-music" min="0" max="100" value="40"></label>
+      <p class="hint">Every sound is synthesised at runtime — nothing is pre-recorded.</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/artpack.js"></script>
+<script src="js/config.js"></script>
+<script src="js/factions.js"></script>
+<script src="js/towers2.js"></script>
+<script src="js/abilities.js"></script>
+<script src="js/roster.js"></script>
+<script src="js/dialogue.js"></script>
+<script src="js/commanders.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/entities.js"></script>
+<script src="js/entities2.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/galaxy.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,473 @@
+/* ==========================================================================
+   COMMANDER ROSTER — five per faction, twenty in all.
+
+   One per faction is free; the rest are bought with souls. Every commander
+   carries a signature trait, a 3x3 technology chart, and two active abilities
+   (offensive first, defensive second — the second gated until the chart is
+   fully allocated or the ability is unlocked with souls).
+
+   Technology charts are built from a compact column spec rather than 180
+   hand-written literals: each column is one escalating theme, which is exactly
+   how the original five were authored and keeps a chart readable at a glance.
+   ========================================================================== */
+
+/** Build a 3x3 chart. `cols` is three [name, icon, desc, apply] triples per row. */
+function chart(prefix, cols) {
+  const out = [];
+  cols.forEach((col, ci) => col.forEach((node, ri) => {
+    out.push({ id: prefix + (ci * 3 + ri + 1), col: ci, row: ri, cost: ri + 1,
+               name: node[0], icon: node[1], desc: node[2], apply: node[3] });
+  }));
+  return out;
+}
+
+const COMMANDER_ROSTER = [
+
+  /* ══════════════════════════════════════════════════════ UNALIGNED ═══
+     The commander every profile starts with, whatever faction they pick.
+     Deliberately the least exciting on the roster: no specialism, no trap,
+     an even lift on every statistic the board has. It exists so a new player
+     learns the game rather than a gimmick, and so that the first commander
+     they BUY feels like a real change of direction. */
+  {
+    id: 'cadre', faction: null, name: 'CADRE', title: 'The Baseline',
+    color: '#94a3b8', icon: '⌂', free: true, always: true,
+    blurb: 'No doctrine, no appetite, no vow. Cadre was trained to hold a line with whatever is to hand, and does exactly that — every structure a little better, nothing spectacular. Most commanders are a bet. Cadre is the house.',
+    abilities: ['steadyaim', 'attrite'],
+    trait: { name: 'EVEN FOOTING',
+      desc: 'Every tower gains +6% damage, +6% rate and +6% range, and reanimated attackers are 10% weaker.',
+      apply: t => { t.dmg += 0.06; t.rate += 0.06; t.rng += 0.06; t.reanimResist = 0.10; } },
+    tech: chart('z', [
+      [['DRILL ORDER','◎','+5% damage and +5% rate.', t=>{t.dmg+=0.05;t.rate+=0.05;}],
+       ['STANDING ORDERS','◉','+7% more of both.', t=>{t.dmg+=0.07;t.rate+=0.07;}],
+       ['GENERAL ORDERS','★','+9% more of both, and +6% range.', t=>{t.dmg+=0.09;t.rate+=0.09;t.rng+=0.06;}]],
+      [['SIGHTLINES','⊙','+7% range.', t=>t.rng+=0.07],
+       ['SUPPLY','◈','+12% kill gold.', t=>t.goldMul+=0.12],
+       ['DEPOT','⛁','+16% more kill gold and upgrades 10% cheaper.', t=>{t.goldMul+=0.16;t.upgradeMul*=0.90;}]],
+      [['DIG IN','⛨','+3 maximum lives.', (t,s)=>{ if(s){s.maxLives+=3;s.lives+=3;} }],
+       ['HOLDFAST','⛰','+5 more lives, and reanimates 10% weaker again.', (t,s)=>{ if(s){s.maxLives+=5;s.lives+=5;} t.reanimResist+=0.10; }],
+       ['THE LINE','∞','+7 more lives, and reanimates 15% weaker again.', (t,s)=>{ if(s){s.maxLives+=7;s.lives+=7;} t.reanimResist+=0.15; }]]
+    ])
+  },
+
+  /* ═══════════════════════════════════════════════════════ HUMANITY ═══ */
+  {
+    id: 'vanta', faction: 'human', name: 'VANTA', title: 'The Archivist',
+    color: '#7dd3fc', icon: '◈', free: true,
+    blurb: 'Fights the long game. Vanta turns the draft itself into a weapon — more choices, more often, and a board that grows stronger with every doctrine filed away.',
+    abilities: ['overclock', 'dampen'],
+    trait: { name: 'PERPETUAL STUDY',
+      desc: 'Command upgrades are drafted every 4 waves instead of 5, and you are offered 4 options instead of 3.',
+      apply: t => { t.draftEvery = 4; t.draftOptions = 4; } },
+    tech: chart('v', [
+      [['CROSS-REFERENCE','⊞','+1 option on every draft.', t=>t.draftOptions+=1],
+       ['RAPID STUDY','⏩','Drafts arrive every 3 waves.', t=>t.draftEvery=3],
+       ['MASTER ARCHIVE','✦','+1 further option, and +3% damage per upgrade held.', t=>{t.draftOptions+=1;t.perModDamage+=0.03;}]],
+      [['COMPENDIUM','▤','+3% tower damage per command upgrade you hold.', t=>t.perModDamage+=0.03],
+       ['DEEP INDEX','▥','+4% more tower damage per upgrade held.', t=>t.perModDamage+=0.04],
+       ['OMNISCIENCE','◉','+5% more tower damage per upgrade held.', t=>t.perModDamage+=0.05]],
+      [['FIELD NOTES','✎','Begin each battle holding 1 random command upgrade.', t=>t.startingMods+=1],
+       ['PRIOR ART','✧','Begin with 2 more command upgrades.', t=>t.startingMods+=2],
+       ['TOTAL RECALL','∞','Begin with 3 more and +1 draft option.', t=>{t.startingMods+=3;t.draftOptions+=1;}]]
+    ])
+  },
+  {
+    id: 'korrin', faction: 'human', name: 'KORRIN', title: 'The Quartermaster',
+    color: '#38e8ff', icon: '◭',
+    blurb: 'Wins on logistics. Korrin makes width affordable when everyone else is priced into a handful of towers.',
+    abilities: ['focusfire', 'bulwark'],
+    trait: { name: 'BULK CONTRACTS',
+      desc: 'Per-copy tower price growth is 30% gentler, and you start with 25% more gold.',
+      apply: (t, s) => { t.costGrowthMul = 0.70; if (s) s.gold = Math.round(s.gold * 1.25); } },
+    tech: chart('k', [
+      [['REQUISITION','◈','+12% gold from every kill.', t=>t.goldMul+=0.12],
+       ['SUPPLY LINE','⛁','+18% more kill gold.', t=>t.goldMul+=0.18],
+       ['WAR CHEST','▦','+25% more kill gold and +' + sqGold(200) + ' starting gold.', (t,s)=>{t.goldMul+=0.25; if(s)s.gold+=sqGold(200);}]],
+      [['BARGAINING','⊗','Price growth a further 10% gentler.', t=>t.costGrowthMul*=0.90],
+       ['STANDARDISED','⊘','And another 12% gentler.', t=>t.costGrowthMul*=0.88],
+       ['MASS PRODUCTION','⊙','And another 15%. Towers become genuinely spammable.', t=>t.costGrowthMul*=0.85]],
+      [['SALVAGE','↺','Selling returns 85% instead of 60%.', t=>t.sellRate=0.85],
+       ['REFIT','↻','Upgrades cost 12% less.', t=>t.upgradeMul*=0.88],
+       ['LOGISTICS CORPS','✚','Upgrades cost a further 15% less.', t=>t.upgradeMul*=0.85]]
+    ])
+  },
+  {
+    id: 'nyx', faction: 'human', name: 'NYX', title: 'The Overclocker',
+    color: '#67e8f9', icon: '⟐',
+    blurb: 'Pushes single structures past their rated limits. Nyx would rather field five monsters than twenty soldiers.',
+    abilities: ['overclock', 'smokescreen'],
+    trait: { name: 'REDLINE',
+      desc: 'Ascension costs 25% less, and SURGE triggers on EVERY ascension instead of every second one.',
+      apply: t => { t.ascCostMul = 0.75; t.surgeEvery = 1; } },
+    tech: chart('n', [
+      [['TOLERANCES','⌁','Ascension costs a further 10% less.', t=>t.ascCostMul*=0.90],
+       ['COOLANT','❄','And another 12% less.', t=>t.ascCostMul*=0.88],
+       ['NO LIMITS','⚡','And another 15% less.', t=>t.ascCostMul*=0.85]],
+      [['SURGE TAP','◆','+2% tower damage per ascension you own.', t=>t.perAscDamage+=0.02],
+       ['FEEDBACK','◇','+3% more per ascension.', t=>t.perAscDamage+=0.03],
+       ['CRITICALITY','✷','+4% more per ascension.', t=>t.perAscDamage+=0.04]],
+      [['DEEP TUNE','⊕','Towers at ascension 3+ fire 10% faster.', t=>t.ascendBonusRate+=0.10],
+       ['RESONANCE','⊛','+14% more.', t=>t.ascendBonusRate+=0.14],
+       ['SINGULAR FOCUS','★','+18% more, and ascension damage scales harder.', t=>{t.ascendBonusRate+=0.18;t.ascDamage+=0.04;}]]
+    ])
+  },
+  {
+    id: 'orin', faction: 'human', name: 'ORIN', title: 'The Engineer',
+    color: '#22d3ee', icon: '⚙',
+    blurb: 'Builds fast and rebuilds faster. Orin treats a lost tower as a delay, not a defeat.',
+    abilities: ['focusfire', 'dampen'],
+    trait: { name: 'FIELD WORKSHOP',
+      desc: 'Towers begin one level higher, and upgrades cost 15% less.',
+      apply: t => { t.startLevel = (t.startLevel || 0) + 1; t.upgradeMul *= 0.85; } },
+    tech: chart('o', [
+      [['BLUEPRINTS','▤','Upgrades cost a further 10% less.', t=>t.upgradeMul*=0.90],
+       ['PREFAB','▥','And another 12% less.', t=>t.upgradeMul*=0.88],
+       ['ASSEMBLY LINE','▧','And another 15% less.', t=>t.upgradeMul*=0.85]],
+      [['CALIBRATION','⌖','+8% tower damage.', t=>t.dmg+=0.08],
+       ['TOLERANCING','⌗','+10% tower damage.', t=>t.dmg+=0.10],
+       ['MASTERWORK','✦','+14% tower damage and +8% range.', t=>{t.dmg+=0.14;t.rng+=0.08;}]],
+      [['REDUNDANCY','⛨','Disruption on your towers ends 40% sooner.', t=>t.jamResist+=0.40],
+       ['HARDENED','⛊','And a further 40% sooner.', t=>t.jamResist+=0.40],
+       ['UNSHAKEABLE','✚','Your towers cannot be disabled at all.', t=>t.jamImmune=true]]
+    ])
+  },
+  {
+    id: 'vess', faction: 'human', name: 'VESS', title: 'The Marshal',
+    color: '#0ea5e9', icon: '⛨',
+    blurb: 'Holds ground nobody else would. Vess measures a battle in how little was given up.',
+    abilities: ['overclock', 'bulwark'],
+    trait: { name: 'NO GROUND GIVEN',
+      desc: '+8 maximum lives, and leaks cost one fewer life (minimum one).',
+      apply: (t, s) => { t.leakReduce = 1; if (s) { s.maxLives += 8; s.lives += 8; } } },
+    tech: chart('m', [
+      [['ENTRENCH','⛰','+4 maximum lives.', (t,s)=>{ if(s){s.maxLives+=4;s.lives+=4;} }],
+       ['GARRISON','⛫','+6 more maximum lives.', (t,s)=>{ if(s){s.maxLives+=6;s.lives+=6;} }],
+       ['LAST STAND','★','+8 more, and survive one lethal leak per battle.', (t,s)=>{ if(s){s.maxLives+=8;s.lives+=8;} t.immortal=true; }]],
+      [['DISCIPLINE','◎','+10% tower rate.', t=>t.rate+=0.10],
+       ['DRILL','◉','+12% tower rate.', t=>t.rate+=0.12],
+       ['PARADE ORDER','✷','+15% rate and +10% damage.', t=>{t.rate+=0.15;t.dmg+=0.10;}]],
+      [['FIELD MEDIC','✚','Recover 1 life every 4 waves.', t=>t.lifeRegen+=0.25],
+       ['TRIAGE','✛','Recover 1 life every 2 waves.', t=>t.lifeRegen+=0.25],
+       ['IMMORTAL CORPS','∞','Life recovery is 60% more effective.', t=>t.lifeGainMul+=0.60]]
+    ])
+  },
+
+  /* ═════════════════════════════════════════ FEDERATION OF LIGHT ═══ */
+  {
+    id: 'seraph', faction: 'light', name: 'SERAPH', title: 'The Radiant', free: true,
+    color: '#fbbf24', icon: '☀',
+    blurb: 'Every structure Seraph blesses stands a little taller. The Federation does not field its strongest — it makes everything strong at once.',
+    abilities: ['zealotry', 'sanctify'],
+    trait: { name: 'RADIANCE',
+      desc: 'Every tower gains +8% damage and +8% range, and support auras are 30% wider.',
+      apply: t => { t.dmg += 0.08; t.rng += 0.08; t.auraRangeMul = (t.auraRangeMul || 1) * 1.30; } },
+    tech: chart('s', [
+      [['DAWNLIGHT','☼','+7% tower damage.', t=>t.dmg+=0.07],
+       ['HIGH NOON','✹','+9% more damage.', t=>t.dmg+=0.09],
+       ['ZENITH','★','+12% more, and auras 20% wider again.', t=>{t.dmg+=0.12;t.auraRangeMul*=1.20;}]],
+      [['CLARITY','◎','+8% range.', t=>t.rng+=0.08],
+       ['FARSIGHT','⊙','+10% more range.', t=>t.rng+=0.10],
+       ['REVELATION','✧','+12% more range and +8% rate.', t=>{t.rng+=0.12;t.rate+=0.08;}]],
+      [['COMMUNION','✚','+3 maximum lives and 25% better life recovery.', (t,s)=>{ if(s){s.maxLives+=3;s.lives+=3;} t.lifeGainMul+=0.25; }],
+       ['THE VOW','⛨','+5 more lives. The cause keeps what it is given.', (t,s)=>{ if(s){s.maxLives+=5;s.lives+=5;} }],
+       ['ETERNAL SERVICE','∞','+8 more lives, and survive one lethal leak per battle.', (t,s)=>{ if(s){s.maxLives+=8;s.lives+=8;} t.immortal=true; }]]
+    ])
+  },
+  {
+    id: 'aurelia', faction: 'light', name: 'AURELIA', title: 'The Chorus',
+    color: '#fcd34d', icon: '✧',
+    blurb: 'Sings the wounded back onto their feet. Aurelia loses battles slowly and wins them late.',
+    abilities: ['zealotry', 'bulwark'],
+    trait: { name: 'CHORAL RECOVERY',
+      desc: 'Recover 1 life every 2 waves, and all life recovery is 50% more effective.',
+      apply: t => { t.lifeRegen += 0.5; t.lifeGainMul += 0.50; } },
+    tech: chart('a', [
+      [['HARMONY','♪','+6% tower damage and rate.', t=>{t.dmg+=0.06;t.rate+=0.06;}],
+       ['CANTICLE','♫','+8% more of both.', t=>{t.dmg+=0.08;t.rate+=0.08;}],
+       ['ANTHEM','★','+11% more of both.', t=>{t.dmg+=0.11;t.rate+=0.11;}]],
+      [['SOLACE','✚','+4 maximum lives.', (t,s)=>{ if(s){s.maxLives+=4;s.lives+=4;} }],
+       ['RESTORATION','✛','Life recovery 40% more effective.', t=>t.lifeGainMul+=0.40],
+       ['RESURGENCE','∞','+8 lives and recovery 50% better again.', (t,s)=>{ if(s){s.maxLives+=8;s.lives+=8;} t.lifeGainMul+=0.50; }]],
+      [['BENEDICTION','◎','Status effects last 20% longer.', t=>t.status+=0.20],
+       ['CONSECRATION','⊙','+25% more status duration.', t=>t.status+=0.25],
+       ['APOTHEOSIS','✷','+30% more, and +10% damage.', t=>{t.status+=0.30;t.dmg+=0.10;}]]
+    ])
+  },
+  {
+    id: 'lumen', faction: 'light', name: 'LUMEN', title: 'The Warden',
+    color: '#f59e0b', icon: '⛊',
+    blurb: 'Shields first, shoots second. Nothing Lumen protects has ever been taken off the board.',
+    abilities: ['focusfire', 'sanctify'],
+    trait: { name: 'AEGIS DOCTRINE',
+      desc: 'Your towers cannot be jammed or sabotaged, anywhere on the board.',
+      apply: t => { t.jamImmune = true; } },
+    tech: chart('l', [
+      [['SHIELDING','⛨','Towers resist disruption entirely.', t=>t.jamImmune=true],
+       ['REINFORCE','⛰','+9% tower damage.', t=>t.dmg+=0.09],
+       ['IMPREGNABLE','★','+13% damage and +6 lives.', (t,s)=>{t.dmg+=0.13; if(s){s.maxLives+=6;s.lives+=6;}}]],
+      [['LANTERN','◎','+9% range.', t=>t.rng+=0.09],
+       ['BEACON','⊙','+11% more range.', t=>t.rng+=0.11],
+       ['LIGHTHOUSE','✧','+14% more range and 25% wider auras.', t=>{t.rng+=0.14;t.auraRangeMul=(t.auraRangeMul||1)*1.25;}]],
+      [['PIERCING LIGHT','⌖','Physical damage ignores 12% more armour.', t=>t.pierce+=0.12],
+       ['SUNLANCE','⌗','+15% more armour ignored.', t=>t.pierce+=0.15],
+       ['JUDGEMENT','✦','+18% more, and +10% damage.', t=>{t.pierce+=0.18;t.dmg+=0.10;}]]
+    ])
+  },
+  {
+    id: 'cantor', faction: 'light', name: 'CANTOR', title: 'The Voice',
+    color: '#eab308', icon: '◍',
+    blurb: 'Talks the enemy to a standstill. Cantor believes a battle prevented is a battle won.',
+    abilities: ['zealotry', 'dampen'],
+    trait: { name: 'THE LONG SERMON',
+      desc: 'Every slow, freeze and weaken you apply lasts 45% longer.',
+      apply: t => { t.status += 0.45; } },
+    tech: chart('c', [
+      [['CADENCE','♪','+20% status duration.', t=>t.status+=0.20],
+       ['REFRAIN','♬','+25% more.', t=>t.status+=0.25],
+       ['LITANY','★','+30% more, and +8% damage.', t=>{t.status+=0.30;t.dmg+=0.08;}]],
+      [['PERSUASION','◎','+8% tower rate.', t=>t.rate+=0.08],
+       ['CONVICTION','◉','+11% more rate.', t=>t.rate+=0.11],
+       ['REVELATION','✷','+14% more rate and +8% range.', t=>{t.rate+=0.14;t.rng+=0.08;}]],
+      [['DOUBT','⊗','Enemies you slow also take 8% more damage.', t=>t.slowVuln+=0.08],
+       ['DESPAIR','⊘','+10% more.', t=>t.slowVuln+=0.10],
+       ['SURRENDER','∞','+14% more, and +4 lives.', (t,s)=>{t.slowVuln+=0.14; if(s){s.maxLives+=4;s.lives+=4;}}]]
+    ])
+  },
+  {
+    id: 'halder', faction: 'light', name: 'HALDER', title: 'The Bulwark',
+    color: '#d97706', icon: '⛨',
+    blurb: 'Absorbs everything and gives nothing. Halder has outlasted commanders who never lost a wave.',
+    abilities: ['focusfire', 'bulwark'],
+    trait: { name: 'DEEP LINE',
+      desc: '+60% maximum lives, and every source of life recovery is 50% more effective.',
+      apply: (t, s) => { t.lifeGainMul += 0.50; if (s) { const add = Math.round(s.maxLives * 0.6); s.maxLives += add; s.lives += add; } } },
+    tech: chart('h', [
+      [['RAMPARTS','⛰','+5 maximum lives.', (t,s)=>{ if(s){s.maxLives+=5;s.lives+=5;} }],
+       ['REDOUBT','⛫','+7 more lives.', (t,s)=>{ if(s){s.maxLives+=7;s.lives+=7;} }],
+       ['CITADEL','★','+10 more, and survive one lethal leak.', (t,s)=>{ if(s){s.maxLives+=10;s.lives+=10;} t.immortal=true; }]],
+      [['ATTRITION','◎','+8% tower damage.', t=>t.dmg+=0.08],
+       ['GRINDSTONE','◉','+11% more damage.', t=>t.dmg+=0.11],
+       ['INEXORABLE','✷','+14% more damage and +8% rate.', t=>{t.dmg+=0.14;t.rate+=0.08;}]],
+      [['FIELD HOSPITAL','✚','Recover 1 life every 3 waves.', t=>t.lifeRegen+=0.33],
+       ['CONVALESCENCE','✛','Recovery 40% more effective.', t=>t.lifeGainMul+=0.40],
+       ['UNDYING','∞','Recovery 60% better again.', t=>t.lifeGainMul+=0.60]]
+    ])
+  },
+
+  /* ═══════════════════════════════════════════════════════ THE XENO ═══ */
+  {
+    id: 'sevra', faction: 'xeno', name: 'SEVRA', title: 'The Necrotist', free: true,
+    color: '#a78bfa', icon: '☠',
+    blurb: 'What Sevra kills does not stop. It changes sides, and it comes back faster than it left.',
+    abilities: ['ravenous', 'consume'],
+    trait: { name: 'RISEN LEGION',
+      desc: 'Units you reanimate arrive with +75% health and move 25% faster.',
+      apply: t => { t.reanimHp = 1.75; t.reanimSpeed = 1.25; } },
+    tech: chart('r', [
+      [['GRAVE TITHE','◈','Each reanimate you send pays ' + sqGold(2) + ' gold.', t=>t.reanimGold+=sqGold(2)],
+       ['BONE HARVEST','⛁','+' + sqGold(3) + ' more gold per reanimate.', t=>t.reanimGold+=sqGold(3)],
+       ['CHARNEL ECONOMY','★','+' + sqGold(5) + ' more, and reanimates are 20% tougher.', t=>{t.reanimGold+=sqGold(5);t.reanimHp+=0.20;}]],
+      [['SECOND BREATH','◐','Reanimates +25% health.', t=>t.reanimHp+=0.25],
+       ['UNQUIET','◑','+30% more health.', t=>t.reanimHp+=0.30],
+       ['LEGION ETERNAL','∞','+40% more, and 15% faster.', t=>{t.reanimHp+=0.40;t.reanimSpeed+=0.15;}]],
+      [['SPITE','⊗','+8% tower damage.', t=>t.dmg+=0.08],
+       ['MALICE','⊘','+11% more damage.', t=>t.dmg+=0.11],
+       ['ANNIHILATION','✷','+15% more damage.', t=>t.dmg+=0.15]]
+    ])
+  },
+  {
+    id: 'mawlord', faction: 'xeno', name: 'MAWLORD', title: 'The Devourer',
+    color: '#8b5cf6', icon: '⬢',
+    blurb: 'Grows by eating. Every corpse on the field is Mawlord getting larger.',
+    abilities: ['ravenous', 'consume'],
+    trait: { name: 'INSATIABLE',
+      desc: '+20% gold from kills, and your towers gain 1% damage per 20 kills, without limit.',
+      apply: t => { t.goldMul += 0.20; t.killRamp = 0.0005; } },
+    tech: chart('d', [
+      [['GORGE','◈','+15% kill gold.', t=>t.goldMul+=0.15],
+       ['GLUT','⛁','+20% more kill gold.', t=>t.goldMul+=0.20],
+       ['FEAST','★','+25% more, and kills ramp damage twice as fast.', t=>{t.goldMul+=0.25;t.killRamp*=2;}]],
+      [['SWELL','◐','+9% tower damage.', t=>t.dmg+=0.09],
+       ['BLOAT','◑','+12% more damage.', t=>t.dmg+=0.12],
+       ['COLOSSAL','✷','+16% more damage and +8% range.', t=>{t.dmg+=0.16;t.rng+=0.08;}]],
+      [['DIGEST','⊕','Reanimates +20% health.', t=>t.reanimHp+=0.20],
+       ['ASSIMILATE','⊛','+30% more.', t=>t.reanimHp+=0.30],
+       ['BECOME','∞','+40% more and +20% speed.', t=>{t.reanimHp+=0.40;t.reanimSpeed+=0.20;}]]
+    ])
+  },
+  {
+    id: 'thrax', faction: 'xeno', name: 'THRAX', title: 'The Hivemind',
+    color: '#9333ea', icon: '⬡',
+    blurb: 'Never fights alone. Thrax fields a swarm and lets the swarm do the arithmetic.',
+    abilities: ['ravenous', 'smokescreen'],
+    trait: { name: 'BROOD LOGIC',
+      desc: 'Per-copy price growth is 25% gentler and every tower fires 8% faster.',
+      apply: t => { t.costGrowthMul = 0.75; t.rate += 0.08; } },
+    tech: chart('t', [
+      [['SPAWNING','⊞','Price growth 12% gentler.', t=>t.costGrowthMul*=0.88],
+       ['PROLIFERATE','⊟','And another 12%.', t=>t.costGrowthMul*=0.88],
+       ['INFEST','★','And another 15%, plus 8% rate.', t=>{t.costGrowthMul*=0.85;t.rate+=0.08;}]],
+      [['CHITIN','◎','+8% tower damage.', t=>t.dmg+=0.08],
+       ['CARAPACE','◉','+11% more damage.', t=>t.dmg+=0.11],
+       ['APEX FORM','✷','+15% more damage.', t=>t.dmg+=0.15]],
+      [['PHEROMONE','⊙','+10% rate.', t=>t.rate+=0.10],
+       ['SYNAPSE','⊛','+13% more rate.', t=>t.rate+=0.13],
+       ['ONE MIND','∞','+16% more rate and +8% range.', t=>{t.rate+=0.16;t.rng+=0.08;}]]
+    ])
+  },
+  {
+    id: 'vorn', faction: 'xeno', name: 'VORN', title: 'The Blight',
+    color: '#a855f7', icon: '☣',
+    blurb: 'Does not kill things so much as ensure they will not survive. Vorn wins after the fighting stops.',
+    abilities: ['ravenous', 'dampen'],
+    trait: { name: 'CONTAGION',
+      desc: 'All damage-over-time effects are 50% stronger and last 30% longer.',
+      apply: t => { t.dotMul = 1.50; t.status += 0.30; } },
+    tech: chart('b', [
+      [['SEPSIS','☠','DoT effects +20% stronger.', t=>t.dotMul+=0.20],
+       ['NECROSIS','☣','+25% stronger.', t=>t.dotMul+=0.25],
+       ['PANDEMIC','★','+35% stronger and +15% duration.', t=>{t.dotMul+=0.35;t.status+=0.15;}]],
+      [['WEAKEN','⊗','Enemies you slow take 10% more damage.', t=>t.slowVuln+=0.10],
+       ['WITHER','⊘','+12% more.', t=>t.slowVuln+=0.12],
+       ['DISSOLVE','✷','+16% more, and +10% damage.', t=>{t.slowVuln+=0.16;t.dmg+=0.10;}]],
+      [['SPORES','◐','Reanimates +25% health.', t=>t.reanimHp+=0.25],
+       ['BLOOM','◑','+30% more.', t=>t.reanimHp+=0.30],
+       ['OVERGROWTH','∞','+40% more and ' + sqGold(2) + ' gold each.', t=>{t.reanimHp+=0.40;t.reanimGold+=sqGold(2);}]]
+    ])
+  },
+  {
+    id: 'ulgrim', faction: 'xeno', name: 'ULGRIM', title: 'The Maw',
+    color: '#6d28d9', icon: '◉',
+    blurb: 'Only interested in the big ones. Ulgrim measures a battle by what it managed to swallow whole.',
+    abilities: ['broadside', 'consume'],
+    trait: { name: 'APEX PREDATOR',
+      desc: '+25% damage against bosses and minibosses, and they pay double bounty.',
+      apply: t => { t.eliteDamage = 1.25; t.eliteBounty = 2; } },
+    tech: chart('u', [
+      [['REND','⌖','Physical damage ignores 14% more armour.', t=>t.pierce+=0.14],
+       ['SUNDER','⌗','+17% more armour ignored.', t=>t.pierce+=0.17],
+       ['DEVASTATE','★','+20% more, and +12% damage.', t=>{t.pierce+=0.20;t.dmg+=0.12;}]],
+      [['HUNGER','◎','+10% tower damage.', t=>t.dmg+=0.10],
+       ['STARVATION','◉','+13% more damage.', t=>t.dmg+=0.13],
+       ['THE MAW','✷','+18% more damage.', t=>t.dmg+=0.18]],
+      [['CRUSH','⊕','+15% crit damage.', t=>t.critMult+=0.15],
+       ['SHATTER','⊛','+10% crit chance.', t=>t.crit+=0.10],
+       ['OBLITERATE','∞','+14% crit chance and +25% crit damage.', t=>{t.crit+=0.14;t.critMult+=0.25;}]]
+    ])
+  },
+
+  /* ═══════════════════════════════════════════════════ THE PIRATES ═══ */
+  {
+    id: 'rake', faction: 'pirate', name: 'RAKE', title: 'The Corsair', free: true,
+    color: '#ef4444', icon: '☠',
+    blurb: 'Takes what is not nailed down and shoots what is. Rake funds the next tower with the last kill.',
+    abilities: ['broadside', 'smokescreen'],
+    trait: { name: 'PLUNDER',
+      desc: '+30% gold from kills, and you begin with ' + sqGold(300) + ' extra gold.',
+      apply: (t, s) => { t.goldMul += 0.30; if (s) s.gold += sqGold(300); } },
+    tech: chart('p', [
+      [['LOOT','◈','+15% kill gold.', t=>t.goldMul+=0.15],
+       ['PILLAGE','⛁','+20% more.', t=>t.goldMul+=0.20],
+       ['RANSACK','★','+28% more, and +' + sqGold(250) + ' starting gold.', (t,s)=>{t.goldMul+=0.28; if(s)s.gold+=sqGold(250);}]],
+      [['CUTLASS','◎','+9% tower damage.', t=>t.dmg+=0.09],
+       ['GRAPESHOT','◉','+12% more damage.', t=>t.dmg+=0.12],
+       ['BROADSIDE','✷','+16% more damage and +10% rate.', t=>{t.dmg+=0.16;t.rate+=0.10;}]],
+      [['SCUTTLE','↺','Selling returns 90%.', t=>t.sellRate=0.90],
+       ['REFIT','↻','Upgrades cost 14% less.', t=>t.upgradeMul*=0.86],
+       ['PRIZE CREW','∞','Upgrades 16% less again, and price growth 12% gentler.', t=>{t.upgradeMul*=0.84;t.costGrowthMul*=0.88;}]]
+    ])
+  },
+  {
+    id: 'scarlet', faction: 'pirate', name: 'SCARLET', title: 'The Reaver',
+    color: '#dc2626', icon: '⚔',
+    blurb: 'Attacks first and works out the plan afterwards. Scarlet has never held a defensive position on purpose.',
+    abilities: ['broadside', 'consume'],
+    trait: { name: 'BLOOD PRICE',
+      desc: '+22% tower damage, but you begin with 4 fewer lives.',
+      apply: (t, s) => { t.dmg += 0.22; if (s) { s.maxLives = Math.max(5, s.maxLives - 4); s.lives = s.maxLives; } } },
+    tech: chart('e', [
+      [['FRENZY','⚡','+12% rate.', t=>t.rate+=0.12],
+       ['BLOODLUST','✹','+15% more rate.', t=>t.rate+=0.15],
+       ['UNCHAINED','★','+18% more rate and +10% damage.', t=>{t.rate+=0.18;t.dmg+=0.10;}]],
+      [['SAVAGERY','◎','+10% damage.', t=>t.dmg+=0.10],
+       ['BUTCHERY','◉','+14% more damage.', t=>t.dmg+=0.14],
+       ['CARNAGE','✷','+18% more damage.', t=>t.dmg+=0.18]],
+      [['FIRST BLOOD','⊕','+8% crit chance.', t=>t.crit+=0.08],
+       ['EXECUTIONER','⊛','+11% more crit.', t=>t.crit+=0.11],
+       ['NO QUARTER','∞','+14% crit and +30% crit damage.', t=>{t.crit+=0.14;t.critMult+=0.30;}]]
+    ])
+  },
+  {
+    id: 'grist', faction: 'pirate', name: 'GRIST', title: 'The Scrapper',
+    color: '#f87171', icon: '⚙',
+    blurb: 'Builds out of wreckage. Grist has never bought anything at full price in their life.',
+    abilities: ['focusfire', 'smokescreen'],
+    trait: { name: 'SALVAGE RIGHTS',
+      desc: 'Selling returns 95%, upgrades cost 18% less, and price growth is 20% gentler.',
+      apply: t => { t.sellRate = 0.95; t.upgradeMul *= 0.82; t.costGrowthMul = 0.80; } },
+    tech: chart('g', [
+      [['STRIP','⊗','Upgrades 12% cheaper.', t=>t.upgradeMul*=0.88],
+       ['CANNIBALISE','⊘','And another 14%.', t=>t.upgradeMul*=0.86],
+       ['FULL RECLAIM','★','And another 16%, plus 10% gentler price growth.', t=>{t.upgradeMul*=0.84;t.costGrowthMul*=0.90;}]],
+      [['JURY RIG','◎','+9% tower damage.', t=>t.dmg+=0.09],
+       ['OVERBUILT','◉','+12% more damage.', t=>t.dmg+=0.12],
+       ['FRANKENWORKS','✷','+15% more damage and +8% rate.', t=>{t.dmg+=0.15;t.rate+=0.08;}]],
+      [['SCROUNGE','◈','+15% kill gold.', t=>t.goldMul+=0.15],
+       ['HOARD','⛁','+18% more kill gold.', t=>t.goldMul+=0.18],
+       ['THE PILE','∞','+22% more, and towers start a level higher.', t=>{t.goldMul+=0.22;t.startLevel=(t.startLevel||0)+1;}]]
+    ])
+  },
+  {
+    id: 'cinder', faction: 'pirate', name: 'CINDER', title: 'The Arsonist',
+    color: '#f97316', icon: '🔥',
+    blurb: 'Leaves nothing standing, including things that were already theirs. Cinder finds this an acceptable cost.',
+    abilities: ['ravenous', 'smokescreen'],
+    trait: { name: 'SCORCHED EARTH',
+      desc: 'Burn and splash damage are 45% stronger, and splash radius is 25% wider.',
+      apply: t => { t.dotMul = (t.dotMul || 1) + 0.45; t.splash += 0.25; } },
+    tech: chart('f', [
+      [['KINDLING','🔥','Burn damage +20%.', t=>t.dotMul+=0.20],
+       ['WILDFIRE','✹','+25% more.', t=>t.dotMul+=0.25],
+       ['FIRESTORM','★','+35% more and +20% splash.', t=>{t.dotMul+=0.35;t.splash+=0.20;}]],
+      [['POWDER','◎','+20% splash radius.', t=>t.splash+=0.20],
+       ['ORDNANCE','◉','+25% more splash.', t=>t.splash+=0.25],
+       ['DEMOLITION','✷','+30% more splash and +10% damage.', t=>{t.splash+=0.30;t.dmg+=0.10;}]],
+      [['ASH','⊗','+9% tower damage.', t=>t.dmg+=0.09],
+       ['EMBER','⊘','+12% more damage.', t=>t.dmg+=0.12],
+       ['CONFLAGRATION','∞','+16% more damage and +25% status duration.', t=>{t.dmg+=0.16;t.status+=0.25;}]]
+    ])
+  },
+  {
+    id: 'dregg', faction: 'pirate', name: 'DREGG', title: 'The Warlord',
+    color: '#b91c1c', icon: '⛧',
+    blurb: 'Rules by being the largest thing in the room. Dregg does not negotiate and has never needed to.',
+    abilities: ['broadside', 'dampen'],
+    trait: { name: 'WARLORD',
+      desc: '+15% damage and +15% rate, but per-copy price growth is 15% steeper.',
+      apply: t => { t.dmg += 0.15; t.rate += 0.15; t.costGrowthMul = 1.15; } },
+    tech: chart('w', [
+      [['CONSCRIPT','◎','+10% damage.', t=>t.dmg+=0.10],
+       ['MARSHAL','◉','+13% more damage.', t=>t.dmg+=0.13],
+       ['OVERLORD','★','+17% more damage.', t=>t.dmg+=0.17]],
+      [['TRIBUTE','◈','+18% kill gold.', t=>t.goldMul+=0.18],
+       ['EXTORTION','⛁','+22% more kill gold.', t=>t.goldMul+=0.22],
+       ['DOMINION','✷','+26% more, and price growth back to normal.', t=>{t.goldMul+=0.26;t.costGrowthMul=1.0;}]],
+      [['IRON FIST','⊕','+10% rate.', t=>t.rate+=0.10],
+       ['TERROR','⊛','+13% more rate.', t=>t.rate+=0.13],
+       ['ABSOLUTE','∞','+16% more rate and +10% range.', t=>{t.rate+=0.16;t.rng+=0.10;}]]
+    ])
+  }
+];
+
+/** Commanders belonging to a faction. CADRE is unaligned and belongs to nobody. */
+function commandersOf(factionId) { return COMMANDER_ROSTER.filter(c => c.faction === factionId); }
+/** Commanders always available regardless of faction. */
+function alwaysUnlocked() { return COMMANDER_ROSTER.filter(c => c.always).map(c => c.id); }
+/** The one free commander for a faction. */
+function freeCommanderOf(factionId) {
+  const list = commandersOf(factionId);
+  /* CADRE has no faction, so `commandersOf` never returns it -- a faction with
+     no free commander would otherwise throw here. */
+  const pick = list.find(c => c.free) || list[0];
+  return pick ? pick.id : 'cadre';
+}
