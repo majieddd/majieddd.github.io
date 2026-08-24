@@ -320,6 +320,12 @@
       <label class="set-row"><span>Sound effects</span><input type="checkbox" id="set-sfx-on" checked></label>
       <label class="set-row"><span>Effects volume</span><input type="range" id="set-sfx" min="0" max="100" value="70"></label>
       <label class="set-row"><span>Music</span><input type="checkbox" id="set-music-on" checked></label>
+      <label class="set-row"><span>Reduced motion</span><input type="checkbox" id="set-reduced-motion"></label>
+      <div class="set-row"><span>Save file</span><span style="display:flex;gap:8px">
+        <button class="btn btn-sm" id="btn-export-save">EXPORT</button>
+        <button class="btn btn-sm" id="btn-import-save">IMPORT</button></span></div>
+      <input type="file" id="import-file-input" accept="application/json,.json" style="display:none">
+      <label class="set-row" data-tt="BATTLE SEED|A number here makes the next singleplayer battle reproducible: same seed, same choices, same match. Leave blank for normal play. Ignored in duels."><span>Battle seed</span><input type="text" id="set-seed" inputmode="numeric" placeholder="random" style="width:90px;text-align:right"></label>
       <label class="set-row"><span>Music volume</span><input type="range" id="set-music" min="0" max="100" value="40"></label>
       <p class="hint">Every sound is synthesised at runtime — nothing is pre-recorded.</p>
     </div>

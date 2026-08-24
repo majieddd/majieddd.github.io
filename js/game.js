@@ -9,6 +9,31 @@ const MAX_STEPS = 8;
 const MAX_PARTICLES = 420;
 const MAX_FLOATERS = 80;
 
+/* REDUCED MOTION — the OS preference OR the OPTIONS checkbox. Cached, and
+   read through one function: the gates below run per spawned particle, and a
+   matchMedia() construction per call would cost more than the particles do.
+   The checkbox is the USER'S switch for machines whose OS preference is out
+   of reach; the OS half updates itself. Gating lives in the spawn functions
+   -- not their call sites -- so no effect can be added later that forgets. */
+let RM_OS = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+let RM_USER = false;
+if (typeof matchMedia !== 'undefined') {
+  try { matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', e => { RM_OS = e.matches; }); } catch (e) {}
+}
+function motionReduced() { return RM_OS || RM_USER; }
+/* mulberry32, the same generator the relay and the pin harness use --
+   identical arithmetic in every engine is the point. */
+function seededDraw(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function setReducedMotion(user) { RM_USER = !!user; }
+
 /** The active battlefield geometry, rebuilt from the chosen map. */
 let FIELD = null;
 
@@ -1648,6 +1673,8 @@ const Game = {
 
   endMatch(wonOverride, abandon) {
     if (this.state === 'over') return;
+    /* The seed dies with the match; the menu and the next battle start clean. */
+    this.seed = null; this._seedDraw = null;
     this.state = 'over';
     Sound.stopMusic();
     /* `wonOverride` lets an abandon resolve as a genuine loss without having to
@@ -2217,12 +2244,13 @@ const Game = {
     return null;
   },
 
-  shake(a) { this.shakeAmt = Math.min(9, this.shakeAmt + a * 0.55); },
+  shake(a) { if (motionReduced()) return; this.shakeAmt = Math.min(9, this.shakeAmt + a * 0.55); },
   banner(text, dur = 2, color = '#e6f5ff') {
     this.bannerText = text; this.bannerTimer = dur; this.bannerMax = dur; this.bannerColor = color;
   },
 
   spawnParticle(x, y, vx, vy, life, size, color, kind = 'spark') {
+    if (motionReduced()) return;
     if (this.particles.length >= MAX_PARTICLES) return;
     this.particles.push({ x, y, vx, vy, life, maxLife: life, size, color, kind });
   },
@@ -2233,6 +2261,7 @@ const Game = {
     }
   },
   spawnExplosion(x, y, radius, color) {
+    if (motionReduced()) return;
     this.particles.push({ x, y, vx: 0, vy: 0, life: 0.32, maxLife: 0.32, size: radius, color, kind: 'shock' });
     const n = Math.min(26, Math.round(radius / 3));
     for (let i = 0; i < n; i++) {
@@ -2242,6 +2271,7 @@ const Game = {
   },
   /** Inward-collapsing ring — the Singularity's signature. */
   spawnImplosion(x, y, radius, color) {
+    if (motionReduced()) return;
     this.particles.push({ x, y, vx: 0, vy: 0, life: 0.4, maxLife: 0.4, size: radius, color, kind: 'implode' });
     for (let i = 0; i < 18; i++) {
       const a = rand(0, TAU), d = rand(radius * 0.5, radius);
@@ -3753,9 +3783,39 @@ const Game = {
 
 /* ------------------------------------------------------ persistent stats */
 
+/* THE SEEDED WINDOW (the OPTIONS battle seed). One stream, installed around
+   exactly two things and nothing else: the whole of start() -- the rival
+   commander, the rival faction and the opening board are all drawn there, so
+   a seed that skipped it would replay a different match -- and then each
+   simulation step. Between and around those windows the native generator is
+   always back in place, so cosmetic rolls in draw code stay off the seeded
+   stream and a replay cannot be perturbed by frame rate; that coupling is
+   the failure the contributed patch set shipped, and its headless test
+   stubbed rendering so it could not see it. Ignored in a duel: the relay
+   owns the stream there and re-seeds it per tick (js/net.js). Unseeded
+   matches pass straight through, untouched. */
+Game._rawStart = Game.start;
+Game.start = function (opts = {}) {
+  const wantSeed = opts.seed !== undefined && opts.seed !== null &&
+                   !(typeof Net !== 'undefined' && Net.live);
+  this.seed = wantSeed ? (opts.seed | 0) : null;
+  this._seedDraw = wantSeed ? seededDraw(this.seed) : null;
+  if (!this._seedDraw) return this._rawStart(opts);
+  const native = Math.random;
+  Math.random = this._seedDraw;
+  try { return this._rawStart(opts); } finally { Math.random = native; }
+};
+Game._rawStep = Game.step;
+Game.step = function (dt) {
+  if (!this._seedDraw) return this._rawStep(dt);
+  const native = Math.random;
+  Math.random = this._seedDraw;
+  try { return this._rawStep(dt); } finally { Math.random = native; }
+};
+
 /* Settings and per-map records live alongside commander progression. */
 const Storage = {
-  loadSettings() { return Object.assign({ sfx: 0.7, music: 0.4, sfxOn: true, musicOn: true }, Meta.getSettings()); },
+  loadSettings() { return Object.assign({ sfx: 0.7, music: 0.4, sfxOn: true, musicOn: true, reducedMotion: false }, Meta.getSettings()); },
   saveSettings(s) { Meta.setSettings(s); },
   recordRun(game, won) {
     const d = Meta.load();

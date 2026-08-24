@@ -306,6 +306,27 @@ const UI = {
     sfxOn.addEventListener('change',   () => { Sound.toggleSfx(sfxOn.checked); this.saveSettings(); });
     musicOn.addEventListener('change', () => { Sound.toggleMusic(musicOn.checked); this.saveSettings(); });
 
+    /* Reduced motion. The checkbox is the USER override -- the OS preference
+       already works without it. One writer for all three surfaces: the cached
+       canvas gate, the CSS class, and the saved setting. */
+    const rm = $('#set-reduced-motion');
+    rm.addEventListener('change', () => {
+      setReducedMotion(rm.checked);
+      document.body.classList.toggle('rm-user', rm.checked);
+      this.saveSettings();
+    });
+
+    /* SAVE FILE I/O. localStorage is one browser-profile eviction away from a
+       lost campaign, and there was no way to move an install between
+       machines. Export writes the whole profile root; import replaces it. */
+    $('#btn-export-save').addEventListener('click', () => this.exportSave());
+    $('#btn-import-save').addEventListener('click', () => $('#import-file-input').click());
+    $('#import-file-input').addEventListener('change', e => {
+      const f = e.target.files[0];
+      if (f) this.importSave(f);
+      e.target.value = '';
+    });
+
     $('#btn-end-menu').addEventListener('click', () => { this.el.endOverlay.classList.add('hidden'); this.toMenu(); });
     $('#btn-end-retry').addEventListener('click', () => {
       this.el.endOverlay.classList.add('hidden');
@@ -452,7 +473,11 @@ const UI = {
                        ? freeCommanderOf(Meta.faction() || 'human') : 'cadre'),
                  loadout: this.sel.loadout.slice(),
                  arena: node.arena, boons: c.boons, rival: node.rival,
-                 escStart: node.escStart });
+                 escStart: node.escStart,
+                 /* The OPTIONS battle seed, if one is set. Blank means today's
+                    behaviour exactly. */
+                 seed: (() => { const v = ($('#set-seed') || {}).value;
+                                return v && v.trim() ? (parseInt(v, 10) | 0) : undefined; })() });
     this.show('screen-game');
     this._inspKey = null;
     this.buildShop();
@@ -3967,6 +3992,7 @@ const UI = {
         <div class="att-arrow">⇄</div>
         <div class="att-cell in"><b>${inbound}</b><span>INBOUND</span></div>
       </div>
+      ${Game.seed !== null && Game.seed !== undefined ? `<div class="section-label" data-tt="BATTLE SEED|Same seed + same choices replays this exact match. Set it in OPTIONS.">SEED ${Game.seed}</div>` : ''}
       <div class="section-label">NEXT — WAVE ${next}${p.boss ? '  ⚠ BOSS' : isMini ? '  ◆ MINIBOSS' : ''}${rage ? `  ✦ RESONATING ×${rage}` : ''}</div>
       <div class="wave-name ${p.boss ? 'boss' : isMini ? 'mini' : ''} ${rage ? 'enraged' : ''}">${p.name}</div>
       <div class="roster">${list}</div>
@@ -5666,18 +5692,63 @@ const UI = {
 
   /* =========================================================== SETTINGS */
 
+  /* ============================================================ SAVE I/O */
+
+  exportSave() {
+    /* root() is the live object -- always at least as current as the
+       coalesced write behind it, so no flush is needed to export. */
+    const payload = { app: 'cosmic-conquest', version: 1,
+                      exportedAt: new Date().toISOString(), data: Meta.root() };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'cosmic-conquest-save-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    this.toast('Save exported');
+  },
+
+  importSave(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result);
+        const data = parsed && parsed.data ? parsed.data : parsed;
+        if (!data || typeof data !== 'object' || !data.profiles ||
+            !Object.keys(data.profiles).length)
+          throw new Error('no profiles in this file');
+        /* ORDER IS THE DEFENCE. flush() first: it clears the coalesced save
+           timer, so no pending write of the OLD root can land after the
+           import and silently undo it. Then overwrite, then drop the
+           in-memory cache so the next read loads what was imported. */
+        Meta.flush();
+        localStorage.setItem(Meta.KEY, JSON.stringify(data));
+        Meta._root = null;
+        this.loadSettings();
+        this.toast('Save imported');
+      } catch (e) {
+        this.toast('Import failed — ' + e.message);
+      }
+    };
+    reader.readAsText(file);
+  },
+
   loadSettings() {
     const s = Storage.loadSettings();
     $('#set-sfx').value = Math.round(s.sfx * 100);
     $('#set-music').value = Math.round(s.music * 100);
     $('#set-sfx-on').checked = s.sfxOn;
     $('#set-music-on').checked = s.musicOn;
+    $('#set-reduced-motion').checked = !!s.reducedMotion;
+    setReducedMotion(s.reducedMotion);
+    document.body.classList.toggle('rm-user', !!s.reducedMotion);
     Sound.setSfxVolume(s.sfx); Sound.setMusicVolume(s.music);
     Sound.toggleSfx(s.sfxOn); Sound.toggleMusic(s.musicOn);
   },
   saveSettings() {
     Storage.saveSettings({ sfx: $('#set-sfx').value / 100, music: $('#set-music').value / 100,
-      sfxOn: $('#set-sfx-on').checked, musicOn: $('#set-music-on').checked });
+      sfxOn: $('#set-sfx-on').checked, musicOn: $('#set-music-on').checked,
+      reducedMotion: $('#set-reduced-motion').checked });
   }
 };
 

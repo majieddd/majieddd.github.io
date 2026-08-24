@@ -52,6 +52,22 @@ body {
   .screen:not(.hidden), .overlay:not(.hidden) .modal { animation: none; }
 }
 
+/* THE USER'S OWN REDUCED-MOTION SWITCH (the OPTIONS checkbox). The OS
+   preference works through the media queries above and below; this class is
+   for the player whose OS setting is out of reach. One generic dampener
+   rather than a mirror of every block, because a mirror is a drift bug on
+   whatever block gets added next -- plus explicit fixes for the few rules
+   whose reduce-blocks set more than animation. */
+body.rm-user *, body.rm-user *::before, body.rm-user *::after {
+  animation-duration: .001s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .001s !important;
+}
+body.rm-user .tal-node.ready { box-shadow: 0 0 0 2px color-mix(in srgb, var(--cc) 55%, transparent); }
+body.rm-user .br-plate .br-art { filter: none; }
+body.rm-user .gx-viewport .gx-plane > svg { transform: none; }
+body.rm-user .bi-line { opacity: 1; }
+
 /* --- buttons: gradient hairline frames, tactile press ------------------- */
 .btn {
   position: relative;

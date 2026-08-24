@@ -146,9 +146,22 @@
   window.addEventListener('pagehide', () => Meta.flush());
 
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) Meta.flush();
-    if (document.hidden) Sound.stopMusic();
-    else if (Game.state === 'playing') Sound.startMusic();
+    if (document.hidden) {
+      Meta.flush();
+      Sound.stopMusic();
+      /* AUTO-PAUSE, singleplayer only. A backgrounded tab throttles rAF, so
+         the player used to return to a battle that had been silently losing
+         through the catch-up steps. NEVER in a duel: pause is a SHARED
+         control there, and the relay's own frozen-tab verdict -- not a pause
+         this window posts while dark -- is the designed outcome. */
+      if (Game.state === 'playing' && !Game.paused &&
+          (typeof Net === 'undefined' || !Net.live)) {
+        Game.paused = true;
+        UI.syncSpeed();
+      }
+    } else if (Game.state === 'playing') {
+      Sound.startMusic();
+    }
   });
 
   /* Painted key art, when the art pack has been generated. Applied as CSS
