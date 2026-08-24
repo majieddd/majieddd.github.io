@@ -8,11 +8,21 @@ several people can work on it at the same time without standing on each other.
 
 ## 1. Run it
 
+You need **git**, any **Python 3** (used only as a static file server — the game
+never executes Python), and **Node 20 or newer** (used only by `node build.js`).
+There is no `package.json`, no lockfile and nothing to install.
+
 ```bash
+git clone https://github.com/majieddd/majieddd.github.io.git
+cd majieddd.github.io
 python -m http.server 8471 --bind 127.0.0.1
 ```
 
 Then open <http://127.0.0.1:8471/index.html>.
+
+Port **8471** is not arbitrary: `.claude/launch.json` declares the same server
+under the name `cosmic-conquest`, so an agent session starts it by name and lands
+on the same URL a human would.
 
 `file://` will *not* work — the browser blocks the module loads. Use the server.
 
@@ -41,28 +51,32 @@ instead of your three lines.
 
 ## 2. Pick your lane — the module map
 
-Two of these files are very large. If two people edit `ui.js` in the same week
-without coordinating, the merge will be genuinely painful. So the first rule of
-working here is: **say which module you are in before you start.**
+Four of these files run past 3,500 lines and `ui.js` is past 6,000. If two people
+edit `ui.js` in the same week without coordinating, the merge will be genuinely
+painful. So the first rule of working here is: **say which module you are in
+before you start.**
+
+Line counts are `wc -l js/*.js` at the last doc pass; they are a rough sense of
+weight, not a contract, and they only ever grow.
 
 | Module | Lines | What lives there |
 |---|---:|---|
-| `js/config.js` | 2811 | Tunables, tower/enemy/wave data, maps, talent trees. **Every magic number belongs here**, named, with a comment saying what it protects against. |
-| `js/game.js` | 3462 | Core state and the simulation step. Board, economy, waves, N-side seat logic, relocation, the radial. |
-| `js/ui.js` | 3981 | Every screen and overlay. Title, galaxy, loadout, battle HUD, dossiers, end screen. |
-| `js/entities.js` | 2225 | Towers and enemies: movement, targeting, damage, status. |
-| `js/entities2.js` | 843 | The expansion behaviours — siren, saboteur, reanimation, marks. |
-| `js/ai.js` | 1102 | The rival commander. Loadout drafting, build/upgrade scoring, musters. |
-| `js/commanders.js` | 904 | `Meta` — the save file, profiles, progression, the soul vault. |
+| `js/ui.js` | 6124 | Every screen and overlay. Title, galaxy, loadout, battle HUD, dossiers, end screen. |
+| `js/entities.js` | 3822 | Towers and enemies: movement, targeting, damage, status. |
+| `js/game.js` | 3695 | Core state and the simulation step. Board, economy, waves, N-side seat logic, relocation, the radial. |
+| `js/config.js` | 3690 | Tunables, tower/enemy/wave data, maps, talent trees. **Every magic number belongs here**, named, with a comment saying what it protects against. |
+| `js/commanders.js` | 1146 | `Meta` — the save file, profiles, progression, the soul vault. |
+| `js/ai.js` | 1118 | The rival commander. Loadout drafting, build/upgrade scoring, musters. |
+| `js/entities2.js` | 1048 | The expansion behaviours — siren, saboteur, reanimation, marks. |
+| `js/towers2.js` | 996 | Elements, the combo table, the expansion towers, arena modifiers, the twenty boons. |
 | `js/audio.js` | 801 | Procedural Web Audio. No sample files anywhere. |
-| `js/towers2.js` | 536 | Expansion tower definitions. |
+| `js/factions.js` | 670 | The four powers, their bonuses, and the twenty faction units with their doctrines. |
+| `js/galaxy.js` | 646 | Galaxy generation — systems, worlds, contested slots. |
 | `js/roster.js` | 473 | Commander roster and their traits. |
-| `js/factions.js` | 406 | The four powers and their bonuses. |
-| `js/galaxy.js` | 324 | Galaxy generation — systems, worlds, contested slots. |
-| `js/dialogue.js` | 192 | Portraits and pre-battle dialogue. |
 | `js/abilities.js` | 193 | Commander abilities. |
-| `js/main.js` | 165 | Bootstrap and keyboard. |
-| `js/artpack.js` | *generated* | 178 base64 images. Never hand-edit; see §6. |
+| `js/dialogue.js` | 192 | Portraits, the `art()` lookup, pre-battle dialogue. |
+| `js/main.js` | 168 | Bootstrap and keyboard. |
+| `js/artpack.js` | *generated* | 188 base64 images on four lines. Never hand-edit; see §6. |
 
 `css/style.css` is structure, `css/polish.css` is everything added since. New
 rules go in `polish.css`.
@@ -93,6 +107,60 @@ the served version still works.
 
 If you genuinely must make a sweeping change across a big module, say so first
 and let the others land their work — it is cheaper than the merge.
+
+### What CI will fail you on
+
+`.github/workflows/verify.yml` runs on every PR and every push to `main`. It is
+cheap, and it is strict:
+
+- `node --check` on every `js/*.js`, every `tools/*.js`, and `build.js`.
+- `node build.js` must succeed, `aegis-protocol.html` must contain no
+  `<script src=`, and `aegis-artifact.html` must still open with its
+  `charset="utf-8"` prefix.
+- **Every module in `js/` must be listed in `build.js`.** A module added to the
+  folder but not the list works served and breaks bundled — the worst shape.
+- **No CRLF.** `.gitattributes` pins the whole tree to `* text=auto eol=lf`, and
+  CI fails on any file the index reports as `i/crlf` or `i/mixed`. This is the
+  one that catches Windows contributors, and a patch script that rewrites a file
+  with the wrong newline setting is how it happens.
+- `js/artpack.js` must exist and carry at least 100 keys. It currently carries
+  **188**.
+
+Run the whole gate locally before you open the PR:
+
+```bash
+for f in js/*.js tools/*.js build.js; do node --check "$f" || echo "SYNTAX $f"; done
+node build.js
+git ls-files --eol | grep -E 'i/crlf|i/mixed'    # must print nothing
+```
+
+`.github/workflows/pages.yml` deploys `main` to <https://majieddd.github.io> on
+its own — you never publish the site by hand. The **Artifact** surface named
+above is the one that still needs a human; its permanent URL is at the top of
+[`docs/ROADMAP.md`](docs/ROADMAP.md).
+
+### Work that is not on `main`
+
+Multiplayer is built and deliberately **unmerged** on
+`feature/multiplayer-20.6` at 19 of 24 harness checks. Its handoff note lives
+**only on that branch**, so every link to it from `main` is a 404. Read it
+without checking the branch out:
+
+```bash
+git show feature/multiplayer-20.6:docs/MULTIPLAYER-HANDOFF.md
+git show feature/multiplayer-20.6:js/net.js
+```
+
+### Where the rest of the paper is
+
+[`docs/ROADMAP.md`](docs/ROADMAP.md) is the resume-here document: every session's
+decisions and what each item actually turned out to be. Its "REMAINING WORK"
+block near the top is a Session-12 artifact and is marked superseded — plan from
+[`docs/BACKLOG.md`](docs/BACKLOG.md), which is the live list.
+[`docs/BRAND.md`](docs/BRAND.md) is binding before any art work,
+[`docs/TOWER-AUDIT.md`](docs/TOWER-AUDIT.md) is why no two towers share an
+identity, and [`docs/MECHANICS-OPTIONS.md`](docs/MECHANICS-OPTIONS.md) holds
+fifteen designed-but-unbuilt mechanics awaiting an owner pick.
 
 ---
 
@@ -127,15 +195,30 @@ These are not style preferences. Each one shipped a real bug.
 
 ## 5. Verify before you open the PR
 
-Two harnesses live in `tools/`. Both run in the browser console (or via a
-`javascript_tool` call) against a served, cache-busted build.
+Two harnesses live in `tools/`. Neither is a test runner and neither is wired to
+CI: each is **pasted whole into the browser console** (or handed to a
+`javascript_tool` call) of a page already open on a served, cache-busted build.
+Nothing to install, nothing to import.
 
 ```js
-// paste tools/owner-sweep.js  — 17 behaviour checks across the whole feature set
-// paste tools/balance-pins.js — then:
-PINS.fresh(6)          // fresh profile, six maps
+// 0. serve the repo (§1), open aegis-protocol.html?v=1, and FRONT the tab.
+
+// 1. paste the entire contents of tools/owner-sweep.js
+//    → 26 behaviour checks. Returns {pass, fail, info, checks} and parks the
+//      same object on window.__SWEEP. Green is fail:0 — last run 27/0.
+//    → it MUTATES game state. Reload before you do anything else.
+//    → run it from the LOADOUT screen: checks 19.12 and 19.15 read live DOM and
+//      report INFO (a skip, not a failure) anywhere else, or in a hidden tab.
+
+// 2. paste the entire contents of tools/balance-pins.js → 'PINS ready'
+PINS.fresh(6)          // fresh profile, six maps, one call
+PINS.maxed(3, 0)       // maxed profile at galaxy TIER 0, three maps, one call
+
+// ...or drive one long run by hand. A maxed run outlasts a single tool call,
+// so the loop is deliberately resumable:
 PINS.maxProfile(0); PINS.begin(0, 'contested');
 PINS.tick(20000)       // repeat until {done: true}
+// Read `.outcome` ('loss' | 'win' | 'capped'), never `.wave` alone — see below.
 ```
 
 **The pins.** Mirror-AI on both seats, loadout pinned to
@@ -180,6 +263,36 @@ No art is committed as loose files. `js/artpack.js` is generated, and the game
 reads every image through the `art(key)` helper so a missing key degrades to the
 shipped fallback rather than a broken image.
 
+**The `python` on your PATH is probably not the one that can render.** Only
+`sdxl_all.py` needs torch, and it imports it at module scope, so on an
+interpreter without torch the very first art command dies before rendering
+anything:
+
+```
+$ python artgen/sdxl_all.py
+  File "...\artgen\sdxl_all.py", line 15, in <module>
+    import torch
+ModuleNotFoundError: No module named 'torch'
+```
+
+That reads as "artgen is broken", and the misreading is reinforced by the other
+three commands *succeeding* on that same interpreter: `derive_worlds.py` and
+`derive_crests.py` import only Pillow, and `krea_gen.py` imports torch lazily
+inside the render path, so `--pack` never touches it. A repack works, a render
+fails, and nothing about it looks consistent. Check the interpreter before you
+blame the code:
+
+```bash
+python -c "import sys, torch; print(sys.executable, torch.__version__, torch.cuda.is_available())"
+```
+
+On the machine this was built on, the interpreter that answers is
+`%LOCALAPPDATA%\Programs\Python\Python312\python.exe` — Python 3.12.10, torch
+2.5.1+cu121, CUDA `True`, with diffusers and transformers — while the bare
+`python` first on PATH is a 3.11 virtualenv carrying Pillow and no torch. Call
+that full path for anything that renders, or put it first on PATH for the
+session. The Python that serves the game in §1 is unrelated: any Python 3 does.
+
 ```bash
 python artgen/sdxl_all.py        # render anything missing (~1 min, needs CUDA)
 python artgen/derive_worlds.py   # deterministic duotone variants (PIL)
@@ -190,7 +303,9 @@ node build.js
 
 The pipeline lives **inside this repository** at `artgen/`, along with its
 `cache/`, `cache_krea/` and the `krea2-turbo/` model checkout (all three
-gitignored — the model alone is 34GB). It used to sit in a sibling directory,
+gitignored — the model alone is 34GB, and `python artgen/dl_krea.py` is the only
+thing that fetches it; nothing else in the pipeline will). It used to sit in a
+sibling directory,
 and that cost a whole session of art work: the Session 19 troop prefix was
 edited there, rendered there, and never reached version control, so the pack
 shipped correct while the source that produced it did not exist in the repo.

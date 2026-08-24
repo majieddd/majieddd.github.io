@@ -12,7 +12,7 @@ Or run it locally — `python -m http.server 8471 --bind 127.0.0.1`, then open
 <http://127.0.0.1:8471/index.html>. (`file://` blocks the module loads, so the
 served copy is the one to use.)
 
-`node build.js` produces `aegis-protocol.html`: about 5.9 MB, fully
+`node build.js` produces `aegis-protocol.html`: about 6.4 MB, fully
 self-contained, and the one file that *does* run straight from `file://` — the
 whole game, art and audio in a single document you can email to someone. The
 original single-player version is kept at
@@ -22,8 +22,22 @@ original single-player version is kept at
 everything unfinished, with the root cause already found for most of it.
 
 **Want to work on it?** Read [CONTRIBUTING.md](CONTRIBUTING.md) first. It carries
-the module map, the branch etiquette that keeps two people out of the same
-4,000-line file, and the traps that have each cost somebody a day.
+the setup, the module map, the branch etiquette that keeps two people out of the
+same 6,000-line file, what CI will fail you on, and the traps that have each cost
+somebody a day.
+
+**Where the rest of the paper lives.** [`docs/ROADMAP.md`](docs/ROADMAP.md) is
+the one to open if work stopped and is resuming — every session's decisions, and
+what each item actually turned out to be once someone read the code.
+[`docs/BRAND.md`](docs/BRAND.md) is the binding visual contract,
+[`docs/TOWER-AUDIT.md`](docs/TOWER-AUDIT.md) is why no two towers share an
+identity, and [`docs/MECHANICS-OPTIONS.md`](docs/MECHANICS-OPTIONS.md) holds
+fifteen designed-but-unbuilt mechanics awaiting a pick.
+
+**Multiplayer is not on `main`.** It is built and deliberately unmerged on
+`feature/multiplayer-20.6` at 19 of 24 harness checks. Its handoff note exists
+only on that branch, so read it without checking the branch out:
+`git show feature/multiplayer-20.6:docs/MULTIPLAYER-HANDOFF.md`.
 
 ---
 
@@ -55,29 +69,35 @@ moment they are earned — permanent unlocks for commanders and towers.
 |---|---|
 | Battlefields | **15** authored maps, of which **4** are three-seat boards (Confluence, Crown, Carousel, Orrery) |
 | The Maelstrom | a **20**-seat arena, its board solved from the seat count rather than authored |
-| Towers | **39**, across **5** tech origins |
+| Towers | **50**, ten per tech origin |
 | Enemies | **49**, including 5 minibosses and 1 boss |
 | Commanders | **21**, across the 4 factions |
 | Commander abilities | **12** — 6 offensive, 6 defensive |
 | Arena modifiers | **8** |
-| Victory boons | **8** |
-| Art keys | **178**, inlined |
+| Victory boons | **20**, five per faction, keyed to the world you took them from |
+| Faction units | **20**, five per faction, rescued from the maps their power holds |
+| Art keys | **188**, inlined |
 
-## Thirty-nine towers, five slots
+## Fifty towers, five slots, five origins
 
 Every tower is built by somebody, and the builder is a mechanical identity
 rather than a label — each origin carries a rider the engine actually reads.
+No tower shares its identifying mechanic with another; the newest ten were
+built against that rule explicitly (`docs/TOWER-AUDIT.md`).
 
 | Origin | Towers | The rider |
 |---|---|---|
 | **HUMAN** | 10 | No clause at all. The widest element coverage, and the only origin that attunes to a terrain node of any element rather than a matched one |
-| **ROBOTIC** | 8 | No proc, no gamble. Machines placed within reach of each other form a lattice, and every link pays |
-| **PIRATE** | 7 | Governors removed. Strikes sometimes overload far past their rating, and the heat that builds takes the gun offline when the bank fills |
-| **XENO** | 7 | Grows on wounds. Every hit carries a rider that scales off how hurt the target already is |
-| **FEDERATION** | 7 | Holds a target's protections open — every resistance it has is worth less for a few seconds — and cannot itself be jammed or sabotaged |
+| **ROBOTIC** | 10 | No proc, no gamble. Machines placed within reach of each other form a lattice, and every link pays |
+| **PIRATE** | 10 | Governors removed. Strikes sometimes overload far past their rating, and the heat that builds takes the gun offline when the bank fills |
+| **XENO** | 10 | Grows on wounds. Every hit carries a rider that scales off how hurt the target already is |
+| **FEDERATION** | 10 | Holds a target's protections open — every resistance it has is worth less for a few seconds — and cannot itself be jammed or sabotaged |
 
 You deploy five of them. You begin owning one (BOLT) and 6 souls, which is
-exactly the price of a second.
+exactly the price of a second. Since Session 19 the loadout has a second column:
+twenty faction units, five per power, unlocked by rescuing them on the maps their
+power holds and carrying their own talent trees. You take **three** of them into
+a battle beside your five towers.
 
 ## Elements and reactions
 
@@ -87,10 +107,10 @@ from a different marking element consumes the mark and reacts.
 
 | Element | Towers | Reacts with |
 |---|---|---|
-| Storm | 6 | fire → PLASMA · frost → SUPERCONDUCT · venom → CATALYSE |
-| Void | 6 | fire → COLLAPSE · frost → ENTROPY · storm → RUPTURE · venom → BLIGHT |
+| Void | 11 | fire → COLLAPSE · frost → ENTROPY · storm → RUPTURE · venom → BLIGHT |
+| Storm | 7 | fire → PLASMA · frost → SUPERCONDUCT · venom → CATALYSE |
 | Fire | 5 | frost → THERMAL SHOCK · storm → PLASMA · venom → IMMOLATE |
-| Venom | 4 | fire → IMMOLATE · frost → PARALYSIS · storm → CATALYSE |
+| Venom | 5 | fire → IMMOLATE · frost → PARALYSIS · storm → CATALYSE |
 | Frost | 3 | fire → THERMAL SHOCK · storm → SUPERCONDUCT · venom → PARALYSIS |
 
 Ten distinct reactions in all. Every marking element carries at least three
@@ -209,11 +229,12 @@ files cache hard and you will otherwise test stale code.
 ## The art pipeline
 
 Sound and battlefield sprites are generated at runtime. The **menu** art is not:
-it is rendered offline by the generator in `../artgen` and baked into
-`js/artpack.js` as one object of base64 WebP data URIs, which is why the bundle
-is 5.8 MB rather than 500 KB — `js/artpack.js` alone is 4.95 MB.
+it is rendered offline by the generator in `artgen/` — inside this repository,
+not beside it — and baked into `js/artpack.js` as one object of base64 WebP data
+URIs, which is why the bundle is 6.4 MB rather than 500 KB: `js/artpack.js`
+alone is 4.96 MB.
 
-The pack holds **178** keys:
+The pack holds **188** keys:
 
 | Class | Keys | Count |
 |---|---|---|
@@ -224,7 +245,8 @@ The pack holds **178** keys:
 | Enemy dossiers | `foe_<id>` | 49 |
 | Planet portraits | `planet_<kind>` | 12 |
 | Ability emblems | `abil_<id>` | 12 |
-| Key art | `title`, `nebula`, `galaxy_bg`, `blackhole` | 4 |
+| Tower plates | `twr_<id>` | 11 |
+| Key art | `title`, `nebula`, `blackhole` | 3 |
 
 Every lookup goes through `art(key)` / `artImg(key, …)` in `js/dialogue.js`,
 both of which return empty for a missing key — so a partial pack degrades to the
@@ -237,8 +259,14 @@ python artgen/sdxl_all.py          # render anything missing from the catalogue
 python artgen/derive_worlds.py     # duotone holder variants from the base plates
 python artgen/derive_crests.py     # crest hues, forced in code rather than prompted
 python artgen/krea_gen.py --pack   # assemble js/artpack.js (cache_krea > cache)
-node TowerDefense/build.js         # inline into the two bundles
+node build.js                      # inline into the two bundles
 ```
+
+Run these from the repository root. **The `python` on your PATH is probably not
+the one that can render** — only `sdxl_all.py` needs torch, and on an
+interpreter without it that command dies at `import torch` while the other
+three succeed on Pillow alone, which reads as a broken pipeline rather than a
+wrong interpreter. CONTRIBUTING §6 has the check and the fix.
 
 `artgen/krea_jobs.py` is the single catalogue for both models; nothing is
 generated that is not listed there.

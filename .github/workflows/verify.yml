@@ -76,4 +76,4 @@ jobs:
           test -f js/artpack.js || { echo "::error::js/artpack.js is missing — the game will render no art"; exit 1; }
           keys=$(grep -o '"[a-z0-9_]*":' js/artpack.js | wc -l)
           echo "artpack carries $keys keys"
-          [ "$keys" -ge 100 ] || { echo "::error::only $keys art keys — expected ~178"; exit 1; }
+          [ "$keys" -ge 100 ] || { echo "::error::only $keys art keys — expected ~188"; exit 1; }

@@ -3565,9 +3565,10 @@ const TARGET_MODES = [
    galaxy around them grows. BOTH dimensions are load-bearing: the scale covers
    the window rather than fitting it, so the world span on screen is never
    wider than .w nor taller than .h whatever shape the box is, and that is the
-   promise the margin below is measured against. Its ORIGIN is now inert --
-   where the window sits is the camera's business, not a constant's. */
-const GX_VIEW = { x: -6, y: -11, w: 137, h: 99 };
+   promise the margin below is measured against. It carries SIZE ONLY: where
+   the window sits is the camera's business, not a constant's, and the x/y it
+   used to also carry had no reader left anywhere in js/ or css/. */
+const GX_VIEW = { w: 137, h: 99 };
 
 /* WORLD SPACE, in RENDERED units (y already squashed -- see
    GX_RENDER_SQUASH). Four and a half windows wide and five tall, so crossing

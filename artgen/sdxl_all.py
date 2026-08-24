@@ -61,7 +61,7 @@ FACTION_COLOUR = { 'human': 'neon cyan', 'light': 'radiant gold',
 # see WHICH faction it is prefixing, so any palette or register it names is
 # wrong for three of the four powers -- and this one spent 32 of the 77 CLIP
 # slots saying a painterly register that the per-faction duotone then had to
-# argue with. The register now lives in krea_jobs.COMMANDER_REGISTER, where it
+# argue with. The register now lives in krea_jobs.TROOP_REGISTER, where it
 # is composed per troop alongside that power's own two inks.
 TROOP_PREFIX = ''
 

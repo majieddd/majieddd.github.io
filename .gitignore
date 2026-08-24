@@ -10,7 +10,7 @@ aegis-artifact.html
 # ── Art generation ─────────────────────────────────────────────────────────
 # The rendered plates are reproducible from artgen/krea_jobs.py, and the packed
 # js/artpack.js IS committed, so the caches are pure intermediate state.
-# krea2-turbo/ is a ~12GB model checkout — never commit it.
+# krea2-turbo/ is a ~34GB model checkout (fetch with artgen/dl_krea.py) — never commit it.
 artgen/cache/
 artgen/cache_krea/
 artgen/krea2-turbo/

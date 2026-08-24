@@ -57,13 +57,23 @@ Verify via `javascript_tool` — DOM inspection, `getImageData` pixel sampling, 
 
 ---
 
-## REMAINING WORK (next session starts here)
+## REMAINING WORK — SUPERSEDED, plan from [`BACKLOG.md`](BACKLOG.md)
 
-1. **Touch support.** Still mouse-only; every tooltip is `mouseenter`. The largest genuine
-   gap left. Needs pointer events, tap-to-brief on the galaxy map, and a long-press preview.
-2. **Spatial hash grid + sprite atlas.** Not needed at the wave counts the current curve
-   reaches, but the first thing to do if enemy counts rise.
-3. **Multiplayer.** The seed+stars data model is ready; everything else is future work.
+This block was written at Session 12 and every line of it has since moved. It is
+kept because the house rule is never to delete an item — but **do not start
+here.** [`BACKLOG.md`](BACKLOG.md) is the live list.
+
+1. ~~**Touch support.** Still mouse-only; every tooltip is `mouseenter`.~~ The board is on
+   pointer events — `pointerdown` / `pointermove` / `pointerup` in `js/game.js`, with
+   `touch-action: none` on `#game`. What is left is narrower: pinch-zoom is unverified on
+   real hardware, and the ten `mouseenter` tooltip bindings in `js/ui.js` still have no tap
+   equivalent. See BACKLOG §D.
+2. **Spatial hash grid + sprite atlas.** Half done — status glyphs already render from a
+   cached tile atlas (`js/entities.js:808`). The hash grid remains unneeded at the wave
+   counts the current curve reaches.
+3. ~~**Multiplayer.** The seed+stars data model is ready; everything else is future work.~~
+   Built in Session 20 on `feature/multiplayer-20.6` (`js/net.js`, `BroadcastChannel`
+   lockstep), **MPT 19/24**, deliberately unmerged. See **20.6** below and BACKLOG §1.
 
 > The old item 3 — "no escalating galaxy-2 difficulty tier yet" — was already shipped when
 > it was written. Moved to **C11** on the status board above; do not re-plan it.

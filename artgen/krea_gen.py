@@ -114,6 +114,19 @@ def load_pipe():
     return pipe, torch
 
 
+def _seed(key):
+    """FNV-1a over the key: identical every run, unlike the salted builtin.
+
+    Byte-identical to sdxl_all._seed, so a key seeded on either path lands on
+    the same number. Not imported from there because sdxl_all imports fit and
+    quality_for FROM this module (the dependency runs that way round) and it
+    pulls torch + diffusers in at module scope."""
+    h = 2166136261
+    for ch in key:
+        h = ((h ^ ord(ch)) * 16777619) & 0xffffffff
+    return h % (2 ** 31)
+
+
 def render(pipe, torch, prompt, gen_px, aspect, seed):
     w, h = (gen_px, gen_px)
     if aspect == 'wide':
@@ -147,6 +160,7 @@ def fit(img, out_px, aspect):
 
 def write_pack(jobs, source_note):
     pack, missing, from_fallback = {}, [], 0
+    passed, recoded = 0, 0
     for key, _prompt, _gen, out_px, aspect in jobs:
         p = os.path.join(CACHE, key + '.webp')
         if not os.path.exists(p):
@@ -156,10 +170,34 @@ def write_pack(jobs, source_note):
             else:
                 missing.append(key)
                 continue
-        img = Image.open(p).convert('RGB')
-        buf = _io.BytesIO()
-        img.save(buf, 'WEBP', quality=quality_for(key), method=6)
-        pack[key] = 'data:image/webp;base64,' + base64.b64encode(buf.getvalue()).decode()
+        # Every cache entry was ALREADY written through fit() at this job's
+        # out_px and at quality_for(key) -- by the render loop below, by
+        # sdxl_all.py:143, and by derive_worlds/derive_crests. Decoding and
+        # re-encoding it here therefore resizes nothing and re-quantises
+        # everything: MEASURED across the 188 catalogue keys, one --pack costs
+        # a mean RMSE of 2.55 and not one key round-trips byte-identical, so
+        # the loss is cumulative for as long as the pack keeps being rebuilt.
+        #
+        # So ship the cached BYTES when they already are the target, and
+        # re-encode only what is not. The guard is the whole point: a
+        # passthrough that skipped a needed resize would ship wrong-sized art,
+        # which is worse than the loss it saves. MEASURED today: 188/188 are
+        # RGB / WEBP / exactly out_px, so the else branch is currently dead --
+        # it is here for a stale or hand-dropped cache file.
+        with open(p, 'rb') as fh:
+            raw = fh.read()
+        img = Image.open(_io.BytesIO(raw))
+        tw, th = (out_px, out_px) if aspect != 'wide' else (out_px, round(out_px * 9 / 16))
+        if img.format == 'WEBP' and img.mode == 'RGB' and img.size == (tw, th):
+            blob = raw
+            passed += 1
+        else:
+            buf = _io.BytesIO()
+            fit(img.convert('RGB'), out_px, aspect).save(
+                buf, 'WEBP', quality=quality_for(key), method=6)
+            blob = buf.getvalue()
+            recoded += 1
+        pack[key] = 'data:image/webp;base64,' + base64.b64encode(blob).decode()
 
     total = sum(len(v) for v in pack.values())
     body = (f'/* Generated illustrative art — {source_note}.\n'
@@ -173,7 +211,8 @@ def write_pack(jobs, source_note):
     with open(OUT, 'w', encoding='utf-8', newline='') as f:
         f.write(body)
     print(f'WROTE {OUT}  {total//1024}KB across {len(pack)} images '
-          f'({from_fallback} from the SDXL fallback)', flush=True)
+          f'({passed} passed through, {recoded} re-encoded, '
+          f'{from_fallback} from the SDXL fallback)', flush=True)
     if missing:
         print(f'  still missing ({len(missing)}): {", ".join(missing[:12])}'
               f'{" ..." if len(missing) > 12 else ""}', flush=True)
@@ -207,7 +246,14 @@ def main():
 
     print(f'{len(todo)} to render (of {len(jobs)} in the catalogue)', flush=True)
     if not todo:
-        write_pack(jobs, 'Krea 2 Turbo, local RTX 4080')
+        # `jobs + derived_jobs()`, matching the --pack branch above and the
+        # end-of-run call below. derived_jobs() is the 60 world_<map>_<faction>
+        # holder duotones; omitting them here wrote an artpack missing 60 of
+        # 188 keys, and it failed SILENTLY -- ui.js falls back from
+        # world_<map>_<holder> to world_<map>, so every battle briefing just
+        # quietly lost its holder tint. This branch is the NORMAL ending of an
+        # overnight class run (everything requested already cached).
+        write_pack(jobs + derived_jobs(), 'Krea 2 Turbo, local RTX 4080')
         return
 
     pipe, torch = load_pipe()
@@ -215,7 +261,14 @@ def main():
     for i, (key, prompt, gen_px, out_px, aspect) in enumerate(todo):
         t1 = time.time()
         # Deterministic per key, so a re-run reproduces and a re-roll differs.
-        seed = abs(hash(key)) % (2 ** 31)
+        # FNV-1a, not the builtin: Python salts str.__hash__ PER PROCESS, so
+        # hash() made a resumed run re-roll every remaining key and made
+        # --force unreproducible. BRAND.md records this as fixed; only the SDXL
+        # path was ever fixed. At ~83 min/image this is the path where an
+        # unreproducible seed is most expensive. Note the GPU is not bit-
+        # deterministic (see commit 4a2974b), so a stable seed buys "recognisably
+        # itself", not byte-equality -- which is the whole of what --force needs.
+        seed = _seed(key)
         img = render(pipe, torch, prompt, gen_px, aspect, seed)
         fit(img, out_px, aspect).save(os.path.join(CACHE, key + '.webp'),
                                       'WEBP', quality=quality_for(key), method=6)

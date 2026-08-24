@@ -21,8 +21,11 @@ strongest claims: the reanimate loop across the wire is *unproven* (the harness
 only reaches wave 3, so nothing dies to reanimate), and the determinism
 **negative control failed to fail**. No adversarial audit exists — all seven
 Session 20 audit agents died to a weekly limit.
-Full write-up and the specific next step for each:
-[`MULTIPLAYER-HANDOFF.md`](MULTIPLAYER-HANDOFF.md). **Do not merge on 19/24.**
+Full write-up and the specific next step for each: `docs/MULTIPLAYER-HANDOFF.md`
+— which exists **only on that branch**, so this link 404s from `main`. Read it
+without checking the branch out:
+`git show feature/multiplayer-20.6:docs/MULTIPLAYER-HANDOFF.md`.
+**Do not merge on 19/24.**
 
 ### 2. Soul-shop surcharge (20.7i)
 Modelled at ten towers per faction, and the finding inverts the assumption: the
@@ -108,9 +111,10 @@ Full write-ups with build notes in [`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md
 
 ## F. Suggested order
 
-1. **Multiplayer** — close the two failures in
-   [`MULTIPLAYER-HANDOFF.md`](MULTIPLAYER-HANDOFF.md), get it audited, then
-   merge `feature/multiplayer-20.6`. It is the only feature-sized item left.
+1. **Multiplayer** — close the two failures in `docs/MULTIPLAYER-HANDOFF.md`
+   (on the branch only: `git show feature/multiplayer-20.6:docs/MULTIPLAYER-HANDOFF.md`),
+   get it audited, then merge `feature/multiplayer-20.6`. It is the only
+   feature-sized item left.
 2. **The soul-shop counter** — small, and it is a real economy bug.
 3. **The pack re-encode** — small, and it stops a slow quality leak.
 4. **Owner picks** from section C and E, whenever you want them.
