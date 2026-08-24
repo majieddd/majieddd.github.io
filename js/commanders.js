@@ -149,7 +149,10 @@ const Meta = {
                 abilUnlocked: [],
                 /* Muster detachment: which SAVED denizens deploy with you.
                    Empty means "the first unlocked" -- resolved on read. */
-                musterLoadout: [] };
+                musterLoadout: [],
+                /* The standing order: which commander deploys. null = never
+                   chosen; the commander screen's EQUIP button writes it. */
+                equippedCommander: null };
     for (const c of COMMANDERS) p.commanders[c.id] = { xp: 0, unlocked: [] };
     for (const id of TOWER_ORDER) { p.talents[id] = []; p.towerXp[id] = 0; }
     /* Units share the tower tracks rather than growing their own: one talent
@@ -202,6 +205,10 @@ const Meta = {
     if (!Array.isArray(p.abilUnlocked)) p.abilUnlocked = [];
     if (!Array.isArray(p.musterLoadout)) p.musterLoadout = [];
     if (p.faction === undefined) p.faction = null;
+    /* The equipped commander arrived after every profile in existence was
+       written, so it is defaulted on READ the way the unit tracks were. null
+       means "never chosen" -- deploy falls back to the session pick. */
+    if (typeof p.equippedCommander !== 'string') p.equippedCommander = null;
     if (typeof p.galaxyTier !== 'number') p.galaxyTier = 0;
     if (!p.prestige || typeof p.prestige !== 'object') p.prestige = {};
     if (!Array.isArray(p.seenEnemies)) p.seenEnemies = [];
@@ -895,6 +902,23 @@ const Meta = {
 
   faction() { return this.load().faction; },
   setFaction(id) { const p = this.load(); p.faction = id; this.adoptShelf(id); this.save(); return id; },
+
+  /* THE EQUIPPED COMMANDER. The session pick (UI.sel.commander) is browsing
+     state and dies with the tab; this is the standing order. Validated on
+     read rather than write, because the shelf is per banner: a commander
+     equipped under one banner and browsed from another must not deploy
+     there. */
+  equipped() {
+    const id = this.load().equippedCommander;
+    return (id && this.isCommanderUnlocked(id)) ? id : null;
+  },
+  equipCommander(id) {
+    if (!this.isCommanderUnlocked(id)) return false;
+    const p = this.load();
+    p.equippedCommander = id;
+    this.save(true);
+    return true;
+  },
 
   /** Swearing to a banner takes the unsworn shelf with you. A profile can
       reach the shop before it has a faction, and stranding those unlocks on a

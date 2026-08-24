@@ -128,7 +128,7 @@ const UI = {
                 r.souls || 0} souls banked.${r.campaign ? ' Campaign in progress.' : ''}">
         <span class="pr-name">${n}</span>
         <span class="pr-meta">◉ ${r.souls || 0} souls · ${r.campaign ? 'node ' + (r.campaign.depth + 1) : 'no campaign'} · ${formatNum(lv)} XP</span>
-        ${names.length > 1 ? `<span class="pr-del" data-del="${n}" title="Delete">✕</span>` : ''}
+        ${names.length > 1 ? `<span class="pr-del" data-del="${n}" title="Delete" role="button" aria-label="Delete profile ${n}">✕</span>` : ''}
       </button>`;
     }).join('');
     const mpList = $('#profile-list-mp');
@@ -316,6 +316,14 @@ const UI = {
       this.saveSettings();
     });
 
+    /* Damage numbers. Presentation only -- the gate sits in registerDamage,
+       so flipping it mid-battle takes effect on the next landed hit. */
+    const dn = $('#set-dmg-numbers');
+    dn.addEventListener('change', () => {
+      setDamageNumbers(dn.checked);
+      this.saveSettings();
+    });
+
     /* SAVE FILE I/O. localStorage is one browser-profile eviction away from a
        lost campaign, and there was no way to move an install between
        machines. Export writes the whole profile root; import replaces it. */
@@ -465,12 +473,15 @@ const UI = {
                     holder has troops on the ground or only a claim on a map. */
                  contested: node.contested, worldKind: node.kind,
                  map: node.map, difficulty: node.difficulty,
-                 /* If the commander screen was never visited, default to your
-                    faction's own commander rather than an arbitrary one. */
-                 commander: (this.sel.commander && Meta.isCommanderUnlocked(this.sel.commander))
+                 /* The EQUIPPED commander is the standing order and outranks
+                    the session's browsing pick -- that is what EQUIP means.
+                    With no standing order: the session pick if visited, else
+                    your faction's own commander rather than an arbitrary one. */
+                 commander: Meta.equipped() ||
+                   ((this.sel.commander && Meta.isCommanderUnlocked(this.sel.commander))
                    ? this.sel.commander
                    : (Meta.isCommanderUnlocked(freeCommanderOf(Meta.faction() || 'human'))
-                       ? freeCommanderOf(Meta.faction() || 'human') : 'cadre'),
+                       ? freeCommanderOf(Meta.faction() || 'human') : 'cadre')),
                  loadout: this.sel.loadout.slice(),
                  arena: node.arena, boons: c.boons, rival: node.rival,
                  escStart: node.escStart,
@@ -865,12 +876,15 @@ const UI = {
        last so the list reads as "yours, theirs, the house". */
     const rank = c => c.faction === mine ? -2 : c.faction ? FACTION_ORDER.indexOf(c.faction) : 90;
     owned.sort((a, b) => rank(a) - rank(b));
-    /* Default to a commander of your own faction until you deliberately pick
-       otherwise -- choosing the Xeno and being handed a Humanity commander made
-       the faction choice look cosmetic. */
+    /* Default to the EQUIPPED commander, then to one of your own faction --
+       choosing the Xeno and being handed a Humanity commander made the
+       faction choice look cosmetic, and an equip order that the screen then
+       ignored would make the EQUIP button look cosmetic too. */
+    const eq = Meta.equipped();
     const sel = owned.find(c => c.id === this.sel.commander);
-    if (!sel || (!this._cmdTouched && sel.faction !== mine))
-      this.sel.commander = (owned.find(c => c.faction === mine) || owned[0]).id;
+    if (!sel || (!this._cmdTouched && sel.id !== eq && sel.faction !== mine))
+      this.sel.commander = (owned.find(c => c.id === eq) ||
+                            owned.find(c => c.faction === mine) || owned[0]).id;
 
     $('#commander-list').innerHTML = owned.map(c => {
       /* CADRE is unaligned, so there is no faction record to read. */
@@ -883,7 +897,8 @@ const UI = {
                 has2 ? ': ' + a1.desc : ' (LOCKED — fill the technology chart, or ' + Meta.abilityCost() + ' souls)'}">
         <span class="cmd-icon">${commanderPortrait(c, 44)}</span>
         <span class="cmd-body">
-          <span class="cmd-name">${stars ? '<em class="pstars">' + '★'.repeat(stars) + '</em> ' : ''}${c.name}</span>
+          <span class="cmd-name">${stars ? '<em class="pstars">' + '★'.repeat(stars) + '</em> ' : ''}${c.name}${
+            Meta.equipped() === c.id ? ' <em class="cmd-eq-badge">⚑ IN COMMAND</em>' : ''}</span>
           <span class="cmd-title">${c.title}</span>
           <span class="cmd-fac" style="--fc:${f.color}">${f.icon} ${f.short}</span>
           <span class="cmd-lvl">LVL <b data-lvl="${c.id}">1</b></span>
@@ -936,6 +951,9 @@ const UI = {
         <b>${c.trait.name}</b>
         <span>${c.trait.desc}</span>
       </div>
+      ${Meta.equipped() === c.id
+        ? `<div class="cd-equipped" role="status">⚑ IN COMMAND — ${c.name} deploys with your next battle.</div>`
+        : `<button class="btn btn-primary cd-equip" data-equip="${c.id}">⚑ EQUIP ${c.name}</button>`}
       ${spendNow ? `
         <div class="cd-spend" role="status" style="--cc:${c.color}">
           <b>${pts} POINT${pts === 1 ? '' : 'S'} TO SPEND</b>
@@ -957,6 +975,28 @@ const UI = {
             : ''}
         <button class="btn btn-sm" data-reset-tree="1">RESET TREE</button>
       </div>`;
+
+    /* The slot above the rail: one line that always answers "who deploys?".
+       Rendered here rather than in buildCommanderScreen so an EQUIP click
+       (which only re-renders) still moves it. */
+    const slot = $('#cmd-slot');
+    if (slot) {
+      const eqc = COMMANDERS.find(x => x.id === Meta.equipped());
+      slot.innerHTML = eqc
+        ? `<b>IN COMMAND</b>
+           <span class="cs-name" style="--cc:${eqc.color}">${eqc.name}</span>
+           <em>${eqc.title}</em>`
+        : `<b>IN COMMAND</b>
+           <span class="cs-none">No standing order — press ⚑ EQUIP on a commander.</span>`;
+    }
+    const eqBtn = $('[data-equip]');
+    if (eqBtn) eqBtn.addEventListener('click', () => {
+      if (Meta.equipCommander(eqBtn.dataset.equip)) {
+        this.sel.commander = eqBtn.dataset.equip; this._cmdTouched = true;
+        Sound.play('tech');
+        this.buildCommanderScreen();
+      } else Sound.play('denied');
+    });
 
     $$('[data-tech]').forEach(b => b.addEventListener('click', () => {
       if (Meta.unlock(c.id, b.dataset.tech)) { Sound.play('tech'); this.renderCommanders(); }
@@ -1666,9 +1706,25 @@ const UI = {
       /* Advancing raises the permanent galaxy tier; the next campaign is
          generated at +30% enemy strength per tier. */
       const pl = Meta.load(); pl.galaxyTier = (pl.galaxyTier || 0) + 1; Meta.save(true);
+      const before = Meta.souls();
       const res = Meta.campaignExtract();
-      this.toast('Galaxy conquered — banked ◉ ' + res.souls + ' souls.');
-      this.show('screen-title'); this.renderTitle();
+      /* THE CEREMONY. The souls are already banked -- campaignExtract paid
+         them the line above -- so everything below is presentation: a payout
+         this size deserves a counter that climbs, not a toast that vanishes.
+         A refresh mid-count loses only the animation, never the souls. */
+      const gv = $('#worldmap-wrap').querySelector('.gv');
+      if (!gv) { this.show('screen-title'); this.renderTitle(); return; }
+      gv.innerHTML = `
+        <span class="gv-sigil">◉</span>
+        <h2>SOULS BANKED</h2>
+        <div class="gv-souls"><b id="gv-soulnum">◉ ${before}</b><em id="gv-souldelta">+0</em></div>
+        <p class="gv-sub">The harvest of a conquered galaxy, paid in full.
+           Spend it in the SOUL SHOP.</p>
+        <button id="btn-gv-done" class="btn btn-primary btn-big">CONTINUE</button>`;
+      Sound.play('branch');
+      this.countUp($('#gv-soulnum'), before, before + res.souls, 1400, v => '◉ ' + formatNum(v));
+      this.countUp($('#gv-souldelta'), 0, res.souls, 1400, v => '+' + v + ' banked');
+      $('#btn-gv-done').addEventListener('click', () => { this.show('screen-title'); this.renderTitle(); });
     });
   },
 
@@ -3225,7 +3281,7 @@ const UI = {
         <span class="tt-mastery" data-tt="MASTERY ${lvl}|Earned by fighting with this, never bought. Higher mastery unlocks the deeper rows.">M${lvl}</span>
         ${stock ? '<span class="tt-stock">stock build</span>' : ''}
         <span class="tt-pts ${spent === TALENT_POINTS ? 'full' : ''}">${spent}/${TALENT_POINTS}</span>
-        <button class="icon-btn sm" data-clear-talent="${id}" title="Clear">↺</button>
+        <button class="icon-btn sm" data-clear-talent="${id}" title="Clear" aria-label="Clear talent picks">↺</button>
       </div>
       ${grid}
     </div>`;
@@ -3587,16 +3643,19 @@ const UI = {
          arsenals read the same way in battle. The shop card is a different
          component from the loadout card (.tower-card vs .lo-card) and already
          rests minimal at five entries, so it needs no disclosure of its own. */
-      return `<button class="tower-card" data-tower="${id}" style="--tc:${t.color}; --cc:${originOf(id).color}">
-        <span class="tc-key">${keys[i]}</span>
-        <span class="tc-mini">${this.towerIconHTML(id, 30)}</span>
+      return `<button class="tower-card" data-tower="${id}" style="--tc:${t.color}; --cc:${originOf(id).color}"
+        aria-label="Build ${t.name}, ${t.role.toLowerCase()}, ${Game.towerLifeCost(0, id)
+          ? Game.towerLifeCost(0, id) + ' lives' : t.cost + ' gold'}, hotkey ${keys[i]}"
+        aria-keyshortcuts="${keys[i]}">
+        <span class="tc-key" aria-hidden="true">${keys[i]}</span>
+        <span class="tc-mini" aria-hidden="true">${this.towerIconHTML(id, 30)}</span>
         <span class="tc-main">
-          <span class="tc-name">${t.name}<i class="tc-og" style="--og:${
+          <span class="tc-name">${t.name}<i class="tc-og" aria-hidden="true" style="--og:${
             originOf(id).color}" title="${originOf(id).name} — ${originOf(id).rule}">${
             originOf(id).icon}</i></span>
           <span class="tc-role">${t.role}</span>
         </span>
-        <span class="tc-cost" data-cost="${id}">${Game.towerLifeCost(0, id)
+        <span class="tc-cost" data-cost="${id}" aria-hidden="true">${Game.towerLifeCost(0, id)
           ? '♥' + Game.towerLifeCost(0, id) : '◈' + t.cost}</span>
       </button>`;
     }).join('');
@@ -4355,6 +4414,7 @@ const UI = {
       const hp = hpLo;
       const hpTxt = hpLo === hpHi ? formatNum(hpLo) : formatNum(hpLo) + '–' + formatNum(hpHi);
       return `<button class="muster-btn ${ok ? '' : 'poor'}" data-muster="${tier.id}"${ok ? '' : ' disabled'}
+        aria-label="Muster ${tier.name}: send ${sent} ${base.name} for ${cost} gold, income +${addPct} percent"
         data-tt="MUSTER — ${tier.name}|Send ${sent} × ${base.name} at ${hpTxt} health each, and add ${
           addPct}% of every wave reward to your income for the rest of the battle — worth ◈${
           formatNum(gain)} on the next wave. Sent units are damped to ${
@@ -5546,12 +5606,41 @@ const UI = {
             <span class="ec-tag">${m.severity >= 2 ? '⚠ SEVERE · +1 DRAFT OPTION' : 'MODERATE'}</span>
           </button>`).join('')}
       </div>
-      ${owed ? `<p class="ec-owed">${owed} refused escalation${owed > 1 ? 's' : ''} still owed.</p>` : ''}`;
+      ${owed ? `<p class="ec-owed">${owed} refused escalation${owed > 1 ? 's' : ''} still owed.</p>` : ''}
+      <button class="btn btn-sm ec-hold" id="btn-ec-hold">⏸ HOLD — BUILD FIRST</button>`;
     ov.classList.remove('hidden');
+    this._removeEscHoldChip();
     $$('[data-esc]', ov).forEach(b => b.addEventListener('click', () => {
       ov.classList.add('hidden');
+      this._removeEscHoldChip();
       Game.takeEscalation(offer[+b.dataset.esc]);
     }));
+    /* D3. The halt is the one moment the board stands still, and on a big
+       seat count it is a LONG moment -- so let the player spend it. HOLD
+       hides the modal without resolving it: the sim stays parked (state is
+       still 'escalating'), but boardInteractive() now says yes, so towers can
+       be placed, upgraded, sold and re-aimed. The chip is the way back, and
+       the wave cannot restart until a card is taken. */
+    $('#btn-ec-hold').addEventListener('click', () => {
+      ov.classList.add('hidden');
+      Game.escalationHold = true;
+      const chip = document.createElement('button');
+      chip.id = 'esc-hold-chip';
+      chip.className = 'btn esc-hold-chip';
+      chip.innerHTML = '⚠ THE ENEMY WAITS — CHOOSE ESCALATION';
+      chip.addEventListener('click', () => {
+        Game.escalationHold = false;
+        this.showEscalationChoice(Game.pendingEscalation || offer);
+      });
+      $('#screen-game').appendChild(chip);
+    });
+  },
+
+  /** The hold chip never outlives its offer -- both re-entry paths and every
+      resolution path route through here. */
+  _removeEscHoldChip() {
+    const c = $('#esc-hold-chip');
+    if (c) c.remove();
   },
 
   showEscalation(m) {
@@ -5691,6 +5780,31 @@ const UI = {
           <div><b>${formatNum(me.stats.sent)}</b><span>sent</span></div>
           <div><b>${me.towers.length}</b><span>towers</span></div>
         </div>
+        <div class="rw-stats">
+          <div><b>${formatNum(me.stats.goldEarned)}</b><span>gold earned</span></div>
+          <div><b>${formatNum(me.stats.mustered)}</b><span>mustered</span></div>
+          <div><b>${formatNum(me.stats.livesRestored)}</b><span>lives restored</span></div>
+          <div><b>${formatNum(me.stats.leaksRecovered)}</b><span>thefts stopped</span></div>
+        </div>
+
+        ${(() => {
+          /* THE HARVEST -- WHAT KILLED YOU's mirror, wins only. A defeat
+             already carries its lecture below; a win deserves the ledger of
+             what fed it. Ranked by body count, not bounty: the question a
+             winner asks is "what did I mostly fight", and the bounty column
+             answers "what was it worth" beside it. */
+          if (!won) return '';
+          const rows = Object.entries(me.killLog || {})
+            .sort((a, b) => b[1].n - a[1].n).slice(0, 3);
+          if (!rows.length) return '';
+          return `<div class="rw-leaks rw-harvest"><b>THE HARVEST</b>${rows.map(([id, v]) => {
+            const d = ENEMY_TYPES[id] || {};
+            return `<div class="rw-leak" style="--tc:${d.color || '#94a3b8'}">
+              <span class="rw-lname">${d.name || id}</span>
+              <span class="rw-lnote">${formatNum(v.n)} killed · ◈${formatNum(v.bounty)} base bounty</span>
+            </div>`;
+          }).join('')}</div>`;
+        })()}
 
         ${(() => {
           /* WHAT KILLED YOU. The top three classes by lives ACTUALLY lost,
@@ -6182,13 +6296,16 @@ const UI = {
     $('#set-reduced-motion').checked = !!s.reducedMotion;
     setReducedMotion(s.reducedMotion);
     document.body.classList.toggle('rm-user', !!s.reducedMotion);
+    $('#set-dmg-numbers').checked = s.damageNumbers !== false;
+    setDamageNumbers(s.damageNumbers !== false);
     Sound.setSfxVolume(s.sfx); Sound.setMusicVolume(s.music);
     Sound.toggleSfx(s.sfxOn); Sound.toggleMusic(s.musicOn);
   },
   saveSettings() {
     Storage.saveSettings({ sfx: $('#set-sfx').value / 100, music: $('#set-music').value / 100,
       sfxOn: $('#set-sfx-on').checked, musicOn: $('#set-music-on').checked,
-      reducedMotion: $('#set-reduced-motion').checked });
+      reducedMotion: $('#set-reduced-motion').checked,
+      damageNumbers: $('#set-dmg-numbers').checked });
   }
 };
 

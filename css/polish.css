@@ -477,6 +477,10 @@ body.rm-user .bi-line { opacity: 1; }
             text-overflow: ellipsis; white-space: nowrap; }
 .rw-ltag { color: var(--text-mute); letter-spacing: .1em; font-size: 9.5px; }
 .rw-lnote { text-align: right; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+/* THE HARVEST reuses the leak-report skeleton in the win palette: same rows,
+   green frame, so the two blocks read as one instrument pointing two ways. */
+.rw-harvest { border-color: rgba(74,222,128,.28); background: rgba(74,222,128,.05); }
+.rw-harvest > b { color: #4ade80; }
 
 /* ---- A1: the first-run coach ---- */
 /* The tip lives OVER the board, so it must never eat a click meant for a
@@ -595,6 +599,13 @@ body.rm-user .bi-line { opacity: 1; }
 .gv-stats b { display: block; font-size: 24px; color: var(--fc); }
 .gv-stats span { font-size: 10px; letter-spacing: .12em; color: var(--text-mute); }
 .gv-next { font-size: 12px; color: var(--text-mute); font-style: italic; }
+/* The claim ceremony: one climbing figure, one delta beside it. */
+.gv-souls { display: flex; align-items: baseline; gap: 12px; }
+.gv-souls b { font-size: clamp(34px, 6vw, 52px); font-weight: 800; letter-spacing: .04em;
+              color: var(--gold, #fbbf24); font-variant-numeric: tabular-nums;
+              text-shadow: 0 0 34px rgba(251,191,36,.35); }
+.gv-souls em { font-size: 15px; font-style: normal; color: var(--text-dim);
+               font-variant-numeric: tabular-nums; }
 .gx-seats { font-size: 11.5px; color: var(--text-dim); cursor: help; }
 
 /* ═════════════════════════════════ CODEX: lore, factions, elements ═════ */
@@ -1102,6 +1113,15 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
   letter-spacing: .14em; color: var(--text-mute); }
 .ec-card.hard .ec-tag { color: #fca5a5; }
 .ec-owed { margin: 12px 0 0; font-size: 11px; color: var(--text-mute); text-align: center; }
+/* D3: the hold. Deliberately quieter than the three cards -- it is the
+   side door, not a fourth choice. */
+.ec-hold { display: block; margin: 14px auto 0; color: var(--text-dim); }
+.esc-hold-chip { position: fixed; top: 64px; left: 50%; transform: translateX(-50%);
+                 z-index: 60; padding: 8px 16px; font-size: 11px; letter-spacing: .14em;
+                 color: #fbbf24; border-color: rgba(251,191,36,.5);
+                 background: rgba(20,14,4,.92); box-shadow: 0 4px 24px rgba(0,0,0,.5);
+                 animation: escHoldPulse 1.6s ease-in-out infinite; }
+@keyframes escHoldPulse { 50% { box-shadow: 0 0 18px rgba(251,191,36,.35); } }
 
 .insp-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .move-btn { font-size: 10.5px; }

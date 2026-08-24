@@ -34,6 +34,16 @@ function seededDraw(seed) {
 }
 function setReducedMotion(user) { RM_USER = !!user; }
 
+/* DAMAGE NUMBERS — same cached-gate shape as reduced motion, and for the same
+   reason: the check runs once per landed hit. Default ON because a new player
+   learning which tower is doing the work needs the numbers; the OPTIONS
+   checkbox exists for the player who finds them noise. The gate lives in
+   registerDamage, not addFloater — floaters also carry gold and MUSTER
+   notices, and those must survive the toggle. */
+let DMG_NUMBERS = true;
+function damageNumbersOn() { return DMG_NUMBERS; }
+function setDamageNumbers(on) { DMG_NUMBERS = !!on; }
+
 /** The active battlefield geometry, rebuilt from the chosen map. */
 let FIELD = null;
 
@@ -103,6 +113,13 @@ class Side {
        job is teaching what killed you. `stats.leaksRecovered` counts those
        refunds instead, because the recovery is the counterplay. */
     this.leakLog = {};
+    /* THE HARVEST -- kills keyed by class: { n, bounty }. leakLog's mirror,
+       for the same reason: stats.kills is one number, and the debrief wants
+       to say WHICH contacts fed this commander, not how many. `bounty` books
+       the base figure after elite/execute adjustments and before gold mods,
+       because the lesson is what the class was worth, not what the economy
+       inflated it to. Written only from killEnemy; never read by the sim. */
+    this.killLog = {};
   }
   get alive() { return this.lives > 0; }
   /** How many of a tower type this side already fields — drives price growth. */
@@ -957,6 +974,9 @@ const Game = {
     if (offer.length <= 1) return this.commitEnemyMod(offer[0] || pick(pool));
     this.pendingEscalation = offer;
     this.state = 'escalating';
+    /* Every fresh offer opens un-held: the hold is a per-offer decision, and
+       a stale flag from the last offer would skip the modal outright. */
+    this.escalationHold = false;
     Sound.play('escalation');
     UI.showEscalationChoice(offer);
   },
@@ -968,6 +988,7 @@ const Game = {
       if (other !== m && !this.escalationOwed.includes(other)) this.escalationOwed.push(other);
     }
     this.pendingEscalation = null;
+    this.escalationHold = false;
     this.state = 'playing';
     /* The bid has to stay symmetric. Escalations land on the wave that hits
        BOTH commanders, so letting the player alone choose which one arrives is
@@ -2252,6 +2273,8 @@ const Game = {
     }
     this.awardGold(killer, bounty);
     S.stats.kills++;
+    const kl = S.killLog[e.type] || (S.killLog[e.type] = { n: 0, bounty: 0 });
+    kl.n++; kl.bounty += bounty;
 
     /* THE RECOVERY. A dead CARRIER hands every stolen life straight back --
        restoreLife is the shipping path (maxLives clamp, heal cue, floater,
@@ -2689,9 +2712,18 @@ const Game = {
     return true;
   },
 
-  addFloater(x, y, text, crit = false, color = null, size = null) {
+  addFloater(x, y, text, crit = false, color = null, size = null, dmg = false) {
+    /* THE JITTER IS DRAWN BEFORE THE GATE, ALWAYS. rand() here is the SIM
+       stream -- Net swaps Math.random per tick -- so a floater the player
+       switched off must still cost the same draw, or two clients running the
+       same seed with different display settings would part company inside a
+       wave. Same law spawnBurst obeys: it draws every value itself and hands
+       them to a spawnParticle that may discard them. A presentation toggle
+       may never be visible to the simulation. */
+    const jx = x + rand(-5, 5);
+    if (dmg && !damageNumbersOn()) return;
     if (this.floaters.length >= MAX_FLOATERS) this.floaters.shift();
-    this.floaters.push({ x: x + rand(-5, 5), y,
+    this.floaters.push({ x: jx, y,
       text: typeof text === 'number' ? formatNum(text) : text,
       life: crit ? 1.0 : 0.7, maxLife: crit ? 1.0 : 0.7,
       color: color || (crit ? '#ffffff' : '#ffe9a8'),
@@ -3301,7 +3333,7 @@ const Game = {
   },
 
   drawBuildOverlay(ctx) {
-    if (!this.selectedType || !this.hover.active || this.state !== 'playing') return;
+    if (!this.selectedType || !this.hover.active || !this.boardInteractive()) return;
     const def = TOWER_TYPES[this.selectedType];
     const foot = towerFoot(def);
     const { gx, gy } = this.hover;
@@ -3757,7 +3789,7 @@ const Game = {
     const r = this.radial;
     if (!r) return;
     /* A finished battle cannot take a build, so the ring goes with it. */
-    if (this.state !== 'playing') { this.radial = null; return; }
+    if (!this.boardInteractive()) { this.radial = null; return; }
 
     /* Every price on the ring is asked of Game.towerCost on the frame it is
        drawn. A number cached at open would be a number the build no longer
@@ -3851,13 +3883,25 @@ const Game = {
     ctx.restore();
   },
 
+  /* One answer for every board-input gate. 'playing' is the normal case; the
+     second clause is D3: an escalation halt the player chose to HOLD is spent
+     time, and spending it placing towers is the point of holding. Abilities
+     and musters keep their own 'playing'-only gates -- they are timed acts,
+     and firing them into a parked sim would bank their whole duration free.
+     Never true in a duel: the modal (and so the hold) is singleplayer-only;
+     multiplayer deals escalations without asking. */
+  boardInteractive() {
+    return this.state === 'playing' ||
+           (this.state === 'escalating' && this.escalationHold);
+  },
+
   bindInput() {
     const cv = this.canvas;
     /* The ring runs on POINTER events so one code path serves a mouse, a
        trackpad and a finger; `drag` is the press it is currently tracking. */
     const drag = { id: null, sx: 0, sy: 0, gx: -1, gy: -1, open: false, live: false };
     cv.addEventListener('mousemove', e => {
-      if (this.state !== 'playing') return;
+      if (!this.boardInteractive()) return;
       const p = this.pointerToGrid(e);
       this.hover.gx = p.gx; this.hover.gy = p.gy; this.hover.active = true;
       const aimed = this.aimedDef();
@@ -3869,7 +3913,7 @@ const Game = {
     });
     cv.addEventListener('mouseleave', () => { this.hover.active = false; });
     cv.addEventListener('click', e => {
-      if (this.state !== 'playing') return;
+      if (!this.boardInteractive()) return;
       Sound.resume();
       const p = this.pointerToGrid(e);
       /* An armed ability consumes the next click ahead of everything else:
@@ -3934,7 +3978,7 @@ const Game = {
          outlive the next press. */
       this.radial = null;
       drag.live = false; drag.open = false; drag.id = e.pointerId;
-      if (this.state !== 'playing') return;
+      if (!this.boardInteractive()) return;
       if (this.aimingAbility !== null || this.movingTower || this.selectedType) return;
       const S = this.sides[0];
       if (!S || !S.loadout || !S.loadout.length) return;
@@ -4026,7 +4070,7 @@ Game.step = function (dt) {
 
 /* Settings and per-map records live alongside commander progression. */
 const Storage = {
-  loadSettings() { return Object.assign({ sfx: 0.7, music: 0.4, sfxOn: true, musicOn: true, reducedMotion: false }, Meta.getSettings()); },
+  loadSettings() { return Object.assign({ sfx: 0.7, music: 0.4, sfxOn: true, musicOn: true, reducedMotion: false, damageNumbers: true }, Meta.getSettings()); },
   saveSettings(s) { Meta.setSettings(s); },
   recordRun(game, won) {
     const d = Meta.load();

@@ -66,7 +66,7 @@
         return;
       }
 
-      if (overlayOpen() || Game.state !== 'playing') return;
+      if (overlayOpen() || !Game.boardInteractive()) return;
 
       if (e.altKey && ['1', '2', '3'].includes(k)) {
         Game.speed = Number(k); UI.syncSpeed(); Sound.play('click'); e.preventDefault(); return;

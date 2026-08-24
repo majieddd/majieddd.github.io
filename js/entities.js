@@ -2404,7 +2404,7 @@ class Tower {
     this.damageDealt += dealt;
     if (dealt > 0 && game.applyElement) game.applyElement(enemy, this.def.element, dealt, this);
     if (!quiet && dealt > 0 && this.side === Game.viewSide)
-      game.addFloater(enemy.x, enemy.y, Math.round(dealt), crit);
+      game.addFloater(enemy.x, enemy.y, Math.round(dealt), crit, null, null, true);
     /* `this.onKill &&` is not defensive noise: entities2.js hangs this very
        method off AbilityOwner.prototype, and an ability construct is not a
        Tower. Without the guard the first kill an aimed battery lands throws
