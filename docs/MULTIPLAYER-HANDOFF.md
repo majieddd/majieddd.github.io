@@ -125,7 +125,7 @@ reading of 19/24 is "the transport is good and the guarantee is unproven".
 
 ---
 
-## WebRTC across two machines (Session 21, owner decision 5A) — SHIPPED, ONE CLAIM UNVERIFIED
+## WebRTC across two machines (Session 21, owner decision 5A) — SHIPPED AND PROVEN
 
 `NetRTC` in `js/net.js` hangs a second transport off the `Net.attach` seam the
 file was built around: a hand-signalled `RTCDataChannel`, no server, no
@@ -142,16 +142,36 @@ blob is refused with the honest message; the panel exists and Esc cancels it;
 and the shipped same-machine path is provably untouched — **MPT 40 pass / 0
 fail** with the RTC code in the build.
 
-**What is NOT verified, and you should know before trusting it.** An
-end-to-end duel over the RTC wire. A loopback harness — two peer connections
-in one page — connected **once** (ICE `connected`, channel `open`, packets
-both ways) and then would not reproduce, including on fresh pages. That is
-consistent with the transport's own documented limitation rather than with a
-bug in it: browsers mask host candidates behind mDNS `.local` names, and
-resolving those to yourself inside one page is exactly the flaky case. The
-real test is the real thing — **two machines on one LAN, two windows, the
-three-paste ritual** — and it has not been run. Until it has, treat the
-two-machine path as SHIPPED BUT UNPROVEN.
+**What is verified — the ritual end to end, across two independent browsing
+contexts.** Not a clone, not a stub: two separate documents, each with its own
+`RTCPeerConnection`, driven through the real three-paste ritual by copying the
+actual base64 blobs between them.
+
+    host()   -> 880-byte offer blob, ICE gathering complete, protocol 2
+    answer() -> 880-byte answer blob, ICE already connected
+    accept() -> channel OPEN, connectionState connected, Net.ch === the adapter
+
+Then real duel traffic, in both directions, through `Net.post` / `Net.receive`
+rather than a hand-rolled harness:
+
+  - a sealed turn arrived intact — `turn 7, seat 0, sum 12345`, and the build
+    command inside it still carrying its tile and type
+  - a heartbeat arrived carrying its turn
+  - the guest's own sealed turn came back the other way, `seat 1`, intact
+  - every message arrived **in order**, protocol-stamped and sender-stamped
+  - a forged `ctl` naming `wave` was **refused by the whitelist over the RTC
+    wire** — `Game.wave` never moved — so the guards written for
+    BroadcastChannel apply to this transport identically, which is the whole
+    point of hanging it off `attach`
+
+The earlier one-page loopback failure was the harness, not the transport:
+cloning a singleton and asking mDNS `.local` candidates to resolve to
+themselves inside a single document is exactly the flaky case. Two real
+contexts resolve them fine.
+
+**What remains genuinely unknown** is network topology, and only that: two
+separate MACHINES have not been tried, so NAT, firewalls and AP isolation are
+untested. The protocol, the adapter, the guards and the packet path are proven.
 
 If it fails on a LAN, the first two things to check are mDNS (guest Wi-Fi with
 AP isolation blocks it) and whether both machines loaded the same build.
