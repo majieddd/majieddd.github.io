@@ -64,6 +64,7 @@ weight, not a contract, and they only ever grow.
 | `js/ui.js` | 6272 | Every screen and overlay. Title, galaxy, loadout, battle HUD, dossiers, end screen. |
 | `js/entities.js` | 3822 | Towers and enemies: movement, targeting, damage, status. |
 | `js/game.js` | 3769 | Core state and the simulation step. Board, economy, waves, N-side seat logic, relocation, the radial. |
+| `js/net.js` | 1415 | The duel relay: BroadcastChannel lobby, deterministic lockstep, the seat lens, the agreement fingerprint. |
 | `js/config.js` | 3697 | Tunables, tower/enemy/wave data, maps, talent trees. **Every magic number belongs here**, named, with a comment saying what it protects against. |
 | `js/commanders.js` | 1200 | `Meta` — the save file, profiles, progression, the soul vault. |
 | `js/ai.js` | 1118 | The rival commander. Loadout drafting, build/upgrade scoring, musters. |
