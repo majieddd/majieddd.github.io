@@ -1015,7 +1015,13 @@ const Game = {
       } else { S.lastMuster = 0; }
       /* The per-cycle allowance resets with the wave that consumed it. */
       S.musterThisWave = 0;
-      /* Halder's Triage, and the Vault's War Bonds technology. */
+      /* THE VIGIL boon (towers2.js `l_vigil`) is the only writer of waveHeal.
+         This comment used to credit "Halder's Triage and the Vault's War
+         Bonds", and neither is it: TRIAGE is VESS's talent and writes
+         lifeRegen (handled below), and WAR BONDS writes the tower stat
+         `waveBonus`, spent on the line after this one. Naming the wrong
+         source is how lifeRegen stayed dead in plain sight -- the reader was
+         right there and appeared to be its reader. */
       if (S.traits.waveHeal) this.restoreLife(S.index, S.traits.waveHeal);
       /* FIELD MEDIC, TRIAGE, CHORAL RECOVERY and the Federation's prestige
          reward all pay `lifeRegen` PER WAVE, in fractions of a life -- "one

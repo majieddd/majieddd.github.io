@@ -258,10 +258,20 @@ const AI = {
   },
 
   /** Weighted fraction of the defended lanes a tower here would cover. */
-  coverage(x, y, rangeTiles) {
+  /* `minTiles` is the tower's own DEAD ZONE, and leaving it out was a real
+     misplacement rather than a rounding: BOMBARD cannot fire inside three
+     tiles, so lane that runs closer than that is lane it does not cover.
+     Measured before this argument existed -- the brain sited a BOMBARD 2.5
+     tiles from the nearest lane, scoring the traffic it was structurally
+     unable to shoot. Defaults to 0, so every other tower is unchanged. */
+  coverage(x, y, rangeTiles, minTiles) {
     const r2 = (rangeTiles * TILE) ** 2;
+    const m2 = minTiles ? (minTiles * TILE) ** 2 : 0;
     let sum = 0;
-    for (const s of this.samples) if (dist2(x, y, s.x, s.y) <= r2) sum += s.w;
+    for (const s of this.samples) {
+      const d = dist2(x, y, s.x, s.y);
+      if (d <= r2 && d >= m2) sum += s.w;
+    }
     return sum;
   },
 
@@ -531,6 +541,7 @@ const AI = {
   /** Best free spot for a given tower, weighted by how much lane it covers. */
   bestSpotFor(def) {
     const range = def.base.range || 3.2;
+    const minRange = def.base.minRange || 0;
     const foot = towerFoot(def);
     let best = null, bestScore = -1;
     /* Only consider the strongest candidates — full search every tick is waste. */
@@ -543,7 +554,7 @@ const AI = {
          tick. Coverage is measured from the rectangle's true centre. */
       if (foot > 1 && !Game.canBuild(this.side.index, s.gx, s.gy, foot)) continue;
       if (++checked > 46) break;
-      let score = this.coverage(s.x + (foot - 1) * TILE / 2, s.y + (foot - 1) * TILE / 2, range);
+      let score = this.coverage(s.x + (foot - 1) * TILE / 2, s.y + (foot - 1) * TILE / 2, range, minRange);
       /* A node is worth most to the tower that can actually use it: matched
          element, or an unmarking tower the node has an element to lend. This is
          the parity clause -- the rival reads nodes by the player's own rule. */
@@ -867,6 +878,17 @@ const AI = {
     t.recompute();
     const v = t.isSupport ? 0 : this.effectiveness(t.def, t.stats, t.estimateDps(), prof);
     Object.assign(t, save);
+    /* RESTORE, THEN RECOMPUTE. Assigning the saved fields back is not enough:
+       recompute ALLOCATES for `drones` (`while (this.drones.length < want)
+       this.drones.push(new Drone(...))`), and those objects are what fly and
+       shoot -- `stats.drones` does not drive firing, the array does. Without
+       this line a rival DRONE BAY gained a permanent extra drone every time
+       the brain merely CONSIDERED upgrading it. Measured: one deliberation
+       took a MK I bay from 2 drones to 3 while its stats still said 2, and it
+       re-inflated on every tick the brain deliberated without spending.
+       The sibling projection already ends this way and its comment claims to
+       copy this function -- now it does. */
+    t.recompute();
     return v;
   },
 

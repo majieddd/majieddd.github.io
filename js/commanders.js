@@ -36,8 +36,19 @@ function freshTraits() {
        THE LAST LINE and RENDERING write them through BOON_FOLD (towers2.js,
        game.js:149+). The old note still described them as inert, which is
        exactly how a stale comment earns its keep: nobody re-checks a key the
-       file has already told them is switched off. If a key here ever does go
-       writer-less again, say so HERE and name the date. */
+       file has already told them is switched off.
+
+       STILL WRITER-LESS as of Session 22, audited key by key -- these are
+       read by live engine code and written by nothing, so every read sits on
+       the default and is inert. Grant one from a chart node or a boon to turn
+       the mechanic on, and move it out of this list when you do:
+         surgeMul        entities.js, the ascension surge multiplier
+         vaultBonus      entities.js + game.js, the Vault's skim (the tower
+                         inspector prints a figure derived from it)
+         compileRateMul  game.js applyCompile, scales a compile metric
+         mods.interest   game.js interestOn, the banked-capital multiplier
+       Everything else in freshTraits() and freshMods() was verified to have
+       both a writer and a reader. */
     ascendBonusRate: 0, perAscDamage: 0, immortalLine: false, vaultBonus: 1,
 
     /* Accumulators the twenty-commander roster writes into. They are folded
