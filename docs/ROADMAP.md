@@ -1283,3 +1283,78 @@ Owner sweep **27/0**, MPT **40 pass / 0 fail**, 60 towers, 657 distinct
 player-facing names with **zero collisions**, pins seeded and reproducible and
 **re-baselined** (fresh loss median 8 -> 9, maxed 22 -> 25 — the heavies raised
 the ceiling and left the floor alone).
+
+---
+
+# SESSION 22 — THE SUMMONING ROUND, AND THE FINISHING PASS
+
+This file's own rule is at the top: *read this first if work stops and
+resumes.* It had no Session 22 section for a whole session, so anyone
+following the README's instruction got a picture of the game one round out of
+date. That is the failure this section exists to end.
+
+## A. What shipped
+
+**The eight owner items.** The outside review's six QoL decisions (damage-number
+toggle, escalation HOLD, ARIA pass, THE HARVEST debrief, the soul ceremony) with
+A4 converted to **NEW GAME PLUS**; an EQUIP button and a standing-order slot on
+the commander screen; **THE PARALLEL** as a secret fifth faction gated on
+conquering a galaxy, with AXIOM and four clone commanders that COMPILE; muster
+renamed **POWER** everywhere a player reads it, with a ledger naming every
+attribute that feeds it; a send button that answers cost / POWER / ECON; **five
+summoning rites** under one conservation law; the faction skews finished; and
+both maps able to fill the browser.
+
+**The finishing pass** then audited the whole codebase for what was still
+unfinished, and found a great deal that shipped green:
+
+| Defect | Why it survived |
+|---|---|
+| **Killing a carrier HEALED you** for lives never taken — leak-then-kill was strictly better than killing early | the comment said "hands every stolen life back"; nothing was ever taken |
+| `leakReduction` subtracted **twice** | one site per breach, one per frame, each correct alone |
+| **Forty-four towers drew nothing** in the soul shop | three dispatch sites had the glyph fallback; the preview did not, and swallowed the TypeError |
+| **Four boons wholly or half inert** (AUREOLE, LETTERS OF MARQUE, SALVAGE RIGHTS, SCUTTLE) | they wrote traits 246 lines AFTER `foldTraits` had run |
+| **Six commander identities changed no number** — `critMult`, `auraRangeMul`, `lifeRegen`, `lifeGainMul`, `dotMul`, `slowVuln` | written by ~30 talents and 6 base traits, read by nothing. AURELIA's whole trait was two of them, so it did literally nothing |
+| **THE COMPILE inflated itself** ×1.12 per level | `applyCompile` re-ran `foldTraits`, which MULTIPLIES and is not idempotent |
+| The rival gained **a free drone per deliberation** | `projectedUpgrade` restored fields without recomputing; `recompute` ALLOCATES drones |
+| The rival sited **BOMBARD inside its own dead zone** | `coverage` counted lane it structurally cannot shoot |
+| **The Parallel's five soldiers were unreachable** — so THE SPLICE and RELAY were dead content | no world flies machine colours, and the own-banner rule refused every banner |
+| A Parallel commander **spoke Humanity's lines** | `DIALOGUE.replies` fell through to `human` |
+
+## B. The lesson worth carrying
+
+Five of those were invisible because a **comment or a test said they were
+fine**. The "HOOKS, NOT BUGS" note listed six keys as inert that the boons had
+long since woken. The boon-inertness check watched `traits` only, so a boon
+that moved a number nothing reads counted as live — and this file recorded
+*"All 20 proved live — zero dead"* on that evidence. A stale reassurance is
+worse than no comment, because it is the reason nobody looks again.
+
+Both have been corrected, and the check now watches `mods` as well — it
+immediately caught a change of its own author's making.
+
+## C. What is genuinely left
+
+**Art.** 49 of 60 towers, 5 of 26 commanders, 5 of 25 units and 1 of 5 factions
+have no painted plate. Nothing renders blank — every one has a working
+procedural fallback, pinned by sweep 22.10 and 22.13 — but the paintings are
+GPU-hours in the artgen pipeline, not a code change.
+
+**The thirteen held mechanics** in MECHANICS-OPTIONS.md remain owner picks,
+minus #8 (mutable destination), which shipped as THE SPLICE.
+
+**Hardware this environment lacks:** pinch-zoom on a real touchscreen, and a
+two-machine WebRTC duel.
+
+## D. Numbers after the round
+
+Owner sweep **38 pass / 0 fail**, MPT **37 pass / 0 fail** (3 INFO: hidden tab,
+async wire, isolation summary), `NET_PROTOCOL` **4**, 60 towers, 26 commanders,
+25 units, 5 powers.
+
+Pins: measured pre- and post-doctrine **back to back in one session at parallel
+paths**, the maxed loss median is **33 before and 31 after** — expert matches
+got shorter, not longer. The earlier claim of a 25 → 31 regression was a
+cross-session comparison and was wrong; see BALANCE-BASELINE's *"the delta that
+was not there"*. The pin harness is only comparable within one session, and
+that is now written down in three places.

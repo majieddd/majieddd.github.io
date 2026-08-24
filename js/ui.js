@@ -161,6 +161,15 @@ const UI = {
        route, and costs nothing when no card is open -- closeLoadoutCard
        returns on its first line unless one is. */
     this.closeLoadoutCard();
+    /* THE HOLD CHIP DIES WITH THE BATTLE. It used to be removed only by
+       showEscalationChoice's two re-entry paths, so leaving a match with an
+       escalation held left the pulsing chip on top of the NEXT board -- and
+       clicking it reopened a `required` modal (Esc cannot dismiss it) holding
+       the LAST match's three cards, which takeEscalation would then commit
+       for real onto a battle they were never offered in. Retired here because
+       this is the one place every exit route passes through, the same
+       reasoning closeLoadoutCard is called on the line above. */
+    if (id !== 'screen-game') this._removeEscHoldChip();
     /* The title universe only spends frames while it is actually on screen. */
     if (typeof TitleFX !== 'undefined') TitleFX.toggle(id === 'screen-title');
     /* And the galaxy starfield only while a MAP is on screen. TitleFX has
@@ -853,6 +862,33 @@ const UI = {
         </button>`;
       }).join('') || '<p class="hint">Every tower on sale is unlocked.</p>'}</div>
 
+      <h3 class="section-label">DETACHMENT — recruit a soldier permanently (◉${Meta.unitUnlockCost()} each)</h3>
+      <p class="hint">A unit bought outright is <b>install-wide</b>: any commander, under any
+        banner, may field it from then on. Your own power's soldiers are always for sale;
+        another power's are rescued on the battlefield, not bought — and machine soldiers
+        go on sale to everyone once this install has taken a galaxy.</p>
+      ${/* THE MISSING DOOR. canUnlockUnit, unlockUnit, soulPrice('unit') and
+            the `banner/unit` ledger key all shipped and had NO call site
+            anywhere -- while two other surfaces told the player to come here
+            and buy one, one of them a button that opened this very shop. */ ''}
+      <div class="soul-grid unlocks">${(typeof unitTrackIds === 'function' ? unitTrackIds() : [])
+          .filter(id => !Meta.isMusterUnlocked(id)).map(id => {
+        const d = ENEMY_TYPES[id]; if (!d) return '';
+        const host = d.faction ? FACTIONS[d.faction] : MACHINE_HOST;
+        const lock = Meta.unitOriginLock(id);
+        const poor = Meta.souls() < Meta.unitUnlockCost();
+        return `<button class="soul-item unlock${lock ? ' origin-locked' : ''}" data-unlock-unit="${id}"
+                style="--cc:${lock ? host.color : d.color}"
+                ${(lock || poor) ? 'disabled' : ''}>
+          <span class="si-fig">${this.unitIconHTML(id, 40)}</span>
+          <span class="si-name">${d.name}</span>
+          <span class="si-og" style="--og:${host.color}">${host.icon} ${host.short || host.name}</span>
+          ${lock
+            ? `<span class="si-lock">⊘ RESCUED, NOT SOLD — ${lock.name}</span>`
+            : `<span class="si-cost">◉ ${Meta.unitUnlockCost()}</span>`}
+        </button>`;
+      }).join('') || '<p class="hint">Every soldier on sale is already yours.</p>'}</div>
+
       <h3 class="section-label">THE MACHINE LINE — issued, never sold</h3>
       <p class="hint">Robotic hardware answers to no power and is not for sale at any price.
         Conquer a solar system and the next machine on the line is issued to you.</p>
@@ -895,6 +931,11 @@ const UI = {
     this.bindTowerPreviews(body);
     $$('[data-unlock]', body).forEach(b => b.addEventListener('click', () => {
       if (Meta.unlockTower(b.dataset.unlock))
+        { Sound.play('branch'); this.renderSoulShop(); this.refreshArsenalViews(); }
+      else Sound.play('denied');
+    }));
+    $$('[data-unlock-unit]', body).forEach(b => b.addEventListener('click', () => {
+      if (Meta.unlockUnit(b.dataset.unlockUnit))
         { Sound.play('branch'); this.renderSoulShop(); this.refreshArsenalViews(); }
       else Sound.play('denied');
     }));
@@ -3654,7 +3695,19 @@ const UI = {
     /* Fixed order, machines first: the day-one unlock is a machine, and an
        order that shuffled with your faction would move the card under the
        cursor between visits. */
-    const order = [MACHINE_HOST.id].concat(typeof FACTION_ORDER !== 'undefined' ? FACTION_ORDER : []);
+    /* POWER_ORDER, not FACTION_ORDER -- this grid asks "who has troops", which
+       is the question POWER_ORDER exists to answer. FACTION_ORDER deliberately
+       omits the Parallel (it holds no worlds and seats no bosses), so grouping
+       by it silently discarded all five machine soldiers: `unitHost` returns
+       the 'robot' key and `order.filter(k => groups[k])` threw the group away.
+       The consequence ran the authored fantasy backwards -- the RIVAL draws
+       from the same install-wide vault and could field them, so your board got
+       spliced and you could never splice back -- and it stranded RELAY, THE
+       SPLICE, 24 authored talents and both fields UNIT_FIELD_IDENTITY was
+       extended for. */
+    const order = [MACHINE_HOST.id].concat(
+      typeof POWER_ORDER !== 'undefined' ? POWER_ORDER
+        : (typeof FACTION_ORDER !== 'undefined' ? FACTION_ORDER : []));
     grid.style.setProperty('--lo-rest-h', LO_CARD_REST_H + 'px');
     grid.innerHTML = order.filter(k => groups[k]).map(k => {
       const h = this.unitHost(groups[k][0]);
@@ -5901,8 +5954,11 @@ const UI = {
       chip.className = 'btn esc-hold-chip';
       chip.innerHTML = '⚠ THE ENEMY WAITS — CHOOSE ESCALATION';
       chip.addEventListener('click', () => {
+        /* No `|| offer` fallback: a chip whose offer the engine has already
+           cleared must be inert, not a replay of a battle that is over. */
+        if (!Game.pendingEscalation) { this._removeEscHoldChip(); return; }
         Game.escalationHold = false;
-        this.showEscalationChoice(Game.pendingEscalation || offer);
+        this.showEscalationChoice(Game.pendingEscalation);
       });
       $('#screen-game').appendChild(chip);
     });

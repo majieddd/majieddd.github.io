@@ -2774,12 +2774,19 @@ const Game = {
    */
   tickRelays(dt) {
     const nodes = this.relayNodes;
-    if (!nodes.length) return;
     for (let i = nodes.length - 1; i >= 0; i--) {
       nodes[i].t -= dt;
       if (nodes[i].t <= 0) nodes.splice(i, 1);
     }
-    if (!nodes.length) return;
+    /* NO EARLY RETURN ON AN EMPTY LIST, and that is the fix. There used to be
+       one here, which meant the frame the LAST node expired was the frame the
+       removal pass below never ran -- so every body still standing in that
+       node's radius kept its speed and armour for the rest of the match, with
+       no relay left on the board to explain it. A node lives six seconds
+       against a march measured in tens, so the last node dying under a
+       walking body is the common case, not the corner. With the list empty
+       `best` is 0 for everyone and the toggle takes the buff back off, which
+       is exactly what the docstring below has always claimed happens. */
     const r2 = (UNIT_RELAY_RADIUS * TILE) * (UNIT_RELAY_RADIUS * TILE);
     for (const e of this.enemies) {
       if (e.dead || e.leaked || !e.reanimated || e.owner === undefined || e.owner < 0) continue;

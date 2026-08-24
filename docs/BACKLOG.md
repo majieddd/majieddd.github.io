@@ -7,10 +7,15 @@ written down; *not started* means nobody has looked.
 
 **Currently shipped and green on `main`:** owner sweep 0 FAIL (the pass/info
 split varies with tab visibility — rAF checks report INFO in a hidden tab),
-duel harness `MPT.all()` clean, Sessions 19, 20 and 21
-complete bar the three rows below, both balance pins holding, duel / tri /
-twenty-seat arena soaking clean. 50 towers (10 per power), 20 boons, 20 faction
-units, 188 art plates. Live on all three surfaces.
+duel harness `MPT.all()` clean, Sessions 19 through 22 complete, both balance
+pins holding, duel / tri / twenty-seat arena soaking clean.
+
+**The inventory, measured from the live registries rather than counted by
+hand** (this line said 50 towers and 20 units for two sessions after the game
+had 60 and 25 — and the missing ten and five were exactly the content with no
+art, so the undercount hid the gap twice over): **60 towers** (12 per origin,
+10 of them 2×2), **26 commanders** across **5 powers**, **25 units**, 20 boons,
+15 maps, 188 art plates. Live on all three surfaces.
 
 ---
 
