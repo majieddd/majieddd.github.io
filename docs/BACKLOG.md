@@ -184,12 +184,34 @@ Full write-ups with build notes in [`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md
 
 ---
 
+## G. The outside review's unpatched items — YOUR CALL
+
+An outside reviewer played the live site in Session 21 and sent a nine-patch
+fixpack. Eight landed (see the commit); one is held in section C. But the
+review's own §D listed six QoL wins and only ONE (refusal reasons) came with a
+patch. The other five were never built, and I confirmed none of them exists:
+
+| # | Item | Cost | Note |
+|---|---|---|---|
+| D2 | **Damage-number toggle**, default ON for new players | S | `NUM_SQUISH` already anticipates the readability lever; nothing renders per-hit numbers today |
+| D3 | **Escalation-modal queueing** — let a build action queue, or show a countdown, during the halt | S | the halt is long on 20-seat boards, and the docs already note it |
+| D4 | **ARIA pass** — 35 aria attributes against hundreds of icon buttons | M | and keyboard play is impossible after deploy: canvas placement is mouse-only. Either document that or add a grid-placement keyboard mode |
+| D5 | **Session-stats screen** — deaths by type, reactions triggered, gold spent | M | every number already exists in sim state; this is presentation |
+| D6 | **First-win soul ceremony** — souls pay instantly; a counter animation would land the reward | S | presentation only |
+| A4 | **Player-chosen difficulty ramp** | S | the reviewer downgraded this themselves after finding the ramp is deliberate pacing (`commanders.js` depth<2 SKIRMISH, <5 CONTESTED, else OVERRUN). The kernel left is accessibility: no way to opt into an easier ramp |
+
+None is a defect. All six are things a player would feel. Pick any and they get
+built the same way everything else here did.
+
+---
+
 ## F. What is actually left
 
 Sessions 19–21 closed every technical item above. What remains is either an
-**owner pick** (sections C and E), **hardware this environment lacks**
-(pinch-zoom on a real touchscreen), or **designed-not-built by choice**
-(WebRTC manual signalling for two machines). There is no engineering backlog.
+**owner pick** (sections C, E and G), or **hardware this environment lacks**
+(pinch-zoom on a real touchscreen). WebRTC manual signalling is no longer on
+this list: it shipped in Session 21 round two and was proved across two
+browsing contexts, sealed turns and all. There is no engineering backlog.
 
 If you touch economy, AI or towers: the pins are SEEDED now — use
 `PINS.once(map, seed)` per page load, run `PINS.selfTest()` first (must say
