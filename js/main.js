@@ -81,6 +81,7 @@
       if (e.key === 'ArrowUp')    { Game.panBy(0, -panStep); e.preventDefault(); return; }
       if (e.key === 'ArrowDown')  { Game.panBy(0, panStep);  e.preventDefault(); return; }
       if (k === '0') { Game.resetCam(); Sound.play('click'); e.preventDefault(); return; }
+      if (k === 'f') { UI.toggleImmersive(); Sound.play('click'); e.preventDefault(); return; }
       if (e.key === '+' || e.key === '=' || e.key === '-' || e.key === '_') {
         const c = Game.camClamped(), z = Game.camZoom();
         Game.zoomAt(c.x + Game.width / z / 2, c.y + Game.height / z / 2,

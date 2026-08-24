@@ -267,6 +267,46 @@ body.rm-user .bi-line { opacity: 1; }
 .theatre-body { display: grid; grid-template-columns: 1fr 296px; gap: 12px; align-items: start; }
 @media (max-width: 1050px) { .theatre-body { grid-template-columns: 1fr; } }
 
+/* ═════════════ THE BATTLEFIELD, FULL BLEED ══════════════════════════════ */
+/* Measured at 1280x720 before this existed: the board rendered at viewScale
+   0.623 into 663x355 -- twenty-six percent of the window -- because a 150px
+   HUD and a 580px sidebar between them take two thirds of the space. The
+   board is the game; it should be able to have the room.
+
+   IMMERSIVE MODE is opt-in and reversible, and default-off is byte-identical
+   to the layout that shipped. With it on, the HUD and the sidebar become
+   layers OVER a board that fills the window, exactly as the galaxy's chrome
+   floats over the galaxy. The sidebar stays reachable -- it slides back on
+   hover or focus -- because it is controls, not decoration, and a shop you
+   cannot open is not immersion. */
+body.immersive #stage { position: absolute; inset: 0; padding: 0; gap: 0; }
+body.immersive #canvas-wrap { position: absolute; inset: 0; }
+body.immersive #hud {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 20;
+  background: linear-gradient(180deg, rgba(4,8,14,.92), rgba(4,8,14,.55) 70%, rgba(4,8,14,0));
+  pointer-events: none;
+}
+body.immersive #hud > * { pointer-events: auto; }
+/* The rail: parked off the right edge, showing a hand-width of itself, and
+   sliding home the moment it is wanted. */
+body.immersive #sidebar {
+  position: absolute; top: 0; right: 0; bottom: 0; z-index: 21;
+  background: linear-gradient(270deg, rgba(4,8,14,.94), rgba(4,8,14,.82));
+  padding: 8px 10px; border-left: 1px solid var(--line);
+  transform: translateX(calc(100% - 18px));
+  transition: transform .18s var(--e-tap);
+  overflow-y: auto;
+}
+body.immersive #sidebar:hover,
+body.immersive #sidebar:focus-within { transform: translateX(0); }
+/* The grab handle, so the parked rail reads as a thing you can pull. */
+body.immersive #sidebar::before {
+  content: '‹'; position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
+  font-size: 15px; color: var(--text-mute); pointer-events: none;
+}
+body.rm-user.immersive #sidebar { transition: none; }
+#btn-immersive.on { color: var(--cyan); border-color: var(--cyan); }
+
 /* ═════════════ THE GALAXY, FULL BLEED ═══════════════════════════════════ */
 /* The map IS the screen. Everything else -- the title, the holdings strip,
    the briefing panel, the footer, the legends -- floats above it as a layer,

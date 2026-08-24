@@ -218,9 +218,13 @@ Eight owner items, all shipped. What is worth knowing later:
   a different day.
 
 Still open, and none of it new: the ten heavies have no `twr_` art plates, the
-rival AI draft lists never learnt them, the soul shop's five new firing
-previews are unwired, and the maxed pin median wants a re-measure now that the
-faction skews have moved (see BALANCE-BASELINE).
+rival AI draft lists never learnt them, and the soul shop's five new firing
+previews are unwired.
+
+The pacing worry this round raised is CLOSED and was never real — measured
+properly, pre-doctrine and post-doctrine builds swept back to back in one
+session give a maxed loss median of 33 and 31, so expert matches got shorter
+rather than longer. See BALANCE-BASELINE's "the delta that was not there".
 
 ---
 

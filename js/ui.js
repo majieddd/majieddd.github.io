@@ -316,6 +316,13 @@ const UI = {
       this.saveSettings();
     });
 
+    /* IMMERSIVE BOARD. The HUD and the sidebar become layers over a board
+       that fills the window. Game.resize has to run AFTER the class lands or
+       it measures the box the canvas is leaving, not the one it is taking --
+       and the background is baked at the fitted scale, so it is re-baked too. */
+    const imm = $('#btn-immersive');
+    if (imm) imm.addEventListener('click', () => { this.toggleImmersive(); Sound.play('click'); });
+
     /* Damage numbers. Presentation only -- the gate sits in registerDamage,
        so flipping it mid-battle takes effect on the next landed hit. */
     const dn = $('#set-dmg-numbers');
@@ -5876,6 +5883,29 @@ const UI = {
     });
   },
 
+  /**
+   * IMMERSIVE BOARD — the map takes the whole window and the chrome floats
+   * over it, the same treatment the galaxy map gets.
+   *
+   * The resize MUST follow the class, not precede it: Game.resize measures
+   * the canvas's parent box, so running it first measures the layout being
+   * left rather than the one being taken. The background is baked at the
+   * fitted scale, so it is re-baked at the new one or the terrain stays
+   * blurry at the size it was drawn for.
+   */
+  toggleImmersive(on) {
+    const want = (on === undefined) ? !document.body.classList.contains('immersive') : !!on;
+    document.body.classList.toggle('immersive', want);
+    const b = $('#btn-immersive');
+    if (b) b.classList.toggle('on', want);
+    Storage.saveSettings(Object.assign(Storage.loadSettings(), { immersive: want }));
+    if (Game.canvas && FIELD) {
+      Game.resize();
+      Game.renderBackground();
+    }
+    return want;
+  },
+
   /** The hold chip never outlives its offer -- both re-entry paths and every
       resolution path route through here. */
   _removeEscHoldChip() {
@@ -6556,6 +6586,11 @@ const UI = {
     document.body.classList.toggle('rm-user', !!s.reducedMotion);
     $('#set-dmg-numbers').checked = s.damageNumbers !== false;
     setDamageNumbers(s.damageNumbers !== false);
+    /* The board preference outlives the session. Class only -- no resize
+       here, because loadSettings runs before a battle exists. */
+    document.body.classList.toggle('immersive', !!s.immersive);
+    const ib = $('#btn-immersive');
+    if (ib) ib.classList.toggle('on', !!s.immersive);
     Sound.setSfxVolume(s.sfx); Sound.setMusicVolume(s.music);
     Sound.toggleSfx(s.sfxOn); Sound.toggleMusic(s.musicOn);
   },

@@ -4797,7 +4797,7 @@ Game.step = function (dt) {
 
 /* Settings and per-map records live alongside commander progression. */
 const Storage = {
-  loadSettings() { return Object.assign({ sfx: 0.7, music: 0.4, sfxOn: true, musicOn: true, reducedMotion: false, damageNumbers: true }, Meta.getSettings()); },
+  loadSettings() { return Object.assign({ sfx: 0.7, music: 0.4, sfxOn: true, musicOn: true, reducedMotion: false, damageNumbers: true, immersive: false }, Meta.getSettings()); },
   saveSettings(s) { Meta.setSettings(s); },
   recordRun(game, won) {
     const d = Meta.load();

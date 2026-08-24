@@ -193,7 +193,10 @@ was 22 / 28664).
 | crossroads | 1004 | loss | 30 |
 | coil | 1005 | loss | 33 |
 
-**1 win / 5 losses** · **loss median 31** (was 25).
+**1 win / 5 losses** · **loss median 31**. Against a PRE-doctrine build
+measured in the same session on the same seeds — waves 25, 34, 33, 33, 28, 30,
+**median 33** — so the rites made expert matches slightly SHORTER, not longer.
+See "the delta that was not there" below.
 
 ## Fresh profile — seeds 1000-1005
 
@@ -206,17 +209,29 @@ was 22 / 28664).
 | crossroads | 1004 | win | 14 |
 | coil | 1005 | loss | 26 |
 
-**2 wins / 4 losses** · **loss median 11** (was 9).
+**2 wins / 4 losses** · **loss median 11**. No delta is claimed against the old
+fresh figure: it was recorded in a different session and this table was not
+re-measured against a pre-doctrine build under the protocol below, so the two
+numbers are not comparable and pretending otherwise is the mistake this
+section exists to document.
 
-## Reading it, and the one number to watch
+## The delta that was not there
 
-Both medians moved UP, and the cause is structural rather than a tuning slip:
-of the five rites only CONSCRIPTION and THE LATTICE turn a kill into a body.
-THE PROCESSION trades every kill-derived body for a clock damped to 0.35, and
-LETTERS OF MARQUE trades them for nothing at all. Since the pins run mirror-AI
-with rivals drawn from every power, total free pressure across the board fell,
-so both seats live longer. The fresh move (9 → 11) is small and lands where
-the owner asked the early game to land.
+This section first shipped claiming the maxed median moved 25 → 31 and calling
+that "the number to watch" — six waves longer, pulling against the standing
+rule that rounds should end promptly. **That claim was wrong**, and it was
+wrong in the exact way the warning below describes: 25 was written down in an
+earlier session and 31 was measured in this one.
+
+Measured properly — both builds served at parallel paths and swept back to
+back in ONE session, seeds 1000-1005 — the maxed loss median is **33 before
+the doctrines and 31 after**. Expert matches got two waves SHORTER. There is
+no pacing regression to chase.
+
+What is true, structurally: of the five rites only CONSCRIPTION and THE
+LATTICE turn a kill into a body, so total free pressure across a mirror-AI
+board fell. It simply did not move the medians the way a cross-session
+comparison suggested.
 
 ### A WARNING ABOUT THIS HARNESS, learnt the hard way in Session 22
 
