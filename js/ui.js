@@ -5186,7 +5186,20 @@ const UI = {
       ctx.save(); ctx.translate(tx, ty);
       stub.age = age; stub.angle = -0.42;
       stub.recoil = Math.max(0, 1 - sinceShot * TP_RECOIL_DECAY);
-      try { Tower.prototype['draw_' + id].call(stub, ctx); } catch (e) {}
+      /* THE SAME THREE-STEP FALLBACK the other three dispatch sites use
+         (entities.js:2584, game.js:4438, ui.js:746), and its absence here was
+         a real hole rather than a nicety: only sixteen of the sixty towers
+         own a bespoke `draw_<id>`, so for the other forty-four this line
+         threw TypeError on the first frame, the catch swallowed it, and the
+         soul shop advertised a tower the player has never seen by showing an
+         empty stage with a projectile leaving thin air. The shop is the one
+         screen that exists to show the thing FIRING before it is bought. */
+      try {
+        const fn = Tower.prototype['draw_' + id];
+        if (fn) fn.call(stub, ctx, stub.age);
+        else if (t.glyph) Tower.prototype.draw_glyph.call(stub, ctx, stub.age);
+        else Tower.prototype.draw_bolt.call(stub, ctx, stub.age);
+      } catch (e) { /* never let one sprite break a menu */ }
       ctx.restore();
 
       /* fire on the tower's own cadence */

@@ -866,9 +866,37 @@ const Meta = {
       Like the tower law it gates what may be TAKEN and never what is owned --
       a unit already in the vault stays usable by every banner and every
       commander in the install, which is the whole of the Soul Profile half. */
+  /**
+   * THE PARALLEL'S TECHNOLOGY IS THE PRIZE, and this is the door to it.
+   *
+   * A secret faction's soldiers are the one set the ordinary banner law
+   * cannot deliver. No world flies machine colours -- the Parallel is absent
+   * from FACTION_ORDER by design -- so no world ever OFFERS a machine unit,
+   * and the own-banner purchase rule then left five soldiers, a whole unit
+   * doctrine (RELAY) and the temporary-lane mechanic (THE SPLICE) as content
+   * no player could reach by any route. Measured before this existed:
+   * `canUnlockUnit('splicer')` refused every banner, and a galaxy generated
+   * for a human player contained no robot-owned world at all.
+   *
+   * So beating the game opens the machines' ARSENAL as well as their banner:
+   * once this install has taken a galaxy, any commander may buy Parallel
+   * soldiers with souls and field them under their own rite. That is the
+   * lore stated as a rule -- the Parallel does not recruit, it gets copied --
+   * and it is what makes RELAY and THE SPLICE live mechanics instead of
+   * dead ones. The gate is the SECRET, never the banner, because a rule that
+   * required swearing to the machines would hand their units only to the one
+   * commander whose rite can never send them.
+   */
+  secretUnitOpen(id) {
+    const f = unitFactionOf(id);
+    return !!(f && typeof SECRET_FACTIONS !== 'undefined' &&
+              SECRET_FACTIONS.indexOf(f) >= 0 && this.gameBeaten());
+  },
+
   unitRescueLock(id) {
     const f = unitFactionOf(id);
     if (!f) return null;
+    if (this.secretUnitOpen(id)) return null;
     return this.faction() === f ? null : (FACTIONS[f] || null);
   },
   /** Which of `ids` this banner is forbidden to rescue -- reported so the
@@ -899,6 +927,10 @@ const Meta = {
   unitOriginLock(id) {
     const f = unitFactionOf(id);
     if (!f) return null;
+    /* Same door as the rescue gate, for the same reason -- the two locks are
+       one law asked twice, and letting them disagree is how a unit becomes
+       buyable on one screen and refused on the other. */
+    if (this.secretUnitOpen(id)) return null;
     return this.faction() === f ? null : (FACTIONS[f] || null);
   },
   unitUnlockCost() { return this.soulPrice('unit'); },

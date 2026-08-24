@@ -91,12 +91,28 @@ const AI = {
     /* Anything whose primary job is killing. The expansion roster added ten
        more of these; leaving them out made the guard below treat a perfectly
        lethal core as if it had one damage tower. */
+    /* THE HEAVIES BELONG IN THESE LISTS. They are already draftable -- the
+       shelf is built from all of TOWER_ORDER and bestSpotFor tests the 2x2
+       rectangle -- but these two lists are how the brain judges whether a set
+       can KILL and whether it can answer air, and ten of sixty towers being
+       invisible to that judgement made improviseSet build worse sets and made
+       a shelf holding PHAROS read as having no anti-air at all.
+       Sorted by what the defs actually do, not by cost: BOMBARD 95 and
+       CARRONADE (zero base, all of it in the overload detonation) are
+       ground-only siege; QUADMOUNT, IMPALER, MONSTRANCE and PHAROS carry real
+       damage and no groundOnly flag, so they answer flyers too. COLDFRONT,
+       REACTOR, STOKEHOLD and SUTURE are deliberately absent: they deal
+       nothing or nearly nothing and exist to amplify the guns around them --
+       counting them as damage is how a brain fields five support towers and
+       cannot kill a crawler. */
     const DAMAGE = ['bolt', 'mortar', 'arc', 'pyre', 'railgun', 'prism', 'sapper', 'dronebay', 'toxin',
                     'flak', 'siphon', 'executioner', 'quake', 'glaive', 'cyclone', 'capacitor',
                     'reckoning', 'arbalest', 'foundry',
-                    'canister', 'reclaimer', 'concord', 'ichor', 'custodian'];
+                    'canister', 'reclaimer', 'concord', 'ichor', 'custodian',
+                    'bombard', 'carronade', 'quadmount', 'impaler', 'monstrance', 'pharos'];
     const AIR    = ['flak', 'arc', 'prism', 'dronebay', 'bolt', 'railgun', 'cyclone', 'arbalest',
-                    'reclaimer', 'concord'];
+                    'reclaimer', 'concord',
+                    'quadmount', 'impaler', 'pharos', 'monstrance'];
 
     /* The rival is held to the SAME PROGRESSION as the player without being
        handed the player's exact shelf: it fields an arsenal of equal size,

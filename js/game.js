@@ -1872,17 +1872,25 @@ const Game = {
 
   loseLives(side, n, breaches) {
     const S = this.sides[side];
-    /* Halder's Shield Wall blunts every leak; his Immortal Line catches one. */
-    if (S.traits.leakReduction) n = Math.max(1, n - S.traits.leakReduction);
-    /* WHAT KILLED YOU, part two: book the manifest against the FINAL `n`.
-       Both endings below add exactly this `n` to stats.leaked, so the log and
-       the ledger cannot disagree -- printing the reap's per-unit figure would
-       overstate a Shield Wall commander by a life on every breach and leave
-       the defeat screen contradicting its own totals. A frame carrying
-       several breaches splits the charge in proportion and gives the rounding
-       remainder to the last, so the shares still sum to n exactly. The
-       argument is optional because Net's remote result and the duel harness
-       both charge lives with no manifest, and a missing manifest must cost
+    /* LEAK REDUCTION IS NOT APPLIED HERE, and that is the fix rather than the
+       omission. It was applied in BOTH places: once per breach in the reap
+       (`cost = max(1, round(cost - red))`) and again to the frame's total on
+       this line. A Shield Wall commander therefore paid the discount twice --
+       a lone three-life miniboss cost 1 instead of the advertised 2, and
+       every trait and boon writing `leakReduction` was worth roughly double
+       what it said. The reap is the correct owner: the trait reads "every
+       BREACH costs one less", and the manifest the reap builds has to carry
+       per-enemy costs the defeat screen can print. Everything reaching this
+       function is already final -- Net's remote result and the duel harness
+       both charge an authoritative number that must not be re-discounted. */
+    /* WHAT KILLED YOU, part two: book the manifest against `n`. Both endings
+       below add exactly this `n` to stats.leaked, so the log and the ledger
+       cannot disagree. With the double-discount gone `n` IS the sum of the
+       breach costs, so the proportional split below is an identity for the
+       ordinary path; it is kept because a caller may still charge a total
+       that is not the manifest's sum (a kill blow, a remote result), and the
+       shares must always sum to n exactly. The argument is optional because
+       those callers pass no manifest, and a missing manifest must cost
        nothing. */
     if (breaches) {
       let raw = 0;
