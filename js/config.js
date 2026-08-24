@@ -2140,6 +2140,10 @@ const TP_RECOIL_DECAY = 5;
 /* Cadence floor. A tower slower than this sits still long enough for the
    preview to read as broken rather than as slow. */
 const TP_MIN_RATE = 0.5;
+/* How long a non-projectile flourish lives on the shop stage: the cone wedge,
+   the instant lance and the support pulse all fade over this. Short, because
+   the point of each is that it does NOT travel. */
+const TP_PULSE_S = 0.42;
 
 /* --------------------------------------------------------------------------
    PROGRESSIVE TOWER CARDS (loadout grid)

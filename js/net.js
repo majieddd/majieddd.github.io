@@ -1670,3 +1670,72 @@ const NetRTC = {
     this.teardown();
   }
 };
+
+/* ══════════════════════ THE APPEND-ONLY LOCK ═══════════════════════════
+
+   Five tables are INDEX-COUPLED across the wire. A duel never sends the name
+   of a draft card, an arena modifier, a targeting mode, a level roll or a
+   summoning rite -- it sends the INDEX, and the far machine looks it up in
+   its own copy. Reorder one entry, delete one, or insert in the middle, and
+   two builds on the same NET_PROTOCOL will silently disagree about what the
+   number means: one seat drafts SAPPER CORPS, the other drafts SURVEYORS,
+   and the divergence surfaces waves later as a fingerprint mismatch nobody
+   can trace back to the edit that caused it.
+
+   Until now that rule lived only in a comment, which is to say it lived
+   nowhere. This is the same rule as executable code: the prefix each table
+   had at NET_PROTOCOL 5, checked at load. APPENDING is always legal and is
+   the only legal edit -- a longer table with an intact prefix passes.
+
+   WHEN YOU DELIBERATELY BREAK ONE: bump NET_PROTOCOL (which makes the two
+   builds refuse each other with a sentence instead of desyncing), then
+   update the prefix below to the new order in the same commit. Doing one
+   without the other is the mistake this guard exists to catch. */
+const LOCKSTEP_PREFIX = {
+  PLAYER_MODS: ['sappers', 'surveyors', 'overcharge', 'cycling', 'optics', 'ap', 'crit',
+                'ordnance', 'catalyst', 'salvage', 'logistics', 'necrotic', 'conscript', 'bulwarks'],
+  ENEMY_MODS:  ['carapace', 'adrenal', 'vitality', 'warding', 'plating', 'regen',
+                'resilient', 'sturdy', 'veiled', 'brutal', 'legion', 'unstable'],
+  TARGET_MODES: ['first', 'last', 'strong', 'weak', 'close'],
+  LEVEL_ROLLS: ['r_dmg', 'r_rate', 'r_range', 'r_splash', 'r_status', 'r_pierce', 'r_crit', 'r_mixed'],
+  DOCTRINE_ORDER: ['human', 'light', 'xeno', 'pirate', 'robot']
+};
+
+/** Every table whose prefix has moved, with the index that moved and both
+    names. Empty means the wire contract still holds. Cheap enough to run at
+    load; `tools/owner-sweep.js` asserts it is empty. */
+Net.lockstepAudit = function () {
+  const live = {
+    PLAYER_MODS:    typeof PLAYER_MODS    !== 'undefined' ? PLAYER_MODS.map(m => m.id)    : null,
+    ENEMY_MODS:     typeof ENEMY_MODS     !== 'undefined' ? ENEMY_MODS.map(m => m.id)     : null,
+    TARGET_MODES:   typeof TARGET_MODES   !== 'undefined' ? TARGET_MODES.map(m => m.id)   : null,
+    LEVEL_ROLLS:    typeof LEVEL_ROLLS    !== 'undefined' ? LEVEL_ROLLS.map(m => m.id)    : null,
+    DOCTRINE_ORDER: typeof DOCTRINE_ORDER !== 'undefined' ? DOCTRINE_ORDER.slice()        : null
+  };
+  const bad = [];
+  for (const name of Object.keys(LOCKSTEP_PREFIX)) {
+    const want = LOCKSTEP_PREFIX[name], got = live[name];
+    if (!got) { bad.push({ table: name, at: -1, want: '(table present)', got: '(undefined)' }); continue; }
+    if (got.length < want.length) {
+      bad.push({ table: name, at: got.length, want: want[got.length], got: '(truncated)' });
+      continue;
+    }
+    for (let i = 0; i < want.length; i++)
+      if (got[i] !== want[i]) { bad.push({ table: name, at: i, want: want[i], got: got[i] }); break; }
+  }
+  return bad;
+};
+
+/* Loud at load, because a desync found here costs one line and a desync
+   found in a duel costs an evening. Never throws: a broken guard must not
+   take the single-player game down with it. */
+(function lockstepGuard() {
+  try {
+    const bad = Net.lockstepAudit();
+    if (!bad.length) return;
+    console.error('LOCKSTEP CONTRACT BROKEN — an index-coupled table was reordered ' +
+                  'without a NET_PROTOCOL bump. Duels between builds will desync.');
+    for (const b of bad)
+      console.error('  ' + b.table + '[' + b.at + '] should be "' + b.want + '", is "' + b.got + '"');
+  } catch (e) { /* a guard that breaks the game is worse than no guard */ }
+})();

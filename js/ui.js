@@ -55,6 +55,10 @@ const UNIT_PREVIEW_MAX_R = 13;
    that long. The card is a demonstration; the printed SPEED stat beside it is
    still the engine's number, which is the half that has to be true. */
 const UNIT_PREVIEW_PPS = 46;
+/* A flier's stage altitude. GUNSKIFF's whole identity is that it does not
+   walk the maze, and the card used to march it down the lane like everything
+   else -- the badge said FLIES THE MAZE while the picture said otherwise. */
+const UNIT_FLY_PX = 22;
 /* Traits are authored on a battle clock -- a Broodmother births every 4.0s, a
    Scrapjack jams every 6.8s -- so at authored cadence a hovering player sees
    neither happen. The stage runs them faster and the panel prints the
@@ -510,8 +514,7 @@ const UI = {
                  systemIndex: (typeof node.si === 'number') ? node.si : undefined,
                  /* The OPTIONS battle seed, if one is set. Blank means today's
                     behaviour exactly. */
-                 seed: (() => { const v = ($('#set-seed') || {}).value;
-                                return v && v.trim() ? (parseInt(v, 10) | 0) : undefined; })() });
+                 seed: this.battleSeed() });
     this.show('screen-game');
     this._inspKey = null;
     this.buildShop();
@@ -1576,6 +1579,24 @@ const UI = {
   /** The ramp a campaign is being played on, resolved once. */
   rampOf(c) { return (c && RAMP_PRESETS[c.ramp]) || RAMP_PRESETS[RAMP_DEFAULT]; },
 
+  /** THE OPTIONS BATTLE SEED, read in ONE place.
+   *
+   *  It used to be read inline at the campaign launch and nowhere else, so a
+   *  player who set a seed and then went to practice or the Maelstrom got an
+   *  unseeded match from a setting that said nothing about campaigns. Three
+   *  ways to start a battle, one of them honouring the field.
+   *
+   *  Blank, whitespace or unparseable returns undefined, which is exactly the
+   *  unseeded path -- `Game.start` only installs the stream when the option is
+   *  neither undefined nor null. A duel ignores it either way: the relay owns
+   *  the stream there and re-seeds it per tick. */
+  battleSeed() {
+    const v = ($('#set-seed') || {}).value;
+    if (!v || !v.trim()) return undefined;
+    const n = parseInt(v, 10);
+    return isNaN(n) ? undefined : (n | 0);
+  },
+
   /**
    * Start a campaign — and, from the second galaxy on, ask what slope it is
    * to be fought at. A first run never sees this: it has not yet learnt what
@@ -2238,7 +2259,8 @@ const UI = {
       const owned = Meta.unlockedTowers();
       Game.start({ skirmish: true, map: w.map, difficulty: 'contested', commander: cmd,
                    loadout: owned.slice(0, Math.min(LOADOUT_SIZE, owned.length)),
-                   rivalFaction: w.owner, worldKind: w.kind, arena: w.arena });
+                   rivalFaction: w.owner, worldKind: w.kind, arena: w.arena,
+                   seed: this.battleSeed() });
       this.show('screen-game'); this.buildShop(); this.buildAbilityBar(); Game.resize();
     });
     const cn = $('#btn-mv-cancel');
@@ -2469,7 +2491,8 @@ const UI = {
     Game.start({ skirmish: true, maelstrom: seats, difficulty: 'contested',
                  commander: cmd, faction: fac,
                  loadout: owned.slice(0, Math.min(LOADOUT_SIZE, owned.length)),
-                 musterLoadout: Meta.musterLoadout() });
+                 musterLoadout: Meta.musterLoadout(),
+                 seed: this.battleSeed() });
     this.show('screen-game'); this.buildShop(); this.buildAbilityBar(); Game.resize();
   },
 
@@ -2796,6 +2819,12 @@ const UI = {
                           : (b.droneDamage ? b.droneDamage + ' × ' + b.drones : '—')],
       ['Fire rate', sustained ? 'sustained' : (b.rate ? b.rate.toFixed(2) + ' /s' : '—')],
       ['Range', (b.range || 0).toFixed(1) + ' tiles'],
+      /* A DEAD ZONE is the only stat that makes a tower worse the closer the
+         target gets, so leaving it off the card let BOMBARD read as a
+         long-range gun with no downside. `acquire()` has always refused
+         anything inside it (entities.js:1874) -- this is the first surface
+         that says so. */
+      ...(b.minRange ? [['Dead zone', 'blind inside ' + b.minRange.toFixed(1) + ' tiles']] : []),
       ['Type', b.dmgType || 'special'],
       ['Price growth', '×' + appliedGrowth(t).toFixed(2) + ' per copy']
     ];
@@ -3874,6 +3903,7 @@ const UI = {
     if (b.droneDamage) rows.push(['Drones', b.droneDamage + ' × ' + b.drones]);
     if (b.rate && !['cone', 'beam'].includes(t.attack)) rows.push(['Fire rate', b.rate.toFixed(2) + ' /s']);
     rows.push(['Range', (b.range || 0).toFixed(1) + ' tiles']);
+    if (b.minRange) rows.push(['Dead zone', 'blind inside ' + b.minRange.toFixed(1) + ' tiles']);
     if (b.dmgType && b.dmgType !== 'none') rows.push(['Type', b.dmgType]);
     if (b.splash) rows.push(['Splash', b.splash.toFixed(2)]);
     if (b.income) rows.push(['Income', `◈${b.income}/${b.incomeEvery}s`]);
@@ -3973,7 +4003,17 @@ const UI = {
     /* Interest is credited through awardGold like everything else, so the
        preview runs the same transform or it under-reports the bank. */
     bank:   () => '+' + formatNum(Game.previewGold(0,
-              interestOn(Game.sides[0].gold, Game.wave + 1, Game.sides[0].mods.interest)))
+              interestOn(Game.sides[0].gold, Game.wave + 1, Game.sides[0].mods.interest))),
+    /* What the bank ACTUALLY credited last wave, beside what it forecasts for
+       the next one. `lastInterest` was written every wave and read by nobody
+       until this line, so a player could not tell a forecast that came true
+       from one the cap had quietly clipped. */
+    bankpaid: () => {
+      const S = Game.sides[0];
+      if (!S) return null;
+      return S.lastInterest ? 'paid ◈' + formatNum(S.lastInterest) + ' last wave'
+                            : 'interest next wave';
+    }
   },
 
   /** The printed form of one live figure. Panels call it; so does the refresh. */
@@ -4207,6 +4247,10 @@ const UI = {
        no gun reads as a bug in the number rather than as the rule it is. */
     if (t.def.attack === 'orison') rows.push(['Reach', 'the whole board — it names, it does not shoot']);
     else rows.push(['Range', t.effRange.toFixed(2), t.aura.range > 0 || t.focusRangeAmt > 0]);
+    /* Live, not base: ROLLING CARRIAGE and the DRUMFIRE branch both move it,
+       and a shrinking dead zone is the whole point of taking them. */
+    if (s.minRange > 0) rows.push(['Dead zone', 'blind inside ' + s.minRange.toFixed(2),
+                                   s.minRange !== (t.def.base.minRange || 0)]);
     /* MORTAR bills its fire mission as a SEPARATE reach, not as range: the
        tube's own circle is what it can hit unaided, and the extra tiles only
        exist over ground another of your weapons is holding. Printing one
@@ -4450,7 +4494,7 @@ const UI = {
       </button>
       <div class="bank-row" data-tt="BANKED CAPITAL|Gold you still hold when a wave finishes spawning earns ${
         Math.round(INTEREST_RATE * 100)}% interest, capped per wave. Not spending is a play.">
-        <span>◈ BANKED</span><b data-live="bank">${this.liveFigure('bank')}</b><em>interest next wave</em>
+        <span>◈ BANKED</span><b data-live="bank">${this.liveFigure('bank')}</b><em data-live="bankpaid">${this.liveFigure('bankpaid')}</em>
       </div>
     </div>`;
   },
@@ -4747,9 +4791,17 @@ const UI = {
       const r = Math.round((Game.sides[vics[0]].traits.reanimResist || 0) * 100);
       if (r) rows.push(`<div class="pl-row pl-them"><span>RIVAL RESISTANCE</span><b>−${r}%</b><em>their law, not yours</em></div>`);
     }
+    /* The one figure here that is gold rather than a multiplier, and the only
+       reader `lastMuster` has ever had: what the rite actually paid when the
+       last wave finished spawning. The ceiling in `musterPayout` means the
+       credited number and the number you expected can differ, and until this
+       line nothing on screen said so. */
+    const paid = S.lastMuster
+      ? `Your rite paid <b>◈${formatNum(S.lastMuster)}</b> when the last wave finished spawning. `
+      : '';
     return `<b>POWER ×${Game.powerOf(side).toFixed(2)}</b>
       <div class="pl-body">${rows.join('') || '<div class="pl-row"><span>nothing yet</span></div>'}</div>
-      <em class="pl-foot">Everything above multiplies the health of every body you send. The rival's own resistance is applied last, per lane.</em>`;
+      <em class="pl-foot">${paid}Everything above multiplies the health of every body you send. The rival's own resistance is applied last, per lane.</em>`;
   },
 
   /* ============================================================== SYNC */
@@ -5208,7 +5260,15 @@ const UI = {
   drawStage(cv, s, now) {
     if (!cv.isConnected ||
         (this.el.tooltip.contains(cv) && this.el.tooltip.classList.contains('hidden'))) return false;
-    const dt = s.last ? Math.min(TP_MAX_DT, (now - s.last) / 1000) : 1 / 60;
+    /* Clamped at BOTH ends. The ceiling has always been here for a tab that
+       comes back from the background; the floor is new, because a `now`
+       behind `s.last` yields a negative dt, a negative dt yields a negative
+       arc radius, and a stage that throws is deleted from the register
+       without a word -- the preview just stops and nothing says why. rAF is
+       monotonic so this cannot happen in play, but every other caller of
+       drawStage is a harness, and a harness that silently kills the thing it
+       is measuring reports a defect that is not there. */
+    const dt = s.last ? Math.max(0, Math.min(TP_MAX_DT, (now - s.last) / 1000)) : 1 / 60;
     s.last = now;
     s.ctx.setTransform(s.d, 0, 0, s.d, 0, 0);
     s.ctx.clearRect(0, 0, s.W, s.H);
@@ -5238,7 +5298,15 @@ const UI = {
     /* The cadence the panel PRINTS, so what the eye counts matches the number
        two lines above it. */
     const period = 1 / Math.max(TP_MIN_RATE, t.base.rate || 1);
-    let shots = [], age = 0, cd = 0, sinceShot = period;
+    /* 'shot'    -- it damages and its shot has to travel (23 towers)
+       'cone'    -- it damages in a wedge, instantly (3)
+       'instant' -- it damages the moment it fires: beam, hitscan, chain (12)
+       'silent'  -- it does no damage at all (22) */
+    const mode = !(t.base.damage > 0) ? 'silent'
+               : t.base.projSpeed > 0 ? 'shot'
+               : t.base.cone         ? 'cone'
+               : 'instant';
+    let shots = [], pulses = [], age = 0, cd = 0, sinceShot = period;
     const targets = [{ x: 150, r: 9 }, { x: 214, r: 8 }, { x: 268, r: 7 }];
 
     this.runPreview(cv, (ctx, dt, W, H) => {
@@ -5261,7 +5329,9 @@ const UI = {
          railgun at 7.0 against a contract of 0 to 1. */
       ctx.save(); ctx.translate(tx, ty);
       stub.age = age; stub.angle = -0.42;
-      stub.recoil = Math.max(0, 1 - sinceShot * TP_RECOIL_DECAY);
+      /* A tower with no gun does not kick. Recoil on BEACON read as a shot
+         the player then went looking for. */
+      stub.recoil = mode === 'silent' ? 0 : Math.max(0, 1 - sinceShot * TP_RECOIL_DECAY);
       /* THE SAME THREE-STEP FALLBACK the other three dispatch sites use
          (entities.js:2584, game.js:4438, ui.js:746), and its absence here was
          a real hole rather than a nicety: only sixteen of the sixty towers
@@ -5278,10 +5348,21 @@ const UI = {
       } catch (e) { /* never let one sprite break a menu */ }
       ctx.restore();
 
-      /* fire on the tower's own cadence */
+      /* ---- what this tower ACTUALLY does, on its own cadence -----------
+         Twenty-two of the sixty towers have no damage at all -- BEACON,
+         VAULT, CUSTODIAN, ORISON, RAMPART and the rest of the support and
+         economy arsenal -- and this stage used to fire a glowing ball out of
+         every one of them into a dummy that flashed white as it died. The
+         shop was advertising a weapon on a third of the catalogue that does
+         not own one. Fifteen more hit instantly and were drawn lobbing a
+         shell that has no travel time.
+
+         The mode is derived, not tabled, so a tower added tomorrow is
+         classified by the same two fields the engine already reads. */
       if (cd <= 0) {
         cd = period; sinceShot = 0;
-        shots.push({ x: tx + 12, y: ty - 20, tx: targets[0].x, ty: ty - 26, t: 0 });
+        if (mode === 'shot') shots.push({ x: tx + 12, y: ty - 20, tx: targets[0].x, ty: ty - 26, t: 0 });
+        else pulses.push({ t: 0 });
       }
       ctx.fillStyle = el.color;
       for (let i = shots.length - 1; i >= 0; i--) {
@@ -5294,6 +5375,36 @@ const UI = {
           ctx.beginPath(); ctx.arc(s2.tx, s2.ty, 8, 0, TAU); ctx.fill();
           ctx.fillStyle = el.color;
         }
+      }
+      for (let i = pulses.length - 1; i >= 0; i--) {
+        const p2 = pulses[i]; p2.t += dt / TP_PULSE_S;
+        if (p2.t >= 1) { pulses.splice(i, 1); continue; }
+        const fade = 1 - p2.t;
+        ctx.save();
+        if (mode === 'cone') {
+          /* A wedge, filled and gone -- no travel, and a width the tower
+             owns rather than one the stage invented. */
+          const half = (t.base.cone || 0.6) / 2, reach = 118;
+          ctx.globalAlpha = fade * 0.5; ctx.fillStyle = el.color;
+          ctx.beginPath(); ctx.moveTo(tx + 8, ty - 20);
+          ctx.arc(tx + 8, ty - 20, reach, -0.32 - half, -0.32 + half);
+          ctx.closePath(); ctx.fill();
+        } else if (mode === 'instant') {
+          /* Instantaneous: it is already on the target the frame it fires. */
+          ctx.globalAlpha = fade; ctx.strokeStyle = el.color;
+          ctx.lineWidth = 1 + fade * 2.6;
+          ctx.beginPath(); ctx.moveTo(tx + 10, ty - 20);
+          ctx.lineTo(targets[0].x, ty - 26); ctx.stroke();
+        } else {
+          /* SILENT: it reaches, it does not shoot. An expanding ring says
+             "this covers ground" and nothing at all says "this kills". */
+          ctx.globalAlpha = fade * 0.7; ctx.strokeStyle = el.color;
+          ctx.lineWidth = 1.8; ctx.setLineDash([5, 5]);
+          ctx.beginPath();
+          ctx.arc(tx, ty - 14, Math.max(0, 8 + p2.t * 86), 0, TAU); ctx.stroke();
+          ctx.setLineDash([]);
+        }
+        ctx.restore();
       }
     });
   },
@@ -5477,8 +5588,22 @@ const UI = {
         case 'phase':
           stub.phaseOn = (t % (def.phase.on + def.phase.off)) < def.phase.on;
           break;
+        case 'fly':
+          /* A flier crosses the barricade the walkers have to go around, so
+             the stage puts one in its way and lets it pass straight over. */
+          ctx.save();
+          ctx.fillStyle = 'rgba(148,163,184,.5)';
+          ctx.fillRect(W * 0.62 - 7, ly - 13, 14, 26);
+          ctx.strokeStyle = 'rgba(203,213,225,.7)'; ctx.lineWidth = 1.4;
+          ctx.strokeRect(W * 0.62 - 7, ly - 13, 14, 26);
+          ctx.restore();
+          break;
         default: break;
       }
+
+      /* Altitude, resolved once, so everything the trait draws hangs off the
+         same y the sprite is drawn at. Walkers keep the lane exactly. */
+      const uy = trait.key === 'fly' ? ly - UNIT_FLY_PX - Math.sin(t * 2.2) * 2.5 : ly;
 
       /* ---------------- escorts, spawn, ghosts and rings ---------------- */
       for (const off of escorts) {
@@ -5548,7 +5673,16 @@ const UI = {
         x = -R * 2; fell = false; down = 0; ward = 1; hit = 0;
         spawn.length = 0; ghosts.length = 0; rings.length = 0;
       }
-      stub.age = t; stub.x = x; stub.y = ly;
+      /* The shadow is the only thing a flier leaves on the ground, and it is
+         what makes the altitude read as altitude rather than as a sprite
+         drawn slightly too high. */
+      if (trait.key === 'fly') {
+        ctx.save();
+        ctx.globalAlpha = 0.28; ctx.fillStyle = '#000';
+        ctx.beginPath(); ctx.ellipse(x, ly + 4, R * 0.9, R * 0.32, 0, 0, TAU); ctx.fill();
+        ctx.restore();
+      }
+      stub.age = t; stub.x = x; stub.y = uy;
       ctx.save();
       ctx.globalAlpha = alpha;
       try { Enemy.prototype.draw.call(stub, ctx); } catch (e) {}

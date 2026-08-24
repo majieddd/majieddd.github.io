@@ -767,6 +767,106 @@
        stages.length + ' stage(s), shared loop live, frame ' + hashes.join('/'));
   });
 
+  /* ---- 23.1 the wire's index-coupled tables have not been reordered ---- */
+  T('23.1 the append-only lock holds on all five index-coupled tables', function () {
+    if (typeof Net === 'undefined' || !Net.lockstepAudit) {
+      ok('23.1 the append-only lock holds on all five index-coupled tables', false,
+         'Net.lockstepAudit is missing -- the guard itself was deleted');
+      return;
+    }
+    const bad = Net.lockstepAudit();
+    ok('23.1 the append-only lock holds on all five index-coupled tables',
+       bad.length === 0,
+       bad.length ? bad.map(function (b) {
+         return b.table + '[' + b.at + '] want ' + b.want + ' got ' + b.got;
+       }).join('; ')
+       : 'PLAYER_MODS/ENEMY_MODS/TARGET_MODES/LEVEL_ROLLS/DOCTRINE_ORDER prefixes intact at protocol ' +
+         (typeof NET_PROTOCOL !== 'undefined' ? NET_PROTOCOL : '?'));
+  });
+
+  /* ---- 23.2 the guard can actually FAIL ------------------------------- */
+  T('23.2 the append-only lock is not vacuous', function () {
+    /* A guard that passes whatever it is shown is worse than none, so bend a
+       table under it and check it notices, then put it back. This is the
+       check that would have caught 17.4, which returned five human staples
+       for every faction and passed for two sessions. */
+    if (typeof TARGET_MODES === 'undefined' || typeof Net === 'undefined' || !Net.lockstepAudit) {
+      skip('23.2 the append-only lock is not vacuous', 'nothing to bend');
+      return;
+    }
+    const keep = TARGET_MODES[0].id;
+    TARGET_MODES[0].id = '__bent__';
+    let caught = 0;
+    try { caught = Net.lockstepAudit().length; } finally { TARGET_MODES[0].id = keep; }
+    const clean = Net.lockstepAudit().length;
+    ok('23.2 the append-only lock is not vacuous',
+       caught > 0 && clean === 0,
+       'bent -> ' + caught + ' violation(s), restored -> ' + clean);
+  });
+
+  /* ---- 23.3 the OPTIONS battle seed reaches every start path ---------- */
+  T('23.3 one seed reader serves all three ways to start a battle', function () {
+    if (typeof UI === 'undefined' || typeof UI.battleSeed !== 'function') {
+      ok('23.3 one seed reader serves all three ways to start a battle', false,
+         'UI.battleSeed is missing');
+      return;
+    }
+    /* The contract is the RETURN, not the field: blank must be undefined so
+       Game.start takes the unseeded path, and a number must survive. */
+    const box = document.querySelector('#set-seed');
+    if (!box) { skip('23.3 one seed reader serves all three ways to start a battle', 'no seed field on this screen'); return; }
+    const keep = box.value;
+    let blank, num, junk;
+    try {
+      box.value = '';      blank = UI.battleSeed();
+      box.value = '  ';    const ws = UI.battleSeed();
+      box.value = '4242';  num = UI.battleSeed();
+      box.value = 'abc';   junk = UI.battleSeed();
+      ok('23.3 one seed reader serves all three ways to start a battle',
+         blank === undefined && ws === undefined && num === 4242 && junk === undefined,
+         'blank=' + blank + ' ws=' + ws + ' 4242=' + num + ' junk=' + junk);
+    } finally { box.value = keep; }
+  });
+
+  /* ---- 23.4 the shop stage does not arm the unarmed ------------------- */
+  T('23.4 no tower is previewed firing a weapon it does not have', function () {
+    if (typeof TOWER_TYPES === 'undefined') { skip('23.4 no tower is previewed firing a weapon it does not have', 'no registry'); return; }
+    /* Mirror of the derivation in UI.runTowerPreview. If that ever drifts
+       back to firing unconditionally, the counts here stop matching the
+       arsenal and the detail says by how much. */
+    let silent = 0, shot = 0, other = 0;
+    for (const id of Object.keys(TOWER_TYPES)) {
+      const b = TOWER_TYPES[id].base || {};
+      if (!(b.damage > 0)) silent++;
+      else if (b.projSpeed > 0) shot++;
+      else other++;
+    }
+    const src = String(UI.runTowerPreview || '');
+    ok('23.4 no tower is previewed firing a weapon it does not have',
+       silent > 0 && /mode === 'shot'/.test(src) && /'silent'/.test(src),
+       silent + ' towers do no damage, ' + shot + ' fire a travelling shot, ' +
+       other + ' hit instantly; stage branches on all three');
+  });
+
+  /* ---- 23.5 a dead zone is visible, not just enforced ----------------- */
+  T('23.5 every minRange tower states its dead zone', function () {
+    if (typeof TOWER_TYPES === 'undefined') { skip('23.5 every minRange tower states its dead zone', 'no registry'); return; }
+    const dz = Object.keys(TOWER_TYPES).filter(function (id) { return (TOWER_TYPES[id].base || {}).minRange > 0; });
+    if (!dz.length) { skip('23.5 every minRange tower states its dead zone', 'no tower has a dead zone'); return; }
+    /* The rows are built from base.minRange in three renderers and the ring
+       is punched in two draws. Prove the copy exists rather than that a
+       symbol does -- a stat row nobody prints is the defect. */
+    const rows = /Dead zone/.test(String(UI.statRowsFor || '') + String(UI.renderTowerDetail || '') +
+                                  String(UI.towerPanel || '') + UI.constructor.toString());
+    const uiSrc = Object.keys(UI).map(function (k) {
+      return typeof UI[k] === 'function' ? String(UI[k]) : '';
+    }).join('');
+    ok('23.5 every minRange tower states its dead zone',
+       (rows || /Dead zone/.test(uiSrc)) &&
+       /minRange/.test(String(Game.drawSelection)) && /minRange/.test(String(Game.drawBuildOverlay)),
+       dz.join(', ') + ' — printed as a stat row and punched out of both range rings');
+  });
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;

@@ -4054,7 +4054,21 @@ const Game = {
     ctx.fillStyle = ok ? 'rgba(74,222,128,0.09)' : 'rgba(239,68,68,0.11)';
     ctx.strokeStyle = ok ? 'rgba(74,222,128,0.9)' : 'rgba(239,68,68,0.9)';
     ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(cx, cy, def.base.range * TILE * this.sides[me].mods.range, 0, TAU); ctx.fill(); ctx.stroke();
+    /* A DEAD ZONE is drawn as an actual hole, not implied by a stat row. The
+       fill is an annulus by even-odd, so the ground BOMBARD cannot cover is
+       visibly not covered while you are still choosing where to put it --
+       which is the only moment the information is worth anything. */
+    const gRange = def.base.range * TILE * this.sides[me].mods.range;
+    const gDead = (def.base.minRange || 0) * TILE;
+    ctx.beginPath(); ctx.arc(cx, cy, gRange, 0, TAU);
+    if (gDead > 0) ctx.arc(cx, cy, gDead, 0, TAU, true);
+    ctx.fill('evenodd'); ctx.stroke();
+    if (gDead > 0) {
+      ctx.save();
+      ctx.setLineDash([4, 4]); ctx.strokeStyle = 'rgba(239,68,68,0.85)';
+      ctx.beginPath(); ctx.arc(cx, cy, gDead, 0, TAU); ctx.stroke();
+      ctx.restore();
+    }
     ctx.setLineDash([5, 5]); ctx.strokeRect(gx * TILE + 2, gy * TILE + 2, TILE * foot - 4, TILE * foot - 4); ctx.setLineDash([]);
     ctx.globalAlpha = 0.6; ctx.fillStyle = ok ? def.color : '#ef4444';
     ctx.beginPath(); ctx.roundRect(cx - 13 * foot, cy - 13 * foot, 26 * foot, 26 * foot, 5 * foot); ctx.fill();
@@ -4095,8 +4109,20 @@ const Game = {
     ctx.strokeStyle = t.def.color; ctx.globalAlpha = 0.85; ctx.lineWidth = 2;
     ctx.setLineDash([7, 6]); ctx.lineDashOffset = -(this.clock * 20) % 26;
     ctx.beginPath(); ctx.arc(t.x, t.y, t.rangePx, 0, TAU); ctx.stroke();
+    /* Live minRange, so the ring shrinks the moment ROLLING CARRIAGE lands. */
+    const dead = (t.stats.minRange || 0) * TILE;
+    if (dead > 0) {
+      ctx.strokeStyle = '#ef4444';
+      ctx.beginPath(); ctx.arc(t.x, t.y, dead, 0, TAU); ctx.stroke();
+      ctx.strokeStyle = t.def.color;
+    }
     ctx.setLineDash([]);
-    ctx.globalAlpha = 0.09; ctx.fillStyle = t.def.color; ctx.fill();
+    ctx.globalAlpha = 0.09; ctx.fillStyle = t.def.color;
+    if (dead > 0) {
+      ctx.beginPath(); ctx.arc(t.x, t.y, t.rangePx, 0, TAU);
+      ctx.arc(t.x, t.y, dead, 0, TAU, true);
+      ctx.fill('evenodd');
+    } else ctx.fill();
     ctx.globalAlpha = 1;
     ctx.strokeRect(t.gx * TILE + 2, t.gy * TILE + 2, TILE * (t.foot || 1) - 4, TILE * (t.foot || 1) - 4);
     ctx.restore();
