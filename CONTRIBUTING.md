@@ -139,17 +139,23 @@ its own — you never publish the site by hand. The **Artifact** surface named
 above is the one that still needs a human; its permanent URL is at the top of
 [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
-### Work that is not on `main`
+### Multiplayer
 
-Multiplayer is built and deliberately **unmerged** on
-`feature/multiplayer-20.6` at 19 of 24 harness checks. Its handoff note lives
-**only on that branch**, so every link to it from `main` is a 404. Read it
-without checking the branch out:
+Merged and live since Session 21 — `js/net.js`, a BroadcastChannel duel relay
+with deterministic lockstep, protocol version `NET_PROTOCOL`. It merged only
+after an adversarial audit found seven blocking defects the green suite could
+not see; [`docs/MULTIPLAYER-HANDOFF.md`](docs/MULTIPLAYER-HANDOFF.md) carries
+the audit story and keeps the original (wrong) diagnosis as history. If you
+touch `js/net.js`, `js/game.js` or `js/ui.js`, run the duel harness as well as
+the owner sweep:
 
-```bash
-git show feature/multiplayer-20.6:docs/MULTIPLAYER-HANDOFF.md
-git show feature/multiplayer-20.6:js/net.js
+```js
+// paste tools/multiplayer_test.js, then:
+MPT.all()        // must pass clean; the wire suite is async — pass a callback
 ```
+
+Changing the command set or the fingerprint formula means bumping
+`NET_PROTOCOL`, so an old window refuses to link rather than desyncing.
 
 ### Where the rest of the paper is
 

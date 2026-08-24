@@ -34,10 +34,13 @@ what each item actually turned out to be once someone read the code.
 identity, and [`docs/MECHANICS-OPTIONS.md`](docs/MECHANICS-OPTIONS.md) holds
 fifteen designed-but-unbuilt mechanics awaiting a pick.
 
-**Multiplayer is not on `main`.** It is built and deliberately unmerged on
-`feature/multiplayer-20.6` at 19 of 24 harness checks. Its handoff note exists
-only on that branch, so read it without checking the branch out:
-`git show feature/multiplayer-20.6:docs/MULTIPLAYER-HANDOFF.md`.
+**Multiplayer is on `main` and live.** Two humans, two browser windows, one
+lockstep duel over `BroadcastChannel` — no server, no dependency, offline. It
+merged in Session 21 only after an adversarial audit found seven blocking
+defects the green test suite could not see, and all seven were fixed; the whole
+story, including the audit, is in
+[`docs/MULTIPLAYER-HANDOFF.md`](docs/MULTIPLAYER-HANDOFF.md). The duel harness
+(`tools/multiplayer_test.js`, `MPT.all()`) passes clean.
 
 ---
 

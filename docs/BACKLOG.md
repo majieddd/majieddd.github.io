@@ -5,7 +5,9 @@ Everything not finished, in one place. Rebuilt at the end of Session 20.
 **Read the status literally.** *Spec'd* means the root cause is found and
 written down; *not started* means nobody has looked.
 
-**Currently shipped and green on `main`:** owner sweep 27/0, Sessions 19 and 20
+**Currently shipped and green on `main`:** owner sweep 0 FAIL (the pass/info
+split varies with tab visibility — rAF checks report INFO in a hidden tab),
+duel harness `MPT.all()` clean, Sessions 19, 20 and 21
 complete bar the three rows below, both balance pins holding, duel / tri /
 twenty-seat arena soaking clean. 50 towers (10 per power), 20 boons, 20 faction
 units, 188 art plates. Live on all three surfaces.
@@ -37,17 +39,18 @@ Full story: [`MULTIPLAYER-HANDOFF.md`](MULTIPLAYER-HANDOFF.md). Still open,
 deliberately: WebRTC manual signalling for two MACHINES (BroadcastChannel is
 same-origin, one machine) — designed for, not built.
 
-### 2. Soul-shop surcharge (20.7i)
-Modelled at ten towers per faction, and the finding inverts the assumption: the
-**+1 step is not the problem, the shared counter is**. The fix lives in
-`Meta.soulSurcharge` / `Meta.chargeSouls` in `js/commanders.js`.
+### 2. Soul-shop surcharge (20.7i) — SHIPPED (Session 21)
+The per-shop ladder is live: `soulPrice(kind, id)` is the one price expression,
+`chargeSouls(kind, id)` books against `boughtBy[banner/kind]`, and the sharp
+bug — CRYO costing 6 souls if you opened the arsenal first and 22 if you
+recruited first — is gone. Migration proved against a legacy save; nobody is
+charged more. Commit `4a7e62f`.
 
-### 3. The art pack re-encodes on every pack (20.7k)
-`write_pack` decodes and re-encodes every cached webp on each `--pack`, so each
-repack costs one more lossy generation. Measured: a byte-identical source
-round-trips to RMSE ~2.2. Harmless once, cumulative forever. Fix is to copy the
-cached bytes through untouched when the cache entry already matches the target
-size.
+### 3. The art pack re-encode (20.7k) — SHIPPED (Session 21)
+`write_pack` now ships cached bytes through untouched when format, mode and
+size already match (188/188 do), and says how many passed through vs were
+rebuilt. Measured: mean RMSE vs the source cache **2.493 → 0.0** across all
+188 keys. Commit `c5f1508`.
 
 ---
 
@@ -115,9 +118,9 @@ All ten Session-19 items were closed in 20.7. What is left:
 
 | Item | Where | State |
 |---|---|---|
-| Soul-shop surcharge | `Meta.soulSurcharge`, `js/commanders.js` | Modelled. The **+1 step is not the problem, the shared counter is** — deferred for file ownership, not difficulty |
-| `--pack` re-encodes every plate | `artgen/krea_gen.py` `write_pack` | Each repack costs one more lossy generation; measured RMSE ~2.2 per round-trip. Copy cached bytes through when the size already matches |
-| `GX_VIEW.x` / `.y` inert | `js/config.js` | **Proved** inert by test, not assumed. Deleting them needs the GX_* block, which belonged to another team that round |
+| Soul-shop surcharge | `Meta.soulPrice` / `Meta.chargeSouls`, `js/commanders.js` | ✅ shipped in Session 21 — per-shop ladders, order-independent, migration proved |
+| `--pack` re-encodes every plate | `artgen/krea_gen.py` `write_pack` | ✅ shipped in Session 21 — byte passthrough when the cache already matches; RMSE 2.493 → 0.0 across 188 keys |
+| `GX_VIEW.x` / `.y` inert | `js/config.js` | ✅ deleted in Session 21 — `GX_VIEW` is `{ w, h }` now, after re-proving `js/ui.js` reads `.w`/`.h` alone |
 | Pinch-zoom | `js/ui.js` `GalaxyFX.pinch` / `zoomAt` | **Verified under synthetic MULTI-pointer events (Session 21)**, which is as far as this environment goes. Two pointers register; spread 100→200px takes z 1.0→2.0; pinch 200→50px takes it back to 0.5; it clamps at both `GX_ZOOM_MIN` 0.36 and `GX_ZOOM_MAX` 2.6; pointers clear on release. `zoomAt`'s anchor math is **exact** — world drift under the anchor is 0 with `clamp()` stubbed, and the drift you see with it live is the camera correctly being held inside the map bounds. Note `pinch()` deliberately ignores separations under 4px (anti-jitter), so a test that drives the fingers together past that point measures nothing. Still unverified on REAL hardware: no multi-touch device here |
 
 ---
@@ -145,16 +148,17 @@ Full write-ups with build notes in [`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md
 
 ---
 
-## F. Suggested order
+## F. What is actually left
 
-1. **Multiplayer** — close the two failures in `docs/MULTIPLAYER-HANDOFF.md`
-   (on the branch only: `git show feature/multiplayer-20.6:docs/MULTIPLAYER-HANDOFF.md`),
-   get it audited, then merge `feature/multiplayer-20.6`. It is the only
-   feature-sized item left.
-2. **The soul-shop counter** — small, and it is a real economy bug.
-3. **The pack re-encode** — small, and it stops a slow quality leak.
-4. **Owner picks** from section C and E, whenever you want them.
+Sessions 19–21 closed every technical item above. What remains is either an
+**owner pick** (sections C and E), **hardware this environment lacks**
+(pinch-zoom on a real touchscreen), or **designed-not-built by choice**
+(WebRTC manual signalling for two machines). There is no engineering backlog.
 
-Re-measure both pins after anything touching economy, AI or towers, and put the
-numbers in the PR. The pins and the three ways to mis-measure them are in
-[`../CONTRIBUTING.md`](../CONTRIBUTING.md) §5.
+If you touch economy, AI or towers: the pins are SEEDED now — use
+`PINS.once(map, seed)` per page load, run `PINS.selfTest()` first (must say
+`reproducible: true`), and compare against the seeded baseline in
+[`BALANCE-BASELINE.md`](BALANCE-BASELINE.md), same seed to same seed. The old
+unseeded numbers cannot gate anything. If you touch `js/net.js`, `js/game.js`
+or `js/ui.js`, run `MPT.all()` too, and bump `NET_PROTOCOL` if the command set
+or fingerprint changes.

@@ -372,7 +372,7 @@ const UNIT_DOCTRINE_TALENTS = {
     { id:'u_h1b', row:1, col:1, name:'ATTRITION',    desc:'+25% bodies per muster.',                   mods:{ countMul:1.25 } }
   ],
   light: [
-    { id:'u_l0a', row:0, col:0, name:'CONSECRATION', desc:'+35% ward.',                                mods:{ shieldMul:1.35 } },
+    { id:'u_l0a', row:0, col:0, name:'HALLOWING',    desc:'+35% ward.',                                mods:{ shieldMul:1.35 } },
     { id:'u_l0b', row:0, col:1, name:'TITHING',      desc:'+30% of the income a muster adds.',         mods:{ incomeMul:1.30 } },
     { id:'u_l1a', row:1, col:0, name:'UNENDING VOW', desc:'A passed ward carries 70% further.',        mods:{ vowMul:1.70 } },
     { id:'u_l1b', row:1, col:1, name:'PROCESSION',   desc:'+15% march speed.',                         mods:{ speedMul:1.15 } }
@@ -402,12 +402,12 @@ const UNIT_SIGNATURE_TALENTS = {
   linebreaker: [{ name:'BOLTED PLATE',   desc:'+4 armour.',                           mods:{ armorAdd:4 } },
                 { name:'HEATED CORE',    desc:'+25% slow resistance.',                mods:{ slowResistAdd:0.25 } }],
   dragoon:     [{ name:'ANCHOR DRIVE',   desc:'+20% health.',                         mods:{ hpMul:1.20 } },
-                { name:'REQUISITION',    desc:'A muster costs 18% less.',             mods:{ costMul:0.82 } }],
+                { name:'COMMANDEER',     desc:'A muster costs 18% less.',             mods:{ costMul:0.82 } }],
   vanguard:    [{ name:'DEEPER RANKS',   desc:'+25% bodies per muster.',              mods:{ countMul:1.25 } },
                 { name:'STANDING ORDERS',desc:'Salvages twice as fast.',              mods:{ salvageMul:2.00 } }],
 
   votary:      [{ name:'LESSER OATH',    desc:'+50% ward.',                           mods:{ shieldMul:1.50 } },
-                { name:'ALMS',           desc:'+40% of the income a muster adds.',    mods:{ incomeMul:1.40 } }],
+                { name:'OFFERTORY',      desc:'+40% of the income a muster adds.',    mods:{ incomeMul:1.40 } }],
   censer:      [{ name:'LONGER LITANY',  desc:'Regrows 4% of its health a second.',   mods:{ regen:0.040 } },
                 { name:'SHARED BREATH',  desc:'A passed ward carries 80% further.',   mods:{ vowMul:1.80 } }],
   sanctifier:  [{ name:'REFORGED WARD',  desc:'+35% ward.',                           mods:{ shieldMul:1.35 } },
@@ -420,7 +420,7 @@ const UNIT_SIGNATURE_TALENTS = {
   chitling:    [{ name:'SPAWN GLUT',     desc:'+50% bodies per muster.',              mods:{ countMul:1.50 } },
                 { name:'RAVENOUS',       desc:'Takes 80% more off its own dead.',     mods:{ massMul:1.80 } }],
   gnawling:    [{ name:'HARD CHITIN',    desc:'+3 armour.',                           mods:{ armorAdd:3 } },
-                { name:'GORGE',          desc:'Takes 50% more off its own dead.',     mods:{ massMul:1.50 } }],
+                { name:'MARROW',         desc:'Takes 50% more off its own dead.',     mods:{ massMul:1.50 } }],
   bloatpod:    [{ name:'RIPE',           desc:'+25% health.',                         mods:{ hpMul:1.25 } },
                 { name:'BILE',           desc:'Regrows 5% of its health a second.',   mods:{ regen:0.050 } }],
   hivelord:    [{ name:'WIDER FRENZY',   desc:'+15% march speed.',                    mods:{ speedMul:1.15 } },

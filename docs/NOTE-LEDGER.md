@@ -50,7 +50,7 @@ Legend: ✅ verified in code · 🔶 landed but unverified · ⏳ in flight · �
 
 | # | Note | Status |
 |---|---|---|
-| 15.1 | Monochrome faction symbols, same art style | 🔶 regenerated — **audit says hue is off: human green, xeno pink** |
+| 15.1 | Monochrome faction symbols, same art style | ✅ fixed via `derive_crests.py`, not regeneration — measured in the shipping pack, worst hue deviation 4.5° (see this file's outstanding table) |
 | 15.2 | Lock vaporwave + gothic cathedral line art (Tyranny) | ✅ BRAND.md |
 | 15.3 | Mob pics grey/black/white + hint of faction colour | ✅ ACCENT table |
 | 15.4 | Some enemies missing pictures | ✅ 7 found and painted; 0 missing |

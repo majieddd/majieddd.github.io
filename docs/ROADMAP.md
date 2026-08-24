@@ -1135,7 +1135,7 @@ seven parallel teams, per the owner's preference for maximum concurrency.
 
 | # | Note | Status |
 |---|---|---|
-| 20.1 | **Dotted travel lines** between near worlds, so the route to your next world reads at a glance — and **multiple paths** between worlds, so the next mission is a genuine choice rather than a queue. | ✅ **56 routes** rendering, classed `taken` / `live` / `sealed` / `local` / `gate`, with a key |
+| 20.1 | **Dotted travel lines** between near worlds, so the route to your next world reads at a glance — and **multiple paths** between worlds, so the next mission is a genuine choice rather than a queue. | ✅ **53 generated routes** rendering (8 gate + 45 local; a DOM count of `.gx-route` reads 56 because the key draws 3 sample paths), classed `taken` / `live` / `sealed` / `local` / `gate`, with a key |
 | 20.3 | **A claimed world takes your faction's colour.** Conquest should be visible on the map, not only in a stars count. | ✅ `worldAllegiance()` is the one source; four redundant channels (hue / fill / shape / ring) so it survives colour-blindness and the far zoom. States: held, taking, yours, contested, locked |
 
 ## B. Legibility
@@ -1178,7 +1178,7 @@ timestep the engine already runs on is what makes lockstep feasible.
 | 20.7h | **A jammed NULL FIELD stops suppressing**, so a Jammer inside one can jam the field off and free itself. Flagged as interaction, not bug — owner call. | ✅ **called it a hole and closed it**: a jammed NULL FIELD keeps its volume and loses only its riders |
 | 20.7i | Soul-shop inflation never re-modelled at ten towers per faction. | ✅ **closed in Session 21.** The shared counter is gone: `soulPrice(kind, id)` is the only price expression and `chargeSouls(kind, id)` prices AND charges through it. The sharp bug was ORDER DEPENDENCE — CRYO cost 6 souls if you opened the arsenal first and 22 if you recruited first. Migration proved against a legacy save; nobody is charged more |
 | 20.7k | **Every `--pack` re-encodes every cached webp**, so each repack costs one more lossy generation. | ✅ **closed in Session 21.** `write_pack` unpacked each job's target size and never used it — `fit()` was never called from there. Passthrough when size/format/mode already match. Mean RMSE vs the source cache **2.493 → 0.0** across all 188 keys; pack grows +2.34% because the byte saving *was* the loss |
-| 20.7j | Ten pre-existing player-facing talent-name collisions (PERMAFROST, WIDE FIELD, BATTERY, CAPACITOR, CONCENTRATE, WINDLASS, TRIBUTE, SATURATION, CLARITY, BACKBONE). | ✅ **fourteen** renamed, not ten — the sweep compares levels against talents too and found LONG ARM, TITHE, ERASURE and HAEMORRHAGE. Measured: **0 talent-vs-talent collisions across 461 talents** |
+| 20.7j | Ten pre-existing player-facing talent-name collisions (PERMAFROST, WIDE FIELD, BATTERY, CAPACITOR, CONCENTRATE, WINDLASS, TRIBUTE, SATURATION, CLARITY, BACKBONE). | ✅ **fourteen** renamed, not ten — the sweep compares levels against talents too and found LONG ARM, TITHE, ERASURE and HAEMORRHAGE. **Session 21 correction: the sweep never enumerated UNIT talents**, and four more collisions were hiding there — CONSECRATION, REQUISITION, ALMS and GORGE, each doubling a tower talent, a tower level or a commander trait. Renamed on the unit side (HALLOWING, COMMANDEER, OFFERTORY, MARROW; ids unchanged, so saves keep their picks). Measured now: **0 collisions across 457 distinct names** spanning tower talents, tower levels and unit talents |
 
 ---
 
@@ -1225,7 +1225,7 @@ limit. Work is on **`session-21/backlog`** (off `main`) and one commit on
 | Item | Who |
 |---|---|
 | Merge `feature/multiplayer-20.6` | ✅ **done.** The audit came back do-not-merge with seven blockers; all seven fixed plus its two majors, MPT 40/0, then merged and pushed |
-| The pin state leak (match state survives `maxProfile()` + `Game.start()`) | next session — it blocks re-baselining both pins |
+| The pin state leak | ✅ **found and fixed same session** (`bf77652`): the AI singleton-prototype carry-over; `PINS.selfTest()` reports `reproducible: true` and both pins are re-baselined seeded in [`BALANCE-BASELINE.md`](BALANCE-BASELINE.md) |
 | `cmd_cadre` is a Krea 2 plate among twenty SDXL commanders | **owner** — re-render on SDXL, accept it, or commit the GPU hours |
 | The soul price cut (basket 533 → 288 souls) | **owner** — the fix is correct; the magnitude is a balance decision |
 | The fifteen held-back mechanics, "THE HARBINGER ENRAGES", grandfathered saves | **owner**, unchanged from Session 20 |
