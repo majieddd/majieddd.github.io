@@ -1006,8 +1006,13 @@ const Game = {
     UI.showChoice(this.pendingChoice);
   },
 
-  takeMod(mod) {
-    const s = this.sides[0];
+  /* `seat` defaults to 0, which is every singleplayer call unchanged. A duel
+     drafts BOTH commanders from the same halted frame (js/net.js), and a
+     lockstep command has to name the seat it belongs to -- a draft applied
+     to whoever happens to sit at index 0 would pay the wrong player on one
+     of the two clients. */
+  takeMod(mod, seat = 0) {
+    const s = this.sides[seat];
     mod.apply(s.mods, s);
     s.taken.push(mod);
     for (const t of s.towers) t.recompute();
@@ -1447,7 +1452,12 @@ const Game = {
     if (weak && dealt > 0 && !enemy.dead) {
       const bonus = enemy.takeDamage(dealt * weak, 'pure', {});
       tower.damageDealt += bonus;
-      if (enemy.hostileTo === this.viewSide && Math.random() < 0.12)
+      /* THE ROLL COMES FIRST ON PURPOSE. `&&` short-circuits, so with the
+         viewSide test in front this draw happened on one client and not on
+         the other -- and two lockstep peers do not share a viewSide, so the
+         shared random stream would part company here and nowhere else. The
+         floater is unchanged; only the order of the test is. See js/net.js. */
+      if (Math.random() < 0.12 && enemy.hostileTo === this.viewSide)
         this.addFloater(enemy.x, enemy.y - 12, 'WEAK', false, spec.color, 10);
     }
     if (!spec || !spec.marks || enemy.dead) return;
