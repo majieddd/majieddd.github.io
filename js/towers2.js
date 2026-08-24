@@ -428,7 +428,7 @@ const TOWER_TYPES_2 = {
       { id:'cu_hold',  row:0, col:1, name:'READY RELIEF',       desc:'Wardens return 25% sooner.', mods:{ vigilEveryMul:0.75 } },
       { id:'cu_quick', row:1, col:0, name:'WIDE WATCH',         desc:'+35% radius.',               mods:{ rangeMul:1.35 } },
       { id:'cu_edge',  row:1, col:1, name:'TITHE OF THE FALLEN',desc:'Each warden spent pays 18 gold.', mods:{ vigilGold:18 } },
-      { id:'cu_more',  row:2, col:0, name:'DEEP MUSTER',        desc:'+2 wardens on watch.',       mods:{ vigilHold:2 } },
+      { id:'cu_more',  row:2, col:0, name:'DEEP RESERVE',       desc:'+2 wardens on watch.',       mods:{ vigilHold:2 } },
       { id:'cu_last',  row:2, col:1, name:'ETERNAL',            desc:'Wardens return 45% sooner.', mods:{ vigilEveryMul:0.55 } } ],
     branches:[
       { id:'vigil',   name:'VIGIL',   cost:430, mods:{ vigilHold:8, vigilEvery:9.5, range:4.2 },
@@ -696,7 +696,7 @@ Object.assign(TOWER_TYPES_2, {
   antiphon: {
     id:'antiphon', element:'storm', origin:'light', name:'ANTIPHON', role:'Answers your losses on rival ground', cost:245, costGrowth:1.70,
     color:'#facc15', dark:'#713f12', attack:'antiphon', glyph:'♫',
-    desc:'It has no cadence of its own. Every detachment you MUSTER that dies on another commander\'s lane is answered here, and the chapel spends those answers as free volleys over your own ground. It is the only structure whose output is decided by what is happening on somebody else\'s board. CONDITIONAL and purely PvP — silent on a board that never sends, one of the heaviest guns in the arsenal on one that sends constantly. Your reanimated dead do not count: the chapel answers only what you paid for.',
+    desc:'It has no cadence of its own. Every detachment you SUMMON that dies on another commander\'s lane is answered here, and the chapel spends those answers as free volleys over your own ground. It is the only structure whose output is decided by what is happening on somebody else\'s board. CONDITIONAL and purely PvP — silent on a board that never sends, one of the heaviest guns in the arsenal on one that sends constantly. Your reanimated dead do not count: the chapel answers only what you paid for.',
     /* antiphonBank is how many unspent answers it holds. Uncapped, a
        commander could muster all match and dump a hundred volleys into one
        wave, which makes the mechanic a battery rather than pressure. */
@@ -1205,7 +1205,7 @@ const BOONS = [
        DEFENCE against being mustered at, not a buff to your own sends. The
        first draft of this boon described the opposite, which is the desync
        class that has shipped seven times here. */
-    desc:'Everything mustered against you arrives 35% weaker.',
+    desc:'Everything summoned against you arrives 35% weaker.',
     lore:'It has been eaten before. It grew a lid.',
     apply:t => t.reanimResist = (t.reanimResist||0) + 0.35 },
   { id:'x_render', f:'xeno', k:'forge', name:'RENDERING', icon:'⧗',
@@ -1214,7 +1214,7 @@ const BOONS = [
     apply:t => { t.siphonRate = (t.siphonRate||1) * 1.50;
                  t.reanimGold = (t.reanimGold||0) + 3; } },
   { id:'x_brood', f:'xeno', k:'nest', name:'BROODSWELL', icon:'✺',
-    desc:'Everything you muster arrives 50% heavier.',
+    desc:'Everything you summon arrives 50% heavier.',
     lore:'The nest does not send soldiers. It sends more of itself.',
     apply:t => t.musterHpMul = (t.musterHpMul||1) * 1.50 },
   { id:'x_consume', f:'xeno', k:'apex', name:'TOTAL CONSUMPTION', icon:'☣',
@@ -1239,7 +1239,7 @@ const BOONS = [
     lore:'There is a legitimate supply chain, and there is ours.',
     apply:t => t.costGrowthMul = (t.costGrowthMul||1) * 0.82 },
   { id:'p_dark', f:'pirate', k:'nest', name:'THE DARK ANSWERS', icon:'☾',
-    desc:'Musters cost 25% less and march a fifth faster.',
+    desc:'Summons cost 25% less and march a fifth faster.',
     lore:'Nobody commands the swarm. It simply agrees with us.',
     apply:t => { t.musterCostMul = (t.musterCostMul||1) * 0.75;
                  t.reanimSpeedMul = (t.reanimSpeedMul||1) * 1.20; } },

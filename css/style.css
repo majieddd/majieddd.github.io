@@ -203,6 +203,22 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 .cmd-lvl { font-size: 11px; color: var(--text-dim); letter-spacing: .1em; }
 .cmd-lvl b { color: var(--gold); }
 
+/* THE STANDING ORDER. The slot answers "who deploys?" at a glance; the badge
+   marks the same commander in the rail; the EQUIP button writes it. */
+.cmd-slot { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px;
+            border: 1px solid var(--gold); border-radius: var(--r);
+            background: color-mix(in srgb, var(--gold) 8%, transparent); }
+.cmd-slot > b { font-size: 10px; letter-spacing: .18em; color: var(--gold); }
+.cmd-slot .cs-name { font-size: 15px; font-weight: 800; letter-spacing: .1em; color: var(--cc, var(--text)); }
+.cmd-slot .cs-none, .cmd-slot em { font-size: 11px; font-style: normal; color: var(--text-mute); }
+.cmd-eq-badge { font-size: 9px; font-style: normal; letter-spacing: .12em;
+                color: var(--gold); border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+                border-radius: 3px; padding: 1px 5px; vertical-align: 2px; }
+.cd-equip { display: block; width: 100%; margin-bottom: 18px; }
+.cd-equipped { text-align: center; font-size: 12.5px; letter-spacing: .1em; color: var(--gold);
+               border: 1px dashed color-mix(in srgb, var(--gold) 55%, transparent);
+               border-radius: 9px; padding: 10px 12px; margin-bottom: 18px; }
+
 .setup-main { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; }
 .cd-head { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center;
            padding-bottom: 14px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }

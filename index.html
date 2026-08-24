@@ -101,6 +101,7 @@
     <div class="setup-body">
       <aside class="setup-rail">
         <h2 class="section-label">COMMANDER</h2>
+        <div id="cmd-slot" class="cmd-slot"></div>
         <div id="commander-list"></div>
         <div class="rail-actions">
           <button class="btn" data-open="codex">FIELD MANUAL</button>
@@ -226,7 +227,7 @@
 <div id="screen-game" class="screen hidden">
   <header id="hud">
     <div class="hud-side">
-      <button id="btn-quit" class="icon-btn" title="Abandon match">✕</button>
+      <button id="btn-quit" class="icon-btn" title="Abandon match" aria-label="Abandon match">✕</button>
       <div class="cmdr">
         <span class="cmdr-tag">YOU</span>
         <div class="cmdr-stats">
@@ -263,11 +264,12 @@
       </div>
       <div class="ctl-group">
         <button id="btn-pause" class="icon-btn" aria-label="Pause">❚❚</button>
-        <button class="speed-btn active" data-speed="1">1×</button>
-        <button class="speed-btn" data-speed="2">2×</button>
-        <button class="speed-btn" data-speed="3">3×</button>
-        <button class="icon-btn" data-open="battlecard" title="Battle card — controls, reactions, the rules that matter">?</button>
-        <button class="icon-btn" data-open="settings" title="Audio">♪</button>
+        <button class="speed-btn active" data-speed="1" aria-label="Speed 1x">1×</button>
+        <button class="speed-btn" data-speed="2" aria-label="Speed 2x">2×</button>
+        <button class="speed-btn" data-speed="3" aria-label="Speed 3x">3×</button>
+        <button id="btn-immersive" class="icon-btn" title="Immersive board — the map fills the window (F)" aria-label="Toggle immersive board">⛶</button>
+        <button class="icon-btn" data-open="battlecard" title="Battle card — controls, reactions, the rules that matter" aria-label="Battle card">?</button>
+        <button class="icon-btn" data-open="settings" title="Audio" aria-label="Audio and settings">♪</button>
       </div>
     </div>
   </header>
@@ -343,7 +345,11 @@
           <span><kbd>Q</kbd>/<kbd>E</kbd> commander abilities</span><span><kbd>N</kbd> or <kbd>Enter</kbd> rush the wave</span>
           <span><kbd>Space</kbd>/<kbd>P</kbd> pause</span><span><kbd>Alt</kbd>+<kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd> speed</span>
           <span><kbd>Esc</kbd> cancel · close</span><span>right-click cancels too</span>
+          <span><kbd>F</kbd> immersive board</span><span>wheel zooms · middle-drag pans</span>
+          <span>arrows pan · <kbd>0</kbd> recentres</span><span><kbd>+</kbd>/<kbd>−</kbd> zoom</span>
         </div>
+        <p class="bc-note">Hotkeys arm a tower; <b>placing it takes a pointer</b> — the
+           board itself is mouse, trackpad or touch only.</p>
       </section>
       <section class="bc-sec">
         <h3>THE ONE RULE</h3>
@@ -415,6 +421,7 @@
       <label class="set-row"><span>Effects volume</span><input type="range" id="set-sfx" min="0" max="100" value="70"></label>
       <label class="set-row"><span>Music</span><input type="checkbox" id="set-music-on" checked></label>
       <label class="set-row"><span>Reduced motion</span><input type="checkbox" id="set-reduced-motion"></label>
+      <label class="set-row"><span>Damage numbers</span><input type="checkbox" id="set-dmg-numbers" checked></label>
       <div class="set-row"><span>Save file</span><span style="display:flex;gap:8px">
         <button class="btn btn-sm" id="btn-export-save">EXPORT</button>
         <button class="btn btn-sm" id="btn-import-save">IMPORT</button></span></div>

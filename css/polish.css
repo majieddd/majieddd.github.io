@@ -266,6 +266,100 @@ body.rm-user .bi-line { opacity: 1; }
 
 .theatre-body { display: grid; grid-template-columns: 1fr 296px; gap: 12px; align-items: start; }
 @media (max-width: 1050px) { .theatre-body { grid-template-columns: 1fr; } }
+
+/* ═════════════ THE BATTLEFIELD, FULL BLEED ══════════════════════════════ */
+/* Measured at 1280x720 before this existed: the board rendered at viewScale
+   0.623 into 663x355 -- twenty-six percent of the window -- because a 150px
+   HUD and a 580px sidebar between them take two thirds of the space. The
+   board is the game; it should be able to have the room.
+
+   IMMERSIVE MODE is opt-in and reversible, and default-off is byte-identical
+   to the layout that shipped. With it on, the HUD and the sidebar become
+   layers OVER a board that fills the window, exactly as the galaxy's chrome
+   floats over the galaxy. The sidebar stays reachable -- it slides back on
+   hover or focus -- because it is controls, not decoration, and a shop you
+   cannot open is not immersion. */
+body.immersive #stage { position: absolute; inset: 0; padding: 0; gap: 0; }
+body.immersive #canvas-wrap { position: absolute; inset: 0; }
+body.immersive #hud {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 20;
+  background: linear-gradient(180deg, rgba(4,8,14,.92), rgba(4,8,14,.55) 70%, rgba(4,8,14,0));
+  pointer-events: none;
+}
+body.immersive #hud > * { pointer-events: auto; }
+/* The rail: parked off the right edge, showing a hand-width of itself, and
+   sliding home the moment it is wanted. */
+body.immersive #sidebar {
+  position: absolute; top: 0; right: 0; bottom: 0; z-index: 21;
+  background: linear-gradient(270deg, rgba(4,8,14,.94), rgba(4,8,14,.82));
+  padding: 8px 10px; border-left: 1px solid var(--line);
+  transform: translateX(calc(100% - 18px));
+  transition: transform .18s var(--e-tap);
+  overflow-y: auto;
+}
+body.immersive #sidebar:hover,
+body.immersive #sidebar:focus-within { transform: translateX(0); }
+/* The grab handle, so the parked rail reads as a thing you can pull. */
+body.immersive #sidebar::before {
+  content: '‹'; position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
+  font-size: 15px; color: var(--text-mute); pointer-events: none;
+}
+body.rm-user.immersive #sidebar { transition: none; }
+#btn-immersive.on { color: var(--cyan); border-color: var(--cyan); }
+
+/* ═════════════ THE GALAXY, FULL BLEED ═══════════════════════════════════ */
+/* The map IS the screen. Everything else -- the title, the holdings strip,
+   the briefing panel, the footer, the legends -- floats above it as a layer,
+   because a map you are meant to fly around should not be a 760px window with
+   furniture stacked over and under it.
+
+   Keyed on `#worldmap-wrap.gx-viewport`, which is the class GalaxyFX adds
+   when it mounts a live map and `renderGalaxyVictory` REMOVES when it
+   replaces the map with the victory panel. So the same screen returns to
+   ordinary document flow for that panel without a second switch to remember. */
+/* Nothing on this screen scrolls any more -- the map is the scroll surface,
+   and it pans. Without this the stray few pixels the screen sits below the
+   viewport top become a scrollbar over a full-bleed map. */
+#screen-theatre { overflow: hidden; }
+#screen-theatre .setup-wrap { max-width: none; padding: 0; gap: 0; position: relative;
+  height: 100vh; min-height: 0; }
+#screen-theatre .theatre-body { display: block; position: absolute; inset: 0; gap: 0; }
+#worldmap-wrap.gx-viewport { position: absolute; inset: 0; height: auto;
+  border: 0; border-radius: 0; padding: 0; background: transparent; }
+
+/* The floating chrome. `pointer-events: none` on the containers so the map
+   can be dragged THROUGH the empty parts of a bar, with the controls
+   themselves handed their clicks back. */
+#screen-theatre .setup-head,
+#screen-theatre #campaign-trail,
+#screen-theatre .setup-foot,
+#screen-theatre #theatre-detail { position: absolute; z-index: 6; pointer-events: none; }
+#screen-theatre .setup-head > *, #screen-theatre #campaign-trail > *,
+#screen-theatre .setup-foot > *, #screen-theatre #theatre-detail > * { pointer-events: auto; }
+
+#screen-theatre .setup-head { top: 10px; left: 0; right: 0; text-align: center; }
+#screen-theatre .setup-head .tagline { display: none; }
+#screen-theatre #campaign-trail { top: 52px; left: 0; right: 0; display: flex; justify-content: center; }
+#screen-theatre .setup-foot { bottom: 0; left: 0; right: 0; padding: 12px 18px;
+  background: linear-gradient(0deg, rgba(4,7,13,.92), rgba(4,7,13,0)); margin-top: 0; }
+#screen-theatre #theatre-detail { top: 96px; right: 14px; width: 296px;
+  max-height: calc(100vh - 190px); overflow-y: auto; }
+
+/* The map's own overlays keep out from under the floating bars. */
+#worldmap-wrap.gx-viewport > .gx-keys { top: 96px; left: 14px; }
+#worldmap-wrap.gx-viewport > .gx-nav { top: 96px; right: 322px; }
+#worldmap-wrap.gx-viewport > .gx-hint { bottom: 66px; left: 14px; }
+#worldmap-wrap.gx-viewport > .wm-hint { bottom: 66px; right: 322px; }
+@media (max-width: 1050px) {
+  #screen-theatre #theatre-detail { top: auto; bottom: 62px; right: 8px; left: 8px; width: auto;
+    max-height: 40vh; }
+  #worldmap-wrap.gx-viewport > .gx-nav { right: 14px; }
+  #worldmap-wrap.gx-viewport > .wm-hint { display: none; }
+}
+/* And the victory panel, which arrives after the class comes off: it owns the
+   whole absolute body, centred, and scrolls if it must. */
+#screen-theatre .theatre-body > #worldmap-wrap:not(.gx-viewport) {
+  display: grid; place-items: center; min-height: 100%; overflow-y: auto; }
 .course-set { font-size: 11px; letter-spacing: 0.2em; color: var(--cyan); margin-bottom: 9px; text-align: center; }
 
 .brief { display: flex; flex-direction: column; gap: 9px; }
@@ -477,6 +571,10 @@ body.rm-user .bi-line { opacity: 1; }
             text-overflow: ellipsis; white-space: nowrap; }
 .rw-ltag { color: var(--text-mute); letter-spacing: .1em; font-size: 9.5px; }
 .rw-lnote { text-align: right; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+/* THE HARVEST reuses the leak-report skeleton in the win palette: same rows,
+   green frame, so the two blocks read as one instrument pointing two ways. */
+.rw-harvest { border-color: rgba(74,222,128,.28); background: rgba(74,222,128,.05); }
+.rw-harvest > b { color: #4ade80; }
 
 /* ---- A1: the first-run coach ---- */
 /* The tip lives OVER the board, so it must never eat a click meant for a
@@ -595,6 +693,13 @@ body.rm-user .bi-line { opacity: 1; }
 .gv-stats b { display: block; font-size: 24px; color: var(--fc); }
 .gv-stats span { font-size: 10px; letter-spacing: .12em; color: var(--text-mute); }
 .gv-next { font-size: 12px; color: var(--text-mute); font-style: italic; }
+/* The claim ceremony: one climbing figure, one delta beside it. */
+.gv-souls { display: flex; align-items: baseline; gap: 12px; }
+.gv-souls b { font-size: clamp(34px, 6vw, 52px); font-weight: 800; letter-spacing: .04em;
+              color: var(--gold, #fbbf24); font-variant-numeric: tabular-nums;
+              text-shadow: 0 0 34px rgba(251,191,36,.35); }
+.gv-souls em { font-size: 15px; font-style: normal; color: var(--text-dim);
+               font-variant-numeric: tabular-nums; }
 .gx-seats { font-size: 11.5px; color: var(--text-dim); cursor: help; }
 
 /* ═════════════════════════════════ CODEX: lore, factions, elements ═════ */
@@ -1102,6 +1207,15 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
   letter-spacing: .14em; color: var(--text-mute); }
 .ec-card.hard .ec-tag { color: #fca5a5; }
 .ec-owed { margin: 12px 0 0; font-size: 11px; color: var(--text-mute); text-align: center; }
+/* D3: the hold. Deliberately quieter than the three cards -- it is the
+   side door, not a fourth choice. */
+.ec-hold { display: block; margin: 14px auto 0; color: var(--text-dim); }
+.esc-hold-chip { position: fixed; top: 64px; left: 50%; transform: translateX(-50%);
+                 z-index: 60; padding: 8px 16px; font-size: 11px; letter-spacing: .14em;
+                 color: #fbbf24; border-color: rgba(251,191,36,.5);
+                 background: rgba(20,14,4,.92); box-shadow: 0 4px 24px rgba(0,0,0,.5);
+                 animation: escHoldPulse 1.6s ease-in-out infinite; }
+@keyframes escHoldPulse { 50% { box-shadow: 0 0 18px rgba(251,191,36,.35); } }
 
 .insp-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .move-btn { font-size: 10.5px; }
@@ -1164,6 +1278,35 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
 .mu-body b { font-family: var(--display); font-size: 10px; letter-spacing: .12em; color: #fed7aa; }
 .mu-body em { font-style: normal; font-size: 10px; color: var(--text-dim);
   font-variant-numeric: tabular-nums; }
+/* THE THREE FIGURES. Colour carries the meaning so the eye can pick out the
+   one it came for without reading all three: gold is what it costs, faction
+   colour is the power it buys, green is the income it adds. */
+.mu-figs { display: flex; gap: .55em; flex-wrap: wrap; }
+.mu-cost { color: var(--gold, #fbbf24); }
+.mu-pow { color: #fb923c; }
+.mu-eco { color: #4ade80; }
+/* The rite, above its own controls. */
+.engine-strip { display: flex; align-items: baseline; gap: 7px; padding: 5px 9px; border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--fc) 34%, transparent);
+  background: color-mix(in srgb, var(--fc) 8%, transparent); cursor: help; }
+.engine-strip b { font-family: var(--display); font-size: 9.5px; letter-spacing: .16em; color: var(--fc); }
+.engine-strip em { font-style: normal; font-size: 9.5px; color: var(--text-dim);
+  font-variant-numeric: tabular-nums; margin-left: auto; text-align: right; }
+.eng-lanes { font-size: 9px; letter-spacing: .12em; color: var(--text-mute); }
+.lattice-plate { display: flex; flex-direction: column; gap: 3px; padding: 9px 11px; border-radius: 10px;
+  border: 1px dashed rgba(148, 163, 184, .4); background: rgba(148, 163, 184, .06); }
+.lattice-plate b { font-family: var(--display); font-size: 10px; letter-spacing: .14em; color: #cbd5e1; }
+.lattice-plate em { font-style: normal; font-size: 10px; color: var(--text-mute); line-height: 1.45; }
+/* The POWER chip and its ledger. */
+.mu-powchip { cursor: help; text-decoration: underline dotted rgba(253, 186, 116, .5); text-underline-offset: 2px; }
+.muster-head b.uncapped { color: #fbbf24; }
+.pl-body { display: flex; flex-direction: column; gap: 3px; margin: 6px 0 4px; }
+.pl-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: baseline; font-size: 11px; }
+.pl-row span { color: var(--text-dim); letter-spacing: .08em; }
+.pl-row b { color: #fb923c; font-variant-numeric: tabular-nums; }
+.pl-row em { grid-column: 1 / -1; font-style: normal; font-size: 9.5px; color: var(--text-mute); }
+.pl-row.pl-them b { color: var(--red, #ef4444); }
+.pl-foot { display: block; font-style: normal; font-size: 9.5px; color: var(--text-mute); line-height: 1.45; }
 
 
 /* ═════════════════ AIMED ABILITIES ══════════════════════════════════════ */

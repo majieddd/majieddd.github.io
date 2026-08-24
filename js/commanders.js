@@ -49,7 +49,11 @@ function freshTraits() {
     reanimHp: 1, dotMul: 1, slowVuln: 0, killRamp: 0,
     eliteDamage: 1, eliteBounty: 1, startLevel: 0, lifeRegen: 0, lifeGainMul: 0,
     jamResist: 0, jamImmune: false, immortal: false,
-    leakReduce: 0, auraRangeMul: 1
+    leakReduce: 0, auraRangeMul: 1,
+    /* THE COMPILE. `compileFloor` pre-grants levels a chart has bought;
+       `compileRateMul` scales the metric a commander is measured on. Both
+       are read by Game.applyCompile and nowhere else. */
+    compileFloor: 0, compileRateMul: 1
   };
 }
 
@@ -149,7 +153,10 @@ const Meta = {
                 abilUnlocked: [],
                 /* Muster detachment: which SAVED denizens deploy with you.
                    Empty means "the first unlocked" -- resolved on read. */
-                musterLoadout: [] };
+                musterLoadout: [],
+                /* The standing order: which commander deploys. null = never
+                   chosen; the commander screen's EQUIP button writes it. */
+                equippedCommander: null };
     for (const c of COMMANDERS) p.commanders[c.id] = { xp: 0, unlocked: [] };
     for (const id of TOWER_ORDER) { p.talents[id] = []; p.towerXp[id] = 0; }
     /* Units share the tower tracks rather than growing their own: one talent
@@ -202,6 +209,10 @@ const Meta = {
     if (!Array.isArray(p.abilUnlocked)) p.abilUnlocked = [];
     if (!Array.isArray(p.musterLoadout)) p.musterLoadout = [];
     if (p.faction === undefined) p.faction = null;
+    /* The equipped commander arrived after every profile in existence was
+       written, so it is defaulted on READ the way the unit tracks were. null
+       means "never chosen" -- deploy falls back to the session pick. */
+    if (typeof p.equippedCommander !== 'string') p.equippedCommander = null;
     if (typeof p.galaxyTier !== 'number') p.galaxyTier = 0;
     if (!p.prestige || typeof p.prestige !== 'object') p.prestige = {};
     if (!Array.isArray(p.seenEnemies)) p.seenEnemies = [];
@@ -251,6 +262,9 @@ const Meta = {
     /* Where the rivals' expansion lives between sessions. */
     if (!c.owners || typeof c.owners !== 'object') c.owners = {};
     if (c.chosen === undefined) c.chosen = null;
+    /* Campaigns that predate NEW GAME PLUS resolve to the law they were
+       played under, which is exactly what VETERAN is. */
+    if (!RAMP_PRESETS[c.ramp]) c.ramp = RAMP_DEFAULT;
     /* The campaign's own banner. Falling back to the profile's keeps the
        galaxy pointed at the right rivals; 'human' is the last resort, and it
        is the same fallback galaxy() has always used. */
@@ -351,8 +365,32 @@ const Meta = {
       delete r.vault.abilUnlocked;
       this.save();
     }
+    /* THE CONQUEST LEDGER, install-wide. Which commander finished a galaxy is
+       nobody's business but theirs; whether THIS INSTALL ever has is what
+       unlocks the fifth banner, and it has to outlive the profile that earned
+       it or the reward would vanish with the run that won it. Grandfathered
+       from the only evidence older saves kept -- a profile that has advanced
+       a galaxy tier has finished a galaxy, by definition. */
+    if (typeof r.vault.victories !== 'number') {
+      let v = 0;
+      for (const n in r.profiles) v += (r.profiles[n] && r.profiles[n].galaxyTier) || 0;
+      r.vault.victories = v;
+      this.save();
+    }
+    /* A banner that did not exist when the shelves were carved gets an empty
+       one on read. Safe to run forever, and it is what lets THE PARALLEL be
+       added to a live install without a migration of its own. */
+    for (const k of arsenalShelfKeys()) {
+      if (!Array.isArray(r.vault.unlockedBy[k])) r.vault.unlockedBy[k] = STARTER_TOWERS.slice();
+      if (!Array.isArray(r.vault.cmdUnlockedBy[k])) r.vault.cmdUnlockedBy[k] = alwaysUnlocked().slice();
+      if (!Array.isArray(r.vault.abilUnlockedBy[k])) r.vault.abilUnlockedBy[k] = [];
+    }
+    for (const k of soulLedgerKeys()) if (typeof r.vault.boughtBy[k] !== 'number') r.vault.boughtBy[k] = 0;
     return r.vault;
   },
+
+  /** Has THIS INSTALL ever taken a galaxy? The fifth banner's only gate. */
+  gameBeaten() { return (this.vault().victories || 0) > 0; },
   setSettings(s) { const r = this.root(); r.settings = Object.assign(r.settings || {}, s); this.save(); },
   /* Saving used to serialise the WHOLE root synchronously on every mutation --
      measured at 1.93 ms per call against a 253 KB blob, and the blob only grows
@@ -418,7 +456,7 @@ const Meta = {
     return () => { x ^= x << 13; x ^= x >>> 17; x ^= x << 5; return ((x >>> 0) / 4294967296); };
   },
   campaign() { return this.load().campaign; },
-  campaignStart(factionId) {
+  campaignStart(factionId, rampId) {
     const p = this.load();
     if (factionId) {
       p.faction = factionId;
@@ -437,6 +475,10 @@ const Meta = {
        a given campaign is always the same campaign. */
     p.campaign = { seed, depth: 0, boons: [], totalWaves: 0, options: null,
                    faction: p.faction || 'human', tier: p.galaxyTier || 0,
+                   /* A first galaxy never chooses its slope -- the choice is
+                      the reward for finishing one, and VETERAN is the law the
+                      campaign already shipped with. */
+                   ramp: ((p.galaxyTier || 0) > 0 && RAMP_PRESETS[rampId]) ? rampId : RAMP_DEFAULT,
                    stars: {}, chosen: null, system: 0, log: [] };
     p.campaign.options = this.campaignOptions();
     this.save();
@@ -650,10 +692,29 @@ const Meta = {
   SYSTEM_BOUNTY: 12,
 
   /** Voluntary retirement: kept only so old saves mid-flight still resolve. */
+  /**
+   * A galaxy claimed. One writer for the whole ceremony, because the tier,
+   * the install's conquest ledger and the payout all have to move together
+   * or the fifth banner unlocks on a run that was never finished.
+   */
+  claimGalaxy() {
+    const p = this.load();
+    const firstEver = !this.gameBeaten();
+    p.galaxyTier = (p.galaxyTier || 0) + 1;
+    this.vault().victories = (this.vault().victories || 0) + 1;
+    this.save(true);
+    const res = this.campaignExtract();
+    return { souls: (res && res.souls) || 0, firstEver };
+  },
+
   campaignExtract() {
     const p = this.load();
     if (!p.campaign) return null;
-    const souls = this.campaignPayout(0);
+    /* The ramp pays at EXTRACTION, never per star: a bonus on the per-star
+       payout would let a commander farm the opening system on APEX and walk
+       away, which rewards abandoning a run rather than finishing one. */
+    const R = RAMP_PRESETS[p.campaign.ramp] || RAMP_PRESETS[RAMP_DEFAULT];
+    const souls = Math.round(this.campaignPayout(0) * R.soulsMul);
     const depth = p.campaign.depth;
     p.souls += souls;
     p.campaign = null;
@@ -895,6 +956,23 @@ const Meta = {
 
   faction() { return this.load().faction; },
   setFaction(id) { const p = this.load(); p.faction = id; this.adoptShelf(id); this.save(); return id; },
+
+  /* THE EQUIPPED COMMANDER. The session pick (UI.sel.commander) is browsing
+     state and dies with the tab; this is the standing order. Validated on
+     read rather than write, because the shelf is per banner: a commander
+     equipped under one banner and browsed from another must not deploy
+     there. */
+  equipped() {
+    const id = this.load().equippedCommander;
+    return (id && this.isCommanderUnlocked(id)) ? id : null;
+  },
+  equipCommander(id) {
+    if (!this.isCommanderUnlocked(id)) return false;
+    const p = this.load();
+    p.equippedCommander = id;
+    this.save(true);
+    return true;
+  },
 
   /** Swearing to a banner takes the unsworn shelf with you. A profile can
       reach the shop before it has a faction, and stranding those unlocks on a

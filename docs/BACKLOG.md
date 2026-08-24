@@ -184,7 +184,64 @@ Full write-ups with build notes in [`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md
 
 ---
 
-## G. The outside review's unpatched items — YOUR CALL
+## Session 22 — the summoning round
+
+Eight owner items, all shipped. What is worth knowing later:
+
+- **Five summoning rites, one conservation law.** `Game.corpseBudget` prices a
+  corpse once; a doctrine may change the SHELL a kill returns in, never the
+  MASS. CONSCRIPTION drafts from your roster, THE PROCESSION marches on a
+  clock, THE BROOD incubates, LETTERS OF MARQUE buys everything with no
+  ceiling on either bonus, THE LATTICE clones exactly and cannot buy at all.
+  The **commander** carries the rite, not the banner — that is the mixing
+  contract, and it is why a cross-faction commander brings their summoning to
+  your flag while your roster supplies the soldiers.
+- **THE PARALLEL** is real in `FACTIONS` and absent from `FACTION_ORDER`. That
+  split is load-bearing: `FACTION_ORDER` is the powers the galaxy is fought
+  over (world owners, arena seats, rivals) and `POWER_ORDER` is the powers
+  that own troops. Adding the robots to the former would put machine
+  garrisons on the map and machine bosses in seats.
+- **A Parallel player never fields their own soldiers**, and that is by
+  construction rather than by oversight: the Lattice clones what it kills and
+  cannot buy. Robot units reach a lane when ANOTHER power captures them —
+  their technology is a thing to be stolen. The RELAY doctrine and THE SPLICE
+  both fire on that path and are proved doing so.
+- **Everything campaign-shaped is a battle OPTION**, never read from the save:
+  `ramp`, `systemIndex`, and the flattening they imply. That is what keeps
+  skirmishes, duels and the balance pins measuring the engine rather than the
+  campaign, and it was verified by running pre- and post-change builds
+  back-to-back at parallel paths for a byte-identical pin.
+- **The pin harness is only comparable within one session.** Measured the hard
+  way this round: the same bundle returned different absolute numbers across
+  sessions while staying `reproducible: true` within each. Compare A against B
+  in ONE session at equivalent paths; never against a number written down on
+  a different day.
+
+Still open, and none of it new: the ten heavies have no `twr_` art plates, the
+rival AI draft lists never learnt them, and the soul shop's five new firing
+previews are unwired.
+
+The pacing worry this round raised is CLOSED and was never real — measured
+properly, pre-doctrine and post-doctrine builds swept back to back in one
+session give a maxed loss median of 33 and 31, so expert matches got shorter
+rather than longer. See BALANCE-BASELINE's "the delta that was not there".
+
+---
+
+## G. The outside review's unpatched items — ALL SIX SHIPPED (Session 22)
+
+| # | Item | Where it landed |
+|---|---|---|
+| D2 | Damage-number toggle | OPTIONS row, default ON. The gate sits INSIDE `addFloater` **after** the `rand()` draw — presentation may never be visible to the simulation, or two duel clients with different display settings desync. Proved sim-neutral: pins byte-identical with it on and off |
+| D3 | Escalation queueing | HOLD on the modal parks the sim but opens the board (`Game.boardInteractive`), with a chip to return. Abilities and musters keep their `playing`-only gates — they are timed acts |
+| D4 | ARIA pass | Build bar (name/role/price/hotkey), HUD, speed, summon tiers, profile delete, talent clear. Canvas placement is still pointer-only and the battle card now SAYS so |
+| D5 | Session stats | `Side.killLog` mirrors `leakLog`; a win gets THE HARVEST as a loss gets WHAT KILLED YOU, plus a second stats row from counters the sim already kept |
+| D6 | Soul ceremony | The galaxy claim counts souls onto the total instead of a toast. Souls are banked BEFORE the animation, so a refresh loses the animation and never the souls |
+| A4 | Difficulty ramp → **NEW GAME PLUS** | Converted per the owner: the choice unlocks after a galaxy is finished (`RAMP_PRESETS` veteran/onslaught/apex). VETERAN is provably the identity element — its two functions equal the retired ternaries — so a first galaxy and a veteran NG+ run play the game that shipped. The first galaxy is FLATTENED instead: relief tent to −35% at wave 8 rejoining the authored curve exactly at 15, types every 3 waves instead of 2, and no wave-5 miniboss in the opening system (the rota shifts rather than skips, so the teaching order survives). Every value is a battle OPTION, never read from the save, so skirmishes, duels and the pins keep the engine defaults |
+
+---
+
+## H. The old §G table, for history
 
 An outside reviewer played the live site in Session 21 and sent a nine-patch
 fixpack. Eight landed (see the commit); one is held in section C. But the

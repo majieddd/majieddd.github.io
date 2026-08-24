@@ -171,3 +171,86 @@ board-cost power tier is supposed to do: the maxed loss median moved 22 → 25
 while the fresh curve barely moved (8 → 9) — a fresh profile cannot afford a
 heavy, so it should not feel them, and it does not. Nothing here needs a nerf
 on this evidence; re-measure again if any heavy's talents change.
+
+---
+
+# Session 22 — RE-BASELINED for the SUMMONING DOCTRINES
+
+Summoning split into five rites, so the single universal law "everything you
+kill rises again" now belongs to one doctrine out of five. That is an ENGINE
+change and it re-bases these pins legitimately. Same seeds, same maps, same
+method; `selfTest(0, 1234)` still reports `reproducible: true` (23 / 28853,
+was 22 / 28664).
+
+## Maxed profile, galaxy tier 0 — seeds 1000-1005
+
+| Map | Seed | Outcome | Wave |
+|---|---:|---|---:|
+| spine | 1000 | win | 25 |
+| delta | 1001 | loss | 31 |
+| narrows | 1002 | loss | 34 |
+| shattered | 1003 | loss | 31 |
+| crossroads | 1004 | loss | 30 |
+| coil | 1005 | loss | 33 |
+
+**1 win / 5 losses** · **loss median 31**. Against a PRE-doctrine build
+measured in the same session on the same seeds — waves 25, 34, 33, 33, 28, 30,
+**median 33** — so the rites made expert matches slightly SHORTER, not longer.
+See "the delta that was not there" below.
+
+## Fresh profile — seeds 1000-1005
+
+| Map | Seed | Outcome | Wave |
+|---|---:|---|---:|
+| spine | 1000 | loss | 10 |
+| delta | 1001 | win | 10 |
+| narrows | 1002 | loss | 11 |
+| shattered | 1003 | loss | 11 |
+| crossroads | 1004 | win | 14 |
+| coil | 1005 | loss | 26 |
+
+**2 wins / 4 losses** · **loss median 11**. No delta is claimed against the old
+fresh figure: it was recorded in a different session and this table was not
+re-measured against a pre-doctrine build under the protocol below, so the two
+numbers are not comparable and pretending otherwise is the mistake this
+section exists to document.
+
+## The delta that was not there
+
+This section first shipped claiming the maxed median moved 25 → 31 and calling
+that "the number to watch" — six waves longer, pulling against the standing
+rule that rounds should end promptly. **That claim was wrong**, and it was
+wrong in the exact way the warning below describes: 25 was written down in an
+earlier session and 31 was measured in this one.
+
+Measured properly — both builds served at parallel paths and swept back to
+back in ONE session, seeds 1000-1005 — the maxed loss median is **33 before
+the doctrines and 31 after**. Expert matches got two waves SHORTER. There is
+no pacing regression to chase.
+
+What is true, structurally: of the five rites only CONSCRIPTION and THE
+LATTICE turn a kill into a body, so total free pressure across a mirror-AI
+board fell. It simply did not move the medians the way a cross-session
+comparison suggested.
+
+### A WARNING ABOUT THIS HARNESS, learnt the hard way in Session 22
+
+These absolute numbers are only comparable **within one session**. The same
+bundle, unchanged, returned 22/28664 one day and 13/18007 another while
+reporting `reproducible: true` both times — the flag only promises that two
+runs inside ONE page agree, which is exactly what it says and not what it was
+being read as. Whatever the page's state is when `captureAI()` snapshots the
+prototype travels into every run after it.
+
+So: to prove a change did or did not move the simulation, build BOTH versions,
+serve them at equivalent fresh paths, and measure them back to back in one
+session. That is how the NG+ work was proved sim-neutral (13/18007 on both
+sides). A number compared against one written down on a different day proves
+nothing at all.
+
+**The maxed move (25 → 31) is the number to watch.** It is not a defect — the
+health curve's terminus still bites and every run ended by wave 34 — but it
+means expert matches now run about six waves longer, which pulls against the
+standing rule that rounds should end promptly. Re-measure this table after the
+difficulty pass; if the maxed median has not come back toward the high
+twenties, the honest lever is the post-wave-20 ramp, not the rites.

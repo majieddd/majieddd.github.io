@@ -55,7 +55,13 @@ const NET_CHANNEL = 'cosmic-conquest-duel/1';
    more fields. An unpatched window would drop every `t` packet it received
    and hash a different set of state, so the two boards would part on turn
    zero for a reason nobody could read off the overlay. Refuse the link. */
-const NET_PROTOCOL = 2;
+/* 3: summoning became five doctrines. The rite decides what a kill returns
+   as, so two builds that disagree about it diverge on the first corpse -- and
+   the fingerprint now carries the procession's place in its march, the
+   clutches on the board, the conscription debt and the power step. No new
+   command kinds: a buy is still `m`, and every rite runs itself identically
+   on both clients from the same seed. */
+const NET_PROTOCOL = 3;
 /* A turn is six ticks — 100ms at 1x. Smaller windows stall constantly the
    moment one browser deprioritises anything; larger ones are felt as lag. */
 const NET_TURN_TICKS = 6;
@@ -1058,6 +1064,16 @@ const Net = {
        turn nowhere near the turn that actually went wrong. */
     for (const m of Game.enemyMods) mix(ENEMY_MODS.indexOf(m));
     mix(q(Game.drift.hp)); mix(q(Game.drift.speed)); mix(q(Game.drift.armor));
+    /* THE CLUTCHES. A pod is a body that has not arrived yet, so two boards
+       that disagree about one are already two different matches -- they just
+       do not find out until it hatches. `lidx` rather than a UNIT_ORDER index
+       because the loadout crosses the wire in the seat contract and so means
+       the same thing on both clients regardless of build. */
+    mix((Game.incubators || []).length);
+    for (const pod of (Game.incubators || [])) {
+      mix(pod.side); mix(q(pod.x)); mix(q(pod.y));
+      mix(q(pod.t)); mix(q(pod.powerHp)); mix(pod.lidx | 0);
+    }
     for (const S of this._realSides) {
       mix(S.gold); mix(S.lives); mix(S.enrage || 0); mix(q(S.musterIncome));
       mix(S.towers.length); mix(S.cleared.size); mix(S.taken.length);
@@ -1066,6 +1082,13 @@ const Net = {
          of the stream and the count of them proves nothing about it. */
       for (const m of S.taken) mix(PLAYER_MODS.indexOf(m));
       mix(S.baseLevel || 1); mix(S.stats.sent); mix(S.stats.kills); mix(S.stats.leaked);
+      /* The rite and its working state. Unconditional for every seat: a
+         doctrine field that only hashed when it was interesting would be a
+         field that stops proving anything the moment it matters. */
+      mix(DOCTRINE_ORDER.indexOf(S.doctrine));
+      mix(S.procIdx | 0); mix(S.procCycle | 0); mix(q(S.procTimer || 0));
+      mix(q(S.rollDebt || 0)); mix(q(S.summonPower || 0));
+      mix(S.musterThisWave | 0);
       for (const t of S.towers) {
         mix(t.gx); mix(t.gy); mix(t.level); mix(t.asc || 0);
         mix(t.invested || 0); mix(t.kills || 0); mix(q(t.damageDealt));

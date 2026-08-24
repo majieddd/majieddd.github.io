@@ -608,6 +608,11 @@ function seatsRemaining(galaxy, progress) {
 function galaxyHoldings(galaxy, progress) {
   const out = {};
   for (const f of FACTION_ORDER) out[f] = 0;
+  /* The player's own banner may not be one of the galaxy's four powers -- THE
+     PARALLEL holds no worlds and so is absent from FACTION_ORDER. Without a
+     slot of its own the first conquest increments `undefined` and every
+     holdings figure on the screen becomes NaN. */
+  out[galaxy.playerFaction] = out[galaxy.playerFaction] || 0;
   for (const sys of galaxy.systems)
     for (const w of sys.worlds)
       out[isConquered(progress, w.id) ? galaxy.playerFaction : w.owner]++;

@@ -956,6 +956,35 @@ function unitDeathDoctrine(e) {
     }
   }
 
+  /* RELAY. A Parallel body that dies on somebody's lane leaves a working node
+     where it fell. Unlike the other four this does nothing to the board it
+     died on -- it is infrastructure for the machines still walking, which is
+     why it is recorded rather than applied: the buff is read per frame from
+     the node, so a unit that arrives later still spends it. */
+  if (doc && doc.id === 'relay' && e.reanimated && e.owner >= 0) {
+    const nodes = game.relayNodes || (game.relayNodes = []);
+    /* THE SPLICER carries the cutting rig. Killing it on your own ground is
+       what triggers the fork -- LEAKING it does nothing at all, which is the
+       trap: the unit you most want dead is the one you should let walk.
+       Where no detour can be derived (a centred lane, the arena) the rig
+       still did something: it leaves a relay that burns twice as long. */
+    let spliced = false;
+    if (e.def.id === 'splicer' && game.openSplice)
+      spliced = game.openSplice(e.hostileTo, Math.max(1, Math.round(ROBOT_SPLICE_WAVES * mine.spliceMul)));
+    nodes.push({ x: e.x, y: e.y,
+                 t: UNIT_RELAY_TIME * mine.relayMul * (e.def.id === 'splicer' && !spliced ? 2 : 1),
+                 owner: e.owner, board: e.hostileTo });
+    /* Oldest first, so a long chain is a road with a moving head rather than
+       a permanent installation. */
+    let mineCount = 0;
+    for (let i = nodes.length - 1; i >= 0; i--) if (nodes[i].owner === e.owner) mineCount++;
+    while (mineCount > UNIT_RELAY_MAX) {
+      for (let i = 0; i < nodes.length; i++) {
+        if (nodes[i].owner === e.owner) { nodes.splice(i, 1); mineCount--; break; }
+      }
+    }
+  }
+
   const salvR2 = (UNIT_SALVAGE_RADIUS * TILE) ** 2;
   const vowR2 = (UNIT_VOW_RADIUS * TILE) ** 2;
   const massR2 = (UNIT_MASS_RADIUS * TILE) ** 2;

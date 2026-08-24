@@ -30,6 +30,10 @@ const STAGE_CHROME_PX = 30;      /* #stage padding + the gap beside the sidebar 
    a ring is a heavier interruption than a missed world click, so it asks for
    more travel before it commits. */
 const RADIAL_OPEN_PX = 12;
+/* How far the battle camera may push in. The board is fitted whole at 1, so
+   this is entirely opt-in; past about 2.6 the hand-drawn sprites soften for
+   the same reason viewScale stops at 1.9. */
+const BATTLE_ZOOM_MAX = 2.6;
 
 /* Ring geometry in LOGICAL board units (Game.width/height space, TILE=38),
    never in CSS pixels -- the canvas is fitted by viewScale, so measuring the
@@ -787,7 +791,7 @@ function maelstromMap(seats) {
     roster: MAELSTROM_ROSTER.slice(), denizens: MAELSTROM_DENIZENS.slice(),
     sigNote: 'The singularity throws back everything it has swallowed.',
     blurb: 'A singularity with ' + n + ' seats around it. Nothing you kill comes back to you here — ' +
-           'the dead fall inward. You may still muster, and every bonus you hold rides what you send.',
+           'the dead fall inward. You may still summon for gold, and every POWER bonus you hold rides what you send.',
     trait: n + ' SEATS · no reanimation · the horizon contracts'
   };
 }
@@ -984,6 +988,79 @@ const DIFFICULTIES = [
   { id: 'overrun',   name: 'OVERRUN',   hp: 1.22, gold: 780, lives: 15, aiSkill: 1.00, aiEcon: 1.2,
     blurb: 'Ruthless and economically ahead. Punishes every wasted tile.' }
 ];
+
+/* --------------------------------------------------------------------------
+   NEW GAME PLUS — the ramp you choose once you have finished a galaxy.
+
+   A first galaxy is not a difficulty menu; it is the tutorial the campaign
+   never admits to being, and asking a new commander to pick a slope before
+   they know what the slope is made of is how a first run gets abandoned. So
+   the choice arrives exactly when the player has proved they no longer need
+   it: at the start of the SECOND galaxy and every one after.
+
+   VETERAN is the identity element. Its two functions are, deliberately and
+   exactly, the mapping the campaign shipped with, so a NG+ run that takes it
+   plays the same game the last one did -- only against tougher garrisons.
+   Everything campaign-less (skirmish, duels, the Maelstrom, the balance pins)
+   resolves to it, which is why it must never drift.
+
+   The harder ramps pay at EXTRACTION rather than per star, so a player cannot
+   farm the opening system on APEX and abandon the run for the bonus.
+-------------------------------------------------------------------------- */
+const RAMP_PRESETS = {
+  veteran: {
+    id: 'veteran', name: 'VETERAN', tierHpStep: 0.30, soulsMul: 1.00,
+    diffFor: si => (si < 1 ? 'skirmish' : si < 3 ? 'contested' : 'overrun'),
+    escFor: si => Math.floor(si * 0.8),
+    blurb: 'The galaxy as you fought it. Garrisons 30% stronger per tier.'
+  },
+  onslaught: {
+    id: 'onslaught', name: 'ONSLAUGHT', tierHpStep: 0.40, soulsMul: 1.20,
+    diffFor: si => (si < 1 ? 'contested' : si < 3 ? 'overrun' : 'overrun'),
+    escFor: si => Math.floor(si * 0.8) + 1,
+    blurb: 'No gentle opening. Every world escalated once more, +40% per tier, and a fifth more souls at extraction.'
+  },
+  apex: {
+    id: 'apex', name: 'APEX', tierHpStep: 0.50, soulsMul: 1.40,
+    diffFor: () => 'overrun',
+    escFor: si => Math.floor(si * 0.8) + 2,
+    blurb: 'Overrun from the first world to the last, +50% per tier. Two escalations already landed everywhere. Pays 40% more.'
+  }
+};
+const RAMP_DEFAULT = 'veteran';
+
+/* --------------------------------------------------------------------------
+   THE FIRST GALAXY, FLATTENED.
+
+   Measured against a fresh profile the opening system asked for everything at
+   once: eight creature types by wave 15, a miniboss on wave 5 before a
+   fourth tower is affordable, and the authored health curve at full slope.
+   These three tables ease exactly that, and ONLY in the first galaxy's first
+   systems -- every value is indexed by solar system, and every one of them is
+   passed into a battle as an OPTION rather than read from the save, so a
+   skirmish, a duel and the balance pins keep the engine defaults untouched.
+
+   The relief is a TENT, not a discount: it grows to its peak around the wave
+   a fresh commander actually dies on, then closes and rejoins the authored
+   curve EXACTLY at TIER0_EASE_END_WAVE. Past wave 20 the terminus is
+   bit-identical to what it always was, so rounds still end when they end.
+-------------------------------------------------------------------------- */
+const TIER0_HP_EASE = [0.35, 0.15, 0, 0, 0];
+const TIER0_INTRO_EVERY = [3, 2, 2, 2, 2];
+const TIER0_MINIBOSS_DELAY = [5, 0, 0, 0, 0];
+const TIER0_EASE_PEAK_WAVE = 8;
+const TIER0_EASE_END_WAVE = 15;
+
+/** The relief tent. 1.0 everywhere it does not apply, so it is safe to
+    multiply unconditionally into the health multiplier. */
+function tier0ReliefMul(n, ease) {
+  if (!ease || n >= TIER0_EASE_END_WAVE) return 1;
+  if (n <= 1) return 1;
+  const t = n <= TIER0_EASE_PEAK_WAVE
+    ? (n - 1) / (TIER0_EASE_PEAK_WAVE - 1)
+    : (TIER0_EASE_END_WAVE - n) / (TIER0_EASE_END_WAVE - TIER0_EASE_PEAK_WAVE);
+  return 1 - ease * Math.max(0, Math.min(1, t));
+}
 
 /* --------------------------------------------------------------------------
    ASCENSION — the price roughly 2.3x per step against 1.34x power.
@@ -2407,8 +2484,8 @@ function battleRosterFor(map, hostFaction) {
 
 /** The slice of `roster` a wave may draw from. One on wave 1, one more every
     ROSTER_INTRO_EVERY waves, and nothing is ever retired. */
-function rosterAvailable(roster, wave) {
-  const n = 1 + Math.floor(Math.max(0, wave - 1) / ROSTER_INTRO_EVERY);
+function rosterAvailable(roster, wave, every = ROSTER_INTRO_EVERY) {
+  const n = 1 + Math.floor(Math.max(0, wave - 1) / (every || ROSTER_INTRO_EVERY));
   return roster.slice(0, Math.max(1, Math.min(roster.length, n)));
 }
 
@@ -2446,9 +2523,9 @@ function rosterPick(avail, hp, used, salt) {
  * Bosses and minibosses pass through untouched -- exempt from the cap and
  * from the introduction schedule, by the owner's brief.
  */
-function composeWave(n, roster, map, countMul) {
+function composeWave(n, roster, map, countMul, introEvery = ROSTER_INTRO_EVERY) {
   const base = WAVES[(n - 1) % WAVES.length];
-  const avail = rosterAvailable(roster, n);
+  const avail = rosterAvailable(roster, n, introEvery);
   const used = new Set();
 
   /* Every slot this wave has to fill: the template's groups, then the map's
@@ -2475,7 +2552,10 @@ function composeWave(n, roster, map, countMul) {
      body carrying a fraction of its own listed health (measured 0.35x), while
      a heavier slot merely sends two or three of them at full strength. */
   let pinned = -1;
-  if (avail.length > rosterAvailable(roster, n - 1).length) {
+  /* MUST use the same cadence as the line above. Comparing this wave's slice
+     against a DEFAULT-cadence previous wave is how the newcomer pin silently
+     stops firing on a slowed schedule. */
+  if (avail.length > rosterAvailable(roster, n - 1, introEvery).length) {
     const fresh = avail[avail.length - 1], want = ENEMY_TYPES[fresh].hp;
     let best = Infinity;
     slots.forEach((s, i) => {
@@ -3188,6 +3268,100 @@ const MUSTER_AI_SAFE_LIVES = 0.8;         /* ceiling 1.12^10 = 3.11x base cost  
    straight into the income ceiling, which is the snowball with extra steps. */
 const MUSTER_PER_WAVE = 2;
 
+/* ==========================================================================
+   THE SUMMONING DOCTRINES — tunables
+
+   Five rites, one conservation law (see SUMMON_DOCTRINES in factions.js and
+   Game.corpseBudget). Everything here bounds a rite that would otherwise run
+   away; each block says what it is holding down. */
+
+/* THE POWER STEP. Every purchase permanently hardens what you send, so a
+   summon bought past the income ceiling still buys something -- until now a
+   post-cap send was pure tempo and the button's promise was half a lie. A
+   bounded additive, not a compounding stream: +0.02 a buy to a +0.20 ceiling
+   is about one boon's worth over a whole match. The Pirates are the named
+   exception the owner asked for -- a steeper step and NO ceiling -- and what
+   re-prices it is PIRATE_COST_GROWTH below, not a second cap. */
+const POWER_PER_BUY = 0.02;
+const POWER_PER_BUY_PIRATE = 0.03;
+const SUMMON_POWER_CAP = 0.20;
+
+/* THE MARQUE PRICE. Pirates buy every body they field, so their cost curve
+   never plateaus the way MUSTER_COST_STEPS lets everyone else's. 1.09
+   unbounded against a FLAT income step means the payback horizon of the Nth
+   buy diverges -- roughly 4.4 waves at buy ten, 9.7 at buy twenty, against
+   matches that resolve by about wave 25. That divergence IS the cap; there is
+   no second brake, and MUSTER_PER_WAVE still stands for them as for everyone. */
+const PIRATE_COST_GROWTH = 1.09;
+
+/* CONSCRIPTION's band. A corpse pays for a body of its own mass in a
+   different shape, so a light kill rolling a heavy unit arrives as a husk of
+   that unit. The band stops the two ends being nonsense: below MIN the husk
+   is free ability real estate (a vanguard-shaped 30% shell soaking a
+   bulwark), above MAX a heavy corpse rolling a chitling arrives as an
+   unkillable pebble. When nothing in the roster fits the band the roll is
+   clamped and the inflation is BOOKED as debt -- the next kills pay it off
+   instead of spawning -- so the clamp can never print mass. */
+const HUMAN_ROLL_HPMUL_MIN = 0.30;
+const HUMAN_ROLL_HPMUL_MAX = 2.20;
+
+/* THE PROCESSION's four bounds, because a stream that ignores kills is the
+   easiest thing here to make unanswerable: it starts late (wave 3, the same
+   reasoning as MUSTER_AI_MIN_WAVE -- defence first), each body pays a
+   STEEPER tax than a bought one (0.35 against MUSTER_DAMP's 0.60, because it
+   was not paid for), the per-entry count stops growing at 6, and the cadence
+   STRETCHES as the count grows. Count capped while the period grows means
+   delivered mass per minute is asymptotically linear -- it cannot outrun the
+   1.26/wave enemy health curve, which is what a free stream must never do. */
+const FOL_START_WAVE = 3;
+const FOL_CADENCE_SEC = 9.0;
+const FOL_CADENCE_GROWTH = 0.6;
+const FOL_CYCLE_COUNT_CAP = 6;
+const PROCESSION_DAMP = 0.35;
+
+/* THE BROOD's clutches. The 25% haircut prices the burst: a clutch lands as a
+   pack the rival cannot answer piecemeal, and DEVOURING (x1.25) plus prestige
+   ride the same budget, so a sworn Xeno nets near the whole corpse -- later,
+   and all at once. Gestation is set by the unit ROLLED, not the unit killed,
+   which is why the pod draws what it is becoming: that glyph is the tell the
+   whole faction plans around. Feeding is the combo -- kills near a clutch
+   hurry it -- and the cap turns overflow into a bigger feed rather than a
+   loss, so a full nest still rewards killing. */
+/* THE PARALLEL's bootstrap. Every tower wakes 12% down on damage, rate and
+   range and recovers 2% a wave, so the faction is the worst in the game for
+   its first six waves and the best from the thirteenth. Break-even lands
+   around wave 7 -- deliberately after the point a fresh commander is usually
+   already in trouble, because a drawback that never hurts is not a drawback.
+   The ramp is a pure function of the wave count, which is why it needs no
+   state of its own and cannot drift between two clients. */
+const ROBOT_BOOT_FLOOR = 0.12;
+const ROBOT_BOOT_STEP = 0.02;
+const ROBOT_BOOT_WAVES = 12;
+
+/* THE RELAY. A Parallel body that dies on a rival's lane leaves a working
+   node where it fell, and the machines behind it walk through faster and
+   harder. This is the faction's combo: not one strong unit but a chain of
+   ordinary ones, each paid for by the last one's death. Non-stacking -- the
+   single strongest node in reach applies -- because a corridor of six nodes
+   should be a road, not a runway. */
+const UNIT_RELAY_RADIUS = 1.8;
+const UNIT_RELAY_TIME = 6.0;
+const UNIT_RELAY_SPEED = 0.25;
+const UNIT_RELAY_ARMOR = 2;
+const UNIT_RELAY_MAX = 6;
+/* How many WAVES a spliced lane stays open. Waves, not seconds: a wave's
+   spawn entries are enumerated per lane exactly once when it starts, so an
+   expiry measured in seconds would strand everything already queued on a
+   lane that no longer exists. */
+const ROBOT_SPLICE_WAVES = 1;
+
+const XENO_INC_SHARE = 0.75;
+const XENO_INC_BASE_SEC = 6.0;
+const XENO_INC_SQRT_SEC = 0.55;
+const XENO_INC_FEED_RADIUS = 2.6;
+const XENO_INC_FEED_SEC = 1.5;
+const XENO_INC_CAP = 10;
+
 /* ── MUSTER DETACHMENT ────────────────────────────────────────────────────
    The fixed three-row table is gone. A commander carries up to
    MUSTER_LOADOUT_SIZE SAVED denizens into battle (Meta.musterLoadout), and
@@ -3301,7 +3475,7 @@ const UNIT_SALVAGE_CAP = 9;         /* total, however much wreckage there is   *
    how far past its own maximum a single survivor can be stacked -- three
    deaths onto one Sanctifier was a 600-point ward and an unkillable anchor. */
 const UNIT_VOW_RADIUS = 3.0;        /* tiles the vow reaches                   */
-const UNIT_VOW_SHARE = 0.45;        /* of the dead unit's FULL ward            */
+const UNIT_VOW_SHARE = 0.50;        /* of the dead unit's FULL ward            */
 const UNIT_VOW_OVERCAP = 1.6;       /* ceiling, as a multiple of its own ward  */
 
 /* THE MASS (Xeno). The swarm eats its own dead. SHARE is of the eaten body's
@@ -3310,7 +3484,7 @@ const UNIT_VOW_OVERCAP = 1.6;       /* ceiling, as a multiple of its own ward  *
    with a cap, because an unbounded radius is a hitbox the renderer and the
    splash maths disagree about. */
 const UNIT_MASS_RADIUS = 2.6;       /* tiles the swarm reaches to feed         */
-const UNIT_MASS_SHARE = 0.35;       /* of the dead body's maximum health       */
+const UNIT_MASS_SHARE = 0.40;       /* of the dead body's maximum health       */
 const UNIT_MASS_GROWTH = 0.12;      /* radius gained per meal                  */
 const UNIT_MASS_RADIUS_CAP = 1.5;   /* as a multiple of its authored radius    */
 
@@ -3319,7 +3493,7 @@ const UNIT_MASS_RADIUS_CAP = 1.5;   /* as a multiple of its authored radius    *
    chain-locking a board for five seconds -- the jam is meant to change WHERE
    you kill pirates, never whether you can. */
 const UNIT_SCUTTLE_RADIUS = 1.8;    /* tiles of towers taken offline           */
-const UNIT_SCUTTLE_JAM = 0.85;      /* seconds                                 */
+const UNIT_SCUTTLE_JAM = 1.00;      /* seconds                                 */
 const UNIT_SCUTTLE_COOLDOWN = 3.2;  /* seconds, per defending side             */
 
 /* A death fires one scan of the board. The cap is a guard against a
@@ -3406,9 +3580,13 @@ function musterTiersFor(loadout) {
   return ids.map(musterTierFor).filter(Boolean).sort((a, b) => a.mass - b.mass);
 }
 
-function musterCost(tier, wave, buys) {
+/* `growth` and `steps` are parameters because LETTERS OF MARQUE buys every
+   body it fields and so must never reach the plateau the other rites get:
+   passing Infinity steps is what turns this into the pirates' only brake.
+   Defaults leave every existing caller exactly where it was. */
+function musterCost(tier, wave, buys, growth = MUSTER_COST_GROWTH, steps = MUSTER_COST_STEPS) {
   return Math.round(waveReward(wave + 1) * tier.cost *
-                    Math.pow(MUSTER_COST_GROWTH, Math.min(buys || 0, MUSTER_COST_STEPS)));
+                    Math.pow(growth, Math.min(buys || 0, steps)));
 }
 /** The income PERCENT one more purchase of `tier` adds. FLAT by the owner's
     spec -- no falloff. MUSTER_INCOME_CAP_PCT alone bounds the total, applied
@@ -3416,9 +3594,13 @@ function musterCost(tier, wave, buys) {
 function musterIncomeStep(tier) {
   return tier.incomePct;
 }
-/** Gold a side's accumulated muster percent pays on `wave`, ceiling applied. */
-function musterPayout(pct, wave) {
-  return Math.round(waveReward(wave) * Math.min(pct || 0, MUSTER_INCOME_CAP_PCT));
+/** Gold a side's accumulated muster percent pays on `wave`, ceiling applied.
+    The ceiling is a PARAMETER because it belongs to the summoning rite, not
+    to the economy: MUSTER_INCOME_CAP_PCT is the default-doctrine bound, and
+    LETTERS OF MARQUE passes Infinity. What re-prices the pirate exemption is
+    PIRATE_COST_GROWTH, not a second ceiling here. */
+function musterPayout(pct, wave, capPct = MUSTER_INCOME_CAP_PCT) {
+  return Math.round(waveReward(wave) * Math.min(pct || 0, capPct));
 }
 
 /* The rival scores a muster against builds and upgrades on score-per-gold, so

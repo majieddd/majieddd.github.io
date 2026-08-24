@@ -34,6 +34,16 @@ function seededDraw(seed) {
 }
 function setReducedMotion(user) { RM_USER = !!user; }
 
+/* DAMAGE NUMBERS — same cached-gate shape as reduced motion, and for the same
+   reason: the check runs once per landed hit. Default ON because a new player
+   learning which tower is doing the work needs the numbers; the OPTIONS
+   checkbox exists for the player who finds them noise. The gate lives in
+   registerDamage, not addFloater — floaters also carry gold and MUSTER
+   notices, and those must survive the toggle. */
+let DMG_NUMBERS = true;
+function damageNumbersOn() { return DMG_NUMBERS; }
+function setDamageNumbers(on) { DMG_NUMBERS = !!on; }
+
 /** The active battlefield geometry, rebuilt from the chosen map. */
 let FIELD = null;
 
@@ -67,6 +77,17 @@ class Side {
        picks; start() replaces both. */
     this.musterLoadout = MUSTER_BASE_UNLOCK.slice();
     this.musterTiers = musterTiersFor(this.musterLoadout);
+    /* THE RITE this commander summons by, and its working state. Defaulted to
+       CONSCRIPTION so a Side is complete before start() resolves the real one
+       from the commander; every field is sim state and every one is
+       fingerprinted, because a duel where one client's procession is a beat
+       ahead is a duel that has already parted. */
+    this.doctrine = 'human';
+    this.procIdx = 0; this.procCycle = 0; this.procTimer = 0;
+    this.rollDebt = 0;
+    this.summonPower = 0;
+    /* How far a compiling commander has rewritten itself. */
+    this.compileLevel = 0;
     /* RESONANT FIELD, per side. It used to be one game-global counter that
        only the player could pay into, so the rival's identical wave also
        arrived with the bounty bonus -- it collected a payout the player
@@ -87,7 +108,7 @@ class Side {
        commitment and pays nothing at all for a leak. */
     this.livesPaid = 0;
     this.stats = { kills: 0, goldEarned: 0, leaked: 0, built: 0, sent: 0, livesRestored: 0, mustered: 0,
-                   leaksRecovered: 0 };
+                   leaksRecovered: 0, jammed: 0 };
     /* WHAT KILLED YOU -- lives actually lost, keyed by the class that walked
        them off the board: { n, lives, sent }. `stats.leaked` is one number and
        a number is not a lesson: a player who cannot name the contact that beat
@@ -103,6 +124,13 @@ class Side {
        job is teaching what killed you. `stats.leaksRecovered` counts those
        refunds instead, because the recovery is the counterplay. */
     this.leakLog = {};
+    /* THE HARVEST -- kills keyed by class: { n, bounty }. leakLog's mirror,
+       for the same reason: stats.kills is one number, and the debrief wants
+       to say WHICH contacts fed this commander, not how many. `bounty` books
+       the base figure after elite/execute adjustments and before gold mods,
+       because the lesson is what the class was worth, not what the economy
+       inflated it to. Written only from killEnemy; never read by the sim. */
+    this.killLog = {};
   }
   get alive() { return this.lives > 0; }
   /** How many of a tower type this side already fields — drives price growth. */
@@ -191,6 +219,13 @@ const Game = {
 
   enemies: [], projectiles: [], particles: [], floaters: [],
   beams: [], puddles: [], pendingSpawns: [], delayed: [],
+  /* THE BROOD's clutches. Sim state, not decoration: fingerprinted, ticked in
+     step, and drawn read-only. */
+  incubators: [],
+  /* THE PARALLEL's relay nodes, same rules. */
+  relayNodes: [],
+  /* Per side: the temporary lane a Splicer cut into that board, or null. */
+  spliceState: [],
 
   wave: 0, spawnQueue: [], prepTimer: 0, waveRunning: false,
   enemyMods: [], pendingChoice: null,
@@ -388,7 +423,11 @@ const Game = {
 
     /* Commanders: yours from the meta save, the rival's picked to contrast. */
     Meta.applyTo(this.sides[0], opts.commander || COMMANDERS[0].id);
-    const rivalPool = COMMANDERS.filter(c => c.id !== this.sides[0].commander.id);
+    /* THE PARALLEL never seats a rival. It holds no worlds, so a machine
+       commander behind a garrison would be a power the campaign has no way to
+       take -- and the secret would be spoiled by meeting it. */
+    const rivalPool = COMMANDERS.filter(c => c.id !== this.sides[0].commander.id &&
+                                             c.faction !== 'robot');
     let rival = (opts.rival && COMMANDERS.find(c => c.id === opts.rival)) ||
                 rivalPool[Math.floor(Math.random() * rivalPool.length)];
     /* rivalPool excludes the player's own commander, but only the RANDOM
@@ -413,6 +452,22 @@ const Game = {
     this._skirmish = !!opts.skirmish;
     this._overDrawn = false;
     this.galaxyTier = this._skirmish ? 0 : ((Meta.campaign() && Meta.campaign().tier) || 0);
+    /* THE RAMP and THE FLATTENING, both resolved from OPTIONS rather than
+       from the save. That is the whole safety property: a skirmish, a duel,
+       the Maelstrom and the balance pins pass none of these, so they get the
+       engine's own defaults and measure the same game they always did. Only a
+       campaign node threads the values in, and only the FIRST galaxy is
+       flattened -- once a tier has been cleared the player has chosen a ramp
+       and the training wheels come off for good. */
+    {
+      const R = (opts.ramp && RAMP_PRESETS[opts.ramp]) || RAMP_PRESETS[RAMP_DEFAULT];
+      this.tierHpStep = R.tierHpStep;
+      const si = (typeof opts.systemIndex === 'number') ? opts.systemIndex : null;
+      const flatten = si !== null && this.galaxyTier === 0 && !this._skirmish;
+      this.hpEase = flatten ? (TIER0_HP_EASE[si] || 0) : 0;
+      this.rosterIntroEvery = flatten ? (TIER0_INTRO_EVERY[si] || ROSTER_INTRO_EVERY) : ROSTER_INTRO_EVERY;
+      this.minibossDelayWaves = flatten ? (TIER0_MINIBOSS_DELAY[si] || 0) : 0;
+    }
     if (this.isSeatBattle) rivalTech = 18;
     Meta.applyToAI(this.sides[1], rival.id, rivalTech);
 
@@ -491,6 +546,9 @@ const Game = {
     this.movingTower = null; this.selectedRubble = null; this.selectedNode = null;
     this.aimingAbility = null; this.constructs = []; this.radial = null;
     this.beams = []; this.puddles = []; this.pendingSpawns = []; this.spawnQueue = [];
+    this.incubators = [];
+    this.relayNodes = [];
+    this.spliceState = [];
     this.delayed = [];
     this.arenaSpeed = 1; this.arenaArmor = 0; this.arenaTempo = 1;
     this.enemyMods = []; this.pendingChoice = null;
@@ -544,8 +602,9 @@ const Game = {
       const variety = this.sides[1].loadout.length;
       for (let i = 3; i < this.sides.length; i++) {
         const S2 = this.sides[i];
-        const own = commandersOf(S2.faction).filter(c => !taken.has(c.id));
-        const spare = COMMANDERS.filter(c => !taken.has(c.id));
+        /* Arena seats are the galaxy's powers too -- no machine commanders. */
+        const own = commandersOf(S2.faction).filter(c => !taken.has(c.id) && c.faction !== 'robot');
+        const spare = COMMANDERS.filter(c => !taken.has(c.id) && c.faction !== 'robot');
         const cmd = own[0] || spare[0] || COMMANDERS[i % COMMANDERS.length];
         taken.add(cmd.id);
         Meta.applyToAI(S2, cmd.id, rivalTech);
@@ -557,6 +616,22 @@ const Game = {
         S2.baseLevel = this.sides[1].baseLevel || 1;
       }
     }
+    /* THE RITE, resolved once for every seat now that every commander is
+       seated. The COMMANDER carries the summoning, not the banner: a
+       cross-faction commander brings their own rite to your flag while your
+       roster supplies the soldiers, which is the whole mixing contract.
+       CADRE is unaligned and has no faction, so it falls through to the sworn
+       banner. `doctrineOverrides` is the story hook -- today the only door to
+       THE LATTICE, because no seat is robotic yet. */
+    for (const S2 of this.sides) {
+      const over = opts.doctrineOverrides && opts.doctrineOverrides[S2.index];
+      const want = over || (S2.commander && S2.commander.faction) || S2.faction || 'human';
+      S2.doctrine = SUMMON_DOCTRINES[want] ? want : 'human';
+      /* Any level a chart pre-granted is owed before the first wave, or a
+         commander who bought its way to level one would still open at zero. */
+      this.applyCompile(S2);
+    }
+
     /* One brain per AI side. The singleton pattern could not host two rivals. */
     this.brains = this.sides.slice(1).map((S2, i) => {
       const b = Object.create(AI); b.init(S2, this.difficulty);
@@ -616,6 +691,10 @@ const Game = {
        a parity bug rather than a rendering one. */
     if (openedGround) for (const b of this.brains) b.buildSpots();
 
+    /* Every battle opens on the whole board. A camera carried in from the
+       last one would start a match looking at a corner of a map the player
+       has not seen yet. */
+    this.resetCam();
     this.resize();
     this.renderBackground();
     Sound.resume(); Sound.setIntensity(1); Sound.startMusic(1);
@@ -636,7 +715,8 @@ const Game = {
     const roster = (this.battleRoster && this.battleRoster.length)
       ? this.battleRoster : battleRosterFor(this.map, null);
     return composeWave(n, roster, this.map,
-                       waveCountMultiplier(n) * legion * COUNT_SCALE);
+                       waveCountMultiplier(n) * legion * COUNT_SCALE,
+                       this.rosterIntroEvery || ROSTER_INTRO_EVERY);
   },
 
   /** Composition summary used by the preview panel and by the AI's scouting. */
@@ -649,7 +729,11 @@ const Game = {
      in: the spawn applies it per unit, and callers that need it say so. */
   waveHpMul(n, rage) {
     return waveHpMultiplier(n) * this.difficulty.hp * UNIT_HP_SCALE
-           * (1 + 0.3 * (this.galaxyTier || 0))
+           * (1 + (this.tierHpStep || 0.30) * (this.galaxyTier || 0))
+           /* The first galaxy's relief tent. 1.0 for every battle that did
+              not ask for it, and 1.0 again from wave 15 on, so the terminus
+              past wave 20 is bit-identical to what it always was. */
+           * tier0ReliefMul(n, this.hpEase || 0)
            * (1 + ENRAGE_HP * (rage || 0));
   },
 
@@ -678,6 +762,17 @@ const Game = {
      need no edit. BATCH-C/nside */
   minibossFor(n, def) {
     if (n % MINIBOSS_EVERY !== 0) return null;
+    /* THE OPENING SYSTEM'S GRACE. A COLOSSUS on wave 5 arrives before a
+       fourth tower is affordable, which is a wall rather than a lesson. The
+       delay shifts the whole ROTA rather than skipping an entry, so the
+       teaching order survives intact -- the first system meets COLOSSUS on
+       wave 10 and VESPER on 15, in that order, just later. Zero for every
+       battle that did not ask, so the schedule is unchanged everywhere else. */
+    const d = this.minibossDelayWaves || 0;
+    if (d) {
+      if (n <= d) return null;
+      return MINIBOSSES[(Math.floor((n - d) / MINIBOSS_EVERY) - 1 + MINIBOSSES.length) % MINIBOSSES.length];
+    }
     return MINIBOSSES[(Math.floor(n / MINIBOSS_EVERY) - 1) % MINIBOSSES.length];
   },
 
@@ -787,6 +882,28 @@ const Game = {
        on each unit so reanimate can take it back off the corpse. */
     const plainHp = this.waveHpMul(this.wave, 0);
     for (const S of this.sides) {
+      /* BOOTSTRAP and THE COMPILE, both on the wave boundary because waves
+         are the only clock two clients are guaranteed to agree on.
+         The ramp is recomputed from the wave number rather than accumulated,
+         so it can never drift and needs no state of its own. */
+      if (S.bootUp) {
+        const steps = Math.min(ROBOT_BOOT_WAVES,
+                               Math.max(0, this.wave - 1 + ((S.traits && S.traits.bootAdvance) || 0)));
+        const target = -ROBOT_BOOT_FLOOR + ROBOT_BOOT_STEP * steps;
+        const prev = S._bootAt === undefined ? -ROBOT_BOOT_FLOOR : S._bootAt;
+        const d = target - prev;
+        if (d) { S.mods.damage += d; S.mods.rate += d; S.mods.range += d; }
+        S._bootAt = target;
+        if (steps >= ROBOT_BOOT_WAVES && !S._bootLit) {
+          S._bootLit = true;
+          if (S.index === this.viewSide) this.banner('LATTICE FULLY LIT', 2.6, '#e2e8f0');
+        }
+      }
+      this.applyCompile(S);
+      /* A spliced lane is measured in waves and closes on the boundary, so
+         the wave that starts now is the one it was cut for. */
+      const sp = this.spliceState[S.index];
+      if (sp) { sp.wavesLeft--; if (sp.wavesLeft < 0) this.closeSplice(S.index); }
       const rage = S.enrage || 0;
       S.enrageSpent = rage;
       S.enrage = 0;
@@ -873,12 +990,12 @@ const Game = {
          gold spent on aggression comes back every wave for the rest of the
          battle. `musterPayout` applies the ceiling, so no sequence of buys
          can turn this into the runaway the mechanic is prone to. */
-      const mus = musterPayout(S.musterIncome, this.wave);
+      const mus = musterPayout(S.musterIncome, this.wave, this.musterCapPct(S.index));
       if (mus > 0) {
         const paidMus = this.awardGold(S.index, mus);
         S.lastMuster = paidMus;
         if (S.index === 0) this.addFloater(this.width * 0.25, 88,
-                                           '+' + paidMus + ' MUSTER', false, '#f97316', 17);
+                                           '+' + paidMus + ' ECON', false, '#f97316', 17);
       } else { S.lastMuster = 0; }
       /* The per-cycle allowance resets with the wave that consumed it. */
       S.musterThisWave = 0;
@@ -957,6 +1074,9 @@ const Game = {
     if (offer.length <= 1) return this.commitEnemyMod(offer[0] || pick(pool));
     this.pendingEscalation = offer;
     this.state = 'escalating';
+    /* Every fresh offer opens un-held: the hold is a per-offer decision, and
+       a stale flag from the last offer would skip the modal outright. */
+    this.escalationHold = false;
     Sound.play('escalation');
     UI.showEscalationChoice(offer);
   },
@@ -968,6 +1088,7 @@ const Game = {
       if (other !== m && !this.escalationOwed.includes(other)) this.escalationOwed.push(other);
     }
     this.pendingEscalation = null;
+    this.escalationHold = false;
     this.state = 'playing';
     /* The bid has to stay symmetric. Escalations land on the wave that hits
        BOTH commanders, so letting the player alone choose which one arrives is
@@ -1725,6 +1846,10 @@ const Game = {
   jamTowers(enemy, jam) {
     const S = this.sides[enemy.hostileTo];
     const r2 = (jam.radius * TILE) ** 2;
+    /* Counted per ATTEMPT, not per tower jammed: LUMEN-R is learning that it
+       is being intruded upon, and a commander whose towers are already
+       immune is still being attacked. Booked against the side under attack. */
+    S.stats.jammed = (S.stats.jammed || 0) + 1;
     let hit = 0;
     for (const t of S.towers) {
       if (t.jamImmune) continue;
@@ -2016,12 +2141,17 @@ const Game = {
    * caller must NOT also pass `drift`/`mods` -- that double application is the
    * measured 3.02x reanimate carried before it was caught.
    */
-  musterHpMul(side, victim) {
+  musterHpMul(side, victim, damp = MUSTER_DAMP) {
     /* Reads the ONE definition rather than open-coding the tier term a third
-       time; drift is applied here because a mustered unit carries it. */
+       time; drift is applied here because a mustered unit carries it.
+       `damp` is a parameter rather than the constant so THE PROCESSION -- the
+       one rite whose bodies have no parent corpse and were never paid for --
+       can pay its steeper tax through this same function instead of forking a
+       second copy of the wave maths. Default is the bought-send figure, so
+       every existing caller is unchanged. */
     let m = this.waveHpMul(Math.max(1, this.wave)) * (1 + this.drift.hp);
     for (const mod of this.enemyMods) if (mod.hpMul) m *= mod.hpMul;
-    m *= MUSTER_DAMP * this.sides[side].mods.reanim;
+    m *= damp * this.sides[side].mods.reanim;
     /* 19.16. A bought body is worth a FRACTION of a wave body in the opening
        and the full damped figure from wave 10 on. It sits inside musterHpMul
        rather than at the spawn, because the muster bar, the rival's pressure
@@ -2032,9 +2162,110 @@ const Game = {
        the two read as attack against defence rather than one number. */
     const mine = this.sides[side].traits;
     if (mine && mine.musterHpMul) m *= mine.musterHpMul;
+    /* Every buy hardens what you send, for good. See POWER_PER_BUY. */
+    m *= (1 + (this.sides[side].summonPower || 0));
     const V = this.sides[victim];
     if (V) m *= (1 - (V.traits.reanimResist || 0));
     return m;
+  },
+
+  /**
+   * THE COMPILE ENGINE.
+   *
+   * A compiling commander opens the battle weaker than the thing it copied
+   * and rewrites itself as the battle teaches it. The metric is whatever
+   * that commander actually learns from -- ascensions, kills, intrusions
+   * survived, gold committed to the board, or simply waves endured.
+   */
+  compileMetric(S, kind) {
+    if (kind === 'asc') return S.totalAsc || 0;
+    if (kind === 'kills') return S.stats.kills || 0;
+    /* A board that never jams would strand this commander at level zero
+       forever, so the wave count is a floor under it: the training arrives
+       either from the rival or from the calendar. */
+    if (kind === 'jams') return (S.stats.jammed || 0) + Math.floor(this.wave / 5);
+    if (kind === 'invested') {
+      let g = 0;
+      for (const t of S.towers) g += t.invested || 0;
+      return g;
+    }
+    return this.wave;   /* 'waves' */
+  },
+
+  /**
+   * Apply every compile level this side has now reached.
+   *
+   * Levels apply ONE-SHOT DELTAS at wave boundaries and never re-fold the
+   * commander from scratch. That is deliberate: a boon, a draft card or a
+   * bought base level taken after wave one would be erased by a refold, and
+   * losing a drafted card to a scheduled recompile is the worst bug this
+   * design could ship.
+   */
+  applyCompile(S) {
+    const cmd = S.commander;
+    if (!cmd || !cmd.compile) return;
+    const spec = cmd.compile;
+    const metric = this.compileMetric(S, spec.metric) * (S.traits.compileRateMul || 1);
+    let want = S.traits.compileFloor || 0;
+    for (let i = 0; i < spec.levels.length; i++) if (metric >= spec.levels[i].at) want = Math.max(want, i + 1);
+    want = Math.min(want, spec.levels.length);
+    if (want <= (S.compileLevel || 0)) return;
+    for (let i = S.compileLevel || 0; i < want; i++) {
+      const lv = spec.levels[i];
+      if (lv && lv.apply) lv.apply(S.traits, S, S.mods);
+    }
+    S.compileLevel = want;
+    /* The trait accumulators the levels wrote into have to reach `mods` the
+       same way the opening fold does, or a level that grants damage grants
+       nothing at all. */
+    foldTraits(S);
+    if (S.index === this.viewSide) {
+      this.addFloater(this.width * 0.5, 128, '⟲ RECOMPILED — ' + spec.name, false, '#e2e8f0', 16);
+      Sound.play('branch');
+    }
+  },
+
+  /** The rite a seat summons by. One reader, so no call site open-codes it. */
+  doctrineOf(side) {
+    const S = this.sides[side];
+    return (S && SUMMON_DOCTRINES[S.doctrine]) || SUMMON_DOCTRINES.human;
+  },
+
+  /** The income ceiling this seat's rite obeys. Infinity for the Marque. */
+  musterCapPct(side) { return this.doctrineOf(side).incomeCapPct; },
+
+  /**
+   * THE POWER FIGURE the HUD quotes: everything that multiplies what this
+   * side sends, before the victim's own resistance. Defined once here so the
+   * chip, the ledger footer and the tooltip can never drift from the spawn.
+   */
+  powerOf(side) {
+    const S = this.sides[side];
+    if (!S) return 1;
+    return MUSTER_DAMP * S.mods.reanim * spawnHpPenaltyMul(this.wave) *
+           ((S.traits && S.traits.musterHpMul) || 1) * (1 + (S.summonPower || 0));
+  },
+
+  /**
+   * THE CORPSE BUDGET — the one conservation number.
+   *
+   * A doctrine may change the SHELL a kill returns in; it may never change
+   * the MASS. Every rite that spends a corpse spends exactly this, so the
+   * shapes stay comparable and no faction can print health by rolling well.
+   * These are the same terms the old universal reanimate applied inline
+   * (maxHp already carries wave scaling, drift and every escalation, which is
+   * why neither is re-applied here -- that double application was a measured
+   * 3.02x and is the reason this is a function and not three copies).
+   * The victim's reanimResist is deliberately NOT folded in: it belongs to
+   * whoever RECEIVES the body, and on a tri board one kill can march on two
+   * seats with different resistances.
+   */
+  corpseBudget(e) {
+    const S = this.sides[e.hostileTo];
+    return {
+      hp: e.maxHp / (e.rageMul || 1) * 0.6 * S.mods.reanim * (1 + (S.summonPower || 0)),
+      armor: e.armor * 0.6
+    };
   },
 
   /** Assign a side's detachment and derive its tiers in one place. */
@@ -2056,8 +2287,9 @@ const Game = {
     /* THE funnel for what a send costs -- canMuster and muster both read it,
        so a discount applied here cannot show one price and charge another. */
     const t = this.sides[side].traits;
+    const d = this.doctrineOf(side);
     return Math.max(1, Math.round(
-      musterCost(tier, this.wave, this.sides[side].musterBuys || 0)
+      musterCost(tier, this.wave, this.sides[side].musterBuys || 0, d.costGrowth, d.costSteps)
       * (t && t.musterCostMul ? t.musterCostMul : 1)));
   },
 
@@ -2075,14 +2307,20 @@ const Game = {
        two previews rather than previewing the difference keeps the honest +0
        once the ceiling is reached. The rival's brain reads this too, so it
        must NOT apply aiEcon again on its side (see js/ai.js). */
-    return this.previewGold(side, musterPayout((S.musterIncome || 0) + step, w))
-         - this.previewGold(side, musterPayout(S.musterIncome, w));
+    const cap = this.musterCapPct(side);
+    return this.previewGold(side, musterPayout((S.musterIncome || 0) + step, w, cap))
+         - this.previewGold(side, musterPayout(S.musterIncome, w, cap));
   },
 
   /** `tier` omitted asks only whether the control is live at all. */
   canMuster(side, tier) {
     const S = this.sides[side];
     if (!S || this.state !== 'playing' || !S.alive || S.defeated) return false;
+    /* THE LATTICE does not buy -- unless the board gives it nothing else. On
+       a no-reanimate arena every rite's free half is switched off, and a seat
+       that can neither earn a body nor buy one has no offence at all, so the
+       refusal is waived rather than leaving it mute. */
+    if (this.doctrineOf(side).noPurchase && !this.noReanim) return false;
     if ((S.musterThisWave || 0) >= MUSTER_PER_WAVE) return false;
     if (!this.musterVictims(side).length) return false;
     return !tier || S.gold >= this.musterCost(side, tier);
@@ -2104,6 +2342,14 @@ const Game = {
     S.musterIncome = (S.musterIncome || 0) + step;
     S.musterBuys = (S.musterBuys || 0) + 1;
     S.musterThisWave = (S.musterThisWave || 0) + 1;
+    /* And the buy hardens every future send, permanently. Without this a
+       summon bought past the income ceiling was pure tempo and the button's
+       standing promise was half a lie. Bounded for four rites; for LETTERS OF
+       MARQUE it is the owner's uncapped power bonus, priced by cost growth. */
+    {
+      const d = this.doctrineOf(side);
+      S.summonPower = Math.min(d.powerCap, (S.summonPower || 0) + d.powerPerBuy);
+    }
 
     /* On the Confluence a send marches on BOTH rivals, exactly as a kill
        does there -- the map's identity, not a muster-specific bonus. */
@@ -2141,7 +2387,7 @@ const Game = {
 
     if (side === this.viewSide) {
       Sound.play('reanimate');
-      this.addFloater(this.width * 0.5, 108, base.name.toUpperCase() + ' ' + tier.name + ' MUSTERED', false, '#f97316', 18);
+      this.addFloater(this.width * 0.5, 108, base.name.toUpperCase() + ' ' + tier.name + ' SUMMONED', false, '#f97316', 18);
       /* Gated exactly as build() and upgrade() are. A full syncAll re-renders
          the shop and the inspector; running it on every RIVAL muster -- which
          the brain can fire every 0.55s -- is DOM churn nothing on screen
@@ -2150,6 +2396,365 @@ const Game = {
       UI.syncAll();
     }
     return true;
+  },
+
+  /**
+   * THE DISPATCH. A corpse belongs to the killer's rite; this is the only
+   * place that decides which one gets it.
+   *
+   * `onKill: null` rites (THE PROCESSION, LETTERS OF MARQUE) take nothing
+   * from a kill at all -- that is precisely what they traded away -- so they
+   * return here having done nothing, and that is not an omission.
+   */
+  doctrineOnKill(e) {
+    const d = this.doctrineOf(e.hostileTo);
+    if (d.onKill === 'clone') return this.reanimate(e);
+    if (d.onKill === 'roll') return this.conscript(e);
+    if (d.onKill === 'incubate') return this.incubate(e);
+  },
+
+  /**
+   * CONSCRIPTION — the human rite. The fallen return as a soldier drawn from
+   * YOUR roster, at the mass of the corpse that paid for them.
+   */
+  conscript(e) {
+    const killer = e.hostileTo;
+    const S = this.sides[killer];
+    const list = S.musterLoadout || [];
+    if (!list.length) return;
+    const P = this.corpseBudget(e);
+
+    /* THE DEBT comes first. A clamped roll earlier in the match spawned more
+       mass than its corpse was worth; until that is paid back, kills feed the
+       ledger instead of the lane. This is what stops the clamp printing. */
+    if (S.rollDebt > 0) {
+      S.rollDebt -= P.hp;
+      if (S.rollDebt < 0) S.rollDebt = 0;
+      return;
+    }
+
+    /* Eligible = every unit whose shell the budget can fill without becoming
+       either a husk or a pebble. Rolled uniformly -- the owner's rule -- and
+       inside step(), so the seeded stream carries it. */
+    const ok = [];
+    for (const id of list) {
+      const U = ENEMY_TYPES[id];
+      if (!U) continue;
+      const k = P.hp / U.hp;
+      if (k >= HUMAN_ROLL_HPMUL_MIN && k <= HUMAN_ROLL_HPMUL_MAX) ok.push(id);
+    }
+    let pickId, hpMulBase;
+    if (ok.length) {
+      pickId = ok[Math.floor(Math.random() * ok.length)];
+      hpMulBase = P.hp / ENEMY_TYPES[pickId].hp;
+    } else {
+      /* Nothing fits: take the lightest shell the roster has, clamp it, and
+         BOOK the difference. Lightest because it is the cheapest lie. */
+      pickId = list[0];
+      for (const id of list)
+        if (ENEMY_TYPES[id] && ENEMY_TYPES[id].hp < ENEMY_TYPES[pickId].hp) pickId = id;
+      const U = ENEMY_TYPES[pickId];
+      const raw = P.hp / U.hp;
+      hpMulBase = clamp(raw, HUMAN_ROLL_HPMUL_MIN, HUMAN_ROLL_HPMUL_MAX);
+      if (hpMulBase > raw) S.rollDebt += (hpMulBase - raw) * U.hp;
+    }
+    const base = ENEMY_TYPES[pickId];
+    if (!base) return;
+
+    /* One roll, marched at every live rival -- the doubled dead, same rule
+       the machine rite obeys. The debt was charged once, above, per kill. */
+    const vics = this.musterVictims(killer);
+    for (const vic of vics) {
+      const path = (this.triMode && FIELD.sendTri) ? this.sendTriPaths[killer][vic] : this.sendPaths[killer];
+      if (!path) continue;
+      let copies = 1;
+      if (S.mods.doubleReanim > 0 && Math.random() < S.mods.doubleReanim) copies = 2;
+      for (let i = 0; i < copies; i++) {
+        this.pendingSpawns.push(new Enemy(base, path, {
+          hpMul: hpMulBase * (1 - (this.sides[vic].traits.reanimResist || 0)),
+          bountyMul: 1, speedMul: S.traits.reanimSpeed,
+          armorFlat: P.armor,
+          hostileTo: vic, owner: killer, reanimated: true,
+          startDist: rand(0, 10), offset: rand(-8, 8)
+        }));
+        S.stats.sent++;
+        if (S.traits.reanimGold) this.awardGold(killer, S.traits.reanimGold);
+      }
+    }
+    if (vics.length && killer === this.viewSide) {
+      Sound.play('reanimate');
+      this.addFloater(e.x, e.y, '▸ ' + base.name.toUpperCase(), false, base.color, 12);
+    }
+  },
+
+  /**
+   * THE BROOD — the xeno rite. A kill does not march; it stays where it fell
+   * and becomes something else. Kills near a clutch hurry it along, which is
+   * the combo the whole faction is built to play.
+   */
+  incubate(e) {
+    const killer = e.hostileTo;
+    const S = this.sides[killer];
+    const list = S.musterLoadout || [];
+    if (!list.length) return;
+
+    /* FEED FIRST, then lay. A kill beside a clutch is worth more than the
+       clutch it would have started, and doing it in this order means the pod
+       this kill creates cannot feed itself on its own creation. */
+    let fed = false;
+    for (const pod of this.incubators) {
+      if (pod.side !== killer) continue;
+      if (dist2(pod.x, pod.y, e.x, e.y) <= (XENO_INC_FEED_RADIUS * TILE) * (XENO_INC_FEED_RADIUS * TILE)) {
+        pod.t -= XENO_INC_FEED_SEC; fed = true;
+      }
+    }
+
+    let mine = 0;
+    for (const pod of this.incubators) if (pod.side === killer) mine++;
+    if (mine >= XENO_INC_CAP) {
+      /* A full nest still rewards killing: a kill that had no clutch beside
+         it feeds the nearest one board-wide instead, so nothing is wasted.
+         Only when it fed NOTHING -- a kill next to a pod has already been
+         paid, and paying it twice would make a full nest better than a
+         working one, which is the opposite of a cap. */
+      if (!fed) {
+        let best = null, bestD = Infinity;
+        for (const pod of this.incubators) {
+          if (pod.side !== killer) continue;
+          const d = dist2(pod.x, pod.y, e.x, e.y);
+          if (d < bestD) { bestD = d; best = pod; }
+        }
+        if (best) best.t -= XENO_INC_FEED_SEC;
+      }
+      return;
+    }
+
+    const P = this.corpseBudget(e);
+    const lidx = Math.floor(Math.random() * list.length);
+    const unitId = list[lidx];
+    const U = ENEMY_TYPES[unitId];
+    if (!U) return;
+    /* The ROLLED unit sets the gestation, not the unit killed -- which is why
+       the pod draws what it is becoming. That glyph is the tell. */
+    const need = XENO_INC_BASE_SEC + XENO_INC_SQRT_SEC * Math.sqrt(U.hp);
+    this.incubators.push({
+      side: killer, x: e.x, y: e.y, unitId: unitId, lidx: lidx,
+      powerHp: P.hp * XENO_INC_SHARE, armorFlat: P.armor,
+      t: need, need: need
+    });
+    if (killer === this.viewSide) Sound.play('reanimate');
+  },
+
+  /** A clutch comes due: it hatches at every live rival, or dies unhatched. */
+  hatchIncubator(pod) {
+    const S = this.sides[pod.side];
+    const base = ENEMY_TYPES[pod.unitId];
+    if (!S || !base) return;
+    const vics = this.musterVictims(pod.side);
+    for (const vic of vics) {
+      const path = (this.triMode && FIELD.sendTri) ? this.sendTriPaths[pod.side][vic] : this.sendPaths[pod.side];
+      if (!path) continue;
+      let copies = 1;
+      if (S.mods.doubleReanim > 0 && Math.random() < S.mods.doubleReanim) copies = 2;
+      for (let i = 0; i < copies; i++) {
+        this.pendingSpawns.push(new Enemy(base, path, {
+          hpMul: (pod.powerHp / base.hp) * (1 - (this.sides[vic].traits.reanimResist || 0)),
+          bountyMul: 1, speedMul: S.traits.reanimSpeed,
+          armorFlat: pod.armorFlat,
+          hostileTo: vic, owner: pod.side, reanimated: true,
+          startDist: rand(0, 10), offset: rand(-8, 8)
+        }));
+        S.stats.sent++;
+        if (S.traits.reanimGold) this.awardGold(pod.side, S.traits.reanimGold);
+      }
+    }
+    if (pod.side === this.viewSide) {
+      this.spawnBurst(pod.x, pod.y, 14, base.color, 120);
+      this.addFloater(pod.x, pod.y, 'HATCHED — ' + base.name.toUpperCase(), false, base.color, 12);
+      Sound.play('reanimate');
+    }
+  },
+
+  /**
+   * THE PROCESSION — the Federation's clock. Ticked from step(), never from
+   * draw(): a rite that fires on a frame rate is a rite two clients disagree
+   * about.
+   */
+  tickProcession(dt) {
+    if (this.noReanim) return;
+    for (const S of this.sides) {
+      if (!this.doctrineOf(S.index).scheduler) continue;
+      if (!S.alive || S.defeated) continue;
+      if (!this.waveRunning || this.wave < FOL_START_WAVE) continue;
+      S.procTimer -= dt;
+      if (S.procTimer > 0) continue;
+      const list = S.musterLoadout || [];
+      if (!list.length) { S.procTimer = FOL_CADENCE_SEC; continue; }
+      const vics = this.musterVictims(S.index);
+      const base = ENEMY_TYPES[list[S.procIdx % list.length]];
+      if (base && vics.length) {
+        const count = Math.min(1 + S.procCycle, FOL_CYCLE_COUNT_CAP);
+        for (const vic of vics) {
+          const path = (this.triMode && FIELD.sendTri) ? this.sendTriPaths[S.index][vic] : this.sendPaths[S.index];
+          if (!path) continue;
+          for (let n = 0; n < count; n++) {
+            let copies = 1;
+            if (S.mods.doubleReanim > 0 && Math.random() < S.mods.doubleReanim) copies = 2;
+            for (let i = 0; i < copies; i++) {
+              this.pendingSpawns.push(new Enemy(base, path, {
+                /* Through the same funnel a bought send uses, at a steeper
+                   damp -- nobody paid for these. No reanimGold: there is no
+                   corpse, and paying a per-corpse bounty on a clock prints. */
+                hpMul: this.musterHpMul(S.index, vic, PROCESSION_DAMP),
+                bountyMul: 1, speedMul: S.traits.reanimSpeed,
+                armorFlat: (base.armor + this.drift.armor) * PROCESSION_DAMP,
+                hostileTo: vic, owner: S.index, reanimated: true,
+                startDist: rand(0, 10), offset: rand(-8, 8)
+              }));
+              S.stats.sent++;
+            }
+          }
+        }
+        if (S.index === this.viewSide) Sound.play('reanimate');
+      }
+      /* Advance the march. A full lap makes every entry heavier -- the
+         owner's compounding -- and stretches the period, which is what keeps
+         mass-per-minute linear instead of exponential. */
+      S.procIdx = (S.procIdx + 1) % list.length;
+      if (S.procIdx === 0) {
+        S.procCycle++;
+        if (S.index === this.viewSide)
+          this.addFloater(this.width * 0.5, 108, 'THE PROCESSION SWELLS — ×' + Math.min(1 + S.procCycle, FOL_CYCLE_COUNT_CAP),
+                          false, FACTIONS.light.color, 16);
+      }
+      S.procTimer = FOL_CADENCE_SEC + S.procCycle * FOL_CADENCE_GROWTH;
+    }
+  },
+
+  /**
+   * THE SPLICE — the Parallel's survey rig, and the one mechanic that edits
+   * the board itself.
+   *
+   * The detour is DERIVED rather than authored per map: it enters the
+   * victim's half at the spawn edge on the opposite flank, runs to the
+   * column where the real lane already is, and REJOINS it partway along. Two
+   * properties fall out of that construction for free on every map, which is
+   * why it is built this way rather than hand-drawn fifteen times: it always
+   * reaches the base (it is the authored lane from the join onward), and only
+   * the new prefix can ever add blocked tiles.
+   */
+  spliceWaypoints(side) {
+    const raw = FIELD.lanes && FIELD.lanes[side] && FIELD.lanes[side][0];
+    if (!raw || raw.length < 3 || FIELD.radial) return null;
+    const j = Math.max(1, Math.min(raw.length - 2, Math.round(raw.length * 0.45)));
+    const entry = raw[0], join = raw[j];
+    /* Toward whichever flank has room. Mirroring across the midline was the
+       obvious rule and the wrong one: most lanes enter dead centre, so the
+       mirror of the entry is the entry and there is no detour at all. */
+    const k = Math.max(2, Math.round(FIELD.rows * 0.35));
+    const y2 = (entry[1] * 2 < FIELD.rows)
+      ? Math.min(FIELD.rows - 2, entry[1] + k)
+      : Math.max(1, entry[1] - k);
+    if (Math.abs(y2 - entry[1]) < 2) return null;
+    /* Axis-aligned throughout: out to the flank, along it to the join
+       column, then the authored lane the rest of the way home. */
+    return [[entry[0], y2], [join[0], y2]].concat(raw.slice(j));
+  },
+
+  /** Cut the lane. Wave-aligned: it opens now and closes at a wave boundary,
+      because startWave enumerates a wave's spawn entries per lane exactly
+      once -- an expiry mid-wave would strand everything already queued. */
+  openSplice(victim, waves) {
+    const S = this.sides[victim];
+    if (!S || S.defeated) return false;
+    const cur = this.spliceState[victim];
+    if (cur) { cur.wavesLeft = Math.max(cur.wavesLeft, waves); return true; }
+    const wp = this.spliceWaypoints(victim);
+    if (!wp) return false;
+    const path = new Path(wp);
+    this.lanes[victim].push(path);
+    /* Only tiles that were not ALREADY blocked are recorded, so closing the
+       splice can never un-block a tile that belongs to the real lane or to
+       the map's own scenery. */
+    const added = [];
+    for (const k of path.blockedTiles()) {
+      if (!this.blocked.has(k)) { this.blocked.add(k); this.laneBlocked.add(k); added.push(k); }
+    }
+    this.spliceState[victim] = { wavesLeft: waves, laneIdx: this.lanes[victim].length - 1, added };
+    this.renderBackground();
+    if (victim === this.viewSide) {
+      this.banner('LANE SPLICED — THE BOARD FORKS', 2.6, '#e2e8f0');
+      Sound.play('wallBreak');
+    }
+    return true;
+  },
+
+  /** Close it and hand the ground back. Towers built on spliced tiles are
+      GRANDFATHERED -- they were legal when they were placed, they keep
+      firing throughout, and nothing is refunded or torn down. */
+  closeSplice(victim) {
+    const st = this.spliceState[victim];
+    if (!st) return;
+    for (const k of st.added) { this.blocked.delete(k); this.laneBlocked.delete(k); }
+    const lanes = this.lanes[victim];
+    if (lanes.length > st.laneIdx) lanes.splice(st.laneIdx, 1);
+    this.spliceState[victim] = null;
+    this.renderBackground();
+    if (victim === this.viewSide) this.addFloater(this.width * 0.5, 128, 'SPLICE COLLAPSED', false, '#e2e8f0', 15);
+  },
+
+  /**
+   * THE RELAY NETWORK. Nodes burn down, and every Parallel body walking the
+   * board they were left on spends the strongest one in reach.
+   *
+   * Non-stacking by construction: a body reads the single best node rather
+   * than summing them, so a corridor of six is a road and not a runway. The
+   * buff is re-applied from scratch each tick rather than accumulated, which
+   * is why leaving the radius takes it straight back off.
+   */
+  tickRelays(dt) {
+    const nodes = this.relayNodes;
+    if (!nodes.length) return;
+    for (let i = nodes.length - 1; i >= 0; i--) {
+      nodes[i].t -= dt;
+      if (nodes[i].t <= 0) nodes.splice(i, 1);
+    }
+    if (!nodes.length) return;
+    const r2 = (UNIT_RELAY_RADIUS * TILE) * (UNIT_RELAY_RADIUS * TILE);
+    for (const e of this.enemies) {
+      if (e.dead || e.leaked || !e.reanimated || e.owner === undefined || e.owner < 0) continue;
+      if (!e.def || e.def.faction !== 'robot') continue;
+      let best = 0;
+      for (const n of nodes) {
+        /* Same owner AND same board: a node the Parallel left on one rival's
+           lane is worth nothing on another's. */
+        if (n.owner !== e.owner || n.board !== e.hostileTo) continue;
+        if (dist2(n.x, n.y, e.x, e.y) > r2) continue;
+        if (n.t > best) best = n.t;
+      }
+      const on = best > 0;
+      if (on === !!e._relayed) continue;
+      /* `baseSpeed`, NOT `speedMul`: the latter is a constructor option the
+         Enemy copies once and never reads again, so writing it live would be
+         a silent no-op of the Tower.jammed class. Toggled symmetrically and
+         only on a CHANGE of state, so it cannot compound frame to frame. */
+      e._relayed = on;
+      if (on) { e.baseSpeed *= (1 + UNIT_RELAY_SPEED); e.armor += UNIT_RELAY_ARMOR; }
+      else { e.baseSpeed /= (1 + UNIT_RELAY_SPEED); e.armor -= UNIT_RELAY_ARMOR; }
+    }
+  },
+
+  /** Clutches come due. Same step window as everything else that spawns. */
+  tickIncubators(dt) {
+    for (let i = this.incubators.length - 1; i >= 0; i--) {
+      const pod = this.incubators[i];
+      const S = this.sides[pod.side];
+      if (!S || S.defeated || !S.alive) { this.incubators.splice(i, 1); continue; }
+      pod.t -= dt;
+      if (pod.t > 0) continue;
+      this.hatchIncubator(pod);
+      this.incubators.splice(i, 1);
+    }
   },
 
   /** THE core PvP loop: your kills become your opponent's problem. */
@@ -2252,6 +2857,8 @@ const Game = {
     }
     this.awardGold(killer, bounty);
     S.stats.kills++;
+    const kl = S.killLog[e.type] || (S.killLog[e.type] = { n: 0, bounty: 0 });
+    kl.n++; kl.bounty += bounty;
 
     /* THE RECOVERY. A dead CARRIER hands every stolen life straight back --
        restoreLife is the shipping path (maxLives clamp, heal cue, floater,
@@ -2274,7 +2881,7 @@ const Game = {
          the case worth teaching. `killer` is `e.hostileTo`, so S is the robbed
          seat and a rival's recovery books against the rival. */
       S.stats.leaksRecovered++;
-      if (e.carrierFresh && !this.noReanim) this.reanimate(e);
+      if (e.carrierFresh && !this.noReanim) this.doctrineOnKill(e);
       if (killer === this.viewSide) this.spawnBurst(e.x, e.y, 12, '#f87171', 110);
       return;
     }
@@ -2365,7 +2972,7 @@ const Game = {
        send you buy, and every reanimation bonus you own still rides it --
        Game.muster applies mods.reanim, doubleReanim, traits.reanimSpeed and
        traits.reanimGold exactly as it does anywhere else. */
-    if (!e.reanimated && !this.noReanim) this.reanimate(e);
+    if (!e.reanimated && !this.noReanim) this.doctrineOnKill(e);
   },
 
   /* ============================================================= HELPERS */
@@ -2689,9 +3296,18 @@ const Game = {
     return true;
   },
 
-  addFloater(x, y, text, crit = false, color = null, size = null) {
+  addFloater(x, y, text, crit = false, color = null, size = null, dmg = false) {
+    /* THE JITTER IS DRAWN BEFORE THE GATE, ALWAYS. rand() here is the SIM
+       stream -- Net swaps Math.random per tick -- so a floater the player
+       switched off must still cost the same draw, or two clients running the
+       same seed with different display settings would part company inside a
+       wave. Same law spawnBurst obeys: it draws every value itself and hands
+       them to a spawnParticle that may discard them. A presentation toggle
+       may never be visible to the simulation. */
+    const jx = x + rand(-5, 5);
+    if (dmg && !damageNumbersOn()) return;
     if (this.floaters.length >= MAX_FLOATERS) this.floaters.shift();
-    this.floaters.push({ x: x + rand(-5, 5), y,
+    this.floaters.push({ x: jx, y,
       text: typeof text === 'number' ? formatNum(text) : text,
       life: crit ? 1.0 : 0.7, maxLife: crit ? 1.0 : 0.7,
       color: color || (crit ? '#ffffff' : '#ffe9a8'),
@@ -2773,6 +3389,13 @@ const Game = {
 
     for (const b of this.brains) if (!b.side.defeated) b.update(dt, this);
     for (const S of this.sides) tickAbilities(S, this, dt);
+
+    /* --- the summoning rites ---
+       Both live in step, never in draw: a clutch that hatched on a frame rate
+       would hatch at different moments on two clients running one seed. */
+    this.tickProcession(dt);
+    this.tickIncubators(dt);
+    this.tickRelays(dt);
 
     /* --- burning ground --- */
     for (let i = this.puddles.length - 1; i >= 0; i--) {
@@ -3180,8 +3803,17 @@ const Game = {
        into a backing store sized for the fitted board, so the field rendered
        cropped and every pointer coordinate was offset. */
     const k = this.dpr * (this.viewScale || 1);
-    ctx.setTransform(k, 0, 0, k, 0, 0);
-    ctx.clearRect(0, 0, this.width, this.height);
+    /* THE CAMERA. At zoom 1 the camera is clamped to the origin and this
+       reduces to exactly the transform above it -- which is the safety
+       property the whole feature rests on: a player who never zooms is
+       playing the board that shipped, pixel for pixel. Cleared in DEVICE
+       space first, because a translated world transform no longer covers the
+       whole backing store. */
+    const z = this.camZoom();
+    const c = this.camClamped();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.setTransform(k * z, 0, 0, k * z, -c.x * k * z, -c.y * k * z);
     ctx.save();
     if (this.shakeAmt > 0.2) ctx.translate(rand(-this.shakeAmt, this.shakeAmt) * 0.16, rand(-this.shakeAmt, this.shakeAmt) * 0.16);
 
@@ -3203,6 +3835,7 @@ const Game = {
     for (const e of this.enemies) if (e.flying) e.draw(ctx);
     for (const p of this.projectiles) p.draw(ctx);
     this.drawBeams(ctx);
+    this.drawIncubators(ctx);
     this.drawParticles(ctx);
     this.drawFloaters(ctx);
     ctx.restore();
@@ -3301,7 +3934,7 @@ const Game = {
   },
 
   drawBuildOverlay(ctx) {
-    if (!this.selectedType || !this.hover.active || this.state !== 'playing') return;
+    if (!this.selectedType || !this.hover.active || !this.boardInteractive()) return;
     const def = TOWER_TYPES[this.selectedType];
     const foot = towerFoot(def);
     const { gx, gy } = this.hover;
@@ -3428,6 +4061,49 @@ const Game = {
     ctx.globalAlpha = 1;
   },
 
+  /**
+   * THE CLUTCHES on the board. Read-only and RANDOM-FREE: this runs in draw,
+   * which is frame-rate dependent, so a single rand() here would make two
+   * clients running one seed disagree. The pulse phase is derived from the
+   * pod's own position instead, which is stable, per-pod and free.
+   *
+   * Only the viewing seat's clutches are drawn -- a rival's nest is not your
+   * information, and the pod sitting on their half would read as yours.
+   */
+  drawIncubators(ctx) {
+    if (!this.incubators.length) return;
+    for (const pod of this.incubators) {
+      if (pod.side !== this.viewSide) continue;
+      const def = ENEMY_TYPES[pod.unitId];
+      const col = (def && def.color) || '#a855f7';
+      const frac = clamp(1 - pod.t / Math.max(0.001, pod.need), 0, 1);
+      /* Position IS the seed. Same pod, same phase, every frame and every
+         client, with no state to carry and nothing to desync. */
+      const phase = (pod.x * 0.37 + pod.y * 0.61);
+      const pulse = motionReduced() ? 0.5 : 0.5 + 0.5 * Math.sin(this.clock * 2.2 + phase);
+      const r = 9 + 3 * frac;
+      ctx.save();
+      ctx.globalAlpha = 0.20 + 0.16 * pulse;
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(pod.x, pod.y, r + 3, 0, TAU); ctx.fill();
+      ctx.globalAlpha = 0.85;
+      ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(pod.x, pod.y, r, 0, TAU); ctx.stroke();
+      /* THE TELL: the glyph of what it is becoming, so a player can plan
+         around the clutch instead of being surprised by it. */
+      if (def && def.shape) {
+        ctx.globalAlpha = 0.5 + 0.3 * frac;
+        ctx.fillStyle = col;
+        ctx.beginPath(); ctx.arc(pod.x, pod.y, 3.2, 0, TAU); ctx.fill();
+      }
+      /* The gestation arc, filling clockwise from twelve. */
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(pod.x, pod.y, r + 3, -Math.PI / 2, -Math.PI / 2 + TAU * frac); ctx.stroke();
+      ctx.restore();
+    }
+  },
+
   drawFloaters(ctx) {
     ctx.textAlign = 'center';
     for (const f of this.floaters) {
@@ -3548,8 +4224,15 @@ const Game = {
    */
   pointerToBoard(evt) {
     const r = this.canvas.getBoundingClientRect();
-    return { x: (evt.clientX - r.left) * (this.width / r.width),
-             y: (evt.clientY - r.top) * (this.height / r.height) };
+    /* THE EXACT INVERSE of the draw transform, and it has to stay that way:
+       the one time these two disagreed the field rendered cropped and every
+       pointer coordinate was offset. At zoom 1 the camera is the origin and
+       both terms below vanish, leaving the plain element-rect ratio this
+       always was. */
+    const z = this.camZoom();
+    const c = this.camClamped();
+    return { x: c.x + (evt.clientX - r.left) * (this.width / r.width) / z,
+             y: c.y + (evt.clientY - r.top) * (this.height / r.height) / z };
   },
 
   pointerToGrid(evt) {
@@ -3757,7 +4440,7 @@ const Game = {
     const r = this.radial;
     if (!r) return;
     /* A finished battle cannot take a build, so the ring goes with it. */
-    if (this.state !== 'playing') { this.radial = null; return; }
+    if (!this.boardInteractive()) { this.radial = null; return; }
 
     /* Every price on the ring is asked of Game.towerCost on the frame it is
        drawn. A number cached at open would be a number the build no longer
@@ -3851,13 +4534,64 @@ const Game = {
     ctx.restore();
   },
 
+  /* ================================================== THE BATTLE CAMERA ==
+     The board has always been fitted whole to the window, which is right for
+     reading it and wrong for being in it. Zoom is OPT-IN and the identity
+     case is exact: at zoom 1 the camera clamps to the origin, the draw
+     transform reduces to the fitted one, and pointerToBoard reduces to the
+     plain element-rect ratio it always was.
+
+     Every gesture is one nothing else already owns: the wheel, the middle
+     button, the arrow keys and 0. Left-drag belongs to the radial build ring
+     and right-click to cancel, and neither is touched. */
+  cam: { x: 0, y: 0, z: 1 },
+  camZoom() { return clamp((this.cam && this.cam.z) || 1, 1, BATTLE_ZOOM_MAX); },
+  /** The camera's top-left in world pixels, clamped so the view can never
+      leave the board. At zoom 1 the view IS the board, so this is the
+      origin and the transform above collapses to the fitted one. */
+  camClamped() {
+    const z = this.camZoom();
+    const vw = this.width / z, vh = this.height / z;
+    return { x: clamp(this.cam.x, 0, Math.max(0, this.width - vw)),
+             y: clamp(this.cam.y, 0, Math.max(0, this.height - vh)) };
+  },
+  /** Zoom about a fixed world point, so the tile under the cursor stays put. */
+  zoomAt(worldX, worldY, factor) {
+    const z0 = this.camZoom();
+    const z1 = clamp(z0 * factor, 1, BATTLE_ZOOM_MAX);
+    if (z1 === z0) return;
+    this.cam.x = worldX - (worldX - this.cam.x) * (z0 / z1);
+    this.cam.y = worldY - (worldY - this.cam.y) * (z0 / z1);
+    this.cam.z = z1;
+    const c = this.camClamped();
+    this.cam.x = c.x; this.cam.y = c.y;
+  },
+  panBy(dx, dy) {
+    this.cam.x += dx; this.cam.y += dy;
+    const c = this.camClamped();
+    this.cam.x = c.x; this.cam.y = c.y;
+  },
+  resetCam() { if (this.cam) { this.cam.x = 0; this.cam.y = 0; this.cam.z = 1; } },
+
+  /* One answer for every board-input gate. 'playing' is the normal case; the
+     second clause is D3: an escalation halt the player chose to HOLD is spent
+     time, and spending it placing towers is the point of holding. Abilities
+     and musters keep their own 'playing'-only gates -- they are timed acts,
+     and firing them into a parked sim would bank their whole duration free.
+     Never true in a duel: the modal (and so the hold) is singleplayer-only;
+     multiplayer deals escalations without asking. */
+  boardInteractive() {
+    return this.state === 'playing' ||
+           (this.state === 'escalating' && this.escalationHold);
+  },
+
   bindInput() {
     const cv = this.canvas;
     /* The ring runs on POINTER events so one code path serves a mouse, a
        trackpad and a finger; `drag` is the press it is currently tracking. */
     const drag = { id: null, sx: 0, sy: 0, gx: -1, gy: -1, open: false, live: false };
     cv.addEventListener('mousemove', e => {
-      if (this.state !== 'playing') return;
+      if (!this.boardInteractive()) return;
       const p = this.pointerToGrid(e);
       this.hover.gx = p.gx; this.hover.gy = p.gy; this.hover.active = true;
       const aimed = this.aimedDef();
@@ -3868,8 +4602,42 @@ const Game = {
           : (this.towerAt(p.gx, p.gy) ? 'pointer' : 'default');
     });
     cv.addEventListener('mouseleave', () => { this.hover.active = false; });
+
+    /* ---- the camera's own gestures ----------------------------------------
+       Deliberately the ones nothing else claims. The wheel zooms about the
+       cursor; the MIDDLE button drags; arrows nudge; 0 recentres (bound with
+       the other keys in main.js). Left-drag stays the build ring's and
+       right-click stays cancel. */
+    cv.addEventListener('wheel', e => {
+      if (!this.boardInteractive()) return;
+      e.preventDefault();
+      const p = this.pointerToBoard(e);
+      this.zoomAt(p.x, p.y, e.deltaY < 0 ? 1.12 : 1 / 1.12);
+    }, { passive: false });
+    let panning = null;
+    cv.addEventListener('pointerdown', e => {
+      if (e.button !== 1) return;                 /* middle only */
+      e.preventDefault();
+      panning = { id: e.pointerId, x: e.clientX, y: e.clientY };
+      cv.setPointerCapture(e.pointerId);
+      cv.style.cursor = 'grabbing';
+    });
+    cv.addEventListener('pointermove', e => {
+      if (!panning || e.pointerId !== panning.id) return;
+      const r = this.canvas.getBoundingClientRect();
+      const z = this.camZoom();
+      this.panBy(-(e.clientX - panning.x) * (this.width / r.width) / z,
+                 -(e.clientY - panning.y) * (this.height / r.height) / z);
+      panning.x = e.clientX; panning.y = e.clientY;
+    });
+    const endPan = e => {
+      if (!panning || (e && e.pointerId !== panning.id)) return;
+      panning = null; cv.style.cursor = '';
+    };
+    cv.addEventListener('pointerup', endPan);
+    cv.addEventListener('pointercancel', endPan);
     cv.addEventListener('click', e => {
-      if (this.state !== 'playing') return;
+      if (!this.boardInteractive()) return;
       Sound.resume();
       const p = this.pointerToGrid(e);
       /* An armed ability consumes the next click ahead of everything else:
@@ -3934,7 +4702,7 @@ const Game = {
          outlive the next press. */
       this.radial = null;
       drag.live = false; drag.open = false; drag.id = e.pointerId;
-      if (this.state !== 'playing') return;
+      if (!this.boardInteractive()) return;
       if (this.aimingAbility !== null || this.movingTower || this.selectedType) return;
       const S = this.sides[0];
       if (!S || !S.loadout || !S.loadout.length) return;
@@ -3953,7 +4721,10 @@ const Game = {
         /* The threshold is in CSS pixels, so the gesture feels identical at
            every board scale — the player's hand does not scale with the
            fitted canvas, so the number that gates it must not either. */
-        if (Math.hypot(b.x - drag.sx, b.y - drag.sy) * (this.viewScale || 1) < RADIAL_OPEN_PX) return;
+        /* Board distance back to SCREEN pixels, so the ring opens after the
+           same physical drag at any fit -- and at any zoom, which multiplies
+           the same way viewScale does. */
+        if (Math.hypot(b.x - drag.sx, b.y - drag.sy) * (this.viewScale || 1) * this.camZoom() < RADIAL_OPEN_PX) return;
         drag.open = this.openRadial(drag.gx, drag.gy, drag.sx, drag.sy, b.x, b.y);
         if (!drag.open) { drag.live = false; return; }
       }
@@ -4026,7 +4797,7 @@ Game.step = function (dt) {
 
 /* Settings and per-map records live alongside commander progression. */
 const Storage = {
-  loadSettings() { return Object.assign({ sfx: 0.7, music: 0.4, sfxOn: true, musicOn: true, reducedMotion: false }, Meta.getSettings()); },
+  loadSettings() { return Object.assign({ sfx: 0.7, music: 0.4, sfxOn: true, musicOn: true, reducedMotion: false, damageNumbers: true, immersive: false }, Meta.getSettings()); },
   saveSettings(s) { Meta.setSettings(s); },
   recordRun(game, won) {
     const d = Meta.load();
