@@ -431,6 +431,92 @@
        opened + '/' + checked + ' maps forked; leaks: ' + (bad.join(' ') || 'none'));
   });
 
+  T('22.9 a leak pays its discount exactly once', function () {
+    /* leakReduction was subtracted in the reap AND again in loseLives, so a
+       Shield Wall commander paid it twice. The reap owns it; this pins that. */
+    Game.start({ map: MAPS[0].id, difficulty: 'contested', loadout: PIN.slice(),
+                 commander: 'vess', skirmish: true });
+    var S = Game.sides[0];
+    var red = S.traits.leakReduction;
+    var before = S.lives;
+    var cost = Math.max(1, Math.round(3 - red));          /* the reap's arithmetic */
+    Game.loseLives(0, cost, [{ type: 'mb_colossus', cost: cost, sent: false }]);
+    var lost = before - S.lives;
+    var row = S.leakLog.mb_colossus || { lives: -1 };
+    ok('22.9 a leak pays its discount exactly once',
+       red === 1 && cost === 2 && lost === 2 && S.stats.leaked === 2 && row.lives === 2,
+       'reduction ' + red + ', 3-life breach cost ' + cost + ', lives lost ' + lost +
+       ', ledger ' + S.stats.leaked + '/' + row.lives);
+  });
+
+  T('22.10 every tower draws itself in the shop preview', function () {
+    var cv = document.createElement('canvas');
+    cv.width = 286; cv.height = 96;
+    var ctx = cv.getContext('2d');
+    var blank = [];
+    for (var i = 0; i < TOWER_ORDER.length; i++) {
+      var id = TOWER_ORDER[i], t = TOWER_TYPES[id];
+      ctx.clearRect(0, 0, 286, 96);
+      var stub = UI.towerStub(id);
+      stub.age = 0.4; stub.angle = -0.42; stub.recoil = 0;
+      ctx.save(); ctx.translate(52, 70);
+      try {
+        var fn = Tower.prototype['draw_' + id];
+        if (fn) fn.call(stub, ctx, stub.age);
+        else if (t.glyph) Tower.prototype.draw_glyph.call(stub, ctx, stub.age);
+        else Tower.prototype.draw_bolt.call(stub, ctx, stub.age);
+      } catch (e) {}
+      ctx.restore();
+      var px = ctx.getImageData(0, 0, 286, 96).data, ink = 0;
+      for (var p = 3; p < px.length; p += 4) if (px[p] > 8) ink++;
+      if (ink <= 40) blank.push(id);
+    }
+    ok('22.10 every tower draws itself in the shop preview', blank.length === 0,
+       (TOWER_ORDER.length - blank.length) + '/' + TOWER_ORDER.length +
+       ' render; blank: ' + (blank.join(' ') || 'none'));
+  });
+
+  T('22.11 the Parallel arsenal opens only once the game is beaten', function () {
+    if (typeof SECRET_FACTIONS === 'undefined' || !Meta.secretUnitOpen) {
+      skip('22.11 the Parallel arsenal opens only once the game is beaten', 'no secret faction');
+      return;
+    }
+    var secretUnits = UNIT_ORDER.filter(function (id) {
+      return SECRET_FACTIONS.indexOf(unitFactionOf(id)) >= 0;
+    });
+    var v = Meta.vault(), keep = v.victories;
+    Meta.setFaction('human');
+    v.victories = 0;
+    var lockedBefore = secretUnits.every(function (id) { return !!Meta.unitOriginLock(id); });
+    v.victories = 1;
+    var openAfter = secretUnits.every(function (id) { return !Meta.unitOriginLock(id); });
+    /* ...and the ORDINARY cross-faction law must survive untouched. */
+    var xenoStillLocked = !!Meta.unitOriginLock('chitling');
+    v.victories = keep;
+    ok('22.11 the Parallel arsenal opens only once the game is beaten',
+       secretUnits.length === 5 && lockedBefore && openAfter && xenoStillLocked,
+       secretUnits.length + ' machine soldiers; locked before ' + lockedBefore +
+       ', open after ' + openAfter + ', xeno still locked ' + xenoStillLocked);
+  });
+
+  T('22.12 the rival can judge every tower it may draft', function () {
+    /* The heavies are draftable and placeable, but DAMAGE/AIR are how the
+       brain decides a shelf can kill and answer air. A tower missing from
+       both while dealing real damage is invisible to that judgement. */
+    var src = String(AI.pickLoadout);
+    var heavies = ['bombard', 'carronade', 'quadmount', 'impaler', 'monstrance', 'pharos'];
+    var missing = heavies.filter(function (id) { return src.indexOf("'" + id + "'") < 0; });
+    var air = ['quadmount', 'impaler', 'pharos', 'monstrance'];
+    var airMissing = air.filter(function (id) {
+      var i = src.indexOf('const AIR');
+      return i < 0 || src.indexOf("'" + id + "'", i) < 0;
+    });
+    ok('22.12 the rival can judge every tower it may draft',
+       missing.length === 0 && airMissing.length === 0,
+       'damage-list gaps: ' + (missing.join(' ') || 'none') +
+       '; air-list gaps: ' + (airMissing.join(' ') || 'none'));
+  });
+
   T('19.16 the spawned-HP curve hits the owner three anchors exactly', function () {
     const a = spawnHpPenaltyMul(1), b = spawnHpPenaltyMul(5), c = spawnHpPenaltyMul(10);
     ok('19.16 the spawned-HP curve hits the owner three anchors exactly',
