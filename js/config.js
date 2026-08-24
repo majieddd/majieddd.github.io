@@ -2765,6 +2765,29 @@ const AI_ECON_UPGRADE_WEIGHT = 9 * GOLD_SQUISH;
    rather than per tick, so its lump has to be divided down or the rival
    prices a depot five times too highly and stops building things that shoot. */
 const DEPOT_TICKS_PER_WAVE = 5;
+/* THE UTILITY UPGRADE TERMS. A tower that does no damage scored no upgrade
+   gain at all, so the rival built RAMPART, SABOTEUR, SIREN, SHEPHERD and WARD
+   and then never spent another coin on any of them. AI.utilityUpgradeGain
+   prices such an upgrade as `roleValue x relative stat movement`, and these
+   two numbers bound it: the WEIGHT sets how a utility upgrade trades against
+   a damage one, and the CAP stops a stat that doubles from reading as an
+   infinitely good buy. Deliberately modest -- the failure being fixed is a
+   tower that is never upgraded, not one that is under-upgraded, and a rival
+   that pours its purse into barricades is a worse opponent than one that
+   ignores them.
+
+   CALIBRATION, because the first pass got it wrong in a way only measurement
+   showed: roleValue is a BUILD-time score and effectiveness is an UPGRADE-time
+   one, and they are an order of magnitude apart -- a new CRYO is priced at 190
+   while a whole BOLT upgrade is worth about 13. At weight 0.55 a RAMPART
+   upgrade scored 2.27 against BOLT's 0.64, so the fix for "never upgrades its
+   barricades" would have shipped as "upgrades nothing else". The weight is the
+   conversion between those two scales, and the cap says an upgrade is worth at
+   most as much again as the tower already was. Measured after: RAMPART 0.28,
+   SIREN 0.09, SHEPHERD 0.07 -- under BOLT at 0.64 and MORTAR at 0.32, which is
+   where a utility upgrade belongs. */
+const AI_UTIL_UPGRADE_WEIGHT = 0.09;
+const AI_UTIL_UPGRADE_CAP = 1.0;
 /* Upgrade gold a held board actually puts through in one Vault tick. The
    requisition discount is worth this times its percentage; a percentage with
    no reference spend behind it is a number the rival cannot compare to

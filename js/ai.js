@@ -616,6 +616,12 @@ const AI = {
       /* Support upgrades are valued by what they enable, not their own damage. */
       if (t.def.attack === 'aura') gain = this.auraGain(t, prof);
       if (t.def.attack === 'economy') gain = Game.wave > 24 ? 0 : (t.stats.income || 0) * AI_ECON_UPGRADE_WEIGHT * this.diff.aiEcon;
+      /* A tower that does no damage scores no damage gain, which is correct
+         and was also the whole of the answer -- so the brain built utility
+         towers and then never upgraded one. Falls through only when the
+         damage terms produced nothing, so a tower that does both keeps the
+         larger, better-founded number. */
+      if (!(gain > 0) && !t.isSupport) gain = this.utilityUpgradeGain(t, next, prof);
 
       /* An upgrade inherits the tile's coverage exactly like a new build does.
          Without this the AI systematically prefers width over depth: new towers
@@ -890,6 +896,53 @@ const AI = {
        copy this function -- now it does. */
     t.recompute();
     return v;
+  },
+
+  /**
+   * WHAT AN UPGRADE IS WORTH TO A TOWER THAT DOES NO DAMAGE.
+   *
+   * The brain valued these towers correctly when it BUILT them -- roleValue
+   * prices a SABOTEUR at 170 and a SIREN at 160 -- and then scored their
+   * upgrades on damage they do not have. `before` and `after` both came back
+   * 0, gain was 0, and `if (score > 0)` dropped them: five towers the rival
+   * would build once and never spend another coin on, for the whole match.
+   * RAMPART, SABOTEUR, SIREN, SHEPHERD and WARD, measured through the real
+   * scoring path rather than read off the table.
+   *
+   * Diffing utilityValue across the upgrade cannot fix it -- that function
+   * keys off the tower's TYPE and how many the side owns, neither of which an
+   * upgrade changes. So value the upgrade by how much it moves the tower's
+   * OWN defining numbers, and price that movement at the role the brain
+   * already agreed the tower is worth. Data-driven on purpose: it reads
+   * whatever stats the upgrade touched, so a utility tower added later is
+   * priced without anyone remembering to come back here.
+   */
+  utilityUpgradeGain(t, next, prof) {
+    const role = this.roleValue(t.def.id, prof);
+    if (!(role > 0)) return 0;
+    const save = { level: t.level, branch: t.branch, asc: t.asc, stats: t.stats,
+                   ascDamage: t.ascDamage, ascRate: t.ascRate, ascRange: t.ascRange };
+    const before = Object.assign({}, t.stats);
+    if (next.kind === 'level') t.level++;
+    else if (next.kind === 'branch') { t.branch = next.data[this.pickBranch(t, prof)]; t.level = 4; }
+    else t.asc++;
+    t.recompute();
+    let rel = 0;
+    for (const k of Object.keys(t.stats)) {
+      const a = t.stats[k], b = before[k];
+      if (typeof a !== 'number' || !isFinite(a)) continue;
+      if (typeof b !== 'number' || !isFinite(b)) { if (a) rel += 1; continue; }
+      if (a === b) continue;
+      /* A stat that starts at zero and becomes non-zero is a NEW capability,
+         which is worth a whole step rather than an infinite one. */
+      rel += b === 0 ? 1 : Math.abs(a - b) / Math.abs(b);
+    }
+    /* Same restore-then-recompute discipline as projectedUpgrade, and for the
+       same reason: recompute ALLOCATES, so a deliberation that skipped it
+       would hand the rival free drones for thinking about an upgrade. */
+    Object.assign(t, save);
+    t.recompute();
+    return role * Math.min(AI_UTIL_UPGRADE_CAP, rel) * AI_UTIL_UPGRADE_WEIGHT;
   },
 
   /** Beacons are worth the summed damage of everything they cover. */

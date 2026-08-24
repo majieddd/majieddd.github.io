@@ -867,6 +867,56 @@
        dz.join(', ') + ' — printed as a stat row and punched out of both range rings');
   });
 
+  /* ---- 23.6 the rival can upgrade a tower that does no damage ---------- */
+  T('23.6 no tower is built by the rival and then never upgradable', function () {
+    if (typeof AI === 'undefined' || typeof Tower === 'undefined' || !AI.utilityUpgradeGain) {
+      ok('23.6 no tower is built by the rival and then never upgradable', false,
+         'AI.utilityUpgradeGain is missing -- the utility term was removed');
+      return;
+    }
+    Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+    Game.wave = 8;
+    const prof = AI.profile();
+    /* Score every tower through the REAL upgrade path, exactly as the brain
+       does it, and fail on any that can never clear `if (score > 0)`. Before
+       the utility term, five did: RAMPART, SABOTEUR, SIREN, SHEPHERD, WARD. */
+    const dead = [], hot = [];
+    let bolt = 0;
+    Object.keys(TOWER_TYPES).forEach(function (id) {
+      let t, next;
+      try { t = new Tower(id, 5, 5, 1); next = t.nextUpgrade(); } catch (e) { return; }
+      if (!next) return;
+      const rawc = next.kind === 'branch' ? Math.min(next.data[0].cost, next.data[1].cost)
+                                          : (next.cost || next.data.cost);
+      const cost = t.upgradeCost(next.kind, rawc);
+      const before = t.isSupport ? 0 : AI.effectiveness(t.def, t.stats, t.estimateDps(), prof);
+      let gain = AI.projectedUpgrade(t, next, prof) - before;
+      if (t.def.attack === 'aura') gain = AI.auraGain(t, prof);
+      if (t.def.attack === 'economy')
+        gain = Game.wave > 24 ? 0 : (t.stats.income || 0) * AI_ECON_UPGRADE_WEIGHT * AI.diff.aiEcon;
+      if (!(gain > 0) && !t.isSupport) gain = AI.utilityUpgradeGain(t, next, prof);
+      const score = gain / Math.max(1, cost);
+      if (id === 'bolt') bolt = score;
+      /* AURA towers legitimately score 0 in isolation -- a BEACON covering
+         nothing IS worth nothing -- and anti-air legitimately scores 0 with
+         no air in the profile. Neither is a tower the rival can never
+         upgrade; both recover from board state. */
+      if (!(score > 0) && t.def.attack !== 'aura' && !t.def.airOnly) dead.push(id);
+      if (score > 0) hot.push({ id: id, s: score });
+    });
+    /* And the fix must not have overshot: a utility upgrade outranking the
+       staple damage upgrade would trade "never upgrades them" for "upgrades
+       nothing else". That is exactly what the first calibration did. */
+    const util = ['rampart', 'saboteur', 'siren', 'shepherd', 'ward'];
+    const over = hot.filter(function (h) { return util.indexOf(h.id) >= 0 && h.s > bolt; })
+                    .map(function (h) { return h.id + '=' + h.s.toFixed(2); });
+    ok('23.6 no tower is built by the rival and then never upgradable',
+       dead.length === 0 && over.length === 0,
+       dead.length ? 'never upgradable: ' + dead.join(', ')
+       : over.length ? 'utility outranks BOLT (' + bolt.toFixed(2) + '): ' + over.join(', ')
+       : 'every tower scores a positive upgrade; no utility upgrade outranks BOLT at ' + bolt.toFixed(2));
+  });
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;
