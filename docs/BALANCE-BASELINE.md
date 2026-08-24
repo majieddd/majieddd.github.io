@@ -218,6 +218,21 @@ with rivals drawn from every power, total free pressure across the board fell,
 so both seats live longer. The fresh move (9 → 11) is small and lands where
 the owner asked the early game to land.
 
+### A WARNING ABOUT THIS HARNESS, learnt the hard way in Session 22
+
+These absolute numbers are only comparable **within one session**. The same
+bundle, unchanged, returned 22/28664 one day and 13/18007 another while
+reporting `reproducible: true` both times — the flag only promises that two
+runs inside ONE page agree, which is exactly what it says and not what it was
+being read as. Whatever the page's state is when `captureAI()` snapshots the
+prototype travels into every run after it.
+
+So: to prove a change did or did not move the simulation, build BOTH versions,
+serve them at equivalent fresh paths, and measure them back to back in one
+session. That is how the NG+ work was proved sim-neutral (13/18007 on both
+sides). A number compared against one written down on a different day proves
+nothing at all.
+
 **The maxed move (25 → 31) is the number to watch.** It is not a defect — the
 health curve's terminus still bites and every run ended by wave 34 — but it
 means expert matches now run about six waves longer, which pulls against the

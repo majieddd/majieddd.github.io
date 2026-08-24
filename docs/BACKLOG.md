@@ -184,6 +184,46 @@ Full write-ups with build notes in [`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md
 
 ---
 
+## Session 22 — the summoning round
+
+Eight owner items, all shipped. What is worth knowing later:
+
+- **Five summoning rites, one conservation law.** `Game.corpseBudget` prices a
+  corpse once; a doctrine may change the SHELL a kill returns in, never the
+  MASS. CONSCRIPTION drafts from your roster, THE PROCESSION marches on a
+  clock, THE BROOD incubates, LETTERS OF MARQUE buys everything with no
+  ceiling on either bonus, THE LATTICE clones exactly and cannot buy at all.
+  The **commander** carries the rite, not the banner — that is the mixing
+  contract, and it is why a cross-faction commander brings their summoning to
+  your flag while your roster supplies the soldiers.
+- **THE PARALLEL** is real in `FACTIONS` and absent from `FACTION_ORDER`. That
+  split is load-bearing: `FACTION_ORDER` is the powers the galaxy is fought
+  over (world owners, arena seats, rivals) and `POWER_ORDER` is the powers
+  that own troops. Adding the robots to the former would put machine
+  garrisons on the map and machine bosses in seats.
+- **A Parallel player never fields their own soldiers**, and that is by
+  construction rather than by oversight: the Lattice clones what it kills and
+  cannot buy. Robot units reach a lane when ANOTHER power captures them —
+  their technology is a thing to be stolen. The RELAY doctrine and THE SPLICE
+  both fire on that path and are proved doing so.
+- **Everything campaign-shaped is a battle OPTION**, never read from the save:
+  `ramp`, `systemIndex`, and the flattening they imply. That is what keeps
+  skirmishes, duels and the balance pins measuring the engine rather than the
+  campaign, and it was verified by running pre- and post-change builds
+  back-to-back at parallel paths for a byte-identical pin.
+- **The pin harness is only comparable within one session.** Measured the hard
+  way this round: the same bundle returned different absolute numbers across
+  sessions while staying `reproducible: true` within each. Compare A against B
+  in ONE session at equivalent paths; never against a number written down on
+  a different day.
+
+Still open, and none of it new: the ten heavies have no `twr_` art plates, the
+rival AI draft lists never learnt them, the soul shop's five new firing
+previews are unwired, and the maxed pin median wants a re-measure now that the
+faction skews have moved (see BALANCE-BASELINE).
+
+---
+
 ## G. The outside review's unpatched items — ALL SIX SHIPPED (Session 22)
 
 | # | Item | Where it landed |
