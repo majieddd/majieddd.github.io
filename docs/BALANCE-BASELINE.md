@@ -127,3 +127,47 @@ Waves 5, 6, 6, 7, 10, 13 · **2 wins / 4 losses** · **loss median 8**.
 
 Compare a seeded number only against the SAME seed. These six are now the
 reference; anything that moves them is the code, not the draw.
+
+---
+
+# Session 21 round two — RE-BASELINED for the ten heavies
+
+Sixty towers changed the draft pool, and a `TOWER_ORDER` change silently
+re-bases these pins (the first documented way to mis-measure them). Same
+seeds, same method, same maps — new numbers, and the harness still reports
+`reproducible: true`.
+
+## Maxed profile, galaxy tier 0 — seeds 1000-1005
+
+| Map | Seed | Outcome | Wave |
+|---|---:|---|---:|
+| spine | 1000 | win | 18 |
+| delta | 1001 | loss | 23 |
+| narrows | 1002 | win | 23 |
+| shattered | 1003 | win | 12 |
+| crossroads | 1004 | loss | 25 |
+| coil | 1005 | loss | 25 |
+
+Waves 12, 18, 23, 23, 25, 25 · **3 wins / 3 losses** · **loss median 25**
+(was 22 before the heavies).
+
+## Fresh profile — seeds 1000-1005
+
+| Map | Seed | Outcome | Wave |
+|---|---:|---|---:|
+| spine | 1000 | loss | 7 |
+| delta | 1001 | win | 6 |
+| narrows | 1002 | loss | 6 |
+| shattered | 1003 | loss | 13 |
+| crossroads | 1004 | win | 6 |
+| coil | 1005 | loss | 9 |
+
+Waves 6, 6, 6, 7, 9, 13 · **2 wins / 4 losses** · **loss median 9** (was 8).
+
+## Reading it
+
+The heavies raised the CEILING and left the floor alone, which is what a
+board-cost power tier is supposed to do: the maxed loss median moved 22 → 25
+while the fresh curve barely moved (8 → 9) — a fresh profile cannot afford a
+heavy, so it should not feel them, and it does not. Nothing here needs a nerf
+on this evidence; re-measure again if any heavy's talents change.

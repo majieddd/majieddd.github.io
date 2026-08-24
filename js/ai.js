@@ -515,13 +515,19 @@ const AI = {
   /** Best free spot for a given tower, weighted by how much lane it covers. */
   bestSpotFor(def) {
     const range = def.base.range || 3.2;
+    const foot = towerFoot(def);
     let best = null, bestScore = -1;
     /* Only consider the strongest candidates — full search every tick is waste. */
     let checked = 0;
     for (const s of this.spots) {
       if (Game.towerAt(s.gx, s.gy)) continue;
+      /* A heavy claims a foot x foot rectangle anchored on this spot, tested
+         by the SAME rule Game.build will enforce -- so the rival can never
+         bid ground the engine then refuses, which would waste the decision
+         tick. Coverage is measured from the rectangle's true centre. */
+      if (foot > 1 && !Game.canBuild(this.side.index, s.gx, s.gy, foot)) continue;
       if (++checked > 46) break;
-      let score = this.coverage(s.x, s.y, range);
+      let score = this.coverage(s.x + (foot - 1) * TILE / 2, s.y + (foot - 1) * TILE / 2, range);
       /* A node is worth most to the tower that can actually use it: matched
          element, or an unmarking tower the node has an element to lend. This is
          the parity clause -- the rival reads nodes by the player's own rule. */
@@ -759,6 +765,10 @@ const AI = {
         for (const t of S.towers) {
           if (t.isSupport) continue;
           if ((t.aiMoves || 0) >= AI_RELOCATE_MAX_MOVES) continue;
+          /* `dest` was picked as a bare free TILE; a heavy needs the whole
+             rectangle there, itself excluded exactly as Game.relocate
+             excludes it. Skipped here so the refusal never eats the tick. */
+          if ((t.foot || 1) > 1 && !Game.canBuild(S.index, dest.gx, dest.gy, t.foot, t)) continue;
           const here = this.coverage(t.x, t.y, t.effRange);
           const there = this.coverage(dest.x, dest.y, t.effRange);
           if (there < here * AI_RELOCATE_MIN_GAIN) continue;

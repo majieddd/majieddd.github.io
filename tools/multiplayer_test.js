@@ -562,14 +562,12 @@ const MPT = (function () {
         try { Net.suspend(Game.drawRadial, Game, [Game.ctx]); }
         finally { for (const u of undo) u(); }
         Game.radial = null;
-        /* EVERY call, not a fixed count of calls: drawRadial re-prices an item
-           for its label as well as its ring slot, so the same function is
-           legitimately asked more than once per frame. The claim under test is
-           that no ask names seat 0 — a count assertion here failed the fix for
-           pricing correctly one extra time. */
-        const fns = ['towerCost', 'towerLifeCost', 'canAffordBuild'];
-        const mineOnly = seen.length >= 3 && seen.every(s => s.slice(-2) === '=1') &&
-                         fns.every(f => seen.some(s => s.indexOf(f) === 0));
+        /* EVERY call, not a fixed count of calls, and not a fixed SET of them:
+           drawRadial re-prices an item for its label as well as its ring slot,
+           and since the footprint engine it short-circuits -- `afford = fits &&
+           canAffordBuild(...)` -- so an option that cannot fit is never priced
+           at all. The claim under test is only ever that NO ask names seat 0. */
+        const mineOnly = seen.length >= 2 && seen.every(s => s.slice(-2) === '=1');
         closeMatch();
         ok('net.lens the radial ring prices the LOCAL seat', mineOnly, seen.join(' '));
       });

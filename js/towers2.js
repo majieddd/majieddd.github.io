@@ -795,6 +795,274 @@ Object.assign(TOWER_TYPES_2, {
 });
 
 /* Merge into the master roster. */
+
+Object.assign(TOWER_TYPES_2, {
+  /* SESSION 21 -- THE HEAVIES. Two per origin, each especially powerful
+     and each paying for it in BOARD: foot:[2,2] claims four tiles, the one
+     cost base-level retrofit can never refund. Inside TOWER_TYPES_2 for
+     the same reason the Session-19 six are: applyGoldSquish runs once at
+     the foot of this file, and anything added after it keeps unsquished
+     prices for the rest of the match. The pirate gun was authored as a
+     second BOMBARD; the adjudication renamed it CARRONADE -- the naval
+     smasher -- and its talent ids moved bd_* -> cn_* with it. */
+  bombard: {
+    id:'bombard', element:'fire', origin:'human', name:'BOMBARD', role:'Siege battery — blind up close', cost:380, costGrowth:1.82,
+    color:'#f97316', dark:'#5f2a08', attack:'lobbed', groundOnly:true, glyph:'✸', foot:[2,2],
+    desc:'The largest gun the coalition ever dragged into a fight. Each shell arcs most of the board and lands as a district-levelling blast — and what a kill did not need is not thrown away: the surplus rolls out of the corpse into the nearest body still standing, and keeps rolling while it keeps killing. The bill is printed on the placard: a barrel this long cannot point at its own feet, so nothing inside three tiles can be fired on at all, and the recoil path alone is why it takes FOUR TILES of board. Site it BEHIND the line, like the artillery it is. Blind to the sky.',
+    /* `minRange` is a DEAD ZONE in tiles: acquire() refuses anything nearer,
+       which is the whole placement question this tower asks. `overkill` is
+       the share of surplus kill damage the shell rolls into the next body --
+       read on the detonate path (Projectile.rollOverkill), never on impact,
+       because the only carrier is a lobbed shell that always bursts. */
+    base:{ damage:95, range:9.0, minRange:3.0, rate:0.30, projSpeed:7, dmgType:'physical', splash:1.8, overkill:0.6 },
+    levels:[ { cost:230, name:'DEMICANNON', mods:{ damage:320, splash:2.0, overkill:0.75 } },
+             { cost:420, name:'BASILISK',   mods:{ damage:520, splash:2.2, range:10.0, rate:0.34, overkill:0.9 } } ],
+    talents:[
+      { id:'bd_hoist',   row:0, col:0, name:'SHELL HOIST',      desc:'+40% fire rate.',                          mods:{ rateMul:1.40 } },
+      { id:'bd_charge',  row:0, col:1, name:'DOUBLE CHARGE',    desc:'+45% damage, −10% fire rate.',             mods:{ damageMul:1.45, rateMul:0.90 } },
+      { id:'bd_carriage',row:1, col:0, name:'ROLLING CARRIAGE', desc:'The dead zone shrinks by a full tile.',    mods:{ minRange:-1.0 } },
+      { id:'bd_through', row:1, col:1, name:'THROUGHSHOT',      desc:'A further 25% of surplus damage rolls onward.', mods:{ overkill:0.25 } },
+      { id:'bd_pit',     row:2, col:0, name:'GUN PIT',          desc:'+35% splash radius.',                      mods:{ splashMul:1.35 } },
+      { id:'bd_mag',     row:2, col:1, name:'FULL MAGAZINE',    desc:'+30% damage and +15% fire rate.',          mods:{ damageMul:1.30, rateMul:1.15 } } ],
+    branches:[
+      { id:'culverin', name:'CULVERIN', cost:620, mods:{ damage:900, rate:0.30, splash:1.7, range:12.0, minRange:3.5, projSpeed:10, overkill:1.0 },
+        surge:{ damage:110 }, note:'A longer barrel still: half the board in reach, and a kill is never where the shell stops.' },
+      { id:'drumfire', name:'DRUMFIRE', cost:620, mods:{ damage:340, rate:0.85, splash:2.4, minRange:2.0, overkill:0.7 },
+        surge:{ rate:0.06 }, note:'The crew stops aiming shells and starts keeping time. A shorter throw is part of the drill.' } ]
+  },
+
+  coldfront: {
+    id:'coldfront', element:'frost', origin:'human', name:'COLDFRONT', role:'Manufactures weather — the field itself slows', cost:340, costGrowth:1.95,
+    color:'#a5f3fc', dark:'#155e75', attack:'front', glyph:'❄', foot:[2,2],
+    desc:'Not a gun — a refrigeration plant run past every rating on its placard, and the four tiles are the compressor hall: you do not make a CLIMATE with a box the size of a rifle. It fires nothing, ever. It manufactures WEATHER: a standing cold front across its whole field, where every second a body spends inside deepens its EXPOSURE — a slow that climbs toward a ceiling and follows the body OUT rather than expiring. Elites weather it at half speed and nothing here ever dies of it: it multiplies the window every gun you own gets to work in, at a scale CRYO cannot reach.',
+    /* `exposure` is slow ADDED PER SECOND to every body in the field, climbing
+       to `exposureCap`; `exposureShed` is how fast a body clear of every front
+       loses it again. The meter and the shed rate ride the UNIT (entities.js),
+       so overlapping fronts share one meter and never wind it backward. */
+    base:{ range:3.5, dmgType:'none', exposure:0.08, exposureCap:0.50, exposureShed:0.35 },
+    levels:[ { cost:210, name:'DEEP WINTER', mods:{ exposure:0.12, exposureCap:0.62, range:3.8 } },
+             { cost:390, name:'ICE AGE',     mods:{ exposure:0.16, exposureCap:0.72, range:4.2, exposureShed:0.25 } } ],
+    talents:[
+      { id:'cf_wide',  row:0, col:0, name:'WIDE FRONT',  desc:'+35% field radius.',                            mods:{ rangeMul:1.35 } },
+      { id:'cf_cool',  row:0, col:1, name:'OVERCOOLED',  desc:'Exposure builds 35% faster.',                   mods:{ exposureMul:1.35 } },
+      { id:'cf_ice',   row:1, col:0, name:'BLACK ICE',   desc:'+0.10 to the exposure ceiling.',                mods:{ exposureCap:0.10 } },
+      { id:'cf_linger',row:1, col:1, name:'LONG WINTER', desc:'The cold follows them out — sheds 40% slower.', mods:{ exposureShedMul:0.60 } },
+      { id:'cf_blind', row:2, col:0, name:'SNOWBLIND',   desc:'Bodies at the ceiling take +20% damage.',       mods:{ exposureVuln:0.20 } },
+      { id:'cf_chill', row:2, col:1, name:'WINDCHILL',   desc:'+25% radius, and exposure builds 15% faster.',  mods:{ rangeMul:1.25, exposureMul:1.15 } } ],
+    branches:[
+      { id:'whiteout',     name:'WHITEOUT',     cost:560, mods:{ exposure:0.22, exposureCap:0.80, exposureFreeze:1.2, exposureShed:0.25, range:4.6 },
+        surge:{ exposureFreeze:0.12 }, note:'At the ceiling the crawl becomes a stop: a body fully exposed freezes solid, once, before it remembers how to move.' },
+      { id:'shatterfront', name:'SHATTERFRONT', cost:560, mods:{ exposure:0.18, exposureCap:0.65, exposureVuln:0.35, exposureShed:0.30, range:5.0 },
+        surge:{ exposureVuln:0.05 }, note:'The front stops being a delay and becomes a multiplier: everything deep inside is easier for every gun you own to kill.' } ]
+  },
+
+  quadmount: {
+    id:'quadmount', element:'frost', origin:'robotic', name:'QUAD MOUNT', role:'Four independent fire solutions', cost:545, costGrowth:1.92,
+    color:'#a5f3fc', dark:'#155e75', attack:'turrets', glyph:'∷', foot:[2, 2],
+    desc:'Four cryo cannon on one traversing bed, each barrel holding its OWN fire solution: four targets engaged at once, every shell landing cold and slowing what it hits. Barrels with nobody left to claim converge on a claimed hull and hit harder for the company, so the same machine answers a swarm and a boss. The footprint is the price of the mount: a bed that traverses four barrels independently does not fit on one tile, and the four tiles it takes are the one bill a base-level retrofit can never refund.',
+    /* `turrets` is the identity -- the only gun whose target COUNT is a
+       stat -- and `convergeBonus` pays surplus barrels for doubling up.
+       Both deterministic, as the origin demands: no proc, no gamble. */
+    base:{ damage:24, range:4.0, rate:1.0, projSpeed:16, dmgType:'magic',
+           turrets:4, convergeBonus:0.10, slow:0.20, slowDur:1.4 },
+    levels:[ { cost:300, name:'GUN LINE',     mods:{ damage:68, rate:1.05, slow:0.26 } },
+             { cost:560, name:'FIRE CONTROL', mods:{ damage:112, rate:1.1, range:4.4, slow:0.32, slowDur:1.8, convergeBonus:0.15 } } ],
+    talents:[
+      { id:'qm_bore',  row:0, col:0, name:'COLD BORE',  desc:'+45% damage.',        mods:{ damageMul:1.45 } },
+      { id:'qm_belt',  row:0, col:1, name:'BELT FEED',  desc:'+35% fire rate.',     mods:{ rateMul:1.35 } },
+      { id:'qm_mount', row:1, col:0, name:'TALL MOUNT', desc:'+30% range.',         mods:{ rangeMul:1.30 } },
+      { id:'qm_frost', row:1, col:1, name:'HARD FROST', desc:'+40% chill potency.', mods:{ statusMul:1.40 } },
+      { id:'qm_box',   row:2, col:0, name:'KILL BOX',   desc:'Converged barrels hit a further +15% per barrel already on the hull.', mods:{ convergeBonus:0.15 } },
+      { id:'qm_fifth', row:2, col:1, name:'FIFTH GUN',  desc:'+1 barrel.',          mods:{ turrets:1 } } ],
+    branches:[
+      { id:'enfilade',  name:'ENFILADE',  cost:640, mods:{ damage:165, rate:1.15, turretFocus:true, convergeBonus:0.30 },
+        surge:{ convergeBonus:0.04 }, note:'Every solution laid on the strongest hull in range. What it looks at, it finishes.' },
+      { id:'fusillade', name:'FUSILLADE', cost:640, mods:{ damage:130, rate:1.2, turrets:6, slow:0.30, slowDur:1.6 },
+        surge:{ turrets:1 }, note:'Six barrels, six lanes of cold. Nothing in the arc moves at speed.' } ]
+  },
+
+  reactor: {
+    id:'reactor', element:'storm', origin:'robotic', name:'REACTOR', role:'Runs the lattice past its rating', cost:585, costGrowth:2.25,
+    color:'#fde047', dark:'#713f12', attack:'aura', glyph:'⌁', foot:[2, 2],
+    desc:'Fires nothing. It is the grid\'s missing half: every machine in its field runs at the reactor\'s RATED lattice, wherever its neighbours actually stand — and the rating climbs past the governed four, which no amount of standing together can reach. Machines stop paying for geometry; the reactor pays for them, in AREA. Four tiles of containment is what a core this size costs, and it is the one price a base-level retrofit can never refund.',
+    /* latticeFill is a RATING, not a bonus: a machine in the field takes
+       max(own links, rating), so it stacks with nothing and cheats nothing.
+       Above ORIGIN_LATTICE_MAX it is the only way past the cap, which is
+       the whole reason it is priced like a second Vault. */
+    base:{ range:3.0, dmgType:'none', latticeFill:4 },
+    levels:[ { cost:320, name:'TURBINE HALL', mods:{ latticeFill:5, range:3.4 } },
+             { cost:600, name:'POWERHOUSE',   mods:{ latticeFill:6, range:3.8 } } ],
+    talents:[
+      { id:'rc_yard', row:0, col:0, name:'SWITCHYARD',     desc:'+35% field radius.',                       mods:{ rangeMul:1.35 } },
+      { id:'rc_rate', row:0, col:1, name:'SURPLUS RATING', desc:'+1 rated lattice.',                        mods:{ latticeFill:1 } },
+      { id:'rc_duty', row:1, col:0, name:'DUTY CYCLE',     desc:'Everything in the field fires 8% faster.', mods:{ auraRate:0.08 } },
+      { id:'rc_feed', row:1, col:1, name:'TARGET FEED',    desc:'+8% range to everything in the field.',    mods:{ auraRange:0.08 } },
+      { id:'rc_bus',  row:2, col:0, name:'BUSBAR',         desc:'+1 rated lattice and +20% radius.',        mods:{ latticeFill:1, rangeMul:1.20 } },
+      { id:'rc_main', row:2, col:1, name:'MAINS FEED',     desc:'+10% damage to everything in the field.',  mods:{ auraDmg:0.10 } } ],
+    branches:[
+      { id:'supercritical', name:'SUPERCRITICAL', cost:700, mods:{ latticeFill:8, range:3.2 },
+        surge:{ latticeFill:1 }, note:'A core run far past its plate rating, and a short field. Stand close to it.' },
+      { id:'intertie',      name:'INTERTIE',      cost:700, mods:{ latticeFill:6, range:5.2, auraRate:0.10, auraRange:0.10 },
+        surge:{ rangeMul:1.05 }, note:'One plant, and the whole board is on its grid.' } ]
+  },
+
+  carronade: {
+    /* THE PIRATE HEAVIES (Session 21). foot:[2,2] -- the engine work for the
+       footprint is a separate design; per-tower notes travel with the def.
+       BOMBARD is the origin rider at siege stakes: overloadMult and
+       overloadSplash override ORIGIN_PIRATE_MULT for this tower only, and
+       heatBank/jamFor override ORIGIN_PIRATE_HEAT_MAX / ORIGIN_PIRATE_JAM --
+       three overloads to a magazine, then seconds of silence. */
+    id:'carronade', element: 'fire', origin:'pirate', name:'CARRONADE', role:'Siege battery whose overloads detonate', cost:425, costGrowth:1.88,
+    color:'#fdba74', dark:'#7c2d12', attack:'lobbed', groundOnly:true, glyph:'✹', foot:[2, 2],
+    desc:'A first-rate\'s great gun taken off a wreck with the deck still bolted to it. Arcing shells with a blast worth the reload, and the origin gamble raised to siege stakes: when a shell OVERLOADS, the whole overpayment lands as a DETONATION around the point of impact rather than a surcharge on one skull — and the magazine banks only three overloads before the gun cooks off and stands silent while the crew re-lays her. The footprint is the price of the calibre: a lighter mount would drive itself through the ground on the first discharge. Blind to anything airborne.',
+    base:{ damage:62, range:4.6, rate:0.34, projSpeed:12, dmgType:'physical', splash:1.8,
+           burn:10, burnDur:2.0, overloadMult:3.4, overloadSplash:1.5, heatBank:3, jamFor:3.5 },
+    levels:[ { cost:260, name:'GUN DECK',   mods:{ damage:150, splash:2.0, burn:18 } },
+             { cost:470, name:'FIRST RATE', mods:{ damage:260, splash:2.3, range:5.0, burn:28, overloadMult:4.0 } } ],
+    talents:[
+      { id:'cn_shot',   row:0, col:0, name:'DOUBLE SHOTTED',  desc:'+45% shell damage.',                    mods:{ damageMul:1.45 } },
+      { id:'cn_quoin',  row:0, col:1, name:'QUOIN WEDGES',    desc:'+25% range, +15% blast radius.',        mods:{ rangeMul:1.25, splashMul:1.15 } },
+      { id:'cn_worm',   row:1, col:0, name:'WORM AND SPONGE', desc:'A cooked-off gun recovers 40% sooner.', mods:{ jamForMul:0.60 } },
+      { id:'cn_hot',    row:1, col:1, name:'HOT SHOT',        desc:'+60% burn damage and duration.',        mods:{ statusMul:1.60 } },
+      { id:'cn_monkey', row:2, col:0, name:'POWDER MONKEYS',  desc:'+30% fire rate.',                       mods:{ rateMul:1.30 } },
+      { id:'cn_locker', row:2, col:1, name:'SHOT LOCKERS',    desc:'The magazine banks 2 more overloads before it cooks off.', mods:{ heatBank:2 } } ],
+    branches:[
+      { id:'hellburner', name:'HELLBURNER', cost:620, mods:{ damage:340, rate:0.36, overloadMult:6.0, overloadSplash:2.2, heatBank:2, jamFor:5.0 },
+        surge:{ overloadMult:0.4 }, note:'Two overloads to a magazine, and each one is a catastrophe.' },
+      { id:'siegetrain', name:'SIEGE TRAIN', cost:620, mods:{ damage:420, rate:0.44, splash:2.6, overloadMult:3.0, heatBank:6, jamFor:2.0 },
+        surge:{ damage:90 }, note:'A disciplined battery: deeper magazine, shorter jam, and the shells do the talking.' } ]
+  },
+
+  stokehold: {
+    /* THE PIRATE HEAVIES (Session 21). foot:[2,2]. STOKEHOLD is the heat bank
+       inverted: the rider's downside becomes its fuel. The transfer clause
+       lives in the pirate rider block in entities.js (see BOMBARD's note);
+       atk_stoke ticks the furnace, the bleed, and FIRESHIP's vent. `stoke`
+       is the banked-points field -- NOT `heat`, which the rider owns, and
+       NOT `heatT`, which PYRE owns. */
+    id:'stokehold', element: 'fire', origin:'pirate', name:'STOKEHOLD', role:'Boiler that feeds on the battery\'s heat', cost:390, costGrowth:1.96,
+    color:'#f97316', dark:'#5a1e07', attack:'stoke', glyph:'♨', foot:[2, 2],
+    desc:'A capital ship\'s boiler cut out whole and set down still lit. It fires nothing. Friendly pirate guns in reach dump their overload heat into its bank INSTEAD of jamming, and every point banked stokes a furnace field that cooks the lane around the hull — a structure that WANTS the battery reckless, because the bank boils off on its own and a line that stops gambling watches the fire die. Four tiles because nothing smaller holds a battery\'s worth of heat: the footprint is the boiler.',
+    base:{ range:2.7, dmgType:'magic', stokeBurn:9, stokePerHeat:7, stokeMax:10, stokeReach:3.6, stokeBleed:0.4 },
+    levels:[ { cost:240, name:'BLACK GANG',  mods:{ stokeBurn:16, stokePerHeat:12, stokeMax:14, range:2.9 } },
+             { cost:430, name:'DREADNOUGHT', mods:{ stokeBurn:26, stokePerHeat:18, stokeMax:20, stokeReach:4.2, range:3.2 } } ],
+    talents:[
+      { id:'sk_draught', row:0, col:0, name:'FORCED DRAUGHT',   desc:'Each banked point burns 40% harder.', mods:{ stokePerHeatMul:1.40 } },
+      { id:'sk_trim',    row:0, col:1, name:'COAL TRIMMERS',    desc:'The boiler loses heat 40% slower.',   mods:{ stokeBleedMul:0.60 } },
+      { id:'sk_flue',    row:1, col:0, name:'LONG FLUES',       desc:'+35% sink reach.',                    mods:{ stokeReachMul:1.35 } },
+      { id:'sk_bars',    row:1, col:1, name:'FIREBARS',         desc:'+30% furnace radius.',                mods:{ rangeMul:1.30 } },
+      { id:'sk_triple',  row:2, col:0, name:'TRIPLE EXPANSION', desc:'+6 boiler capacity.',                 mods:{ stokeMax:6 } },
+      { id:'sk_scald',   row:2, col:1, name:'SCALDING STEAM',   desc:'+50% furnace floor burn.',            mods:{ stokeBurnMul:1.50 } } ],
+    branches:[
+      { id:'overpressure', name:'OVERPRESSURE', cost:580, mods:{ stokeBurn:40, stokePerHeat:26, stokeMax:34, stokeBleed:0.25, range:3.5 },
+        surge:{ stokeMax:3 }, note:'A boiler that can hold a whole battery\'s worth of sin, and radiates every point of it.' },
+      { id:'fireship', name:'FIRESHIP', cost:580, mods:{ stokeBurn:30, stokePerHeat:16, stokeMax:16, stokeVent:22, range:3.3 },
+        surge:{ stokeVent:6 }, note:'At full pressure the boiler blows itself across the lane, and starts again cold.' } ]
+  },
+
+  suture: {
+    id:'suture', element:'venom', origin:'xeno', name:'SUTURE', role:'Sews the wave into one flesh', cost:430, costGrowth:1.94,
+    color:'#bef264', dark:'#2f4a10', attack:'graft', glyph:'≬', foot:[2,2],
+    desc:'It does not fight the wave. It SEWS it. Living cable lashes out and grafts the bodies in reach into ONE FLESH, and while the graft holds a share of every wound any of them takes is repeated in all of the others — your whole line is suddenly hitting everything it is hitting. Against a crowd it is a multiplier on the entire board; against one giant there is nothing to sew it to, and it is a rope with no second post. The footprint is the anchor mass: an organ holding a dozen straining bodies on live sinew would be dragged down the lane by anything smaller than four tiles. LATE-GAME, and the exact inverse of the MAW — that answers the one, this answers the many.',
+    /* graftFrac is a SHARE, and the repeat pays out once per other body, so a
+       graft of n is worth frac*(n-1) on every hit -- quadratic in the catch.
+       That curve is the tower, and GRAFT_FRAC_MAX is what keeps a surged
+       BLOOD KNOT from repeating more wound than was ever dealt. */
+    base:{ damage:16, range:3.4, rate:0.5, dmgType:'magic', graftCount:4, graftFrac:0.22, graftDur:6 },
+    levels:[ { cost:235, name:'LIGATURE', mods:{ damage:30, graftCount:6, graftFrac:0.28 } },
+             { cost:440, name:'CHIMERA',  mods:{ damage:48, graftCount:8, graftFrac:0.34, graftDur:8, range:3.7 } } ],
+    talents:[
+      { id:'su_wide',  row:0, col:0, name:'WIDE STITCH',   desc:'+2 bodies held in the graft.',        mods:{ graftCount:2 } },
+      { id:'su_deep',  row:0, col:1, name:'DEEP THREAD',   desc:'+10% of every wound repeated.',       mods:{ graftFrac:0.10 } },
+      { id:'su_lash',  row:1, col:0, name:'RAW SINEW',     desc:'+45% lash damage.',                   mods:{ damageMul:1.45 } },
+      { id:'su_reach', row:1, col:1, name:'LONG FIBRES',   desc:'+30% reach.',                         mods:{ rangeMul:1.30 } },
+      { id:'su_sep',   row:2, col:0, name:'SEPTIC THREAD', desc:'Grafted bodies take +15% damage.',    mods:{ graftVuln:0.15 } },
+      { id:'su_hold',  row:2, col:1, name:'TIGHT WEAVE',   desc:'Grafts hold 4s longer.',              mods:{ graftDur:4 } } ],
+    branches:[
+      { id:'oneflesh', name:'ONE FLESH',  cost:620, mods:{ damage:66, graftCount:14, graftFrac:0.30, graftDur:10, range:4.0 },
+        surge:{ graftCount:1 }, note:'The whole wave, one body — a wound anywhere is a wound everywhere.' },
+      { id:'bloodknot', name:'BLOOD KNOT', cost:620, mods:{ damage:88, graftCount:3, graftFrac:0.95, graftDur:8, graftVuln:0.20 },
+        surge:{ graftFrac:0.05 }, note:'Three bodies bound so tight that hurting one is hurting all of them, whole.' } ]
+  },
+
+  impaler: {
+    id:'impaler', element:'fire', origin:'xeno', name:'IMPALER', role:'Falls on the worst wound on the board', cost:470, costGrowth:2.10,
+    color:'#fb923c', dark:'#5a2506', attack:'impale', glyph:'⟟', foot:[2,2],
+    desc:'A spine the length of a lane, held over the whole board. It does not patrol a circle — it watches every wound your line opens, ANYWHERE, falls on the worst of them, and the deeper the hurt the harder it lands. It will not touch a fresh body at all: it does not open wounds, it ENDS them, so it is worth nothing behind a line that draws no blood and monstrous behind one that does. The four tiles are the haunch that throws it — reach over every lane at once is bought with ground, not gold. LATE-GAME: the appetite\'s answer to the creature your line can hurt but never finish.',
+    /* range is board-wide on purpose, same clause as ORISON: it names one
+       wound out of the whole field, which is why it argues with your LINE
+       (something must cut first) instead of with its own placement. */
+    base:{ damage:62, range:99, rate:0.22, projSpeed:26, dmgType:'physical', homing:true, impaleScale:3.0, impaleFloor:0.25 },
+    levels:[ { cost:260, name:'GREATSPINE', mods:{ damage:112, impaleScale:3.6 } },
+             { cost:480, name:'WORLDSPINE', mods:{ damage:178, impaleScale:4.2, impaleFloor:0.20, rate:0.26 } } ],
+    talents:[
+      { id:'im_barb',  row:0, col:0, name:'BARBED HEAD',    desc:'+45% damage.',                          mods:{ damageMul:1.45 } },
+      { id:'im_fast',  row:0, col:1, name:'SHORT PATIENCE', desc:'Strikes 25% more often.',               mods:{ rateMul:1.25 } },
+      { id:'im_fresh', row:1, col:0, name:'FRESH MEAT',     desc:'Falls on wounds 10% shallower.',        mods:{ impaleFloor:-0.10 } },
+      { id:'im_scale', row:1, col:1, name:'FEVERED SPINE',  desc:'+1.0 wound scaling.',                   mods:{ impaleScale:1.0 } },
+      { id:'im_split', row:2, col:0, name:'SPLINTER',       desc:'The spine shatters 1.0 tiles wide.',    mods:{ splash:1.0 } },
+      { id:'im_burn',  row:2, col:1, name:'RENDING HEAT',   desc:'Hits burn for 24/s over 3s.',           mods:{ burn:24, burnDur:3 } } ],
+    branches:[
+      { id:'abattoir',   name:'ABATTOIR',   cost:660, mods:{ damage:120, rate:0.55, impaleScale:3.2, impaleFloor:0.30 },
+        surge:{ rate:0.03 }, note:'It stops waiting for the worst wound and works every hurt on the board in turn.' },
+      { id:'extinction', name:'EXTINCTION', cost:660, mods:{ damage:340, rate:0.14, impaleScale:6.0, impaleFloor:0.40, splash:1.4 },
+        surge:{ damage:60 }, note:'One spine, held until the wound is worth it — and then the wound is the whole creature.' } ]
+  },
+
+  monstrance: {
+    id:'monstrance', element:'radiant', origin:'light', name:'MONSTRANCE', role:'Holds one body utterly open', cost:432, costGrowth:2.15, foot:[2,2],
+    color:'#fef08a', dark:'#6b5407', attack:'beam', glyph:'✶',
+    desc:'A cathedral-class projector: four tiles of plinth, reliquary and ONE lens the size of a chapel window. What the beam holds is REVEALED — armour and every resistance held open, and not for this tower: for EVERY tower you own. It is the Federation rider built at the only scale where it is allowed to reach armour, and the footprint is the licence — an aperture this wide cannot stand on one tile, and nothing narrower could hold a war-engine open. It prefers the strongest body walking, which is the body you wanted opened. Its own beam is honest; the line behind it is what collects.',
+    /* rampMax:1 is deliberate and load-bearing: updateBeam defaults an
+       unstated ramp to PRISM's, and a Monstrance that ramped would be a
+       gilded Prism. 1 zeroes the ramp term whatever `ramp` defaults to.
+       revealFrac is capped by REVEAL_CAP (config.js) at the moment it is
+       spent, so the branch figure below may honestly approach 1.0 without
+       the engine ever having to make an immunity literal. */
+    base:{ damage:34, range:5.0, rate:1, dmgType:'magic', rampMax:1, preferStrongest:true, revealFrac:0.45, revealLinger:1.2 },
+    levels:[ { cost:280, name:'OSTENSORIUM', mods:{ damage:60, revealFrac:0.58 } },
+             { cost:520, name:'EPIPHANY',    mods:{ damage:94, revealFrac:0.70, revealLinger:2.0, range:5.5 } } ],
+    talents:[
+      { id:'ms_burn', row:0, col:0, name:'BRIGHTER TRUTH',  desc:'+45% beam damage.',                                     mods:{ damageMul:1.45 } },
+      { id:'ms_wide', row:0, col:1, name:'GREAT APERTURE',  desc:'+25% range.',                                           mods:{ rangeMul:1.25 } },
+      { id:'ms_deep', row:1, col:0, name:'FULL DISCLOSURE', desc:'A further 12% of the target\'s protections held open.', mods:{ revealFrac:0.12 } },
+      { id:'ms_ling', row:1, col:1, name:'AFTERGLOW',       desc:'The opening outlasts the beam by 2s.',                  mods:{ revealLinger:2 } },
+      { id:'ms_bare', row:2, col:0, name:'CANDOUR',         desc:'The beam itself ignores 40% of armour.',                mods:{ pierce:0.40 } },
+      { id:'ms_twin', row:2, col:1, name:'SECOND WITNESS',  desc:'Holds a second body open at 55% strength.',             mods:{ split:2, splitFalloff:0.55 } } ],
+    branches:[
+      { id:'revelation', name:'REVELATION', cost:620, mods:{ damage:170, revealFrac:0.92, revealLinger:3.0, range:6.0 },
+        surge:{ revealLinger:0.3 }, note:'What it looks at has, for every practical purpose, no protections at all.' },
+      { id:'theophany',  name:'THEOPHANY',  cost:620, mods:{ damage:120, revealFrac:0.62, split:3, splitFalloff:0.65 },
+        surge:{ splitFalloff:0.03 }, note:'Three bodies held open at once. The whole front rank, presented.' } ]
+  },
+
+  pharos: {
+    id:'pharos', element:'fire', origin:'light', name:'PHAROS', role:'A turning lamp that owns the approach', cost:398, costGrowth:2.02, foot:[2,2],
+    color:'#fdba74', dark:'#7c2d12', attack:'cone', glyph:'☀',
+    desc:'A lighthouse of the Host: a sacred flame on four tiles of foundation, turning on its own clock. It does not aim and it cannot be made to — no jam, no bait, no body on the board changes where the light is pointing; the beam simply comes round, and everything it crosses burns, wades, and is left with its protections held open for whoever shoots next. The footprint is the price of the elevation: a lamp that must see the WHOLE approach cannot stand on one tile. At a board edge half of every revolution lights empty dark — where you put it is most of what it does.',
+    /* sweepRate is radians per second: 1.05 is one full turn every six
+       seconds. The lamp reuses the cone verb's geometry, burn and status
+       hooks wholesale; the ONLY new behaviour is that `angle` is driven by
+       the clock instead of by acquisition, which is the identity. */
+    base:{ damage:26, range:5.5, rate:1, dmgType:'magic', cone:0.55, burn:12, burnDur:2.6, sweepRate:1.05, sweepBeams:1 },
+    levels:[ { cost:260, name:'WATCHFIRE', mods:{ damage:46, burn:22, range:6.0 } },
+             { cost:480, name:'DAYSPRING', mods:{ damage:72, burn:34, burnDur:3.0, range:6.6, cone:0.62 } } ],
+    talents:[
+      { id:'ph_oil',   row:0, col:0, name:'SACRED OIL',     desc:'+45% lamp damage.',                    mods:{ damageMul:1.45 } },
+      { id:'ph_high',  row:0, col:1, name:'HIGH GALLERY',   desc:'+20% range.',                          mods:{ rangeMul:1.20 } },
+      { id:'ph_wide',  row:1, col:0, name:'BROAD LIGHT',    desc:'+40% beam width.',                     mods:{ coneMul:1.40 } },
+      { id:'ph_turn',  row:1, col:1, name:'TIRELESS WHEEL', desc:'The lamp turns 35% faster.',           mods:{ sweepRateMul:1.35 } },
+      { id:'ph_pitch', row:2, col:0, name:'PITCH FIRE',     desc:'+10/s to the fire it leaves.',         mods:{ burn:10 } },
+      { id:'ph_hvy',   row:2, col:1, name:'HEAVY LIGHT',    desc:'Anything in the beam is slowed 30%.',  mods:{ slow:0.30, slowDur:1.2 } } ],
+    branches:[
+      { id:'solstice', name:'SOLSTICE', cost:580, mods:{ damage:98, burn:40, sweepBeams:2, range:6.8 },
+        surge:{ damage:10 }, note:'Two lights back to back. Half the dark it used to leave.' },
+      { id:'noontide', name:'NOONTIDE', cost:580, mods:{ damage:64, burn:52, burnDur:4.0, cone:1.5, sweepRate:0.7, range:7.2 },
+        surge:{ coneMul:1.03 }, note:'Less a beam than a season: a broad slow noon that is always somewhere.' } ]
+  },
+});
+
 Object.assign(TOWER_TYPES, TOWER_TYPES_2);
 TOWER_ORDER.push('foundry', 'saboteur', 'rampart', 'executioner', 'chrono', 'echo',
                  'quake', 'siren', 'alchemist', 'glaive', 'cyclone', 'capacitor',
@@ -838,6 +1106,13 @@ applyGoldSquish();
    same result, and the merge now lands in either arrival order. */
 TOWER_ORDER.splice(TOWER_ORDER.length, 0,
                    'sepulchre', 'orison', 'antiphon', 'gestalt', 'maw', 'veil');
+
+/* SESSION 21 -- THE HEAVIES. Same append-after-squish argument as the six
+   above: applyGoldSquish walks TOWER_TYPES, never TOWER_ORDER. */
+TOWER_ORDER.splice(TOWER_ORDER.length, 0,
+                   'bombard', 'coldfront', 'quadmount', 'reactor',
+                   'carronade', 'stokehold', 'suture', 'impaler',
+                   'monstrance', 'pharos');
 
 /* --------------------------------------------------------------------------
    CAMPAIGN CONTENT — arena modifiers shown on the world-path nodes, and the

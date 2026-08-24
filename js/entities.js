@@ -162,6 +162,7 @@ class Enemy {
 
     /* status timers (seconds) */
     this.slowFactor = 0; this.slowTimer = 0;
+    this.exposure = 0; this.exposureT = 0; this.exposureShed = 0; this.exposureFroze = false;
     this.burnDps = 0;    this.burnTimer = 0;
     this.poisonStacks = 0; this.poisonTimer = 0; this.poisonDps = 0; this.poisonPct = 0; this.poisonContagion = 0;
     /* Share of MAX health per stack per second -- CANISTER's axis. Kept
@@ -364,7 +365,12 @@ class Enemy {
        and deliberately NOT applied to armour: armour is the physical curve's
        main lever and halving it from a support tower would re-price every
        physical tower in the game. Resistances only. */
-    const supp = this.suppressT > 0 ? (1 - ORIGIN_LIGHT_STRIP) : 1;
+    let supp = this.suppressT > 0 ? (1 - ORIGIN_LIGHT_STRIP) : 1;
+    /* MONSTRANCE's REVELATION -- the origin rider bought at cathedral scale.
+       Folded into the same factor suppression uses so the two never disagree
+       about what 'held open' means; the armour reach is granted separately
+       below, because armour is the one protection the rider is forbidden. */
+    if (this.revealT > 0) supp *= (1 - Math.min(REVEAL_CAP, this.revealAmt || 0));
     /* Shelled mobs shrug off area damage -- splash alone stops clearing maps. */
     if (opts.splash && this.def.splashResist) amount *= (1 - this.def.splashResist * supp);
     /* A phased Wraith simply cannot be hurt — sustained damage is wasted on it. */
@@ -393,7 +399,11 @@ class Enemy {
     }
 
     if (type === 'physical') {
-      const armor = this.totalArmor * (1 - (opts.pierce || 0));
+      let armor = this.totalArmor * (1 - (opts.pierce || 0));
+      /* Revelation reaches armour; suppression never does. The 2x2 is the
+         licence: a 1x1 support halving armour would re-price every physical
+         tower in the game, so only the tower that pays four tiles gets to. */
+      if (this.revealT > 0) armor *= (1 - Math.min(REVEAL_CAP, this.revealAmt || 0));
       amount = Math.max(amount * 0.12, amount - armor);
     }
 
@@ -406,6 +416,12 @@ class Enemy {
     this.hp -= amount;
     this.flash = 0.1;
     this.recentDmg += dealt;
+    /* SUTURE banks here and spends at tower cadence in atk_graft -- the
+       hottest path in the simulation writes one addition and never walks a
+       list. `opts.graft` guards the repeat itself, or one wound would echo
+       through the flesh forever. */
+    if (this.graftUntil > Game.clock && !opts.graft && dealt > 0)
+      this.graftPending = (this.graftPending || 0) + dealt;
     if (opts.shred) this.applyShred(opts.shred);
 
     if (this.def.phases && this.phaseIndex < this.def.phases.length) {
@@ -464,8 +480,20 @@ class Enemy {
     this._hpMark = this.hp; this._shMark = this.shield;
 
     if (this.slowTimer > 0)  { this.slowTimer -= dt;  if (this.slowTimer <= 0) this.slowFactor = 0; }
+    /* COLDFRONT exposure: refreshed every tick by any front holding this
+       unit; clear of every field it SHEDS at the stamped rate rather than
+       expiring, and the slow walks down with it. */
+    if (this.exposure > 0) {
+      if (this.exposureT > 0) this.exposureT -= dt;
+      else {
+        this.exposure = Math.max(0, this.exposure - (this.exposureShed || 0.35) * dt);
+        if (this.exposure > 0.02) this.applySlow(this.exposure, 0.2);
+        else { this.exposure = 0; this.exposureFroze = false; }
+      }
+    }
     if (this.markT > 0) { this.markT -= dt; if (this.markT <= 0) this.markEl = null; }
     if (this.suppressT > 0) this.suppressT -= dt;
+    if (this.revealT > 0) this.revealT -= dt;
     /* Refreshed every frame by any NULL FIELD holding this unit. Towers step
        before enemies in Game.step so one frame would do; the window is wider
        so a long frame or a resumed tab cannot flicker a wraith back to
@@ -1254,8 +1282,13 @@ class Tower {
     this.type = type;
     this.side = side;
     this.gx = gx; this.gy = gy;
-    this.x = (gx + 0.5) * TILE;
-    this.y = (gy + 0.5) * TILE;
+    /* A heavy occupies foot x foot tiles with (gx, gy) as the TOP-LEFT; the
+       centre every range test, aura pass, lattice count, projectile origin
+       and draw call reads sits mid-rectangle. foot 1 reduces to the old
+       (gx + 0.5) * TILE exactly, so no 1x1 tower moves a pixel. */
+    this.foot = towerFoot(this.def);
+    this.x = (gx + this.foot / 2) * TILE;
+    this.y = (gy + this.foot / 2) * TILE;
 
     this.level = 1;
     this.branch = null;
@@ -1361,7 +1394,20 @@ class Tower {
        marking tower of some other element holds its own charge longer instead.
        Read here so relocation and base-level retrofits pick it up for free;
        both already recompute. */
-    const node = nodeAt(this.gx, this.gy, 'build');
+    /* THE FOOTPRINT ATTUNEMENT RULE: a heavy standing on several tiles
+       honours exactly ONE covered build node, and a node matching this
+       tower's element wins over one that does not -- so a 2x2 dropped across
+       two nodes attunes if ANY covered node matches. One node, never two:
+       stacking infusions would pay the board-area tax back to the heavy,
+       which is the one refund the 2x2 cost must never give. foot 1 reads its
+       own tile exactly as before. */
+    let node = null;
+    const fp = this.foot || 1;
+    for (let ndy = 0; ndy < fp; ndy++) for (let ndx = 0; ndx < fp; ndx++) {
+      const n = nodeAt(this.gx + ndx, this.gy + ndy, 'build');
+      if (!n) continue;
+      if (!node || (n.el === this.def.element && node.el !== this.def.element)) node = n;
+    }
     this.node = node;
     this.nodeEl = null; this.nodeAttuned = false; this.nodeHold = false;
     if (node) {
@@ -1389,7 +1435,7 @@ class Tower {
        ordering is why relocation, sale and base-level retrofits all pick up a
        new count for free -- every one of them recomputes auras. */
     const links = (this.def.origin === 'robotic')
-      ? Math.max(0, Math.min(ORIGIN_LATTICE_MAX, this.latticeRaw || 0)) : 0;
+      ? Math.max(0, Math.min(Math.max(ORIGIN_LATTICE_MAX, this.latticeFillCap || 0), this.latticeRaw || 0)) : 0;
     this.lattice = links;
     if (links > 0) {
       const dm = 1 + ORIGIN_LATTICE_DAMAGE * links;
@@ -1555,6 +1601,11 @@ class Tower {
       if (s.overheat)
         d += this.effDamageFor((s.blowDmg || 0) * (s.blowDmgMul || 1))
              / Math.max(1, (s.overheat || 5) + PYRE_VENT_SECONDS);
+      /* PHAROS is a cone that is only ever pointing at one slice of the
+         board: price the slice, not the circle, or the rival reads a lamp
+         as a 26-damage Pyre with triple the reach and drafts nothing else. */
+      if (s.sweepRate)
+        d *= Math.min(1, (s.cone || 0.6) * Math.max(1, Math.round(s.sweepBeams || 1)) * PHAROS_UPTIME / TAU);
       return d;
     }
     if (a === 'vigil') {
@@ -1628,6 +1679,12 @@ class Tower {
       return MAW_REF_HP * Game.waveHpMul(Math.max(1, Game.wave)) / Math.max(1, s.mawCd || 18);
     if (a === 'veil')
       return VEIL_REF_DEBT * Game.waveHpMul(Math.max(1, Game.wave)) * (s.veilHealTax || 0);
+    if (a === 'front')
+      /* Weather has no damage figure. Priced as the share of a nominal wave
+         body's walk the ceiling takes away, on the LIVE curve through
+         Game.waveHpMul -- THE definition, never a second copy of it. */
+      return FRONT_REF_DPS * Game.waveHpMul(Math.max(1, Game.wave))
+           * (s.exposureCap || 0) * (1 + (s.exposureVuln || 0) * 2);
     if (a === 'depot') {
       /* Supply has no damage figure either, so it is converted on the scale
          the rival already uses for gold: per VAULT tick, times the weight
@@ -1636,7 +1693,28 @@ class Tower {
                     + (s.requisition || 0) * DEPOT_REQ_REF_SPEND;
       return perTick * AI_ECON_UPGRADE_WEIGHT;
     }
-    if (a === 'beam') return this.effDamage * (1 + (s.rampMax || 1) * 0.5) * (s.split || 1);
+    if (a === 'stoke')
+      /* STOKEHOLD. Floor burn plus the bank at half fill -- a boiler is
+         priced for the pressure it typically holds, not its ceiling. */
+      return this.effDamageFor((s.stokeBurn || 0)
+           + (s.stokePerHeat || 0) * (s.stokeMax || 10) * 0.5);
+    if (a === 'graft')
+      /* SUTURE. The lash across its catch, plus the repeat priced at half
+         weight -- the repeat's real value is the LINE's dps, which this
+         function must not walk from inside a board pass. */
+      return this.effDamage * this.effRate * Math.max(1, s.graftCount || 1)
+           * (1 + Math.min(GRAFT_FRAC_MAX, s.graftFrac || 0)
+                  * Math.max(0, (s.graftCount || 1) - 1) * 0.5);
+    if (a === 'impale')
+      /* IMPALER. Coverage is total (range 99); the wound multiplier averages
+         half its ceiling over a kill, same arithmetic as the origin rider. */
+      return this.effDamage * this.effRate * (1 + (s.impaleScale || 0) * 0.5);
+    if (a === 'turrets')
+      /* QUAD MOUNT -- one gun, `turrets` fire solutions. Convergence priced at
+         half weight: surplus barrels only earn it when the wave thins. */
+      return this.effDamage * this.effRate * Math.max(1, Math.round(s.turrets || 1))
+           * (1 + (s.convergeBonus || 0) * 0.5);
+    if (a === 'beam') return this.effDamage * (1 + (s.rampMax || 1) * 0.5) * (s.split || 1) * (1 + (s.revealFrac || 0) * REVEAL_PRICE_WEIGHT);
     if (a === 'mines') return this.effDamage * (s.maxMines || 1) / Math.max(3, (s.mineDelay || 3) * (s.maxMines || 1) * 0.5);
     if (a === 'drones') return this.effDamageFor(s.droneDamage || 0) * (s.droneRate || 1) * (s.drones || 0) * this.rateMul;
     if (a === 'gravity') return this.effDamage * this.effRate * 3;
@@ -1690,6 +1768,9 @@ class Tower {
        but only onto ground one of your own weapons is currently holding. */
     const spot = (this.stats.spotting || 0) * TILE;
     const sr2 = spot > 0 ? (R + spot) * (R + spot) : r2;
+    /* BOMBARD's dead zone. A barrel this long cannot depress inside it, so
+       acquire() refuses the near ground outright -- the tooltip never lies. */
+    const mr = (this.stats.minRange || 0) * TILE, mr2 = mr * mr;
     const groundOnly = this.def.groundOnly, airOnly = this.def.airOnly;
     let best = null, bestScore = -Infinity;
     for (let i = 0; i < enemies.length; i++) {
@@ -1700,6 +1781,7 @@ class Tower {
       if (airOnly && !e.flying) continue;
       const d2 = dist2(this.x, this.y, e.x, e.y);
       if (d2 > sr2) continue;
+      if (d2 < mr2) continue;
       if (d2 > r2 && !this.spottedFor(e)) continue;
       let score;
       switch (this.targetMode) {
@@ -1740,6 +1822,11 @@ class Tower {
     if (!S || !S.towers) return false;
     for (const t of S.towers) {
       if (t === this || t.isSupport || t.jammed) continue;
+      /* Board-wide namers and the IMPALER are not observation posts: a
+         spotter extends a fire mission only from ground it genuinely
+         patrols. Also closes the latent saboteur/orison hole the comment
+         above already disclaims. */
+      if ((t.stats.range || 0) >= 90) continue;
       if (t.def.groundOnly && e.flying && !e.grounded) continue;
       if (t.def.airOnly && !e.flying) continue;
       if (dist2(t.x, t.y, e.x, e.y) <= t.rangePx * t.rangePx) return true;
@@ -2157,20 +2244,43 @@ class Tower {
       this.firing = false;
       return;
     }
-    const target = this.acquire(game.enemies);
-    this.firing = !!target;
-    if (!target) { this.heatT = Math.max(0, (this.heatT || 0) - dt); return; }
-    this.angle = angleLerp(this.angle, Math.atan2(target.y - this.y, target.x - this.x), Math.min(1, dt * 14));
-    Sound.play('pyre');
+    if (s.sweepRate) {
+      /* PHAROS. The lamp does not aim -- it TURNS, on its own clock. No
+         acquisition at all: nothing on the board changes where the light is
+         pointing, which is the whole identity. The wave walks through the
+         light or it does not. */
+      this.angle = (this.angle + s.sweepRate * dt) % TAU;
+      this.firing = true;
+      if (this.side === Game.viewSide) {
+        const lamps = Math.max(1, Math.round(s.sweepBeams || 1));
+        for (let b = 0; b < lamps; b++) {
+          const la = this.angle + (TAU / lamps) * b;
+          game.beams.push({ points: [{ x: this.x, y: this.y },
+            { x: this.x + Math.cos(la) * this.rangePx, y: this.y + Math.sin(la) * this.rangePx }],
+            life: 0.05, maxLife: 0.05, color: this.def.color, width: 2.5 });
+        }
+      }
+    } else {
+      const target = this.acquire(game.enemies);
+      this.firing = !!target;
+      if (!target) { this.heatT = Math.max(0, (this.heatT || 0) - dt); return; }
+      this.angle = angleLerp(this.angle, Math.atan2(target.y - this.y, target.x - this.x), Math.min(1, dt * 14));
+      Sound.play('pyre');
+    }
 
     const half = (s.cone || 0.6) / 2, r2 = this.rangePx * this.rangePx;
     for (const e of game.enemies) {
       if (e.dead || e.hostileTo !== this.side) continue;
       const d2 = dist2(this.x, this.y, e.x, e.y);
       if (d2 > r2) continue;
-      let da = Math.atan2(e.y - this.y, e.x - this.x) - this.angle;
-      da = ((da + Math.PI) % TAU + TAU) % TAU - Math.PI;
-      if (Math.abs(da) > half + Math.atan2(e.radius, Math.max(12, Math.sqrt(d2)))) continue;
+      const lamps = Math.max(1, Math.round(s.sweepBeams || 1));
+      let inLight = false;
+      for (let b = 0; b < lamps; b++) {
+        let da = Math.atan2(e.y - this.y, e.x - this.x) - this.angle - (TAU / lamps) * b;
+        da = ((da + Math.PI) % TAU + TAU) % TAU - Math.PI;
+        if (Math.abs(da) <= half + Math.atan2(e.radius, Math.max(12, Math.sqrt(d2)))) { inLight = true; break; }
+      }
+      if (!inLight) continue;
       this.registerDamage(e.takeDamage(this.effDamage * dt, s.dmgType, {}), e, game, false, true);
       if (s.burn) e.applyBurn(s.burn * this.effStatus, (s.burnDur || 2) * this.effStatus, this);
       if (s.burnVuln && e.burnTimer > 0)
@@ -2180,6 +2290,9 @@ class Tower {
       if (s.digest) e.applyDigest(s.digest * this.effStatus, (s.digestDur || 3) * this.effStatus, this);
       if (s.digestVuln && e.digestTimer > 0)
         e.applyVuln(s.digestVuln, (s.digestDur || 3) * this.effStatus);
+      /* PHAROS's HEAVY LIGHT: weight while lit. The burn above already
+         bridges the dark between passes, so the slow may be short. */
+      if (s.sweepRate && s.slow) e.applySlow(s.slow * this.effStatus, (s.slowDur || 1.2) * this.effStatus);
     }
 
     /* PYRE. Heat builds only while the trigger is actually held. */
@@ -2309,18 +2422,45 @@ class Tower {
            what keeps this a gamble rather than a flat buff on a beam. */
         if ((this.procCd || 0) <= 0 && Math.random() < ORIGIN_PIRATE_PROC) {
           this.procCd = ORIGIN_PIRATE_PROC_CD;
-          const extra = dealt * (ORIGIN_PIRATE_MULT - 1);
-          this.damageDealt += enemy.takeDamage(extra, this.stats.dmgType || 'physical',
-                                               { pierce: this.effPierce });
+          /* However far HELLBURNER surges the rating, one overload never pays
+             more than OVERLOAD_MULT_MAX: surges bypass STAT_CEIL, so the
+             ceiling lives here, at the one place the multiple is read. */
+          const mult = Math.min(OVERLOAD_MULT_MAX, this.stats.overloadMult || ORIGIN_PIRATE_MULT);
+          const extra = dealt * (mult - 1);
+          if (this.stats.overloadSplash && game) {
+            /* CARRONADE. The overload is not a surcharge on one target, it is
+               a DETONATION -- the whole overpayment lands on everything around
+               the shell. Same dice, siege stakes. */
+            const br = this.stats.overloadSplash * TILE, br2 = br * br;
+            for (const e of game.enemies) {
+              if (e.dead || e.hostileTo !== this.side) continue;
+              if (dist2(enemy.x, enemy.y, e.x, e.y) > br2) continue;
+              this.damageDealt += e.takeDamage(extra, this.stats.dmgType || 'physical',
+                                               { pierce: this.effPierce, splash: true });
+            }
+          } else {
+            this.damageDealt += enemy.takeDamage(extra, this.stats.dmgType || 'physical',
+                                                 { pierce: this.effPierce });
+          }
           this.overloads = (this.overloads || 0) + 1;
           this.heat = (this.heat || 0) + 1;
+          /* STOKEHOLD. A friendly boiler in reach takes the point instead --
+             the gun keeps its governor removed and never pays for it. */
+          const SB = Game.sides[this.side];
+          if (SB && SB.towers) for (const bt of SB.towers) {
+            if (!bt.stats.stokeMax) continue;
+            const reach = (bt.stats.stokeReach || 3) * TILE;
+            if (dist2(this.x, this.y, bt.x, bt.y) > reach * reach) continue;
+            if ((bt.stoke || 0) >= Math.round(bt.stats.stokeMax)) continue;
+            bt.stoke = (bt.stoke || 0) + 1; this.heat--; break;
+          }
           if (game && game.spawnBurst && this.side === Game.viewSide)
             game.spawnBurst(enemy.x, enemy.y, 6, '#ef4444', 120);
-          if (this.heat >= ORIGIN_PIRATE_HEAT_MAX) {
+          if (this.heat >= (this.stats.heatBank || ORIGIN_PIRATE_HEAT_MAX)) {
             this.heat = 0;
             /* jamTimer, NEVER `jammed` -- that is a getter with no setter and
                assigning to it is a silent no-op. */
-            this.jamTimer = Math.max(this.jamTimer || 0, ORIGIN_PIRATE_JAM);
+            this.jamTimer = Math.max(this.jamTimer || 0, this.stats.jamFor || ORIGIN_PIRATE_JAM);
           }
         }
       }
@@ -2354,10 +2494,16 @@ class Tower {
        over the entire arena. */
     if (this.stats.requisition || this.stats.vigilHold || this.stats.nullRadius
         || this.stats.sepulchreFrac
-        || this.stats.veilHealTax || this.stats.mawCd || this.stats.gestaltPerKill)
+        || this.stats.veilHealTax || this.stats.mawCd || this.stats.gestaltPerKill
+        || this.stats.exposure || this.stats.stokePerHeat)
       this.drawAuraField(ctx);
     ctx.save();
     ctx.translate(this.x, this.y);
+    /* A heavy's chassis fills its rectangle. Presentation only -- the sim
+       never reads a canvas -- and the 0.92 keeps the same proportional gutter
+       a 1x1's 32px plate leaves inside its 38px tile. Tier pips, the sprite
+       and the jam ring all scale with it, so the badge stays legible. */
+    if ((this.foot || 1) > 1) ctx.scale(this.foot * 0.92, this.foot * 0.92);
     ctx.fillStyle = 'rgba(8,12,20,0.85)';
     ctx.strokeStyle = d.color; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.roundRect(-16, -16, 32, 32, 6); ctx.fill(); ctx.stroke();
@@ -2820,8 +2966,11 @@ class Projectile {
         const t = this.tower, s = t ? t.stats : {};
         let dmg = this.damage * falloff;
         if (s.brittle && (e.slowTimer > 0 || e.freezeTimer > 0)) dmg *= s.brittle;
+        const had = e.hp + e.shield;
         const dealt = e.takeDamage(dmg, this.dmgType, { pierce: this.pierce });
         if (t) t.registerDamage(dealt, e, game);
+        /* BOMBARD -- what the kill did not need rolls onward. */
+        if (s.overkill && e.dead && dmg > had) this.rollOverkill((dmg - had) * s.overkill, e, game);
         this.applyRiders(e, game);
       }
     } else game.spawnBurst(this.x, this.y, 5, this.color, 80);
@@ -2972,7 +3121,11 @@ function offeringRateMul(side)   { const f = offeringFold(); return f ? 1 + (f.r
  * cannot leave a ward that does: the caller already drops a zero.
  */
 function wardDps(t) {
-  if (t.isSupport || t.def.attack === 'depot') return 0;
+  /* A sold COLDFRONT or SUTURE must raise no ward: their estimates are
+     control PRICES, and a sepulchre ward fires real damage -- the
+     QUARTERMASTER lesson, applied to every verb priced that way. */
+  if (t.isSupport || t.def.attack === 'depot'
+      || t.def.attack === 'front' || t.def.attack === 'graft') return 0;
   return t.estimateDps();
 }
 

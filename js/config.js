@@ -483,6 +483,16 @@ function nodeAt(gx, gy, kind) {
   return n && (!kind || n.kind === kind) ? n : null;
 }
 
+/** Footprint edge of a tower def in tiles: 1 for every classic tower, 2 for a
+    heavy authored with `foot: [2, 2]`. THE single reader of the field -- the
+    engine, the AI, the radial and the deploy check all ask this one function,
+    so "how big is it" has exactly one answer. (gx, gy) is always the tower's
+    TOP-LEFT tile; its world centre is (gx + foot/2) * TILE, which for foot 1
+    is the old (gx + 0.5) * TILE exactly. */
+function towerFoot(def) {
+  return (def && def.foot && def.foot[0]) || 1;
+}
+
 /* --------------------------------------------------------------------------
    TRI-FIELD
 
@@ -1071,6 +1081,19 @@ const ORIGIN_LIGHT_SUPPRESS = 2.5;
    than deleted, and so a magic-immune unit stays magic-immune. */
 const ORIGIN_LIGHT_STRIP = 0.40;
 
+/* MONSTRANCE -- REVELATION. The cap on how much of a body's protections one
+   beam may hold open, and the weight the rival's pricer gives that opening.
+   Capped short of 1.0 so 'no protections' stays a figure of speech the
+   engine never makes literal -- a true zero re-prices every immunity in the
+   bestiary. */
+const REVEAL_CAP = 0.95;
+const REVEAL_PRICE_WEIGHT = 0.9;
+
+/* PHAROS -- the share of a full turn the lamp is actually lighting any one
+   body, inflated for the burn that bridges the dark between passes. Used
+   only by estimateDps: the tick reads the geometry itself. */
+const PHAROS_UPTIME = 3;
+
 /* XENO -- PUNISH. Bonus damage as a fraction of the hit, scaling with how
    wounded the target ALREADY is: nothing at full health, this much at zero,
    so the average over a kill is roughly half of it. Dealt as PURE and flagged
@@ -1091,6 +1114,10 @@ const ORIGIN_PIRATE_PROC_CD = 1.1;
 const ORIGIN_PIRATE_HEAT_MAX = 5;
 const ORIGIN_PIRATE_JAM = 1.2;
 
+/* CARRONADE. However far HELLBURNER surges, one overload never pays more than
+   this multiple -- surges skip STAT_CEIL, so the reader holds the ceiling. */
+const OVERLOAD_MULT_MAX = 8;
+
 /* ROBOTIC -- LATTICE. Links are counted between robotic towers inside this
    radius, plus one for a build node (a tile with a power tap of its own), and
    capped so that a corner packed with eight machines is not a different game
@@ -1098,6 +1125,10 @@ const ORIGIN_PIRATE_JAM = 1.2;
    with every aura on the board and damage does not. */
 const ORIGIN_LATTICE_TILES = 2.2;
 const ORIGIN_LATTICE_MAX = 4;
+/* REACTOR. Rated fill can exceed the governed four -- that is the tower --
+   but never this, however many surges SUPERCRITICAL banks: surges skip
+   STAT_CEIL, so the ceiling lives at the one place the rating is read. */
+const LATTICE_FILL_MAX = 10;
 const ORIGIN_LATTICE_DAMAGE = 0.05;
 const ORIGIN_LATTICE_RATE = 0.035;
 
@@ -1390,6 +1421,11 @@ const MAW_REF_HP = 260;
    description. */
 const MAW_YIELD_MAX = 6.0;
 
+/* SUTURE. However far the branch surges the share, one wound never repeats
+   at more than this fraction -- surges skip STAT_CEIL, so the reader holds
+   the ceiling, the MAW_YIELD_MAX pattern. */
+const GRAFT_FRAC_MAX = 1.2;
+
 /* ── HUNGERING VEIL: THE LEDGER ───────────────────────────── */
 
 /* Share of a creature's OUTSTANDING healing debt called in each second it
@@ -1423,6 +1459,11 @@ const VEIL_TITHE_PER = 250;
    no support in it -- which is the tower's stated curve, and also a zero the
    rival cannot draft against. */
 const VEIL_REF_DEBT = 12;
+
+/* Walk a nominal wave body loses inside a full-depth cold front, used only to
+   price the plant for the rival. Priced off the CEILING rather than the rate:
+   a front's worth is how deep it holds a crowd, not how fast it gets there. */
+const FRONT_REF_DPS = 26;
 
 
 const TOWER_TYPES = {
@@ -1961,7 +2002,10 @@ const STORY_TOWER_ORIGIN = 'robotic';
    any more than the existing eight can. */
 const ROBOTIC_UNLOCK_ORDER = ['dronebay', 'railgun', 'echo', 'pylon',
                               'foundry', 'quake', 'nullfield', 'singularity',
-                              'vault', 'replicator'];
+                              'vault', 'replicator',
+  /* Session 21: the two heavies close the ladder -- the gun before the
+     grid-multiplier, so the first heavy a campaign earns can fight alone. */
+  'quadmount', 'reactor'];
 
 /* Every soul-shop purchase raises the next one IN THAT SHOP on that banner by
    this much. It stops a hoarded bank buying the whole arsenal in one sitting,
@@ -2801,7 +2845,7 @@ function applyGoldSquish() {
 const STAT_CEIL = {
   falloff: 0.95, splitFalloff: 0.95, echoFrac: 0.95, aftershock: 0.90,
   charmHpBonus: 0.90, minionSlow: 0.85, novaKeep: 0.80, reckonFrac: 0.90,
-  pierce: 0.90, crit: 0.75, vuln: 0.60, slow: 0.85, freezeChance: 0.50,
+  pierce: 0.90, crit: 0.75, vuln: 0.60, slow: 0.85, freezeChance: 0.50, overkill: 1.00,
   transmute: 0.50, hold: 0.80, execThreshold: 0.40,
   flockHp: 1.20, flockSpeed: 0.60,
   /* runFalloff is authored the way `falloff` already is: the talent states
@@ -2813,7 +2857,8 @@ const STAT_CEIL = {
      (SEPULCHRE_FRAC_MAX) because branches and ascension surges skip this
      table entirely, and a ward stronger than the tower it replaced makes
      selling strictly better than keeping. */
-  sepulchreFrac: 1.00, offeringDmg: 0.60, offeringGuard: 0.60, veilSlow: 0.60
+  sepulchreFrac: 1.00, offeringDmg: 0.60, offeringGuard: 0.60, veilSlow: 0.60,
+  exposureCap: 0.80, exposureVuln: 0.60
 };
 function waveCountMultiplier(w) { return 1 + (w - 1) * 0.022; }
 /** Bounty still grows slower than health, but it has to keep enough pace that

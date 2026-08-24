@@ -1080,8 +1080,16 @@ const Game = {
   /* ============================================================ BUILDING */
 
   tileKey(gx, gy) { return gx + ',' + gy; },
+  /** The tower COVERING (gx, gy) -- any tile of a multi-tile footprint
+      answers, so clicks, the lockstep command lookups in js/net.js and the
+      AI's occupancy re-tests all agree on what "here" means. (t.gx, t.gy)
+      stays the TOP-LEFT anchor, which is what the wire and the fingerprint
+      carry; footprints cannot overlap, so the match is never ambiguous. */
   towerAt(gx, gy) {
-    for (const s of this.sides) for (const t of s.towers) if (t.gx === gx && t.gy === gy) return t;
+    for (const s of this.sides) for (const t of s.towers) {
+      const f = t.foot || 1;
+      if (gx >= t.gx && gx < t.gx + f && gy >= t.gy && gy < t.gy + f) return t;
+    }
     return null;
   },
   ownsTile(side, gx, gy) {
@@ -1089,12 +1097,33 @@ const Game = {
     return side === 0 ? gx <= FIELD.buildMax[0] : gx >= FIELD.buildMax[1];
   },
 
-  canBuild(side, gx, gy) {
-    if (gx < 0 || gy < 0 || gx >= FIELD.cols || gy >= FIELD.rows) return false;
-    if (!this.ownsTile(side, gx, gy)) return false;
-    if (this.blocked.has(this.tileKey(gx, gy))) return false;
-    if (this.towerAt(gx, gy)) return false;
+  /** May `side` place a tower whose TOP-LEFT tile is (gx, gy)? `foot` widens
+      the test to the whole foot x foot rectangle: bounds, ownership, lanes,
+      authored terrain and arena rubble (all three live in `blocked`) and
+      standing towers are checked per covered tile, so a heavy obeys exactly
+      the rules a 1x1 does, four times over. `ignore` lets a relocation
+      overlap the mover's own current footprint. Deterministic: reads only
+      FIELD and board state, so a lockstep replay reaches the same verdict. */
+  canBuild(side, gx, gy, foot = 1, ignore = null) {
+    for (let dy = 0; dy < foot; dy++) for (let dx = 0; dx < foot; dx++) {
+      const tx = gx + dx, ty = gy + dy;
+      if (tx < 0 || ty < 0 || tx >= FIELD.cols || ty >= FIELD.rows) return false;
+      if (!this.ownsTile(side, tx, ty)) return false;
+      if (this.blocked.has(this.tileKey(tx, ty))) return false;
+      const t = this.towerAt(tx, ty);
+      if (t && t !== ignore) return false;
+    }
     return true;
+  },
+
+  /** Does ANY foot x foot rectangle fit in this side's buildable ground right
+      now? Deploy-screen honesty for heavies (UI.deploy); called once per
+      deploy, so the full-grid scan is fine. */
+  canFitFoot(side, foot) {
+    for (let gy = 0; gy <= FIELD.rows - foot; gy++)
+      for (let gx = 0; gx <= FIELD.cols - foot; gx++)
+        if (this.canBuild(side, gx, gy, foot)) return true;
+    return false;
   },
 
   /**
@@ -1268,7 +1297,7 @@ const Game = {
     const S = this.sides[side];
     if (!S || !TOWER_TYPES[type]) return null;
     if (!S.loadout.includes(type)) return null;
-    if (!this.canBuild(side, gx, gy)) return null;
+    if (!this.canBuild(side, gx, gy, towerFoot(TOWER_TYPES[type]))) return null;
     const t = new Tower(type, gx, gy, side);
     if ((S.baseLevel || 1) > 1) this.applyBaseLevelTo(t, S.baseLevel);
     S.towers.push(t);
@@ -1286,7 +1315,7 @@ const Game = {
     const S = this.sides[side];
     const cost = this.towerCost(side, type);
     const life = this.towerLifeCost(side, type);
-    if (!TOWER_TYPES[type] || !this.canBuild(side, gx, gy)) { if (side === 0) Sound.play('denied'); return null; }
+    if (!TOWER_TYPES[type] || !this.canBuild(side, gx, gy, towerFoot(TOWER_TYPES[type]))) { if (side === 0) Sound.play('denied'); return null; }
     /* Only the five towers you deployed with may be built. */
     if (!S.loadout.includes(type)) { if (side === 0) Sound.play('denied'); return null; }
     if (!this.canAffordBuild(side, type)) {
@@ -1431,6 +1460,24 @@ const Game = {
           const lb = p !== t && p.stats && p.stats.latticeBonus;
           if (!lb) continue;
           if (dist2(t.x, t.y, p.x, p.y) <= p.rangePx * p.rangePx) n += lb;
+        }
+        /* A REACTOR does not add links -- it SUPPLIES them: a machine in its
+           field runs at the reactor's rated fill wherever its neighbours
+           stand, and the rating may exceed ORIGIN_LATTICE_MAX -- recompute
+           honours that through latticeFillCap. Counted inside this pass for
+           the same reason the pylon is: it already walks every tower. */
+        t.latticeFillCap = 0;
+        for (const p of S.towers) {
+          const raw = p !== t && p.stats && p.stats.latticeFill;
+          if (!raw) continue;
+          /* However far SUPERCRITICAL surges the rating, the fill never
+             exceeds LATTICE_FILL_MAX: surges skip STAT_CEIL, so the ceiling
+             lives at the one place the rating is read. */
+          const lf = Math.min(LATTICE_FILL_MAX, raw);
+          if (dist2(t.x, t.y, p.x, p.y) <= p.rangePx * p.rangePx) {
+            n = Math.max(n, lf);
+            t.latticeFillCap = Math.max(t.latticeFillCap, lf);
+          }
         }
         t.latticeRaw = n;
       }
@@ -1850,7 +1897,15 @@ const Game = {
     for (const S of this.sides) {
       for (let i = S.towers.length - 1; i >= 0; i--) {
         const t = S.towers[i];
-        if (!this.consumed.has(this.tileKey(t.gx, t.gy))) continue;
+        /* ANY covered tile taken by the horizon takes the whole emplacement --
+           a heavy standing half in the void is not a thing the board can draw
+           or the blocked set can express. */
+        const tf = t.foot || 1;
+        let eaten = false;
+        for (let fdy = 0; fdy < tf && !eaten; fdy++)
+          for (let fdx = 0; fdx < tf && !eaten; fdx++)
+            if (this.consumed.has(this.tileKey(t.gx + fdx, t.gy + fdy))) eaten = true;
+        if (!eaten) continue;
         S.towers.splice(i, 1);
         if (this.selected === t) this.selected = null;
         if (this.movingTower === t) this.movingTower = null;
@@ -2474,13 +2529,16 @@ const Game = {
        charged for, and re-selected. Being in its side's list is the only
        honest test of whether a tower is still on the board. */
     if (!S || S.towers.indexOf(t) < 0) return false;
-    if (!this.canBuild(t.side, gx, gy)) { if (t.side === 0) Sound.play('denied'); return false; }
+    /* The destination rectangle is tested with the mover EXCLUDED, so a heavy
+       may shuffle one tile across its own current footprint -- the tiles it
+       stands on are the tiles it is about to vacate. */
+    if (!this.canBuild(t.side, gx, gy, t.foot || 1, t)) { if (t.side === 0) Sound.play('denied'); return false; }
     const fee = this.relocateCost(t);
     if (S.gold < fee) { if (t.side === 0) { Sound.play('denied'); UI.flashGold(); } return false; }
     S.gold -= fee;
     t.gx = gx; t.gy = gy;
-    t.x = gx * TILE + TILE / 2;
-    t.y = gy * TILE + TILE / 2;
+    t.x = (gx + (t.foot || 1) / 2) * TILE;
+    t.y = (gy + (t.foot || 1) / 2) * TILE;
     /* Node affinity is a property of the TILE, so moving on or off one has to
        re-read it, and recompute is where that reading happens. */
     t.recompute();
@@ -3102,8 +3160,12 @@ const Game = {
   drawBuildOverlay(ctx) {
     if (!this.selectedType || !this.hover.active || this.state !== 'playing') return;
     const def = TOWER_TYPES[this.selectedType];
+    const foot = towerFoot(def);
     const { gx, gy } = this.hover;
-    const cx = (gx + 0.5) * TILE, cy = (gy + 0.5) * TILE;
+    /* The hovered tile is the TOP-LEFT anchor; the ghost's centre -- range
+       ring and chassis cube alike -- sits mid-rectangle, exactly where the
+       built tower's x,y will land. */
+    const cx = (gx + foot / 2) * TILE, cy = (gy + foot / 2) * TILE;
     /* THE SEAT IN FRONT OF THIS SCREEN, not seat 0. draw runs with Net's lens
        suspended so the canvas keeps true seat order, which means a literal 0
        here reached the engine as the REAL seat 0: the guest's ghost went green
@@ -3112,15 +3174,15 @@ const Game = {
        field that already means "me" on both clients -- net.js sets it to the
        local seat -- and it is a real index, so it needs no lens to be right. */
     const me = this.viewSide;
-    const ok = this.canBuild(me, gx, gy) && this.canAffordBuild(me, this.selectedType);
+    const ok = this.canBuild(me, gx, gy, foot) && this.canAffordBuild(me, this.selectedType);
     ctx.save();
     ctx.fillStyle = ok ? 'rgba(74,222,128,0.09)' : 'rgba(239,68,68,0.11)';
     ctx.strokeStyle = ok ? 'rgba(74,222,128,0.9)' : 'rgba(239,68,68,0.9)';
     ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(cx, cy, def.base.range * TILE * this.sides[me].mods.range, 0, TAU); ctx.fill(); ctx.stroke();
-    ctx.setLineDash([5, 5]); ctx.strokeRect(gx * TILE + 2, gy * TILE + 2, TILE - 4, TILE - 4); ctx.setLineDash([]);
+    ctx.setLineDash([5, 5]); ctx.strokeRect(gx * TILE + 2, gy * TILE + 2, TILE * foot - 4, TILE * foot - 4); ctx.setLineDash([]);
     ctx.globalAlpha = 0.6; ctx.fillStyle = ok ? def.color : '#ef4444';
-    ctx.beginPath(); ctx.roundRect(cx - 13, cy - 13, 26, 26, 5); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(cx - 13 * foot, cy - 13 * foot, 26 * foot, 26 * foot, 5 * foot); ctx.fill();
     ctx.restore();
   },
 
@@ -3161,7 +3223,7 @@ const Game = {
     ctx.setLineDash([]);
     ctx.globalAlpha = 0.09; ctx.fillStyle = t.def.color; ctx.fill();
     ctx.globalAlpha = 1;
-    ctx.strokeRect(t.gx * TILE + 2, t.gy * TILE + 2, TILE - 4, TILE - 4);
+    ctx.strokeRect(t.gx * TILE + 2, t.gy * TILE + 2, TILE * (t.foot || 1) - 4, TILE * (t.foot || 1) - 4);
     ctx.restore();
   },
 
@@ -3434,6 +3496,11 @@ const Game = {
     const prof = scorer.profile();
     const items = types.map(type => ({
       type, ang: 0, afford: false,
+      /* A heavy needs its whole rectangle from THIS anchor tile. A ring that
+         offered it over ground it cannot take would refuse at release --
+         which reads as a bug -- so it is greyed instead, with the reason
+         printed on hover exactly like an unpayable price. */
+      fits: this.canBuild(0, gx, gy, towerFoot(TOWER_TYPES[type])),
       cost: this.towerCost(0, type),
       value: this.radialValue(scorer, type, gx, gy, prof)
     }));
@@ -3447,7 +3514,7 @@ const Game = {
        never let an unpayable build through. */
     /* Through canAffordBuild, not `S.gold >= cost`, so the ring can order a
        life-priced tower by whether it is actually payable. */
-    for (const it of items) it.afford = this.canAffordBuild(0, it.type);
+    for (const it of items) it.afford = it.fits && this.canAffordBuild(0, it.type);
     items.sort((a, b) => ((b.afford ? 1 : 0) - (a.afford ? 1 : 0)) || (b.value - a.value));
 
     /* Keep the whole ring on the board. Side 0 owns the left columns, where a
@@ -3562,7 +3629,8 @@ const Game = {
     for (const it of r.items) {
       it.cost = this.towerCost(me, it.type);
       it.life = this.towerLifeCost(me, it.type);
-      it.afford = this.canAffordBuild(me, it.type);
+      it.fits = this.canBuild(me, r.gx, r.gy, towerFoot(TOWER_TYPES[it.type]));
+      it.afford = it.fits && this.canAffordBuild(me, it.type);
     }
 
     const grow = clamp((performance.now() - r.born) / (RADIAL_GROW_SECS * 1000), 0, 1);
@@ -3633,7 +3701,7 @@ const Game = {
       const it = r.items[r.hover];
       ctx.font = 'bold 13px ui-monospace, Consolas, monospace';
       ctx.fillStyle = it.afford ? TOWER_TYPES[it.type].color : '#f87171';
-      const refusal = it.life ? 'NOT ENOUGH LIVES' : 'NOT ENOUGH GOLD';
+      const refusal = !it.fits ? 'NO ROOM (2×2)' : it.life ? 'NOT ENOUGH LIVES' : 'NOT ENOUGH GOLD';
       ctx.fillText(it.afford ? TOWER_TYPES[it.type].name : refusal,
                    r.mx, r.my - TILE * 0.95);
     }
@@ -3653,7 +3721,7 @@ const Game = {
       cv.style.cursor = aimed
         ? (this.canAim(0, p.gx, p.gy, aimed) ? 'crosshair' : 'not-allowed')
         : this.selectedType
-          ? (this.canBuild(0, p.gx, p.gy) ? 'copy' : 'not-allowed')
+          ? (this.canBuild(0, p.gx, p.gy, towerFoot(TOWER_TYPES[this.selectedType])) ? 'copy' : 'not-allowed')
           : (this.towerAt(p.gx, p.gy) ? 'pointer' : 'default');
     });
     cv.addEventListener('mouseleave', () => { this.hover.active = false; });

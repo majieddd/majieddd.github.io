@@ -482,6 +482,13 @@ const UI = {
     this._inspKey = null;
     this.buildShop();
     this.buildAbilityBar();
+    /* DEPLOY-TIME HONESTY for 2x2 heavies: the loadout slot is spent either
+       way, but a commander must learn the map cannot seat one NOW, not three
+       waves in with the gold already saved. Checked against the REAL built
+       FIELD (Game.start has run), and non-blocking -- the other towers still
+       fight, and rubble clearance can open ground later. */
+    if (this.sel.loadout.some(t => towerFoot(TOWER_TYPES[t]) > 1) && !Game.canFitFoot(0, 2))
+      Game.banner('NO GROUND FITS A 2×2 EMPLACEMENT ON THIS MAP', 4, '#f59e0b');
     if (!Game._skirmish) this.showBattleIntro();
     this.syncAll();
   },
@@ -4374,7 +4381,7 @@ const UI = {
       case 'robotic': {
         const n = t.lattice || 0;
         return n
-          ? `LATTICE ${n}/${ORIGIN_LATTICE_MAX} · +${Math.round(ORIGIN_LATTICE_DAMAGE * n * 100)}% damage · +${
+          ? `LATTICE ${n}/${Math.max(ORIGIN_LATTICE_MAX, t.latticeFillCap || 0)} · +${Math.round(ORIGIN_LATTICE_DAMAGE * n * 100)}% damage · +${
               Math.round(ORIGIN_LATTICE_RATE * n * 100)}% rate`
           : 'LATTICE 0 — place another machine within ' + ORIGIN_LATTICE_TILES + ' tiles';
       }
@@ -4388,9 +4395,14 @@ const UI = {
           ORIGIN_LIGHT_SUPPRESS}s · cannot be jammed`;
       case 'xeno':
         return `PUNISH — up to +${Math.round(ORIGIN_XENO_PUNISH * 100)}% against a nearly-dead target`;
-      case 'pirate':
-        return `OVERLOAD ${t.heat || 0}/${ORIGIN_PIRATE_HEAT_MAX} — ${
-          Math.round(ORIGIN_PIRATE_PROC * 100)}% for ×${ORIGIN_PIRATE_MULT.toFixed(2)}, then a jam`;
+      case 'pirate': {
+        /* CARRONADE overrides the rider's constants; the card must print the
+           gun's own figures or the next UI/engine desync ships right here. */
+        const bank = t.stats.heatBank || ORIGIN_PIRATE_HEAT_MAX;
+        const mult = Math.min(OVERLOAD_MULT_MAX, t.stats.overloadMult || ORIGIN_PIRATE_MULT);
+        return `OVERLOAD ${t.heat || 0}/${bank} — ${
+          Math.round(ORIGIN_PIRATE_PROC * 100)}% for ×${mult.toFixed(2)}, then a jam`;
+      }
       default: return o.rule;
     }
   },

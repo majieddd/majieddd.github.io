@@ -1046,3 +1046,236 @@ Enemy.prototype.takeDamage = function (amount, type, opts) {
   }
   return dealt;
 };
+
+/* BOMBARD -- OVERKILL (Session 21 heavies). Damage a kill did not need rolls
+   to the nearest body still standing near the corpse, and keeps rolling while
+   it keeps killing. The share taken per hop is `overkill`; three hops is the
+   leash, 2.2 tiles the reach, and the ground-only rule of the shell that
+   started it still holds. Authored on the detonate path only: the sole
+   carrier is a lobbed shell that always bursts. */
+Projectile.prototype.rollOverkill = function (surplus, corpse, game) {
+  const t = this.tower, s = t ? t.stats : {};
+  const r2 = (2.2 * TILE) ** 2;
+  let at = corpse, carry = surplus;
+  for (let hop = 0; hop < 3 && carry > 1; hop++) {
+    let next = null, bd = Infinity;
+    for (const e of game.enemies) {
+      if (e.dead || e.hostileTo !== this.side) continue;
+      if (this.groundOnly && e.flying && !e.grounded) continue;
+      const d2 = dist2(at.x, at.y, e.x, e.y);
+      if (d2 < r2 && d2 < bd) { bd = d2; next = e; }
+    }
+    if (!next) return;
+    const had = next.hp + next.shield;
+    const dealt = next.takeDamage(carry, this.dmgType, { pierce: this.pierce });
+    if (t) t.registerDamage(dealt, next, game);
+    game.spawnBurst(next.x, next.y, 5, this.color, 70);
+    if (!next.dead) return;
+    carry = Math.max(0, carry - had) * (s.overkill || 0);
+    at = next;
+  }
+};
+
+/* COLDFRONT -- industrial weather (Session 21 heavies). The field is not an
+   attack and never rolls a hit: every second a body spends inside adds
+   EXPOSURE, a slow that deepens toward this tower's ceiling. Elites weather
+   it at half speed. Math.max so overlapping fronts share one meter and a
+   shallow plant can never wind a deep one's work backward; the shed rate is
+   stamped ON THE UNIT because it keeps chilling after it has left every
+   field. Jam behaviour is free and correct: the gate in Tower.update returns
+   before this verb, the meter stops climbing and sheds on schedule. */
+Tower.prototype.atk_front = function (dt, game) {
+  const s = this.stats;
+  const cap = Math.min(0.85, s.exposureCap || 0.5);
+  for (const e of this.acquireAll(game.enemies)) {
+    const rate = (s.exposure || 0.08) * this.effStatus * ((e.boss || e.miniboss) ? 0.5 : 1);
+    e.exposure = Math.max(e.exposure || 0, Math.min(cap, (e.exposure || 0) + rate * dt));
+    e.exposureT = 0.6;
+    e.exposureShed = s.exposureShed || 0.35;
+    e.applySlow(e.exposure, 0.45);
+    if (e.exposure >= cap - 1e-6) {
+      if (s.exposureVuln) e.applyVuln(s.exposureVuln, 0.6);
+      if (s.exposureFreeze && !e.exposureFroze) {
+        e.exposureFroze = true;
+        e.applyFreeze(s.exposureFreeze * this.effStatus);
+        if (this.side === Game.viewSide) Sound.play('freeze');
+      }
+    }
+  }
+};
+
+/* QUAD MOUNT (Session 21 heavies). Each barrel holds its own fire solution:
+   targets are dealt round-robin, furthest-along first -- the same 'first'
+   score acquire() uses -- and a barrel laid on a hull that already has
+   barrels on it hits (1 + convergeBonus x prior) harder. turretFocus
+   (ENFILADE) lays every solution on the strongest hull instead. No roll
+   anywhere: the origin forbids the gamble. Chill rides through
+   Projectile.applyRiders, which already reads the tower's slow/slowDur, so
+   the shells are cold for free. Hung on the generic atk_ dispatch, the
+   Session-19 shape -- the core update path is not touched. */
+Tower.prototype.atk_turrets = function (dt, game) {
+  const s = this.stats;
+  const inRange = this.acquireAll(game.enemies);
+  if (inRange.length) {
+    inRange.sort((a, b) => a.remaining - b.remaining);
+    const lead = this.predict(inRange[0], s.projSpeed);
+    this.angle = angleLerp(this.angle, Math.atan2(lead.y - this.y, lead.x - this.x), Math.min(1, dt * 14));
+  }
+  this.cooldown -= dt;
+  if (!inRange.length || this.cooldown > 0) return;
+  this.cooldown = 1 / this.effRate;
+  this.recoil = 1;
+  Sound.play('cryo');
+  let focus = null;
+  if (s.turretFocus) {
+    focus = inRange[0];
+    for (const e of inRange) if (e.hp + e.shield > focus.hp + focus.shield) focus = e;
+  }
+  const barrels = Math.max(1, Math.round(s.turrets));
+  const claims = new Map();
+  for (let i = 0; i < barrels; i++) {
+    const tg = focus || inRange[i % inRange.length];
+    const prior = claims.get(tg) || 0;
+    claims.set(tg, prior + 1);
+    const aim = this.predict(tg, s.projSpeed);
+    const ang = Math.atan2(aim.y - this.y, aim.x - this.x);
+    game.projectiles.push(new Projectile({
+      x: this.x + Math.cos(ang) * 15, y: this.y + Math.sin(ang) * 15,
+      angle: ang, speed: (s.projSpeed || 12) * TILE,
+      damage: this.effDamage * (1 + (s.convergeBonus || 0) * prior),
+      dmgType: s.dmgType, splash: this.effSplash,
+      pierce: this.effPierce, pierceCount: s.pierceCount || 0, shred: s.shred || 0,
+      target: tg, tower: this, color: this.def.color, radius: 4,
+      airOnly: !!this.def.airOnly, groundOnly: !!this.def.groundOnly, side: this.side
+    }));
+  }
+};
+
+/* STOKEHOLD (Session 21 heavies) -- the pirate line's boiler. Heat banked by
+   friendly overloads (transferred in the pirate rider block, entities.js) is
+   fuel: every point stokes the furnace field. The bank boils off, so it must
+   be FED, and a full boiler simply stops absorbing -- unless FIRESHIP made
+   the overpressure a weapon. */
+Tower.prototype.atk_stoke = function (dt, game) {
+  const s = this.stats;
+  const cap = Math.round(s.stokeMax || 10);
+  this.stoke = clamp(this.stoke || 0, 0, cap);
+  /* The boil-off. Constant, so a battery that stops overloading watches the
+     furnace die in front of it. */
+  this.stokeT = (this.stokeT || 0) + dt * (s.stokeBleed || 0.4);
+  if (this.stokeT >= 1) { this.stokeT -= 1; if (this.stoke > 0) this.stoke--; }
+  /* FIRESHIP. At full pressure the whole bank goes across the lane at once. */
+  if (s.stokeVent && this.stoke >= cap) {
+    const dmg = this.effDamageFor(s.stokeVent * this.stoke);
+    const vr2 = this.rangePx * this.rangePx;
+    for (const e of game.enemies) {
+      if (e.dead || e.hostileTo !== this.side) continue;
+      if (dist2(this.x, this.y, e.x, e.y) > vr2) continue;
+      this.registerDamage(e.takeDamage(dmg, s.dmgType, { splash: true }), e, game);
+    }
+    this.stoke = 0;
+    game.spawnExplosion(this.x, this.y, this.rangePx, this.def.color);
+    game.shake(4);
+    if (this.side === Game.viewSide) Sound.play('explosion');
+    return;
+  }
+  /* The furnace itself: floor burn plus the banked heat. */
+  const dps = this.effDamageFor((s.stokeBurn || 0) + (s.stokePerHeat || 0) * this.stoke);
+  if (dps <= 0) return;
+  const r2 = this.rangePx * this.rangePx;
+  this.firing = false;
+  for (const e of game.enemies) {
+    if (e.dead || e.hostileTo !== this.side) continue;
+    if (dist2(this.x, this.y, e.x, e.y) > r2) continue;
+    this.firing = true;
+    this.registerDamage(e.takeDamage(dps * dt, s.dmgType, {}), e, game, false, true);
+  }
+};
+
+/* SUTURE (Session 21 heavies) -- sew the bodies in reach into one flesh, and
+   repeat every wound across all of it. */
+Tower.prototype.atk_graft = function (dt, game) {
+  const s = this.stats;
+  const r2 = this.rangePx * this.rangePx;
+
+  /* Spend what the grafted banked since last frame. The repeat is pure and
+     dot-flagged for the same reasons the origin rider is: armour was already
+     rolled on the original hit, and the min-1 floor would let sixty
+     fractional repeats a second out-damage the wounds they repeat. */
+  const held = [];
+  for (const e of game.enemies) {
+    if (e.dead || e.leaked || e.hostileTo !== this.side) continue;
+    if (e.graftOf === this && e.graftUntil > game.clock) held.push(e);
+  }
+  if (held.length >= 2) {
+    for (const e of held) {
+      if (s.graftVuln) e.applyVuln(s.graftVuln * this.effStatus, 0.4);
+      const p = e.graftPending || 0;
+      if (p <= 0) continue;
+      e.graftPending = 0;
+      const share = p * Math.min(GRAFT_FRAC_MAX, s.graftFrac || 0);
+      for (const o of held) {
+        if (o === e || o.dead) continue;
+        this.registerDamage(o.takeDamage(share, 'pure', { dot: true, graft: true }), o, game, false, true);
+      }
+    }
+  } else for (const e of held) e.graftPending = 0;
+
+  /* The lash: strike and graft up to graftCount bodies in one throw. Array
+     order is spawn order, so the catch is the front of the wave -- the
+     bodies your line is already hitting, which is the point. */
+  this.cooldown -= dt;
+  if (this.cooldown > 0) return;
+  const caught = [];
+  for (const e of game.enemies) {
+    if (e.dead || e.leaked || e.hostileTo !== this.side) continue;
+    if (dist2(this.x, this.y, e.x, e.y) > r2) continue;
+    caught.push(e);
+    if (caught.length >= Math.max(1, Math.round(s.graftCount || 1))) break;
+  }
+  if (!caught.length) return;
+  this.cooldown = 1 / this.effRate;
+  this.recoil = 1;
+  for (const e of caught) {
+    e.graftOf = this; e.graftUntil = game.clock + (s.graftDur || 6);
+    this.registerDamage(e.takeDamage(this.effDamage, s.dmgType, {}), e, game, false);
+    game.beams.push({ points: [{ x: this.x, y: this.y }, { x: e.x, y: e.y }],
+                      life: 0.3, maxLife: 0.3, color: this.def.color, width: 2.5 });
+  }
+};
+
+/* IMPALER (Session 21 heavies) -- fall on the deepest wound anywhere on the
+   board, and refuse the unhurt outright. */
+Tower.prototype.atk_impale = function (dt, game) {
+  const s = this.stats;
+  /* The floor never reaches zero: refusing fresh bodies IS the tower, and a
+     FRESH MEAT stack that bought the refusal away would leave a plain
+     board-wide gun wearing this one's name. */
+  const floor = Math.max(0.05, s.impaleFloor || 0.25);
+  let best = null, bw = floor;
+  for (const e of game.enemies) {
+    if (e.dead || e.leaked || e.hostileTo !== this.side) continue;
+    const wound = 1 - Math.max(0, e.hp) / Math.max(1, e.maxHp);
+    if (wound >= bw) { bw = wound; best = e; }
+  }
+  if (best) {
+    const aim = this.predict(best, s.projSpeed);
+    this.angle = angleLerp(this.angle, Math.atan2(aim.y - this.y, aim.x - this.x), Math.min(1, dt * 14));
+  }
+  this.cooldown -= dt;
+  if (!best || this.cooldown > 0) return;
+  this.cooldown = 1 / this.effRate;
+  this.recoil = 1;
+  Sound.play('mortar');
+  /* The wound is priced at LAUNCH: the spine was thrown at what the board
+     looked like, so a body mended mid-flight still pays for what it was.
+     Straight to the projectile array rather than through fire(), whose
+     switch only knows the six core verbs -- the ANTIPHON clause. */
+  game.projectiles.push(new Projectile({
+    x: this.x + Math.cos(this.angle) * 22, y: this.y + Math.sin(this.angle) * 22,
+    angle: this.angle, speed: (s.projSpeed || 26) * TILE,
+    damage: this.effDamage * (1 + (s.impaleScale || 0) * bw), dmgType: s.dmgType,
+    splash: this.effSplash, pierce: this.effPierce, shred: s.shred || 0,
+    target: best, tower: this, color: this.def.color, radius: 6, side: this.side
+  }));
+};
