@@ -963,7 +963,16 @@ function unitDeathDoctrine(e) {
      the node, so a unit that arrives later still spends it. */
   if (doc && doc.id === 'relay' && e.reanimated && e.owner >= 0) {
     const nodes = game.relayNodes || (game.relayNodes = []);
-    nodes.push({ x: e.x, y: e.y, t: UNIT_RELAY_TIME * mine.relayMul,
+    /* THE SPLICER carries the cutting rig. Killing it on your own ground is
+       what triggers the fork -- LEAKING it does nothing at all, which is the
+       trap: the unit you most want dead is the one you should let walk.
+       Where no detour can be derived (a centred lane, the arena) the rig
+       still did something: it leaves a relay that burns twice as long. */
+    let spliced = false;
+    if (e.def.id === 'splicer' && game.openSplice)
+      spliced = game.openSplice(e.hostileTo, Math.max(1, Math.round(ROBOT_SPLICE_WAVES * mine.spliceMul)));
+    nodes.push({ x: e.x, y: e.y,
+                 t: UNIT_RELAY_TIME * mine.relayMul * (e.def.id === 'splicer' && !spliced ? 2 : 1),
                  owner: e.owner, board: e.hostileTo });
     /* Oldest first, so a long chain is a road with a moving head rather than
        a permanent installation. */

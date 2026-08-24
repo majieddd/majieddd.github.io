@@ -402,6 +402,35 @@
        ', an un-flagged battle is untouched: ' + plain);
   });
 
+  T('22.8 a splice forks the board and hands it back exactly', function () {
+    var bad = [], opened = 0, checked = 0;
+    for (var i = 0; i < 5; i++) {
+      Game.start({ map: MAPS[i].id, difficulty: 'contested', loadout: PIN.slice(),
+                   commander: COMMANDERS[0].id, skirmish: true });
+      if (FIELD.radial) continue;
+      checked++;
+      var lanes0 = Game.lanes[1].length, blocked0 = Game.blocked.size;
+      var sp = new Enemy(ENEMY_TYPES.splicer, Game.sendPaths[0],
+                         { hostileTo: 1, owner: 0, reanimated: true });
+      sp.x = 400; sp.y = 300;
+      Game.enemies.push(sp);
+      unitDeathDoctrine(sp);
+      if (!Game.spliceState[1]) continue;
+      opened++;
+      /* The forked lane must END where the real one ends, or it is a road to
+         nowhere and everything that walks it never arrives. */
+      var p = Game.lanes[1][Game.lanes[1].length - 1], base = Game.lanes[1][0];
+      var a = p.posAt(p.total, {}), b = base.posAt(base.total, {});
+      if (Math.hypot(a.x - b.x, a.y - b.y) >= 1) bad.push(MAPS[i].id + ':no-base');
+      Game.closeSplice(1);
+      if (Game.lanes[1].length !== lanes0) bad.push(MAPS[i].id + ':lane-leak');
+      if (Game.blocked.size !== blocked0) bad.push(MAPS[i].id + ':tile-leak');
+    }
+    ok('22.8 a splice forks the board and hands it back exactly',
+       checked > 0 && opened === checked && bad.length === 0,
+       opened + '/' + checked + ' maps forked; leaks: ' + (bad.join(' ') || 'none'));
+  });
+
   T('19.16 the spawned-HP curve hits the owner three anchors exactly', function () {
     const a = spawnHpPenaltyMul(1), b = spawnHpPenaltyMul(5), c = spawnHpPenaltyMul(10);
     ok('19.16 the spawned-HP curve hits the owner three anchors exactly',

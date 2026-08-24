@@ -3345,6 +3345,11 @@ const UNIT_RELAY_TIME = 6.0;
 const UNIT_RELAY_SPEED = 0.25;
 const UNIT_RELAY_ARMOR = 2;
 const UNIT_RELAY_MAX = 6;
+/* How many WAVES a spliced lane stays open. Waves, not seconds: a wave's
+   spawn entries are enumerated per lane exactly once when it starts, so an
+   expiry measured in seconds would strand everything already queued on a
+   lane that no longer exists. */
+const ROBOT_SPLICE_WAVES = 1;
 
 const XENO_INC_SHARE = 0.75;
 const XENO_INC_BASE_SEC = 6.0;

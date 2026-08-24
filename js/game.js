@@ -224,6 +224,8 @@ const Game = {
   incubators: [],
   /* THE PARALLEL's relay nodes, same rules. */
   relayNodes: [],
+  /* Per side: the temporary lane a Splicer cut into that board, or null. */
+  spliceState: [],
 
   wave: 0, spawnQueue: [], prepTimer: 0, waveRunning: false,
   enemyMods: [], pendingChoice: null,
@@ -546,6 +548,7 @@ const Game = {
     this.beams = []; this.puddles = []; this.pendingSpawns = []; this.spawnQueue = [];
     this.incubators = [];
     this.relayNodes = [];
+    this.spliceState = [];
     this.delayed = [];
     this.arenaSpeed = 1; this.arenaArmor = 0; this.arenaTempo = 1;
     this.enemyMods = []; this.pendingChoice = null;
@@ -893,6 +896,10 @@ const Game = {
         }
       }
       this.applyCompile(S);
+      /* A spliced lane is measured in waves and closes on the boundary, so
+         the wave that starts now is the one it was cut for. */
+      const sp = this.spliceState[S.index];
+      if (sp) { sp.wavesLeft--; if (sp.wavesLeft < 0) this.closeSplice(S.index); }
       const rage = S.enrage || 0;
       S.enrageSpent = rage;
       S.enrage = 0;
@@ -2618,6 +2625,78 @@ const Game = {
       }
       S.procTimer = FOL_CADENCE_SEC + S.procCycle * FOL_CADENCE_GROWTH;
     }
+  },
+
+  /**
+   * THE SPLICE — the Parallel's survey rig, and the one mechanic that edits
+   * the board itself.
+   *
+   * The detour is DERIVED rather than authored per map: it enters the
+   * victim's half at the spawn edge on the opposite flank, runs to the
+   * column where the real lane already is, and REJOINS it partway along. Two
+   * properties fall out of that construction for free on every map, which is
+   * why it is built this way rather than hand-drawn fifteen times: it always
+   * reaches the base (it is the authored lane from the join onward), and only
+   * the new prefix can ever add blocked tiles.
+   */
+  spliceWaypoints(side) {
+    const raw = FIELD.lanes && FIELD.lanes[side] && FIELD.lanes[side][0];
+    if (!raw || raw.length < 3 || FIELD.radial) return null;
+    const j = Math.max(1, Math.min(raw.length - 2, Math.round(raw.length * 0.45)));
+    const entry = raw[0], join = raw[j];
+    /* Toward whichever flank has room. Mirroring across the midline was the
+       obvious rule and the wrong one: most lanes enter dead centre, so the
+       mirror of the entry is the entry and there is no detour at all. */
+    const k = Math.max(2, Math.round(FIELD.rows * 0.35));
+    const y2 = (entry[1] * 2 < FIELD.rows)
+      ? Math.min(FIELD.rows - 2, entry[1] + k)
+      : Math.max(1, entry[1] - k);
+    if (Math.abs(y2 - entry[1]) < 2) return null;
+    /* Axis-aligned throughout: out to the flank, along it to the join
+       column, then the authored lane the rest of the way home. */
+    return [[entry[0], y2], [join[0], y2]].concat(raw.slice(j));
+  },
+
+  /** Cut the lane. Wave-aligned: it opens now and closes at a wave boundary,
+      because startWave enumerates a wave's spawn entries per lane exactly
+      once -- an expiry mid-wave would strand everything already queued. */
+  openSplice(victim, waves) {
+    const S = this.sides[victim];
+    if (!S || S.defeated) return false;
+    const cur = this.spliceState[victim];
+    if (cur) { cur.wavesLeft = Math.max(cur.wavesLeft, waves); return true; }
+    const wp = this.spliceWaypoints(victim);
+    if (!wp) return false;
+    const path = new Path(wp);
+    this.lanes[victim].push(path);
+    /* Only tiles that were not ALREADY blocked are recorded, so closing the
+       splice can never un-block a tile that belongs to the real lane or to
+       the map's own scenery. */
+    const added = [];
+    for (const k of path.blockedTiles()) {
+      if (!this.blocked.has(k)) { this.blocked.add(k); this.laneBlocked.add(k); added.push(k); }
+    }
+    this.spliceState[victim] = { wavesLeft: waves, laneIdx: this.lanes[victim].length - 1, added };
+    this.renderBackground();
+    if (victim === this.viewSide) {
+      this.banner('LANE SPLICED — THE BOARD FORKS', 2.6, '#e2e8f0');
+      Sound.play('wallBreak');
+    }
+    return true;
+  },
+
+  /** Close it and hand the ground back. Towers built on spliced tiles are
+      GRANDFATHERED -- they were legal when they were placed, they keep
+      firing throughout, and nothing is refunded or torn down. */
+  closeSplice(victim) {
+    const st = this.spliceState[victim];
+    if (!st) return;
+    for (const k of st.added) { this.blocked.delete(k); this.laneBlocked.delete(k); }
+    const lanes = this.lanes[victim];
+    if (lanes.length > st.laneIdx) lanes.splice(st.laneIdx, 1);
+    this.spliceState[victim] = null;
+    this.renderBackground();
+    if (victim === this.viewSide) this.addFloater(this.width * 0.5, 128, 'SPLICE COLLAPSED', false, '#e2e8f0', 15);
   },
 
   /**
