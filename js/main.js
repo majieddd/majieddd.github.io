@@ -109,8 +109,11 @@
           if (Game.selected && !Game.selected.isSupport && Game.selected.side === 0) {
             const modes = TARGET_MODES.map(m => m.id);
             const i = modes.indexOf(Game.selected.targetMode);
-            Game.selected.targetMode = modes[(i + 1) % modes.length];
-            Sound.play('click'); UI.syncAll();
+            /* Through Game, for the same reason the inspector's mode row is:
+               the assignment that used to be here never reached the rival's
+               client. setTargetMode redraws for side 0 and sounds its own
+               click, so neither is repeated here. */
+            Game.setTargetMode(Game.selected, modes[(i + 1) % modes.length]);
           }
           e.preventDefault(); break;
       }

@@ -8,7 +8,7 @@ const read = p => fs.readFileSync(path.join(here, p), 'utf8');
 
 const html = read('index.html');
 const css  = read('css/style.css') + String.fromCharCode(10) + read('css/polish.css');
-const js   = ['artpack', 'config', 'factions', 'towers2', 'abilities', 'roster', 'dialogue', 'commanders', 'audio', 'entities', 'entities2', 'ai', 'galaxy', 'game', 'ui', 'main']
+const js   = ['artpack', 'config', 'factions', 'towers2', 'abilities', 'roster', 'dialogue', 'commanders', 'audio', 'entities', 'entities2', 'ai', 'galaxy', 'game', 'net', 'ui', 'main']
   .map(n => `/* ── ${n}.js ─────────────────────────────────── */\n` + read(`js/${n}.js`))
   .join('\n\n');
 

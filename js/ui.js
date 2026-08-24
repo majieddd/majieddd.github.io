@@ -365,8 +365,23 @@ const UI = {
    */
   confirmAbandon() {
     Sound.play('click');
-    const c = Meta.campaign();
-    if (!c) { this.toMenu(); return; }
+    /* THE DUEL QUESTION IS ASKED FIRST AND THE SKIRMISH QUESTION SECOND, because
+       a duel answers `Game._skirmish` true and answers the campaign lookup null.
+       With the lookup first, abandoning a duel returned to the title without
+       ever calling endMatch — the only path Net.finish hangs off — so the relay
+       stayed live: the peer waited on a heartbeat that never stopped, and the
+       next Game.start built Game.sides through a lens still switched on and died
+       on undefined.faction with no try/catch above it. */
+    if (Net.live) {
+      /* No garrison holds a duel board — the other commander does, and leaving
+         hands them the win the moment the concession lands (net.js posts
+         `quit`, and the peer resolves it as a win). */
+      this.confirmBox('CONCEDE THE DUEL?',
+        '<p>Your rival <b>takes the win</b> the moment you leave the field. ' +
+        'Nothing in your campaign changes &mdash; a duel never writes to it.</p>',
+        'CONCEDE', () => Game.endMatch(false, true));
+      return;
+    }
     if (Game._skirmish) {
       /* A garrison skirmish never touched the campaign ledger, so it must not
          threaten it either. */
@@ -375,6 +390,12 @@ const UI = {
         'ABANDON', () => Game.endMatch(false, true));
       return;
     }
+    const c = Meta.campaign();
+    /* No campaign and no skirmish is a board that should not exist, and it still
+       leaves through endMatch: an exit that skips endMatch skips everything
+       endMatch tears down. */
+    if (!c) { Game.endMatch(false, true); return; }
+
     this.confirmBox('ABANDON CAMPAIGN?',
       '<p>Abandoning <b>forfeits the whole campaign</b>: this galaxy and every ' +
       'star on it are gone, and your next campaign rolls a fresh galaxy. Souls ' +
@@ -386,9 +407,19 @@ const UI = {
   },
 
   toMenu() {
+    /* THE LAST GATE ON THE ONE-EXIT RULE. Every road out of a battle is meant to
+       pass through endMatch, which is the only caller of Net.finish; a road that
+       does not leaves a relay live behind a title screen, and the next
+       Game.start dies building its sides through a lens nobody switched off.
+       Callers that already ended properly read `live` false and pay nothing. */
+    if (Net.live) Game.endMatch(false, true);
     Game.state = 'menu'; Sound.stopMusic();
     this.el.endOverlay.classList.add('hidden');
-    this.el.choiceOv.classList.add('hidden');
+    /* Through hideChoice, which is the one place that also EMPTIES the body.
+       Adding the class alone left the cards bound to Game.takeMod, standing
+       invisibly behind the title screen with a click still able to reach the
+       engine. */
+    this.hideChoice();
     this.renderTitle();
     this.show('screen-title');
   },
@@ -1540,7 +1571,7 @@ const UI = {
       }
       svg.push(`</g>`);
     }
-    svg.push(`</svg><p class="wm-hint">Drag to pan &middot; click a world to look for another commander fighting over it</p>`);
+    svg.push(`</svg><p class="wm-hint">Drag to pan &middot; click a world to open a duel table over it</p>`);
     $('#multiverse-wrap').innerHTML = svg.join('');
     this.gxPaintStars($('#multiverse-wrap'));
     this.mountGalaxyViewport($('#multiverse-wrap'), 'mv');
@@ -1558,7 +1589,9 @@ const UI = {
         <div class="br-rows">${w.contested ? `<div class="br-row"><span class="br-ic">⚔</span>
           <span>A three-way board. Every kill reanimates toward BOTH rivals.</span></div>` : ''}
           <div class="br-row"><span class="br-ic">⚔</span>
-          <span>Click to challenge — the relay searches for another commander here.</span></div></div></div>`);
+          <span>${Net.duelRefusal(w)
+            ? 'No duel table opens here — this board seats more commanders than a duel does. Click for the garrison.'
+            : 'Click to open a duel table here, or to join one already open.'}</span></div></div></div>`);
       g.addEventListener('mouseenter', brief);
       g.addEventListener('focus', brief);
       g.addEventListener('focus', () => GalaxyFX.bring(g));
@@ -1575,35 +1608,130 @@ const UI = {
   },
 
   /**
-   * Matchmaking front door. There is no live relay yet -- the campaign's whole
-   * data model (a seed plus a star ledger) was built so one can attach later --
-   * so the search resolves honestly and offers the garrison as practice.
+   * THE DUEL TABLE. There is no matchmaking service behind this and there
+   * never will be: the game ships as one offline file with no dependencies,
+   * which rules out every relay there is to rent. What it does not rule out
+   * is the browser talking to itself, so a duel is fought between two WINDOWS
+   * of this game on one machine, over BroadcastChannel, at full fidelity --
+   * towers, musters, sends, reanimation, the lot, on one simulation both
+   * clients step in lockstep. The copy says exactly that. See js/net.js.
    */
   mpSearch(w) {
     const ov = $('#mv-search'), body = $('#mv-search-body');
     ov.classList.remove('hidden');
-    body.innerHTML = `<b class="mv-title">OPENING RELAY</b><div class="mv-spin"></div>
-      <p class="mv-text">Searching for a commander over <b>${w.name}</b>…</p>`;
+    this._mvWorld = w;
     clearTimeout(this._mvT);
-    this._mvT = setTimeout(() => {
-      body.innerHTML = `<b class="mv-title">NO ANSWER</b>
-        <p class="mv-text">No commander answered over <b>${w.name}</b>. The live relay comes
-           online in a future update — for now, its garrison will oblige.</p>
+
+    if (!Net.supported) {
+      body.innerHTML = `<b class="mv-title">NO RELAY IN THIS BROWSER</b>
+        <p class="mv-text">A duel needs BroadcastChannel, which this browser does not
+           provide. Everything else still works — the garrison of <b>${w.name}</b> will oblige.</p>
         <div class="modal-actions">
           <button id="btn-mv-practice" class="btn btn-primary">SKIRMISH THE GARRISON</button>
           <button id="btn-mv-cancel" class="btn">CANCEL</button></div>`;
-      $('#btn-mv-practice').addEventListener('click', () => {
-        ov.classList.add('hidden'); Sound.resume();
-        const fac = Meta.faction() || 'human';
-        const cmd = Meta.isCommanderUnlocked(freeCommanderOf(fac)) ? freeCommanderOf(fac) : 'cadre';
-        const owned = Meta.unlockedTowers();
-        Game.start({ skirmish: true, map: w.map, difficulty: 'contested', commander: cmd,
-                     loadout: owned.slice(0, Math.min(LOADOUT_SIZE, owned.length)),
-                     rivalFaction: w.owner, worldKind: w.kind, arena: w.arena });
-        this.show('screen-game'); this.buildShop(); this.buildAbilityBar(); Game.resize();
-      });
-      $('#btn-mv-cancel').addEventListener('click', () => ov.classList.add('hidden'));
-    }, 3600);
+      this.bindMpFooter(w);
+      return;
+    }
+
+    /* A world the relay will not seat is said so here, in full, rather than
+       quietly swapped for a different board or left to open a table that
+       freezes on wave 5. The garrison skirmish below still fights this exact
+       map -- a three-way board is only broken between two WINDOWS, never
+       against the machine -- so the way in is offered, not withheld. */
+    const refused = Net.duelRefusal(w);
+    if (refused) {
+      body.innerHTML = `<b class="mv-title">NO DUEL OVER ${w.name}</b>
+        <p class="mv-text">${refused}</p>
+        <p class="mv-text">Every uncontested world in the universe will host one, and the
+           garrison of <b>${w.name}</b> will still fight you for this board.</p>
+        <div class="modal-actions">
+          <button id="btn-mv-practice" class="btn btn-primary">SKIRMISH THE GARRISON</button>
+          <button id="btn-mv-cancel" class="btn">CANCEL</button></div>`;
+      this.bindMpFooter(w);
+      return;
+    }
+
+    Net.enterLobby();
+    Net.onLobby = () => this.renderMpTables();
+    Net.onStatus = t => { const n = $('#mv-note'); if (n) n.textContent = t; };
+
+    const p = Net.localProfile();
+    const cmd = COMMANDERS.find(c => c.id === p.commander);
+    const towers = p.loadout.map(id => (TOWER_TYPES[id] || { name: id }).name).join(' · ');
+
+    body.innerHTML = `<b class="mv-title">DUEL — ${w.name}</b>
+      <p class="mv-text">A duel is fought between two windows of this game on this machine.
+         Open a second window, take <b>MULTIPLAYER</b> into the same universe there, then one
+         of you opens a table and the other joins it. Both commanders fight the whole battle
+         on one simulation.</p>
+      <div class="mv-fielding" style="margin:10px 0;padding:8px 10px;border:1px solid rgba(120,180,220,.18);border-radius:4px;font-size:12px;line-height:1.5">
+        <span class="mv-fk" style="display:block;font-size:10px;letter-spacing:.16em;opacity:.6">FIELDING</span>
+        <b>${cmd ? cmd.name : p.commander}</b> · ${towers}
+      </div>
+      <div class="mv-tables" id="mv-tables" style="margin:10px 0;display:flex;flex-direction:column;gap:6px"></div>
+      <p class="mv-note" id="mv-note" style="min-height:14px;font-size:11px;opacity:.7"></p>
+      <div class="modal-actions">
+        <button id="btn-mv-host" class="btn btn-primary">OPEN A TABLE</button>
+        <button id="btn-mv-practice" class="btn">SKIRMISH THE GARRISON</button>
+        <button id="btn-mv-cancel" class="btn">CANCEL</button></div>
+      <p class="hint">Duel rules: escalations are dealt rather than drafted, rushing a wave is
+         off, and nothing a duel does is written to your campaign.</p>`;
+
+    $('#btn-mv-host').addEventListener('click', () => {
+      if (Net.phase === 'hosting') { Net.cancel(); this.renderMpTables(); return; }
+      Net.host(w);
+      this.renderMpTables();
+    });
+    this.bindMpFooter(w);
+    this.renderMpTables();
+  },
+
+  /** The open tables on this machine, repainted whenever the relay says so. */
+  renderMpTables() {
+    const box = $('#mv-tables');
+    if (!box) return;
+    const host = $('#btn-mv-host');
+    if (host) host.textContent = Net.phase === 'hosting' ? 'CLOSE MY TABLE' : 'OPEN A TABLE';
+    if (Net.phase === 'hosting') {
+      box.innerHTML = `<div class="mv-table open" style="display:flex;align-items:center;gap:10px;justify-content:space-between;padding:7px 10px;border:1px solid rgba(120,180,220,.18);border-radius:4px;font-size:12px"><span class="mv-spin"></span>
+        <span>Your table over <b>${Net.table.name}</b> is open — waiting for a commander.</span></div>`;
+      return;
+    }
+    if (Net.phase === 'joining') {
+      box.innerHTML = `<div class="mv-table open" style="display:flex;align-items:center;gap:10px;justify-content:space-between;padding:7px 10px;border:1px solid rgba(120,180,220,.18);border-radius:4px;font-size:12px"><span class="mv-spin"></span>
+        <span>Joining…</span></div>`;
+      return;
+    }
+    if (!Net.tables.length) {
+      box.innerHTML = `<div class="mv-table empty" style="padding:7px 10px;font-size:12px;opacity:.55">No tables are open in another window.</div>`;
+      return;
+    }
+    box.innerHTML = Net.tables.map(t => `<div class="mv-table" style="display:flex;align-items:center;gap:10px;justify-content:space-between;padding:7px 10px;border:1px solid rgba(120,180,220,.18);border-radius:4px;font-size:12px">
+      <span><b>${t.name}</b> over <b>${t.world.name}</b></span>
+      <button class="btn btn-sm" data-table="${t.id}">JOIN</button></div>`).join('');
+    $$('#mv-tables [data-table]').forEach(b => b.addEventListener('click', () => {
+      Sound.play('click');
+      Net.join(b.dataset.table);
+      this.renderMpTables();
+    }));
+  },
+
+  /** The garrison skirmish and the way out — shared by both lobby states. */
+  bindMpFooter(w) {
+    const ov = $('#mv-search');
+    const pr = $('#btn-mv-practice');
+    if (pr) pr.addEventListener('click', () => {
+      ov.classList.add('hidden'); Net.cancel(); Sound.resume();
+      const fac = Meta.faction() || 'human';
+      const cmd = Meta.isCommanderUnlocked(freeCommanderOf(fac)) ? freeCommanderOf(fac) : 'cadre';
+      const owned = Meta.unlockedTowers();
+      Game.start({ skirmish: true, map: w.map, difficulty: 'contested', commander: cmd,
+                   loadout: owned.slice(0, Math.min(LOADOUT_SIZE, owned.length)),
+                   rivalFaction: w.owner, worldKind: w.kind, arena: w.arena });
+      this.show('screen-game'); this.buildShop(); this.buildAbilityBar(); Game.resize();
+    });
+    const cn = $('#btn-mv-cancel');
+    if (cn) cn.addEventListener('click', () => { Net.cancel(); Net.onLobby = null; ov.classList.add('hidden'); });
   },
 
   /* ═══════════════════════════════ THE MAELSTROM ═══ */
@@ -3658,7 +3786,7 @@ const UI = {
     const up = $('[data-upgrade]', root);
     if (up) up.addEventListener('click', () => { Game.upgrade(t); this.renderInspector(true); });
     $$('[data-branch]', root).forEach(b => b.addEventListener('click', () => { Game.upgrade(t, +b.dataset.branch); this.renderInspector(true); }));
-    $$('[data-mode]', root).forEach(b => b.addEventListener('click', () => { t.targetMode = b.dataset.mode; Sound.play('click'); this.renderInspector(true); }));
+    $$('[data-mode]', root).forEach(b => b.addEventListener('click', () => { Game.setTargetMode(t, b.dataset.mode); this.renderInspector(true); }));
     const sell = $('[data-sell]', root);
     if (sell) sell.addEventListener('click', () => { Game.sell(t); this.renderInspector(true); });
     const mv = $('[data-move]', root);
@@ -4124,7 +4252,13 @@ const UI = {
       b.addEventListener('click', () => Game.takeMod(options[+b.dataset.choice]));
     });
   },
-  hideChoice() { this.el.choiceOv.classList.add('hidden'); },
+  /* HIDING IS NOT CLOSING. The cards stay bound to Game.takeMod, so a modal left
+     standing when a duel voided was still a live control: one click reached the
+     engine's own takeMod, set the state back to 'playing', and handed Game.loop
+     a dead board to step behind an overlay that had just said nothing was
+     recorded — which then paid XP, tower mastery and a recorded run when it
+     resolved. Emptying the body is what makes the close a close. */
+  hideChoice() { this.el.choiceOv.classList.add('hidden'); this.el.choiceBody.innerHTML = ''; },
 
   /* ======================================================= ABILITIES ==== */
 
