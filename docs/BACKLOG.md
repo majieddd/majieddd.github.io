@@ -41,29 +41,28 @@ size.
 
 ---
 
-### 4. The balance pins do not reproduce, and one of them never did
-`tools/balance-pins.js`. Measured this session on `main`: maxed/tier-0/`spine`
-produced death waves **5, 6, 13, 19, 19, 20 and 21**, wins and losses both. A 4x
-spread cannot gate a PR the way [`../CONTRIBUTING.md`](../CONTRIBUTING.md) §5
-asks it to, and the documented "median 27" did not reproduce at n=9 (median 7,
-8 wins / 1 loss across the six pin maps).
+### 4. The balance pins — FIXED, and re-baselined
+`tools/balance-pins.js` now takes a **seed** and resets the AI prototype between
+runs, and `PINS.selfTest()` reports `reproducible: true`.
 
-The harness now takes an optional **seed**, and seeding works — proved by two
-fresh page loads at seed 1234 returning byte-identical results (wave 21, steps
-27480, lives [0,13]). The simulation itself is a pure function of its RNG
-stream: with `Math.random` replaced by mulberry32 and a fixed step budget,
-trials come back byte-identical (839 draws with no brain, 3462 with the
-mirror-AI brain).
+The leak was that `AI` is a singleton *and* a prototype: `js/game.js:520-521`
+gives each rival seat `Object.create(AI)` and `:533` also calls `AI.init(...)`
+on the shared object, so a match left `spots` (148 entries), `samples` (206),
+`side`, `diff`, `think` and `ready` behind. Same seed, same page, run 1 gave
+wave 21 / 27480 steps and run 2 gave wave 20 / 26129. Restoring those six
+fields makes run 2 byte-identical to run 1.
 
-**But a seed only reproduces the FIRST run after a page load.** Same page, same
-seed, run 2 gives wave 20 / 26129 steps where run 1 gave wave 21 / 27480. Some
-match state survives `maxProfile()` + `Game.start()`. That is the open defect —
-`PINS.selfTest()` is a regression test for it and returns `leaks: true` today.
-Until it is found, quote **one seeded run per page load**; a sweep in one page
-is a distribution, not a reproducible number.
+A seeded six-map baseline is now recorded in
+[`BALANCE-BASELINE.md`](BALANCE-BASELINE.md) with the seeds to replay it.
+Two documented claims did not survive it: **"every loss under wave 10" is
+false** (coil 10, shattered 13, reproducibly), and the maxed **"median 27"** is
+the top of the range, not the middle — the loss median is 22.
 
-Re-baselining the two documented pin numbers is blocked on that leak, because
-any median measured today is measured through it.
+**Still open, and it is a question rather than a defect:** whether that same
+prototype carry-over changes the real game's second match of a session. `init()`
+does reassign both arrays via `buildSpots()`, so the mechanism is subtler than
+"the arrays are stale". The harness is fixed either way; the game-side question
+has not been run down.
 
 ---
 

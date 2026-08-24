@@ -5,6 +5,45 @@ window.PINS = (function () {
   const PIN = ['bolt', 'cryo', 'mortar', 'flak', 'beacon'];
   const KEY = Meta.KEY;
 
+  /* THE STATE LEAK THAT MADE THESE PINS IRREPRODUCIBLE, and the fix.
+
+     `AI` is a singleton AND a prototype. js/game.js:520-521 gives each rival
+     seat its own brain with `Object.create(AI)`, and then :533 ALSO calls
+     `AI.init(this.sides[1], ...)` on the shared object itself. So a match
+     leaves per-match state on the prototype: measured after one run, `AI.spots`
+     held 148 entries and `AI.samples` 206, with `side`, `diff`, `think` and
+     `ready` all populated.
+
+     Measured consequence, same seed, same page:
+        run 1 -> wave 21, steps 27480
+        run 2 -> wave 20, steps 26129
+     Restoring just these six fields between runs makes run 2 byte-identical to
+     run 1. That is the whole difference, isolated by restoring nothing else.
+
+     NOTE what this does and does not claim. It makes the HARNESS reproducible.
+     Whether the same carry-over changes the real game's second match of a
+     session is a separate question and is NOT settled here -- `init()` does
+     reassign both arrays via `buildSpots()`, so the mechanism is subtler than
+     "the arrays are stale", and it has not been run down. See docs/BACKLOG.md.
+
+     The snapshot must be taken before any match has run in this page. Load this
+     harness first, or reload before quoting a number. */
+  const AI_FIELDS = ['side', 'diff', 'spots', 'samples', 'think', 'ready', 'patience'];
+  const AI_PRISTINE = {};
+  let aiCaptured = false;
+  function captureAI() {
+    if (aiCaptured || typeof AI === 'undefined') return;
+    for (const k of AI_FIELDS) AI_PRISTINE[k] = Array.isArray(AI[k]) ? AI[k].slice() : AI[k];
+    aiCaptured = true;
+  }
+  function resetAI() {
+    if (!aiCaptured) return false;
+    for (const k of AI_FIELDS)
+      AI[k] = Array.isArray(AI_PRISTINE[k]) ? AI_PRISTINE[k].slice() : AI_PRISTINE[k];
+    return true;
+  }
+  captureAI();
+
   function wipe() { try { localStorage.removeItem(KEY); } catch (e) {} Meta._root = null; }
 
   function maxProfile(tier) {
@@ -45,20 +84,19 @@ window.PINS = (function () {
      behaviour exactly. Compare a seeded run against the SAME seed, or compare
      distributions -- never a seeded number against an unseeded one.
 
-     THE FOURTH WAY TO MIS-MEASURE THESE PINS, and it defeats seeding: a seed
-     only reproduces the FIRST run after a page load. Measured on this build,
-     seed 1234, maxed/tier-0/spine:
+     THE FOURTH WAY TO MIS-MEASURE THESE PINS was that a seed only reproduced
+     the FIRST run after a page load. Measured on this build, seed 1234,
+     maxed/tier-0/spine:
 
        fresh page A -> wave 21, steps 27480, loss, lives [0,13]
        fresh page B -> wave 21, steps 27480, loss, lives [0,13]   IDENTICAL
        same page, run 1 -> wave 21, steps 27480
        same page, run 2 -> wave 20, steps 26129   SAME SEED, DIFFERENT RESULT
 
-     Something survives `maxProfile()` + `Game.start()` in memory and changes
-     the second match. That is a real defect and it is why the historical
-     numbers never reproduced. Until it is found: ONE SEEDED RUN PER PAGE LOAD
-     if you want a number you can quote. A sweep inside one page is still fine
-     for a distribution, but do not call it reproducible. */
+     That was the AI prototype carrying per-match state between runs, and it is
+     fixed below — `resetAI()` runs at the top of every `begin()`. `selfTest()`
+     is the regression test. Load this harness in a page that has not yet run a
+     match, or the snapshot it restores is already dirty. */
   let NATIVE = null;
 
   function mulberry32(seed) {
@@ -86,6 +124,9 @@ window.PINS = (function () {
   let R = null;
 
   function begin(mapIdx, diff, s) {
+    /* Hand the AI prototype back its pristine state before anything reads it.
+       Without this the second run in a page measures a warmed-up rival. */
+    resetAI();
     /* Seed BEFORE Game.start: board generation and the opening draft both
        draw, so seeding after it would leave the setup unreproducible and only
        the match body pinned -- which looks seeded and is not. */
@@ -184,19 +225,18 @@ window.PINS = (function () {
     seed: seed, restore: restore, stats: stats,
     fresh(n, seedBase) { return sweep(n, function () { wipe(); }, seedBase); },
     maxed(n, tier, seedBase) { return sweep(n, function () { maxProfile(tier || 0); }, seedBase); },
-    /* Runs the same seed TWICE IN ONE PAGE, which is precisely the case that
-       does NOT reproduce. It is here as a regression test for the state leak,
-       not as proof of seeding: `leaks: true` is the CURRENT, expected answer,
-       and the day it flips to false the leak is fixed and a whole sweep
-       becomes quotable. To prove seeding itself, run `once()` in two fresh
-       page loads and compare -- that pair is byte-identical today. */
+    resetAI: resetAI,
+    /* The regression test for the AI-prototype leak: the same seed twice in one
+       page must now agree. `reproducible: false` means the reset above has
+       stopped covering everything a match leaves behind — treat any number the
+       harness produces as untrustworthy until it is true again. */
     selfTest(mapIdx, s) {
       maxProfile(0); const a = runOne(mapIdx || 0, 'contested', s === undefined ? 1234 : s);
       maxProfile(0); const b = runOne(mapIdx || 0, 'contested', s === undefined ? 1234 : s);
       const same = a.wave === b.wave && a.steps === b.steps && a.outcome === b.outcome;
-      return { a: a, b: b, leaks: !same,
-               note: same ? 'no leak detected — in-page repeats now reproduce'
-                          : 'EXPECTED TODAY: match state survives maxProfile()+Game.start()' };
+      return { a: a, b: b, reproducible: same, aiSnapshotTaken: aiCaptured,
+               note: same ? 'in-page repeats reproduce'
+                          : 'REGRESSION: something beyond the AI prototype is carrying between runs' };
     },
     /* One seeded run, the quotable unit. Use it as the first thing a page
        does, then reload before the next one. */
