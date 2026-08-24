@@ -850,7 +850,7 @@ const UI = {
         const poor = Meta.souls() < Meta.towerUnlockCost();
         return `<button class="soul-item unlock${lock ? ' origin-locked' : ''}" data-unlock="${id}"
                 style="--cc:${lock ? og.color : t.color}"
-                ${(lock || poor) ? 'disabled' : ''}
+                ${(lock || poor) ? 'aria-disabled="true"' : ''}
                 data-preview="${id}">
           <span class="si-fig">${this.towerIconHTML(id, 40)}</span>
           <span class="si-name">${t.name}</span>
@@ -879,7 +879,7 @@ const UI = {
         const poor = Meta.souls() < Meta.unitUnlockCost();
         return `<button class="soul-item unlock${lock ? ' origin-locked' : ''}" data-unlock-unit="${id}"
                 style="--cc:${lock ? host.color : d.color}"
-                ${(lock || poor) ? 'disabled' : ''}>
+                ${(lock || poor) ? 'aria-disabled="true"' : ''}>
           <span class="si-fig">${this.unitIconHTML(id, 40)}</span>
           <span class="si-name">${d.name}</span>
           <span class="si-og" style="--og:${host.color}">${host.icon} ${host.short || host.name}</span>
@@ -904,7 +904,7 @@ const UI = {
            same pending list grantStoryTower issues from. */
         const n = Meta.storySystemsFor(id);
         return `<button class="soul-item unlock story-locked" data-story="${id}"
-                style="--cc:${og.color}" disabled data-preview="${id}">
+                style="--cc:${og.color}" aria-disabled="true" data-preview="${id}">
           <span class="si-fig">${this.towerIconHTML(id, 40)}</span>
           <span class="si-name">${t.name}</span>
           <span class="si-el" style="--el:${el.color}">${el.icon} ${el.name}</span>
@@ -930,11 +930,17 @@ const UI = {
     }));
     this.bindTowerPreviews(body);
     $$('[data-unlock]', body).forEach(b => b.addEventListener('click', () => {
+      /* aria-disabled, not disabled: a DISABLED button receives no mouse
+         events at all in Chromium or Firefox, which silently killed the
+         firing preview on every card a player had not yet bought -- which is
+         every card this grid shows. The refusal moved here instead. */
+      if (b.getAttribute('aria-disabled') === 'true') { Sound.play('denied'); return; }
       if (Meta.unlockTower(b.dataset.unlock))
         { Sound.play('branch'); this.renderSoulShop(); this.refreshArsenalViews(); }
       else Sound.play('denied');
     }));
     $$('[data-unlock-unit]', body).forEach(b => b.addEventListener('click', () => {
+      if (b.getAttribute('aria-disabled') === 'true') { Sound.play('denied'); return; }
       if (Meta.unlockUnit(b.dataset.unlockUnit))
         { Sound.play('branch'); this.renderSoulShop(); this.refreshArsenalViews(); }
       else Sound.play('denied');
@@ -4529,7 +4535,7 @@ const UI = {
       ${this.enragePanel(Game.waveRunning ? spent : rage)}
       <div class="hint-block">
         <div class="section-label">ATTRITION</div>
-        <p class="hint">Waves spawn in the <b>neutral zone</b> and hit every base identically. Everything <b>you</b> kill is reanimated and sent at your rival — reanimates never reanimate again.</p>
+        <p class="hint">Waves spawn in the <b>neutral zone</b> and hit every base identically. What your kills become is your commander's rite — a body sent can never be sent again.</p>
         <p class="hint">Each wave permanently raises one enemy stat (shown top-centre). Escalations land every <b>10</b> waves, minibosses every <b>${MINIBOSS_EVERY}</b>.</p>
       </div>
     </div>`;
@@ -6016,10 +6022,27 @@ const UI = {
     const t = this.el.tooltip;
     if (t.classList.contains('hidden')) return;
     const r = t.getBoundingClientRect();
-    let x = ev.clientX - r.width - 16;
-    if (x < 8) x = ev.clientX + 16;
-    t.style.left = x + 'px';
-    t.style.top = clamp(ev.clientY - r.height / 2, 8, window.innerHeight - r.height - 8) + 'px';
+    /* A FocusEvent HAS NO COORDINATES, and three surfaces feed one in: the
+       galaxy world nodes, the universe map, and the POWER chip -- which was
+       given tabindex="0" precisely so a keyboard could reach it. `undefined
+       - n` is NaN, `NaN < 8` is false so the flip never fired, clamp returns
+       NaN unchanged, and the browser rejects both style writes: the card
+       stayed frozen wherever the mouse last left it, or sat at the foot of
+       the document. Anchor to the focused ELEMENT instead, which is where a
+       keyboard user is actually looking. */
+    let px = ev && ev.clientX, py = ev && ev.clientY;
+    if (!isFinite(px) || !isFinite(py)) {
+      const el = ev && ev.target && ev.target.getBoundingClientRect
+        ? ev.target.getBoundingClientRect() : null;
+      if (el) { px = el.right; py = el.top + el.height / 2; }
+      else { px = window.innerWidth / 2; py = window.innerHeight / 2; }
+    }
+    let x = px - r.width - 16;
+    if (x < 8) x = px + 16;
+    /* And the horizontal needs the same clamp the vertical always had, or an
+       element near the right edge pushes the card off the screen. */
+    t.style.left = clamp(x, 8, Math.max(8, window.innerWidth - r.width - 8)) + 'px';
+    t.style.top = clamp(py - r.height / 2, 8, Math.max(8, window.innerHeight - r.height - 8)) + 'px';
   },
   hideTooltip() { this.el.tooltip.classList.add('hidden'); },
 
@@ -6503,7 +6526,14 @@ const UI = {
       <section><h3>Commanders</h3><div class="codex-grid">${cmdRows}</div></section>
       <section><h3>Attrition</h3><div class="codex-note">
         <p>Neutral waves spawn in the centre corridor and march on <b>both</b> bases at once — same composition, same instant.</p>
-        <p>Anything <b>you</b> destroy is <b>reanimated</b> and sent down your rival's lane at 60% health and 45% faster. A reanimated unit that dies is gone for good, so kills never cascade.</p>
+        <p>What a kill becomes is decided by your commander's <b>rite</b>, not by a single
+           universal law. <b>${SUMMON_DOCTRINES.robot.name}</b> returns the body exactly as it
+           fell; <b>${SUMMON_DOCTRINES.human.name}</b> drafts a different soldier from your own
+           roster; <b>${SUMMON_DOCTRINES.xeno.name}</b> leaves it to incubate where it died; and
+           under <b>${SUMMON_DOCTRINES.light.name}</b> and <b>${SUMMON_DOCTRINES.pirate.name}</b> a
+           kill yields nothing at all — they march on a clock and on gold instead. Whatever a rite
+           sends arrives at <b>${Math.round(MUSTER_DAMP * 100)}%</b> health and can never be sent
+           again, so kills never cascade.</p>
       </div></section>
       <section><h3>Escalation</h3><div class="codex-note">
         <p>Every wave permanently raises one random enemy statistic — health, speed or armour. The running totals sit at the top of the battlefield.</p>

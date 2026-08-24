@@ -203,7 +203,11 @@ body.rm-user .bi-line { opacity: 1; }
   cursor: pointer; transition: all 0.15s var(--ease);
 }
 .soul-item:hover:not(:disabled) { background: color-mix(in srgb, var(--cc) 14%, transparent); transform: translateY(-2px); }
-.soul-item:disabled { opacity: 0.4; cursor: not-allowed; }
+/* `aria-disabled` carries the same look as `:disabled` and none of its cost:
+   a truly disabled control receives no mouse events, which killed the firing
+   preview on every card the player had not bought yet -- i.e. all of them. */
+.soul-item:disabled,
+.soul-item[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
 .si-ic { font-size: 21px; color: var(--cc); }
 .si-name { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; }
 .si-lvl { font-size: 10.5px; color: var(--text-mute); }
