@@ -65,7 +65,11 @@ const NET_CHANNEL = 'cosmic-conquest-duel/1';
    level, the intrusion count and the bootstrap ramp. Protocol 3 shipped
    without them, so a 3 and a 4 hash different sets and would part on turn
    zero for a reason nobody could read off the overlay. Refuse the link. */
-const NET_PROTOCOL = 4;
+/* 5: the seat contract carries UNIT talents as well as tower talents. A 4
+   sends only the tower half, so a 4 and a 5 derive different pack sizes from
+   the same summon -- and pack size moves gold, stats.sent and musterIncome,
+   all three of them hashed. Refuse the link. */
+const NET_PROTOCOL = 5;
 /* A turn is six ticks — 100ms at 1x. Smaller windows stall constantly the
    moment one browser deprioritises anything; larger ones are felt as lag. */
 const NET_TURN_TICKS = 6;
@@ -452,7 +456,16 @@ const Net = {
     const cmd = COMMANDERS.find(c => c.id === cmdId) || COMMANDERS[0];
     const loadout = this.localLoadout();
     const talents = {};
-    for (const id of loadout) talents[id] = Meta.talentMods(id).map(t => t.id);
+    /* TOWERS **AND** SOLDIERS. Units share the tower talent store by design
+       (`addUnitXp` is `addTowerXp`), and their picks change what a summon IS:
+       unitFieldMods feeds musterTierFor, which derives the pack COUNT, the
+       mass, the cost and the income percent. Sending only the tower half left
+       every unit talent to be read off whichever machine happened to be
+       asking -- so two commanders with different unit trees derived different
+       pack sizes from the same command, and gold, stats.sent and musterIncome
+       are all fingerprinted. The first muster parted the boards. */
+    for (const id of loadout.concat(Meta.musterLoadout()))
+      talents[id] = Meta.talentMods(id).map(t => t.id);
     return {
       name: this.name,
       faction: Meta.faction() || cmd.faction || 'human',
@@ -1222,16 +1235,30 @@ const Net = {
         arena: cfg.world.arena,
         boons: []
       });
-    } finally { this._starting = false; this.unlensProfile(); }
-
-    /* What Game.start could only derive from THIS machine's save file is
-       replaced, for both seats on both clients, by what the wire agreed. */
-    const S = this._realSides;
-    for (let i = 0; i < 2; i++) {
-      S[i].loadout = cfg.seats[i].loadout.slice();
-      Game.setMusterLoadout(i, cfg.seats[i].muster.slice());
-      S[i].talentSets = this.talentSetsFor(cfg.seats[i]);
-    }
+      /* INSIDE THE LENS, and seat by seat. setMusterLoadout derives every
+         tier through musterTierFor -> unitFieldMods -> Meta.talentMods, so
+         run OUTSIDE the lens it read this machine's unit trees for both
+         seats -- two commanders with different unit builds then derived
+         different pack sizes from the same command, and gold, stats.sent and
+         musterIncome are all fingerprinted.
+         The lens itself pins talentMods to SEAT 0 (it exists to answer for
+         the seat being built), so deriving both seats under it unchanged
+         would hand seat 1 seat 0's soldiers. Pointed at each seat's own wire
+         picks in turn instead. The cache is cleared around every swap because
+         it is keyed by unit id alone: an entry built for one seat would
+         otherwise be served to the other. */
+      const S = this._realSides;
+      const sets = [this.talentSetsFor(cfg.seats[0]), this.talentSetsFor(cfg.seats[1])];
+      const lensedTalentMods = Meta.talentMods;
+      for (let i = 0; i < 2; i++) {
+        S[i].loadout = cfg.seats[i].loadout.slice();
+        Meta.talentMods = id => sets[i][id] || [];
+        clearUnitFieldCache();
+        Game.setMusterLoadout(i, cfg.seats[i].muster.slice());
+        S[i].talentSets = sets[i];
+      }
+      Meta.talentMods = lensedTalentMods;
+    } finally { this._starting = false; this.unlensProfile(); clearUnitFieldCache(); }
     /* Two commanders and nothing for a machine to decide -- but the brain
        SLOT has to stay, because onWaveSpawned reaches into brains[si-1] to
        hand each rival its draft and Game.loop has no try/catch: an empty
@@ -1258,7 +1285,7 @@ const Net = {
   /** Talent objects rebuilt from ids, so both clients read the same tree. */
   talentSetsFor(p) {
     const out = {};
-    for (const id of p.loadout) {
+    for (const id of p.loadout.concat(p.muster || [])) {
       const def = Meta.talentDefOf(id);
       const ids = (p.talents && p.talents[id]) || [];
       out[id] = def ? ids.map(tid => def.talents.find(t => t.id === tid)).filter(Boolean) : [];
