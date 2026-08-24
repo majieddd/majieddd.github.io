@@ -1,98 +1,61 @@
 # Cosmic Conquest — the standing backlog
 
-Everything not finished, in one place. Assembled by re-reading the roadmap, the
-note ledger, the tower audit, the mechanics dossier, and the deferral notes the
-Session 19 patches left behind.
+Everything not finished, in one place. Rebuilt at the end of Session 20.
 
-**Read the status column literally.** A row says *spec'd* only if the root cause
-is already found and written down, and *not started* only if nobody has looked
-yet. Nothing here is marked done — done work lives in
-[`ROADMAP.md`](ROADMAP.md) with the measurement that proves it.
+**Read the status literally.** *Spec'd* means the root cause is found and
+written down; *not started* means nobody has looked.
 
-**Currently shipped and green:** owner sweep 16/0, Session 19 Phase 1 suites
-150/150, both balance pins holding, duel / tri / twenty-seat arena all soak
-clean. Live on all three surfaces.
+**Currently shipped and green on `main`:** owner sweep 27/0, Sessions 19 and 20
+complete bar the three rows below, both balance pins holding, duel / tri /
+twenty-seat arena soaking clean. 50 towers (10 per power), 20 boons, 20 faction
+units, 188 art plates. Live on all three surfaces.
 
 ---
 
-## A. Ready to build — spec'd, root cause known
+## The only three things outstanding
 
-These are not investigations. Each has a design doc and a named cause.
+### 1. Multiplayer — built, on a branch, NOT merged
+`feature/multiplayer-20.6`. Two humans on two clients over `BroadcastChannel`
+with deterministic lockstep. **MPT 19/24**, and the two failures are the two
+strongest claims: the reanimate loop across the wire is *unproven* (the harness
+only reaches wave 3, so nothing dies to reanimate), and the determinism
+**negative control failed to fail**. No adversarial audit exists — all seven
+Session 20 audit agents died to a weekly limit.
+Full write-up and the specific next step for each:
+[`MULTIPLAYER-HANDOFF.md`](MULTIPLAYER-HANDOFF.md). **Do not merge on 19/24.**
 
-### A1. The units system (19.10–19.15) — the tent pole
+### 2. Soul-shop surcharge (20.7i)
+Modelled at ten towers per faction, and the finding inverts the assumption: the
+**+1 step is not the problem, the shared counter is**. The fix lives in
+`Meta.soulSurcharge` / `Meta.chargeSouls` in `js/commanders.js`.
 
-Spec: [`UNITS-AND-BOONS-DESIGN.md`](UNITS-AND-BOONS-DESIGN.md).
-
-The surprise here is how much already exists. **Twenty faction units are already
-defined** with art (five per power, `js/factions.js`), and **per-map rescue
-already works** (all fifteen maps declare `denizens`; `ui.js:1759` builds the
-savable list). They have simply never been connected — of the twenty-two
-denizens across all fifteen maps, **none is a faction unit**. Every rescue today
-is a neutral machine.
-
-| # | Item | Notes |
-|---|---|---|
-| 19.10 | Units unlock per map | Put faction units into the denizen pools that already exist |
-| 19.11 | Each faction has its own units | Already authored; needs wiring and lore-shaped effects |
-| 19.12 | Four-column loadout | Units and Towers as visually matched middle columns, detail panels outside. Needs a defined narrow-viewport behaviour — collapse the detail columns to a drawer rather than reflowing, or the pairing that is the whole point breaks |
-| 19.13 | Talents per unit | Reuse `Meta.talentMods`, including its partial-allocation trap: spending one point must never be worse than spending none |
-| 19.14 | Rescue gate + Soul Profile escape hatch | **Storage does not change** — souls are already per-profile, the vault already install-wide. Only the gate |
-| 19.15 | Unit cards preview the unit moving | Reuse the hover preview fixed in 19.8 rather than building a second one |
-
-### A2. Tower differentiation (19.20)
-
-Audit: [`TOWER-AUDIT.md`](TOWER-AUDIT.md). **36 of 39 towers already carry a
-unique mechanic** — the arsenal is in better shape than it looks. What is
-actually wrong is narrow:
-
-- **Three pure stat blocks** — `bolt`, `mortar`, `flak`. All three human
-  starters. A baseline is defensible; being characterless is not.
-- **Six pairs sharing the keys that define them.** `toxin`/`canister` is now
-  fixed. Remaining: `foundry`/`custodian`, `beacon`/`pylon`,
-  `vault`/`quartermaster`, `arc`/`concord`, `pyre`/`ichor`.
-
-Worth stating plainly: the *"tower that creates troops that fight oncoming
-troops, stopping them until they die"* **already exists** — FOUNDRY grapples and
-grinds. Its own description claims it is "the only structure that fights with
-BODIES", which is true of the intent and false of the arsenal because CUSTODIAN
-duplicates it. Proposal in the audit: FOUNDRY keeps the body-wall identity,
-CUSTODIAN becomes Federation escorts that **shield and buff your own musters** —
-which also serves the "buffing your own army" ask and makes the two answer
-opposite questions.
-
-### A3. Victory boons (19.23–19.24)
-
-Cause found: all eight boons are **global**, drawn at `commanders.js:453` with no
-reference to the world or the power it was taken from. That is exactly why every
-victory feels the same.
-
-Design is a two-axis matrix — faction decides *what kind* of advantage you loot,
-`WORLD_KINDS` biases *which of its five* you are offered. Five per faction,
-twenty total. The eight existing boons should be **re-authored into the matrix,
-not kept beside it**, or the global pool dilutes the diversity the change exists
-to create.
+### 3. The art pack re-encodes on every pack (20.7k)
+`write_pack` decodes and re-encodes every cached webp on each `--pack`, so each
+repack costs one more lossy generation. Measured: a byte-identical source
+round-trips to RMSE ~2.2. Harmless once, cumulative forever. Fix is to copy the
+cached bytes through untouched when the cache entry already matches the target
+size.
 
 ---
 
-## B. Content generation — needs new material
+## Closed in Sessions 19 and 20
 
-| # | Item | Size |
-|---|---|---|
-| 19.21 | Bring every faction to **10 towers** | **11 new towers**: light +3, xeno +3, pirate +3, robotic +2. Constraint: *a new tower is not approved until it names a `base` key that appears nowhere else in the arsenal* |
-| 19.22 | Distinct balance curves | Levers already exist — `cost`/`costGrowth`, time-on-field mechanics (`forgeTime`, `incomeEvery`), and level-jump shape. Each new tower states which curve it aims at |
-| 19.15 | Unit preview art | Batches with the art pass |
+These had their own sections here until Session 20 shipped them. Kept as one
+line each rather than deleted, because the *reason* each was smaller than it
+looked is worth not re-learning:
 
-**Art batching.** Generate 19.15 and 19.21 in one pass so the style stays
-consistent, and re-read [`BRAND.md`](BRAND.md) first. Two rules are load-bearing
-and have each cost a whole class of art: CLIP truncates at **77 tokens** (all 49
-dossiers once shipped amber because the accent sat at token ~114), and guidance
-is 0 so the **negative prompt is inert** — you cannot subtract, only lead with
-what you want.
+| Was | Outcome |
+|---|---|
+| **A1 units (19.10-19.15)** | ✅ Mostly wiring, not building — 20 faction units already existed with art and per-map rescue already worked; they had simply never been connected. 61/62 checks |
+| **A2 tower identity (19.20)** | ✅ 36 of 39 already unique. Three stat blocks given signatures, all five real pairs separated. 288/288 checks |
+| **A3 boons (19.23-19.24)** | ✅ 20 boons, 5 per power, keyed to power × world kind. All proved live; five dormant engine mechanics woken |
+| **B 11 new towers (19.21-19.22)** | ✅ 50 towers, ten per power, each naming a `base` key that appears nowhere else |
+| **D technical debt** | ✅ All ten Session-19 items closed in 20.7 — plus four extra name collisions the sweep found on its own |
 
-**Soul-shop interaction worth modelling first:** eleven new towers means eleven
-more purchasables, so the 19.9 inflation rule (+1 soul to every other purchase
-from that faction) compounds much harder at ten towers than at seven. Model the
-full unlock curve for one faction before committing the number.
+The one lesson worth carrying: in four of those five, **reading the code first
+changed what the task was.** The lane-blocking spawner already existed. The
+units already existed. The boons' problem was the draw site, not the boons.
+Measure before building.
 
 ---
 
@@ -107,17 +70,16 @@ full unlock curve for one faction before committing the number.
 
 ---
 
-## D. Technical debt and follow-ups
+## D. Technical debt
 
-Small, real, and each one named by whoever deferred it.
+All ten Session-19 items were closed in 20.7. What is left:
 
-| Item | Where | Why it matters |
+| Item | Where | State |
 |---|---|---|
-| CANISTER lost an AI heuristic | `js/ai.js:371` | Gated on `poisonPct`, which CANISTER no longer has. Half the heuristic is still deserved (pure damage, ignores shields) and half is now wrong (it should *not* get the boss bonus). A scoring weight, not a printed number, so it degrades quietly rather than lying |
-| `Tower.estimateDps` ignores `poisonPct` for TOXIN | `js/entities.js` | Pre-existing. Left alone deliberately so the CANISTER rework did not silently re-rate TOXIN to the AI at the same time |
-| `MUSTER_AI_HORIZON_WAVES` still 5 | `js/config.js` | Doubled income makes the brain score a send ~2.2× higher at the same horizon. Instrumented runs say it is *not* over-buying (fewer purchases, more income, unchanged tower counts), so it was left — but it is the Session-15 failure mode's neighbourhood and worth re-checking after the units round |
-| `GX_VIEW.x` / `GX_VIEW.y` are inert | `js/config.js` | Only `.w`/`.h` are read since the world/viewport split. Left because `GX_VIEW` is passed around as a rect; could reduce to a size |
-| Pinch-zoom unverified on real hardware | `js/ui.js` | Implemented and verified by code path and synthetic single-pointer events only — no multi-touch device in this environment |
+| Soul-shop surcharge | `Meta.soulSurcharge`, `js/commanders.js` | Modelled. The **+1 step is not the problem, the shared counter is** — deferred for file ownership, not difficulty |
+| `--pack` re-encodes every plate | `artgen/krea_gen.py` `write_pack` | Each repack costs one more lossy generation; measured RMSE ~2.2 per round-trip. Copy cached bytes through when the size already matches |
+| `GX_VIEW.x` / `.y` inert | `js/config.js` | **Proved** inert by test, not assumed. Deleting them needs the GX_* block, which belonged to another team that round |
+| Pinch-zoom unverified on hardware | `js/ui.js` | Code path and synthetic single-pointer events only — no multi-touch device in this environment |
 
 ---
 
@@ -146,13 +108,13 @@ Full write-ups with build notes in [`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md
 
 ## F. Suggested order
 
-1. **Boons (A3)** — smallest, self-contained, and the diversity lands immediately.
-2. **Tower differentiation (A2)** — five pairs to separate, no new content needed.
-3. **Units (A1)** — the tent pole. Data model before UI; the four-column loadout
-   depends on the unit/talent shape existing first.
-4. **Tower content (B, 19.21–19.22)** — after A2, so new towers are designed
-   against a differentiated arsenal rather than adding to a muddled one.
-5. **One art pass** covering 19.15 and 19.21 together.
+1. **Multiplayer** — close the two failures in
+   [`MULTIPLAYER-HANDOFF.md`](MULTIPLAYER-HANDOFF.md), get it audited, then
+   merge `feature/multiplayer-20.6`. It is the only feature-sized item left.
+2. **The soul-shop counter** — small, and it is a real economy bug.
+3. **The pack re-encode** — small, and it stops a slow quality leak.
+4. **Owner picks** from section C and E, whenever you want them.
 
-Re-measure both pins after anything in 2–4, and put the numbers in the PR —
-that is three separate rounds touching economy and tower power.
+Re-measure both pins after anything touching economy, AI or towers, and put the
+numbers in the PR. The pins and the three ways to mis-measure them are in
+[`../CONTRIBUTING.md`](../CONTRIBUTING.md) §5.

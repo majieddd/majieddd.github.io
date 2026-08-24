@@ -1145,7 +1145,7 @@ seven parallel teams, per the owner's preference for maximum concurrency.
 
 | # | Note | Status |
 |---|---|---|
-| 20.6 | **Make multiplayer actually work.** Today `mpSearch` fakes a 3.6-second relay search, reports "no commander answered … the live relay comes online in a future update", and hands you an AI garrison. There is **no network layer of any kind** in the codebase. | ⏳ |
+| 20.6 | **Make multiplayer actually work.** | 🔶 **built, on `feature/multiplayer-20.6`, deliberately NOT merged.** `js/net.js` puts two humans on two clients in one battle over `BroadcastChannel` (browser-native, so no dependency) with deterministic lockstep. **MPT 19/24.** The two failures are the two strongest claims: the reanimate loop across the wire is *unproven* (the harness only reaches wave 3, so nothing dies to reanimate — musters and sends do agree 32/32), and the determinism **negative control failed to fail**. No adversarial audit exists — all seven Session 20 audit agents died to a weekly limit. [`MULTIPLAYER-HANDOFF.md`](MULTIPLAYER-HANDOFF.md) |
 
 The hard constraint this must respect: **no external libraries, ever**, and the
 game must run offline from a single inlined HTML file. That rules out any
@@ -1158,14 +1158,14 @@ timestep the engine already runs on is what makes lockstep feasible.
 
 | # | Item | Status |
 |---|---|---|
-| 20.7a | CANISTER lost an AI heuristic when it stopped carrying `poisonPct` (`ai.js:371`) — half of it is still deserved, half is now wrong for it. | ⏳ |
-| 20.7b | `Tower.estimateDps` ignores `poisonPct` for TOXIN (pre-existing). | ⏳ |
-| 20.7c | `MUSTER_AI_HORIZON_WAVES` still 5 after the income buff — measured as not over-buying, but worth re-checking now units have landed. | ⏳ |
-| 20.7d | `GX_VIEW.x` / `GX_VIEW.y` are inert since the world/viewport split. | ⏳ |
-| 20.7e | **The six light/xeno towers have no bespoke inspector rows** — the biggest legibility gap the Phase 3 agent flagged. No "Wards standing 1/3", "Offering: Ironmarch", "Answers banked 4". | ⏳ |
-| 20.7f | BLOOD PRICE's tooltip prints `◈0`. True — no gold changes hands — but it should show a ♥ price. | ⏳ |
-| 20.7g | Rival parity for BLOOD PRICE: `ai.js` scores it through `towerCost` (which returns 0) rather than a life-aware bid. | ⏳ |
-| 20.7h | **A jammed NULL FIELD stops suppressing**, so a Jammer inside one can jam the field off and free itself. Flagged as interaction, not bug — owner call. | ⏳ |
-| 20.7i | Soul-shop inflation never re-modelled at ten towers per faction. | ⏳ |
-| 20.7k | **Every `--pack` re-encodes every cached webp**, so each repack costs one more lossy generation. Measured: a byte-identical source round-trips to RMSE ~2.2. Harmless once, cumulative forever. | ⏳ |
-| 20.7j | Ten pre-existing player-facing talent-name collisions (PERMAFROST, WIDE FIELD, BATTERY, CAPACITOR, CONCENTRATE, WINDLASS, TRIBUTE, SATURATION, CLARITY, BACKBONE). | ⏳ |
+| 20.7a | CANISTER lost an AI heuristic when it stopped carrying `poisonPct` (`ai.js:371`) — half of it is still deserved, half is now wrong for it. | ✅ heuristic split: keeps the shieldShare term (the gas is pure and a share of health, so a shield does not stop it), loses the boss term |
+| 20.7b | `Tower.estimateDps` ignores `poisonPct` for TOXIN (pre-existing). | ✅ `estimateDps` now prices TOXIN’s share-of-current-health venom via `Game.waveHpMul` against a new `POISON_PCT_REF_HP` |
+| 20.7c | `MUSTER_AI_HORIZON_WAVES` still 5 after the income buff — measured as not over-buying, but worth re-checking now units have landed. | ✅ re-measured across horizons 4/5/6/8 and **held at 5**, with the measurement written into the constant’s own comment |
+| 20.7d | `GX_VIEW.x` / `GX_VIEW.y` are inert since the world/viewport split. | ✅ proved **inert** with a test rather than guessed — no reader anywhere in js/ or css/. Deleting it needs the GX_* block, owned by another team this round |
+| 20.7e | **The six light/xeno towers have no bespoke inspector rows** — the biggest legibility gap the Phase 3 agent flagged. No "Wards standing 1/3", "Offering: Ironmarch", "Answers banked 4". | ✅ bespoke rows for all six, every figure read from a `SixRead` table beside the verb that produces it — so a row cannot quote a stale number |
+| 20.7f | BLOOD PRICE's tooltip prints `◈0`. True — no gold changes hands — but it should show a ♥ price. | ✅ shop card, cost cell and tooltip all print **♥** through `Game.towerLifeCost` instead of ◈0 |
+| 20.7g | Rival parity for BLOOD PRICE: `ai.js` scores it through `towerCost` (which returns 0) rather than a life-aware bid. | ✅ **already landed** — verified rather than re-implemented; `Game.bidCost` existed and `ai.js:606` already scored through it. Five assertions added to prove it |
+| 20.7h | **A jammed NULL FIELD stops suppressing**, so a Jammer inside one can jam the field off and free itself. Flagged as interaction, not bug — owner call. | ✅ **called it a hole and closed it**: a jammed NULL FIELD keeps its volume and loses only its riders |
+| 20.7i | Soul-shop inflation never re-modelled at ten towers per faction. | 🔶 modelled — and the finding is that the **+1 step is not the problem, the shared counter is**. Fix lives in `Meta.soulSurcharge`, deferred for file ownership |
+| 20.7k | **Every `--pack` re-encodes every cached webp**, so each repack costs one more lossy generation. Measured: a byte-identical source round-trips to RMSE ~2.2. Harmless once, cumulative forever. | ❌ open — cosmetic but cumulative |
+| 20.7j | Ten pre-existing player-facing talent-name collisions (PERMAFROST, WIDE FIELD, BATTERY, CAPACITOR, CONCENTRATE, WINDLASS, TRIBUTE, SATURATION, CLARITY, BACKBONE). | ✅ **fourteen** renamed, not ten — the sweep compares levels against talents too and found LONG ARM, TITHE, ERASURE and HAEMORRHAGE. Measured: **0 talent-vs-talent collisions across 461 talents** |
