@@ -29,14 +29,15 @@ function freshTraits() {
     ascCostMul: 1, ascDamage: ASCENSION.damage, surgeEvery: ASCENSION.surgeEvery, surgeMul: 1,
     reanimSpeed: 1, reanimGold: 0, siphonRate: 1,
     leakReduction: 0, lastStandAt: 0, lastStandDmg: 0, waveHeal: 0,
-    /* HOOKS, NOT BUGS. `freeCopies`, `siphonRate`, `lastStandAt` and
-       `lastStandDmg` are read by live engine code -- the copy count in
-       Game, the siphon drain and the last-stand check in Enemy -- but no
-       commander, faction or tech node writes any of them, so every read
-       sits on the default above and is inert. Kept because the mechanics
-       behind them are finished and wired; deleting the keys would throw
-       that work away and save nothing. Grant one from a chart node to
-       turn the mechanic on. */
+    /* THESE ARE ALL LIVE NOW, and this comment used to say otherwise.
+       `freeCopies`, `siphonRate`, `lastStandAt`, `lastStandDmg`, `waveHeal`
+       and `immortalLine` were dormant hooks -- read by engine code, written
+       by nobody -- until the twenty faction boons woke them: FIELD REFIT,
+       THE LAST LINE and RENDERING write them through BOON_FOLD (towers2.js,
+       game.js:149+). The old note still described them as inert, which is
+       exactly how a stale comment earns its keep: nobody re-checks a key the
+       file has already told them is switched off. If a key here ever does go
+       writer-less again, say so HERE and name the date. */
     ascendBonusRate: 0, perAscDamage: 0, immortalLine: false, vaultBonus: 1,
 
     /* Accumulators the twenty-commander roster writes into. They are folded
@@ -88,6 +89,11 @@ function foldTraits(side) {
   m.upCost *= t.upgradeMul;
   m.pierce += t.pierce;
   m.crit   += t.crit;
+  /* The other half of a crit. CRUSH, OBLITERATE, NO QUARTER and the MARQUE
+     boon all wrote `critMult` and nothing ever folded it, so ULGRIM's and
+     SCARLET's whole third column advertised crit damage and changed no
+     number on the board. */
+  m.critMult += t.critMult;
   m.reanim *= t.reanimHp;
   if (t.sellRate) m.sellRate = t.sellRate;
   if (t.leakReduce) t.leakReduction = Math.max(t.leakReduction, t.leakReduce);

@@ -597,7 +597,7 @@ const UI = {
          off the spawn edge, so the teachable moment is while the carrier is
          still on the board and still killable. */
       { at: () => Game.enemies.some(e => e.hostileTo === 0 && e.carrier),
-        text: 'That one is carrying your lives back to the edge. Kill it before it leaves and you get every one of them back.' },
+        text: 'That one is carrying your lives to the edge. Nothing is spent until it gets out — kill it first and you pay nothing.' },
     ];
     const fired = steps.map(() => false);
     let shown = 0, done = false, hideT = 0;
@@ -6133,8 +6133,8 @@ const UI = {
           }).join('');
           const lead = rows.length
             ? (saved
-                ? `${saved} further theft${saved === 1 ? '' : 's'} never got out — a carrier killed before it crosses the spawn edge hands every life back.`
-                : 'Every theft above walked off the board. Kill the carrier on its way out and the lives come back.')
+                ? `${saved} further theft${saved === 1 ? '' : 's'} never got out — a carrier killed before it crosses the spawn edge costs you nothing.`
+                : 'Every theft above walked off the board. Kill the carrier on its way out and you never pay for it.')
             : (saved
                 ? `Not one theft got out: all ${saved} carrier${saved === 1 ? '' : 's'} died before crossing the spawn edge.`
                 : 'No breach cost you a life.');

@@ -50,7 +50,11 @@ let FIELD = null;
 /** Fresh command-upgrade multiplier block. PLAYER_MODS mutate this. */
 function freshMods() {
   return { damage: 1, rate: 1, range: 1, splash: 1, status: 1, gold: 1,
-           pierce: 0, crit: 0, cost: 1, upCost: 1, reanim: 1, doubleReanim: 0, sellRate: 0.7,
+           /* `crit` is the CHANCE and `critMult` the DAMAGE. Both are side-wide
+              accumulators; only the chance had a home here, so every talent and
+              boon that promised harder crits wrote into a trait nothing read. */
+           pierce: 0, crit: 0, critMult: 0,
+           cost: 1, upCost: 1, reanim: 1, doubleReanim: 0, sellRate: 0.7,
            interest: 1, relocFee: RELOCATE_FEE_FRAC };
 }
 
@@ -1608,7 +1612,11 @@ const Game = {
       for (const t of S.towers) { t.aura.dmg = 0; t.aura.rate = 0; t.aura.range = 0; }
       for (const b of S.towers) {
         if (b.def.attack !== 'aura') continue;
-        const r2 = (b.stats.range * TILE) ** 2;
+        /* SERAPH's RADIANCE widens the field itself. `auraRangeMul` was
+           written by her trait, by two talents and by a boon, had its own
+           BOON_FOLD entry, and was read by nothing at all -- so the one
+           commander whose identity is aura WIDTH had no wider auras. */
+        const r2 = (b.stats.range * TILE * (S.traits.auraRangeMul || 1)) ** 2;
         for (const t of S.towers) {
           if (t === b || t.def.attack === 'aura') continue;
           if (dist2(b.x, b.y, t.x, t.y) <= r2) {
@@ -2868,19 +2876,26 @@ const Game = {
     const kl = S.killLog[e.type] || (S.killLog[e.type] = { n: 0, bounty: 0 });
     kl.n++; kl.bounty += bounty;
 
-    /* THE RECOVERY. A dead CARRIER hands every stolen life straight back --
-       restoreLife is the shipping path (maxLives clamp, heal cue, floater,
-       stats.livesRestored) -- and if the body was FRESH when it leaked the
-       corpse still marches on the rival, so recovery and offence are one
-       action. The early return is the value gate: no vault skim, no
+    /* THE RECOVERY, and what it is NOT.
+       Killing a carrier PREVENTS a loss; it does not repay one, because
+       nothing was taken. Reaching the seat spends no lives at all -- that is
+       the whole carrier design (entities.js: "only walking off that edge
+       makes the loss real") and the HUD says so, printing lives IN FLIGHT as
+       `12 (3⚑)` rather than deducting them.
+       This used to call restoreLife here, which HEALED the robbed seat by
+       the full livesCost. Measured: a side on 12 of 30 let one Gantry reach
+       the seat and killed it on the way out, and came away with 15 -- three
+       lives it had never lost. It made deliberately leaking and then killing
+       strictly better than killing early, which inverts the entire point of
+       a defence. The theft is now simply averted.
+       The early return below is still the value gate: no vault skim, no
        transmutation, no contagion, no split walking your lane again --
-       bounty was zeroed at conversion (the award above was a no-op; the
-       lives ARE the payment). `reanimated` was set at conversion too, so
-       the generic gate at the bottom of this funnel can never fire for a
-       carrier: the call here is the only reanimate it gets, and only when
-       carrierFresh says the corpse never marched before. */
+       bounty was zeroed at conversion, so the award above was a no-op.
+       `reanimated` was set at conversion too, so the generic gate at the
+       bottom of this funnel can never fire for a carrier: the doctrine call
+       here is the only summon it gets, and only when carrierFresh says the
+       corpse never marched before. */
     if (e.carrier) {
-      this.restoreLife(e.hostileTo, e.livesCost);
       /* Counted, never logged: a recovered theft belongs on the defeat screen
          as the COUNTERPLAY line, not as a row in WHAT KILLED YOU -- it cost
          this side nothing at all. stats.livesRestored cannot stand in for it:

@@ -1598,7 +1598,13 @@ class Tower {
   rollCrit() {
     const chance = (this.stats.crit || 0) + this.sideMods.crit;
     if (chance > 0 && Math.random() < chance) {
-      const mult = Math.max(this.stats.critMult || 0, 2.5);
+      /* The floor is the tower's own multiplier; the commander's doctrine
+         then scales it, because "+15% crit damage" has to mean fifteen
+         percent MORE crit damage. Folding it additively instead would have
+         made a +0.15 talent worth six percent against the 2.5x floor, which
+         is how a printed number quietly becomes a different one. */
+      const mult = Math.max(this.stats.critMult || 0, 2.5) *
+                   (1 + (this.sideMods.critMult || 0));
       return { isCrit: true, mult };
     }
     return { isCrit: false, mult: 1 };
@@ -2193,7 +2199,13 @@ class Tower {
     this.focusCd = dur;
     const S = Game.sides[this.side];
     if (!S || !S.towers) return;
-    const r2 = this.rangePx * this.rangePx;
+    /* RADIANCE widens a support field, and a BEACON's field is its beam's
+       reach -- the same trait that widens a PYLON's broadcast in
+       recomputeAuras. Applying it to only one of the two kinds would make
+       "aura width" mean different things on two towers that are both auras. */
+    const auraMul = (S.traits && S.traits.auraRangeMul) || 1;
+    const reach = this.rangePx * auraMul;
+    const r2 = reach * reach;
     /* Scored ONCE per candidate, not once per comparison: estimateDps walks
        the whole stat block and a comparator would call it O(n log n) times. */
     const pool = [];
