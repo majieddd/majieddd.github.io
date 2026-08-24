@@ -267,6 +267,10 @@ body.rm-user .bi-line { opacity: 1; }
 .theatre-body { display: grid; grid-template-columns: 1fr 296px; gap: 12px; align-items: start; }
 @media (max-width: 1050px) { .theatre-body { grid-template-columns: 1fr; } }
 
+/* The secret power's badge in the field manual. */
+.fx-secret { font-style: normal; font-size: 9px; letter-spacing: .18em; color: var(--text-mute);
+             border: 1px solid var(--line-2); border-radius: 3px; padding: 1px 5px; vertical-align: 2px; }
+
 /* ═════════════ THE BATTLEFIELD, FULL BLEED ══════════════════════════════ */
 /* Measured at 1280x720 before this existed: the board rendered at viewScale
    0.623 into 663x355 -- twenty-six percent of the window -- because a 150px

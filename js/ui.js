@@ -6304,13 +6304,25 @@ const UI = {
     const lore = LORE.map(l => `
       <div class="lore-entry"><b>${l.title}</b><p>${l.body}</p></div>`).join('');
 
-    const factions = FACTION_ORDER.map(id => {
+    /* The fifth power is documented the day it becomes real and not one day
+       sooner. A manual that described a banner the player cannot swear would
+       be the same advertisement the faction screen deliberately refuses to
+       show -- but a player who HAS earned it needs somewhere to read what
+       BOOTSTRAP and the Lattice actually do. */
+    const powerIds = FACTION_ORDER.concat(
+      (typeof SECRET_FACTIONS !== 'undefined' && Meta.gameBeaten()) ? SECRET_FACTIONS : []);
+    const factions = powerIds.map(id => {
       const f = FACTIONS[id];
+      const secret = FACTION_ORDER.indexOf(id) < 0;
       return `<div class="codex-entry fac" style="--tc:${f.color}">
-        <b>${f.icon} ${f.name}</b>
+        <b>${f.icon} ${f.name}${secret ? ' <em class="fx-secret">SECRET</em>' : ''}</b>
         <em class="fx-creed">${f.creed}</em>
         <span>${f.blurb}</span>
         <span class="fx-bonus"><b>${f.bonusName}</b> — ${f.bonusDesc}</span>
+        ${secret ? `<span class="fx-bonus"><b>THE LATTICE</b> — ${SUMMON_DOCTRINES.robot.desc}
+          Their commanders COMPILE: each opens weaker than the commander it was copied from and
+          rewrites itself as the battle teaches it. Their soldiers are for sale to every banner
+          now that a galaxy has fallen.</span>` : ''}
       </div>`;
     }).join('');
 
@@ -6383,6 +6395,20 @@ const UI = {
            the rivals a free move &mdash; but the galaxy and every star already on it stay
            yours. Only <em>abandoning</em> a campaign from the battle's \u2715 button forfeits
            it.</p>
+        <p><b>The first galaxy is the gentle one.</b> Its opening system meets one new creature
+           every three waves instead of two, holds its first miniboss back, and eases the health
+           curve around the waves that usually end a first run \u2014 closing again by wave
+           ${TIER0_EASE_END_WAVE}, so nothing past it changes.</p>
+        <p><b>NEW GAME PLUS.</b> Take every commander seat and the galaxy is yours; the next one
+           asks how hard you want it. <b>${RAMP_PRESETS.veteran.name}</b> is the galaxy as you
+           fought it. <b>${RAMP_PRESETS.onslaught.name}</b> escalates every world once more and
+           pays ${Math.round((RAMP_PRESETS.onslaught.soulsMul - 1) * 100)}% more souls at
+           extraction. <b>${RAMP_PRESETS.apex.name}</b> is Overrun from the first world to the
+           last for ${Math.round((RAMP_PRESETS.apex.soulsMul - 1) * 100)}% more. Each tier also
+           makes every garrison stronger \u2014 ${Math.round(RAMP_PRESETS.veteran.tierHpStep * 100)}%,
+           ${Math.round(RAMP_PRESETS.onslaught.tierHpStep * 100)}% or
+           ${Math.round(RAMP_PRESETS.apex.tierHpStep * 100)}% per galaxy behind you. The harder
+           ramps pay when you EXTRACT, never per star, so there is nothing to farm.</p>
       </div></section>
       <section><h3>Commander abilities</h3><div class="codex-note">
         <p>Every commander carries two: an offensive power on <b>Q</b> and a defensive one on
