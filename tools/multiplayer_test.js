@@ -31,14 +31,23 @@ const MPT = (function () {
 
   const SEED = 0x5eed1234;
 
+  /* The board a duel test measures must not be decided by the save file this
+     browser happens to hold. contract() read Meta.unlockedTowers(), so on a
+     fresh profile -- STARTER_TOWERS is ['bolt'] -- both commanders fielded a
+     ONE-TOWER loadout, and the same suite that passes on a maxed profile
+     failed on a clean one. Pinned ids are the only version of this that means
+     anything twice: Game.build gates on S.loadout alone (game.js:1266) and
+     never on the unlock shelf, and beginMatch overwrites S.loadout out of the
+     contract (net.js beginMatch), so a pin needs no unlocks to be legal. */
+  const PIN_LOADOUT = ['bolt', 'cryo', 'mortar', 'flak', 'beacon'];
+  const PIN_MUSTER = ['crawler'];
+
   /** A duel contract that does not need a second window. */
   function contract(seed) {
-    const owned = Meta.unlockedTowers();
-    const pick = n => owned.slice(0, Math.min(n, owned.length));
     const seat = (cmdId, fac) => ({
       name: 'TEST', faction: fac, commander: cmdId,
-      loadout: pick(LOADOUT_SIZE),
-      muster: Meta.musterLoadout().slice(),
+      loadout: PIN_LOADOUT.slice(),
+      muster: PIN_MUSTER.slice(),
       talents: {}, prestige: 0, tech: [], second: false
     });
     return {
@@ -112,8 +121,16 @@ const MPT = (function () {
    * input, for both seats; whichever seat this client holds is issued through
    * the local path, and the other arrives as a packet.
    */
-  function runClient(cfg, seat, log, ticks, trace) {
+  function runClient(cfg, seat, log, ticks, trace, opts) {
+    opts = opts || {};
     openMatch(cfg, seat);
+    /* A duel test that cannot afford its own opening is a test of poverty.
+       Six towers plus an upgrade cost more than the starting purse, so four of
+       the six builds in the log were refused for gold and the two-tower board
+       that survived could not kill a single wave unit. The grant is IDENTICAL
+       on both seats and on both clients, so it buys reachability and costs
+       nothing in determinism. */
+    if (opts.gold) { Net._realSides[0].gold = opts.gold; Net._realSides[1].gold = opts.gold; }
     const byTurn = {};
     for (const a of log) (byTurn[a.turn] = byTurn[a.turn] || []).push(a);
 
@@ -136,7 +153,13 @@ const MPT = (function () {
       /* the remote seat's packet for the turn about to run */
       const box = (Net.inbox[turn] = Net.inbox[turn] || [null, null]);
       if (!box[1 - seat]) {
-        box[1 - seat] = (byTurn[turn] || []).filter(a => a.seat !== seat).map(record).filter(Boolean);
+        /* `deaf` is the OFF half of the wire measurement. The peer's turns
+           still arrive, and arrive on time -- they arrive EMPTY. Seed, local
+           log and tick budget are untouched, so every difference it makes to
+           the rival seat's numbers was carried by the commands and by nothing
+           else on this client. */
+        box[1 - seat] = opts.deaf ? []
+          : (byTurn[turn] || []).filter(a => a.seat !== seat).map(record).filter(Boolean);
       }
       /* the local seat's commands, issued NET_INPUT_DELAY turns early so they
          land on the same turn the remote ones do */
@@ -199,15 +222,39 @@ const MPT = (function () {
     return path + ': ' + s(a) + '  vs  ' + s(b);
   }
 
-  /** Legal build tiles for each real seat, probed from the live board. */
+  /**
+   * Legal build tiles for each real seat, RANKED BY THE LANE THEY COVER.
+   * Scan order handed back the top edge of the board -- row 0, gx 0-11 on
+   * SPINE -- which is a legal place to build and a useless one. Six towers up
+   * there fired at nothing, both commanders leaked their whole wave, and a
+   * check about what happens to the dead ran on a board where nothing died.
+   * Distance to the path this seat actually defends is the only ordering that
+   * makes a build a defence.
+   */
   function probe(cfg) {
     openMatch(cfg, 0);
     const can = Net._orig.seat_canBuild || Game.canBuild;
     const tiles = [[], []];
-    for (let s = 0; s < 2; s++)
-      for (let gy = 0; gy < FIELD.rows && tiles[s].length < 12; gy++)
-        for (let gx = 0; gx < FIELD.cols && tiles[s].length < 12; gx++)
-          if (Net.suspend(can, Game, [s, gx, gy])) tiles[s].push([gx, gy]);
+    for (let s = 0; s < 2; s++) {
+      /* Through suspend because `s` here means the REAL seat, not the lensed
+         one -- the same reason canBuild is called through it below. */
+      const paths = Net.suspend(Game.defendedPaths, Game, [s]);
+      const scored = [];
+      for (let gy = 0; gy < FIELD.rows; gy++)
+        for (let gx = 0; gx < FIELD.cols; gx++) {
+          if (!Net.suspend(can, Game, [s, gx, gy])) continue;
+          const cx = (gx + 0.5) * TILE, cy = (gy + 0.5) * TILE;
+          let near = Infinity;
+          for (const pa of paths)
+            for (const pt of pa.pts) near = Math.min(near, Math.hypot(pt.x - cx, pt.y - cy));
+          scored.push([gx, gy, near]);
+        }
+      /* gy/gx break the tie so the ordering is TOTAL: two tiles the same
+         distance from the lane must not depend on sort stability, or the two
+         clients could probe the same board and build in different places. */
+      scored.sort((a, b) => a[2] - b[2] || a[1] - b[1] || a[0] - b[0]);
+      tiles[s] = scored.slice(0, 12).map(t => [t[0], t[1]]);
+    }
     const tiers = [Net.suspend(Net._orig.ret_musterVictims ? Game.musterTiers : Game.musterTiers, Game, [0]),
                    Net.suspend(Game.musterTiers, Game, [1])];
     const types = [Net._realSides[0].loadout.slice(), Net._realSides[1].loadout.slice()];
@@ -572,23 +619,97 @@ const MPT = (function () {
      * units feed must reanimate back.
      */
     pvp() {
-      T('net.pvp the send/muster/reanimate loop works across the connection', function () {
+      /* THREE RUNS, read by the three checks below.
+
+         The tick budget is not the interesting number and never was. Wave 1
+         starts at prepTime(0) = 22s = tick 1320, the first wave unit dies to a
+         tower about five seconds after that, and reanimate() fires at tick
+         ~1650 -- inside a quarter of the 7200 already granted. The duel then
+         resolves itself near tick 6000 when a commander falls, and runClient
+         stops there on Game.state === 'over' whatever the budget says. Raising
+         7200 to 20000 changes nothing at all; what the old check was missing
+         was a board that could kill, not a longer afternoon.
+
+         `bought` and `sends` come off the SAME seat's ledger. Game.muster
+         writes stats.sent AND stats.mustered on every unit it queues
+         (game.js:1942-1943); the only other writers of stats.sent in the tree
+         are reanimate()'s two branches (game.js:1991, 2028) and the SIREN
+         charm (entities2.js:391). SPINE is not triMode and PIN_LOADOUT has no
+         SIREN, so on this contract sends-minus-bought IS reanimate() and can
+         be nothing else. */
+      const GOLD = 4000;
+      let a = null, b = null, deaf = null;
+      /* Guarded, because these three runs are outside every T() below and a
+         throw here would take the whole suite down with it rather than
+         reporting one red line. */
+      T('net.pvp the three duel runs complete', function () {
         const cfg = contract(SEED);
         const p = probe(cfg);
         const log = buildLog(p);
         /* This client holds seat 0, so every seat-1 action in the log arrives
            the way the other window's would: as a command inside a turn packet. */
-        const a = runClient(cfg, 0, log, 7200);
-        const mustered = a.sides.map(s => s.stats[4]);
-        const sent = a.sides.map(s => s.stats[1]);
-        const kills = a.sides.map(s => s.stats[0]);
-        /* Sends beyond the ones that were bought are reanimation -- your kills
-           becoming your rival's problem, which is the whole game. */
-        const reanimated = sent[0] > mustered[0] && sent[1] > mustered[1];
-        ok('net.pvp the send/muster/reanimate loop works across the connection',
-           mustered[0] > 0 && mustered[1] > 0 && reanimated,
-           'wave ' + a.wave + ' | musters ' + mustered.join('/') +
-           ' | sends ' + sent.join('/') + ' | kills ' + kills.join('/'));
+        a = runClient(cfg, 0, log, 7200, null, { gold: GOLD });
+        /* The OTHER window: the same log, the same seed, the seats swapped
+           over the local and the remote path. */
+        b = runClient(cfg, 1, log, 7200, null, { gold: GOLD });
+        /* The same client as `a`, with the peer's turns arriving empty. */
+        deaf = runClient(cfg, 0, log, 7200, null, { gold: GOLD, deaf: true });
+        ok('net.pvp the three duel runs complete', !!(a && b && deaf),
+           'wired ' + a.ticks + ' ticks (' + a._why + '), mirror ' + b.ticks +
+           ' ticks (' + b._why + '), deaf ' + deaf.ticks + ' ticks (' + deaf._why + ')');
+      });
+
+      const bought = s => s.stats[4], sends = s => s.stats[1], kills = s => s.stats[0];
+      const built = s => s.stats[3];
+      const raised = s => sends(s) - bought(s);
+      const line = r => 'wave ' + r.wave + ' t' + r.ticks + ' | bought ' +
+        r.sides.map(bought).join('/') + ' | sent ' + r.sides.map(sends).join('/') +
+        ' | raised ' + r.sides.map(raised).join('/') + ' | kills ' + r.sides.map(kills).join('/');
+
+      T('net.pvp the send/muster/reanimate loop closes for both commanders', function () {
+        ok('net.pvp the send/muster/reanimate loop closes for both commanders',
+           bought(a.sides[0]) > 0 && bought(a.sides[1]) > 0 &&
+           raised(a.sides[0]) > 0 && raised(a.sides[1]) > 0,
+           line(a));
+      });
+
+      /* THE ACROSS-THE-WIRE MEASUREMENT, and the only one of these three that
+         is about the connection.
+
+         Reanimation is computed locally on both clients -- waves are seeded,
+         not sent -- so "reanimation happened here" proves the simulation, not
+         the relay, and a check that only asserted it would pass with the wire
+         unplugged. What DOES cross is the rival's commands: on this client,
+         seat 1 owns towers only because its build packets arrived, kills only
+         because those towers exist, and reanimated sends only because of those
+         kills. So seat 1's raised sends, measured on the client holding seat
+         0, are wire-carried by construction -- and the proof is to take the
+         wire away and watch them go to zero while seat 0's own stay. */
+      T('net.pvp the RIVAL\'s reanimation is carried by the connection', function () {
+        const wired = raised(a.sides[1]) > 0 && bought(a.sides[1]) > 0;
+        const silent = built(deaf.sides[1]) === 0 && kills(deaf.sides[1]) === 0 &&
+                       sends(deaf.sides[1]) === 0;
+        /* Seat 0 is issued locally in BOTH runs, so it must keep raising the
+           dead when the peer goes quiet. Without this the check would also
+           pass if deafening the wire had simply broken the whole board. */
+        const localUnhurt = raised(deaf.sides[0]) > 0;
+        ok('net.pvp the RIVAL\'s reanimation is carried by the connection',
+           wired && silent && localUnhurt,
+           'wired: ' + line(a) + '  ||  deaf: ' + line(deaf));
+      });
+
+      /* And the two windows must have raised the SAME dead. Seat 1 was issued
+         locally on b and arrived as packets on a; if the remote path and the
+         local path produced different corpses, the enemy list -- which carries
+         the reanimated flag per unit -- is where it shows. */
+      T('net.pvp both windows raise the same dead', function () {
+        const statsAgree = JSON.stringify(a.sides.map(s => s.stats)) ===
+                           JSON.stringify(b.sides.map(s => s.stats));
+        const bodiesAgree = a.enemies === b.enemies;
+        ok('net.pvp both windows raise the same dead',
+           a.ticks === b.ticks && statsAgree && bodiesAgree,
+           'seat0 client: ' + line(a) + '  ||  seat1 client: ' + line(b) +
+           (statsAgree && bodiesAgree ? '' : ' | first difference — ' + firstDiff(a, b)));
       });
       T('net.pvp a remote muster puts units on THIS clients lane', function () {
         const cfg = contract(SEED);
