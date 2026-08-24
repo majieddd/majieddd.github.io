@@ -274,6 +274,40 @@ class Enemy {
     this.markT = NODE_LANE_MARK;
   }
 
+  /**
+   * THE THEFT -- a leak is no longer instant. Reaching the seat no longer
+   * spends lives: the unit turns around and CARRIES them back toward the
+   * spawn edge, and only walking off that edge makes the loss real -- the
+   * carrier branch in update() sets `leaked` at dist 0 and the ordinary
+   * reap then charges the ordinary loseLives, BRUTAL surcharge, enemyDamp
+   * and Shield Wall reduction included. Killing the carrier is the
+   * recovery (see Game.killEnemy). `reanimated` is set so nothing generic
+   * pays for this body twice: the automatic reanimate gate skips it, a
+   * Siren cannot charm it, a Press cannot take it. `carrierFresh`
+   * remembers whether the corpse still owes the rival a march. Bounty is
+   * zeroed -- the lives ARE the payment. Everything here keys off entity
+   * state, never a seat literal, so a rival's leak builds a rival's
+   * carrier under exactly this law.
+   */
+  becomeCarrier() {
+    this.carrier = true;
+    this.carrierFresh = !this.reanimated;
+    this.reanimated = true;
+    this.bounty = 0;
+    /* Fixed and slower than the walk in: the window is authored. */
+    this.carrierSpeed = Math.min(CARRIER_SPEED, this.baseSpeed * 0.7);
+    this.dist = this.path.total;
+    /* A phased wraith must not flee inside an invulnerability window, and
+       a flyer lands under the weight of what it stole: the theft has to be
+       contestable by the board that just failed to stop the walk in. */
+    this.phaseOn = false;
+    if (this.flying) { this.grounded = true; this.groundedT = 1e9; }
+    if (this.hostileTo === Game.viewSide) {
+      Game.hurtFlash = 0.6; Game.shake(5); Sound.play('leak');
+      Game.addFloater(this.x, this.y - 18, '-' + this.livesCost + ' ♥ STOLEN', false, '#f87171', 15);
+    }
+  }
+
   /* ------------------------------------------------------------ statuses */
 
   applySlow(f, dur) {
@@ -572,7 +606,7 @@ class Enemy {
         this.shield + (this.def.shieldRegen || this.shieldRegenOverride || 0) * dt);
     }
 
-    if (this.def.summon && !this.dead) {
+    if (this.def.summon && !this.dead && !this.carrier) {
       this.summonTimer -= dt;
       /* The attempt is CONSUMED rather than deferred -- here, at the jam and
          at the blink. Freezing the clock instead would let a unit bank its
@@ -585,6 +619,20 @@ class Enemy {
     }
 
     if (this.dead) return;
+
+    /* --- CARRIER: a stolen life walking back out. Fixed pace, immune to
+       slow, haste and freeze -- but every burn, bleed, poison and digest
+       tick above still lands, so damage-over-time can finish the recovery
+       on its own. Crossing the spawn edge is the moment the theft becomes
+       real: `leaked` re-enters the unchanged reap in Game.step, which
+       charges loseLives with the full livesCost through the same
+       enemyDamp/leakReduction arithmetic every leak has always paid. --- */
+    if (this.carrier) {
+      this.dist -= this.carrierSpeed * TILE * dt;
+      if (this.dist <= 0) { this.dist = 0; this.leaked = true; }
+      this.updatePosition();
+      return;
+    }
 
     /* --- JAMMER: silences every tower defending against it --- */
     if (this.def.jam) {
@@ -643,7 +691,7 @@ class Enemy {
          Oath is simply the second thing that removes a unit without killing
          it. */
       if (vigilSpend(this)) { this.dead = true; this.charmed = true; }
-      else this.leaked = true;
+      else this.becomeCarrier();
     }
   }
 
@@ -662,12 +710,27 @@ class Enemy {
       ctx.translate(0, -6 + Math.sin(this.age * 3.4) * 2);
     }
 
+    /* A CARRIER wears the theft openly -- pulsing ring and a life glyph
+       both armies can read, because interception IS the mechanic. Drawn
+       from entity state alone; the rival's carriers render identically. */
+    if (this.carrier) {
+      ctx.save();
+      ctx.globalAlpha = 0.55 + Math.sin(this.age * 6) * 0.3;
+      ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2.2;
+      ctx.beginPath(); ctx.arc(0, 0, this.radius + 5.5, 0, TAU); ctx.stroke();
+      ctx.globalAlpha = 0.9; ctx.fillStyle = '#f87171';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('♥', 0, -this.radius - 12);
+      ctx.restore();
+    }
+
     /* Reanimated units wear a spectral halo so both armies stay readable. */
     /* "Both armies" was the two-sided reading. Game.reanimate passes
        `owner: killer` and killer runs 0..N-1 on a tri board, so a send from
        the third commander arrived wearing the second commander's rose and the
        player could not tell whose dead were walking at them. BATCH-C/nside */
-    if (this.reanimated) {
+    if (this.reanimated && !this.carrier) {
       const hue = sideColor(this.owner);
       ctx.save();
       ctx.globalAlpha = 0.55 + Math.sin(this.age * 5) * 0.2;

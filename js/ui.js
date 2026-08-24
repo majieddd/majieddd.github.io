@@ -4118,8 +4118,18 @@ const UI = {
       bb.classList.toggle('poor', S.gold < cost);
     }
     const me = Game.sides[0], ai = Game.sides[1];
+    /* Lives IN FLIGHT: stolen by a carrier still walking out, recoverable
+       until it crosses the spawn edge. Summed live from entity state by
+       seat index -- no stored counter to drift -- so whichever seat is
+       viewing, both panels obey the same law. */
+    let meFlight = 0, aiFlight = 0;
+    for (const en of Game.enemies) {
+      if (!en.carrier || en.dead) continue;
+      if (en.hostileTo === me.index) meFlight += en.livesCost;
+      else if (en.hostileTo === ai.index) aiFlight += en.livesCost;
+    }
     e.myGold.textContent = formatNum(me.gold);
-    e.myLives.textContent = me.lives;
+    e.myLives.textContent = me.lives + (meFlight ? ' (' + meFlight + '⚑)' : '');
     e.myTowers.textContent = me.towers.length;
     e.myBar.style.width = (me.lives / me.maxLives * 100) + '%';
     e.aiGold.textContent = formatNum(ai.gold);
@@ -4130,7 +4140,7 @@ const UI = {
        in css/polish.css was scoped `.cmdr.third.down`, which this panel can
        never match -- it is widened to `.cmdr.down` by the same patch.
        BATCH-C/nside */
-    e.aiLives.textContent = ai.defeated ? '☠' : ai.lives;
+    e.aiLives.textContent = ai.defeated ? '☠' : ai.lives + (aiFlight ? ' (' + aiFlight + '⚑)' : '');
     if (e.aiPanel) e.aiPanel.classList.toggle('down', !!ai.defeated);
     /* A third commander needs its own readout, not a squashed join -- and the
        moment the field is not a three-way the panel comes down, or it survives

@@ -1394,6 +1394,17 @@ const ORISON_BOARD_WEIGHT = 60;
    resource the pins cannot see moving. Surges bypass STAT_CEIL. */
 const ORISON_LIVES_MAX = 6;
 
+/* ── THE CARRIER: a leak is no longer instant ─────────────── */
+
+/* Tiles per second a carrier walks BACK toward the spawn edge, and the
+   ceiling of the per-unit rule in Enemy.becomeCarrier: a carrier moves at
+   min(CARRIER_SPEED, 70% of its own walk-in speed), fixed thereafter --
+   immune to slow, haste and freeze alike, so the interception window is
+   authored rather than stackable. 0.62 puts the fastest carriers at the
+   pace of the slowest walkers in the roster (Ironmarch is 0.56) and gives
+   a mid-lane killzone several extra seconds of contact on the way out. */
+const CARRIER_SPEED = 0.62;
+
 /* ── ANTIPHON: THE ANSWER ────────────────────────────────── */
 
 /* Share of the time a chapel actually holds an answer AND has something in

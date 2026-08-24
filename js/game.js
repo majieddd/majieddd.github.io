@@ -2173,6 +2173,24 @@ const Game = {
     this.awardGold(killer, bounty);
     S.stats.kills++;
 
+    /* THE RECOVERY. A dead CARRIER hands every stolen life straight back --
+       restoreLife is the shipping path (maxLives clamp, heal cue, floater,
+       stats.livesRestored) -- and if the body was FRESH when it leaked the
+       corpse still marches on the rival, so recovery and offence are one
+       action. The early return is the value gate: no vault skim, no
+       transmutation, no contagion, no split walking your lane again --
+       bounty was zeroed at conversion (the award above was a no-op; the
+       lives ARE the payment). `reanimated` was set at conversion too, so
+       the generic gate at the bottom of this funnel can never fire for a
+       carrier: the call here is the only reanimate it gets, and only when
+       carrierFresh says the corpse never marched before. */
+    if (e.carrier) {
+      this.restoreLife(e.hostileTo, e.livesCost);
+      if (e.carrierFresh && !this.noReanim) this.reanimate(e);
+      if (killer === this.viewSide) this.spawnBurst(e.x, e.y, 12, '#f87171', 110);
+      return;
+    }
+
     /* Alchemists transmute nearby deaths into permanent power. */
     for (const t of S.towers) {
       if (!t.stats.transmute) continue;
