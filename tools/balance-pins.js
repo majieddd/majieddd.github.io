@@ -31,11 +31,65 @@ window.PINS = (function () {
     Meta.save();
   }
 
+  /* SEEDING, and why it is worth having. Measured: `Game.step` is a pure
+     function of (state, Math.random stream) -- with Math.random replaced by
+     mulberry32 and a FIXED step budget, three trials came back byte-identical
+     (839 draws with no brain, 3462 with the mirror-AI brain in the loop; same
+     wave, lives, gold and enemy count every time). Unseeded, it is not: one
+     map has produced death waves 5, 6, 13, 19, 19, 20 and 21 on this build,
+     wins and losses both. A 4x spread cannot gate a PR the way CONTRIBUTING
+     asks it to, and every re-measurement reads as a regression or a triumph
+     depending on the draw.
+
+     So: pass a seed and a run is reproducible; omit it and you get the old
+     behaviour exactly. Compare a seeded run against the SAME seed, or compare
+     distributions -- never a seeded number against an unseeded one.
+
+     THE FOURTH WAY TO MIS-MEASURE THESE PINS, and it defeats seeding: a seed
+     only reproduces the FIRST run after a page load. Measured on this build,
+     seed 1234, maxed/tier-0/spine:
+
+       fresh page A -> wave 21, steps 27480, loss, lives [0,13]
+       fresh page B -> wave 21, steps 27480, loss, lives [0,13]   IDENTICAL
+       same page, run 1 -> wave 21, steps 27480
+       same page, run 2 -> wave 20, steps 26129   SAME SEED, DIFFERENT RESULT
+
+     Something survives `maxProfile()` + `Game.start()` in memory and changes
+     the second match. That is a real defect and it is why the historical
+     numbers never reproduced. Until it is found: ONE SEEDED RUN PER PAGE LOAD
+     if you want a number you can quote. A sweep inside one page is still fine
+     for a distribution, but do not call it reproducible. */
+  let NATIVE = null;
+
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /* Install the seeded stream. Kept installed for the whole run, because the
+     brain draws from it too and a stream that stops mid-match is worse than
+     no seed at all. `restore()` is idempotent so a caller cannot leave the
+     page with a stubbed Math.random. */
+  function seed(n) {
+    if (NATIVE === null) NATIVE = Math.random;
+    Math.random = mulberry32(n);
+  }
+  function restore() { if (NATIVE !== null) { Math.random = NATIVE; NATIVE = null; } }
+
   /* A maxed run can outlast any single tool call, so the loop is RESUMABLE:
      begin() arms it, tick(n) advances at most n frames and reports. */
   let R = null;
 
-  function begin(mapIdx, diff) {
+  function begin(mapIdx, diff, s) {
+    /* Seed BEFORE Game.start: board generation and the opening draft both
+       draw, so seeding after it would leave the setup unreproducible and only
+       the match body pinned -- which looks seeded and is not. */
+    if (s !== undefined && s !== null) seed(s); else restore();
     Game.start({
       map: MAPS[mapIdx % MAPS.length].id,
       difficulty: diff,
@@ -47,7 +101,8 @@ window.PINS = (function () {
     const brain = Object.create(AI);
     brain.init(Game.sides[0], Game.difficulty);
     brain.loadout = PIN.slice();
-    R = { brain: brain, steps: 0, map: MAPS[mapIdx % MAPS.length].id, err: null };
+    R = { brain: brain, steps: 0, map: MAPS[mapIdx % MAPS.length].id, err: null,
+          seed: (s === undefined ? null : s) };
     return R.map;
   }
 
@@ -76,33 +131,78 @@ window.PINS = (function () {
     const outcome = !done ? 'running'
       : lives[0] <= 0 ? 'loss'
       : lives.slice(1).every(l => l <= 0) ? 'win' : 'capped';
+    /* Hand the stream back the moment the run is over, so a seeded pin cannot
+       leave a stubbed Math.random behind for whatever runs next in the page. */
+    if (done) restore();
     return { done: done, wave: Game.wave, steps: R.steps, err: R.err,
              capped: R.steps >= CAP, map: R.map, state: Game.state,
-             outcome: outcome, lives: lives };
+             outcome: outcome, lives: lives, seed: R.seed };
   }
 
-  function runOne(mapIdx, diff) {
-    begin(mapIdx, diff);
+  function runOne(mapIdx, diff, s) {
+    begin(mapIdx, diff, s);
     let r;
     do { r = tick(20000); } while (!r.done);
-    return { wave: r.wave, steps: r.steps, timeout: r.capped, err: r.err };
+    return { wave: r.wave, steps: r.steps, timeout: r.capped, err: r.err,
+             outcome: r.outcome, map: r.map, seed: r.seed };
   }
 
   function med(a) { const s = a.slice().sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; }
 
+  /* Quartiles, not just a median. With an unseeded run the spread IS the
+     result -- a lone median hides that one map swung 5..21 -- and a reader
+     who sees q1/q3 will not mistake noise for a regression. */
+  function stats(w) {
+    if (!w.length) return { median: null, min: null, max: null, q1: null, q3: null, n: 0 };
+    const s = w.slice().sort((x, y) => x - y);
+    const at = f => s[Math.min(s.length - 1, Math.max(0, Math.round(f * (s.length - 1))))];
+    return { median: med(s), min: s[0], max: s[s.length - 1], q1: at(0.25), q3: at(0.75), n: s.length };
+  }
+
+  /* `seedBase` makes a sweep reproducible: run i uses seedBase + i, so the
+     same call in a later session replays the same matches and a difference is
+     the CODE, not the draw. Omit it and behaviour is exactly as before. */
+  function sweep(n, prep, seedBase) {
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      prep(i);
+      out.push(runOne(i, 'contested',
+                      seedBase === undefined ? undefined : (seedBase + i) >>> 0));
+    }
+    const good = out.filter(r => !r.err);
+    const w = good.map(r => r.wave);
+    return Object.assign(stats(w), {
+      runs: out, errs: out.filter(r => r.err), seedBase: seedBase === undefined ? null : seedBase,
+      wins: good.filter(r => r.outcome === 'win').length,
+      losses: good.filter(r => r.outcome === 'loss').length,
+      lossWaves: good.filter(r => r.outcome === 'loss').map(r => r.wave).sort((a, b) => a - b)
+    });
+  }
+
   return {
     begin: begin, tick: tick, maxProfile: maxProfile, wipe: wipe,
-    fresh(n) {
-      const out = [];
-      for (let i = 0; i < n; i++) { wipe(); out.push(runOne(i, 'contested')); }
-      const w = out.filter(r => !r.err).map(r => r.wave);
-      return { runs: out, median: med(w), max: Math.max.apply(null, w), errs: out.filter(r => r.err) };
+    seed: seed, restore: restore, stats: stats,
+    fresh(n, seedBase) { return sweep(n, function () { wipe(); }, seedBase); },
+    maxed(n, tier, seedBase) { return sweep(n, function () { maxProfile(tier || 0); }, seedBase); },
+    /* Runs the same seed TWICE IN ONE PAGE, which is precisely the case that
+       does NOT reproduce. It is here as a regression test for the state leak,
+       not as proof of seeding: `leaks: true` is the CURRENT, expected answer,
+       and the day it flips to false the leak is fixed and a whole sweep
+       becomes quotable. To prove seeding itself, run `once()` in two fresh
+       page loads and compare -- that pair is byte-identical today. */
+    selfTest(mapIdx, s) {
+      maxProfile(0); const a = runOne(mapIdx || 0, 'contested', s === undefined ? 1234 : s);
+      maxProfile(0); const b = runOne(mapIdx || 0, 'contested', s === undefined ? 1234 : s);
+      const same = a.wave === b.wave && a.steps === b.steps && a.outcome === b.outcome;
+      return { a: a, b: b, leaks: !same,
+               note: same ? 'no leak detected — in-page repeats now reproduce'
+                          : 'EXPECTED TODAY: match state survives maxProfile()+Game.start()' };
     },
-    maxed(n, tier) {
-      const out = [];
-      for (let i = 0; i < n; i++) { maxProfile(tier || 0); out.push(runOne(i, 'contested')); }
-      const w = out.filter(r => !r.err).map(r => r.wave);
-      return { runs: out, median: med(w), max: Math.max.apply(null, w), errs: out.filter(r => r.err) };
+    /* One seeded run, the quotable unit. Use it as the first thing a page
+       does, then reload before the next one. */
+    once(mapIdx, s, tier) {
+      maxProfile(tier || 0);
+      return runOne(mapIdx || 0, 'contested', s === undefined ? 1234 : s);
     }
   };
 })();

@@ -12,7 +12,7 @@ units, 188 art plates. Live on all three surfaces.
 
 ---
 
-## The only three things outstanding
+## The four things outstanding
 
 ### 1. Multiplayer — built, on a branch, NOT merged
 `feature/multiplayer-20.6`. Two humans on two clients over `BroadcastChannel`
@@ -38,6 +38,32 @@ repack costs one more lossy generation. Measured: a byte-identical source
 round-trips to RMSE ~2.2. Harmless once, cumulative forever. Fix is to copy the
 cached bytes through untouched when the cache entry already matches the target
 size.
+
+---
+
+### 4. The balance pins do not reproduce, and one of them never did
+`tools/balance-pins.js`. Measured this session on `main`: maxed/tier-0/`spine`
+produced death waves **5, 6, 13, 19, 19, 20 and 21**, wins and losses both. A 4x
+spread cannot gate a PR the way [`../CONTRIBUTING.md`](../CONTRIBUTING.md) §5
+asks it to, and the documented "median 27" did not reproduce at n=9 (median 7,
+8 wins / 1 loss across the six pin maps).
+
+The harness now takes an optional **seed**, and seeding works — proved by two
+fresh page loads at seed 1234 returning byte-identical results (wave 21, steps
+27480, lives [0,13]). The simulation itself is a pure function of its RNG
+stream: with `Math.random` replaced by mulberry32 and a fixed step budget,
+trials come back byte-identical (839 draws with no brain, 3462 with the
+mirror-AI brain).
+
+**But a seed only reproduces the FIRST run after a page load.** Same page, same
+seed, run 2 gives wave 20 / 26129 steps where run 1 gave wave 21 / 27480. Some
+match state survives `maxProfile()` + `Game.start()`. That is the open defect —
+`PINS.selfTest()` is a regression test for it and returns `leaks: true` today.
+Until it is found, quote **one seeded run per page load**; a sweep in one page
+is a distribution, not a reproducible number.
+
+Re-baselining the two documented pin numbers is blocked on that leak, because
+any median measured today is measured through it.
 
 ---
 
