@@ -1176,6 +1176,56 @@ timestep the engine already runs on is what makes lockstep feasible.
 | 20.7f | BLOOD PRICE's tooltip prints `◈0`. True — no gold changes hands — but it should show a ♥ price. | ✅ shop card, cost cell and tooltip all print **♥** through `Game.towerLifeCost` instead of ◈0 |
 | 20.7g | Rival parity for BLOOD PRICE: `ai.js` scores it through `towerCost` (which returns 0) rather than a life-aware bid. | ✅ **already landed** — verified rather than re-implemented; `Game.bidCost` existed and `ai.js:606` already scored through it. Five assertions added to prove it |
 | 20.7h | **A jammed NULL FIELD stops suppressing**, so a Jammer inside one can jam the field off and free itself. Flagged as interaction, not bug — owner call. | ✅ **called it a hole and closed it**: a jammed NULL FIELD keeps its volume and loses only its riders |
-| 20.7i | Soul-shop inflation never re-modelled at ten towers per faction. | 🔶 modelled — and the finding is that the **+1 step is not the problem, the shared counter is**. Fix lives in `Meta.soulSurcharge`, deferred for file ownership |
-| 20.7k | **Every `--pack` re-encodes every cached webp**, so each repack costs one more lossy generation. Measured: a byte-identical source round-trips to RMSE ~2.2. Harmless once, cumulative forever. | ❌ open — cosmetic but cumulative |
+| 20.7i | Soul-shop inflation never re-modelled at ten towers per faction. | ✅ **closed in Session 21.** The shared counter is gone: `soulPrice(kind, id)` is the only price expression and `chargeSouls(kind, id)` prices AND charges through it. The sharp bug was ORDER DEPENDENCE — CRYO cost 6 souls if you opened the arsenal first and 22 if you recruited first. Migration proved against a legacy save; nobody is charged more |
+| 20.7k | **Every `--pack` re-encodes every cached webp**, so each repack costs one more lossy generation. | ✅ **closed in Session 21.** `write_pack` unpacked each job's target size and never used it — `fit()` was never called from there. Passthrough when size/format/mode already match. Mean RMSE vs the source cache **2.493 → 0.0** across all 188 keys; pack grows +2.34% because the byte saving *was* the loss |
 | 20.7j | Ten pre-existing player-facing talent-name collisions (PERMAFROST, WIDE FIELD, BATTERY, CAPACITOR, CONCENTRATE, WINDLASS, TRIBUTE, SATURATION, CLARITY, BACKBONE). | ✅ **fourteen** renamed, not ten — the sweep compares levels against talents too and found LONG ARM, TITHE, ERASURE and HAEMORRHAGE. Measured: **0 talent-vs-talent collisions across 461 talents** |
+
+---
+
+# SESSION 21 — THE BACKLOG, AND THREE NUMBERS THAT WERE WRONG
+
+Picked up after the previous session was cut off mid-sentence by a weekly usage
+limit. Work is on **`session-21/backlog`** (off `main`) and one commit on
+**`feature/multiplayer-20.6`**. Nothing pushed at time of writing.
+
+## A. Backlog items closed
+
+| # | Item | Status |
+|---|---|---|
+| 20.7k | Art pack re-encoded itself on every `--pack` | ✅ mean RMSE vs source cache **2.493 → 0.0** across 188 keys |
+| 20.7d | `GX_VIEW.x` / `.y` inert | ✅ deleted, after re-proving `js/ui.js:5957` is the only reader and uses `.w`/`.h` alone |
+| 20.7i | Soul-shop shared counter | ✅ per-shop ladders, order-independent, migration proved |
+| — | The interrupted docs handoff | ✅ CONTRIBUTING module table (12 of 16 counts stale, ui.js 3981→6124), README element table (3 of 5 rows wrong), both dead `MULTIPLAYER-HANDOFF.md` links, CI's stale 178 message, setup prose a stranger actually needs |
+| 20.6 | Multiplayer's two failures | ✅ **MPT 19/24 → 29 pass / 0 fail.** Merge still gated on the audit |
+| — | Art docs contradicting shipped art | ✅ BRAND.md carried note 20.4 as live direction for two sessions after the owner reversed it |
+
+## B. Three numbers that were wrong, and now are not
+
+1. **The multiplayer handoff's own diagnosis.** It said "test window, raise
+   7,200 steps to 20,000". The failing run stopped at **tick 4495** on
+   elimination — short of the budget it already had. The real cause was
+   `contract()` reading the local save, so both commanders fielded a **one-tower
+   loadout**. The same root cause explains why the `net.isolation OFF` negative
+   control "failed to fail": a match where nothing happens runs no cosmetic
+   code, so removing cosmetic isolation removed nothing to observe.
+
+2. **The balance pins never reproduced.** maxed/tier-0/`spine` produced death
+   waves **5, 6, 13, 19, 19, 20, 21** — wins and losses both. The documented
+   "median 27" did not reproduce at n=9. The pins are now **seedable**, and the
+   simulation is proved to be a pure function of its RNG stream. The remaining
+   limit is real and written down: a seed only reproduces the **first run per
+   page load**. See BACKLOG item 4.
+
+3. **Krea 2 is ~138 min/image at 1024px, not 83.** Measured end to end on this
+   RTX 4080: load 93 s at 10.4/12 GiB, one 512px plate in 34.6 min. That makes
+   the commander class ~46 GPU-hours and the `foe_` class ~113.
+
+## C. Open, and whose call it is
+
+| Item | Who |
+|---|---|
+| Merge `feature/multiplayer-20.6` | gated on the adversarial audit, then owner |
+| The pin state leak (match state survives `maxProfile()` + `Game.start()`) | next session — it blocks re-baselining both pins |
+| `cmd_cadre` is a Krea 2 plate among twenty SDXL commanders | **owner** — re-render on SDXL, accept it, or commit the GPU hours |
+| The soul price cut (basket 533 → 288 souls) | **owner** — the fix is correct; the magnitude is a balance decision |
+| The fifteen held-back mechanics, "THE HARBINGER ENRAGES", grandfathered saves | **owner**, unchanged from Session 20 |
