@@ -691,6 +691,10 @@ const Game = {
        a parity bug rather than a rendering one. */
     if (openedGround) for (const b of this.brains) b.buildSpots();
 
+    /* Every battle opens on the whole board. A camera carried in from the
+       last one would start a match looking at a corner of a map the player
+       has not seen yet. */
+    this.resetCam();
     this.resize();
     this.renderBackground();
     Sound.resume(); Sound.setIntensity(1); Sound.startMusic(1);
@@ -3799,8 +3803,17 @@ const Game = {
        into a backing store sized for the fitted board, so the field rendered
        cropped and every pointer coordinate was offset. */
     const k = this.dpr * (this.viewScale || 1);
-    ctx.setTransform(k, 0, 0, k, 0, 0);
-    ctx.clearRect(0, 0, this.width, this.height);
+    /* THE CAMERA. At zoom 1 the camera is clamped to the origin and this
+       reduces to exactly the transform above it -- which is the safety
+       property the whole feature rests on: a player who never zooms is
+       playing the board that shipped, pixel for pixel. Cleared in DEVICE
+       space first, because a translated world transform no longer covers the
+       whole backing store. */
+    const z = this.camZoom();
+    const c = this.camClamped();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.setTransform(k * z, 0, 0, k * z, -c.x * k * z, -c.y * k * z);
     ctx.save();
     if (this.shakeAmt > 0.2) ctx.translate(rand(-this.shakeAmt, this.shakeAmt) * 0.16, rand(-this.shakeAmt, this.shakeAmt) * 0.16);
 
@@ -4211,8 +4224,15 @@ const Game = {
    */
   pointerToBoard(evt) {
     const r = this.canvas.getBoundingClientRect();
-    return { x: (evt.clientX - r.left) * (this.width / r.width),
-             y: (evt.clientY - r.top) * (this.height / r.height) };
+    /* THE EXACT INVERSE of the draw transform, and it has to stay that way:
+       the one time these two disagreed the field rendered cropped and every
+       pointer coordinate was offset. At zoom 1 the camera is the origin and
+       both terms below vanish, leaving the plain element-rect ratio this
+       always was. */
+    const z = this.camZoom();
+    const c = this.camClamped();
+    return { x: c.x + (evt.clientX - r.left) * (this.width / r.width) / z,
+             y: c.y + (evt.clientY - r.top) * (this.height / r.height) / z };
   },
 
   pointerToGrid(evt) {
@@ -4514,6 +4534,45 @@ const Game = {
     ctx.restore();
   },
 
+  /* ================================================== THE BATTLE CAMERA ==
+     The board has always been fitted whole to the window, which is right for
+     reading it and wrong for being in it. Zoom is OPT-IN and the identity
+     case is exact: at zoom 1 the camera clamps to the origin, the draw
+     transform reduces to the fitted one, and pointerToBoard reduces to the
+     plain element-rect ratio it always was.
+
+     Every gesture is one nothing else already owns: the wheel, the middle
+     button, the arrow keys and 0. Left-drag belongs to the radial build ring
+     and right-click to cancel, and neither is touched. */
+  cam: { x: 0, y: 0, z: 1 },
+  camZoom() { return clamp((this.cam && this.cam.z) || 1, 1, BATTLE_ZOOM_MAX); },
+  /** The camera's top-left in world pixels, clamped so the view can never
+      leave the board. At zoom 1 the view IS the board, so this is the
+      origin and the transform above collapses to the fitted one. */
+  camClamped() {
+    const z = this.camZoom();
+    const vw = this.width / z, vh = this.height / z;
+    return { x: clamp(this.cam.x, 0, Math.max(0, this.width - vw)),
+             y: clamp(this.cam.y, 0, Math.max(0, this.height - vh)) };
+  },
+  /** Zoom about a fixed world point, so the tile under the cursor stays put. */
+  zoomAt(worldX, worldY, factor) {
+    const z0 = this.camZoom();
+    const z1 = clamp(z0 * factor, 1, BATTLE_ZOOM_MAX);
+    if (z1 === z0) return;
+    this.cam.x = worldX - (worldX - this.cam.x) * (z0 / z1);
+    this.cam.y = worldY - (worldY - this.cam.y) * (z0 / z1);
+    this.cam.z = z1;
+    const c = this.camClamped();
+    this.cam.x = c.x; this.cam.y = c.y;
+  },
+  panBy(dx, dy) {
+    this.cam.x += dx; this.cam.y += dy;
+    const c = this.camClamped();
+    this.cam.x = c.x; this.cam.y = c.y;
+  },
+  resetCam() { if (this.cam) { this.cam.x = 0; this.cam.y = 0; this.cam.z = 1; } },
+
   /* One answer for every board-input gate. 'playing' is the normal case; the
      second clause is D3: an escalation halt the player chose to HOLD is spent
      time, and spending it placing towers is the point of holding. Abilities
@@ -4543,6 +4602,40 @@ const Game = {
           : (this.towerAt(p.gx, p.gy) ? 'pointer' : 'default');
     });
     cv.addEventListener('mouseleave', () => { this.hover.active = false; });
+
+    /* ---- the camera's own gestures ----------------------------------------
+       Deliberately the ones nothing else claims. The wheel zooms about the
+       cursor; the MIDDLE button drags; arrows nudge; 0 recentres (bound with
+       the other keys in main.js). Left-drag stays the build ring's and
+       right-click stays cancel. */
+    cv.addEventListener('wheel', e => {
+      if (!this.boardInteractive()) return;
+      e.preventDefault();
+      const p = this.pointerToBoard(e);
+      this.zoomAt(p.x, p.y, e.deltaY < 0 ? 1.12 : 1 / 1.12);
+    }, { passive: false });
+    let panning = null;
+    cv.addEventListener('pointerdown', e => {
+      if (e.button !== 1) return;                 /* middle only */
+      e.preventDefault();
+      panning = { id: e.pointerId, x: e.clientX, y: e.clientY };
+      cv.setPointerCapture(e.pointerId);
+      cv.style.cursor = 'grabbing';
+    });
+    cv.addEventListener('pointermove', e => {
+      if (!panning || e.pointerId !== panning.id) return;
+      const r = this.canvas.getBoundingClientRect();
+      const z = this.camZoom();
+      this.panBy(-(e.clientX - panning.x) * (this.width / r.width) / z,
+                 -(e.clientY - panning.y) * (this.height / r.height) / z);
+      panning.x = e.clientX; panning.y = e.clientY;
+    });
+    const endPan = e => {
+      if (!panning || (e && e.pointerId !== panning.id)) return;
+      panning = null; cv.style.cursor = '';
+    };
+    cv.addEventListener('pointerup', endPan);
+    cv.addEventListener('pointercancel', endPan);
     cv.addEventListener('click', e => {
       if (!this.boardInteractive()) return;
       Sound.resume();
@@ -4628,7 +4721,10 @@ const Game = {
         /* The threshold is in CSS pixels, so the gesture feels identical at
            every board scale — the player's hand does not scale with the
            fitted canvas, so the number that gates it must not either. */
-        if (Math.hypot(b.x - drag.sx, b.y - drag.sy) * (this.viewScale || 1) < RADIAL_OPEN_PX) return;
+        /* Board distance back to SCREEN pixels, so the ring opens after the
+           same physical drag at any fit -- and at any zoom, which multiplies
+           the same way viewScale does. */
+        if (Math.hypot(b.x - drag.sx, b.y - drag.sy) * (this.viewScale || 1) * this.camZoom() < RADIAL_OPEN_PX) return;
         drag.open = this.openRadial(drag.gx, drag.gy, drag.sx, drag.sy, b.x, b.y);
         if (!drag.open) { drag.live = false; return; }
       }

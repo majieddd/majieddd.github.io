@@ -42,8 +42,15 @@ const FACTIONS = {
       'galaxy’s conscience. To their critics they are a cult that took the ' +
       'free will of everyone who ever joined, and calls the loss a gift.',
     bonusName: 'ILLUMINATED',
-    bonusDesc: 'Every tower you build begins one level higher.',
-    apply: (side) => { side.startLevelBonus = (side.startLevelBonus || 0) + 1; }
+    bonusDesc: 'Every tower you build begins one level higher, and you hold five more lives.',
+    /* The Federation is the DEFENSIVE power and now reads as one at a glance.
+       THE PROCESSION already took every kill-derived body away from them, so
+       what they keep has to be the line itself: a level of quality on every
+       tower, and the depth to survive a wave that gets through. */
+    apply: (side) => {
+      side.startLevelBonus = (side.startLevelBonus || 0) + 1;
+      side.maxLives += 5; side.lives += 5;
+    }
   },
 
   xeno: {
@@ -775,8 +782,10 @@ function originOf(id) {
 const PRESTIGE_BONUS = {
   human:  { desc: '+4 maximum lives per star',
             apply: (s, n) => { s.maxLives += 4 * n; s.lives += 4 * n; } },
-  light:  { desc: '+4% tower damage per star',
-            apply: (s, n) => { s.mods.damage += 0.04 * n; } },
+  /* Defensive prestige for the defensive power: the line heals rather than
+     hits harder, which is the half of them nothing else pays into. */
+  light:  { desc: '+0.25 life regeneration per wave, per star',
+            apply: (s, n) => { s.traits.lifeRegen = (s.traits.lifeRegen || 0) + 0.25 * n; } },
   xeno:   { desc: 'reanimates +8% stronger per star',
             apply: (s, n) => { s.mods.reanim *= (1 + 0.08 * n); } },
   pirate: { desc: '+' + sqGold(120) + ' starting gold per star',

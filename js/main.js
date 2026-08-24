@@ -72,6 +72,22 @@
         Game.speed = Number(k); UI.syncSpeed(); Sound.play('click'); e.preventDefault(); return;
       }
 
+      /* THE CAMERA. Arrows nudge, 0 recentres, +/- zoom about the middle of
+         the view. None of these keys is claimed by anything else on this
+         board, and at zoom 1 the pans are clamped to nothing. */
+      const panStep = TILE * 2;
+      if (e.key === 'ArrowLeft')  { Game.panBy(-panStep, 0); e.preventDefault(); return; }
+      if (e.key === 'ArrowRight') { Game.panBy(panStep, 0);  e.preventDefault(); return; }
+      if (e.key === 'ArrowUp')    { Game.panBy(0, -panStep); e.preventDefault(); return; }
+      if (e.key === 'ArrowDown')  { Game.panBy(0, panStep);  e.preventDefault(); return; }
+      if (k === '0') { Game.resetCam(); Sound.play('click'); e.preventDefault(); return; }
+      if (e.key === '+' || e.key === '=' || e.key === '-' || e.key === '_') {
+        const c = Game.camClamped(), z = Game.camZoom();
+        Game.zoomAt(c.x + Game.width / z / 2, c.y + Game.height / z / 2,
+                    (e.key === '-' || e.key === '_') ? 1 / 1.15 : 1.15);
+        e.preventDefault(); return;
+      }
+
       /* This handler is not a UI method, so it runs with the seat lens OFF and
          a literal 0 here means REAL seat 0 -- in a duel that handed the guest
          the opponent's hotbar and made U, S and Tab inert on their own towers.

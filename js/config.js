@@ -30,6 +30,10 @@ const STAGE_CHROME_PX = 30;      /* #stage padding + the gap beside the sidebar 
    a ring is a heavier interruption than a missed world click, so it asks for
    more travel before it commits. */
 const RADIAL_OPEN_PX = 12;
+/* How far the battle camera may push in. The board is fitted whole at 1, so
+   this is entirely opt-in; past about 2.6 the hand-drawn sprites soften for
+   the same reason viewScale stops at 1.9. */
+const BATTLE_ZOOM_MAX = 2.6;
 
 /* Ring geometry in LOGICAL board units (Game.width/height space, TILE=38),
    never in CSS pixels -- the canvas is fitted by viewScale, so measuring the
@@ -3471,7 +3475,7 @@ const UNIT_SALVAGE_CAP = 9;         /* total, however much wreckage there is   *
    how far past its own maximum a single survivor can be stacked -- three
    deaths onto one Sanctifier was a 600-point ward and an unkillable anchor. */
 const UNIT_VOW_RADIUS = 3.0;        /* tiles the vow reaches                   */
-const UNIT_VOW_SHARE = 0.45;        /* of the dead unit's FULL ward            */
+const UNIT_VOW_SHARE = 0.50;        /* of the dead unit's FULL ward            */
 const UNIT_VOW_OVERCAP = 1.6;       /* ceiling, as a multiple of its own ward  */
 
 /* THE MASS (Xeno). The swarm eats its own dead. SHARE is of the eaten body's
@@ -3480,7 +3484,7 @@ const UNIT_VOW_OVERCAP = 1.6;       /* ceiling, as a multiple of its own ward  *
    with a cap, because an unbounded radius is a hitbox the renderer and the
    splash maths disagree about. */
 const UNIT_MASS_RADIUS = 2.6;       /* tiles the swarm reaches to feed         */
-const UNIT_MASS_SHARE = 0.35;       /* of the dead body's maximum health       */
+const UNIT_MASS_SHARE = 0.40;       /* of the dead body's maximum health       */
 const UNIT_MASS_GROWTH = 0.12;      /* radius gained per meal                  */
 const UNIT_MASS_RADIUS_CAP = 1.5;   /* as a multiple of its authored radius    */
 
@@ -3489,7 +3493,7 @@ const UNIT_MASS_RADIUS_CAP = 1.5;   /* as a multiple of its authored radius    *
    chain-locking a board for five seconds -- the jam is meant to change WHERE
    you kill pirates, never whether you can. */
 const UNIT_SCUTTLE_RADIUS = 1.8;    /* tiles of towers taken offline           */
-const UNIT_SCUTTLE_JAM = 0.85;      /* seconds                                 */
+const UNIT_SCUTTLE_JAM = 1.00;      /* seconds                                 */
 const UNIT_SCUTTLE_COOLDOWN = 3.2;  /* seconds, per defending side             */
 
 /* A death fires one scan of the board. The cap is a guard against a
