@@ -3313,6 +3313,18 @@ const UI = {
         <span class="lo-d-name"><b>${def.name}</b><span class="lo-role">${host.short || host.name}</span></span>
         ${tier ? `<span class="lo-d-cost">${tier.icon} ×${tier.count}</span>` : ''}
       </div>
+      ${/* The painted troop plate, on the screen where troops are CHOSEN.
+            Twenty of these were re-rendered specifically because the army art
+            did not match the commander portraits (ROADMAP 19.25) and then
+            appeared on exactly one surface: the once-ever NEW CONTACT dossier,
+            which only fires for bodies marching AT you -- so a player who
+            fielded a TROOPER every match could go a whole campaign without
+            seeing its painting. Same key namespace as the dossier (`foe_`,
+            units share the enemy registry) and the same artImg contract as
+            the tower panel above: '' for a key the pack has not got, so the
+            five machine soldiers show their procedural sprite and nothing
+            else until their pixels exist. */ ''}
+      ${artImg('foe_' + id, 'lo-d-art', def.name)}
       <div class="lo-chips">
         <span class="lo-d-trait" style="--tc:${def.color}">${trait.label}</span>
         ${at >= 0 ? `<span class="lo-d-in">IN DETACHMENT · ${at + 1}</span>` : ''}

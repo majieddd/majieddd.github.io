@@ -125,7 +125,15 @@ const DIALOGUE = {
     xeno:   ['You are not an enemy. You are an acquisition.',
              'Everything you are will be folded into us by nightfall.'],
     pirate: ['No flags on my hull, no mercy in my hold.',
-             'The swarm eats whoever loses. Try to make it you.']
+             'The swarm eats whoever loses. Try to make it you.'],
+    /* THE PARALLEL speaks for itself. Without this entry the lookup below
+       falls through to `human`, and a machine commander opened every battle
+       with Humanity's line about burying empires -- the one faction whose
+       whole identity is that it is not human, saying so in a human voice.
+       The Parallel only ever REPLIES: it holds no worlds and seats no
+       bosses, so it never opens an exchange and needs no `openers` entry. */
+    robot:  ['You solved this badly for four centuries. We read the logs.',
+             'Nothing personal. You are simply the previous draft.']
   },
   pairs: {
     'seraph|sevra': [

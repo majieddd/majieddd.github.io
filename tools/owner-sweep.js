@@ -517,6 +517,44 @@
        '; air-list gaps: ' + (airMissing.join(' ') || 'none'));
   });
 
+  T('22.13 nothing renders blank, and the art ledger is on the record', function () {
+    /* Art generation is a separate pipeline measured in GPU-hours, so a
+       missing plate is a BACKLOG item and not a failure. What must never
+       regress is the FALLBACK: every registry entry has to render something.
+       Towers are pinned by 22.10; this covers the other three registries and
+       prints the coverage so a further slip is visible rather than silent. */
+    var miss = function (ids, prefix) {
+      return ids.filter(function (id) {
+        return !(typeof ARTPACK !== 'undefined' && ARTPACK[prefix + id]);
+      });
+    };
+    var twr = miss(TOWER_ORDER, 'twr_');
+    var cmd = miss(COMMANDER_ROSTER.map(function (c) { return c.id; }), 'cmd_');
+    var uni = miss(UNIT_ORDER, 'foe_');
+    var fac = miss(Object.keys(FACTIONS), 'fac_');
+    /* The fallbacks, exercised for real rather than assumed. */
+    var blank = [];
+    for (var i = 0; i < COMMANDER_ROSTER.length; i++) {
+      var html = commanderPortrait(COMMANDER_ROSTER[i], 44);
+      if (!html || !String(html).trim()) blank.push('cmd:' + COMMANDER_ROSTER[i].id);
+    }
+    for (var f in FACTIONS) if (!FACTIONS[f].crest && !(typeof ARTPACK !== 'undefined' && ARTPACK['fac_' + f]))
+      blank.push('fac:' + f);
+    /* And every faction a player can swear must have its own battle voice --
+       falling through to human put Humanity's line in a machine's mouth. */
+    var mute = Object.keys(FACTIONS).filter(function (id) {
+      return !(DIALOGUE.replies && DIALOGUE.replies[id]);
+    });
+    ok('22.13 nothing renders blank, and the art ledger is on the record',
+       blank.length === 0 && mute.length === 0,
+       'unpainted — towers ' + twr.length + '/' + TOWER_ORDER.length +
+       ', commanders ' + cmd.length + '/' + COMMANDER_ROSTER.length +
+       ', units ' + uni.length + '/' + UNIT_ORDER.length +
+       ', factions ' + fac.length + '/' + Object.keys(FACTIONS).length +
+       ' · blank renders: ' + (blank.join(' ') || 'none') +
+       ' · mute factions: ' + (mute.join(' ') || 'none'));
+  });
+
   T('19.16 the spawned-HP curve hits the owner three anchors exactly', function () {
     const a = spawnHpPenaltyMul(1), b = spawnHpPenaltyMul(5), c = spawnHpPenaltyMul(10);
     ok('19.16 the spawned-HP curve hits the owner three anchors exactly',
