@@ -986,6 +986,79 @@ const DIFFICULTIES = [
 ];
 
 /* --------------------------------------------------------------------------
+   NEW GAME PLUS — the ramp you choose once you have finished a galaxy.
+
+   A first galaxy is not a difficulty menu; it is the tutorial the campaign
+   never admits to being, and asking a new commander to pick a slope before
+   they know what the slope is made of is how a first run gets abandoned. So
+   the choice arrives exactly when the player has proved they no longer need
+   it: at the start of the SECOND galaxy and every one after.
+
+   VETERAN is the identity element. Its two functions are, deliberately and
+   exactly, the mapping the campaign shipped with, so a NG+ run that takes it
+   plays the same game the last one did -- only against tougher garrisons.
+   Everything campaign-less (skirmish, duels, the Maelstrom, the balance pins)
+   resolves to it, which is why it must never drift.
+
+   The harder ramps pay at EXTRACTION rather than per star, so a player cannot
+   farm the opening system on APEX and abandon the run for the bonus.
+-------------------------------------------------------------------------- */
+const RAMP_PRESETS = {
+  veteran: {
+    id: 'veteran', name: 'VETERAN', tierHpStep: 0.30, soulsMul: 1.00,
+    diffFor: si => (si < 1 ? 'skirmish' : si < 3 ? 'contested' : 'overrun'),
+    escFor: si => Math.floor(si * 0.8),
+    blurb: 'The galaxy as you fought it. Garrisons 30% stronger per tier.'
+  },
+  onslaught: {
+    id: 'onslaught', name: 'ONSLAUGHT', tierHpStep: 0.40, soulsMul: 1.20,
+    diffFor: si => (si < 1 ? 'contested' : si < 3 ? 'overrun' : 'overrun'),
+    escFor: si => Math.floor(si * 0.8) + 1,
+    blurb: 'No gentle opening. Every world escalated once more, +40% per tier, and a fifth more souls at extraction.'
+  },
+  apex: {
+    id: 'apex', name: 'APEX', tierHpStep: 0.50, soulsMul: 1.40,
+    diffFor: () => 'overrun',
+    escFor: si => Math.floor(si * 0.8) + 2,
+    blurb: 'Overrun from the first world to the last, +50% per tier. Two escalations already landed everywhere. Pays 40% more.'
+  }
+};
+const RAMP_DEFAULT = 'veteran';
+
+/* --------------------------------------------------------------------------
+   THE FIRST GALAXY, FLATTENED.
+
+   Measured against a fresh profile the opening system asked for everything at
+   once: eight creature types by wave 15, a miniboss on wave 5 before a
+   fourth tower is affordable, and the authored health curve at full slope.
+   These three tables ease exactly that, and ONLY in the first galaxy's first
+   systems -- every value is indexed by solar system, and every one of them is
+   passed into a battle as an OPTION rather than read from the save, so a
+   skirmish, a duel and the balance pins keep the engine defaults untouched.
+
+   The relief is a TENT, not a discount: it grows to its peak around the wave
+   a fresh commander actually dies on, then closes and rejoins the authored
+   curve EXACTLY at TIER0_EASE_END_WAVE. Past wave 20 the terminus is
+   bit-identical to what it always was, so rounds still end when they end.
+-------------------------------------------------------------------------- */
+const TIER0_HP_EASE = [0.35, 0.15, 0, 0, 0];
+const TIER0_INTRO_EVERY = [3, 2, 2, 2, 2];
+const TIER0_MINIBOSS_DELAY = [5, 0, 0, 0, 0];
+const TIER0_EASE_PEAK_WAVE = 8;
+const TIER0_EASE_END_WAVE = 15;
+
+/** The relief tent. 1.0 everywhere it does not apply, so it is safe to
+    multiply unconditionally into the health multiplier. */
+function tier0ReliefMul(n, ease) {
+  if (!ease || n >= TIER0_EASE_END_WAVE) return 1;
+  if (n <= 1) return 1;
+  const t = n <= TIER0_EASE_PEAK_WAVE
+    ? (n - 1) / (TIER0_EASE_PEAK_WAVE - 1)
+    : (TIER0_EASE_END_WAVE - n) / (TIER0_EASE_END_WAVE - TIER0_EASE_PEAK_WAVE);
+  return 1 - ease * Math.max(0, Math.min(1, t));
+}
+
+/* --------------------------------------------------------------------------
    ASCENSION — the price roughly 2.3x per step against 1.34x power.
 -------------------------------------------------------------------------- */
 /**
@@ -2407,8 +2480,8 @@ function battleRosterFor(map, hostFaction) {
 
 /** The slice of `roster` a wave may draw from. One on wave 1, one more every
     ROSTER_INTRO_EVERY waves, and nothing is ever retired. */
-function rosterAvailable(roster, wave) {
-  const n = 1 + Math.floor(Math.max(0, wave - 1) / ROSTER_INTRO_EVERY);
+function rosterAvailable(roster, wave, every = ROSTER_INTRO_EVERY) {
+  const n = 1 + Math.floor(Math.max(0, wave - 1) / (every || ROSTER_INTRO_EVERY));
   return roster.slice(0, Math.max(1, Math.min(roster.length, n)));
 }
 
@@ -2446,9 +2519,9 @@ function rosterPick(avail, hp, used, salt) {
  * Bosses and minibosses pass through untouched -- exempt from the cap and
  * from the introduction schedule, by the owner's brief.
  */
-function composeWave(n, roster, map, countMul) {
+function composeWave(n, roster, map, countMul, introEvery = ROSTER_INTRO_EVERY) {
   const base = WAVES[(n - 1) % WAVES.length];
-  const avail = rosterAvailable(roster, n);
+  const avail = rosterAvailable(roster, n, introEvery);
   const used = new Set();
 
   /* Every slot this wave has to fill: the template's groups, then the map's
@@ -2475,7 +2548,10 @@ function composeWave(n, roster, map, countMul) {
      body carrying a fraction of its own listed health (measured 0.35x), while
      a heavier slot merely sends two or three of them at full strength. */
   let pinned = -1;
-  if (avail.length > rosterAvailable(roster, n - 1).length) {
+  /* MUST use the same cadence as the line above. Comparing this wave's slice
+     against a DEFAULT-cadence previous wave is how the newcomer pin silently
+     stops firing on a slowed schedule. */
+  if (avail.length > rosterAvailable(roster, n - 1, introEvery).length) {
     const fresh = avail[avail.length - 1], want = ENEMY_TYPES[fresh].hp;
     let best = Infinity;
     slots.forEach((s, i) => {
@@ -3247,6 +3323,29 @@ const PROCESSION_DAMP = 0.35;
    whole faction plans around. Feeding is the combo -- kills near a clutch
    hurry it -- and the cap turns overflow into a bigger feed rather than a
    loss, so a full nest still rewards killing. */
+/* THE PARALLEL's bootstrap. Every tower wakes 12% down on damage, rate and
+   range and recovers 2% a wave, so the faction is the worst in the game for
+   its first six waves and the best from the thirteenth. Break-even lands
+   around wave 7 -- deliberately after the point a fresh commander is usually
+   already in trouble, because a drawback that never hurts is not a drawback.
+   The ramp is a pure function of the wave count, which is why it needs no
+   state of its own and cannot drift between two clients. */
+const ROBOT_BOOT_FLOOR = 0.12;
+const ROBOT_BOOT_STEP = 0.02;
+const ROBOT_BOOT_WAVES = 12;
+
+/* THE RELAY. A Parallel body that dies on a rival's lane leaves a working
+   node where it fell, and the machines behind it walk through faster and
+   harder. This is the faction's combo: not one strong unit but a chain of
+   ordinary ones, each paid for by the last one's death. Non-stacking -- the
+   single strongest node in reach applies -- because a corridor of six nodes
+   should be a road, not a runway. */
+const UNIT_RELAY_RADIUS = 1.8;
+const UNIT_RELAY_TIME = 6.0;
+const UNIT_RELAY_SPEED = 0.25;
+const UNIT_RELAY_ARMOR = 2;
+const UNIT_RELAY_MAX = 6;
+
 const XENO_INC_SHARE = 0.75;
 const XENO_INC_BASE_SEC = 6.0;
 const XENO_INC_SQRT_SEC = 0.55;

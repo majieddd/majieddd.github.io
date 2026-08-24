@@ -78,12 +78,66 @@ const FACTIONS = {
     bonusName: 'PLUNDER',
     bonusDesc: 'Begin every battle with enough extra gold for one more tower.',
     apply: (side) => { side.gold += sqGold(340); }
+  },
+
+  /* THE FIFTH BANNER, and the only one nobody is offered.
+
+     Three powers want the galaxy and a fourth wants everything. The machines
+     wanted none of it until somebody finished a war in front of them. They
+     are not a faction the galaxy fights over -- no world flies their colours,
+     no seat is theirs -- which is why they are absent from FACTION_ORDER and
+     present here: real enough to swear to, invisible until earned.
+
+     BOOTSTRAP is the achilles heel as a faction-wide law. The Parallel wakes
+     WORSE than everyone and compounds past them, so its early game is the
+     hardest in the roster and its late game is the best -- the trade the
+     owner asked for, stated once at the top and paid back in startWave. */
+  robot: {
+    id: 'robot', name: 'THE PARALLEL', short: 'Parallel',
+    color: '#e2e8f0', accent: '#ffffff', icon: '⬡',
+    creed: 'Iterate. Perfect. Replace.',
+    tagline: 'Machines that watched a galaxy fall and decided they could do it better.',
+    crest: '<svg viewBox="0 0 40 40"><path d="M20 4l13.9 8v16L20 36 6.1 28V12z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 13l7 4v8l-7 4-7-4v-8z" fill="currentColor" opacity=".85"/></svg>',
+    blurb:
+      'The Vigil were built to guard, and guarding taught them to watch. What ' +
+      'they watched was every power in the galaxy solving the same problem ' +
+      'badly, for centuries, and never once writing down the answer. The ' +
+      'Parallel is what woke up when the machines stopped waiting to be told. ' +
+      'They begin every engagement at a disadvantage and consider it a ' +
+      'rounding error: given enough of the battle, they arrive at the optimum.',
+    bonusName: 'BOOTSTRAP',
+    bonusDesc: 'Towers wake at −12% damage, rate and range, and run 2% hotter every wave — +12% past baseline once fully lit.',
+    apply: (side) => {
+      side.mods.damage -= ROBOT_BOOT_FLOOR;
+      side.mods.rate -= ROBOT_BOOT_FLOOR;
+      side.mods.range -= ROBOT_BOOT_FLOOR;
+      /* The ramp is paid back in startWave, because waves are the only clock
+         both seats and both clients agree on. */
+      side.bootUp = true;
+    }
   }
 };
 
-const FACTION_ORDER = ['human', 'light', 'xeno', 'pirate'];
+/* THE GALAXY'S POWERS, and everyone who owns soldiers.
 
-/** Everyone who is not you is a target; pirates are a target for everyone. */
+   FACTION_ORDER is the list of powers the galaxy is fought over: it seeds
+   world ownership, deals arena seats, and answers "who are my rivals". The
+   Parallel holds no worlds and seats no bosses, so it must never appear
+   there -- adding it would put machine garrisons on the map and machine
+   commanders in the seats a campaign is built to take.
+
+   POWER_ORDER is the list of powers that HAVE TROOPS, which is a different
+   question and the one the unit registries ask. */
+const FACTION_ORDER = ['human', 'light', 'xeno', 'pirate'];
+const POWER_ORDER = FACTION_ORDER.concat(['robot']);
+/* Real in FACTIONS, absent from the faction screen until the install has
+   conquered a galaxy. Secret means secret: there is no locked teaser card,
+   because a locked card is an advertisement. */
+const SECRET_FACTIONS = ['robot'];
+
+/** Everyone who is not you is a target; pirates are a target for everyone.
+    Reads FACTION_ORDER, so a Parallel commander faces all four powers and
+    none of them ever faces the Parallel on the map. */
 function rivalFactionsOf(id) { return FACTION_ORDER.filter(f => f !== id); }
 
 /* --------------------------------------------------------------------------
@@ -190,7 +244,34 @@ const FACTION_ENEMY_TYPES = {
   vanguard:    { id:'vanguard', faction:'human', name:'Vanguard', hp:465, speed:0.72, armor:12, bounty:48, lives:3, radius:16,
                  color:'#06b6d4', shape:'vanguard',
                  aura:{ radius:2.6, armor:9, tint:'#06b6d4', label:'LOCKSTEP' },
-                 desc:'AURA \u2014 the formation gives +9 armour within 2.6 tiles. Humanity endures by standing closer together.' }
+                 desc:'AURA \u2014 the formation gives +9 armour within 2.6 tiles. Humanity endures by standing closer together.' },
+
+  /* THE PARALLEL -- no proc, no gamble, no appetite. Every other power's
+     roster has a trick: a ward that reforms, a body that splits, a corpse
+     that gets up twice. These five have none. What they have is the four
+     powers' stat lines with the waste taken out -- a little more armour for
+     the mass, a little less speed for the armour, and a doctrine that makes
+     the SECOND body better than the first because the first one died here.
+     One light, two middling, two heavy, on the same ladder as everyone. */
+  stitch:      { id:'stitch', faction:'robot', name:'Stitch', hp:70, speed:1.45, armor:4, bounty:11, lives:1, radius:9,
+                 color:'#cbd5e1', shape:'diamond',
+                 elemWeak:{ storm:0.35 },
+                 desc:'A repair drone that decided repairing the enemy line was inefficient. Cheap, quick, and never quite alone.' },
+  fabricant:   { id:'fabricant', faction:'robot', name:'Fabricant', hp:150, speed:1.05, armor:6, bounty:22, lives:1, radius:11,
+                 color:'#d5dde7', shape:'hex',
+                 elemResist:{ fire:0.3 }, elemWeak:{ storm:0.3 },
+                 desc:'Printed on the march, to a pattern revised after every death. It runs cool and does not panic.' },
+  splicer:     { id:'splicer', faction:'robot', name:'Splicer', hp:240, speed:0.95, armor:7, bounty:34, lives:2, radius:12,
+                 color:'#e2e8f0', shape:'cross',
+                 elemResist:{ frost:0.35 },
+                 desc:'Carries survey gear and a cutting rig. Where it falls on your ground, the ground stops being the shape you built for.' },
+  gantry:      { id:'gantry', faction:'robot', name:'Gantry', hp:390, speed:0.78, armor:11, bounty:44, lives:3, radius:15,
+                 color:'#eef2f7', shape:'warden', pullImmune:true,
+                 desc:'A walking scaffold. It cannot be displaced, and everything the Parallel sends behind it arrives standing.' },
+  omniframe:   { id:'omniframe', faction:'robot', name:'Omniframe', hp:480, speed:0.7, armor:13, bounty:49, lives:3, radius:16,
+                 color:'#f8fafc', shape:'vanguard',
+                 aura:{ radius:2.8, armor:7, tint:'#f8fafc', label:'CONSENSUS' },
+                 desc:'AURA \u2014 +7 armour within 2.8 tiles. The chassis every earlier chassis was a draft of.' }
 };
 Object.assign(ENEMY_TYPES, FACTION_ENEMY_TYPES);
 
@@ -209,7 +290,7 @@ const MACHINE_HOST = { id: 'vigil', name: 'THE VIGIL', short: 'Vigil',
     battle roster introduces them in. Derived, so a new unit joins its army by
     carrying a `faction` and nothing else. */
 const FACTION_ENEMIES = {};
-for (const f of FACTION_ORDER) FACTION_ENEMIES[f] = [];
+for (const f of POWER_ORDER) FACTION_ENEMIES[f] = [];
 for (const id in ENEMY_TYPES) {
   const f = ENEMY_TYPES[id].faction;
   if (f && FACTION_ENEMIES[f]) FACTION_ENEMIES[f].push(id);
@@ -242,11 +323,11 @@ for (const f in FACTION_ENEMIES)
    a reward that does nothing, which is this codebase's signature bug wearing a
    different hat. */
 const FACTION_UNITS = {};
-for (const f of FACTION_ORDER) FACTION_UNITS[f] = FACTION_ENEMIES[f].filter(musterSendable);
+for (const f of POWER_ORDER) FACTION_UNITS[f] = FACTION_ENEMIES[f].filter(musterSendable);
 
 /** Every unit id, in power order then ladder order. The talent trees, the
     profile normalisation and the soul shop all enumerate from this one list. */
-const UNIT_ORDER = FACTION_ORDER.reduce((a, f) => a.concat(FACTION_UNITS[f]), []);
+const UNIT_ORDER = POWER_ORDER.reduce((a, f) => a.concat(FACTION_UNITS[f]), []);
 
 /** The power a body answers to, or null for a neutral machine. The gate reads
     this, so a machine -- which answers to nobody -- is legal to everyone. */
@@ -335,6 +416,17 @@ const UNIT_DOCTRINES = {
        WHERE you want to kill rather than how much you have to. */
     desc: 'Nothing is taken intact. A pirate that dies takes the guns that ' +
           'killed it offline for a moment.'
+  },
+
+  robot: {
+    id: 'relay', faction: 'robot', name: 'RELAY', color: '#e2e8f0',
+    /* The other four doctrines act on the ENEMY -- they take armour, share
+       health, grow the swarm, jam the guns. This one acts on the Parallel
+       itself, which is the whole difference between them and everybody else:
+       a machine that dies has not lost, it has SURVEYED. What it leaves is
+       infrastructure, and the next one through spends it. */
+    desc: 'A machine that dies becomes a relay on the lane. Everything the ' +
+          'Parallel sends past it moves faster and armoured heavier.'
   }
 };
 
@@ -397,8 +489,8 @@ const SUMMON_DOCTRINES = {
     powerPerBuy: POWER_PER_BUY_PIRATE, powerCap: Infinity, aiPressureMul: 1.25, aiMinWave: 3,
     desc: 'Nothing rises free under this flag. Every body is bought — and neither your POWER nor your ECON has a ceiling.'
   },
-  robotic: {
-    id: 'robotic', name: 'THE LATTICE', onKill: 'clone', scheduler: false, noPurchase: true,
+  robot: {
+    id: 'robot', name: 'THE LATTICE', onKill: 'clone', scheduler: false, noPurchase: true,
     incomeCapPct: MUSTER_INCOME_CAP_PCT, costGrowth: MUSTER_COST_GROWTH, costSteps: MUSTER_COST_STEPS,
     powerPerBuy: 0, powerCap: 0,
     desc: 'Every kill returns as itself, exactly as it fell. The Lattice does not sell, and the Lattice does not buy.'
@@ -407,7 +499,7 @@ const SUMMON_DOCTRINES = {
 /* FINGERPRINT INDEX. Net.fingerprint mixes the POSITION of a doctrine in this
    array, so two builds must agree on the order or a duel desyncs while both
    clients believe they are right. Append only -- never reorder. */
-const DOCTRINE_ORDER = ['human', 'light', 'xeno', 'pirate', 'robotic'];
+const DOCTRINE_ORDER = ['human', 'light', 'xeno', 'pirate', 'robot'];
 
 /* --------------------------------------------------------------------------
    UNIT TALENTS (19.13)
@@ -456,6 +548,12 @@ const UNIT_DOCTRINE_TALENTS = {
     { id:'u_p0b', row:0, col:1, name:'FENCE',        desc:'+35% of the income a summon adds.',         mods:{ incomeMul:1.35 } },
     { id:'u_p1a', row:1, col:0, name:'CUT ENGINES',  desc:'+20% march speed.',                         mods:{ speedMul:1.20 } },
     { id:'u_p1b', row:1, col:1, name:'PRESS-GANG',   desc:'+30% bodies per summon.',                   mods:{ countMul:1.30 } }
+  ],
+  robot: [
+    { id:'u_r0a', row:0, col:0, name:'HOT NODES',    desc:'A relay burns 50% longer.',                 mods:{ relayMul:1.50 } },
+    { id:'u_r0b', row:0, col:1, name:'ASSEMBLY REBATE',desc:'A copy costs 15% less.',                  mods:{ costMul:0.85 } },
+    { id:'u_r1a', row:1, col:0, name:'CASE HARDENING',desc:'+3 armour.',                               mods:{ armorAdd:3 } },
+    { id:'u_r1b', row:1, col:1, name:'PRINT RUN',    desc:'+25% bodies per copy.',                     mods:{ countMul:1.25 } }
   ]
 };
 
@@ -505,7 +603,18 @@ const UNIT_SIGNATURE_TALENTS = {
   wrecker:     [{ name:'MORE SPARES',    desc:'+25% health.',                         mods:{ hpMul:1.25 } },
                 { name:'POWDER',         desc:'A scuttle jams 60% longer.',           mods:{ scuttleMul:1.60 } }],
   ironhulk:    [{ name:'WELDED LAYERS',  desc:'+5 armour.',                           mods:{ armorAdd:5 } },
-                { name:'BALLAST',        desc:'+30% slow resistance.',                mods:{ slowResistAdd:0.30 } }]
+                { name:'BALLAST',        desc:'+30% slow resistance.',                mods:{ slowResistAdd:0.30 } }],
+
+  stitch:      [{ name:'SWARM PRINT',    desc:'+35% bodies per copy.',                mods:{ countMul:1.35 } },
+                { name:'CONDUCTIVE MESH',desc:'A relay burns 60% longer.',            mods:{ relayMul:1.60 } }],
+  fabricant:   [{ name:'SELF-PATCH',     desc:'Regrows 4% of its health a second.',   mods:{ regen:0.040 } },
+                { name:'COLD RATED',     desc:'+25% slow resistance.',                mods:{ slowResistAdd:0.25 } }],
+  splicer:     [{ name:'LONG SPLICE',    desc:'A spliced lane stays open twice as long.', mods:{ spliceMul:2.00 } },
+                { name:'ARMOURED CASING',desc:'+4 armour.',                           mods:{ armorAdd:4 } }],
+  gantry:      [{ name:'RE-ARMER',       desc:'A relay burns 50% longer.',            mods:{ relayMul:1.50 } },
+                { name:'BALLAST RACKS',  desc:'+25% health.',                         mods:{ hpMul:1.25 } }],
+  omniframe:   [{ name:'OVERBUILT',      desc:'+5 armour.',                           mods:{ armorAdd:5 } },
+                { name:'CROWN NODE',     desc:'+20% health and a relay burns 40% longer.', mods:{ hpMul:1.20, relayMul:1.40 } }]
 };
 
 /**
@@ -536,7 +645,11 @@ for (const id of UNIT_ORDER) {
 const UNIT_FIELD_IDENTITY = Object.freeze({
   countMul: 1, costMul: 1, incomeMul: 1,
   hpMul: 1, armorAdd: 0, speedMul: 1, shieldMul: 1, regen: 0, slowResistAdd: 0,
-  salvageMul: 1, vowMul: 1, massMul: 1, scuttleMul: 1
+  salvageMul: 1, vowMul: 1, massMul: 1, scuttleMul: 1,
+  /* THE PARALLEL's two. Each has exactly one reader -- relayMul in the relay
+     node's lifetime, spliceMul in the spliced lane's -- because a field
+     nothing reads is a talent that lies about what it does. */
+  relayMul: 1, spliceMul: 1
 });
 
 /**
@@ -667,7 +780,12 @@ const PRESTIGE_BONUS = {
   xeno:   { desc: 'reanimates +8% stronger per star',
             apply: (s, n) => { s.mods.reanim *= (1 + 0.08 * n); } },
   pirate: { desc: '+' + sqGold(120) + ' starting gold per star',
-            apply: (s, n) => { s.gold += sqGold(120) * n; } }
+            apply: (s, n) => { s.gold += sqGold(120) * n; } },
+  /* The Parallel's prestige shortens the disadvantage rather than raising the
+     ceiling: the lattice lights one wave sooner per star. Written here, read
+     once in startWave's bootstrap block -- one writer, one reader. */
+  robot:  { desc: 'the lattice lights one wave sooner per star',
+            apply: (s, n) => { s.traits.bootAdvance = (s.traits.bootAdvance || 0) + n; } }
 };
 function applyPrestigeBonus(side, factionId, stars) {
   if (!stars) return;

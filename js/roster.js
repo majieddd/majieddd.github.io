@@ -456,6 +456,167 @@ const COMMANDER_ROSTER = [
        ['TERROR','⊛','+13% more rate.', t=>t.rate+=0.13],
        ['ABSOLUTE','∞','+16% more rate and +10% range.', t=>{t.rate+=0.16;t.rng+=0.10;}]]
     ])
+  },
+
+  /* ======================================================================
+     THE PARALLEL — the fifth banner, and the machines' answer to the four.
+
+     Every one of these COMPILES: it opens the battle weaker than the
+     commander it was copied from and rewrites itself as the battle teaches
+     it, crossing the original somewhere in the middle and finishing past
+     them. That is the owner's achilles heel stated as an engine rather than
+     as a number -- the drawback is real and front-loaded, the payoff is real
+     and needs the match to last.
+
+     The four clones are copies of the four most MECHANICALLY singular
+     commanders in the roster: the only owner of the ascension identity, the
+     only flat immunity, the only unbounded scaler, and the only commander
+     who takes a penalty to pay for a bonus. A copy of a commander who was
+     merely strong would have nothing to distort.
+     ====================================================================== */
+  {
+    id: 'axiom', faction: 'robot', name: 'AXIOM', title: 'The First Draft',
+    color: '#e2e8f0', icon: '⬡', free: true,
+    blurb: 'The first machine to finish a thought it was not given. Everything the Parallel is began as a note AXIOM made about somebody else\'s war.',
+    abilities: ['focusfire', 'dampen'],
+    trait: { name: 'BOOT SEQUENCE',
+      desc: 'Begins at −6% to every statistic and recovers 3% of it every wave, past baseline by the tenth.',
+      apply: t => { t.dmg -= 0.06; t.rate -= 0.06; t.rng -= 0.06; } },
+    compile: { name: 'BOOT SEQUENCE', metric: 'waves',
+      desc: 'Recompiles on a schedule. It needs nothing from you but time.',
+      levels: [
+        { at: 3,  desc: 'first pass — +4% damage and rate', apply: (t, S, m) => { m.damage += 0.04; m.rate += 0.04; } },
+        { at: 6,  desc: 'second pass — +4% more, and +4% range', apply: (t, S, m) => { m.damage += 0.04; m.rate += 0.04; m.range += 0.04; } },
+        { at: 10, desc: 'optimal — +6% damage, rate and range', apply: (t, S, m) => { m.damage += 0.06; m.rate += 0.06; m.range += 0.06; } },
+        { at: 15, desc: 'rewritten — +8% damage and +8% rate', apply: (t, S, m) => { m.damage += 0.08; m.rate += 0.08; } }
+      ] },
+    tech: chart('x', [
+      [['PARSE','◎','+9% damage.', t=>t.dmg+=0.09],
+       ['REWRITE','◉','+12% more damage.', t=>t.dmg+=0.12],
+       ['OPTIMAL','★','+15% more damage.', t=>t.dmg+=0.15]],
+      [['CLOCK UP','⊕','+9% rate.', t=>t.rate+=0.09],
+       ['PIPELINE','⊛','+12% more rate.', t=>t.rate+=0.12],
+       ['UNROLLED','∞','Compiles arrive one level sooner.', t=>t.compileFloor=(t.compileFloor||0)+1]],
+      [['SURVEY','◈','+10% range.', t=>t.rng+=0.10],
+       ['TELEMETRY','⌖','+8% more range and +6% status.', t=>{t.rng+=0.08;t.status+=0.06;}],
+       ['CONSENSUS','✷','+10% damage, rate and range.', t=>{t.dmg+=0.10;t.rate+=0.10;t.rng+=0.10;}]]
+    ])
+  },
+
+  {
+    id: 'nyx_r', faction: 'robot', name: 'NYX-R', title: 'The Cold Boot',
+    color: '#cbd5e1', icon: '⟲',
+    blurb: 'A copy of the Overclocker with the recklessness compiled out. It ascends slower than she did, then never stops.',
+    abilities: ['overclock', 'smokescreen'],
+    trait: { name: 'COLD BOOT',
+      desc: 'Ascension costs 10% MORE at first, and every ascension you complete cuts it further — past her 25% discount by the fourth.',
+      apply: t => { t.ascCostMul = 1.10; t.surgeEvery = 1; } },
+    compile: { name: 'COLD BOOT', metric: 'asc',
+      desc: 'Every ascension teaches it the next one. Where NYX is cheapest at the start, this is cheapest at the end.',
+      levels: [
+        { at: 1, desc: 'first ascension — cost back to normal', apply: t => { t.ascCostMul = 1.00; } },
+        { at: 2, desc: 'cost 0.85, +6% ascension damage', apply: t => { t.ascCostMul = 0.85; t.ascDamage = (t.ascDamage || 0) + 0.06; } },
+        { at: 4, desc: 'cost 0.68 — past the original', apply: t => { t.ascCostMul = 0.68; } },
+        { at: 6, desc: 'cost 0.55, and +10% per ascension held', apply: t => { t.ascCostMul = 0.55; t.perAscDamage = (t.perAscDamage || 0) + 0.10; } }
+      ] },
+    tech: chart('y', [
+      [['CORE HEAT','◎','+9% damage.', t=>t.dmg+=0.09],
+       ['RECLOCK','◉','+12% more damage.', t=>t.dmg+=0.12],
+       ['REDLINED','★','+8% per ascension held.', t=>t.perAscDamage=(t.perAscDamage||0)+0.08]],
+      [['PRE-FETCH','⊕','Compiles arrive one level sooner.', t=>t.compileFloor=(t.compileFloor||0)+1],
+       ['BRANCH HINT','⊛','+11% rate.', t=>t.rate+=0.11],
+       ['SPECULATIVE','∞','Compiles arrive one level sooner again.', t=>t.compileFloor=(t.compileFloor||0)+1]],
+      [['HEATSINK','◈','+9% rate.', t=>t.rate+=0.09],
+       ['LIQUID COOLED','⌖','+8% ascension damage.', t=>t.ascDamage=(t.ascDamage||0)+0.08],
+       ['ABSOLUTE ZERO','✷','+12% damage and +10% rate.', t=>{t.dmg+=0.12;t.rate+=0.10;}]]
+    ])
+  },
+
+  {
+    id: 'lumen_r', faction: 'robot', name: 'LUMEN-R', title: 'The Hardened',
+    color: '#f1f5f9', icon: '⛨',
+    blurb: 'The Warden\'s immunity was a fact about the Warden. This one has to earn it, by being jammed enough times to understand jamming.',
+    abilities: ['focusfire', 'sanctify'],
+    trait: { name: 'INTRUSION TRAINING',
+      desc: 'Begins with NO jam protection. Every intrusion against you hardens it — total immunity once it has seen enough.',
+      apply: t => { t.jamResist = 0; } },
+    compile: { name: 'INTRUSION TRAINING', metric: 'jams',
+      desc: 'Learns from being attacked. Against a board that never jams, it stays a defensive commander with a very good chart.',
+      levels: [
+        { at: 2,  desc: 'partial hardening — 35% jam resistance', apply: t => { t.jamResist = Math.max(t.jamResist || 0, 0.35); } },
+        { at: 5,  desc: '70% jam resistance', apply: t => { t.jamResist = Math.max(t.jamResist || 0, 0.70); } },
+        { at: 9,  desc: 'IMMUNE — and +8% status', apply: t => { t.jamImmune = true; t.status += 0.08; } },
+        { at: 14, desc: 'counter-intrusion — +10% damage and +10% rate', apply: t => { t.dmg += 0.10; t.rate += 0.10; } }
+      ] },
+    tech: chart('z', [
+      [['SHIELDING','◎','+9% damage.', t=>t.dmg+=0.09],
+       ['FARADAY','◉','+12% more damage.', t=>t.dmg+=0.12],
+       ['GROUNDED','★','+15% more damage.', t=>t.dmg+=0.15]],
+      [['WATCHDOG','⊕','Compiles arrive one level sooner.', t=>t.compileFloor=(t.compileFloor||0)+1],
+       ['TRIPWIRE','⊛','+10% status.', t=>t.status+=0.10],
+       ['LOCKOUT','∞','Compiles arrive one level sooner again.', t=>t.compileFloor=(t.compileFloor||0)+1]],
+      [['BULKHEAD','◈','+3 lives.', (t,s)=>{ if(s) s.maxLives+=3; }],
+       ['REDUNDANT','⌖','+10% rate.', t=>t.rate+=0.10],
+       ['UNBREACHED','✷','+12% range and +10% status.', t=>{t.rng+=0.12;t.status+=0.10;}]]
+    ])
+  },
+
+  {
+    id: 'mawlord_r', faction: 'robot', name: 'MAWLORD-R', title: 'The Starved Set',
+    color: '#e2e8f0', icon: '⌬',
+    blurb: 'A copy of the Devourer trained on no data at all. It begins knowing nothing about killing and ends knowing more than he does.',
+    abilities: ['ravenous', 'consume'],
+    trait: { name: 'DATASET STARVED',
+      desc: 'No kill ramp at all to begin with. Kills train it — and once trained it ramps harder than the original, forever.',
+      apply: t => { t.killRamp = 0; t.goldMul += 0.10; } },
+    compile: { name: 'DATASET STARVED', metric: 'kills',
+      desc: 'Every kill is a sample. The curve is flat until the set is large enough to mean anything.',
+      levels: [
+        { at: 40,  desc: 'first fit — the ramp begins', apply: t => { t.killRamp = 0.00030; } },
+        { at: 120, desc: 'converging — ramp 0.00055', apply: t => { t.killRamp = 0.00055; } },
+        { at: 260, desc: 'past the original — ramp 0.00075', apply: t => { t.killRamp = 0.00075; } },
+        { at: 450, desc: 'overfit — ramp 0.00095 and +12% kill gold', apply: t => { t.killRamp = 0.00095; t.goldMul += 0.12; } }
+      ] },
+    tech: chart('q', [
+      [['SAMPLE','◎','+9% damage.', t=>t.dmg+=0.09],
+       ['CLASSIFY','◉','+12% more damage.', t=>t.dmg+=0.12],
+       ['GENERALISE','★','+16% more damage.', t=>t.dmg+=0.16]],
+      [['BATCH','⊕','Compiles arrive one level sooner.', t=>t.compileFloor=(t.compileFloor||0)+1],
+       ['AUGMENT','⊛','+20% kill gold.', t=>t.goldMul+=0.20],
+       ['SYNTHETIC','∞','Compiles arrive one level sooner again.', t=>t.compileFloor=(t.compileFloor||0)+1]],
+      [['PRUNE','◈','+10% rate.', t=>t.rate+=0.10],
+       ['QUANTISE','⌖','+13% more rate.', t=>t.rate+=0.13],
+       ['DISTILLED','✷','+10% damage and +10% range.', t=>{t.dmg+=0.10;t.rng+=0.10;}]]
+    ])
+  },
+
+  {
+    id: 'dregg_r', faction: 'robot', name: 'DREGG-R', title: 'The Audit',
+    color: '#cbd5e1', icon: '⛓',
+    blurb: 'The Warlord paid for his strength with a worse economy. The Audit runs the same books and balances them by wave nine.',
+    abilities: ['broadside', 'dampen'],
+    trait: { name: 'CAPITAL AUDIT',
+      desc: '+12% damage and rate, and price growth 25% steeper — every gold you invest in the board pays the penalty down.',
+      apply: t => { t.dmg += 0.12; t.rate += 0.12; t.costGrowthMul = 1.25; } },
+    compile: { name: 'CAPITAL AUDIT', metric: 'invested',
+      desc: 'Reads the ledger, not the clock. Build and upgrade and the penalty retires itself; sit on your gold and it never does.',
+      levels: [
+        { at: 900,  desc: 'reconciled — growth 1.12', apply: t => { t.costGrowthMul = 1.12; } },
+        { at: 2200, desc: 'balanced — growth 1.00', apply: t => { t.costGrowthMul = 1.00; } },
+        { at: 4200, desc: 'in credit — growth 0.88 and +12% kill gold', apply: t => { t.costGrowthMul = 0.88; t.goldMul += 0.12; } },
+        { at: 7000, desc: 'audited — growth 0.78 and +10% damage', apply: t => { t.costGrowthMul = 0.78; t.dmg += 0.10; } }
+      ] },
+    tech: chart('j', [
+      [['LINE ITEM','◎','+10% damage.', t=>t.dmg+=0.10],
+       ['WRITE-DOWN','◉','+13% more damage.', t=>t.dmg+=0.13],
+       ['SEIZURE','★','+16% more damage.', t=>t.dmg+=0.16]],
+      [['DEPRECIATE','⊕','Sells return 88%.', t=>t.sellRate=0.88],
+       ['AMORTISE','⊛','Upgrades cost 12% less.', t=>t.upgradeMul*=0.88],
+       ['SETTLED','∞','Compiles arrive one level sooner.', t=>t.compileFloor=(t.compileFloor||0)+1]],
+      [['LEVY','◈','+16% kill gold.', t=>t.goldMul+=0.16],
+       ['ARREARS','⌖','+10% rate.', t=>t.rate+=0.10],
+       ['LIQUIDATED','✷','+20% kill gold and +8% damage.', t=>{t.goldMul+=0.20;t.dmg+=0.08;}]]
+    ])
   }
 ];
 

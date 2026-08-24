@@ -275,6 +275,133 @@
        ROBOTIC_UNLOCK_ORDER.length + ' buyable with souls');
   });
 
+  /* ---- Session 22: the summoning doctrines, NG+ and the flattening ---- */
+
+  T('22.1 every seat resolves the rite its commander carries', function () {
+    Game.start({ map: MAPS[0].id, difficulty: 'contested', loadout: PIN.slice(),
+                 commander: COMMANDERS[0].id, skirmish: true });
+    var bad = [];
+    for (var i = 0; i < Game.sides.length; i++) {
+      var S = Game.sides[i];
+      var want = (S.commander && S.commander.faction) || S.faction || 'human';
+      if (S.doctrine !== want) bad.push(i + ':' + S.doctrine + '!=' + want);
+      if (!SUMMON_DOCTRINES[S.doctrine]) bad.push(i + ':unknown ' + S.doctrine);
+    }
+    ok('22.1 every seat resolves the rite its commander carries', bad.length === 0,
+       Game.sides.length + ' seats, mismatches: ' + (bad.join(' ') || 'none'));
+  });
+
+  T('22.2 a rite may change the shell a kill returns in, never the mass', function () {
+    Game.start({ map: MAPS[0].id, difficulty: 'contested', loadout: PIN.slice(),
+                 commander: COMMANDERS[0].id, skirmish: true, doctrineOverrides: { 0: 'human' } });
+    Game.setMusterLoadout(0, ['crawler', 'sprinter', 'bulwark']);
+    var worst = 0, n = 0;
+    for (var t = 0; t < 240; t++) {
+      var vt = ['crawler', 'bulwark', 'juggernaut'][t % 3];
+      var d = ENEMY_TYPES[vt];
+      if (!d) continue;
+      var corpse = { maxHp: d.hp * 6, armor: d.armor, x: 300, y: 300,
+                     hostileTo: 0, rageMul: 1, type: vt };
+      var budget = Game.corpseBudget(corpse);
+      Game.pendingSpawns.length = 0;
+      Game.conscript(corpse);
+      for (var i = 0; i < Game.pendingSpawns.length; i++) {
+        n++;
+        var ratio = Game.pendingSpawns[i].maxHp / budget.hp;
+        if (ratio > worst) worst = ratio;
+      }
+    }
+    ok('22.2 a rite may change the shell a kill returns in, never the mass',
+       n > 0 && worst <= 1.0001 && Game.sides[0].rollDebt >= 0,
+       n + ' bodies, heaviest ' + worst.toFixed(3) + ' of its corpse, debt ' +
+       Math.round(Game.sides[0].rollDebt));
+  });
+
+  T('22.3 the Marque is uncapped, and its price is what caps it', function () {
+    Game.start({ map: MAPS[0].id, difficulty: 'contested', loadout: PIN.slice(),
+                 commander: COMMANDERS[0].id, skirmish: true,
+                 doctrineOverrides: { 0: 'pirate', 1: 'human' } });
+    var tier = Game.musterTiers(0)[0];
+    Game.sides[0].musterBuys = 10; var p10 = Game.musterCost(0, tier);
+    Game.sides[0].musterBuys = 20; var p20 = Game.musterCost(0, tier);
+    Game.sides[1].musterBuys = 10; var h10 = Game.musterCost(1, tier);
+    Game.sides[1].musterBuys = 20; var h20 = Game.musterCost(1, tier);
+    var payP = musterPayout(3.0, 10, Game.musterCapPct(0));
+    var payH = musterPayout(3.0, 10, Game.musterCapPct(1));
+    ok('22.3 the Marque is uncapped, and its price is what caps it',
+       !isFinite(Game.musterCapPct(0)) && isFinite(Game.musterCapPct(1)) &&
+       payP > payH && p20 > p10 && h20 === h10,
+       'econ ' + payP + ' vs capped ' + payH + '; pirate cost ' + p10 + '->' + p20 +
+       ', others ' + h10 + '->' + h20);
+  });
+
+  T('22.4 the Lattice does not buy, and nothing else is refused', function () {
+    Game.start({ map: MAPS[0].id, difficulty: 'contested', loadout: PIN.slice(),
+                 commander: COMMANDERS[0].id, skirmish: true,
+                 doctrineOverrides: { 0: 'robot', 1: 'human' } });
+    Game.sides[0].gold += 99999; Game.sides[1].gold += 99999;
+    var robo = Game.canMuster(0), human = Game.canMuster(1);
+    ok('22.4 the Lattice does not buy, and nothing else is refused',
+       robo === false && human === true,
+       'robotic canMuster=' + robo + ' human canMuster=' + human);
+  });
+
+  T('22.5 clutches cap, and a full nest still pays for a kill', function () {
+    Game.start({ map: MAPS[0].id, difficulty: 'contested', loadout: PIN.slice(),
+                 commander: COMMANDERS[0].id, skirmish: true, doctrineOverrides: { 0: 'xeno' } });
+    Game.setMusterLoadout(0, ['crawler', 'sprinter', 'bulwark']);
+    Game.incubators.length = 0;
+    var d = ENEMY_TYPES.crawler;
+    var mk = function (x, y) {
+      return { maxHp: d.hp * 5, armor: d.armor, x: x, y: y, hostileTo: 0, rageMul: 1, type: 'crawler' };
+    };
+    while (Game.incubators.length < XENO_INC_CAP + 4) {
+      var before = Game.incubators.length;
+      Game.incubate(mk(600, 600));
+      if (Game.incubators.length === before) break;
+    }
+    var held = Game.incubators.length;
+    var pod = Game.incubators[0];
+    var t0 = pod.t;
+    Game.incubate(mk(600 + 40 * TILE, 600));      /* far from every clutch */
+    var fedFar = t0 - pod.t;
+    ok('22.5 clutches cap, and a full nest still pays for a kill',
+       held === XENO_INC_CAP && Math.abs(fedFar - XENO_INC_FEED_SEC) < 1e-6,
+       'held ' + held + '/' + XENO_INC_CAP + ', overflow fed nearest ' + fedFar.toFixed(2) + 's');
+  });
+
+  T('22.6 VETERAN is the identity ramp', function () {
+    var v = RAMP_PRESETS[RAMP_DEFAULT];
+    var same = true;
+    for (var si = 0; si < 5; si++) {
+      var wantD = si < 1 ? 'skirmish' : si < 3 ? 'contested' : 'overrun';
+      if (v.diffFor(si) !== wantD || v.escFor(si) !== Math.floor(si * 0.8)) same = false;
+    }
+    ok('22.6 VETERAN is the identity ramp',
+       same && v.tierHpStep === 0.30 && v.soulsMul === 1,
+       'diff/esc match the retired ternaries: ' + same +
+       ', tierHpStep ' + v.tierHpStep + ', soulsMul ' + v.soulsMul);
+  });
+
+  T('22.7 the first galaxy is eased, and the terminus is not', function () {
+    var rejoin = tier0ReliefMul(TIER0_EASE_END_WAVE, 0.35) === 1 &&
+                 tier0ReliefMul(20, 0.35) === 1 && tier0ReliefMul(30, 0.35) === 1;
+    var peak = tier0ReliefMul(TIER0_EASE_PEAK_WAVE, 0.35);
+    var identity = tier0ReliefMul(8, 0) === 1;
+    /* A battle told nothing must behave exactly as it always did. */
+    Game.start({ map: MAPS[0].id, difficulty: 'contested', loadout: PIN.slice(),
+                 commander: COMMANDERS[0].id, skirmish: true });
+    var plain = (Game.hpEase || 0) === 0 &&
+                (Game.rosterIntroEvery || ROSTER_INTRO_EVERY) === ROSTER_INTRO_EVERY &&
+                (Game.minibossDelayWaves || 0) === 0 &&
+                Game.minibossFor(MINIBOSS_EVERY) === MINIBOSSES[0];
+    ok('22.7 the first galaxy is eased, and the terminus is not',
+       rejoin && identity && plain && Math.abs(peak - 0.65) < 1e-9,
+       'peak ' + peak.toFixed(2) + ' at w' + TIER0_EASE_PEAK_WAVE +
+       ', rejoins by w' + TIER0_EASE_END_WAVE + ': ' + rejoin +
+       ', an un-flagged battle is untouched: ' + plain);
+  });
+
   T('19.16 the spawned-HP curve hits the owner three anchors exactly', function () {
     const a = spawnHpPenaltyMul(1), b = spawnHpPenaltyMul(5), c = spawnHpPenaltyMul(10);
     ok('19.16 the spawned-HP curve hits the owner three anchors exactly',

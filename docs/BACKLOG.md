@@ -184,7 +184,20 @@ Full write-ups with build notes in [`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md
 
 ---
 
-## G. The outside review's unpatched items — YOUR CALL
+## G. The outside review's unpatched items — ALL SIX SHIPPED (Session 22)
+
+| # | Item | Where it landed |
+|---|---|---|
+| D2 | Damage-number toggle | OPTIONS row, default ON. The gate sits INSIDE `addFloater` **after** the `rand()` draw — presentation may never be visible to the simulation, or two duel clients with different display settings desync. Proved sim-neutral: pins byte-identical with it on and off |
+| D3 | Escalation queueing | HOLD on the modal parks the sim but opens the board (`Game.boardInteractive`), with a chip to return. Abilities and musters keep their `playing`-only gates — they are timed acts |
+| D4 | ARIA pass | Build bar (name/role/price/hotkey), HUD, speed, summon tiers, profile delete, talent clear. Canvas placement is still pointer-only and the battle card now SAYS so |
+| D5 | Session stats | `Side.killLog` mirrors `leakLog`; a win gets THE HARVEST as a loss gets WHAT KILLED YOU, plus a second stats row from counters the sim already kept |
+| D6 | Soul ceremony | The galaxy claim counts souls onto the total instead of a toast. Souls are banked BEFORE the animation, so a refresh loses the animation and never the souls |
+| A4 | Difficulty ramp → **NEW GAME PLUS** | Converted per the owner: the choice unlocks after a galaxy is finished (`RAMP_PRESETS` veteran/onslaught/apex). VETERAN is provably the identity element — its two functions equal the retired ternaries — so a first galaxy and a veteran NG+ run play the game that shipped. The first galaxy is FLATTENED instead: relief tent to −35% at wave 8 rejoining the authored curve exactly at 15, types every 3 waves instead of 2, and no wave-5 miniboss in the opening system (the rota shifts rather than skips, so the teaching order survives). Every value is a battle OPTION, never read from the save, so skirmishes, duels and the pins keep the engine defaults |
+
+---
+
+## H. The old §G table, for history
 
 An outside reviewer played the live site in Session 21 and sent a nine-patch
 fixpack. Eight landed (see the commit); one is held in section C. But the

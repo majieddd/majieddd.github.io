@@ -86,6 +86,8 @@ class Side {
     this.procIdx = 0; this.procCycle = 0; this.procTimer = 0;
     this.rollDebt = 0;
     this.summonPower = 0;
+    /* How far a compiling commander has rewritten itself. */
+    this.compileLevel = 0;
     /* RESONANT FIELD, per side. It used to be one game-global counter that
        only the player could pay into, so the rival's identical wave also
        arrived with the bounty bonus -- it collected a payout the player
@@ -106,7 +108,7 @@ class Side {
        commitment and pays nothing at all for a leak. */
     this.livesPaid = 0;
     this.stats = { kills: 0, goldEarned: 0, leaked: 0, built: 0, sent: 0, livesRestored: 0, mustered: 0,
-                   leaksRecovered: 0 };
+                   leaksRecovered: 0, jammed: 0 };
     /* WHAT KILLED YOU -- lives actually lost, keyed by the class that walked
        them off the board: { n, lives, sent }. `stats.leaked` is one number and
        a number is not a lesson: a player who cannot name the contact that beat
@@ -220,6 +222,8 @@ const Game = {
   /* THE BROOD's clutches. Sim state, not decoration: fingerprinted, ticked in
      step, and drawn read-only. */
   incubators: [],
+  /* THE PARALLEL's relay nodes, same rules. */
+  relayNodes: [],
 
   wave: 0, spawnQueue: [], prepTimer: 0, waveRunning: false,
   enemyMods: [], pendingChoice: null,
@@ -417,7 +421,11 @@ const Game = {
 
     /* Commanders: yours from the meta save, the rival's picked to contrast. */
     Meta.applyTo(this.sides[0], opts.commander || COMMANDERS[0].id);
-    const rivalPool = COMMANDERS.filter(c => c.id !== this.sides[0].commander.id);
+    /* THE PARALLEL never seats a rival. It holds no worlds, so a machine
+       commander behind a garrison would be a power the campaign has no way to
+       take -- and the secret would be spoiled by meeting it. */
+    const rivalPool = COMMANDERS.filter(c => c.id !== this.sides[0].commander.id &&
+                                             c.faction !== 'robot');
     let rival = (opts.rival && COMMANDERS.find(c => c.id === opts.rival)) ||
                 rivalPool[Math.floor(Math.random() * rivalPool.length)];
     /* rivalPool excludes the player's own commander, but only the RANDOM
@@ -442,6 +450,22 @@ const Game = {
     this._skirmish = !!opts.skirmish;
     this._overDrawn = false;
     this.galaxyTier = this._skirmish ? 0 : ((Meta.campaign() && Meta.campaign().tier) || 0);
+    /* THE RAMP and THE FLATTENING, both resolved from OPTIONS rather than
+       from the save. That is the whole safety property: a skirmish, a duel,
+       the Maelstrom and the balance pins pass none of these, so they get the
+       engine's own defaults and measure the same game they always did. Only a
+       campaign node threads the values in, and only the FIRST galaxy is
+       flattened -- once a tier has been cleared the player has chosen a ramp
+       and the training wheels come off for good. */
+    {
+      const R = (opts.ramp && RAMP_PRESETS[opts.ramp]) || RAMP_PRESETS[RAMP_DEFAULT];
+      this.tierHpStep = R.tierHpStep;
+      const si = (typeof opts.systemIndex === 'number') ? opts.systemIndex : null;
+      const flatten = si !== null && this.galaxyTier === 0 && !this._skirmish;
+      this.hpEase = flatten ? (TIER0_HP_EASE[si] || 0) : 0;
+      this.rosterIntroEvery = flatten ? (TIER0_INTRO_EVERY[si] || ROSTER_INTRO_EVERY) : ROSTER_INTRO_EVERY;
+      this.minibossDelayWaves = flatten ? (TIER0_MINIBOSS_DELAY[si] || 0) : 0;
+    }
     if (this.isSeatBattle) rivalTech = 18;
     Meta.applyToAI(this.sides[1], rival.id, rivalTech);
 
@@ -521,6 +545,7 @@ const Game = {
     this.aimingAbility = null; this.constructs = []; this.radial = null;
     this.beams = []; this.puddles = []; this.pendingSpawns = []; this.spawnQueue = [];
     this.incubators = [];
+    this.relayNodes = [];
     this.delayed = [];
     this.arenaSpeed = 1; this.arenaArmor = 0; this.arenaTempo = 1;
     this.enemyMods = []; this.pendingChoice = null;
@@ -574,8 +599,9 @@ const Game = {
       const variety = this.sides[1].loadout.length;
       for (let i = 3; i < this.sides.length; i++) {
         const S2 = this.sides[i];
-        const own = commandersOf(S2.faction).filter(c => !taken.has(c.id));
-        const spare = COMMANDERS.filter(c => !taken.has(c.id));
+        /* Arena seats are the galaxy's powers too -- no machine commanders. */
+        const own = commandersOf(S2.faction).filter(c => !taken.has(c.id) && c.faction !== 'robot');
+        const spare = COMMANDERS.filter(c => !taken.has(c.id) && c.faction !== 'robot');
         const cmd = own[0] || spare[0] || COMMANDERS[i % COMMANDERS.length];
         taken.add(cmd.id);
         Meta.applyToAI(S2, cmd.id, rivalTech);
@@ -598,6 +624,9 @@ const Game = {
       const over = opts.doctrineOverrides && opts.doctrineOverrides[S2.index];
       const want = over || (S2.commander && S2.commander.faction) || S2.faction || 'human';
       S2.doctrine = SUMMON_DOCTRINES[want] ? want : 'human';
+      /* Any level a chart pre-granted is owed before the first wave, or a
+         commander who bought its way to level one would still open at zero. */
+      this.applyCompile(S2);
     }
 
     /* One brain per AI side. The singleton pattern could not host two rivals. */
@@ -679,7 +708,8 @@ const Game = {
     const roster = (this.battleRoster && this.battleRoster.length)
       ? this.battleRoster : battleRosterFor(this.map, null);
     return composeWave(n, roster, this.map,
-                       waveCountMultiplier(n) * legion * COUNT_SCALE);
+                       waveCountMultiplier(n) * legion * COUNT_SCALE,
+                       this.rosterIntroEvery || ROSTER_INTRO_EVERY);
   },
 
   /** Composition summary used by the preview panel and by the AI's scouting. */
@@ -692,7 +722,11 @@ const Game = {
      in: the spawn applies it per unit, and callers that need it say so. */
   waveHpMul(n, rage) {
     return waveHpMultiplier(n) * this.difficulty.hp * UNIT_HP_SCALE
-           * (1 + 0.3 * (this.galaxyTier || 0))
+           * (1 + (this.tierHpStep || 0.30) * (this.galaxyTier || 0))
+           /* The first galaxy's relief tent. 1.0 for every battle that did
+              not ask for it, and 1.0 again from wave 15 on, so the terminus
+              past wave 20 is bit-identical to what it always was. */
+           * tier0ReliefMul(n, this.hpEase || 0)
            * (1 + ENRAGE_HP * (rage || 0));
   },
 
@@ -721,6 +755,17 @@ const Game = {
      need no edit. BATCH-C/nside */
   minibossFor(n, def) {
     if (n % MINIBOSS_EVERY !== 0) return null;
+    /* THE OPENING SYSTEM'S GRACE. A COLOSSUS on wave 5 arrives before a
+       fourth tower is affordable, which is a wall rather than a lesson. The
+       delay shifts the whole ROTA rather than skipping an entry, so the
+       teaching order survives intact -- the first system meets COLOSSUS on
+       wave 10 and VESPER on 15, in that order, just later. Zero for every
+       battle that did not ask, so the schedule is unchanged everywhere else. */
+    const d = this.minibossDelayWaves || 0;
+    if (d) {
+      if (n <= d) return null;
+      return MINIBOSSES[(Math.floor((n - d) / MINIBOSS_EVERY) - 1 + MINIBOSSES.length) % MINIBOSSES.length];
+    }
     return MINIBOSSES[(Math.floor(n / MINIBOSS_EVERY) - 1) % MINIBOSSES.length];
   },
 
@@ -830,6 +875,24 @@ const Game = {
        on each unit so reanimate can take it back off the corpse. */
     const plainHp = this.waveHpMul(this.wave, 0);
     for (const S of this.sides) {
+      /* BOOTSTRAP and THE COMPILE, both on the wave boundary because waves
+         are the only clock two clients are guaranteed to agree on.
+         The ramp is recomputed from the wave number rather than accumulated,
+         so it can never drift and needs no state of its own. */
+      if (S.bootUp) {
+        const steps = Math.min(ROBOT_BOOT_WAVES,
+                               Math.max(0, this.wave - 1 + ((S.traits && S.traits.bootAdvance) || 0)));
+        const target = -ROBOT_BOOT_FLOOR + ROBOT_BOOT_STEP * steps;
+        const prev = S._bootAt === undefined ? -ROBOT_BOOT_FLOOR : S._bootAt;
+        const d = target - prev;
+        if (d) { S.mods.damage += d; S.mods.rate += d; S.mods.range += d; }
+        S._bootAt = target;
+        if (steps >= ROBOT_BOOT_WAVES && !S._bootLit) {
+          S._bootLit = true;
+          if (S.index === this.viewSide) this.banner('LATTICE FULLY LIT', 2.6, '#e2e8f0');
+        }
+      }
+      this.applyCompile(S);
       const rage = S.enrage || 0;
       S.enrageSpent = rage;
       S.enrage = 0;
@@ -1772,6 +1835,10 @@ const Game = {
   jamTowers(enemy, jam) {
     const S = this.sides[enemy.hostileTo];
     const r2 = (jam.radius * TILE) ** 2;
+    /* Counted per ATTEMPT, not per tower jammed: LUMEN-R is learning that it
+       is being intruded upon, and a commander whose towers are already
+       immune is still being attacked. Booked against the side under attack. */
+    S.stats.jammed = (S.stats.jammed || 0) + 1;
     let hit = 0;
     for (const t of S.towers) {
       if (t.jamImmune) continue;
@@ -2089,6 +2156,62 @@ const Game = {
     const V = this.sides[victim];
     if (V) m *= (1 - (V.traits.reanimResist || 0));
     return m;
+  },
+
+  /**
+   * THE COMPILE ENGINE.
+   *
+   * A compiling commander opens the battle weaker than the thing it copied
+   * and rewrites itself as the battle teaches it. The metric is whatever
+   * that commander actually learns from -- ascensions, kills, intrusions
+   * survived, gold committed to the board, or simply waves endured.
+   */
+  compileMetric(S, kind) {
+    if (kind === 'asc') return S.totalAsc || 0;
+    if (kind === 'kills') return S.stats.kills || 0;
+    /* A board that never jams would strand this commander at level zero
+       forever, so the wave count is a floor under it: the training arrives
+       either from the rival or from the calendar. */
+    if (kind === 'jams') return (S.stats.jammed || 0) + Math.floor(this.wave / 5);
+    if (kind === 'invested') {
+      let g = 0;
+      for (const t of S.towers) g += t.invested || 0;
+      return g;
+    }
+    return this.wave;   /* 'waves' */
+  },
+
+  /**
+   * Apply every compile level this side has now reached.
+   *
+   * Levels apply ONE-SHOT DELTAS at wave boundaries and never re-fold the
+   * commander from scratch. That is deliberate: a boon, a draft card or a
+   * bought base level taken after wave one would be erased by a refold, and
+   * losing a drafted card to a scheduled recompile is the worst bug this
+   * design could ship.
+   */
+  applyCompile(S) {
+    const cmd = S.commander;
+    if (!cmd || !cmd.compile) return;
+    const spec = cmd.compile;
+    const metric = this.compileMetric(S, spec.metric) * (S.traits.compileRateMul || 1);
+    let want = S.traits.compileFloor || 0;
+    for (let i = 0; i < spec.levels.length; i++) if (metric >= spec.levels[i].at) want = Math.max(want, i + 1);
+    want = Math.min(want, spec.levels.length);
+    if (want <= (S.compileLevel || 0)) return;
+    for (let i = S.compileLevel || 0; i < want; i++) {
+      const lv = spec.levels[i];
+      if (lv && lv.apply) lv.apply(S.traits, S, S.mods);
+    }
+    S.compileLevel = want;
+    /* The trait accumulators the levels wrote into have to reach `mods` the
+       same way the opening fold does, or a level that grants damage grants
+       nothing at all. */
+    foldTraits(S);
+    if (S.index === this.viewSide) {
+      this.addFloater(this.width * 0.5, 128, '⟲ RECOMPILED — ' + spec.name, false, '#e2e8f0', 16);
+      Sound.play('branch');
+    }
   },
 
   /** The rite a seat summons by. One reader, so no call site open-codes it. */
@@ -2494,6 +2617,47 @@ const Game = {
                           false, FACTIONS.light.color, 16);
       }
       S.procTimer = FOL_CADENCE_SEC + S.procCycle * FOL_CADENCE_GROWTH;
+    }
+  },
+
+  /**
+   * THE RELAY NETWORK. Nodes burn down, and every Parallel body walking the
+   * board they were left on spends the strongest one in reach.
+   *
+   * Non-stacking by construction: a body reads the single best node rather
+   * than summing them, so a corridor of six is a road and not a runway. The
+   * buff is re-applied from scratch each tick rather than accumulated, which
+   * is why leaving the radius takes it straight back off.
+   */
+  tickRelays(dt) {
+    const nodes = this.relayNodes;
+    if (!nodes.length) return;
+    for (let i = nodes.length - 1; i >= 0; i--) {
+      nodes[i].t -= dt;
+      if (nodes[i].t <= 0) nodes.splice(i, 1);
+    }
+    if (!nodes.length) return;
+    const r2 = (UNIT_RELAY_RADIUS * TILE) * (UNIT_RELAY_RADIUS * TILE);
+    for (const e of this.enemies) {
+      if (e.dead || e.leaked || !e.reanimated || e.owner === undefined || e.owner < 0) continue;
+      if (!e.def || e.def.faction !== 'robot') continue;
+      let best = 0;
+      for (const n of nodes) {
+        /* Same owner AND same board: a node the Parallel left on one rival's
+           lane is worth nothing on another's. */
+        if (n.owner !== e.owner || n.board !== e.hostileTo) continue;
+        if (dist2(n.x, n.y, e.x, e.y) > r2) continue;
+        if (n.t > best) best = n.t;
+      }
+      const on = best > 0;
+      if (on === !!e._relayed) continue;
+      /* `baseSpeed`, NOT `speedMul`: the latter is a constructor option the
+         Enemy copies once and never reads again, so writing it live would be
+         a silent no-op of the Tower.jammed class. Toggled symmetrically and
+         only on a CHANGE of state, so it cannot compound frame to frame. */
+      e._relayed = on;
+      if (on) { e.baseSpeed *= (1 + UNIT_RELAY_SPEED); e.armor += UNIT_RELAY_ARMOR; }
+      else { e.baseSpeed /= (1 + UNIT_RELAY_SPEED); e.armor -= UNIT_RELAY_ARMOR; }
     }
   },
 
@@ -3148,6 +3312,7 @@ const Game = {
        would hatch at different moments on two clients running one seed. */
     this.tickProcession(dt);
     this.tickIncubators(dt);
+    this.tickRelays(dt);
 
     /* --- burning ground --- */
     for (let i = this.puddles.length - 1; i >= 0; i--) {

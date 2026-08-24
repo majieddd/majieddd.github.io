@@ -229,7 +229,7 @@ const UI = {
          everyone else goes straight to their commanders, and a fresh campaign
          simply continues under the same banner. */
       if (!Meta.faction()) { this.show('screen-faction'); this.renderFactions(); return; }
-      if (!Meta.campaign()) { Meta.campaignStart(Meta.faction()); this.sel.loadout = []; }
+      if (!Meta.campaign()) { this.beginCampaign(); return; }
       this.show('screen-command'); this.buildCommanderScreen();
     });
     $('#btn-soul-shop').addEventListener('click', () => this.openSoulShop());
@@ -485,6 +485,13 @@ const UI = {
                  loadout: this.sel.loadout.slice(),
                  arena: node.arena, boons: c.boons, rival: node.rival,
                  escStart: node.escStart,
+                 /* THE RAMP and THE SYSTEM, handed over as options. Game.start
+                    reads these and nothing else to decide the tier step and
+                    whether the first galaxy's flattening applies -- which is
+                    why a skirmish, a duel and the pins, none of which pass
+                    them, keep the engine defaults. */
+                 ramp: (c && c.ramp) || RAMP_DEFAULT,
+                 systemIndex: (typeof node.si === 'number') ? node.si : undefined,
                  /* The OPTIONS battle seed, if one is set. Blank means today's
                     behaviour exactly. */
                  seed: (() => { const v = ($('#set-seed') || {}).value;
@@ -1113,13 +1120,20 @@ const UI = {
        bought under. Anyone with a faction has nothing to choose here. */
     if (Meta.faction()) { this.show('screen-command'); this.buildCommanderScreen(); return; }
     const chosen = this.sel.faction;
-    $('#faction-grid').innerHTML = FACTION_ORDER.map(id => {
+    /* The fifth banner appears only once this install has taken a galaxy, and
+       until then there is no card at all -- not a locked one. A locked card is
+       an advertisement, and a secret that advertises itself is a menu item. */
+    const secret = Meta.gameBeaten() ? SECRET_FACTIONS : [];
+    $('#faction-grid').innerHTML = FACTION_ORDER.concat(secret).map(id => {
       const f = FACTIONS[id];
+      const isSecret = secret.indexOf(id) >= 0;
       const cmd = COMMANDER_ROSTER.find(c => c.id === freeCommanderOf(id)) || COMMANDER_ROSTER[0];
       return `<button class="fac-card ${chosen === id ? 'on' : ''}" data-fac="${id}"
                       style="--fc:${f.color};--fa:${f.accent}"
                       data-tt="${f.name}|${f.bonusName}: ${f.bonusDesc} Their rivals are ${
-                        rivalFactionsOf(id).map(x => FACTIONS[x].short).join(', ')}. You begin with ${cmd.name}, ${cmd.title}.">
+                        rivalFactionsOf(id).map(x => FACTIONS[x].short).join(', ')}. You begin with ${cmd.name}, ${cmd.title}.${
+                        isSecret ? ' Unlocked the day this install first conquered a galaxy.' : ''}">
+        ${isSecret ? '<span class="fac-secret">SECRET BANNER · UNLOCKED BY CONQUEST</span>' : ''}
         <span class="fac-crest" aria-hidden="true">${
           (typeof ARTPACK !== 'undefined' && ARTPACK['fac_' + id])
             ? `<img src="${ARTPACK['fac_' + id]}" alt="" width="128" height="128">`
@@ -1505,6 +1519,61 @@ const UI = {
     return `<g class="gx-routes" aria-hidden="true">${out.join('')}</g>`;
   },
 
+  /** The ramp a campaign is being played on, resolved once. */
+  rampOf(c) { return (c && RAMP_PRESETS[c.ramp]) || RAMP_PRESETS[RAMP_DEFAULT]; },
+
+  /**
+   * Start a campaign — and, from the second galaxy on, ask what slope it is
+   * to be fought at. A first run never sees this: it has not yet learnt what
+   * it would be choosing between, and the ramp it would pick is the one it
+   * is already on.
+   */
+  beginCampaign() {
+    const go = ramp => {
+      Meta.campaignStart(Meta.faction(), ramp);
+      this.sel.loadout = [];
+      this.show('screen-command'); this.buildCommanderScreen();
+    };
+    if ((Meta.load().galaxyTier || 0) < 1) return go(RAMP_DEFAULT);
+
+    let ov = $('#ramp-choice');
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.id = 'ramp-choice';
+      /* NOT `required`, unlike the escalation modal: this one is cancellable
+         because nothing has been created yet. Escape here simply leaves the
+         player where they were, with no campaign and no state to strand. */
+      ov.className = 'overlay hidden';
+      ov.innerHTML = '<div class="modal escal"><div id="rc-body"></div></div>';
+      document.body.appendChild(ov);
+    }
+    const tier = Meta.load().galaxyTier || 0;
+    const roman = ['II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][Math.min(tier - 1, 6)] || 'NEXT';
+    $('#rc-body').innerHTML = `
+      <p class="ec-eyebrow">GALAXY ${roman} — YOU HAVE DONE THIS BEFORE</p>
+      <h2 class="ec-title">NEW GAME PLUS</h2>
+      <p class="ec-sub">Choose the slope. Every garrison is already stronger for the
+        ${tier} galax${tier === 1 ? 'y' : 'ies'} behind you — this decides how much harder
+        again, and what the run pays when you extract.</p>
+      <div class="ec-cards">
+        ${['veteran', 'onslaught', 'apex'].map(id => {
+          const R = RAMP_PRESETS[id];
+          return `<button class="ec-card ${id === 'apex' ? 'hard' : ''}" data-ramp="${id}">
+            <b>${R.name}</b>
+            <em>${R.blurb}</em>
+            <span class="ec-tag">+${Math.round(R.tierHpStep * 100)}% PER TIER · ${
+              R.soulsMul > 1 ? '+' + Math.round((R.soulsMul - 1) * 100) + '% SOULS' : 'STANDARD PAY'}</span>
+          </button>`;
+        }).join('')}
+      </div>`;
+    ov.classList.remove('hidden');
+    $$('[data-ramp]', ov).forEach(b => b.addEventListener('click', () => {
+      ov.classList.add('hidden');
+      Sound.play('tech');
+      go(b.dataset.ramp);
+    }));
+  },
+
   renderTheatre() {
     let c = Meta.campaign();
     /* A defeat no longer ends a campaign, so this branch is reached only after
@@ -1512,7 +1581,14 @@ const UI = {
        road back from a finished battle must still land on the world map, not
        on the commander screen, so a sworn profile silently opens a fresh
        campaign under the same banner and the galaxy simply appears. */
-    if (!c && Meta.faction()) { c = Meta.campaignStart(Meta.faction()); this.sel.loadout = []; }
+    if (!c && Meta.faction()) {
+      /* A commander who has finished a galaxy chooses the next one's slope
+         before it is generated, so this road has to ask too rather than
+         silently opening a VETERAN run behind their back. beginCampaign
+         takes over the screen from here; the map redraws once it returns. */
+      if ((Meta.load().galaxyTier || 0) >= 1) { this.beginCampaign(); return; }
+      c = Meta.campaignStart(Meta.faction()); this.sel.loadout = [];
+    }
     if (!c) { this.show('screen-faction'); this.renderFactions(); return; }
     const gx = Meta.galaxy();
     const prog = c.stars || {};
@@ -1653,8 +1729,15 @@ const UI = {
                         downstream reconciles them. */
                      rival: worldBossOf(sys, w), rivalFaction: w.owner, kind: w.kind,
                      contested: !!w.contested, contestedBy: w.contestedBy,
-                     difficulty: w.si < 1 ? 'skirmish' : w.si < 3 ? 'contested' : 'overrun',
-                     escStart: Math.floor(w.si * 0.8) };
+                     /* THE RAMP decides the slope now. VETERAN's two functions
+                        ARE the expressions that used to be written here, so a
+                        first galaxy and a veteran NG+ run get precisely the
+                        campaign this line always produced. `si` rides along
+                        because the first galaxy's flattening is indexed by
+                        solar system, and the battle must be told which. */
+                     si: w.si,
+                     difficulty: this.rampOf(c).diffFor(w.si),
+                     escStart: this.rampOf(c).escFor(w.si) };
         Meta.save(); Sound.play('click'); this.renderTheatre();
       };
       /* Coarse pointers have had no hover in which to read the briefing, so
@@ -1718,7 +1801,14 @@ const UI = {
           <div><b>${stars}</b><span>stars earned</span></div>
           <div><b>${Math.round(stars / (total * 3) * 100)}%</b><span>of a perfect galaxy</span></div>
         </div>
-        <p class="gv-next">Galaxy ${['II','III','IV','V','VI','VII','VIII'][Meta.load().galaxyTier || 0]} is already massing — its garrisons will be 30% stronger.</p>
+        ${!Meta.gameBeaten() ? `
+          <div class="gv-secret">
+            <b>UNSCHEDULED SIGNAL</b>
+            <p>The machines have watched you take a galaxy. A fifth banner is now yours to swear.</p>
+            <em>A banner is sworn once per commander — raise a new profile to answer it.</em>
+          </div>` : ''}
+        <p class="gv-next">Galaxy ${['II','III','IV','V','VI','VII','VIII'][Meta.load().galaxyTier || 0]} is already massing — its garrisons will be
+           ${Math.round(RAMP_PRESETS[RAMP_DEFAULT].tierHpStep * 100)}% stronger per tier, and you will set the ramp when it musters.</p>
         <button id="btn-gv-claim" class="btn btn-primary btn-big">◉ CLAIM ${payout} SOULS &amp; ADVANCE</button>
       </div>`;
     $('#theatre-detail').innerHTML = '';
@@ -1728,9 +1818,10 @@ const UI = {
     $('#btn-gv-claim').addEventListener('click', () => {
       /* Advancing raises the permanent galaxy tier; the next campaign is
          generated at +30% enemy strength per tier. */
-      const pl = Meta.load(); pl.galaxyTier = (pl.galaxyTier || 0) + 1; Meta.save(true);
       const before = Meta.souls();
-      const res = Meta.campaignExtract();
+      /* One writer for the tier, the install's conquest ledger and the
+         payout -- see Meta.claimGalaxy. */
+      const res = Meta.claimGalaxy();
       /* THE CEREMONY. The souls are already banked -- campaignExtract paid
          them the line above -- so everything below is presentation: a payout
          this size deserves a counter that climbs, not a toast that vanishes.
@@ -1747,6 +1838,7 @@ const UI = {
       Sound.play('branch');
       this.countUp($('#gv-soulnum'), before, before + res.souls, 1400, v => '◉ ' + formatNum(v));
       this.countUp($('#gv-souldelta'), 0, res.souls, 1400, v => '+' + v + ' banked');
+      if (res.firstEver) this.toast('SIGNAL LOGGED — A FIFTH BANNER AWAITS A NEW COMMANDER.');
       $('#btn-gv-done').addEventListener('click', () => { this.show('screen-title'); this.renderTitle(); });
     });
   },
@@ -6344,7 +6436,7 @@ const UI = {
            ${XENO_INC_CAP} at once.<br>
            <b>${SUMMON_DOCTRINES.pirate.name}</b> — ${SUMMON_DOCTRINES.pirate.desc} What prices it is a
            summon cost that never stops climbing.<br>
-           <b>${SUMMON_DOCTRINES.robotic.name}</b> — ${SUMMON_DOCTRINES.robotic.desc}</p>
+           <b>${SUMMON_DOCTRINES.robot.name}</b> — ${SUMMON_DOCTRINES.robot.desc}</p>
         <p>On a board where nothing rises — the Maelstrom — every rite's free half is switched off and
            all five buy their bodies instead.</p>
         <p><em>Older field manuals described every kill rising again. That law now belongs to the
