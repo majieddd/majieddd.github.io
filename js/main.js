@@ -72,7 +72,12 @@
         Game.speed = Number(k); UI.syncSpeed(); Sound.play('click'); e.preventDefault(); return;
       }
 
-      const loadout = Game.sides[0].loadout;
+      /* This handler is not a UI method, so it runs with the seat lens OFF and
+         a literal 0 here means REAL seat 0 -- in a duel that handed the guest
+         the opponent's hotbar and made U, S and Tab inert on their own towers.
+         Game.viewSide is the seat in front of this screen: 0 in singleplayer,
+         the local seat in a duel, under either lens state. */
+      const loadout = Game.sides[Game.viewSide].loadout;
       const idx = HOTKEYS.indexOf(k);
       if (idx >= 0 && idx < loadout.length) {
         const id = loadout[idx];
@@ -88,7 +93,7 @@
         case 'n': case 'enter':
           Sound.resume(); Game.rushWave(); e.preventDefault(); break;
         case 'u':
-          if (Game.selected && Game.selected.side === 0) {
+          if (Game.selected && Game.selected.side === Game.viewSide) {
             const next = Game.selected.nextUpgrade();
             /* A branch fork is a permanent identity choice — never auto-pick. */
             if (next.kind === 'branch') Sound.play('denied');
@@ -96,7 +101,7 @@
           }
           e.preventDefault(); break;
         case 's':
-          if (Game.selected && Game.selected.side === 0) Game.sell(Game.selected);
+          if (Game.selected && Game.selected.side === Game.viewSide) Game.sell(Game.selected);
           e.preventDefault(); break;
         case 'q': case 'e': {
           /* Commander abilities. Q is the offensive slot, E the defensive one.
@@ -106,7 +111,7 @@
           e.preventDefault(); break;
         }
         case 'tab':
-          if (Game.selected && !Game.selected.isSupport && Game.selected.side === 0) {
+          if (Game.selected && !Game.selected.isSupport && Game.selected.side === Game.viewSide) {
             const modes = TARGET_MODES.map(m => m.id);
             const i = modes.indexOf(Game.selected.targetMode);
             /* Through Game, for the same reason the inspector's mode row is:

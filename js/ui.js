@@ -1620,6 +1620,13 @@ const UI = {
     const ov = $('#mv-search'), body = $('#mv-search-body');
     ov.classList.remove('hidden');
     this._mvWorld = w;
+    /* Esc must CLOSE the lobby, not merely hide it. Dismissing the overlay
+       used to leave phase 'hosting' and the table advertised, so a later join
+       from another window yanked this client into a live duel from whatever
+       screen it was on -- the title, or the middle of a Maelstrom run. The
+       same cleanup the CANCEL button does, published on the overlay's own
+       dismiss hook. */
+    ov._escDismiss = () => { Net.cancel(); Net.onLobby = null; };
     clearTimeout(this._mvT);
 
     if (!Net.supported) {
@@ -1706,9 +1713,15 @@ const UI = {
       box.innerHTML = `<div class="mv-table empty" style="padding:7px 10px;font-size:12px;opacity:.55">No tables are open in another window.</div>`;
       return;
     }
-    box.innerHTML = Net.tables.map(t => `<div class="mv-table" style="display:flex;align-items:center;gap:10px;justify-content:space-between;padding:7px 10px;border:1px solid rgba(120,180,220,.18);border-radius:4px;font-size:12px">
-      <span><b>${t.name}</b> over <b>${t.world.name}</b></span>
-      <button class="btn btn-sm" data-table="${t.id}">JOIN</button></div>`).join('');
+    /* Names off the wire are text, never markup: a table row is a message any
+       window on this origin composed, and interpolating it raw put whatever it
+       carried into this document. A row with no world is dropped for the same
+       reason it used to throw -- there is nothing legal to print for it. */
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+      ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    box.innerHTML = Net.tables.filter(t => t.world && t.world.name).map(t => `<div class="mv-table" style="display:flex;align-items:center;gap:10px;justify-content:space-between;padding:7px 10px;border:1px solid rgba(120,180,220,.18);border-radius:4px;font-size:12px">
+      <span><b>${esc(t.name)}</b> over <b>${esc(t.world.name)}</b></span>
+      <button class="btn btn-sm" data-table="${esc(t.id)}">JOIN</button></div>`).join('');
     $$('#mv-tables [data-table]').forEach(b => b.addEventListener('click', () => {
       Sound.play('click');
       Net.join(b.dataset.table);
