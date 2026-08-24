@@ -1663,12 +1663,21 @@ const UI = {
     clearTimeout(this._mvT);
 
     if (!Net.supported) {
+      /* No BroadcastChannel is no SAME-MACHINE duel. The hand-carried wire
+         does not need it, so a browser this old is refused only the half it
+         actually lacks. */
+      const rtcOk = NetRTC.supported;
       body.innerHTML = `<b class="mv-title">NO RELAY IN THIS BROWSER</b>
-        <p class="mv-text">A duel needs BroadcastChannel, which this browser does not
-           provide. Everything else still works — the garrison of <b>${w.name}</b> will oblige.</p>
+        <p class="mv-text">A same-machine duel needs BroadcastChannel, which this browser does not
+           provide. ${rtcOk
+             ? 'Two machines can still fight over the hand-carried wire — or the garrison of <b>' + w.name + '</b> will oblige.'
+             : 'Everything else still works — the garrison of <b>' + w.name + '</b> will oblige.'}</p>
         <div class="modal-actions">
-          <button id="btn-mv-practice" class="btn btn-primary">SKIRMISH THE GARRISON</button>
+          ${rtcOk ? '<button id="btn-mv-rtc" class="btn btn-primary">ACROSS TWO MACHINES</button>' : ''}
+          <button id="btn-mv-practice" class="btn${rtcOk ? '' : ' btn-primary'}">SKIRMISH THE GARRISON</button>
           <button id="btn-mv-cancel" class="btn">CANCEL</button></div>`;
+      const rb = $('#btn-mv-rtc');
+      if (rb) rb.addEventListener('click', () => this.mpRtc(w));
       this.bindMpFooter(w);
       return;
     }
@@ -1703,7 +1712,8 @@ const UI = {
       <p class="mv-text">A duel is fought between two windows of this game on this machine.
          Open a second window, take <b>MULTIPLAYER</b> into the same universe there, then one
          of you opens a table and the other joins it. Both commanders fight the whole battle
-         on one simulation.</p>
+         on one simulation. Two machines can fight it too — <b>ACROSS TWO MACHINES</b> below,
+         where the two of you carry the connection by hand.</p>
       <div class="mv-fielding" style="margin:10px 0;padding:8px 10px;border:1px solid rgba(120,180,220,.18);border-radius:4px;font-size:12px;line-height:1.5">
         <span class="mv-fk" style="display:block;font-size:10px;letter-spacing:.16em;opacity:.6">FIELDING</span>
         <b>${cmd ? cmd.name : p.commander}</b> · ${towers}
@@ -1712,6 +1722,7 @@ const UI = {
       <p class="mv-note" id="mv-note" style="min-height:14px;font-size:11px;opacity:.7"></p>
       <div class="modal-actions">
         <button id="btn-mv-host" class="btn btn-primary">OPEN A TABLE</button>
+        <button id="btn-mv-rtc" class="btn">ACROSS TWO MACHINES</button>
         <button id="btn-mv-practice" class="btn">SKIRMISH THE GARRISON</button>
         <button id="btn-mv-cancel" class="btn">CANCEL</button></div>
       <p class="hint">Duel rules: escalations are dealt rather than drafted, rushing a wave is
@@ -1722,8 +1733,119 @@ const UI = {
       Net.host(w);
       this.renderMpTables();
     });
+    /* The second wire. The panel replaces this body and hands straight back
+       to mpSearch the moment the machines meet, so everything past the link
+       is this same flow. */
+    const rtc = $('#btn-mv-rtc');
+    if (rtc) rtc.addEventListener('click', () => { Sound.play('click'); this.mpRtc(w); });
     this.bindMpFooter(w);
     this.renderMpTables();
+  },
+
+  /**
+   * THE HAND-CARRIED WIRE. Two machines, no server: WebRTC with the
+   * signalling done by the players themselves. The copy does not dress it
+   * up — the offer and the answer are blobs the two of you ferry across by
+   * any channel you already share, and after that the machines talk
+   * directly. Everything past the link is the same lobby as the
+   * same-machine duel; this panel's only job is to end. See NetRTC, js/net.js.
+   */
+  mpRtc(w) {
+    const ov = $('#mv-search'), body = $('#mv-search-body');
+    ov.classList.remove('hidden');
+    /* Esc must kill the half-built connection too, or an abandoned ritual
+       leaves a pc waiting to link this client into a duel from any screen.
+       Same shape as the lobby's own dismiss, published on the same hook. */
+    ov._escDismiss = () => { NetRTC.abort(); Net.cancel(); Net.onLobby = null; };
+
+    const back = () => { NetRTC.abort(); this.mpSearch(w); };
+    const TA = 'width:100%;min-height:72px;margin:6px 0;background:rgba(8,14,23,.9);color:#9fd8ef;' +
+               'border:1px solid rgba(120,180,220,.25);border-radius:4px;font:11px/1.4 monospace;padding:6px';
+    const note = t => { const n = $('#mv-rtc-note'); if (n) n.textContent = t; };
+    NetRTC.onState = note;
+    /* The link coming up is the exit for BOTH roles: back to the lobby the
+       rest of the flow already owns, with the wire quietly underneath it. */
+    NetRTC.onLink = () => {
+      this.mpSearch(w);
+      Net.status('The wire between the machines is live. One of you opens a table; the other joins it.');
+    };
+
+    if (!NetRTC.supported) {
+      body.innerHTML = `<b class="mv-title">NO WIRE IN THIS BROWSER</b>
+        <p class="mv-text">A two-machine duel needs WebRTC, which this browser does not provide.</p>
+        <div class="modal-actions"><button id="btn-mv-rtc-back" class="btn">BACK</button></div>`;
+      $('#btn-mv-rtc-back').addEventListener('click', back);
+      return;
+    }
+
+    body.innerHTML = `<b class="mv-title">A DUEL ACROSS TWO MACHINES</b>
+      <p class="mv-text">No server exists; <b>you are the wire</b>. One machine writes an
+         offer, the other writes an answer, and the two of you carry those blobs across by
+         hand — a chat message, an email, anything that moves text. Paste each one where it
+         is asked for and the machines talk directly from then on. The same network is the
+         honest expectation; across the open internet this wire may simply not reach.</p>
+      <div class="modal-actions">
+        <button id="btn-mv-rtc-host" class="btn btn-primary">THIS MACHINE HOSTS</button>
+        <button id="btn-mv-rtc-guest" class="btn">THIS MACHINE ANSWERS</button>
+        <button id="btn-mv-rtc-back" class="btn">BACK</button></div>
+      <p class="mv-note" id="mv-rtc-note" style="min-height:14px;font-size:11px;opacity:.7"></p>`;
+    $('#btn-mv-rtc-back').addEventListener('click', back);
+
+    $('#btn-mv-rtc-host').addEventListener('click', async () => {
+      let blob;
+      try { blob = await NetRTC.host(); }
+      catch (e) { note(e.message || String(e)); return; }
+      body.innerHTML = `<b class="mv-title">HOSTING — CARRY THE OFFER</b>
+        <p class="mv-text">1 — Give this offer to the other commander, whole.</p>
+        <textarea id="mv-rtc-give" style="${TA}" readonly></textarea>
+        <p class="mv-text">2 — They will hand you an answer back. Paste it here and proceed.</p>
+        <textarea id="mv-rtc-take" style="${TA}" placeholder="the answer blob goes here"></textarea>
+        <p class="mv-note" id="mv-rtc-note" style="min-height:14px;font-size:11px;opacity:.7"></p>
+        <div class="modal-actions">
+          <button id="btn-mv-rtc-copy" class="btn">COPY THE OFFER</button>
+          <button id="btn-mv-rtc-go" class="btn btn-primary">PROCEED</button>
+          <button id="btn-mv-rtc-back" class="btn">BACK</button></div>`;
+      $('#mv-rtc-give').value = blob;
+      $('#btn-mv-rtc-back').addEventListener('click', back);
+      $('#btn-mv-rtc-copy').addEventListener('click', () => {
+        const t = $('#mv-rtc-give'); t.select();
+        try { navigator.clipboard.writeText(t.value); note('Copied.'); }
+        catch (e) { note('The clipboard refused — select it all and copy by hand.'); }
+      });
+      $('#btn-mv-rtc-go').addEventListener('click', async () => {
+        try { await NetRTC.accept($('#mv-rtc-take').value); }
+        catch (e) { note(e.message || String(e)); }
+      });
+    });
+
+    $('#btn-mv-rtc-guest').addEventListener('click', () => {
+      body.innerHTML = `<b class="mv-title">ANSWERING — TAKE THE OFFER</b>
+        <p class="mv-text">1 — Paste the host's offer here and proceed.</p>
+        <textarea id="mv-rtc-take" style="${TA}" placeholder="the offer blob goes here"></textarea>
+        <p class="mv-text">2 — Your answer appears below. Carry it back to the host; the
+           lobby opens on both machines the moment they meet.</p>
+        <textarea id="mv-rtc-give" style="${TA}" readonly></textarea>
+        <p class="mv-note" id="mv-rtc-note" style="min-height:14px;font-size:11px;opacity:.7"></p>
+        <div class="modal-actions">
+          <button id="btn-mv-rtc-go" class="btn btn-primary">PROCEED</button>
+          <button id="btn-mv-rtc-copy" class="btn">COPY THE ANSWER</button>
+          <button id="btn-mv-rtc-back" class="btn">BACK</button></div>`;
+      $('#btn-mv-rtc-back').addEventListener('click', back);
+      $('#btn-mv-rtc-copy').addEventListener('click', () => {
+        const t = $('#mv-rtc-give');
+        if (!t.value) { note('Nothing to copy yet — take the offer first.'); return; }
+        t.select();
+        try { navigator.clipboard.writeText(t.value); note('Copied. The duel table opens when the host takes it.'); }
+        catch (e) { note('The clipboard refused — select it all and copy by hand.'); }
+      });
+      $('#btn-mv-rtc-go').addEventListener('click', async () => {
+        let ans;
+        try { ans = await NetRTC.answer($('#mv-rtc-take').value); }
+        catch (e) { note(e.message || String(e)); return; }
+        $('#mv-rtc-give').value = ans;
+        note('Answer written. Carry it back to the host.');
+      });
+    });
   },
 
   /** The open tables on this machine, repainted whenever the relay says so. */

@@ -1413,3 +1413,181 @@ const Net = {
     });
   }
 };
+
+/* ═══════════════════════════════════════════════════════════════════════
+   THE SECOND WIRE — the same duel, fought across two machines.
+
+   Everything above this line is transport-agnostic on purpose: Net.attach
+   takes anything with postMessage(msg) and an onmessage callback, and the
+   lobby, the lockstep, the fingerprints and the liveness clocks run over it
+   unchanged. This section is the transport the header promised — a
+   hand-signalled RTCDataChannel — and it touches nothing above the seam.
+
+   THERE IS NO SERVER, AND THE PLAYERS ARE TOLD SO. WebRTC still needs the
+   two session descriptions carried between the machines somehow, and every
+   signalling service there is to rent is a dependency the house rule
+   forbids. So the two commanders carry them: the host copies an offer blob
+   out, the guest pastes it and copies an answer back, the host pastes that,
+   and from then on the machines talk directly. The ritual is the price of
+   the rule, and the UI copy says so in as many words.
+
+   NO ICE SERVERS EITHER. A bare RTCPeerConnection gathers host candidates
+   only, which reach across one LAN — two machines in one room, the
+   realistic shape of this duel for a game that ships as a single offline
+   file. A public STUN url would cross NATs and would also put a third
+   party in every duel; NET_RTC_CONFIG below is where one would go, and it
+   is empty on purpose. */
+
+const NET_RTC_CONFIG = {};   // no iceServers: host candidates, one LAN
+
+const NetRTC = {
+
+  supported: (typeof RTCPeerConnection === 'function'),
+  pc: null,          // the connection being built, or the one in use
+  dc: null,          // its single channel — ordered and reliable by default,
+                     // which is exactly what lockstep already assumes
+  adapter: null,     // the postMessage/onmessage shim Net is attached to
+  onState: null,     // UI hook: a line of ritual progress
+  onLink: null,      // UI hook: the wire is live
+
+  state(text) { if (this.onState) this.onState(text); },
+
+  /* A blob is base64 over JSON so it survives whatever carries it — chat
+     clients that mangle newlines, mail that folds lines, clipboards that
+     smart-quote. Whitespace picked up in transit is stripped on the way in.
+     escape/unescape keep the round trip unicode-safe with no library. */
+  _enc(obj) { return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); },
+  _dec(s) { return JSON.parse(decodeURIComponent(escape(atob(String(s).replace(/\s+/g, ''))))); },
+
+  /* ONE BLOB PER DIRECTION. Trickling candidates needs a wire, and the wire
+     is the thing being built — so gathering must FINISH before the blob is
+     worth copying, and iceGatheringState 'complete' is how the browser says
+     it has. With no ICE servers to consult this is milliseconds. */
+  _gathered(pc) {
+    return new Promise(res => {
+      if (pc.iceGatheringState === 'complete') return res(pc.localDescription);
+      pc.addEventListener('icegatheringstatechange', function h() {
+        if (pc.iceGatheringState !== 'complete') return;
+        pc.removeEventListener('icegatheringstatechange', h);
+        res(pc.localDescription);
+      });
+    });
+  },
+
+  _open() {
+    this.abort();
+    const R = this, pc = this.pc = new RTCPeerConnection(NET_RTC_CONFIG);
+    /* 'failed' and 'closed' are verdicts. 'disconnected' is deliberately NOT
+       here: it can be a transient blip that recovers on its own, and the
+       existing heartbeat timeout already ends a genuine loss with the same
+       honesty five seconds later. */
+    pc.onconnectionstatechange = () => {
+      if (pc !== R.pc) return;                          // an aborted build talking
+      if (pc.connectionState === 'failed' || pc.connectionState === 'closed') R._lost();
+    };
+    return pc;
+  },
+
+  /** HOST, step one: build the connection, hand back the offer blob. */
+  async host() {
+    if (!this.supported) throw new Error('This browser has no WebRTC.');
+    const pc = this._open();
+    this._arm(pc.createDataChannel('duel'));
+    await pc.setLocalDescription(await pc.createOffer());
+    const d = await this._gathered(pc);
+    return this._enc({ v: NET_PROTOCOL, d: { type: d.type, sdp: d.sdp } });
+  },
+
+  /** GUEST: take the offer, hand back the answer blob. */
+  async answer(blob) {
+    if (!this.supported) throw new Error('This browser has no WebRTC.');
+    let o; try { o = this._dec(blob); } catch (e) { throw new Error('That is not an offer blob — copy the WHOLE of it and try again.'); }
+    if (o.v !== NET_PROTOCOL) throw new Error('The two machines are running different builds of the game. Reload both from the site, then start over.');
+    const pc = this._open();
+    pc.ondatachannel = ev => this._arm(ev.channel);
+    await pc.setRemoteDescription(o.d);
+    await pc.setLocalDescription(await pc.createAnswer());
+    const d = await this._gathered(pc);
+    return this._enc({ v: NET_PROTOCOL, d: { type: d.type, sdp: d.sdp } });
+  },
+
+  /** HOST, step two: take the answer. The channel opens by itself after. */
+  async accept(blob) {
+    let a; try { a = this._dec(blob); } catch (e) { throw new Error('That is not an answer blob — copy the WHOLE of it and try again.'); }
+    if (a.v !== NET_PROTOCOL) throw new Error('The two machines are running different builds of the game. Reload both from the site, then start over.');
+    if (!this.pc) throw new Error('There is no offer waiting for this answer. Start the ritual again.');
+    await this.pc.setRemoteDescription(a.d);
+    this.state('Answer taken. The machines are finding each other…');
+  },
+
+  _arm(dc) {
+    const R = this;
+    this.dc = dc;
+    dc.onopen = () => R._live(dc);
+    dc.onclose = () => R._lost();
+  },
+
+  /* The channel is open: wrap it in the exact shape Net.attach was built
+     for. BroadcastChannel carries structured clones and a DataChannel
+     carries text, so JSON is the whole of the adaptation — post() gains a
+     stringify, receive() gains a parse, and nothing else differs. */
+  _live(dc) {
+    const R = this;
+    const adapter = this.adapter = {
+      onmessage: null,
+      postMessage(msg) { try { dc.send(JSON.stringify(msg)); } catch (e) { console.error('[rtc] send', e); } },
+      close() { try { dc.close(); } catch (e) {} }
+    };
+    dc.onmessage = ev => {
+      let m; try { m = JSON.parse(ev.data); } catch (e) { return; }   // not JSON, not ours
+      if (adapter.onmessage) adapter.onmessage({ data: m });
+    };
+    /* The same-machine channel retires first — two live transports would
+       double every lobby message. The next same-machine lobby rebuilds a
+       fresh BroadcastChannel through Net.open() as if this never happened. */
+    if (Net.ch && Net.ch !== adapter && typeof Net.ch.close === 'function') { try { Net.ch.close(); } catch (e) {} }
+    Net.ch = null;
+    /* `supported` gates every lobby entry on BroadcastChannel existing. A
+       browser without one can still hold THIS wire, and with the adapter
+       attached the gate must answer for the wire that exists. */
+    Net.supported = true;
+    Net.attach(adapter);
+    /* A closing window must reach the peer as a closed CONNECTION, not as
+       five seconds of unexplained silence: pc.close() fires the far side's
+       onclose the moment the last packet lands. */
+    if (!this._unloadHooked) {
+      this._unloadHooked = true;
+      window.addEventListener('beforeunload', () => { if (R.pc) { try { R.pc.close(); } catch (e) {} } });
+    }
+    this.state('The wire is live.');
+    if (this.onLink) this.onLink();
+  },
+
+  /* Every way the wire dies lands here — dc.onclose, connectionState failed
+     or closed, the peer's window closing — and routes into the SAME dropPeer
+     the heartbeat timeout uses. Mid-duel that voids with the existing copy;
+     in the lobby it reads as the closed window it is. A death before the
+     link ever opened is neither: it is the ritual failing, said in ritual
+     terms. */
+  _lost() {
+    if (!this.pc && !this.adapter) return;              // already torn down
+    const hadLink = !!this.adapter;
+    this.teardown();
+    if (hadLink) { Net.ch = null; Net.dropPeer('closed'); }
+    else this.state('The machines could not reach each other. Same network? Whole blobs? Start the ritual again.');
+  },
+
+  /** The RTC objects only. Net keeps whatever state it is in. */
+  teardown() {
+    const pc = this.pc, dc = this.dc;
+    this.pc = null; this.dc = null; this.adapter = null;
+    if (dc) { dc.onopen = dc.onclose = dc.onmessage = null; try { dc.close(); } catch (e) {} }
+    if (pc) { pc.onconnectionstatechange = null; pc.ondatachannel = null; try { pc.close(); } catch (e) {} }
+  },
+
+  /** Esc, BACK, or a fresh start mid-ritual: nothing survives it. */
+  abort() {
+    if (this.adapter && Net.ch === this.adapter) Net.ch = null;
+    this.teardown();
+  }
+};

@@ -103,8 +103,11 @@ asserted rather than demonstrated.
   to a weekly usage limit (resets Aug 25). Everything above is my own
   verification, not an independent one. **This branch has had no adversarial
   review**, and on this project unaudited patches have twice shipped real bugs.
-- BroadcastChannel is same-origin, same-browser. Two machines need the WebRTC
-  path with manual copy-paste signalling, which is designed for but not built.
+- BroadcastChannel is same-origin, same-browser. Two machines duel over the
+  WebRTC path with manual copy-paste signalling — built in Session 21 round
+  two: `NetRTC` (bottom of `js/net.js`) hangs a hand-signalled RTCDataChannel
+  on the `Net.attach` seam, and ACROSS TWO MACHINES in the duel table
+  (`UI.mpRtc`) is the ritual. No ICE servers: host candidates only, one LAN.
 
 ## Picking this up
 
@@ -119,3 +122,40 @@ python -m http.server 8471 --bind 127.0.0.1
 Fix the two above, get an adversarial audit on it, then merge. Do not merge on
 19/24 — the note asked for multiplayer that *actually* works, and the honest
 reading of 19/24 is "the transport is good and the guarantee is unproven".
+
+---
+
+## WebRTC across two machines (Session 21, owner decision 5A) — SHIPPED, ONE CLAIM UNVERIFIED
+
+`NetRTC` in `js/net.js` hangs a second transport off the `Net.attach` seam the
+file was built around: a hand-signalled `RTCDataChannel`, no server, no
+library, no ICE servers (`NET_RTC_CONFIG = {}`), host candidates only. The
+ritual is three copy-pastes — host makes an offer blob, guest answers with
+one, host takes the answer — and every blob is base64 over JSON stamped with
+`NET_PROTOCOL`, so two different builds refuse each other with a sentence
+instead of desyncing. From the moment the channel opens, the lobby, the
+lockstep, the seat lens and the guards run **unchanged**: the adapter is
+`postMessage` + `onmessage` and JSON is the whole of the adaptation.
+
+**What is verified.** The blobs generate and carry the protocol; a wrong-build
+blob is refused with the honest message; the panel exists and Esc cancels it;
+and the shipped same-machine path is provably untouched — **MPT 40 pass / 0
+fail** with the RTC code in the build.
+
+**What is NOT verified, and you should know before trusting it.** An
+end-to-end duel over the RTC wire. A loopback harness — two peer connections
+in one page — connected **once** (ICE `connected`, channel `open`, packets
+both ways) and then would not reproduce, including on fresh pages. That is
+consistent with the transport's own documented limitation rather than with a
+bug in it: browsers mask host candidates behind mDNS `.local` names, and
+resolving those to yourself inside one page is exactly the flaky case. The
+real test is the real thing — **two machines on one LAN, two windows, the
+three-paste ritual** — and it has not been run. Until it has, treat the
+two-machine path as SHIPPED BUT UNPROVEN.
+
+If it fails on a LAN, the first two things to check are mDNS (guest Wi-Fi with
+AP isolation blocks it) and whether both machines loaded the same build.
+Adding a public STUN URL to `NET_RTC_CONFIG` would fix most NAT cases and is
+the single place a fork would do it — deliberately absent, because a
+third-party server in every duel's setup is exactly the external dependency
+this project does not take.
