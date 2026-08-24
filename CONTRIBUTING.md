@@ -61,11 +61,11 @@ weight, not a contract, and they only ever grow.
 
 | Module | Lines | What lives there |
 |---|---:|---|
-| `js/ui.js` | 6124 | Every screen and overlay. Title, galaxy, loadout, battle HUD, dossiers, end screen. |
+| `js/ui.js` | 6272 | Every screen and overlay. Title, galaxy, loadout, battle HUD, dossiers, end screen. |
 | `js/entities.js` | 3822 | Towers and enemies: movement, targeting, damage, status. |
-| `js/game.js` | 3695 | Core state and the simulation step. Board, economy, waves, N-side seat logic, relocation, the radial. |
-| `js/config.js` | 3690 | Tunables, tower/enemy/wave data, maps, talent trees. **Every magic number belongs here**, named, with a comment saying what it protects against. |
-| `js/commanders.js` | 1146 | `Meta` — the save file, profiles, progression, the soul vault. |
+| `js/game.js` | 3769 | Core state and the simulation step. Board, economy, waves, N-side seat logic, relocation, the radial. |
+| `js/config.js` | 3697 | Tunables, tower/enemy/wave data, maps, talent trees. **Every magic number belongs here**, named, with a comment saying what it protects against. |
+| `js/commanders.js` | 1200 | `Meta` — the save file, profiles, progression, the soul vault. |
 | `js/ai.js` | 1118 | The rival commander. Loadout drafting, build/upgrade scoring, musters. |
 | `js/entities2.js` | 1048 | The expansion behaviours — siren, saboteur, reanimation, marks. |
 | `js/towers2.js` | 996 | Elements, the combo table, the expansion towers, arena modifiers, the twenty boons. |
@@ -75,7 +75,7 @@ weight, not a contract, and they only ever grow.
 | `js/roster.js` | 473 | Commander roster and their traits. |
 | `js/abilities.js` | 193 | Commander abilities. |
 | `js/dialogue.js` | 192 | Portraits, the `art()` lookup, pre-battle dialogue. |
-| `js/main.js` | 168 | Bootstrap and keyboard. |
+| `js/main.js` | 176 | Bootstrap and keyboard. |
 | `js/artpack.js` | *generated* | 188 base64 images on four lines. Never hand-edit; see §6. |
 
 `css/style.css` is structure, `css/polish.css` is everything added since. New

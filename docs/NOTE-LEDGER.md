@@ -75,9 +75,9 @@ Legend: ✅ verified in code · 🔶 landed but unverified · ⏳ in flight · �
 | 16.5 | Souls = 2× stars earned | ✅ verified 1★→2, 3★→6 |
 | 16.6 | Complete map reformation for diversity | ✅ 15 battle boards + the arena; 4 of them tri |
 | 16.7 | Title bg → space nebula gradient, keep star interaction | ✅ verified |
-| 16.8 | Muster income much higher; reanimation stacks | ✅ +5%→+14.9%, cap 100%, gold+doubling stack |
-| 16.9 | Faction-specific enemies; neutral = semi-sentient robotic protectors | ✅ `FACTION_TROOPS` replace machine slots on a garrisoned world |
-| 16.10 | Tower tech origins (5), soul-shop gated by faction playthrough | ✅ all 39 towers carry `origin:`; shop gated |
+| 16.8 | Muster income much higher; reanimation stacks | ✅ +5%→+14.9%; cap retuned to **180%** by 19.17 (`MUSTER_INCOME_CAP_PCT`); gold+doubling stack |
+| 16.9 | Faction-specific enemies; neutral = semi-sentient robotic protectors | ✅ faction troops replace machine slots on a garrisoned world (the symbol moved: `ROSTER_FACTION_SLOTS` + `battleHostFaction` since the Session-19 refactor) |
+| 16.10 | Tower tech origins (5), soul-shop gated by faction playthrough | ✅ every tower carries `origin:` — all **50** since 19.21; shop gated |
 | 16.11 | Dialogue more immersive, less clumped/random | ✅ 21 per-commander openers, per-faction replies, authored rivalry pairs (dialogue.js) |
 | 16.12 | Universe map: drag-scroll, varied planets, fix clumping, 2+ tri per system, bigger tri maps | ✅ drag + clumping; `CONTESTED_PER_SYSTEM = 2` drawing distinct boards from `TRI_MAP_IDS` |
 
