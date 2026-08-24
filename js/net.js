@@ -61,7 +61,11 @@ const NET_CHANNEL = 'cosmic-conquest-duel/1';
    clutches on the board, the conscription debt and the power step. No new
    command kinds: a buy is still `m`, and every rite runs itself identically
    on both clients from the same seed. */
-const NET_PROTOCOL = 3;
+/* 4: the fingerprint learnt the relay network, the spliced lane, the compile
+   level, the intrusion count and the bootstrap ramp. Protocol 3 shipped
+   without them, so a 3 and a 4 hash different sets and would part on turn
+   zero for a reason nobody could read off the overlay. Refuse the link. */
+const NET_PROTOCOL = 4;
 /* A turn is six ticks — 100ms at 1x. Smaller windows stall constantly the
    moment one browser deprioritises anything; larger ones are felt as lag. */
 const NET_TURN_TICKS = 6;
@@ -1074,6 +1078,22 @@ const Net = {
       mix(pod.side); mix(q(pod.x)); mix(q(pod.y));
       mix(q(pod.t)); mix(q(pod.powerHp)); mix(pod.lidx | 0);
     }
+    /* THE RELAY NETWORK and THE SPLICE. Both are duel-reachable -- any
+       commander may field Parallel soldiers once the install has taken a
+       galaxy -- and both change what arrives and where it walks: a relay
+       moves speed and armour, a splice adds a whole LANE. Hash the cause,
+       not the symptom: without these a divergence here would surface later
+       as an enemy in the wrong place and name a turn nowhere near the one
+       that actually parted. */
+    mix((Game.relayNodes || []).length);
+    for (const n of (Game.relayNodes || [])) {
+      mix(n.owner); mix(n.board); mix(q(n.x)); mix(q(n.y)); mix(q(n.t));
+    }
+    for (let i = 0; i < Game.lanes.length; i++) {
+      mix(Game.lanes[i] ? Game.lanes[i].length : 0);
+      const sp = (Game.spliceState || [])[i];
+      mix(sp ? (sp.wavesLeft | 0) + 1 : 0);
+    }
     for (const S of this._realSides) {
       mix(S.gold); mix(S.lives); mix(S.enrage || 0); mix(q(S.musterIncome));
       mix(S.towers.length); mix(S.cleared.size); mix(S.taken.length);
@@ -1089,6 +1109,15 @@ const Net = {
       mix(S.procIdx | 0); mix(S.procCycle | 0); mix(q(S.procTimer || 0));
       mix(q(S.rollDebt || 0)); mix(q(S.summonPower || 0));
       mix(S.musterThisWave | 0);
+      /* THE COMPILE and THE BOOTSTRAP. A clone commander rewrites its own
+         traits at wave boundaries and the Parallel's towers ramp every wave,
+         so both sides' STATS depend on these even though `mods` themselves
+         are not hashed. `stats.jammed` is in because it is the metric
+         LUMEN-R compiles on -- a client that counted one more intrusion
+         would recompile a wave early and diverge on tower damage. */
+      mix(S.compileLevel | 0);
+      mix(S.stats.jammed | 0);
+      mix(q(S._bootAt || 0));
       for (const t of S.towers) {
         mix(t.gx); mix(t.gy); mix(t.level); mix(t.asc || 0);
         mix(t.invested || 0); mix(t.kills || 0); mix(q(t.damageDealt));
