@@ -924,6 +924,43 @@ T('net.rules conceding a duel does not promise a garrison', function () {
            ' the notice names the tab=' + named);
         closeMatch();
       });
+      T('net.guard a stranger cannot speak for the peer, and ctl cannot name an arbitrary key', function () {
+        openMatch(cfg, 0);
+        try {
+          /* A forged quit from a same-origin tab must not concede the duel. */
+          Net.receive({ v: NET_PROTOCOL, from: 'stranger', t: 'quit' });
+          const survivedQuit = Net.live === true;
+          /* A forged ctl naming an engine field is dropped twice over: the
+             sender gate refuses the stranger, the whitelist refuses the key. */
+          Net.receive({ v: NET_PROTOCOL, from: 'stranger', t: 'ctl', ctl: 'wave', value: 99 });
+          const w0 = Game.wave;
+          Net.receive({ v: NET_PROTOCOL, from: 'ghost', t: 'ctl', ctl: 'wave', value: 99 });
+          const waveHeld = Game.wave === w0 && Game.wave !== 99;
+          /* The two shared controls still cross. */
+          Net.receive({ v: NET_PROTOCOL, from: 'ghost', t: 'ctl', ctl: 'speed', value: 3 });
+          const speedCrossed = Game.speed === 3;
+          Net.receive({ v: NET_PROTOCOL, from: 'ghost', t: 'ctl', ctl: 'speed', value: 1 });
+          ok('net.guard a stranger cannot speak for the peer, and ctl cannot name an arbitrary key',
+             survivedQuit && waveHeld && speedCrossed,
+             'quit ignored=' + survivedQuit + ' wave held=' + waveHeld +
+             ' speed crossed=' + speedCrossed);
+        } finally { closeMatch(); }
+      });
+      T('net.guard a join that nobody answers comes back with a verdict', function () {
+        /* No host exists behind this row; the deadline is aged by hand. */
+        Net.tables = [{ id: 'gone', name: 'GONE',
+                        world: { id: 'w9', name: 'NOWHERE', map: 'spine' } }];
+        const okJoin = Net.join('gone');
+        Net.joinSince = Date.now() - NET_PEER_TIMEOUT_MS - 1000;
+        Net.tickWall();
+        const back = Net.phase === 'idle' && !Net.tables.some(t => t.id === 'gone') &&
+                     /did not answer/i.test(Net._status || '');
+        ok('net.guard a join that nobody answers comes back with a verdict',
+           okJoin === true && back,
+           'join accepted=' + okJoin + ' phase=' + Net.phase +
+           ' stale row dropped=' + !Net.tables.some(t => t.id === 'gone') +
+           ' status=' + String(Net._status).slice(0, 70));
+      });
       /* THE WAVE-5 DEADLOCK, and why no test saw it. Every CONTESTED world is
          dealt a three-way map by the galaxy generator, a tri map deals a third
          Side, and the only `oob` producer stamps the seat THIS client holds --

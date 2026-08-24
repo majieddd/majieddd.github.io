@@ -79,6 +79,14 @@ const NET_STALL_NOTICE_MS = 450;
    the other commander sat in front of a frozen board with no end to it. This
    is measured against the peer's own turn counter, never against silence. */
 const NET_STALL_VOID_MS = 20000;
+/* The message kinds only the current peer may speak. Everything here either
+   mutates the simulation, ends the duel, or feeds the liveness clocks, so a
+   sender check is the difference between a relay and an open command port. */
+const NET_PEER_ONLY = ['pkt', 'oob', 'ctl', 'quit', 'done', 'beat'];
+/* The two Game properties a 'ctl' may name. applyCtl assigns by name, and a
+   name chosen by the wire would be arbitrary state injection from any tab on
+   the origin -- speed and pause are the shared controls, and the only two. */
+const NET_CTL_KEYS = ['speed', 'paused'];
 /* Fixed-point scale for the agreement fingerprint. Positions compare to
    1/1024 px: fine enough to catch a real divergence within a few ticks,
    coarse enough that the fingerprint is never itself the false alarm. */
@@ -160,6 +168,15 @@ const Net = {
       this.lastAdvert = now;
       this.post({ t: 'table', name: this.name, world: this.table });
     }
+    /* The join deadline. The table that did not answer is the table that is
+       gone, so its row goes with the verdict -- leaving it would invite the
+       same click into the same silence. */
+    if (this.phase === 'joining' && now - this.joinSince > NET_PEER_TIMEOUT_MS) {
+      this.tables = this.tables.filter(t => t.id !== this.joinTarget);
+      this.phase = 'idle'; this.table = null; this.joinTarget = null;
+      this.status('The table did not answer — the host may have closed that window. Pick another.');
+      if (this.onLobby) this.onLobby();
+    }
     if ((this.phase === 'linked' || this.phase === 'playing') && now - this.lastBeat > NET_HEARTBEAT_MS) {
       this.lastBeat = now;
       /* The turn rides along. A bare heartbeat proves a window exists; it does
@@ -194,6 +211,16 @@ const Net = {
     if (!m || m.from === this.id) return;
     if (m.v !== NET_PROTOCOL) return;
     if (m.to && m.to !== this.id) return;
+    /* THE MATCH FAMILY SPEAKS ONLY FOR THE PEER. Every in-family sender posts
+       addressed messages, but BroadcastChannel is same-origin — any tab on
+       this origin can post a `to`-less packet — and before this gate a forged
+       'ctl' reached applyCtl and a forged 'quit' conceded a duel the player
+       was winning. Lobby traffic ('hello', 'table', 'join', ...) stays open:
+       it is how strangers meet. 'bye' is not listed because it is both — from
+       the peer it is a drop, from anyone else it merely clears a lobby row,
+       and its own case already tells them apart by sender. */
+    if (NET_PEER_ONLY.indexOf(m.t) >= 0 &&
+        (!this.peer || m.from !== this.peer.id)) return;
     if (this.peer && m.from === this.peer.id) this.lastHeard = Date.now();
 
     switch (m.t) {
@@ -259,6 +286,15 @@ const Net = {
 
       case 'ctl':
         this.applyCtl(m.ctl, m.value, true);
+        break;
+
+      case 'beat':
+        /* The turn rides the beat so a stalled window can tell a peer that is
+           merely quiet from one that is stuck: a rising turn is progress even
+           before any packet for OUR turn arrives. Without this reader the
+           field was write-only and the frozen-tab clock ran on packets alone.
+           An old window's beat carries no turn; notePeerTurn refuses it. */
+        this.notePeerTurn(m.turn);
         break;
 
       case 'quit':                                    // the other commander conceded
@@ -363,6 +399,12 @@ const Net = {
     if (why) { this.status(why); return false; }
     this.phase = 'joining';
     this.table = row.world;
+    /* A join is a question with a deadline. The only answers are the host's
+       'accept' and 'busy', both of which need the host to still exist -- so a
+       joiner whose host closed between the advert and the click used to spin
+       on "Joining..." forever. tickWall holds the deadline. */
+    this.joinSince = Date.now();
+    this.joinTarget = tableId;
     this.post({ t: 'join', to: tableId, name: this.name, profile: this.localProfile() });
     return true;
   },
@@ -984,6 +1026,7 @@ const Net = {
   },
 
   applyCtl(ctl, value, remote) {
+    if (NET_CTL_KEYS.indexOf(ctl) < 0) return;
     this._applyingCtl = !!remote;
     try { Game[ctl] = value; } finally { this._applyingCtl = false; }
     if (ctl === 'speed')
