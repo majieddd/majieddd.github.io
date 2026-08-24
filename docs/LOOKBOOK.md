@@ -1,5 +1,15 @@
 # Cosmic Conquest — Commander Portrait Lookbook
 
+> **STATUS — read before building against this.** The commander half of note 20.4
+> was **reversed by the owner** mid-Session-20: the commanders keep the approved
+> full-palette look and were restored byte-identical in `4a2974b`. Only the twenty
+> **troops** were restyled and kept. The prompt anatomy below therefore describes a
+> commander prompt that no longer exists, and it names two constants that no longer
+> exist either — `COMMANDER_DUOTONE` and `COMMANDER_REGISTER` (the latter is now
+> `TROOP_REGISTER`, and it is troop-only). Read this file as the record of how the
+> troop restyle was measured and won, not as a spec for the commanders. The current
+> direction is in [`BRAND.md`](BRAND.md) — see its final amendment.
+
 **Scope:** the `cmd_<id>` class — the twenty-one commander portraits. This is
 the working reference for that class: where the style comes from, what the
 model is actually shown, what has already gone wrong, and how to check a new

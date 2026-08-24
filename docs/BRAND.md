@@ -175,6 +175,14 @@ can tell a soldier from a specimen.
 
 ---
 
+## Amendment (Session 20.4, owner) — SUPERSEDED, see the amendment below it
+
+> **Read the next section before acting on any of this.** The owner reversed this
+> mid-Session-20: the commanders were fine, it was the troops that were off. The
+> troop half of this amendment shipped; the commander half did NOT. What follows
+> is kept because the token measurements in it are correct and worth having, but
+> its commander instruction is no longer the direction.
+
 ## Amendment (Session 20.4, owner): the commander class is duotone or monochrome
 
 The owner's note:
@@ -250,3 +258,51 @@ which is why the xeno line pays two tokens for `bioluminescence`.
 **Hue still cannot be pinned by prompting.** The hexes above are the target and
 the reference for any authored or derived asset. If an exact hue is ever
 required on a portrait, force it in code the way `derive_crests.py` does.
+
+---
+
+## Amendment (Session 20, owner reversal): the commanders keep the approved look
+
+Mid-round the owner clarified: *the commanders we have looked fine, it was the
+troops that looked off.* The code followed, and **that is what ships**:
+
+- **Commanders (`cmd_<id>`) — the full three-hue vaporwave palette, unchanged.**
+  Restored in `4a2974b`, 21/21 prompts byte-identical to the pre-20.4 originals.
+  The treatment table at the top of this file is therefore correct as written,
+  and the duotone amendment above applies to the TROOPS only.
+- **Troops (twenty of the forty-nine `foe_<id>` keys) — restyled and kept.**
+  Measured at ~1.5 hue families each, i.e. duotone/monochrome by power.
+
+### Constants: what the two amendments above name, and what actually exists
+
+The prompt spine was renamed when the commander half was reverted. Grepped
+against `artgen/`:
+
+| Named in these docs | Exists in code? |
+|---|---|
+| `COMMANDER_DUOTONE` | **No.** Removed with the commander revert |
+| `COMMANDER_REGISTER` | **No.** Renamed to `TROOP_REGISTER` in `4a2974b` |
+| `TROOP_REGISTER` | Yes — `artgen/krea_jobs.py`, and it is the troop-only register |
+| `TROOP_PREFIX`, `FACTION_LOOK`, `STYLE` | Yes |
+
+So `LOOKBOOK.md`'s prompt anatomy (its lines 135, 142-143, 206 and 336) describes
+a commander prompt that **no longer exists**. Read it as the history of the
+troop restyle, not as a spec to build against.
+
+### The standing question for the owner
+
+`cmd_cadre` is a **Krea 2** plate; the other twenty commanders are SDXL. Proved
+by decoding the shipped pack: 0.5/255 mean difference against `cache_krea`,
+97/255 against `cache`. That is a partial class upgrade, which rule 3 above
+forbids, and it is live on `main` right now in the 21-portrait grid.
+
+Measured on this machine (RTX 4080, 12 GiB): Krea 2 Turbo loads in 93 s at
+10.4 GiB and renders **one 512px plate in 34.6 minutes** — about **138 min per
+image at 1024px**, not the 83 min recorded earlier in this file. Finishing the
+commander class costs ~46 GPU-hours; the `foe_` class, which all render through
+the same dossier modal at the same size, is 49 keys and ~113 GPU-hours.
+
+Three ways out, all cheap except the last, and the choice is the owner's:
+1. Re-render `cmd_cadre` on SDXL so the grid is uniform again (minutes).
+2. Leave it and accept one sharper portrait among twenty-one.
+3. Commit the GPU time and upgrade a whole class.
