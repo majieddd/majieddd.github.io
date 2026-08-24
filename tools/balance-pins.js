@@ -59,7 +59,11 @@ window.PINS = (function () {
        list would leave the "maxed" pin holding one tower and read as a
        catastrophe -- the third documented way to mis-measure this pin. */
     for (const k of Object.keys(v.unlockedBy)) v.unlockedBy[k] = TOWER_ORDER.slice();
-    v.cmdUnlocked = COMMANDERS.map(c => c.id);
+    /* Commanders and abilities are shelved per banner too since Session 21
+       round two. Writing the retired flat `cmdUnlocked` key would be a silent
+       no-op of exactly the Tower.jammed class -- nothing reads it any more. */
+    for (const k of Object.keys(v.cmdUnlockedBy)) v.cmdUnlockedBy[k] = COMMANDERS.map(c => c.id);
+    for (const k of Object.keys(v.abilUnlockedBy)) v.abilUnlockedBy[k] = COMMANDERS.map(c => c.id);
     p.souls = 99999;
     /* Galaxy tier is DELIBERATELY left at zero. It multiplies enemy scaling,
        so a maxed-unlocks run at tier 4 measures the escalation curve, not the

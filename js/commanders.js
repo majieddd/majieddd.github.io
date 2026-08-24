@@ -326,6 +326,31 @@ const Meta = {
       delete r.vault.bought;
       this.save();
     }
+    /* COMMANDERS AND SECOND ABILITIES JOIN THE BANNER SPLIT (owner, Session 21
+       round two). Towers went per banner in 19.6 for a reason that applies
+       word-for-word here: souls are spent UNDER A BANNER, so what they buy is
+       scoped to the banner that paid. Recruiting stays possible across the
+       line -- the cross-faction premium in soulPrice already prices that --
+       but the recruit belongs to the banner that recruited them.
+
+       Existing installs are grandfathered (owner decision 4A): every shelf is
+       seeded from the old flat lists, so nobody loses a commander or an
+       ability they paid for, on any banner they will ever swear to. */
+    if (!r.vault.cmdUnlockedBy) {
+      const legacyCmd = Array.isArray(r.vault.cmdUnlocked) ? r.vault.cmdUnlocked : [];
+      const legacyAbil = Array.isArray(r.vault.abilUnlocked) ? r.vault.abilUnlocked : [];
+      r.vault.cmdUnlockedBy = {};
+      r.vault.abilUnlockedBy = {};
+      for (const k of arsenalShelfKeys()) {
+        r.vault.cmdUnlockedBy[k] = legacyCmd.slice();
+        r.vault.abilUnlockedBy[k] = legacyAbil.slice();
+      }
+      /* Deleted rather than left beside their replacements, for the same
+         reason `unlocked` and `bought` were. */
+      delete r.vault.cmdUnlocked;
+      delete r.vault.abilUnlocked;
+      this.save();
+    }
     return r.vault;
   },
   setSettings(s) { const r = this.root(); r.settings = Object.assign(r.settings || {}, s); this.save(); },
@@ -399,10 +424,12 @@ const Meta = {
       p.faction = factionId;
       /* ...and takes the unsworn arsenal shelf with it. */
       this.adoptShelf(factionId);
-      /* Swearing to a faction hands you its base commander, permanently. */
+      /* Swearing to a faction hands you its base commander, permanently --
+         on THIS banner's shelf, which shelfKey() already resolves to because
+         p.faction was assigned above. */
       const base = freeCommanderOf(factionId);
-      const v = this.vault();
-      if (base && !v.cmdUnlocked.includes(base)) v.cmdUnlocked.push(base);
+      const shelf = this.cmdShelf();
+      if (base && !shelf.includes(base)) shelf.push(base);
     }
     const seed = (p.runs * 7919 + 104729 + Math.floor(Math.random() * 1e6)) | 0;
     /* A campaign is a galaxy. Only the seed and the star progress are stored;
@@ -887,23 +914,49 @@ const Meta = {
       v.boughtBy[fk] = 0;
     }
     v.unlockedBy[NO_BANNER_SHELF] = STARTER_TOWERS.slice();
+    /* The commander and ability shelves adopt identically -- a recruit made
+       before swearing would otherwise be stranded on a shelf nothing reads. */
+    const cFrom = v.cmdUnlockedBy[NO_BANNER_SHELF] || [];
+    const cTo = (v.cmdUnlockedBy[id] = v.cmdUnlockedBy[id] || alwaysUnlocked());
+    for (const c of cFrom) if (!cTo.includes(c)) cTo.push(c);
+    const aFrom = v.abilUnlockedBy[NO_BANNER_SHELF] || [];
+    const aTo = (v.abilUnlockedBy[id] = v.abilUnlockedBy[id] || []);
+    for (const a of aFrom) if (!aTo.includes(a)) aTo.push(a);
+    v.cmdUnlockedBy[NO_BANNER_SHELF] = alwaysUnlocked();
+    v.abilUnlockedBy[NO_BANNER_SHELF] = [];
   },
 
-  isCommanderUnlocked(id) { return this.vault().cmdUnlocked.includes(id); },
+  /** The active banner's commander shelf, defaulted on read: an unknown
+      banner gets a legal starter roster instead of throwing, and the free
+      commanders can never go missing from one. Mirrors arsenalShelf(). */
+  cmdShelf() {
+    const v = this.vault();
+    const k = this.shelfKey();
+    const shelf = (v.cmdUnlockedBy[k] = v.cmdUnlockedBy[k] || alwaysUnlocked());
+    for (const id of alwaysUnlocked()) if (!shelf.includes(id)) shelf.push(id);
+    return shelf;
+  },
+  abilShelf() {
+    const v = this.vault();
+    const k = this.shelfKey();
+    return (v.abilUnlockedBy[k] = v.abilUnlockedBy[k] || []);
+  },
+
+  isCommanderUnlocked(id) { return this.cmdShelf().includes(id); },
   commanderCost(id) { return this.soulPrice('commander', id); },
   unlockCommander(id) {
-    const v = this.vault();
-    if (v.cmdUnlocked.includes(id)) return false;
+    const shelf = this.cmdShelf();
+    if (shelf.includes(id)) return false;
     /* The charge is priced by the SAME call the shop button printed from. */
     if (!this.chargeSouls('commander', id)) return false;
-    v.cmdUnlocked.push(id);
+    shelf.push(id);
     this.save(true);
     return true;
   },
 
   /** The second (defensive) ability unlocks with a full chart, or with souls. */
   hasSecondAbility(cmdId) {
-    if (this.vault().abilUnlocked.includes(cmdId)) return true;
+    if (this.abilShelf().includes(cmdId)) return true;
     const c = COMMANDER_ROSTER.find(x => x.id === cmdId);
     if (!c) return false;
     return c.tech.every(t => this.isUnlocked(cmdId, t.id));
@@ -940,13 +993,13 @@ const Meta = {
     return { stars: p.prestige[id] };
   },
   unlockAbility(cmdId) {
-    const v = this.vault();
-    if (v.abilUnlocked.includes(cmdId)) return false;
+    const shelf = this.abilShelf();
+    if (shelf.includes(cmdId)) return false;
     /* The raw constant used to be charged here while the shop printed
        abilityCost(). They were equal, which is why it survived -- and the
        moment a surcharge landed on one of them they would have parted. */
     if (!this.chargeSouls('ability')) return false;
-    v.abilUnlocked.push(cmdId);
+    shelf.push(cmdId);
     this.save(true);
     return true;
   },

@@ -100,7 +100,25 @@ Measure before building.
 
 ---
 
-## C. Owner decisions — nothing is blocked, but these are yours
+## C. Owner decisions — RESOLVED (Session 21, round two)
+
+The owner reviewed the docket and ruled on every row:
+
+| Decision | Ruling |
+|---|---|
+| The one Krea 2 commander plate (`cmd_cadre`) | **1B — leave it.** "All the commanders look fine." The mixed plate is owner-accepted; BRAND.md rule 3's partial-upgrade concern is waived for this one key |
+| "THE HARBINGER ENRAGES" | **2A — keep it.** Boss flavour, not the mechanic |
+| Commander / second-ability unlock scope | **2B... no — 3B: widen the split.** Commanders and abilities are shelved per banner like towers, with the 4A grandfather: every existing flat list seeded onto every shelf, nobody loses anything. Shipped — `cmdUnlockedBy` / `abilUnlockedBy` in `js/commanders.js` |
+| Grandfathered saves | **4A — keep the grandfather**, and it governed the 3B migration above |
+| WebRTC two-machine duels | **5A — queued as the next feature.** In design |
+
+And from the held-back fifteen: **#1 (recoverable stolen objective)** and **#4
+(variable footprints, as two especially-powerful 2×2 towers per origin)** are
+ordered built. The other thirteen remain held.
+
+### The old table, for history
+
+#### Owner decisions — nothing is blocked, but these are yours
 
 | Decision | Context |
 |---|---|

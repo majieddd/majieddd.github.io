@@ -121,9 +121,10 @@ const UI = {
       return `<button class="profile-row ${n === active ? 'active' : ''}" data-profile="${n}"
               data-tt="${n}|${fa ? fa.name + '. ' : 'No allegiance chosen. '}This banner's arsenal holds ${
                 shelf.length} ${shelf.length === 1 ? 'tower' : 'towers'}; ${
-                vault.cmdUnlocked.length} ${
-                vault.cmdUnlocked.length === 1 ? 'commander is' : 'commanders are'
-                } recruited across the install. ${
+                ((vault.cmdUnlockedBy || {})[r.faction || NO_BANNER_SHELF] || []).length} ${
+                ((vault.cmdUnlockedBy || {})[r.faction || NO_BANNER_SHELF] || []).length === 1
+                  ? 'commander is' : 'commanders are'
+                } recruited under this banner. ${
                 r.souls || 0} souls banked.${r.campaign ? ' Campaign in progress.' : ''}">
         <span class="pr-name">${n}</span>
         <span class="pr-meta">◉ ${r.souls || 0} souls · ${r.campaign ? 'node ' + (r.campaign.depth + 1) : 'no campaign'} · ${formatNum(lv)} XP</span>
