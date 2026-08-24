@@ -490,7 +490,121 @@ const UI = {
     if (this.sel.loadout.some(t => towerFoot(TOWER_TYPES[t]) > 1) && !Game.canFitFoot(0, 2))
       Game.banner('NO GROUND FITS A 2×2 EMPLACEMENT ON THIS MAP', 4, '#f59e0b');
     if (!Game._skirmish) this.showBattleIntro();
+    this.startFirstRunCoach();
     this.syncAll();
+  },
+
+  /* ═══════════════════════════════════ THE FIRST-RUN COACH (A1) ═══ */
+
+  /** The first campaign battle a profile fights gets four hints keyed to what
+      is actually happening on its board. The only teaching surfaces this game
+      ships are a 50K-character field manual and per-enemy dossiers, and
+      neither is read during wave two -- the novice wall the repo measures at
+      waves 6-10 is reached by players who were never told the rules that
+      decide it. Every beat is a LIVE predicate over engine state rather than a
+      timer, so a hint can never describe something the player has not seen.
+
+      What each guard prevents:
+      - `Net.live`: a duel is lockstep. Nothing here mutates the simulation,
+        but a coach is still one client running a loop the other is not, and
+        the guard costs a comparison. Today no duel reaches this function --
+        Net.start passes `skirmish: true` (js/net.js) -- and that is exactly
+        the kind of accident the next entry point stops inheriting.
+      - `Game.noReanim`: the arena suspends reanimation outright (config.js),
+        so the reanimation beat would be teaching a law that board repeals.
+        Guarded on the STEP, not on the coach: a three-seat contested world
+        still reanimates and its commander still needs the other three hints.
+      - `coachDone` rides the ACTIVE PROFILE, not the install: a second
+        commander file is a second first battle. It is a plain field on the
+        object Meta.load() returns, so the OPTIONS save export carries it and
+        an import restores it with no allow-list to keep in step.
+
+      Nothing here draws a random number. The seeded battle window wraps
+      Game.start and Game.step and nothing else (js/game.js); this loop is a
+      timer callback outside both, so a seeded replay is identical with the
+      coach running or retired. */
+  startFirstRunCoach() {
+    if (Game._skirmish) return;
+    if (typeof Net !== 'undefined' && Net.live) return;
+    if (Meta.load().coachDone) return;
+    const S = Game.sides[0];
+    /* Read off the board rather than hard-coded: hotkey 1 is loadout[0], and
+       that is whatever the player put in the first slot, not always BOLT. */
+    const first = TOWER_TYPES[S.loadout[0]];
+    const steps = [
+      { at: () => true,
+        text: 'Press 1 to take ' + ((first && first.name) || 'your first tower') +
+              ', then click a buildable tile on YOUR half of the board.' },
+      { at: () => S.towers.length > 0,
+        text: 'It fires on its own. Kills pay gold — U upgrades the tower you have selected, S sells it back.' },
+      /* Keyed to a reanimate ALREADY WALKING, never to the kill counter: a
+         carrier kill increments stats.kills too (game.js killEnemy), and a
+         carrier hands lives back instead of marching, so the counter would
+         have fired this line on the one death that disproves it. */
+      { at: () => !Game.noReanim &&
+                  Game.enemies.some(e => e.hostileTo === 0 && e.reanimated && !e.carrier),
+        text: 'Your kills rise again and march on your rival — and theirs march on you. That is the INBOUND count in the sidebar.' },
+      /* THE THEFT, not the loss. A leak no longer spends lives on contact:
+         the unit turns around carrying them and only charges you if it walks
+         off the spawn edge, so the teachable moment is while the carrier is
+         still on the board and still killable. */
+      { at: () => Game.enemies.some(e => e.hostileTo === 0 && e.carrier),
+        text: 'That one is carrying your lives back to the edge. Kill it before it leaves and you get every one of them back.' },
+    ];
+    const fired = steps.map(() => false);
+    let shown = 0, done = false, hideT = 0;
+    const tip = () => document.getElementById('coach-tip');
+    const finish = () => {
+      if (done) return;
+      done = true;
+      clearInterval(poll); clearTimeout(stopT); clearTimeout(hideT);
+      /* Only a coach that actually TAUGHT something is retired. Opening a
+         battle and walking straight back out is not a lesson, and burning the
+         flag there is how a first-run aid becomes one nobody ever sees. */
+      if (shown > 0) { Meta.load().coachDone = true; Meta.save(true); }
+      const t = tip(); if (t) t.remove();
+    };
+    const poll = setInterval(() => {
+      if (done) return;
+      /* LEFT THE BOARD. The screen is the truth here, because Game.state parks
+         at 'over' until UI.show moves it on and passes through 'choosing' and
+         'escalating' mid-battle -- a state test retired the coach on the first
+         draft. Returning as well as finishing is the other half: without the
+         return this tick went on to build a tip on the screen it had just
+         left, with a GOT IT whose handler was already spent. */
+      if ($('#screen-game').classList.contains('hidden')) { finish(); return; }
+      /* A hint must not burn its nine seconds behind a modal, behind a pause,
+         or in a backgrounded tab -- nobody is reading it in any of the three.
+         `.overlay:not(.hidden)` is the guard main.js already uses; an id list
+         goes stale on the next overlay somebody adds. */
+      if (Game.paused || document.hidden) return;
+      if (document.querySelector('.overlay:not(.hidden)')) return;
+      /* Independent, not sequential: a beat that never happens on this board
+         must not dam the beats behind it. */
+      const i = steps.findIndex((s, n) => !fired[n] && s.at());
+      if (i < 0) return;
+      fired[i] = true; shown++;
+      let box = tip();
+      if (!box) {
+        box = document.createElement('div');
+        box.id = 'coach-tip';
+        box.className = 'coach-tip';
+        /* Static markup only; the step copy is engine text and lands through
+           textContent below. */
+        box.innerHTML = '<b>COACH</b><span></span><button class="btn btn-sm" id="coach-done">GOT IT</button>';
+        document.body.appendChild(box);
+        $('#coach-done', box).addEventListener('click', () => { Sound.play('click'); finish(); });
+      }
+      $('span', box).textContent = steps[i].text;
+      box.classList.add('show');
+      Sound.play('click');
+      clearTimeout(hideT);
+      hideT = setTimeout(() => { const b = tip(); if (!done && b) b.classList.remove('show'); }, 9000);
+      if (fired.every(Boolean)) setTimeout(finish, 9200);
+    }, 1500);
+    /* A hard stop, so the loop can never outlive a tab left open on a paused
+       battle for an afternoon. */
+    const stopT = setTimeout(finish, 8 * 60 * 1000);
   },
 
   /* ══════════════════════════════════════════════ SCREEN 1 — COMMAND ═══ */
@@ -1647,7 +1761,11 @@ const UI = {
    * is the browser talking to itself, so a duel is fought between two WINDOWS
    * of this game on one machine, over BroadcastChannel, at full fidelity --
    * towers, musters, sends, reanimation, the lot, on one simulation both
-   * clients step in lockstep. The copy says exactly that. See js/net.js.
+   * clients step in lockstep. TWO MACHINES fight the same duel over the
+   * hand-signalled wire in mpRtc below, and the lobby past that link is this
+   * one unchanged -- so this header must name both, or the next reader
+   * trims the panel back down to the one shape it describes. The copy says
+   * exactly that. See js/net.js.
    */
   mpSearch(w) {
     const ov = $('#mv-search'), body = $('#mv-search-body');
@@ -3202,7 +3320,25 @@ const UI = {
       strip.innerHTML = this.chosenStripHTML('tower', sel, target);
       this.bindChosenStrip(strip);
     }
-    $('#btn-deploy').disabled = sel.length !== target;
+    /* B3: A DISABLED BUTTON THAT SAYS NOTHING READS AS A BROKEN BUTTON. A
+       first-run profile owns one tower, so loadoutTarget() is 1 -- yet the
+       header printed a flat "five" and DEPLOY greyed out with no word, so a
+       new commander concluded the game was broken rather than that picking
+       was required. The label carries the shortfall, the title carries the
+       rule, and the header now prints the number the gate actually uses.
+       .btn:disabled sets only opacity and cursor -- never pointer-events --
+       so the browser still paints the title on the dead button, which is the
+       one moment a player goes looking for it. The disabled test is the
+       original expression untouched: this adds words, never a new gate. */
+    const need = target - sel.length;
+    const dep = $('#btn-deploy');
+    dep.disabled = need !== 0;
+    dep.textContent = need === 0 ? 'DEPLOY' : `SELECT ${need} MORE TOWER${need === 1 ? '' : 'S'}`;
+    dep.title = need === 0
+      ? ''
+      : `This campaign fields ${target} tower${target === 1 ? '' : 's'}. ${need} slot${need === 1 ? '' : 's'} still empty — pick from the ARSENAL column.`;
+    const tag = $('#loadout-tagline');
+    if (tag) tag.innerHTML = `You may take <b>${target}</b> tower${target === 1 ? '' : 's'} into battle. Everything else stays home.`;
 
     const unlockedCount = Meta.unlockedTowers().length;
     $('#loadout-unlocked').innerHTML =
@@ -3233,9 +3369,18 @@ const UI = {
       if (combo && !pairs.some(p => p.id === combo.id)) pairs.push(combo);
     }
 
-    /* Warnings are only meaningful once something is actually selected. */
-    $('#loadout-warn').innerHTML = !sel.length
-      ? '<div class="lo-hint">Pick five towers. Warnings about coverage gaps appear as you build the set.</div>'
+    /* Coverage warnings are only meaningful once something is selected -- but
+       the DEPLOY gate is meaningful from the first frame, and this bar is the
+       screen's ONE place for "what is wrong with this loadout". The gate
+       sentence lands here rather than in a second hint element under the
+       button: two surfaces stating the same rule drift apart the first time
+       either is edited, and the button label is already the short form of
+       this sentence. The count is loadoutTarget(), never a literal five --
+       printing five to a profile that can field one was the whole of B3. */
+    const gate = need === 0 ? ''
+      : `<div class="lo-hint"><b>${need} more tower${need === 1 ? '' : 's'} to pick.</b> DEPLOY opens when ${target === 1 ? 'the slot is' : `all ${target} slots are`} filled — the rival fields a full arsenal whether or not you do.</div>`;
+    $('#loadout-warn').innerHTML = gate + (!sel.length
+      ? '<div class="lo-hint">Coverage warnings appear as you build the set.</div>'
       : (warn.length
           ? warn.map(w => `<div class="lo-warn">⚠ ${w}</div>`).join('')
           : '<div class="lo-ok">✓ This loadout covers air, armour and magic immunity.</div>')
@@ -3244,7 +3389,17 @@ const UI = {
                  `<span class="chip" data-tt="${c.name}|${c.desc}">${c.name}</span>`).join('')}</div>`
             : (els.some(e => ELEMENTS[e].marks)
                 ? '<div class="lo-hint">No elemental reactions — these towers share elements, or their partners are missing. Overlap two DIFFERENT marking elements on the same stretch of lane to trigger one.</div>'
-                : '<div class="lo-hint">Nothing here marks. Kinetic and Radiant deal straight damage and never trigger reactions.</div>'));
+                : '<div class="lo-hint">Nothing here marks. Kinetic and Radiant deal straight damage and never trigger reactions.</div>')));
+    /* THE OTHER HALF OF THE DEPLOY GATE, SAID EARLY. UI.deploy already banners
+       NO GROUND FITS A 2×2 EMPLACEMENT when Game.canFitFoot(0, 2) fails, but
+       that fires AFTER the transition, on a map already committed to, with a
+       loadout slot spent on a tower that cannot be placed. FIELD is not built
+       on this screen, so the honest pre-flight is the caveat rather than the
+       verdict -- and stating it here makes that battle banner a confirmation
+       of something already read instead of a second, surprising voice. */
+    if (sel.some(id => towerFoot(TOWER_TYPES[id]) > 1))
+      $('#loadout-warn').insertAdjacentHTML('beforeend',
+        '<div class="lo-hint">This set carries a 2×2 heavy emplacement. Not every map has four free tiles together — you are told on arrival if this one does not, and the rest of the loadout still fights.</div>');
     this.bindChipTips($('#loadout-warn'));
 
     this.bindLoadoutColumns();
@@ -4401,7 +4556,28 @@ const UI = {
     this.el.speedBtns.forEach(b => b.classList.toggle('active', Number(b.dataset.speed) === Game.speed));
     this.el.btnPause.textContent = Game.paused ? '▶' : '❚❚';
   },
-  togglePause() { if (Game.state === 'playing') { Game.paused = !Game.paused; Sound.play('click'); this.syncSpeed(); } },
+  /* B1: the dossier and the pre-battle dialogue OWN the pause state -- each
+     sets Game.paused on the way in and clears it in its own close path. The
+     backdrop stops the mouse (.overlay is inset:0 at z-index 300), but nothing
+     moves FOCUS off the HUD, so a pause button the player clicked a moment
+     earlier is still document.activeElement and a Space or Enter meant for the
+     modal natively re-fires it -- un-pausing a battle that then ran behind a
+     modal nobody had dismissed. That is the desync closeTopOverlay documents
+     and fixes for Escape, and which the keyboard path in main.js already
+     refuses; only the button was left open. A marker CLASS rather than a list
+     of ids, for the reason main.js gives: the next blocking modal that pauses
+     is covered by wearing it. Codex, settings, the soul shop and the confirm
+     box go unmarked on purpose -- they open over a live battle without owning
+     its pause, and the button must keep working under them. The draft,
+     escalation and end overlays need no marker either: each parks Game.state
+     off 'playing', which the state check already refuses. */
+  togglePause() {
+    if (Game.state !== 'playing') return;
+    if (document.querySelector('.overlay.owns-pause:not(.hidden)')) return;
+    Game.paused = !Game.paused;
+    Sound.play('click');
+    this.syncSpeed();
+  },
   flashGold() { const g = this.el.myGold.parentElement; g.classList.remove('flash'); void g.offsetWidth; g.classList.add('flash'); },
 
   /* ============================================================ CHOICE */
@@ -5076,7 +5252,10 @@ const UI = {
     if (!ov) {
       ov = document.createElement('div');
       ov.id = 'battle-intro';
-      ov.className = 'overlay hidden';
+      /* `owns-pause`: this modal sets Game.paused below and clears it in
+         closeIntro, so the HUD button must not toggle underneath it. The class
+         is the whole of how UI.togglePause knows that. */
+      ov.className = 'overlay hidden owns-pause';
       ov.innerHTML = '<div class="modal vs"><div id="bi-body"></div></div>';
       document.body.appendChild(ov);
     }
@@ -5175,7 +5354,17 @@ const UI = {
     };
     this._biOpen = true;
     ov._escDismiss = closeIntro;
-    $('#bi-go').addEventListener('click', () => { Sound.play('click'); closeIntro(); }, { once: true });
+    /* No {once:true}. The wrapper protected nothing -- #bi-body's innerHTML is
+       rewritten on every open, so this button and its listener are destroyed and
+       rebuilt anyway -- while costing a dead BEGIN THE BATTLE the instant anything
+       makes closeIntro return early: listener fired and removed, overlay still on
+       screen, Escape the only way out. _biOpen is the real gate; reading it here
+       keeps a repeat click silent as well as harmless. */
+    $('#bi-go').addEventListener('click', () => {
+      if (!this._biOpen) return;
+      Sound.play('click');
+      closeIntro();
+    });
   },
 
   /* ═══════════════════════════════ ENEMY DOSSIER (first encounter) ═══ */
@@ -5187,7 +5376,10 @@ const UI = {
     if (!ov) {
       ov = document.createElement('div');
       ov.id = 'enemy-intro';
-      ov.className = 'overlay hidden';
+      /* `owns-pause`: showEnemyIntro already set Game.paused and closeDossier
+         clears it, so the HUD button must not toggle underneath it. Same marker
+         the pre-battle dialogue wears; see UI.togglePause. */
+      ov.className = 'overlay hidden owns-pause';
       ov.innerHTML = '<div class="modal dossier"><div id="ei-body"></div></div>';
       document.body.appendChild(ov);
     }
@@ -5266,7 +5458,17 @@ const UI = {
     };
     this._eiOpen = true;
     ov._escDismiss = closeDossier;
-    $('#ei-go').addEventListener('click', () => { Sound.play('click'); closeDossier(); }, { once: true });
+    /* No {once:true} here either, same reasoning as the dialogue's button: the
+       wrapper is redundant against #ei-body's rebuilt innerHTML and turns any
+       future early return in closeDossier into an ENGAGE nobody can press twice.
+       closeDossier zeroes _eiRaf as it cancels, so even a double click cannot
+       double-cancel the sprite loop -- but re-reading _eiOpen here stops a second
+       click from firing a second click sound at a modal already gone. */
+    $('#ei-go').addEventListener('click', () => {
+      if (!this._eiOpen) return;
+      Sound.play('click');
+      closeDossier();
+    });
   },
 
   /** Transient status line, reused by extraction and other one-off confirmations. */
@@ -5277,6 +5479,45 @@ const UI = {
     $('#toasts').appendChild(el);
     setTimeout(() => el.classList.add('out'), 4200);
     setTimeout(() => el.remove(), 5000);
+  },
+
+  /** A REFUSAL THAT SAYS WHY. The blip and the gold flash were the entire
+      vocabulary for "no", so a lane tile, an empty purse, a 2x2 that does not
+      fit and a spent demolition allowance all sounded identical and a refused
+      click taught the player nothing. Same blip, same flash -- but only when
+      GOLD was the problem, because flashing the gold meter at a life-priced
+      refusal points at the one number that is not short.
+
+      ONE REUSED NODE, not this.toast(). A toast lives five seconds and several
+      callers answer a held key: keydown has no e.repeat guard, so holding U on
+      a tower you cannot afford fires this at the OS repeat rate, and appending
+      per refusal would bury the battlefield under a column of the same line.
+      Rewriting in place keeps a CHANGING reason readable while the screen
+      never carries more than one, and the sound underneath is already
+      throttled to 0.14s inside Sound.denied.
+
+      textContent rather than the toast path's innerHTML: every caller today
+      builds its line from TOWER_TYPES and formatNum, but a refusal is exactly
+      the surface a later caller would be tempted to hand a profile or peer
+      name to, and this one cannot render it. */
+  denied(text, goldFlash = true) {
+    Sound.play('denied');
+    if (goldFlash) this.flashGold();
+    let el = this._deniedToast;
+    if (!el || !el.isConnected) {
+      el = this._deniedToast = document.createElement('div');
+      el.className = 'toast';
+      el.appendChild(document.createElement('span'));
+      $('#toasts').appendChild(el);
+    }
+    el.classList.remove('out');
+    el.firstChild.textContent = text;
+    clearTimeout(this._deniedFade); clearTimeout(this._deniedGone);
+    this._deniedFade = setTimeout(() => el.classList.add('out'), 2600);
+    this._deniedGone = setTimeout(() => {
+      el.remove();
+      if (this._deniedToast === el) this._deniedToast = null;
+    }, 3200);
   },
 
   /** Three escalations offered; the player underwrites one. */
@@ -5450,6 +5691,61 @@ const UI = {
           <div><b>${formatNum(me.stats.sent)}</b><span>sent</span></div>
           <div><b>${me.towers.length}</b><span>towers</span></div>
         </div>
+
+        ${(() => {
+          /* WHAT KILLED YOU. The top three classes by lives ACTUALLY lost,
+             read from Side.leakLog -- which only loseLives writes, so a
+             carrier shot down on its way out is absent by construction and
+             can never be mourned here as a death that did not happen. The
+             trait tag is the sentence that usually explains the leak on its
+             own: TELEPORTS beside a slow-tower board needs no further
+             comment. Derived from the same def fields the dossier and the
+             next-wave panel read, so all three surfaces say one thing.
+             Defeat only -- a win does not need a lecture.
+             Three answers, not one, because a defeat has three causes and
+             only the first is a row: what crossed, what you STOPPED crossing
+             (the recovery is the counterplay this screen exists to teach),
+             and what you spent yourself. A board can fall on BLOOD PRICE
+             alone -- spendLives is deliberately not loseLives, so it books no
+             breach -- and a block headed WHAT KILLED YOU that then listed
+             nothing would be the same silence this fixes. */
+          if (won) return '';
+          const rows = Object.entries(me.leakLog || {}).filter(([, v]) => v.lives > 0)
+            .sort((a, b) => b[1].lives - a[1].lives).slice(0, 3);
+          const saved = me.stats.leaksRecovered || 0;
+          const paid = me.livesPaid || 0;
+          if (!rows.length && !saved && !paid) return '';
+          const body = rows.map(([id, v]) => {
+            const d = ENEMY_TYPES[id] || {};
+            const tags = [];
+            if (d.flying) tags.push('FLYING');
+            if (d.teleport) tags.push('TELEPORTS');
+            if (d.phase) tags.push('PHASES');
+            if (d.slowResist >= 1) tags.push('SLOW-IMMUNE');
+            if (d.jam) tags.push('JAMS TOWERS');
+            if (d.healRate) tags.push('HEALER');
+            if (d.revive) tags.push('REVIVES');
+            if (d.splitInto) tags.push('SPLITS');
+            if (d.armor >= 8) tags.push('ARMOURED');
+            const tag = tags.slice(0, 2).join(' · ');
+            return `<div class="rw-leak" style="--tc:${d.color || '#94a3b8'}">
+              <span class="rw-lname">${d.name || id}${tag ? ` <span class="rw-ltag">${tag}</span>` : ''}</span>
+              <span class="rw-lnote">−${v.lives} ♥ · ${v.n} breach${v.n === 1 ? '' : 'es'}${
+                v.sent ? ` · ${v.sent} sent at you` : ''}</span>
+            </div>`;
+          }).join('');
+          const lead = rows.length
+            ? (saved
+                ? `${saved} further theft${saved === 1 ? '' : 's'} never got out — a carrier killed before it crosses the spawn edge hands every life back.`
+                : 'Every theft above walked off the board. Kill the carrier on its way out and the lives come back.')
+            : (saved
+                ? `Not one theft got out: all ${saved} carrier${saved === 1 ? '' : 's'} died before crossing the spawn edge.`
+                : 'No breach cost you a life.');
+          return `<div class="rw-leaks"><b>${rows.length ? 'WHAT KILLED YOU' : 'WHERE YOUR LIVES WENT'}</b>${body}
+            <em>${lead}</em>
+            ${paid ? `<em>${paid} ♥ went on BLOOD PRICE — you spent those yourself; no enemy took them.</em>` : ''}
+            <em>The full dossier for every contact is in the FIELD MANUAL.</em></div>`;
+        })()}
 
         <div class="rw-damage">${towers.map(t => `
           <div class="rw-dmg">

@@ -465,6 +465,36 @@ body.rm-user .bi-line { opacity: 1; }
 .rw-rivals b { font-size: 10px; letter-spacing: .18em; color: var(--red); }
 .rw-rivals span { font-size: 11.5px; color: var(--fc); }
 
+/* WHAT KILLED YOU. Amber rather than the rivals block's red: this is the
+   post-mortem, not an alarm. No transition or transform anywhere in here, so
+   it needs no entry in the reduced-motion block at the foot of this file. */
+.rw-leaks { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px;
+            border: 1px solid rgba(251,191,36,.3); border-radius: 9px; background: rgba(251,191,36,.05); }
+.rw-leaks > b { font-family: var(--display); font-size: 10px; letter-spacing: .18em; color: #fbbf24; }
+.rw-leaks em { font-style: normal; font-size: 9.5px; color: var(--text-mute); }
+.rw-leak { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: baseline; font-size: 11px; }
+.rw-lname { color: var(--tc, #e05555); letter-spacing: .05em; overflow: hidden;
+            text-overflow: ellipsis; white-space: nowrap; }
+.rw-ltag { color: var(--text-mute); letter-spacing: .1em; font-size: 9.5px; }
+.rw-lnote { text-align: right; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+
+/* ---- A1: the first-run coach ---- */
+/* The tip lives OVER the board, so it must never eat a click meant for a
+   tile: pointer events are refused by the panel at every state and taken
+   only by GOT IT. Below .overlay (z 300) on purpose -- a required modal owns
+   the screen, and the coach's own poll yields to one anyway. */
+.coach-tip { position: fixed; left: 50%; bottom: 86px; transform: translate(-50%, 16px);
+             display: flex; align-items: center; gap: 12px;
+             max-width: min(640px, 92vw); padding: 10px 14px; z-index: 120;
+             background: rgba(10,16,26,.94); border: 1px solid rgba(56,232,255,.4);
+             border-radius: 9px; box-shadow: 0 6px 24px rgba(0,0,0,.45);
+             opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; }
+.coach-tip.show { opacity: 1; transform: translate(-50%, 0); }
+.coach-tip.show .btn { pointer-events: auto; }
+.coach-tip b { font-size: 9.5px; letter-spacing: .2em; color: var(--cyan); white-space: nowrap; }
+.coach-tip span { font-size: 12.5px; line-height: 1.5; color: var(--text-dim); }
+@media (prefers-reduced-motion: reduce) { .coach-tip { transition: none; } }
+
 .rw-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
             background: var(--line); border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
 .rw-stats div { background: var(--panel, #0d1420); padding: 9px 6px; text-align: center; }
@@ -481,6 +511,32 @@ body.rm-user .bi-line { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   .rw-star, .rw-bar i, .rw-mastery { transition: none !important; animation: none !important; }
 }
+
+/* ═══════════════════════════════ BATTLE CARD (the battlefield ?) ═══════ */
+/* Static markup, so nothing here needs a reduced-motion rule of its own: the
+   only animation it inherits is modalIn, which the media query and the
+   body.rm-user dampener at the top of this file already cover. Adding a
+   third statement of the same thing is how those two drifted apart before. */
+/* max-width, not width: .modal already sets max-width:520px, so a plain
+   `width: min(560px, 92vw)` was clamped straight back down and the rule read
+   as if it did nothing. */
+.bc-modal { max-width: min(560px, 92vw); }
+.bc-body { display: flex; flex-direction: column; gap: 13px; padding: 2px; }
+.bc-sec h3 { font-size: 10px; letter-spacing: .18em; color: var(--cyan); margin-bottom: 5px; }
+.bc-sec p { font-size: 12.5px; line-height: 1.5; color: var(--text-dim); }
+.bc-sec p b { color: var(--text); font-weight: 700; }
+.bc-sec p.bc-note { font-size: 11px; color: var(--text-mute); margin-top: 2px; }
+.bc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; }
+.bc-grid span { font-size: 12px; color: var(--text-dim); }
+.bc-grid kbd { display: inline-block; min-width: 14px; text-align: center; padding: 0 4px;
+               font-family: var(--mono); font-size: 10.5px; color: var(--text);
+               border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 3px;
+               background: rgba(255,255,255,.04); }
+.bc-reacts { display: flex; flex-wrap: wrap; gap: 4px 8px; margin: 6px 0; }
+.bc-reacts span { font-size: 11px; color: var(--text-dim); white-space: nowrap;
+                  border: 1px solid var(--line); border-radius: 3px; padding: 2px 7px; }
+.bc-foot { margin-top: 14px; text-align: center; }
+@media (max-width: 520px) { .bc-grid { grid-template-columns: 1fr; } }
 
 /* ═══════════════════════════════════════ TOWER PREVIEW (soul shop) ═════ */
 .tp { display: flex; flex-direction: column; gap: 7px; }

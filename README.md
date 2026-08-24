@@ -34,11 +34,13 @@ what each item actually turned out to be once someone read the code.
 identity, and [`docs/MECHANICS-OPTIONS.md`](docs/MECHANICS-OPTIONS.md) holds
 fifteen designed-but-unbuilt mechanics awaiting a pick.
 
-**Multiplayer is on `main` and live.** Two humans, two browser windows, one
-lockstep duel over `BroadcastChannel` — no server, no dependency, offline. It
-merged in Session 21 only after an adversarial audit found seven blocking
-defects the green test suite could not see, and all seven were fixed; the whole
-story, including the audit, is in
+**Multiplayer is on `main` and live.** Two humans, one lockstep duel — no
+server, no dependency, offline. Two windows of one browser talk over
+`BroadcastChannel`; two machines talk over an `RTCDataChannel` the two players
+signal by hand, because every signalling service there is to rent is a
+dependency the house rule forbids. It merged in Session 21 only after an
+adversarial audit found seven blocking defects the green test suite could not
+see, and all seven were fixed; the whole story, including the audit, is in
 [`docs/MULTIPLAYER-HANDOFF.md`](docs/MULTIPLAYER-HANDOFF.md). The duel harness
 (`tools/multiplayer_test.js`, `MPT.all()`) passes clean.
 

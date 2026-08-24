@@ -86,7 +86,23 @@ class Side {
        Tower.rateMul reads this and only this, so the doctrine pays for
        commitment and pays nothing at all for a leak. */
     this.livesPaid = 0;
-    this.stats = { kills: 0, goldEarned: 0, leaked: 0, built: 0, sent: 0, livesRestored: 0, mustered: 0 };
+    this.stats = { kills: 0, goldEarned: 0, leaked: 0, built: 0, sent: 0, livesRestored: 0, mustered: 0,
+                   leaksRecovered: 0 };
+    /* WHAT KILLED YOU -- lives actually lost, keyed by the class that walked
+       them off the board: { n, lives, sent }. `stats.leaked` is one number and
+       a number is not a lesson: a player who cannot name the contact that beat
+       them rebuilds the same board next run. Count and lives accumulate apart
+       so the end screen can rank by damage done rather than by body count (one
+       COLOSSUS is not four Motes), and `sent` remembers how many of those
+       breaches were bodies the RIVAL put on the lane, which is the half of
+       this game a leak report is likeliest to teach.
+       Written ONLY from loseLives, never from the seat: since the carrier
+       shipped, reaching the seat costs nothing, and a theft shot down on its
+       way out is refunded in full -- booking at the seat would report deaths
+       that never happened, which is the exact wrong lesson for a block whose
+       job is teaching what killed you. `stats.leaksRecovered` counts those
+       refunds instead, because the recovery is the counterplay. */
+    this.leakLog = {};
   }
   get alive() { return this.lives > 0; }
   /** How many of a tower type this side already fields — drives price growth. */
@@ -1165,7 +1181,15 @@ const Game = {
   buyBaseLevel(side) {
     const S = this.sides[side];
     const cost = this.baseLevelCost(side);
-    if (S.gold < cost) { if (side === 0) { Sound.play('denied'); UI.flashGold(); } return false; }
+    /* `=== this.viewSide`, not `=== 0`, for every refusal below. A duel replays
+       BOTH seats' commands on BOTH machines with the real seat index, so a
+       seat-0 refusal under the old gate printed the host's price on the
+       guest's screen and gave the guest's own refusals nothing at all. This is
+       the gate the success lines beside it already use. */
+    if (S.gold < cost) {
+      if (side === this.viewSide) UI.denied('BASE LEVEL ' + ((S.baseLevel || 1) + 1) + ' needs ◈' + formatNum(cost));
+      return false;
+    }
     S.gold -= cost;
     S.baseLevel = (S.baseLevel || 1) + 1;
     S.maxLives += 2; S.lives += 2;
@@ -1315,11 +1339,32 @@ const Game = {
     const S = this.sides[side];
     const cost = this.towerCost(side, type);
     const life = this.towerLifeCost(side, type);
-    if (!TOWER_TYPES[type] || !this.canBuild(side, gx, gy, towerFoot(TOWER_TYPES[type]))) { if (side === 0) Sound.play('denied'); return null; }
+    const def = TOWER_TYPES[type];
+    const foot = def ? towerFoot(def) : 1;
+    if (!def || !this.canBuild(side, gx, gy, foot)) {
+      /* A heavy refused for its own SIZE is not a closed tile, and saying the
+         tile is closed sends the player hunting for terrain that is already
+         fine. The same canBuild at foot 1 separates the two: if the anchor
+         tile alone is legal, the only thing wrong is that the block does not
+         fit -- which is the refusal drawRadial already prints as NO ROOM. */
+      if (side === this.viewSide) UI.denied(def && foot > 1 && this.canBuild(side, gx, gy)
+        ? def.name + ' needs a clear ' + foot + '×' + foot + ' block'
+        : 'No room there — that ground is a lane, rubble, not yours, or already built on', false);
+      return null;
+    }
     /* Only the five towers you deployed with may be built. */
-    if (!S.loadout.includes(type)) { if (side === 0) Sound.play('denied'); return null; }
+    if (!S.loadout.includes(type)) {
+      if (side === this.viewSide) UI.denied(def.name + ' is not in the loadout you deployed with', false);
+      return null;
+    }
     if (!this.canAffordBuild(side, type)) {
-      if (side === 0) { Sound.play('denied'); if (!life) UI.flashGold(); }
+      /* BLOOD PRICE is charged in LIVES, and towerCost deliberately quotes 0
+         gold for it, so a single gold sentence here would have read "needs
+         ◈0" -- a refusal naming a price the engine never charges. canAffordBuild
+         refuses on the floor as well as on the balance, so the line states both. */
+      if (side === this.viewSide) UI.denied(life
+        ? def.name + ' costs ♥' + life + ' — never below ♥' + BLOOD_PRICE_FLOOR + ' left'
+        : def.name + ' needs ◈' + formatNum(cost), !life);
       return null;
     }
     if (life > 0) this.spendLives(side, life); else S.gold -= cost;
@@ -1343,7 +1388,13 @@ const Game = {
 
     if (next.kind === 'level') {
       const cost = tower.upgradeCost('level', next.data.cost);
-      if (S.gold < cost) { if (tower.side === 0) { Sound.play('denied'); UI.flashGold(); } return false; }
+      /* Named for the step the button offered ("UPGRADE → RAPID CORE"), never a
+         level number: the phrase the player just clicked is the only one they
+         can match the refusal back to. */
+      if (S.gold < cost) {
+        if (tower.side === this.viewSide) UI.denied(tower.def.name + ' → ' + next.data.name + ' needs ◈' + formatNum(cost));
+        return false;
+      }
       S.gold -= cost; tower.invested += cost; tower.level++;
       /* Each level also rolls one random minor buff — no decision to make. */
       const roll = tower.addRoll();
@@ -1358,13 +1409,19 @@ const Game = {
          that rule now, so the engine, the inspector and the rival all read
          the same price. */
       const cost = tower.upgradeCost('branch', b.cost);
-      if (S.gold < cost) { if (tower.side === 0) { Sound.play('denied'); UI.flashGold(); } return false; }
+      if (S.gold < cost) {
+        if (tower.side === this.viewSide) UI.denied(b.name + ' needs ◈' + formatNum(cost));
+        return false;
+      }
       S.gold -= cost; tower.invested += cost; tower.branch = b; tower.level = 4;
       tower.pendingBranch = false;
       if (tower.side === this.viewSide) Sound.play('branch');
     } else {
       const cost = tower.upgradeCost('ascend', next.cost);
-      if (S.gold < cost) { if (tower.side === 0) { Sound.play('denied'); UI.flashGold(); } return false; }
+      if (S.gold < cost) {
+        if (tower.side === this.viewSide) UI.denied(tower.def.name + ' ASCEND → +' + (tower.asc + 1) + ' needs ◈' + formatNum(cost));
+        return false;
+      }
       S.gold -= cost; tower.invested += cost; tower.asc++;
       if (tower.side === this.viewSide) Sound.play(tower.asc % S.traits.surgeEvery === 0 ? 'branch' : 'ascend');
     }
@@ -1688,10 +1745,33 @@ const Game = {
     }
   },
 
-  loseLives(side, n) {
+  loseLives(side, n, breaches) {
     const S = this.sides[side];
     /* Halder's Shield Wall blunts every leak; his Immortal Line catches one. */
     if (S.traits.leakReduction) n = Math.max(1, n - S.traits.leakReduction);
+    /* WHAT KILLED YOU, part two: book the manifest against the FINAL `n`.
+       Both endings below add exactly this `n` to stats.leaked, so the log and
+       the ledger cannot disagree -- printing the reap's per-unit figure would
+       overstate a Shield Wall commander by a life on every breach and leave
+       the defeat screen contradicting its own totals. A frame carrying
+       several breaches splits the charge in proportion and gives the rounding
+       remainder to the last, so the shares still sum to n exactly. The
+       argument is optional because Net's remote result and the duel harness
+       both charge lives with no manifest, and a missing manifest must cost
+       nothing. */
+    if (breaches) {
+      let raw = 0;
+      for (const b of breaches) raw += b.cost;
+      let left = n;
+      for (let i = 0; i < breaches.length; i++) {
+        const b = breaches[i];
+        const share = i === breaches.length - 1
+          ? left : Math.min(left, Math.max(1, Math.round(n * b.cost / raw)));
+        left -= share;
+        const row = S.leakLog[b.type] || (S.leakLog[b.type] = { n: 0, lives: 0, sent: 0 });
+        row.n++; row.lives += share; if (b.sent) row.sent++;
+      }
+    }
     if (S.lives - n <= 0 && S.traits.immortalLine && !S.immortalUsed) {
       S.immortalUsed = true;
       S.lives = 1; S.stats.leaked += n;
@@ -2186,6 +2266,14 @@ const Game = {
        carrierFresh says the corpse never marched before. */
     if (e.carrier) {
       this.restoreLife(e.hostileTo, e.livesCost);
+      /* Counted, never logged: a recovered theft belongs on the defeat screen
+         as the COUNTERPLAY line, not as a row in WHAT KILLED YOU -- it cost
+         this side nothing at all. stats.livesRestored cannot stand in for it:
+         menders, the Custodian and waveHeal all write there too, and
+         restoreLife returns early at full lives, so it under-counts exactly
+         the case worth teaching. `killer` is `e.hostileTo`, so S is the robbed
+         seat and a rival's recovery books against the rival. */
+      S.stats.leaksRecovered++;
       if (e.carrierFresh && !this.noReanim) this.reanimate(e);
       if (killer === this.viewSide) this.spawnBurst(e.x, e.y, 12, '#f87171', 110);
       return;
@@ -2502,9 +2590,23 @@ const Game = {
   /** Demolish one rubble tile into buildable ground. */
   clearTerrain(side, gx, gy) {
     const S = this.sides[side];
-    if (!this.canClear(side, gx, gy)) { if (side === 0) Sound.play('denied'); return false; }
+    if (!this.canClear(side, gx, gy)) {
+      /* canClear refuses for two DIFFERENT reasons and only one of them is
+         about the tile. A land card's free demolitions come out of this same
+         allowance and can spend the last of it while the rubble is still
+         standing and still selectable, so "nothing to demolish" would be a lie
+         at exactly the moment the player is most confused about why DEMOLISH
+         stopped working. */
+      if (side === this.viewSide) UI.denied(S && S.cleared.size >= this.clearLimit(side)
+        ? 'No clearances left — ' + this.clearLimit(side) + ' is the allowance for this battle'
+        : 'Nothing to demolish there — authored rubble on your own ground only, never the lane', false);
+      return false;
+    }
     const cost = this.clearCostNow(side);
-    if (S.gold < cost) { if (side === 0) { Sound.play('denied'); UI.flashGold(); } return false; }
+    if (S.gold < cost) {
+      if (side === this.viewSide) UI.denied('DEMOLISH needs ◈' + formatNum(cost));
+      return false;
+    }
     S.gold -= cost;
     const k = this.tileKey(gx, gy);
     this.blocked.delete(k);
@@ -2550,9 +2652,21 @@ const Game = {
     /* The destination rectangle is tested with the mover EXCLUDED, so a heavy
        may shuffle one tile across its own current footprint -- the tiles it
        stands on are the tiles it is about to vacate. */
-    if (!this.canBuild(t.side, gx, gy, t.foot || 1, t)) { if (t.side === 0) Sound.play('denied'); return false; }
+    if (!this.canBuild(t.side, gx, gy, t.foot || 1, t)) {
+      /* The same split build() makes: a heavy that cannot set down because its
+         2x2 overlaps something is not a closed tile. The mover is excluded
+         from both tests, so its own footprint can never read as the obstacle
+         in the sentence explaining why it may not move. */
+      if (t.side === this.viewSide) UI.denied((t.foot || 1) > 1 && this.canBuild(t.side, gx, gy, 1, t)
+        ? t.def.name + ' needs a clear ' + t.foot + '×' + t.foot + ' block to set down'
+        : 'Cannot set down there — that ground is a lane, rubble, not yours, or already built on', false);
+      return false;
+    }
     const fee = this.relocateCost(t);
-    if (S.gold < fee) { if (t.side === 0) { Sound.play('denied'); UI.flashGold(); } return false; }
+    if (S.gold < fee) {
+      if (t.side === this.viewSide) UI.denied('Moving ' + t.def.name + ' costs ◈' + formatNum(fee));
+      return false;
+    }
     S.gold -= fee;
     t.gx = gx; t.gy = gy;
     t.x = (gx + (t.foot || 1) / 2) * TILE;
@@ -2813,6 +2927,11 @@ const Game = {
 
     /* --- reap --- */
     const leaked = this.sides.map(() => 0);
+    /* WHAT KILLED YOU, part one: WHO was in this frame's charge. Only the
+       manifest is gathered here -- the booking happens in loseLives, because
+       `cost` below is still one Shield Wall reduction short of what the seat
+       actually pays. Lazy arrays: most frames breach nothing. */
+    const breaches = this.sides.map(() => null);
     for (let i = this.enemies.length - 1; i >= 0; i--) {
       const e = this.enemies[i];
       if (e.dead) { this.killEnemy(e); this.enemies.splice(i, 1); }
@@ -2823,10 +2942,16 @@ const Game = {
         const red = this.sides[e.hostileTo].traits.leakReduction || 0;
         cost = Math.max(1, Math.round(cost - red));
         leaked[e.hostileTo] += cost;
+        /* `carrierFresh` is false exactly when the body was a reanimate or a
+           bought detachment BEFORE it turned around, so it is the only honest
+           read of "your rival sent this one" left: becomeCarrier sets
+           `reanimated` on every carrier, fresh or not. */
+        (breaches[e.hostileTo] || (breaches[e.hostileTo] = []))
+          .push({ type: e.type, cost: cost, sent: e.carrierFresh === false });
         this.enemies.splice(i, 1);
       }
     }
-    for (let s = 0; s < this.sides.length; s++) if (leaked[s] > 0) this.loseLives(s, leaked[s]);
+    for (let s = 0; s < this.sides.length; s++) if (leaked[s] > 0) this.loseLives(s, leaked[s], breaches[s]);
 
     if (this.pendingSpawns.length) {
       for (const e of this.pendingSpawns) this.enemies.push(e);
