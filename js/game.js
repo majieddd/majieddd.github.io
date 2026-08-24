@@ -92,6 +92,8 @@ class Side {
     this.summonPower = 0;
     /* How far a compiling commander has rewritten itself. */
     this.compileLevel = 0;
+    /* Fractional life regeneration, banked between waves. */
+    this.lifeRegenBank = 0;
     /* RESONANT FIELD, per side. It used to be one game-global counter that
        only the player could pay into, so the rival's identical wave also
        arrived with the bounty bonus -- it collected a payout the player
@@ -162,7 +164,17 @@ const BOON_FOLD = {
   goldMul:        (S, v) => { S.mods.gold *= v; },
   costMul:        () => {},   /* read directly in towerCost -- see below */
   costGrowthMul:  (S, v) => { S.traits.costGrowthMul *= v; },
-  sellRate:       (S, v) => { S.traits.sellRate += v; },
+  /* SELLING, CLAMPED. These four write `mods` and not `traits`, because a
+     trait only reaches the engine through foldTraits and boons are applied
+     246 lines AFTER the fold has already run (Meta.applyTo at Game.start vs
+     the boon loop below it). Written as traits they were silently dead:
+     AUREOLE promised aura range and harder status and delivered neither,
+     LETTERS OF MARQUE promised crit chance and damage and delivered neither,
+     and both SALVAGE RIGHTS and SCUTTLE delivered only their other half.
+     The clamp is not decoration: mods.sellRate starts at 0.7, SCUTTLE is
+     worth +60%, and a sell that returns MORE than it cost is a build-and-
+     sell loop that prints gold forever. */
+  sellRate:       (S, v) => { S.mods.sellRate = Math.min(1, S.mods.sellRate * (1 + v)); },
   freeCopies:     (S, v) => { S.traits.freeCopies += v; },
   siphonRate:     (S, v) => { S.traits.siphonRate *= v; },
   reanimGold:     (S, v) => { S.traits.reanimGold += v; },
@@ -171,9 +183,9 @@ const BOON_FOLD = {
   ascDamageMul:   (S, v) => { S.traits.ascDamage *= v; },
   auraRangeMul:   (S, v) => { S.traits.auraRangeMul *= v; },
   jamResist:      (S, v) => { S.traits.jamResist += v; },
-  status:         (S, v) => { S.traits.status += v; },
-  crit:           (S, v) => { S.traits.crit += v; },
-  critMult:       (S, v) => { S.traits.critMult += v; },
+  status:         (S, v) => { S.mods.status *= (1 + v); },
+  crit:           (S, v) => { S.mods.crit += v; },
+  critMult:       (S, v) => { S.mods.critMult += v; },
   killRamp:       (S, v) => { S.traits.killRamp += v; },
   eliteDamageMul: (S, v) => { S.traits.eliteDamage *= v; },
   eliteBountyMul: (S, v) => { S.traits.eliteBounty *= v; },
@@ -1005,6 +1017,18 @@ const Game = {
       S.musterThisWave = 0;
       /* Halder's Triage, and the Vault's War Bonds technology. */
       if (S.traits.waveHeal) this.restoreLife(S.index, S.traits.waveHeal);
+      /* FIELD MEDIC, TRIAGE, CHORAL RECOVERY and the Federation's prestige
+         reward all pay `lifeRegen` PER WAVE, in fractions of a life -- "one
+         life every four waves" is 0.25. Nothing read the key, so a Light
+         commander could prestige to five stars for a reward the confirmation
+         dialog printed and the engine ignored. Banked rather than rounded at
+         each wave: 0.25 a wave must pay on the fourth wave, and rounding a
+         quarter-life four times pays nothing forever. */
+      if (S.traits.lifeRegen) {
+        S.lifeRegenBank = (S.lifeRegenBank || 0) + S.traits.lifeRegen;
+        const whole = Math.floor(S.lifeRegenBank);
+        if (whole >= 1) { S.lifeRegenBank -= whole; this.restoreLife(S.index, whole); }
+      }
       for (const t of S.towers) if (t.stats.waveBonus) this.awardGold(S.index, t.stats.waveBonus, t);
     }
     Sound.play('waveClear');
@@ -1711,6 +1735,14 @@ const Game = {
   restoreLife(side, n, tower) {
     const S = this.sides[side];
     if (S.lives >= S.maxLives) return;
+    /* HALDER's DEEP LINE and AURELIA's CHORAL RECOVERY both promise that
+       "every source of life recovery" is worth more, and `lifeGainMul` was
+       written by two commander traits and six talents while nothing read it.
+       Applied HERE, at the one funnel every heal passes through -- menders,
+       the Custodian, waveHeal and the wave-clear regen -- so the promise is
+       true of every source rather than of whichever one got remembered. */
+    const gain = 1 + (S.traits.lifeGainMul || 0);
+    if (gain !== 1) n = Math.max(1, Math.round(n * gain));
     S.lives = Math.min(S.maxLives, S.lives + n);
     S.stats.livesRestored += n;
     if (tower) tower.livesRestored += n;
@@ -2231,10 +2263,16 @@ const Game = {
       if (lv && lv.apply) lv.apply(S.traits, S, S.mods);
     }
     S.compileLevel = want;
-    /* The trait accumulators the levels wrote into have to reach `mods` the
-       same way the opening fold does, or a level that grants damage grants
-       nothing at all. */
-    foldTraits(S);
+    /* NO RE-FOLD HERE, and that is deliberate. foldTraits MULTIPLIES mods by
+       the trait accumulators (`m.damage *= 1 + t.dmg`), so it is not
+       idempotent: calling it once per recompile re-applied the commander's
+       whole trait block every time. Measured on DREGG-R, whose trait carries
+       +12% damage: mods.damage climbed 0.986 -> 1.104 -> 1.236 -> 1.385 over
+       three compiles, a 40% inflation nothing advertised and nothing capped.
+       Levels that want a MODS change now write `m` directly (the third
+       argument); levels that want a live-read trait -- jamImmune, killRamp,
+       costGrowthMul, ascCostMul -- write `t` and the engine reads those from
+       traits anyway. */
     if (S.index === this.viewSide) {
       this.addFloater(this.width * 0.5, 128, '⟲ RECOMPILED — ' + spec.name, false, '#e2e8f0', 16);
       Sound.play('branch');

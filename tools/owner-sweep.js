@@ -556,15 +556,25 @@
 
   T('19.23 not one boon is inert', function () {
     const PIN2 = ['bolt', 'cryo', 'mortar', 'flak', 'beacon'];
+    /* WATCHES BOTH LEDGERS, and it has to. This snapshot read `traits` only,
+       so it called a boon LIVE whenever it moved a trait -- even a trait no
+       engine code reads -- and called it DEAD when it correctly wrote `mods`
+       instead. Four boons were folding into traits AFTER foldTraits had
+       already run, which made AUREOLE and LETTERS OF MARQUE entirely inert
+       and this check reported all twenty healthy. Watching both is what lets
+       it tell "moved something the engine reads" from "moved a number". */
     const snap = function (boons) {
       Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN2.slice(), boons: boons });
-      const S = Game.sides[0], t = S.traits;
-      return JSON.stringify([S.maxLives, S.mods.gold, S.mods.reanim, t.freeCopies,
-        t.lastStandAt, t.lastStandDmg, t.sellRate, t.ascCostMul, t.ascDamage, t.jamResist,
-        t.waveHeal, t.immortalLine, t.auraRangeMul, t.status, t.reanimSpeed, t.killRamp,
-        t.reanimResist, t.siphonRate, t.reanimGold, t.musterHpMul, t.musterCostMul,
-        t.eliteDamage, t.eliteBounty, t.costGrowthMul, t.crit, t.critMult,
-        t.draftOptions, t.draftEvery]);
+      const S = Game.sides[0], t = S.traits, m = S.mods;
+      return JSON.stringify([S.maxLives,
+        m.gold, m.reanim, m.damage, m.rate, m.range, m.splash, m.status,
+        m.crit, m.critMult, m.pierce, m.sellRate, m.cost, m.upCost, m.doubleReanim,
+        t.freeCopies, t.lastStandAt, t.lastStandDmg, t.sellRate, t.ascCostMul,
+        t.ascDamage, t.jamResist, t.waveHeal, t.immortalLine, t.auraRangeMul,
+        t.status, t.reanimSpeed, t.killRamp, t.reanimResist, t.siphonRate,
+        t.reanimGold, t.musterHpMul, t.musterCostMul, t.eliteDamage, t.eliteBounty,
+        t.costGrowthMul, t.crit, t.critMult, t.lifeRegen, t.lifeGainMul,
+        t.dotMul, t.slowVuln, t.leakReduction, t.draftOptions, t.draftEvery]);
     };
     const base = snap([]);
     const dead = BOONS.filter(function (b) { return snap([b.id]) === base; }).map(function (b) { return b.id; });

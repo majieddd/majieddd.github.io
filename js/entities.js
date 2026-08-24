@@ -316,11 +316,25 @@ class Enemy {
       this.slowTimer = Math.max(this.slowTimer, dur);
     }
   }
+  /* CONTAGION and SCORCHED EARTH. VORN's +50% damage-over-time and CINDER's
+     +45% burn were written by two commander traits and six talents and read
+     by nothing at all, so half of each identity moved no number. Scaled HERE,
+     at application, for the same reason `effStatus` is: the tick loop has no
+     idea which side lit the fire, while every applier is handed the `src`
+     tower and a tower knows its own side. Scaled BEFORE the strongest-source
+     comparison, so a doctrine's stronger fire correctly overwrites a weaker
+     one rather than losing to the number it would have beaten. */
+  dotScale(src) {
+    const S = (src && typeof Game !== 'undefined' && Game.sides) ? Game.sides[src.side] : null;
+    return (S && S.traits && S.traits.dotMul) || 1;
+  }
   applyBurn(dps, dur, src) {
+    dps *= this.dotScale(src);
     if (dps >= this.burnDps) { this.burnDps = dps; this.burnTimer = dur; this.burnSrc = src; }
     else this.burnTimer = Math.max(this.burnTimer, dur * 0.5);
   }
   applyBleed(dps, dur, src) {
+    dps *= this.dotScale(src);
     if (dps >= this.bleedDps) { this.bleedDps = dps; this.bleedTimer = dur; this.bleedSrc = src; }
     else this.bleedTimer = Math.max(this.bleedTimer, dur * 0.5);
   }
@@ -328,6 +342,7 @@ class Enemy {
      was not updated is a hard argument-order break at the first tick instead
      of a silently missing effect. All three call sites move together. */
   applyPoison(dps, pct, maxPct, dur, maxStacks, contagion, src) {
+    dps *= this.dotScale(src);
     this.poisonStacks = Math.min(maxStacks, this.poisonStacks + 1);
     this.poisonTimer = dur;
     this.poisonDps = Math.max(this.poisonDps, dps);
@@ -410,6 +425,19 @@ class Enemy {
     /* A phased Wraith simply cannot be hurt — sustained damage is wasted on it. */
     if (this.phaseOn) { this.flash = 0.05; return 0; }
     amount *= (1 + this.vulnAmt);
+    /* CANTOR's and VORN's slow-vulnerability rows -- six talents that wrote
+       `slowVuln` while nothing read it, so "slowed enemies take more damage"
+       was a promise the engine never kept. `hostileTo` IS the attacker here:
+       it names the side this body is marching on, which is the side whose
+       towers are shooting it, so the trait read is the shooter's own. Folded
+       beside vulnAmt because that is the one place a damage-taken multiplier
+       belongs, and gated on the live slow timer rather than on a flag, so it
+       ends exactly when the slow does. */
+    if (this.slowTimer > 0 && typeof Game !== 'undefined' && Game.sides) {
+      const A = Game.sides[this.hostileTo];
+      const sv = A && A.traits && A.traits.slowVuln;
+      if (sv) amount *= (1 + sv);
+    }
     /* ORISON's SANCTIFIED. The chapel wants its offering to LAST, so the one
        creature it named is harder to kill -- the tension the whole tower is
        built on, not a defensive buff handed to the enemy. Read off the body

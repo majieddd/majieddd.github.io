@@ -485,10 +485,10 @@ const COMMANDER_ROSTER = [
     compile: { name: 'BOOT SEQUENCE', metric: 'waves',
       desc: 'Recompiles on a schedule. It needs nothing from you but time.',
       levels: [
-        { at: 3,  desc: 'first pass — +4% damage and rate', apply: (t, S, m) => { m.damage += 0.04; m.rate += 0.04; } },
-        { at: 6,  desc: 'second pass — +4% more, and +4% range', apply: (t, S, m) => { m.damage += 0.04; m.rate += 0.04; m.range += 0.04; } },
-        { at: 10, desc: 'optimal — +6% damage, rate and range', apply: (t, S, m) => { m.damage += 0.06; m.rate += 0.06; m.range += 0.06; } },
-        { at: 15, desc: 'rewritten — +8% damage and +8% rate', apply: (t, S, m) => { m.damage += 0.08; m.rate += 0.08; } }
+        { at: 3,  desc: 'first pass — +4% damage and rate', apply: (t, S, m) => { m.damage *= 1.04; m.rate *= 1.04; } },
+        { at: 6,  desc: 'second pass — +4% more, and +4% range', apply: (t, S, m) => { m.damage *= 1.04; m.rate *= 1.04; m.range *= 1.04; } },
+        { at: 10, desc: 'optimal — +6% damage, rate and range', apply: (t, S, m) => { m.damage *= 1.06; m.rate *= 1.06; m.range *= 1.06; } },
+        { at: 15, desc: 'rewritten — +8% damage and +8% rate', apply: (t, S, m) => { m.damage *= 1.08; m.rate *= 1.08; } }
       ] },
     tech: chart('x', [
       [['PARSE','◎','+9% damage.', t=>t.dmg+=0.09],
@@ -545,8 +545,8 @@ const COMMANDER_ROSTER = [
       levels: [
         { at: 2,  desc: 'partial hardening — 35% jam resistance', apply: t => { t.jamResist = Math.max(t.jamResist || 0, 0.35); } },
         { at: 5,  desc: '70% jam resistance', apply: t => { t.jamResist = Math.max(t.jamResist || 0, 0.70); } },
-        { at: 9,  desc: 'IMMUNE — and +8% status', apply: t => { t.jamImmune = true; t.status += 0.08; } },
-        { at: 14, desc: 'counter-intrusion — +10% damage and +10% rate', apply: t => { t.dmg += 0.10; t.rate += 0.10; } }
+        { at: 9,  desc: 'IMMUNE — and +8% status', apply: (t, S, m) => { t.jamImmune = true; m.status *= 1.08; } },
+        { at: 14, desc: 'counter-intrusion — +10% damage and +10% rate', apply: (t, S, m) => { m.damage *= 1.10; m.rate *= 1.10; } }
       ] },
     tech: chart('z', [
       [['SHIELDING','◎','+9% damage.', t=>t.dmg+=0.09],
@@ -575,7 +575,7 @@ const COMMANDER_ROSTER = [
         { at: 40,  desc: 'first fit — the ramp begins', apply: t => { t.killRamp = 0.00030; } },
         { at: 120, desc: 'converging — ramp 0.00055', apply: t => { t.killRamp = 0.00055; } },
         { at: 260, desc: 'past the original — ramp 0.00075', apply: t => { t.killRamp = 0.00075; } },
-        { at: 450, desc: 'overfit — ramp 0.00095 and +12% kill gold', apply: t => { t.killRamp = 0.00095; t.goldMul += 0.12; } }
+        { at: 450, desc: 'overfit — ramp 0.00095 and +12% kill gold', apply: (t, S, m) => { t.killRamp = 0.00095; m.gold *= 1.12; } }
       ] },
     tech: chart('q', [
       [['SAMPLE','◎','+9% damage.', t=>t.dmg+=0.09],
@@ -603,8 +603,8 @@ const COMMANDER_ROSTER = [
       levels: [
         { at: 900,  desc: 'reconciled — growth 1.12', apply: t => { t.costGrowthMul = 1.12; } },
         { at: 2200, desc: 'balanced — growth 1.00', apply: t => { t.costGrowthMul = 1.00; } },
-        { at: 4200, desc: 'in credit — growth 0.88 and +12% kill gold', apply: t => { t.costGrowthMul = 0.88; t.goldMul += 0.12; } },
-        { at: 7000, desc: 'audited — growth 0.78 and +10% damage', apply: t => { t.costGrowthMul = 0.78; t.dmg += 0.10; } }
+        { at: 4200, desc: 'in credit — growth 0.88 and +12% kill gold', apply: (t, S, m) => { t.costGrowthMul = 0.88; m.gold *= 1.12; } },
+        { at: 7000, desc: 'audited — growth 0.78 and +10% damage', apply: (t, S, m) => { t.costGrowthMul = 0.78; m.damage *= 1.10; } }
       ] },
     tech: chart('j', [
       [['LINE ITEM','◎','+10% damage.', t=>t.dmg+=0.10],
