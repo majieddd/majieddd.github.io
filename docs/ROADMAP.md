@@ -1155,7 +1155,7 @@ seven parallel teams, per the owner's preference for maximum concurrency.
 
 | # | Note | Status |
 |---|---|---|
-| 20.6 | **Make multiplayer actually work.** | 🔶 **built, on `feature/multiplayer-20.6`, deliberately NOT merged.** `js/net.js` puts two humans on two clients in one battle over `BroadcastChannel` (browser-native, so no dependency) with deterministic lockstep. **MPT 19/24.** The two failures are the two strongest claims: the reanimate loop across the wire is *unproven* (the harness only reaches wave 3, so nothing dies to reanimate — musters and sends do agree 32/32), and the determinism **negative control failed to fail**. No adversarial audit exists — all seven Session 20 audit agents died to a weekly limit. [`MULTIPLAYER-HANDOFF.md`](MULTIPLAYER-HANDOFF.md) |
+| 20.6 | **Make multiplayer actually work.** | ✅ **SHIPPED in Session 21 at MPT 40/0** after the adversarial audit found and we fixed seven blockers — see [`MULTIPLAYER-HANDOFF.md`](MULTIPLAYER-HANDOFF.md). The Session-20 state, kept for history: 🔶 built, deliberately not merged. `js/net.js` puts two humans on two clients in one battle over `BroadcastChannel` (browser-native, so no dependency) with deterministic lockstep. **MPT 19/24.** The two failures are the two strongest claims: the reanimate loop across the wire is *unproven* (the harness only reaches wave 3, so nothing dies to reanimate — musters and sends do agree 32/32), and the determinism **negative control failed to fail**. No adversarial audit exists — all seven Session 20 audit agents died to a weekly limit. [`MULTIPLAYER-HANDOFF.md`](MULTIPLAYER-HANDOFF.md) |
 
 The hard constraint this must respect: **no external libraries, ever**, and the
 game must run offline from a single inlined HTML file. That rules out any
@@ -1224,7 +1224,7 @@ limit. Work is on **`session-21/backlog`** (off `main`) and one commit on
 
 | Item | Who |
 |---|---|
-| Merge `feature/multiplayer-20.6` | gated on the adversarial audit, then owner |
+| Merge `feature/multiplayer-20.6` | ✅ **done.** The audit came back do-not-merge with seven blockers; all seven fixed plus its two majors, MPT 40/0, then merged and pushed |
 | The pin state leak (match state survives `maxProfile()` + `Game.start()`) | next session — it blocks re-baselining both pins |
 | `cmd_cadre` is a Krea 2 plate among twenty SDXL commanders | **owner** — re-render on SDXL, accept it, or commit the GPU hours |
 | The soul price cut (basket 533 → 288 souls) | **owner** — the fix is correct; the magnitude is a balance decision |

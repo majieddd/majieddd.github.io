@@ -1,6 +1,24 @@
 # Multiplayer (20.6) — handoff
 
-**Branch:** `feature/multiplayer-20.6`. **Deliberately not merged to `main`.**
+> **STATUS (Session 21): MERGED AND LIVE.** The two failures below were closed —
+> and their diagnosis here was WRONG: it was never a test-window problem but a
+> harness save-state bug (`contract()` read the local save, so both commanders
+> fielded a one-tower loadout; nothing died, so reanimation was unreachable by
+> construction, and a match where nothing happens runs no cosmetic code, which
+> is why the isolation negative control "failed to fail"). The adversarial
+> audit this document asked for then ran — four independent lenses — and
+> returned **do-not-merge with seven blocking defects** the 29/0 suite could
+> not see: raw-written tower targeting parting the boards in ~100 ms, a
+> page-killing abandon path, a hard deadlock on all ten contested worlds, the
+> draft halting on different ticks per client, a frozen tab stalling the peer
+> forever with no verdict, the seat lens escaping on the draw path, and a
+> stranded draft modal starting a zombie match. All seven were fixed, plus the
+> audit's two remaining majors (a join with no deadline; `ctl` as an open
+> command port), under NET_PROTOCOL 2. **MPT: 40 pass / 0 fail.** The section
+> below is kept as history — read it as the state of Session 20, not of the
+> code.
+
+**Branch:** `feature/multiplayer-20.6`, merged to `main` in Session 21.
 
 `main` is what <https://majieddd.github.io> serves, and two of this feature's
 strongest claims are *unproven* — not disproven, unproven. That is not a thing

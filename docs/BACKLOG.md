@@ -12,20 +12,30 @@ units, 188 art plates. Live on all three surfaces.
 
 ---
 
-## The four things outstanding
+## Outstanding
 
-### 1. Multiplayer — built, on a branch, NOT merged
-`feature/multiplayer-20.6`. Two humans on two clients over `BroadcastChannel`
-with deterministic lockstep. **MPT 19/24**, and the two failures are the two
-strongest claims: the reanimate loop across the wire is *unproven* (the harness
-only reaches wave 3, so nothing dies to reanimate), and the determinism
-**negative control failed to fail**. No adversarial audit exists — all seven
-Session 20 audit agents died to a weekly limit.
-Full write-up and the specific next step for each: `docs/MULTIPLAYER-HANDOFF.md`
-— which exists **only on that branch**, so this link 404s from `main`. Read it
-without checking the branch out:
-`git show feature/multiplayer-20.6:docs/MULTIPLAYER-HANDOFF.md`.
-**Do not merge on 19/24.**
+### 1. Multiplayer — SHIPPED (Session 21)
+`feature/multiplayer-20.6` is merged to `main` and live. The path there matters
+more than the destination:
+
+- The two harness failures closed — and the handoff's diagnosis of them was
+  wrong. Not a test window: `contract()` read the LOCAL SAVE, so both
+  commanders fielded a one-tower loadout, nothing died, and reanimation was
+  unreachable by construction. The same root cause explains the isolation
+  negative control "failing to fail".
+- The adversarial audit then ran (four independent lenses) and returned
+  **do-not-merge with seven blocking defects** the green suite could not see.
+  All seven fixed, plus the two remaining majors (join deadline; `ctl`
+  whitelist + peer-only message gate), under **NET_PROTOCOL 2**.
+- **MPT: 40 pass / 0 fail**, including checks that pin each fix: a targeting
+  change crossing the wire, the fingerprint carrying choices rather than
+  counts, the batched frame halting on the draft's own tick, the frozen-tab
+  verdict, the tri-world refusal, both exit paths, both lens escapes, and the
+  stranger/ctl guards.
+
+Full story: [`MULTIPLAYER-HANDOFF.md`](MULTIPLAYER-HANDOFF.md). Still open,
+deliberately: WebRTC manual signalling for two MACHINES (BroadcastChannel is
+same-origin, one machine) — designed for, not built.
 
 ### 2. Soul-shop surcharge (20.7i)
 Modelled at ten towers per faction, and the finding inverts the assumption: the
