@@ -600,8 +600,9 @@ const UI = {
       <h3 class="section-label">ARSENAL — unlock a tower permanently (◉${Meta.towerUnlockCost()} each)</h3>
       <p class="hint">Human hardware is sold to everyone. A power's own arsenal is only for
         sale while you are sworn to it, and whatever you buy joins <b>that banner's</b>
-        shelf — another commander's file does not inherit it. Each purchase raises the
-        next one on this banner by ${SOUL_INFLATION_STEP}.</p>
+        shelf — another commander's file does not inherit it. Each ARSENAL purchase
+        raises the next arsenal price on this banner by ${SOUL_INFLATION_STEP};
+        commanders and abilities climb their own ladders, not this one.</p>
       <div class="soul-grid unlocks">${TOWER_ORDER.filter(id =>
           !Meta.isTowerUnlocked(id) && !Meta.isStoryTower(id)).map(id => {
         const t = TOWER_TYPES[id];

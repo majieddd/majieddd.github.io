@@ -99,6 +99,21 @@ const COMMANDERS = COMMANDER_ROSTER;
 const NO_BANNER_SHELF = 'none';
 function arsenalShelfKeys() { return Object.keys(FACTIONS).concat([NO_BANNER_SHELF]); }
 
+/* THE FOUR SHOPS souls buy from. Each keeps its OWN inflation ladder on each
+   banner. One shared counter meant a commander recruited on Tuesday raised
+   Wednesday's tower price: the same CRYO cost 6 souls to a player who opened
+   the arsenal first and 22 to one who recruited first, for no reason the shop
+   ever stated. A ladder now answers for its own aisle and nobody else's. */
+const SOUL_SHOP_KINDS = ['tower', 'unit', 'commander', 'ability'];
+/* `banner/kind`. No faction id and no NO_BANNER_SHELF contains a slash, so the
+   key is unambiguous and still legible in a dumped save. */
+function soulLedgerKeys() {
+  const out = [];
+  for (const b of arsenalShelfKeys())
+    for (const k of SOUL_SHOP_KINDS) out.push(b + '/' + k);
+  return out;
+}
+
 /* --------------------------------------------------------------------------
    META PROGRESSION
 -------------------------------------------------------------------------- */
@@ -290,11 +305,25 @@ const Meta = {
       delete r.vault.unlocked;
       this.save();
     }
-    /* The inflation ladder starts at zero for a grandfathered save: nobody is
-       retro-charged for purchases made at the old flat price. */
-    if (!r.vault.bought) {
-      r.vault.bought = {};
-      for (const k of arsenalShelfKeys()) r.vault.bought[k] = 0;
+    /* ONE LEDGER PER SHOP PER BANNER (20.7i). `bought` was a single integer
+       per banner that all four shops incremented and all four read, so the
+       arsenal was taxed for recruiting and the recruiter was taxed for the
+       arsenal. Split per shop, and named `boughtBy` beside `unlockedBy`
+       because it is the same migration for the same reason -- the presence
+       of the key IS the version marker, so this runs exactly once.
+
+       Grandfathered saves start every ladder at ZERO. That is the rule the
+       flat counter already shipped under, and it is the only seed that cannot
+       charge a live profile MORE for its next purchase than it would have been
+       charged today. Nothing owned is read or touched here: `unlockedBy`,
+       `cmdUnlocked`, `abilUnlocked` and `musterUnlocked` are not named. */
+    if (!r.vault.boughtBy) {
+      r.vault.boughtBy = {};
+      for (const k of soulLedgerKeys()) r.vault.boughtBy[k] = 0;
+      /* Deleted rather than left beside its replacement, exactly as the flat
+         `unlocked` list was: a stale second copy of the same fact is how one
+         vault came to be read from two places. */
+      delete r.vault.bought;
       this.save();
     }
     return r.vault;
@@ -638,21 +667,45 @@ const Meta = {
   unlockedTowers() { return this.arsenalShelf().slice(); },
 
   /* ---- soul prices -- ONE definition each, printed AND charged ---- */
-  /** Every purchase on a banner raises every later one on it. Read by the
-      shop and by every deduction, because two expressions for one price is
-      exactly how a panel came to promise 21 souls while paying 6. */
-  soulSurcharge() { return (this.vault().bought[this.shelfKey()] || 0) * SOUL_INFLATION_STEP; },
-  /** Take the souls AND book the purchase that raises the next price. Every
-      buyer goes through here so no purchase can escape the ladder. */
-  chargeSouls(cost) {
+  /** Where one shop's ladder is booked on the active banner. */
+  soulLedgerKey(kind) { return this.shelfKey() + '/' + kind; },
+  /** Every purchase in a SHOP raises every later purchase in THAT shop on this
+      banner. Read by the panel and by every deduction, because two expressions
+      for one price is exactly how a panel came to promise 21 souls while
+      paying 6. */
+  soulSurcharge(kind) {
+    return (this.vault().boughtBy[this.soulLedgerKey(kind)] || 0) * SOUL_INFLATION_STEP;
+  },
+  /** THE ONE PRICE TABLE. Every printed price and every charge is this call,
+      so a price cannot be quoted from one expression and taken from another,
+      and a purchase cannot be booked against a shop it was not priced in:
+      `kind` is named ONCE per purchase, by chargeSouls, which prices it. */
+  soulPrice(kind, id) {
+    const s = this.soulSurcharge(kind);
+    if (kind === 'tower') return TOWER_UNLOCK_COST + s;
+    if (kind === 'unit') return UNIT_UNLOCK_COST + s;
+    if (kind === 'ability') return ABILITY_UNLOCK_COST + s;
+    if (kind === 'commander') {
+      const c = COMMANDER_ROSTER.find(x => x.id === id);
+      /* A commander outside your own faction costs more -- you are recruiting
+         across a line that is supposed to mean something. */
+      return (c && c.faction === this.faction() ? 12 : 18) + s;
+    }
+    return Infinity;   /* an unnamed shop is unaffordable, never free */
+  },
+  /** Price it, take the souls, and book the purchase that raises the next
+      price IN THE SAME SHOP. Every buyer goes through here, so no purchase can
+      escape its own ladder and none can ride another's. */
+  chargeSouls(kind, id) {
+    const cost = this.soulPrice(kind, id);
     const p = this.load(), v = this.vault();
     if (p.souls < cost) return false;
     p.souls -= cost;
-    const k = this.shelfKey();
-    v.bought[k] = (v.bought[k] || 0) + 1;
+    const k = this.soulLedgerKey(kind);
+    v.boughtBy[k] = (v.boughtBy[k] || 0) + 1;
     return true;
   },
-  towerUnlockCost() { return TOWER_UNLOCK_COST + this.soulSurcharge(); },
+  towerUnlockCost() { return this.soulPrice('tower'); },
 
   /** ORIGIN GATING. A tower built by one of the three POWERS may only be
       bought while you are sworn to that power -- their arsenals are the point
@@ -760,15 +813,15 @@ const Meta = {
     if (!f) return null;
     return this.faction() === f ? null : (FACTIONS[f] || null);
   },
-  unitUnlockCost() { return UNIT_UNLOCK_COST + this.soulSurcharge(); },
+  unitUnlockCost() { return this.soulPrice('unit'); },
   canUnlockUnit(id) {
     return !!(typeof UNIT_TYPES !== 'undefined' && UNIT_TYPES[id]) &&
            musterSendable(id) && !this.isMusterUnlocked(id) && !this.unitOriginLock(id);
   },
   unlockUnit(id) {
     if (!this.canUnlockUnit(id)) return false;
-    /* The charge reads the SAME cost the shop button printed. */
-    if (!this.chargeSouls(this.unitUnlockCost())) return false;
+    /* The charge is priced by the SAME call the shop button printed from. */
+    if (!this.chargeSouls('unit')) return false;
     this.vault().musterUnlocked.push(id);
     this.save(true);
     return true;
@@ -825,23 +878,24 @@ const Meta = {
     const from = v.unlockedBy[NO_BANNER_SHELF] || [];
     const to = (v.unlockedBy[id] = v.unlockedBy[id] || STARTER_TOWERS.slice());
     for (const t of from) if (!to.includes(t)) to.push(t);
-    v.bought[id] = (v.bought[id] || 0) + (v.bought[NO_BANNER_SHELF] || 0);
+    /* Every shop's unsworn ladder travels with it. Missing one would forgive
+       that shop's bill for swearing late, and writing the retired flat key
+       would be a silent no-op -- nothing reads it any more. */
+    for (const kind of SOUL_SHOP_KINDS) {
+      const fk = NO_BANNER_SHELF + '/' + kind, tk = id + '/' + kind;
+      v.boughtBy[tk] = (v.boughtBy[tk] || 0) + (v.boughtBy[fk] || 0);
+      v.boughtBy[fk] = 0;
+    }
     v.unlockedBy[NO_BANNER_SHELF] = STARTER_TOWERS.slice();
-    v.bought[NO_BANNER_SHELF] = 0;
   },
 
   isCommanderUnlocked(id) { return this.vault().cmdUnlocked.includes(id); },
-  commanderCost(id) {
-    const c = COMMANDER_ROSTER.find(x => x.id === id);
-    /* A commander outside your own faction costs more -- you are recruiting
-       across a line that is supposed to mean something. */
-    return (c && c.faction === this.faction() ? 12 : 18) + this.soulSurcharge();
-  },
+  commanderCost(id) { return this.soulPrice('commander', id); },
   unlockCommander(id) {
     const v = this.vault();
     if (v.cmdUnlocked.includes(id)) return false;
-    /* The charge reads the SAME commanderCost the shop button printed. */
-    if (!this.chargeSouls(this.commanderCost(id))) return false;
+    /* The charge is priced by the SAME call the shop button printed from. */
+    if (!this.chargeSouls('commander', id)) return false;
     v.cmdUnlocked.push(id);
     this.save(true);
     return true;
@@ -854,7 +908,7 @@ const Meta = {
     if (!c) return false;
     return c.tech.every(t => this.isUnlocked(cmdId, t.id));
   },
-  abilityCost() { return ABILITY_UNLOCK_COST + this.soulSurcharge(); },
+  abilityCost() { return this.soulPrice('ability'); },
 
   /** First encounter with an enemy type. Returns true exactly once, forever. */
   markSeen(type) {
@@ -891,7 +945,7 @@ const Meta = {
     /* The raw constant used to be charged here while the shop printed
        abilityCost(). They were equal, which is why it survived -- and the
        moment a surcharge landed on one of them they would have parted. */
-    if (!this.chargeSouls(this.abilityCost())) return false;
+    if (!this.chargeSouls('ability')) return false;
     v.abilUnlocked.push(cmdId);
     this.save(true);
     return true;
@@ -902,7 +956,7 @@ const Meta = {
        locked entries, so the button exists and has to be honest. A machine is
        refused for a second reason: it has no price to pay at all. */
     if (this.towerOriginLock(id) || this.towerStoryLock(id)) return false;
-    if (!this.chargeSouls(this.towerUnlockCost())) return false;
+    if (!this.chargeSouls('tower')) return false;
     this.arsenalShelf().push(id);
     this.save();
     return true;

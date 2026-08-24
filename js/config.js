@@ -1963,11 +1963,17 @@ const ROBOTIC_UNLOCK_ORDER = ['dronebay', 'railgun', 'echo', 'pylon',
                               'foundry', 'quake', 'nullfield', 'singularity',
                               'vault', 'replicator'];
 
-/* Every soul-shop purchase raises the next one on that banner by this much.
-   It stops a hoarded bank buying the whole arsenal in one sitting, which is
-   what turned the shop into a single shopping trip instead of a decision made
-   again across a campaign. Per banner, not per install, because the shelves
-   are per banner too -- a second profile must not inherit the first's bill. */
+/* Every soul-shop purchase raises the next one IN THAT SHOP on that banner by
+   this much. It stops a hoarded bank buying the whole arsenal in one sitting,
+   which is what turned the shop into a single shopping trip instead of a
+   decision made again across a campaign. Per banner, not per install, because
+   the shelves are per banner too -- a second profile must not inherit the
+   first's bill. Per SHOP as well (20.7i): one counter shared by towers, units,
+   commanders and abilities meant recruiting taxed the arsenal and the arsenal
+   taxed recruiting, so the same tower cost 6 souls or 22 depending only on
+   which panel the player happened to open first. See Meta.soulPrice, which is
+   the single expression every one of those four prices is printed from and
+   charged from. */
 const SOUL_INFLATION_STEP = 1;
 
 /* --------------------------------------------------------------------------
