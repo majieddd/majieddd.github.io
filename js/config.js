@@ -787,7 +787,7 @@ function maelstromMap(seats) {
     roster: MAELSTROM_ROSTER.slice(), denizens: MAELSTROM_DENIZENS.slice(),
     sigNote: 'The singularity throws back everything it has swallowed.',
     blurb: 'A singularity with ' + n + ' seats around it. Nothing you kill comes back to you here — ' +
-           'the dead fall inward. You may still muster, and every bonus you hold rides what you send.',
+           'the dead fall inward. You may still summon for gold, and every POWER bonus you hold rides what you send.',
     trait: n + ' SEATS · no reanimation · the horizon contracts'
   };
 }
@@ -3188,6 +3188,72 @@ const MUSTER_AI_SAFE_LIVES = 0.8;         /* ceiling 1.12^10 = 3.11x base cost  
    straight into the income ceiling, which is the snowball with extra steps. */
 const MUSTER_PER_WAVE = 2;
 
+/* ==========================================================================
+   THE SUMMONING DOCTRINES — tunables
+
+   Five rites, one conservation law (see SUMMON_DOCTRINES in factions.js and
+   Game.corpseBudget). Everything here bounds a rite that would otherwise run
+   away; each block says what it is holding down. */
+
+/* THE POWER STEP. Every purchase permanently hardens what you send, so a
+   summon bought past the income ceiling still buys something -- until now a
+   post-cap send was pure tempo and the button's promise was half a lie. A
+   bounded additive, not a compounding stream: +0.02 a buy to a +0.20 ceiling
+   is about one boon's worth over a whole match. The Pirates are the named
+   exception the owner asked for -- a steeper step and NO ceiling -- and what
+   re-prices it is PIRATE_COST_GROWTH below, not a second cap. */
+const POWER_PER_BUY = 0.02;
+const POWER_PER_BUY_PIRATE = 0.03;
+const SUMMON_POWER_CAP = 0.20;
+
+/* THE MARQUE PRICE. Pirates buy every body they field, so their cost curve
+   never plateaus the way MUSTER_COST_STEPS lets everyone else's. 1.09
+   unbounded against a FLAT income step means the payback horizon of the Nth
+   buy diverges -- roughly 4.4 waves at buy ten, 9.7 at buy twenty, against
+   matches that resolve by about wave 25. That divergence IS the cap; there is
+   no second brake, and MUSTER_PER_WAVE still stands for them as for everyone. */
+const PIRATE_COST_GROWTH = 1.09;
+
+/* CONSCRIPTION's band. A corpse pays for a body of its own mass in a
+   different shape, so a light kill rolling a heavy unit arrives as a husk of
+   that unit. The band stops the two ends being nonsense: below MIN the husk
+   is free ability real estate (a vanguard-shaped 30% shell soaking a
+   bulwark), above MAX a heavy corpse rolling a chitling arrives as an
+   unkillable pebble. When nothing in the roster fits the band the roll is
+   clamped and the inflation is BOOKED as debt -- the next kills pay it off
+   instead of spawning -- so the clamp can never print mass. */
+const HUMAN_ROLL_HPMUL_MIN = 0.30;
+const HUMAN_ROLL_HPMUL_MAX = 2.20;
+
+/* THE PROCESSION's four bounds, because a stream that ignores kills is the
+   easiest thing here to make unanswerable: it starts late (wave 3, the same
+   reasoning as MUSTER_AI_MIN_WAVE -- defence first), each body pays a
+   STEEPER tax than a bought one (0.35 against MUSTER_DAMP's 0.60, because it
+   was not paid for), the per-entry count stops growing at 6, and the cadence
+   STRETCHES as the count grows. Count capped while the period grows means
+   delivered mass per minute is asymptotically linear -- it cannot outrun the
+   1.26/wave enemy health curve, which is what a free stream must never do. */
+const FOL_START_WAVE = 3;
+const FOL_CADENCE_SEC = 9.0;
+const FOL_CADENCE_GROWTH = 0.6;
+const FOL_CYCLE_COUNT_CAP = 6;
+const PROCESSION_DAMP = 0.35;
+
+/* THE BROOD's clutches. The 25% haircut prices the burst: a clutch lands as a
+   pack the rival cannot answer piecemeal, and DEVOURING (x1.25) plus prestige
+   ride the same budget, so a sworn Xeno nets near the whole corpse -- later,
+   and all at once. Gestation is set by the unit ROLLED, not the unit killed,
+   which is why the pod draws what it is becoming: that glyph is the tell the
+   whole faction plans around. Feeding is the combo -- kills near a clutch
+   hurry it -- and the cap turns overflow into a bigger feed rather than a
+   loss, so a full nest still rewards killing. */
+const XENO_INC_SHARE = 0.75;
+const XENO_INC_BASE_SEC = 6.0;
+const XENO_INC_SQRT_SEC = 0.55;
+const XENO_INC_FEED_RADIUS = 2.6;
+const XENO_INC_FEED_SEC = 1.5;
+const XENO_INC_CAP = 10;
+
 /* ── MUSTER DETACHMENT ────────────────────────────────────────────────────
    The fixed three-row table is gone. A commander carries up to
    MUSTER_LOADOUT_SIZE SAVED denizens into battle (Meta.musterLoadout), and
@@ -3406,9 +3472,13 @@ function musterTiersFor(loadout) {
   return ids.map(musterTierFor).filter(Boolean).sort((a, b) => a.mass - b.mass);
 }
 
-function musterCost(tier, wave, buys) {
+/* `growth` and `steps` are parameters because LETTERS OF MARQUE buys every
+   body it fields and so must never reach the plateau the other rites get:
+   passing Infinity steps is what turns this into the pirates' only brake.
+   Defaults leave every existing caller exactly where it was. */
+function musterCost(tier, wave, buys, growth = MUSTER_COST_GROWTH, steps = MUSTER_COST_STEPS) {
   return Math.round(waveReward(wave + 1) * tier.cost *
-                    Math.pow(MUSTER_COST_GROWTH, Math.min(buys || 0, MUSTER_COST_STEPS)));
+                    Math.pow(growth, Math.min(buys || 0, steps)));
 }
 /** The income PERCENT one more purchase of `tier` adds. FLAT by the owner's
     spec -- no falloff. MUSTER_INCOME_CAP_PCT alone bounds the total, applied
@@ -3416,9 +3486,13 @@ function musterCost(tier, wave, buys) {
 function musterIncomeStep(tier) {
   return tier.incomePct;
 }
-/** Gold a side's accumulated muster percent pays on `wave`, ceiling applied. */
-function musterPayout(pct, wave) {
-  return Math.round(waveReward(wave) * Math.min(pct || 0, MUSTER_INCOME_CAP_PCT));
+/** Gold a side's accumulated muster percent pays on `wave`, ceiling applied.
+    The ceiling is a PARAMETER because it belongs to the summoning rite, not
+    to the economy: MUSTER_INCOME_CAP_PCT is the default-doctrine bound, and
+    LETTERS OF MARQUE passes Infinity. What re-prices the pirate exemption is
+    PIRATE_COST_GROWTH, not a second ceiling here. */
+function musterPayout(pct, wave, capPct = MUSTER_INCOME_CAP_PCT) {
+  return Math.round(waveReward(wave) * Math.min(pct || 0, capPct));
 }
 
 /* The rival scores a muster against builds and upgrades on score-per-gold, so

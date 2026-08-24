@@ -171,3 +171,56 @@ board-cost power tier is supposed to do: the maxed loss median moved 22 → 25
 while the fresh curve barely moved (8 → 9) — a fresh profile cannot afford a
 heavy, so it should not feel them, and it does not. Nothing here needs a nerf
 on this evidence; re-measure again if any heavy's talents change.
+
+---
+
+# Session 22 — RE-BASELINED for the SUMMONING DOCTRINES
+
+Summoning split into five rites, so the single universal law "everything you
+kill rises again" now belongs to one doctrine out of five. That is an ENGINE
+change and it re-bases these pins legitimately. Same seeds, same maps, same
+method; `selfTest(0, 1234)` still reports `reproducible: true` (23 / 28853,
+was 22 / 28664).
+
+## Maxed profile, galaxy tier 0 — seeds 1000-1005
+
+| Map | Seed | Outcome | Wave |
+|---|---:|---|---:|
+| spine | 1000 | win | 25 |
+| delta | 1001 | loss | 31 |
+| narrows | 1002 | loss | 34 |
+| shattered | 1003 | loss | 31 |
+| crossroads | 1004 | loss | 30 |
+| coil | 1005 | loss | 33 |
+
+**1 win / 5 losses** · **loss median 31** (was 25).
+
+## Fresh profile — seeds 1000-1005
+
+| Map | Seed | Outcome | Wave |
+|---|---:|---|---:|
+| spine | 1000 | loss | 10 |
+| delta | 1001 | win | 10 |
+| narrows | 1002 | loss | 11 |
+| shattered | 1003 | loss | 11 |
+| crossroads | 1004 | win | 14 |
+| coil | 1005 | loss | 26 |
+
+**2 wins / 4 losses** · **loss median 11** (was 9).
+
+## Reading it, and the one number to watch
+
+Both medians moved UP, and the cause is structural rather than a tuning slip:
+of the five rites only CONSCRIPTION and THE LATTICE turn a kill into a body.
+THE PROCESSION trades every kill-derived body for a clock damped to 0.35, and
+LETTERS OF MARQUE trades them for nothing at all. Since the pins run mirror-AI
+with rivals drawn from every power, total free pressure across the board fell,
+so both seats live longer. The fresh move (9 → 11) is small and lands where
+the owner asked the early game to land.
+
+**The maxed move (25 → 31) is the number to watch.** It is not a defect — the
+health curve's terminus still bites and every run ended by wave 34 — but it
+means expert matches now run about six waves longer, which pulls against the
+standing rule that rounds should end promptly. Re-measure this table after the
+difficulty pass; if the maxed median has not come back toward the high
+twenties, the honest lever is the post-wave-20 ramp, not the rites.

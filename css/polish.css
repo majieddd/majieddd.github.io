@@ -266,6 +266,60 @@ body.rm-user .bi-line { opacity: 1; }
 
 .theatre-body { display: grid; grid-template-columns: 1fr 296px; gap: 12px; align-items: start; }
 @media (max-width: 1050px) { .theatre-body { grid-template-columns: 1fr; } }
+
+/* ═════════════ THE GALAXY, FULL BLEED ═══════════════════════════════════ */
+/* The map IS the screen. Everything else -- the title, the holdings strip,
+   the briefing panel, the footer, the legends -- floats above it as a layer,
+   because a map you are meant to fly around should not be a 760px window with
+   furniture stacked over and under it.
+
+   Keyed on `#worldmap-wrap.gx-viewport`, which is the class GalaxyFX adds
+   when it mounts a live map and `renderGalaxyVictory` REMOVES when it
+   replaces the map with the victory panel. So the same screen returns to
+   ordinary document flow for that panel without a second switch to remember. */
+/* Nothing on this screen scrolls any more -- the map is the scroll surface,
+   and it pans. Without this the stray few pixels the screen sits below the
+   viewport top become a scrollbar over a full-bleed map. */
+#screen-theatre { overflow: hidden; }
+#screen-theatre .setup-wrap { max-width: none; padding: 0; gap: 0; position: relative;
+  height: 100vh; min-height: 0; }
+#screen-theatre .theatre-body { display: block; position: absolute; inset: 0; gap: 0; }
+#worldmap-wrap.gx-viewport { position: absolute; inset: 0; height: auto;
+  border: 0; border-radius: 0; padding: 0; background: transparent; }
+
+/* The floating chrome. `pointer-events: none` on the containers so the map
+   can be dragged THROUGH the empty parts of a bar, with the controls
+   themselves handed their clicks back. */
+#screen-theatre .setup-head,
+#screen-theatre #campaign-trail,
+#screen-theatre .setup-foot,
+#screen-theatre #theatre-detail { position: absolute; z-index: 6; pointer-events: none; }
+#screen-theatre .setup-head > *, #screen-theatre #campaign-trail > *,
+#screen-theatre .setup-foot > *, #screen-theatre #theatre-detail > * { pointer-events: auto; }
+
+#screen-theatre .setup-head { top: 10px; left: 0; right: 0; text-align: center; }
+#screen-theatre .setup-head .tagline { display: none; }
+#screen-theatre #campaign-trail { top: 52px; left: 0; right: 0; display: flex; justify-content: center; }
+#screen-theatre .setup-foot { bottom: 0; left: 0; right: 0; padding: 12px 18px;
+  background: linear-gradient(0deg, rgba(4,7,13,.92), rgba(4,7,13,0)); margin-top: 0; }
+#screen-theatre #theatre-detail { top: 96px; right: 14px; width: 296px;
+  max-height: calc(100vh - 190px); overflow-y: auto; }
+
+/* The map's own overlays keep out from under the floating bars. */
+#worldmap-wrap.gx-viewport > .gx-keys { top: 96px; left: 14px; }
+#worldmap-wrap.gx-viewport > .gx-nav { top: 96px; right: 322px; }
+#worldmap-wrap.gx-viewport > .gx-hint { bottom: 66px; left: 14px; }
+#worldmap-wrap.gx-viewport > .wm-hint { bottom: 66px; right: 322px; }
+@media (max-width: 1050px) {
+  #screen-theatre #theatre-detail { top: auto; bottom: 62px; right: 8px; left: 8px; width: auto;
+    max-height: 40vh; }
+  #worldmap-wrap.gx-viewport > .gx-nav { right: 14px; }
+  #worldmap-wrap.gx-viewport > .wm-hint { display: none; }
+}
+/* And the victory panel, which arrives after the class comes off: it owns the
+   whole absolute body, centred, and scrolls if it must. */
+#screen-theatre .theatre-body > #worldmap-wrap:not(.gx-viewport) {
+  display: grid; place-items: center; min-height: 100%; overflow-y: auto; }
 .course-set { font-size: 11px; letter-spacing: 0.2em; color: var(--cyan); margin-bottom: 9px; text-align: center; }
 
 .brief { display: flex; flex-direction: column; gap: 9px; }
@@ -1184,6 +1238,35 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
 .mu-body b { font-family: var(--display); font-size: 10px; letter-spacing: .12em; color: #fed7aa; }
 .mu-body em { font-style: normal; font-size: 10px; color: var(--text-dim);
   font-variant-numeric: tabular-nums; }
+/* THE THREE FIGURES. Colour carries the meaning so the eye can pick out the
+   one it came for without reading all three: gold is what it costs, faction
+   colour is the power it buys, green is the income it adds. */
+.mu-figs { display: flex; gap: .55em; flex-wrap: wrap; }
+.mu-cost { color: var(--gold, #fbbf24); }
+.mu-pow { color: #fb923c; }
+.mu-eco { color: #4ade80; }
+/* The rite, above its own controls. */
+.engine-strip { display: flex; align-items: baseline; gap: 7px; padding: 5px 9px; border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--fc) 34%, transparent);
+  background: color-mix(in srgb, var(--fc) 8%, transparent); cursor: help; }
+.engine-strip b { font-family: var(--display); font-size: 9.5px; letter-spacing: .16em; color: var(--fc); }
+.engine-strip em { font-style: normal; font-size: 9.5px; color: var(--text-dim);
+  font-variant-numeric: tabular-nums; margin-left: auto; text-align: right; }
+.eng-lanes { font-size: 9px; letter-spacing: .12em; color: var(--text-mute); }
+.lattice-plate { display: flex; flex-direction: column; gap: 3px; padding: 9px 11px; border-radius: 10px;
+  border: 1px dashed rgba(148, 163, 184, .4); background: rgba(148, 163, 184, .06); }
+.lattice-plate b { font-family: var(--display); font-size: 10px; letter-spacing: .14em; color: #cbd5e1; }
+.lattice-plate em { font-style: normal; font-size: 10px; color: var(--text-mute); line-height: 1.45; }
+/* The POWER chip and its ledger. */
+.mu-powchip { cursor: help; text-decoration: underline dotted rgba(253, 186, 116, .5); text-underline-offset: 2px; }
+.muster-head b.uncapped { color: #fbbf24; }
+.pl-body { display: flex; flex-direction: column; gap: 3px; margin: 6px 0 4px; }
+.pl-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: baseline; font-size: 11px; }
+.pl-row span { color: var(--text-dim); letter-spacing: .08em; }
+.pl-row b { color: #fb923c; font-variant-numeric: tabular-nums; }
+.pl-row em { grid-column: 1 / -1; font-style: normal; font-size: 9.5px; color: var(--text-mute); }
+.pl-row.pl-them b { color: var(--red, #ef4444); }
+.pl-foot { display: block; font-style: normal; font-size: 9.5px; color: var(--text-mute); line-height: 1.45; }
 
 
 /* ═════════════════ AIMED ABILITIES ══════════════════════════════════════ */

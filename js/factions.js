@@ -341,6 +341,74 @@ const UNIT_DOCTRINES = {
 /** The doctrine a body obeys, or null for a neutral machine. */
 function unitDoctrineOf(id) { return UNIT_DOCTRINES[unitFactionOf(id)] || null; }
 
+/* ==========================================================================
+   SUMMONING DOCTRINES
+
+   The rite by which a commander puts bodies on a rival's lane. Until now
+   there was exactly one law for everybody -- every kill got up and marched --
+   and it is preserved intact below as THE LATTICE, the machine rite. The
+   other four each gave something up to get something:
+
+     CONSCRIPTION      a kill returns as a DIFFERENT soldier of your own
+                       choosing. Gave up: nothing. It is the baseline, and the
+                       all-arounder's identity is that it does not flinch.
+     THE PROCESSION    bodies march on a CLOCK, kills or no kills, heavier
+                       every full cycle. Gave up: every kill-derived body.
+     THE BROOD         a kill INCUBATES where it fell and hatches as something
+                       else. Gave up: tempo -- everything arrives late.
+     LETTERS OF MARQUE nothing rises free; everything is bought, and neither
+                       the POWER nor the ECON bonus has a ceiling. Gave up:
+                       the free stream entirely.
+     THE LATTICE       every kill returns as ITSELF. Gave up: the purchase
+                       economy -- the Lattice does not sell and does not buy.
+
+   THE CONSERVATION LAW, which every entry obeys or explicitly re-prices: a
+   doctrine may change the SHELL a kill returns in, never the MASS. See
+   Game.corpseBudget -- one number, computed once, spent by whichever rite
+   owns the corpse.
+
+   The commander carries the rite, not the banner: a cross-faction commander
+   brings their own summoning to your flag, while the loadout supplies
+   whatever soldiers you have saved. That is the mixing contract -- the rite
+   and the roster are separate choices. The tower arsenal law (17.4) is a
+   different rule about a different thing and is untouched by any of this. */
+const SUMMON_DOCTRINES = {
+  human: {
+    id: 'human', name: 'CONSCRIPTION', onKill: 'roll', scheduler: false, noPurchase: false,
+    incomeCapPct: MUSTER_INCOME_CAP_PCT, costGrowth: MUSTER_COST_GROWTH, costSteps: MUSTER_COST_STEPS,
+    powerPerBuy: POWER_PER_BUY, powerCap: SUMMON_POWER_CAP,
+    desc: 'Every kill drafts. The fallen return as a soldier drawn at random from your own roster — a different shape, never a heavier one.'
+  },
+  light: {
+    id: 'light', name: 'THE PROCESSION', onKill: null, scheduler: true, noPurchase: false,
+    incomeCapPct: MUSTER_INCOME_CAP_PCT, costGrowth: MUSTER_COST_GROWTH, costSteps: MUSTER_COST_STEPS,
+    powerPerBuy: POWER_PER_BUY, powerCap: SUMMON_POWER_CAP, aiPressureMul: 0.85,
+    desc: 'The march does not wait for the dead. Your roster walks in order on a clock, and every full cycle it walks heavier.'
+  },
+  xeno: {
+    id: 'xeno', name: 'THE BROOD', onKill: 'incubate', scheduler: false, noPurchase: false,
+    incomeCapPct: MUSTER_INCOME_CAP_PCT, costGrowth: MUSTER_COST_GROWTH, costSteps: MUSTER_COST_STEPS,
+    powerPerBuy: POWER_PER_BUY, powerCap: SUMMON_POWER_CAP,
+    desc: 'What you kill does not die. It incubates where it fell and hatches as something else — and a kill beside a clutch hurries it along.'
+  },
+  pirate: {
+    id: 'pirate', name: 'LETTERS OF MARQUE', onKill: null, scheduler: false, noPurchase: false,
+    incomeCapPct: Infinity, costGrowth: PIRATE_COST_GROWTH, costSteps: Infinity,
+    powerPerBuy: POWER_PER_BUY_PIRATE, powerCap: Infinity, aiPressureMul: 1.25, aiMinWave: 3,
+    desc: 'Nothing rises free under this flag. Every body is bought — and neither your POWER nor your ECON has a ceiling.'
+  },
+  robotic: {
+    id: 'robotic', name: 'THE LATTICE', onKill: 'clone', scheduler: false, noPurchase: true,
+    incomeCapPct: MUSTER_INCOME_CAP_PCT, costGrowth: MUSTER_COST_GROWTH, costSteps: MUSTER_COST_STEPS,
+    powerPerBuy: 0, powerCap: 0,
+    desc: 'Every kill returns as itself, exactly as it fell. The Lattice does not sell, and the Lattice does not buy.'
+  }
+};
+/* FINGERPRINT INDEX. Net.fingerprint mixes the POSITION of a doctrine in this
+   array, so two builds must agree on the order or a duel desyncs while both
+   clients believe they are right. Append only -- never reorder. */
+const DOCTRINE_ORDER = ['human', 'light', 'xeno', 'pirate', 'robotic'];
+
 /* --------------------------------------------------------------------------
    UNIT TALENTS (19.13)
 
@@ -367,27 +435,27 @@ function unitDoctrineOf(id) { return UNIT_DOCTRINES[unitFactionOf(id)] || null; 
 const UNIT_DOCTRINE_TALENTS = {
   human: [
     { id:'u_h0a', row:0, col:0, name:'SCAVENGE',     desc:'Takes half again as much off every wreck.', mods:{ salvageMul:1.5 } },
-    { id:'u_h0b', row:0, col:1, name:'QUARTERMASTER',desc:'A muster costs 15% less.',                  mods:{ costMul:0.85 } },
+    { id:'u_h0b', row:0, col:1, name:'QUARTERMASTER',desc:'A summon costs 15% less.',                  mods:{ costMul:0.85 } },
     { id:'u_h1a', row:1, col:0, name:'PLATE SHOP',   desc:'+3 armour before a wreck is even found.',   mods:{ armorAdd:3 } },
-    { id:'u_h1b', row:1, col:1, name:'ATTRITION',    desc:'+25% bodies per muster.',                   mods:{ countMul:1.25 } }
+    { id:'u_h1b', row:1, col:1, name:'ATTRITION',    desc:'+25% bodies per summon.',                   mods:{ countMul:1.25 } }
   ],
   light: [
     { id:'u_l0a', row:0, col:0, name:'HALLOWING',    desc:'+35% ward.',                                mods:{ shieldMul:1.35 } },
-    { id:'u_l0b', row:0, col:1, name:'TITHING',      desc:'+30% of the income a muster adds.',         mods:{ incomeMul:1.30 } },
+    { id:'u_l0b', row:0, col:1, name:'TITHING',      desc:'+30% of the income a summon adds.',         mods:{ incomeMul:1.30 } },
     { id:'u_l1a', row:1, col:0, name:'UNENDING VOW', desc:'A passed ward carries 70% further.',        mods:{ vowMul:1.70 } },
     { id:'u_l1b', row:1, col:1, name:'PROCESSION',   desc:'+15% march speed.',                         mods:{ speedMul:1.15 } }
   ],
   xeno: [
-    { id:'u_x0a', row:0, col:0, name:'BROOD',        desc:'+35% bodies per muster.',                   mods:{ countMul:1.35 } },
+    { id:'u_x0a', row:0, col:0, name:'BROOD',        desc:'+35% bodies per summon.',                   mods:{ countMul:1.35 } },
     { id:'u_x0b', row:0, col:1, name:'CARRION',      desc:'The swarm takes 70% more off its own dead.',mods:{ massMul:1.70 } },
     { id:'u_x1a', row:1, col:0, name:'THICK HIDE',   desc:'+3 armour.',                                mods:{ armorAdd:3 } },
     { id:'u_x1b', row:1, col:1, name:'METABOLISE',   desc:'Regrows 4.5% of its health a second.',      mods:{ regen:0.045 } }
   ],
   pirate: [
     { id:'u_p0a', row:0, col:0, name:'RIGGED CHARGES',desc:'A scuttle jams 80% longer.',               mods:{ scuttleMul:1.80 } },
-    { id:'u_p0b', row:0, col:1, name:'FENCE',        desc:'+35% of the income a muster adds.',         mods:{ incomeMul:1.35 } },
+    { id:'u_p0b', row:0, col:1, name:'FENCE',        desc:'+35% of the income a summon adds.',         mods:{ incomeMul:1.35 } },
     { id:'u_p1a', row:1, col:0, name:'CUT ENGINES',  desc:'+20% march speed.',                         mods:{ speedMul:1.20 } },
-    { id:'u_p1b', row:1, col:1, name:'PRESS-GANG',   desc:'+30% bodies per muster.',                   mods:{ countMul:1.30 } }
+    { id:'u_p1b', row:1, col:1, name:'PRESS-GANG',   desc:'+30% bodies per summon.',                   mods:{ countMul:1.30 } }
   ]
 };
 
@@ -395,29 +463,29 @@ const UNIT_DOCTRINE_TALENTS = {
    the Boarder's grapple, the Scrapjack's looted jammer, the Bloatpod's burst
    -- so the deepest choice reads as that soldier rather than as a number. */
 const UNIT_SIGNATURE_TALENTS = {
-  trooper:     [{ name:'DRILLED',        desc:'+30% bodies per muster.',              mods:{ countMul:1.30 } },
+  trooper:     [{ name:'DRILLED',        desc:'+30% bodies per summon.',              mods:{ countMul:1.30 } },
                 { name:'FIELD KIT',      desc:'Salvages twice as fast.',              mods:{ salvageMul:2.00 } }],
   gunskiff:    [{ name:'SKIRMISH SCREEN',desc:'+18% march speed.',                    mods:{ speedMul:1.18 } },
                 { name:'SPOTTER',        desc:'+60% salvage and +1 armour.',          mods:{ salvageMul:1.60, armorAdd:1 } }],
   linebreaker: [{ name:'BOLTED PLATE',   desc:'+4 armour.',                           mods:{ armorAdd:4 } },
                 { name:'HEATED CORE',    desc:'+25% slow resistance.',                mods:{ slowResistAdd:0.25 } }],
   dragoon:     [{ name:'ANCHOR DRIVE',   desc:'+20% health.',                         mods:{ hpMul:1.20 } },
-                { name:'COMMANDEER',     desc:'A muster costs 18% less.',             mods:{ costMul:0.82 } }],
-  vanguard:    [{ name:'DEEPER RANKS',   desc:'+25% bodies per muster.',              mods:{ countMul:1.25 } },
+                { name:'COMMANDEER',     desc:'A summon costs 18% less.',             mods:{ costMul:0.82 } }],
+  vanguard:    [{ name:'DEEPER RANKS',   desc:'+25% bodies per summon.',              mods:{ countMul:1.25 } },
                 { name:'STANDING ORDERS',desc:'Salvages twice as fast.',              mods:{ salvageMul:2.00 } }],
 
   votary:      [{ name:'LESSER OATH',    desc:'+50% ward.',                           mods:{ shieldMul:1.50 } },
-                { name:'OFFERTORY',      desc:'+40% of the income a muster adds.',    mods:{ incomeMul:1.40 } }],
+                { name:'OFFERTORY',      desc:'+40% of the income a summon adds.',    mods:{ incomeMul:1.40 } }],
   censer:      [{ name:'LONGER LITANY',  desc:'Regrows 4% of its health a second.',   mods:{ regen:0.040 } },
                 { name:'SHARED BREATH',  desc:'A passed ward carries 80% further.',   mods:{ vowMul:1.80 } }],
   sanctifier:  [{ name:'REFORGED WARD',  desc:'+35% ward.',                           mods:{ shieldMul:1.35 } },
                 { name:'UNBROKEN',       desc:'A passed ward carries 60% further.',   mods:{ vowMul:1.60 } }],
   oriflamme:   [{ name:'BANNER HELD HIGH',desc:'+18% health.',                        mods:{ hpMul:1.18 } },
-                { name:'PILGRIMAGE',     desc:'+40% bodies per muster.',              mods:{ countMul:1.40 } }],
+                { name:'PILGRIMAGE',     desc:'+40% bodies per summon.',              mods:{ countMul:1.40 } }],
   luminark:    [{ name:'CATHEDRAL PLATE',desc:'+45% ward and +3 armour.',             mods:{ shieldMul:1.45, armorAdd:3 } },
                 { name:'RELIQUARY',      desc:'A passed ward carries twice as far.',  mods:{ vowMul:2.00 } }],
 
-  chitling:    [{ name:'SPAWN GLUT',     desc:'+50% bodies per muster.',              mods:{ countMul:1.50 } },
+  chitling:    [{ name:'SPAWN GLUT',     desc:'+50% bodies per summon.',              mods:{ countMul:1.50 } },
                 { name:'RAVENOUS',       desc:'Takes 80% more off its own dead.',     mods:{ massMul:1.80 } }],
   gnawling:    [{ name:'HARD CHITIN',    desc:'+3 armour.',                           mods:{ armorAdd:3 } },
                 { name:'MARROW',         desc:'Takes 50% more off its own dead.',     mods:{ massMul:1.50 } }],
@@ -425,11 +493,11 @@ const UNIT_SIGNATURE_TALENTS = {
                 { name:'BILE',           desc:'Regrows 5% of its health a second.',   mods:{ regen:0.050 } }],
   hivelord:    [{ name:'WIDER FRENZY',   desc:'+15% march speed.',                    mods:{ speedMul:1.15 } },
                 { name:'DOMINANCE',      desc:'Takes twice as much off its own dead.',mods:{ massMul:2.00 } }],
-  broodmother: [{ name:'PROLIFIC',       desc:'+25% bodies per muster.',              mods:{ countMul:1.25 } },
+  broodmother: [{ name:'PROLIFIC',       desc:'+25% bodies per summon.',              mods:{ countMul:1.25 } },
                 { name:'ENGORGED',       desc:'+30% health.',                         mods:{ hpMul:1.30 } }],
 
   cutter:      [{ name:'STRIPPED HULL',  desc:'+25% march speed.',                    mods:{ speedMul:1.25 } },
-                { name:'PRIZE MONEY',    desc:'+40% of the income a muster adds.',    mods:{ incomeMul:1.40 } }],
+                { name:'PRIZE MONEY',    desc:'+40% of the income a summon adds.',    mods:{ incomeMul:1.40 } }],
   boarder:     [{ name:'LONGER LINE',    desc:'+20% health.',                         mods:{ hpMul:1.20 } },
                 { name:'GRAPNEL CHARGE', desc:'A scuttle jams 80% longer.',           mods:{ scuttleMul:1.80 } }],
   scrapjack:   [{ name:'LOOTED COILS',   desc:'A scuttle jams twice as long.',        mods:{ scuttleMul:2.00 } },

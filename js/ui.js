@@ -552,9 +552,32 @@ const UI = {
          carrier kill increments stats.kills too (game.js killEnemy), and a
          carrier hands lives back instead of marching, so the counter would
          have fired this line on the one death that disproves it. */
-      { at: () => !Game.noReanim &&
-                  Game.enemies.some(e => e.hostileTo === 0 && e.reanimated && !e.carrier),
-        text: 'Your kills rise again and march on your rival — and theirs march on you. That is the INBOUND count in the sidebar.' },
+      /* KEYED TO THE RITE. The universal "everything you kill rises" line was
+         true for one doctrine out of five once summoning split; teaching a
+         Federation player that their kills come back would be teaching them
+         the one thing their commander cannot do. Each beat waits for the
+         thing its own rite actually produces. */
+      (() => {
+        const d = (Game.doctrineOf && Game.doctrineOf(0)) || null;
+        const id = d ? d.id : 'human';
+        if (id === 'light') return {
+          at: () => !Game.noReanim && S.procCycle + S.procIdx > 0,
+          text: 'THE PROCESSION marches on a clock, kills or no kills — and every full cycle it marches heavier.' };
+        if (id === 'xeno') return {
+          at: () => !Game.noReanim && Game.incubators.some(p => p.side === 0),
+          text: 'That kill did not die — it is incubating where it fell. Kills beside a clutch hatch it sooner.' };
+        if (id === 'pirate') return {
+          at: () => Game.canMuster(0) && Game.musterTiers(0).some(t => Game.canMuster(0, t)),
+          text: 'Nothing rises free under your flag. Bodies are bought — and your POWER and ECON have no ceiling.' };
+        if (id === 'robotic') return {
+          at: () => !Game.noReanim &&
+                    Game.enemies.some(e => e.hostileTo === 0 && e.reanimated && !e.carrier),
+          text: 'THE LATTICE returns every kill exactly as it fell. It cannot be bought, and it does not need to be.' };
+        return {
+          at: () => !Game.noReanim &&
+                    Game.enemies.some(e => e.hostileTo === 0 && e.reanimated && !e.carrier),
+          text: 'Your kills draft — each one summons a soldier from your own roster and marches it at your rival. That is the INBOUND count in the sidebar.' };
+      })(),
       /* THE THEFT, not the loss. A leak no longer spends lives on contact:
          the unit turns around carrying them and only charges you if it walks
          off the spawn edge, so the teachable moment is while the carrier is
@@ -1695,7 +1718,7 @@ const UI = {
           <div><b>${stars}</b><span>stars earned</span></div>
           <div><b>${Math.round(stars / (total * 3) * 100)}%</b><span>of a perfect galaxy</span></div>
         </div>
-        <p class="gv-next">Galaxy ${['II','III','IV','V','VI','VII','VIII'][Meta.load().galaxyTier || 0]} is already mustering — its garrisons will be 30% stronger.</p>
+        <p class="gv-next">Galaxy ${['II','III','IV','V','VI','VII','VIII'][Meta.load().galaxyTier || 0]} is already massing — its garrisons will be 30% stronger.</p>
         <button id="btn-gv-claim" class="btn btn-primary btn-big">◉ CLAIM ${payout} SOULS &amp; ADVANCE</button>
       </div>`;
     $('#theatre-detail').innerHTML = '';
@@ -2195,7 +2218,7 @@ const UI = {
       this.mapPreviewBlock(maelstromMap(MAELSTROM_MAX_SEATS), { size: 'tip' }) +
       '<div class="br-rows"><div class="br-row">' +
       '<span class="br-ic">&#9673;</span><span>Every commander holds their own lane and their own base. ' +
-      'Nothing you kill comes back to you — you send by muster alone.</span></div></div></div>');
+      'Nothing you kill comes back to you — you send by paid summons alone.</span></div></div></div>');
     /* The label used to be lit by a sibling selector, which the split above
        breaks -- the two are no longer siblings. A class on the buried group
        says the same thing and survives wherever either one is parented. */
@@ -2264,7 +2287,7 @@ const UI = {
       lobby.innerHTML = '<b class="mv-title">THE MAELSTROM</b>' +
         '<p class="mv-text">One board, one singularity, a base and a lane for every commander. ' +
         'Nothing that walks into your lane reanimates for you — killing it leaves you nothing ' +
-        'to send. You send by <b>MUSTER</b>, and every reanimation bonus you hold still rides ' +
+        'to send. You send by <b>PAID SUMMONS</b>, and every POWER bonus you hold still rides ' +
         'what you send. The horizon contracts every ' + MAELSTROM_CONTRACT_WAVES +
         ' waves and keeps whatever is standing inside it.</p>' +
         /* Redrawn with the seat count, because the seat count is the only
@@ -3179,7 +3202,7 @@ const UI = {
     if (tier) rows.push(
       ['Pack', tier.count + ' × ' + def.name],
       ['Price', Math.round(tier.cost * 100) + '% of a wave reward'],
-      ['Wave income', '+' + Math.round(tier.incomePct * 100) + '% per muster']);
+      ['ECON', '+' + Math.round(tier.incomePct * 100) + '% per summon']);
     const els = (obj, sign) => obj
       ? Object.keys(obj).map(k => `<span class="ei-el" style="--el:${ELEMENTS[k].color}">${
           ELEMENTS[k].icon} ${ELEMENTS[k].name} ${sign}${Math.round(obj[k] * 100)}%</span>`).join('')
@@ -4368,9 +4391,13 @@ const UI = {
     const S = Game.sides[0];
     const left = MUSTER_PER_WAVE - (S.musterThisWave || 0);
     /* mods.gold belongs in the signature: a BATTLEFIELD SALVAGE draft moves
-       every figure in this bar without touching the purse. */
+       every figure in this bar without touching the purse. The doctrine's own
+       live state joins it, coarsened to whole seconds -- the key is a RENDER
+       BUDGET, and anything that moves faster than a second belongs to CSS,
+       not to a re-render at 8Hz. */
     const key = [Game.wave, S.gold, S.musterBuys || 0, left,
-                 Game.waveRunning ? 1 : 0, S.mods.gold].join(':');
+                 Game.waveRunning ? 1 : 0, S.mods.gold,
+                 S.baseLevel || 1, this.engineKey(S)].join(':');
     if (bar.dataset.mkey === key) return;
     bar.dataset.mkey = key;
 
@@ -4382,9 +4409,12 @@ const UI = {
        transform, so `mods.gold` cannot go missing from the preview and not
        from the payout. */
     const baseIncome = Game.previewGold(0, waveReward(w));
-    const pct = Math.min(S.musterIncome || 0, MUSTER_INCOME_CAP_PCT);
-    const capped = (S.musterIncome || 0) >= MUSTER_INCOME_CAP_PCT;
+    const capPct = Game.musterCapPct(0);
+    const uncapped = !isFinite(capPct);
+    const pct = Math.min(S.musterIncome || 0, capPct);
+    const capped = !uncapped && (S.musterIncome || 0) >= capPct;
     const vic = Game.musterVictims(0)[0];
+    const doc = Game.doctrineOf(0);
     /* 19.16 is already inside the health figure above, because that figure
        comes from Game.musterHpMul. It is SAID here as well so the number is
        explicable rather than merely correct -- and it is read from the same
@@ -4413,25 +4443,143 @@ const UI = {
       const hpLo = Math.min.apply(null, hps), hpHi = Math.max.apply(null, hps);
       const hp = hpLo;
       const hpTxt = hpLo === hpHi ? formatNum(hpLo) : formatNum(hpLo) + '–' + formatNum(hpHi);
+      /* THE THREE FIGURES the owner asked for, in one fixed order: what it
+         COSTS, the POWER it puts in the lane, and the ECON it adds forever.
+         `powDelivered` is the same total the rival's brain scores as
+         `delivered` -- summed from the very health figures above, never
+         re-derived, so the button and the engine cannot disagree. Band name,
+         health range and the per-wave gold move into the tooltip: three
+         numbers is what a glance can hold. */
+      const powDelivered = hps.reduce((a, b) => a + b, 0) * tier.count;
       return `<button class="muster-btn ${ok ? '' : 'poor'}" data-muster="${tier.id}"${ok ? '' : ' disabled'}
-        aria-label="Muster ${tier.name}: send ${sent} ${base.name} for ${cost} gold, income +${addPct} percent"
-        data-tt="MUSTER — ${tier.name}|Send ${sent} × ${base.name} at ${hpTxt} health each, and add ${
-          addPct}% of every wave reward to your income for the rest of the battle — worth ◈${
-          formatNum(gain)} on the next wave. Sent units are damped to ${
-          Math.round(MUSTER_DAMP * 100)}% and can never be reanimated again${earlyTxt}. The bonus is flat additive, capped at +${
-          Math.round(MUSTER_INCOME_CAP_PCT * 100)}%.">
+        aria-label="Summon ${tier.name}: ${sent} ${base.name} for ${cost} gold, ${powDelivered} power, econ plus ${addPct} percent"
+        data-tt="SUMMON — ${tier.name}|◈${formatNum(cost)} marches ${sent} × ${base.name} at ${hpTxt} health each — ${
+          formatNum(powDelivered)} POWER into the lane${vics.length > 1 ? ', split across ' + vics.length + ' rivals' : ''} — and adds ${
+          addPct}% of every wave reward to your ECON for the rest of the battle, worth ◈${
+          formatNum(gain)} next wave. Every buy also hardens what you send by +${
+          Math.round(doc.powerPerBuy * 100)}%${uncapped ? ' — with no ceiling, by the MARQUE' : ''}. Summoned bodies arrive at ${
+          Math.round(MUSTER_DAMP * 100)}% and never rise again${earlyTxt}. ${
+          uncapped ? 'Your ECON has no ceiling.' : 'ECON is flat additive, capped at +' + Math.round(capPct * 100) + '%.'}">
         <span class="mu-ic">${tier.icon}</span>
-        <span class="mu-body"><b>${sent}× ${base.name.toUpperCase()} · ◈${formatNum(cost)}</b>
-          <em>${tier.name} · ${hpTxt} hp → +${addPct}% (+◈${formatNum(gain)}/wave)</em></span>
+        <span class="mu-body"><b>${sent}× ${base.name.toUpperCase()}</b>
+          <em class="mu-figs"><span class="mu-cost">◈${formatNum(cost)}</span>
+            <span class="mu-pow">+${formatNum(powDelivered)} PWR</span>
+            <span class="mu-eco">+${addPct}% ECON</span></em></span>
       </button>`;
     }).join('');
 
-    bar.innerHTML = `<div class="muster-head" data-tt="INCOME|Every commander earns the BASE wave reward. Musters stack a flat percent of it on top, every wave, for the rest of the battle — so aggression and economy stop being opposite choices. Pick your detachment on the loadout screen; conquer worlds to save more denizens for it.">
+    bar.innerHTML = `${this.engineStripHtml(S, doc)}<div class="muster-head" data-tt="ECON|Every commander earns the BASE wave reward. Summons stack a flat percent of it on top, every wave, for the rest of the battle — so aggression and economy stop being opposite choices.${
+        uncapped ? ' Under LETTERS OF MARQUE that percent has NO ceiling; what prices it instead is a summon cost that never stops climbing.' : ''} Pick your roster on the loadout screen; conquer worlds to save more denizens for it.">
         <span>BASE</span><b>+◈${formatNum(baseIncome)}/wave</b>
-        <span class="mu-sep">MUSTER</span><b class="${capped ? 'capped' : ''}">+${Math.round(pct * 100)}%</b>
-        <em>${capped ? 'AT CAP' : left + ' left'}</em>
-      </div>${rows}`;
+        <span class="mu-sep">ECON</span><b class="${capped ? 'capped' : ''}${uncapped ? ' uncapped' : ''}">+${Math.round((uncapped ? (S.musterIncome || 0) : pct) * 100)}%</b>
+        <span class="mu-sep mu-powchip" tabindex="0" data-power="1">POWER</span><b>×${Game.powerOf(0).toFixed(2)}</b>
+        <em>${doc.noPurchase && !Game.noReanim ? 'NO TRADE'
+              : uncapped ? 'NO CAP' : capped ? 'AT CAP' : left + ' left'}</em>
+      </div>${doc.noPurchase && !Game.noReanim ? this.latticePlateHtml(S) : rows}`;
     this.bindChipTips(bar);
+    /* The POWER chip opens the ledger the owner asked for -- every attribute
+       that feeds this number, quoted at the value the spawn will read. Bound
+       directly rather than through data-tt because the body is built HTML. */
+    const chip = bar.querySelector('[data-power]');
+    if (chip) {
+      const show = ev => this.showTooltip(ev, this.powerLedgerHtml(0));
+      chip.addEventListener('mouseenter', show);
+      chip.addEventListener('mousemove', ev => this.moveTooltip(ev));
+      chip.addEventListener('focus', ev => show(ev));
+      chip.addEventListener('mouseleave', () => this.hideTooltip());
+      chip.addEventListener('blur', () => this.hideTooltip());
+    }
+  },
+
+  /** Render-budget token: whatever about a rite's live state deserves a
+      re-render, coarsened so nothing sub-second churns the DOM at 8Hz. */
+  engineKey(S) {
+    const d = Game.doctrineOf(S.index);
+    if (d.scheduler) return d.id + S.procCycle + '.' + S.procIdx + '.' + Math.ceil(S.procTimer || 0);
+    if (d.onKill === 'incubate') {
+      let n = 0, soon = Infinity;
+      for (const p of Game.incubators) if (p.side === S.index) { n++; if (p.t < soon) soon = p.t; }
+      return d.id + n + '.' + (isFinite(soon) ? Math.ceil(soon) : 0);
+    }
+    if (d.onKill === 'roll' || d.onKill === 'clone')
+      return d.id + (S.stats.sent - S.stats.mustered);
+    return d.id + Math.round((S.musterIncome || 0) * 100);
+  },
+
+  /** The rite, named and live, above its own controls. */
+  engineStripHtml(S, doc) {
+    const f = FACTIONS[S.faction] || { color: '#94a3b8' };
+    const vics = Game.musterVictims(S.index).length;
+    /* `sent - mustered` IS the free-body count: Game.muster is the only writer
+       of stats.mustered and it books one per unit, so the difference is every
+       body a rite granted rather than sold. No new counter. */
+    const free = S.stats.sent - S.stats.mustered;
+    let state;
+    if (Game.noReanim && (doc.scheduler || doc.onKill))
+      state = 'ENGINE COLD — THE MAELSTROM PERMITS PAID SUMMONS ONLY';
+    else if (doc.scheduler) {
+      const list = S.musterLoadout || [];
+      const nxt = ENEMY_TYPES[list[S.procIdx % Math.max(1, list.length)]];
+      /* Before the march begins the clock is meaningless -- say when it
+         starts instead of counting down to nothing. */
+      state = Game.wave < FOL_START_WAVE
+        ? 'THE MARCH BEGINS ON WAVE ' + FOL_START_WAVE
+        : 'NEXT ' + Math.max(0, Math.ceil(S.procTimer || 0)) + 's' +
+          (nxt ? ' · ' + nxt.name.toUpperCase() + ' ×' + Math.min(1 + S.procCycle, FOL_CYCLE_COUNT_CAP) : '') +
+          ' · CYCLE ' + (S.procCycle + 1);
+    } else if (doc.onKill === 'incubate') {
+      let n = 0, soon = Infinity;
+      for (const p of Game.incubators) if (p.side === S.index) { n++; if (p.t < soon) soon = p.t; }
+      state = 'CLUTCHES ' + n + '/' + XENO_INC_CAP + (n ? ' · NEXT ' + Math.max(0, Math.ceil(soon)) + 's' : '');
+    } else if (doc.onKill === 'roll') state = 'EVERY KILL DRAFTS · ' + free + ' RAISED';
+    else if (doc.onKill === 'clone') state = 'EVERY KILL RETURNS AS ITSELF · ' + free + ' REBUILT';
+    else if (doc.noPurchase) state = 'THE LATTICE DOES NOT BUY';
+    else state = 'NOTHING RISES FREE · NO CEILING';
+    return `<div class="engine-strip" style="--fc:${f.color}" data-tt="${doc.name}|${doc.desc}">
+      <b>${doc.name}</b><em>${state}</em>${vics > 1 ? `<span class="eng-lanes">×${vics} LANES</span>` : ''}
+    </div>`;
+  },
+
+  /** THE LATTICE has no controls to draw, and says so rather than showing an
+      empty rail the player would read as a bug. */
+  latticePlateHtml() {
+    return `<div class="lattice-plate">
+      <b>THE LATTICE DOES NOT SELL.</b>
+      <em>Every kill returns as itself. Nothing here is for sale, and nothing needs to be.</em>
+    </div>`;
+  },
+
+  /**
+   * THE POWER LEDGER — every attribute that multiplies what you send, in the
+   * order the engine applies them, each quoting the value the spawn will
+   * actually read. Pure: it re-derives from live state and captures nothing,
+   * because a ledger that estimates is worse than no ledger at all.
+   */
+  powerLedgerHtml(side) {
+    const S = Game.sides[side];
+    if (!S) return '';
+    const rows = [];
+    const add = (label, mul, note) => {
+      if (Math.abs(mul - 1) < 0.0005) return;
+      rows.push(`<div class="pl-row"><span>${label}</span><b>×${mul.toFixed(2)}</b>${
+        note ? `<em>${note}</em>` : ''}</div>`);
+    };
+    add('STANDING LAW', MUSTER_DAMP, 'every summoned body arrives damped');
+    const early = spawnHpPenaltyMul(Math.max(1, Game.wave));
+    add('EARLY WAVE', early, 'fades to nothing by wave ' + SPAWN_HP_PENALTY_END);
+    add('REANIMATION', S.mods.reanim, 'creed, commander tech, boons and drafts');
+    if (S.traits && S.traits.musterHpMul) add('BOONS', S.traits.musterHpMul, 'what you summon arrives heavier');
+    add('SUMMONS BOUGHT', 1 + (S.summonPower || 0),
+        '+' + Math.round(Game.doctrineOf(side).powerPerBuy * 100) + '% a buy' +
+        (isFinite(Game.doctrineOf(side).powerCap) ? '' : ', NO CAP'));
+    const vics = Game.musterVictims(side);
+    if (vics.length) {
+      const r = Math.round((Game.sides[vics[0]].traits.reanimResist || 0) * 100);
+      if (r) rows.push(`<div class="pl-row pl-them"><span>RIVAL RESISTANCE</span><b>−${r}%</b><em>their law, not yours</em></div>`);
+    }
+    return `<b>POWER ×${Game.powerOf(side).toFixed(2)}</b>
+      <div class="pl-body">${rows.join('') || '<div class="pl-row"><span>nothing yet</span></div>'}</div>
+      <em class="pl-foot">Everything above multiplies the health of every body you send. The rival's own resistance is applied last, per lane.</em>`;
   },
 
   /* ============================================================== SYNC */
@@ -5763,7 +5911,7 @@ const UI = {
         ${st && st.saved && st.saved.length ? `
           <div class="rw-saved"><b>DENIZENS SAVED</b>${st.saved.map(id =>
             `<span style="--tc:${ENEMY_TYPES[id].color}">${ENEMY_TYPES[id].name}</span>`).join('')}
-            <em>freed from the fallen garrison — now available to your muster detachment</em></div>` : ''}
+            <em>freed from the fallen garrison — now available to your summon roster</em></div>` : ''}
 
         ${st && st.storyTower ? `
           <div class="rw-saved"><b>MACHINE LINE</b>
@@ -5782,7 +5930,7 @@ const UI = {
         </div>
         <div class="rw-stats">
           <div><b>${formatNum(me.stats.goldEarned)}</b><span>gold earned</span></div>
-          <div><b>${formatNum(me.stats.mustered)}</b><span>mustered</span></div>
+          <div><b>${formatNum(me.stats.mustered)}</b><span>summoned</span></div>
           <div><b>${formatNum(me.stats.livesRestored)}</b><span>lives restored</span></div>
           <div><b>${formatNum(me.stats.leaksRecovered)}</b><span>thefts stopped</span></div>
         </div>
@@ -6168,26 +6316,44 @@ const UI = {
            gold you were just paid; and because the ceiling is a share of the reward rather than a flat
            number, banking is worth about the same at wave 3 as at wave 30. Not spending is a play.</p>
       </div></section>
-      <section><h3>Muster</h3><div class="codex-note">
-        <p>Gold buys aggression. A <b>muster</b> marches a detachment of saved denizens down your rival's
-           lane at once, and pays you a <em>permanent</em> share of every wave reward for the rest of the
-           battle. It is the only purchase in the game that is an attack and an income at the same time.</p>
+      <section><h3>Power &amp; summons</h3><div class="codex-note">
+        <p>Two figures govern everything you put on a rival's lane. <b>POWER</b> is how heavy a body
+           arrives. <b>ECON</b> is the permanent share of every wave reward your summons have bought you.
+           A paid summon raises both at once — it is the only purchase in the game that is an attack and
+           an income in the same press.</p>
         <p>You carry up to <b>${MUSTER_LOADOUT_SIZE}</b> saved denizens into a battle, chosen on the
-           deployment loadout screen; each becomes one row of the muster bar, and its pack size, price and
+           deployment loadout screen; each becomes one row of the summon bar, and its pack size, price and
            income are all derived from that denizen's own health, so a swarm of frail mobs and a pair of
            heavies put comparable mass in the lane. A denizen is <b>saved</b> by conquering the world it
            defends outright — three stars, first time — and it joins a vault every profile shares.</p>
-        <p>A purchase costs a share of the <em>next</em> wave's reward and rises
-           <b>${Math.round((MUSTER_COST_GROWTH - 1) * 100)}%</b> each time for the first
-           <b>${MUSTER_COST_STEPS}</b> buys, then flattens. The income each purchase adds stacks flat and
-           is capped at <b>+${Math.round(MUSTER_INCOME_CAP_PCT * 100)}%</b> of a wave reward, and you may
-           buy at most <b>${MUSTER_PER_WAVE}</b> per wave — a mustered army is built across a match, not
-           bought in one build phase.</p>
-        <p>Sent units count as <b>reanimated</b>: they arrive damped, cost half as many lives on a leak,
-           and cannot be reanimated a second time. On the Confluence one purchase marches on
+        <p>A purchase costs a share of the <em>next</em> wave's reward and climbs with every buy; for most
+           commanders it flattens after <b>${MUSTER_COST_STEPS}</b>, and the ECON it adds is capped at
+           <b>+${Math.round(MUSTER_INCOME_CAP_PCT * 100)}%</b> of a wave reward. You may buy at most
+           <b>${MUSTER_PER_WAVE}</b> per wave, under every flag — an army is built across a match, not
+           bought in one build phase. Every buy also hardens what you send, permanently.</p>
+        <p><b>THE FIVE RITES.</b> How a commander summons is decided by the commander, not the banner —
+           a commander of another power brings their own rite to your flag, while your roster supplies the
+           soldiers. One law binds all five: a rite may change the <em>shape</em> a kill returns in, never
+           its <em>mass</em>.</p>
+        <p><b>${SUMMON_DOCTRINES.human.name}</b> — ${SUMMON_DOCTRINES.human.desc}<br>
+           <b>${SUMMON_DOCTRINES.light.name}</b> — ${SUMMON_DOCTRINES.light.desc} It begins on wave
+           ${FOL_START_WAVE}, and pays a steeper tax than a bought body because nobody paid for it.<br>
+           <b>${SUMMON_DOCTRINES.xeno.name}</b> — ${SUMMON_DOCTRINES.xeno.desc} A clutch keeps
+           ${Math.round(XENO_INC_SHARE * 100)}% of what it was, hatches on its own clock, and a kill within
+           ${XENO_INC_FEED_RADIUS} tiles takes ${XENO_INC_FEED_SEC}s off it. At most
+           ${XENO_INC_CAP} at once.<br>
+           <b>${SUMMON_DOCTRINES.pirate.name}</b> — ${SUMMON_DOCTRINES.pirate.desc} What prices it is a
+           summon cost that never stops climbing.<br>
+           <b>${SUMMON_DOCTRINES.robotic.name}</b> — ${SUMMON_DOCTRINES.robotic.desc}</p>
+        <p>On a board where nothing rises — the Maelstrom — every rite's free half is switched off and
+           all five buy their bodies instead.</p>
+        <p><em>Older field manuals described every kill rising again. That law now belongs to the
+           Lattice alone.</em></p>
+        <p>Summoned units count as <b>reanimated</b>: they arrive damped, cost half as many lives on a
+           leak, and can never be summoned a second time. On the Confluence one purchase marches on
            <b>both</b> rivals, exactly as a kill does there.</p>
         <p><b>A summoned body is not a wave body.</b> On top of that damping, anything you
-           <em>summon</em> — a mustered detachment, a tower's minions, a carrier's brood — arrives
+           <em>summon</em> — a bought detachment, a tower's minions, a carrier's brood — arrives
            lighter for the first ${SPAWN_HP_PENALTY_END} waves, because the wave curve is flat that
            early and a bought body would otherwise be worth very nearly a scripted one against a
            defence that is still two towers. It is

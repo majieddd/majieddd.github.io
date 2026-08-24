@@ -689,7 +689,11 @@ const AI = {
        two existing branches are already scored in. */
     /* Defence-first gate: no sends until the board can actually hold. Every
        condition here is a measured failure mode, not a taste. */
-    const musterSane = Game.wave >= MUSTER_AI_MIN_WAVE
+    /* A rite that fields NO free bodies cannot wait as long to start buying
+       them -- pricing a pirate's sends like a human's leaves that brain with
+       no offence at all -- so the doctrine may lower the gate. */
+    const mdoc = (Game.doctrineOf && Game.doctrineOf(S.index)) || null;
+    const musterSane = Game.wave >= ((mdoc && mdoc.aiMinWave) || MUSTER_AI_MIN_WAVE)
       && S.towers.length >= MUSTER_AI_MIN_TOWERS
       && S.lives >= S.maxLives * MUSTER_AI_SAFE_LIVES;
     if (musterSane && Game.canMuster && Game.canMuster(S.index)) {
@@ -707,7 +711,13 @@ const AI = {
            income half is that figure collected over a finite horizon. The
            defence-first musterSane gate above is untouched -- it is what
            keeps the early curve where the design pinned it. */
-        let value = delivered * MUSTER_AI_PRESSURE
+        /* The pressure half is scaled by the rite: a brain whose doctrine
+           already puts free bodies on the lane (THE PROCESSION) would
+           otherwise double-spend on aggression it is getting for nothing,
+           and one that gets none (the MARQUE) undervalues the only offence
+           it owns. The income half is untouched -- gold is gold. */
+        const pressure = delivered * MUSTER_AI_PRESSURE * ((mdoc && mdoc.aiPressureMul) || 1);
+        let value = pressure
                   + Game.musterGain(S.index, tier) * MUSTER_AI_HORIZON_WAVES
                     * MUSTER_AI_INCOME_WEIGHT;
         /* GOLD SQUISH. The health half is priced per point of HP and already
@@ -715,7 +725,7 @@ const AI = {
            which is GOLD_SQUISH times smaller than the weights were calibrated
            in. Restore that half to its measured band here, on the half itself,
            so the rival keeps pricing sends the way the player sees them. */
-        value += (value - delivered * MUSTER_AI_PRESSURE) * (GOLD_SQUISH - 1);
+        value += (value - pressure) * (GOLD_SQUISH - 1);
         const mscore = value / cost;
         if (mscore > 0) consider({ kind: 'muster', tier, cost, score: mscore });
       }
