@@ -1229,3 +1229,57 @@ limit. Work is on **`session-21/backlog`** (off `main`) and one commit on
 | `cmd_cadre` is a Krea 2 plate among twenty SDXL commanders | **owner** — re-render on SDXL, accept it, or commit the GPU hours |
 | The soul price cut (basket 533 → 288 souls) | **owner** — the fix is correct; the magnitude is a balance decision |
 | The fifteen held-back mechanics, "THE HARBINGER ENRAGES", grandfathered saves | **owner**, unchanged from Session 20 |
+
+---
+
+# SESSION 21, ROUND TWO — THE OWNER'S DOCKET, EXECUTED
+
+The owner reviewed every outstanding decision and ruled on all five, then
+picked two of the fifteen held-back mechanics. Everything below is shipped,
+verified and live.
+
+## A. The five standing decisions
+
+| # | Ruling | Outcome |
+|---|---|---|
+| 1 | **1B** — the Krea 2 `cmd_cadre` plate stays | "All the commanders look fine." BRAND rule 3 waived for that one key |
+| 2 | **2A** — THE HARBINGER keeps its word | Boss flavour, not the wave-bid mechanic |
+| 3 | **3B** — widen the banner split | ✅ commanders and second abilities are shelved per banner like towers, grandfathered per 4A. `973284f` |
+| 4 | **4A** — keep the grandfather | Governed the 3B migration: nobody loses a recruit they paid for |
+| 5 | **5A** — WebRTC, queued | ✅ shipped additive; two-machine path SHIPPED BUT UNPROVEN, see the handoff. `0a56da9` |
+
+## B. The two mechanics
+
+| # | Mechanic | Status |
+|---|---|---|
+| #1 | Recoverable stolen objective | ✅ **shipped** — a leak becomes a chase; recovery and offence are the same action. `4a8fd73` |
+| #4 | Variable footprints, as ten 2x2 heavies | ✅ **shipped** — 50 towers -> **60**, twelve per origin, plus a 23-edit footprint engine. `7523182` |
+
+## C. The contributed improvements bundle
+
+Five features arrived as a patch set against a pre-multiplayer tree. Three
+shipped re-derived and hardened (reduced motion, save export/import,
+auto-pause), one was rebuilt from scratch (the seeded RNG — their architecture
+broke both shipped determinism systems and coupled replays to frame rate), and
+one was **rejected on measurement**: the spatial broadphase was correct after
+one fix and measured **0.81-0.89x**, i.e. slower, because the live enemy list
+holds ~12 bodies. Backed out clean and recorded so the next optimiser starts
+from the measurement. `b24ff40`
+
+## D. What the parallel-design round cost, and what it caught
+
+Ten towers designed by five agents in parallel, adjudicated by a sixth. The
+judge caught the three seams parallel design cannot see across: **two
+designers independently shipped a tower called BOMBARD** (the pirate gun
+became the CARRONADE), **eight of ten were never registered in TOWER_ORDER**,
+and **five new attack verbs would have priced at the default** — the rival
+read a 545-gold QUADMOUNT as 24 dps against its real 96. Three unbounded surge
+stats also got reader-side ceilings, because surges bypass STAT_CEIL: that is
+the exact shape that produced the documented ARC blow-up.
+
+## E. Numbers after the round
+
+Owner sweep **27/0**, MPT **40 pass / 0 fail**, 60 towers, 657 distinct
+player-facing names with **zero collisions**, pins seeded and reproducible and
+**re-baselined** (fresh loss median 8 -> 9, maxed 22 -> 25 — the heavies raised
+the ceiling and left the floor alone).

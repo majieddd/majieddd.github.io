@@ -143,7 +143,25 @@ All ten Session-19 items were closed in 20.7. What is left:
 
 ---
 
-## E. The fifteen held-back mechanics
+## E. The held-back mechanics — TWO SHIPPED, THIRTEEN HELD
+
+The owner picked **#1** and **#4** from the docket. Both are in and live:
+
+- **#1 Recoverable stolen objective** — a leak becomes a chase. The unit turns
+  around carrying the lives and only its EXIT charges; kill it and they were
+  never lost. BRUTAL carries all three on one carrier. Commit `4a8fd73`.
+- **#4 Variable footprints**, in the owner's shape: **ten 2x2 heavies, two per
+  origin**, 50 towers -> 60. The footprint engine is 23 anchored edits;
+  `docs/TOWER-AUDIT.md`'s uniqueness law holds across all sixty. Commit
+  `7523182`.
+
+Thirteen remain written up and unbuilt in
+[`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md), unchanged: #2 scarring, #3 land
+as a resource, #5 economy exposure, #6 FOCUS, #7 fog, #8 second spawn mouth,
+#9 per-tower XP, #10 upkeep, #11 territory income, #12 rewind, #13 mazing,
+#14 deployment points, #15 multi-deck.
+
+### The original fifteen
 
 From the mechanics dossier, deliberately **not** implemented pending your picks.
 Full write-ups with build notes in [`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md).
