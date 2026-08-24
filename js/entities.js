@@ -304,7 +304,11 @@ class Enemy {
     if (this.flying) { this.grounded = true; this.groundedT = 1e9; }
     if (this.hostileTo === Game.viewSide) {
       Game.hurtFlash = 0.6; Game.shake(5); Sound.play('leak');
-      Game.addFloater(this.x, this.y - 18, '-' + this.livesCost + ' ♥ STOLEN', false, '#f87171', 15);
+      /* The figure the seat would actually pay, not the raw one -- the same
+         call the reap charges and the HUD prints. */
+      Game.addFloater(this.x, this.y - 18,
+                      '-' + (Game.leakCostOf ? Game.leakCostOf(this) : this.livesCost) + ' ♥ STOLEN',
+                      false, '#f87171', 15);
     }
   }
 

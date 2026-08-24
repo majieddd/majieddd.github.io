@@ -274,6 +274,20 @@ body.rm-user .bi-line { opacity: 1; }
 /* The secret power's badge in the field manual. */
 .fx-secret { font-style: normal; font-size: 9px; letter-spacing: .18em; color: var(--text-mute);
              border: 1px solid var(--line-2); border-radius: 3px; padding: 1px 5px; vertical-align: 2px; }
+/* THE FIFTH BANNER'S REVEAL, which shipped with no rules at all -- the payoff
+   for a whole campaign rendered as unstyled text between two glass panels,
+   and the ribbon on the faction card rendered as a bare line of caps. Both
+   deliberately wear Vigil grey rather than the Parallel's own white: the
+   machines announce themselves before they introduce themselves. */
+.gv-secret { display: flex; flex-direction: column; gap: 5px; padding: 13px 16px;
+             border: 1px solid rgba(148,163,184,.45); border-radius: 10px;
+             background: rgba(148,163,184,.07); max-width: 54ch; text-align: left; }
+.gv-secret b { font-family: var(--display); font-size: 10px; letter-spacing: .22em; color: #cbd5e1; }
+.gv-secret p { font-size: 13.5px; color: var(--text); line-height: 1.55; margin: 0; }
+.gv-secret em { font-style: normal; font-size: 11px; color: var(--text-mute); }
+.fac-secret { align-self: center; font-size: 8.5px; letter-spacing: .2em; color: #cbd5e1;
+              border: 1px solid rgba(148,163,184,.5); border-radius: 3px;
+              padding: 2px 7px; margin-bottom: 6px; }
 
 /* ═════════════ THE BATTLEFIELD, FULL BLEED ══════════════════════════════ */
 /* Measured at 1280x720 before this existed: the board rendered at viewScale

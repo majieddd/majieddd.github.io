@@ -919,6 +919,13 @@ Object.defineProperty(Enemy.prototype, 'totalArmor', {
     Cutter pack dying together would otherwise chain-lock a board solid, which
     is not "changes where you kill pirates", it is "you do not have towers". */
 const _scuttleReady = [];
+/* MODULE-LEVEL SIM STATE MUST BE RESET WITH THE MATCH. Game.start clears the
+   incubators, the relay nodes and the spliced lanes; this array was the one
+   piece it could not see, so a cooldown stamp from the last battle could mute
+   a side's SCUTTLE through the opening seconds of the next one. The
+   self-heal below only catches a stamp from the FAR future, not one that
+   happens to land inside the first few seconds. */
+function resetUnitDoctrineState() { _scuttleReady.length = 0; }
 
 /** A body's talent-folded doctrine coefficients, or the identity when nobody
     fielded it. The distinction matters: a garrison's soldiers are standing on

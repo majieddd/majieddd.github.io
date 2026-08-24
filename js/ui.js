@@ -4777,11 +4777,16 @@ const UI = {
        until it crosses the spawn edge. Summed live from entity state by
        seat index -- no stored counter to drift -- so whichever seat is
        viewing, both panels obey the same law. */
+    /* Through Game.leakCostOf, the same call the reap charges. This used to
+       sum the RAW livesCost, so a Shield Wall commander watched `(3⚑)` walk
+       off the board and paid 2 -- the panel asking you to defend a number
+       that was not the number. */
     let meFlight = 0, aiFlight = 0;
     for (const en of Game.enemies) {
       if (!en.carrier || en.dead) continue;
-      if (en.hostileTo === me.index) meFlight += en.livesCost;
-      else if (en.hostileTo === ai.index) aiFlight += en.livesCost;
+      const c = Game.leakCostOf ? Game.leakCostOf(en) : en.livesCost;
+      if (en.hostileTo === me.index) meFlight += c;
+      else if (en.hostileTo === ai.index) aiFlight += c;
     }
     e.myGold.textContent = formatNum(me.gold);
     e.myLives.textContent = me.lives + (meFlight ? ' (' + meFlight + '⚑)' : '');
@@ -6474,8 +6479,15 @@ const UI = {
       <section><h3>The Galaxy</h3><div class="lore-grid">${lore}</div></section>
       <section><h3>Powers</h3><div class="codex-grid">${factions}</div></section>
       <section><h3>Conquest</h3><div class="codex-note">
-        <p>A campaign is a galaxy: five solar systems, seven worlds each, held by the three
-           powers that are not yours and by the pirates.</p>
+        <p>A campaign is a galaxy: five solar systems, seven worlds each, held by every
+           power that is not yours${(() => {
+             /* Counted, not hard-coded. A Parallel commander faces FOUR rivals
+                because the machines hold no worlds of their own, and the old
+                sentence said "the three powers that are not yours" to
+                everybody. */
+             const n = rivalFactionsOf(Meta.faction() || 'human').length;
+             return n === 4 ? ' — all four of them, since the machines hold none' : '';
+           })()}.</p>
         <p><b>Stars.</b> Winning takes a world. Winning <em>cleanly</em> — with 90% of your
            lives intact — earns three stars and CONQUERS it for your faction. Two stars needs
            55%. One star is any other victory.</p>

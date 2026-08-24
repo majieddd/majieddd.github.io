@@ -415,7 +415,11 @@ const Game = {
     const myFaction = opts.faction || Meta.faction() || 'human';
     this.sides[0].faction = myFaction;
     this.sides[1].faction = opts.rivalFaction ||
-      rivalFactionsOf(myFaction)[Math.floor(Math.random() * 3)];
+      /* `% length`, not a literal 3. rivalFactionsOf returns everyone who
+         is not you, which is three powers for the four that hold worlds and
+         FOUR for the Parallel -- so the literal made the Pirates unreachable
+         as a skirmish rival for exactly one banner. */
+      rivalFactionsOf(myFaction)[Math.floor(Math.random() * rivalFactionsOf(myFaction).length)];
     if (this.triMode) {
       /* On a CONTESTED world the two powers already fighting over it are the
          rivals; elsewhere the three core powers take the table. */
@@ -565,6 +569,9 @@ const Game = {
     this.incubators = [];
     this.relayNodes = [];
     this.spliceState = [];
+    /* The one piece of doctrine state that lives in a module rather than on
+       the Game, and so had to be told about the new match by hand. */
+    if (typeof resetUnitDoctrineState === 'function') resetUnitDoctrineState();
     this.delayed = [];
     this.arenaSpeed = 1; this.arenaArmor = 0; this.arenaTempo = 1;
     this.enemyMods = []; this.pendingChoice = null;
@@ -1914,6 +1921,21 @@ const Game = {
       Sound.play('revive');
       this.addFloater(enemy.x, enemy.y - 18, 'RISEN', false, '#e2e8f0', 13);
     }
+  },
+
+  /**
+   * WHAT A BREACH ACTUALLY COSTS — one definition, three readers.
+   *
+   * The reap charged this, and the HUD's lives-in-flight figure and the theft
+   * floater both printed the RAW `livesCost` instead, under a comment
+   * claiming both panels obeyed the same law. A Shield Wall commander watched
+   * `(3⚑)` walk out and paid 2. The number a player is asked to defend has to
+   * be the number they are charged.
+   */
+  leakCostOf(e) {
+    const damp = (this.enemyDamp[e.hostileTo] || {}).power || 1;
+    const red = (this.sides[e.hostileTo] && this.sides[e.hostileTo].traits.leakReduction) || 0;
+    return Math.max(1, Math.round(e.livesCost * damp - red));
   },
 
   loseLives(side, n, breaches) {
@@ -3624,10 +3646,15 @@ const Game = {
 
     /* --- reap --- */
     const leaked = this.sides.map(() => 0);
-    /* WHAT KILLED YOU, part one: WHO was in this frame's charge. Only the
-       manifest is gathered here -- the booking happens in loseLives, because
-       `cost` below is still one Shield Wall reduction short of what the seat
-       actually pays. Lazy arrays: most frames breach nothing. */
+    /* WHAT KILLED YOU, part one: WHO was in this frame's charge. The manifest
+       is gathered here and BOOKED in loseLives, so the log and the ledger add
+       up to the same number.
+       `cost` below is the FINAL figure -- the Shield Wall reduction is
+       applied right here and nowhere else. This note used to say the opposite
+       ("still one Shield Wall reduction short of what the seat actually
+       pays"), which was the description of the double-discount bug rather
+       than of the code, and an open invitation to reintroduce it. Lazy
+       arrays: most frames breach nothing. */
     const breaches = this.sides.map(() => null);
     for (let i = this.enemies.length - 1; i >= 0; i--) {
       const e = this.enemies[i];
@@ -3635,9 +3662,7 @@ const Game = {
       else if (e.leaked) {
         /* A defensive ability that weakens attackers also blunts what a leak
            costs, and VESS-style traits shave one life off every breach. */
-        let cost = e.livesCost * ((this.enemyDamp[e.hostileTo] || {}).power || 1);
-        const red = this.sides[e.hostileTo].traits.leakReduction || 0;
-        cost = Math.max(1, Math.round(cost - red));
+        const cost = this.leakCostOf(e);
         leaked[e.hostileTo] += cost;
         /* `carrierFresh` is false exactly when the body was a reanimate or a
            bought detachment BEFORE it turned around, so it is the only honest
