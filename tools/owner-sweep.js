@@ -177,17 +177,33 @@
   /* ---- 17.4 a rival fields its own power's hardware --------------------- */
   T('17.4 a rival never fields a third power’s towers', function () {
     if (!AI.rivalArsenal) { skip('17.4 a rival never fields a third power’s towers', 'no rivalArsenal'); return; }
+    /* CALLED WITH THE REAL SIGNATURE, which it was not for three sessions:
+       `rivalArsenal(budget, map, DAMAGE, AIR, faction)` was being handed
+       (faction, towerList), so `budget` was the string 'human', `faction` was
+       undefined, every gated origin was filtered out, and the fill loop
+       `while (out.length < budget)` compared a number against a string and
+       never ran. It returned the same five human staples for all four
+       powers, so `foreign` was always empty: the check passed unconditionally
+       and would still have passed with the origin law deleted outright.
+       DAMAGE and AIR are vestigial in this function -- it reads neither --
+       so null is honest rather than a stub. */
     const bad = [];
+    const sizes = [];
     ['human', 'light', 'xeno', 'pirate'].forEach(function (fac) {
-      const arsenal = AI.rivalArsenal(fac, Meta.unlockedTowers()) || [];
+      const arsenal = AI.rivalArsenal(TOWER_ORDER.length, MAPS[0], null, null, fac) || [];
+      sizes.push(fac + ':' + arsenal.length);
       const foreign = arsenal.filter(function (id) {
         const o = (TOWER_TYPES[id] || {}).origin;
         return o && o !== 'human' && o !== 'robotic' && o !== fac;
       });
       if (foreign.length) bad.push(fac + ' fields ' + foreign.join(','));
+      /* A shelf of five staples would pass the foreign test while proving
+         nothing, which is exactly how the miscall hid. Demand a real one. */
+      if (arsenal.length < 10) bad.push(fac + ' shelf is only ' + arsenal.length + ' — the call is not reaching the roster');
     });
     ok('17.4 a rival never fields a third power’s towers', bad.length === 0,
-       bad.length ? bad.join(' | ') : 'all four arsenals stay on own + human + robotic');
+       bad.length ? bad.join(' | ')
+                  : 'all four arsenals stay on own + human + robotic (' + sizes.join(' ') + ')');
   });
 
   /* ---- the desync class this project has shipped seven times ------------ */
@@ -553,6 +569,68 @@
        ', factions ' + fac.length + '/' + Object.keys(FACTIONS).length +
        ' · blank renders: ' + (blank.join(' ') || 'none') +
        ' · mute factions: ' + (mute.join(' ') || 'none'));
+  });
+
+  T('22.15 THE PROCESSION marches in order, on the clock, and takes nothing from a kill', function () {
+    Game.start({ map: MAPS[0].id, difficulty: 'contested', loadout: PIN.slice(),
+                 commander: COMMANDERS[0].id, skirmish: true, doctrineOverrides: { 0: 'light' } });
+    Game.setMusterLoadout(0, ['crawler', 'sprinter', 'bulwark']);
+    var S = Game.sides[0];
+    var list = S.musterLoadout.slice();
+    var bad = [];
+    /* A kill must yield NOTHING -- the half 22.2 cannot see, because that
+       check overrides to CONSCRIPTION. */
+    var d = ENEMY_TYPES.crawler;
+    Game.pendingSpawns.length = 0;
+    Game.doctrineOnKill({ maxHp: d.hp * 6, armor: d.armor, x: 300, y: 300,
+                          hostileTo: 0, rageMul: 1, type: 'crawler' });
+    if (Game.pendingSpawns.length) bad.push('a kill produced ' + Game.pendingSpawns.length + ' bodies');
+
+    /* Then the clock: entries in ROSTER ORDER, one per interval, wrapping
+       exactly once per cycle, with the period stretching as the count grows. */
+    Game.wave = FOL_START_WAVE; Game.waveRunning = true; Game.state = 'playing';
+    S.procIdx = 0; S.procCycle = 0; S.procTimer = 0;
+    var order = [], cycles = [];
+    for (var step = 0; step < list.length * 2; step++) {
+      Game.pendingSpawns.length = 0;
+      Game.tickProcession(0.001);
+      var got = Game.pendingSpawns.length ? Game.pendingSpawns[0].def.id : null;
+      if (got) order.push(got);
+      cycles.push(S.procCycle);
+      S.procTimer = 0;               /* jump straight to the next dispatch */
+    }
+    var wantOne = list.join(','), wantTwo = list.concat(list).join(',');
+    if (order.join(',') !== wantTwo) bad.push('order ' + order.join(',') + ' != ' + wantTwo);
+    if (S.procCycle < 1) bad.push('cycle never advanced');
+    /* The re-armed period must carry the growth term. */
+    S.procTimer = 0; Game.tickProcession(0.001);
+    var want = FOL_CADENCE_SEC + S.procCycle * FOL_CADENCE_GROWTH;
+    if (Math.abs(S.procTimer - want) > 1e-6) bad.push('period ' + S.procTimer.toFixed(2) + ' != ' + want.toFixed(2));
+    ok('22.15 THE PROCESSION marches in order, on the clock, and takes nothing from a kill',
+       bad.length === 0,
+       bad.length ? bad.join(' | ')
+                  : 'roster order twice over (' + wantOne + '), cycle ' + S.procCycle +
+                    ', period ' + S.procTimer.toFixed(2) + 's, kills yield nothing');
+  });
+
+  T('22.14 every map offers a reward its commander can actually field', function () {
+    /* A rescue you cannot muster is a reward that does nothing -- the
+       codebase's own words, recorded when the faction ladders were brought to
+       three lives, and then left standing on THE EXPANSE, whose two denizens
+       were both over MUSTER_MAX_LIVES. */
+    var dead = MAPS.filter(function (m) {
+      var d = m.denizens || [];
+      return d.length && !d.some(musterSendable);
+    }).map(function (m) { return m.id; });
+    var partial = MAPS.filter(function (m) {
+      var d = m.denizens || [];
+      return d.length && d.filter(musterSendable).length < d.length;
+    }).map(function (m) { return m.id + '(' + (m.denizens||[]).filter(function (x) {
+      return !musterSendable(x); }).join('/') + ')'; });
+    ok('22.14 every map offers a reward its commander can actually field',
+       dead.length === 0,
+       MAPS.length + ' maps; wholly unfieldable: ' + (dead.join(' ') || 'none') +
+       '; partly: ' + (partial.join(' ') || 'none'));
   });
 
   T('19.16 the spawned-HP curve hits the owner three anchors exactly', function () {

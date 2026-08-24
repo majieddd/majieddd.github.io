@@ -793,12 +793,38 @@ const MPT = (function () {
         S.taken[S.taken.length - 1] = PLAYER_MODS[1];
         const drawn = Net.fingerprint() !== drawnA;
         S.taken.pop();
+
+        /* THE SESSION-22 STATE. This tripwire exists to catch "the NEXT field
+           somebody writes out of band", and it could only trip on what it
+           reads -- so every rite, every clutch, every relay and every compile
+           could have been deleted from the fingerprint and this suite would
+           still have gone green. Each one is a real desync: two clients that
+           disagree about a spliced lane are playing two different boards. */
+        const doc = shifts(() => { S.doctrine = 'xeno'; }, () => { S.doctrine = 'human'; });
+        const proc = shifts(() => { S.procIdx = 2; S.procCycle = 1; },
+                            () => { S.procIdx = 0; S.procCycle = 0; });
+        const debt = shifts(() => { S.rollDebt = 40; }, () => { S.rollDebt = 0; });
+        const power = shifts(() => { S.summonPower = 0.06; }, () => { S.summonPower = 0; });
+        const comp = shifts(() => { S.compileLevel = 3; }, () => { S.compileLevel = 0; });
+        const jam = shifts(() => { S.stats.jammed = 5; }, () => { S.stats.jammed = 0; });
+        const boot = shifts(() => { S._bootAt = 0.06; }, () => { S._bootAt = 0; });
+        const pod = shifts(() => { Game.incubators.push({ side: 0, x: 100, y: 100, t: 5,
+                                     powerHp: 200, lidx: 0, unitId: 'crawler', need: 5, armorFlat: 0 }); },
+                           () => { Game.incubators.pop(); });
+        const relay = shifts(() => { Game.relayNodes.push({ x: 90, y: 90, t: 4, owner: 0, board: 1 }); },
+                             () => { Game.relayNodes.pop(); });
+        const splice = shifts(() => { Game.spliceState[1] = { wavesLeft: 1, laneIdx: 1, added: [] }; },
+                              () => { Game.spliceState[1] = null; });
         closeMatch();
+        const s22 = doc && proc && debt && power && comp && jam && boot && pod && relay && splice;
         ok('net.rules the fingerprint carries the choice, not just the count',
-           mode && branch && roll && drift && esc && drawn,
+           mode && branch && roll && drift && esc && drawn && s22,
            'targetMode=' + mode + ' branch=' + branch + ' level roll=' + roll +
            ' wave drift=' + drift + ' escalation identity=' + esc +
-           ' drafted card identity=' + drawn);
+           ' drafted card identity=' + drawn +
+           ' | rite=' + doc + ' procession=' + proc + ' rollDebt=' + debt +
+           ' summonPower=' + power + ' compile=' + comp + ' jams=' + jam +
+           ' bootstrap=' + boot + ' clutch=' + pod + ' relay=' + relay + ' splice=' + splice);
       });
 T('net.rules conceding a duel does not promise a garrison', function () {
         /* A duel starts through Game.start({skirmish:true}), so the abandon

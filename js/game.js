@@ -550,7 +550,7 @@ const Game = {
     const mine = this.sides[0].loadout.map(id => (this.sides[0].talentSets[id] || []).length);
     const myDepth = mine.length ? Math.round(mine.reduce((a, b) => a + b, 0) / mine.length) : 1;
     const rivalDepth = clamp(myDepth + (this.difficulty.aiSkill >= 1 ? 1 : 0), 1, TALENT_POINTS);
-    this.sides[1].talentSets = AI.pickTalents(this.sides[1].loadout, rivalDepth);
+    this.sides[1].talentSets = AI.pickTalents(this.sides[1].loadout, rivalDepth, this.difficulty);
     this.rivalDepth = rivalDepth; this.rivalTech = rivalTech;
 
     this.enemies = []; this.projectiles = []; this.particles = []; this.floaters = [];
@@ -603,7 +603,7 @@ const Game = {
                                              Meta.unlockedTowers(), this.sides[2].faction)
                                 .slice(0, this.sides[1].loadout.length);
       this.setMusterLoadout(2, this.sides[1].musterLoadout);
-      this.sides[2].talentSets = AI.pickTalents(this.sides[2].loadout, this.rivalDepth);
+      this.sides[2].talentSets = AI.pickTalents(this.sides[2].loadout, this.rivalDepth, this.difficulty);
       this.sides[2].baseLevel = this.sides[1].baseLevel || 1;
     }
     /* Every arena seat past the third is a commander in its own right: its own
@@ -628,7 +628,7 @@ const Game = {
         if (S2.loadout.length > variety) S2.loadout = S2.loadout.slice(0, variety);
         this.setMusterLoadout(i, AI.pickMusterLoadout(Meta.musterUnlocked(),
                                                       this.sides[0].musterLoadout.length));
-        S2.talentSets = AI.pickTalents(S2.loadout, this.rivalDepth);
+        S2.talentSets = AI.pickTalents(S2.loadout, this.rivalDepth, this.difficulty);
         S2.baseLevel = this.sides[1].baseLevel || 1;
       }
     }

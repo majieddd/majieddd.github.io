@@ -908,7 +908,16 @@ const AI = {
    * from each row, favouring raw output — it cannot see the coming waves yet,
    * so it plays to the tower's strength rather than to a counter.
    */
-  pickTalents(loadout, depth) {
+  /* `diff` is a PARAMETER, and that is the fix. It used to read `this.diff`
+     off the prototype -- which AI.init writes, and AI.init runs AFTER all
+     three call sites. So on the first battle of a page the rival always took
+     the optimal node (a perfect build on Skirmish), and from the second
+     battle it used the PREVIOUS battle's threat level. Worse, the
+     short-circuit meant Math.random() was NOT consumed on run one and WAS on
+     run two, so two seeded runs in one page diverged -- which is the
+     unexplained pin delta recorded in the backlog (run 1 wave 21/27480, run 2
+     wave 20/26129). It was `diff`, not `spots` or `samples`. */
+  pickTalents(loadout, depth, diff) {
     const sets = {};
     /* Score a talent by how much raw output it adds, so the rival's builds
        are coherent rather than random. Utility keys still count, weighted
@@ -942,7 +951,11 @@ const AI = {
         if (chosen.length >= cap) break;
         const opts = rows[r].slice().sort((a, b) => value(b.mods) - value(a.mods));
         /* A weaker commander sometimes takes the second-best option. */
-        const take = (this.diff && Math.random() > this.diff.aiSkill && opts[1]) ? opts[1] : opts[0];
+        /* The draw happens UNCONDITIONALLY so the seeded stream advances
+           by the same amount whether or not a downgrade is available. */
+        const roll = Math.random();
+        const d = diff || this.diff;
+        const take = (d && roll > d.aiSkill && opts[1]) ? opts[1] : opts[0];
         chosen.push(take);
       }
       sets[id] = chosen;

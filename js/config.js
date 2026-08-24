@@ -192,7 +192,18 @@ const MAPS = [
 {
     id: 'expanse', name: 'THE EXPANSE', tier: 4,
     blurb: 'A colossal drift of dead hulks with two long approaches that never come within reach of each other. Nothing you own covers much; you simply have to own more of it.',
-    trait: 'Massive field · two long lanes', denizens: ['juggernaut', 'carrier'],
+    /* THE TWO HEAVIEST SENDABLE BODIES ON ITS OWN ROSTER. This map used to
+       offer `juggernaut` (5 lives) and `carrier` (4), and musterSendable
+       refuses anything over MUSTER_MAX_LIVES = 3 -- so saveDenizens skipped
+       both, refusedDenizens could not even name them, and THE EXPANSE was
+       the one map in fifteen whose entire three-star reward was nothing at
+       all. That is the exact failure the faction ladders record fixing --
+       "a rescue you cannot muster is a reward that does nothing, which is
+       this codebase's signature bug wearing a different hat" -- left
+       standing on a map. WARDEN and REVENANT keep the deep-space weight
+       without breaking the send law, and the signature line below still
+       describes what actually garrisons the field. */
+    trait: 'Massive field · two long lanes', denizens: ['warden', 'revenant'],
     sigNote: 'Deep space — Ironmarches and Foundry Carriers drift in from the dark.',
     roster: ['crawler', 'wisp', 'cluster', 'shardling', 'revenant', 'warden', 'carrier', 'juggernaut'],
     cols: 36, rows: 20, region: { x: 78, y: 30 },
