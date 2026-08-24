@@ -74,16 +74,16 @@ moment they are earned — permanent unlocks for commanders and towers.
 |---|---|
 | Battlefields | **15** authored maps, of which **4** are three-seat boards (Confluence, Crown, Carousel, Orrery) |
 | The Maelstrom | a **20**-seat arena, its board solved from the seat count rather than authored |
-| Towers | **50**, ten per tech origin |
-| Enemies | **49**, including 5 minibosses and 1 boss |
-| Commanders | **21**, across the 4 factions |
+| Towers | **60**, twelve per tech origin (ten of them 2×2 heavies) |
+| Enemies | **54**, including 5 minibosses and 1 boss |
+| Commanders | **26**, across 5 powers — the fifth is unlocked by conquering a galaxy |
 | Commander abilities | **12** — 6 offensive, 6 defensive |
 | Arena modifiers | **8** |
 | Victory boons | **20**, five per faction, keyed to the world you took them from |
-| Faction units | **20**, five per faction, rescued from the maps their power holds |
+| Faction units | **25**, five per power, rescued from the maps their power holds or bought with souls |
 | Art keys | **188**, inlined |
 
-## Fifty towers, five slots, five origins
+## Sixty towers, five slots, five origins
 
 Every tower is built by somebody, and the builder is a mechanical identity
 rather than a label — each origin carries a rider the engine actually reads.
@@ -92,11 +92,11 @@ built against that rule explicitly (`docs/TOWER-AUDIT.md`).
 
 | Origin | Towers | The rider |
 |---|---|---|
-| **HUMAN** | 10 | No clause at all. The widest element coverage, and the only origin that attunes to a terrain node of any element rather than a matched one |
-| **ROBOTIC** | 10 | No proc, no gamble. Machines placed within reach of each other form a lattice, and every link pays |
-| **PIRATE** | 10 | Governors removed. Strikes sometimes overload far past their rating, and the heat that builds takes the gun offline when the bank fills |
-| **XENO** | 10 | Grows on wounds. Every hit carries a rider that scales off how hurt the target already is |
-| **FEDERATION** | 10 | Holds a target's protections open — every resistance it has is worth less for a few seconds — and cannot itself be jammed or sabotaged |
+| **HUMAN** | 12 | No clause at all. The widest element coverage, and the only origin that attunes to a terrain node of any element rather than a matched one |
+| **ROBOTIC** | 12 | No proc, no gamble. Machines placed within reach of each other form a lattice, and every link pays |
+| **PIRATE** | 12 | Governors removed. Strikes sometimes overload far past their rating, and the heat that builds takes the gun offline when the bank fills |
+| **XENO** | 12 | Grows on wounds. Every hit carries a rider that scales off how hurt the target already is |
+| **FEDERATION** | 12 | Holds a target's protections open — every resistance it has is worth less for a few seconds — and cannot itself be jammed or sabotaged |
 
 You deploy five of them. You begin owning one (BOLT) and 6 souls, which is
 exactly the price of a second. Since Session 19 the loadout has a second column:
@@ -113,10 +113,10 @@ from a different marking element consumes the mark and reacts.
 | Element | Towers | Reacts with |
 |---|---|---|
 | Void | 11 | fire → COLLAPSE · frost → ENTROPY · storm → RUPTURE · venom → BLIGHT |
-| Storm | 7 | fire → PLASMA · frost → SUPERCONDUCT · venom → CATALYSE |
-| Fire | 5 | frost → THERMAL SHOCK · storm → PLASMA · venom → IMMOLATE |
-| Venom | 5 | fire → IMMOLATE · frost → PARALYSIS · storm → CATALYSE |
-| Frost | 3 | fire → THERMAL SHOCK · storm → SUPERCONDUCT · venom → PARALYSIS |
+| Storm | 8 | fire → PLASMA · frost → SUPERCONDUCT · venom → CATALYSE |
+| Fire | 10 | frost → THERMAL SHOCK · storm → PLASMA · venom → IMMOLATE |
+| Venom | 6 | fire → IMMOLATE · frost → PARALYSIS · storm → CATALYSE |
+| Frost | 5 | fire → THERMAL SHOCK · storm → SUPERCONDUCT · venom → PARALYSIS |
 
 Ten distinct reactions in all. Every marking element carries at least three
 towers, so a reaction is reachable from an ordinary loadout rather than gated
@@ -124,8 +124,8 @@ behind owning one specific tower. A marked unit wears its element as a ringed
 glyph, and the loadout screen lists exactly which reactions your five picks can
 produce.
 
-Ten enemies resist a specific element — a **Palisade** takes half damage from
-frost — and twenty are weak to one. Reactions need two different marking
+Twelve enemies resist a specific element — a **Palisade** takes half damage from
+frost — and twenty-two are weak to one. Reactions need two different marking
 elements to overlap on the same stretch of lane, which makes tower placement an
 elemental decision as well as a spatial one.
 
@@ -181,10 +181,10 @@ wave to a 7s floor it reaches at wave 23 — so the field stays busy rather than
 idle.
 
 Enemies come fewer but individually stronger. Bosses and minibosses are wholly
-immune to slow, displacement and stun. **Seven** aura carriers protect their
+immune to slow, displacement and stun. **Eight** aura carriers protect their
 neighbours from your control tools — Marshal Pylon (RESOLVE), Anchor Pylon
 (ANCHOR), Cadence Pylon (HASTE), Bastion Pylon (PLATING), Oriflamme, Hivelord
-(FRENZY) and Vanguard (LOCKSTEP). Kill the carrier and the buff dies with it.
+(FRENZY), Vanguard (LOCKSTEP) and Omniframe (CONSENSUS). Kill the carrier and the buff dies with it.
 
 ---
 
@@ -286,10 +286,10 @@ css/style.css         interface styling
 css/polish.css        the polish layer: glass surfaces, world map, sprite previews
 js/artpack.js         the generated art pack, base64 WebP (loaded first)
 js/config.js          maps, core towers + tech trees, enemies, waves, modifier pools
-js/factions.js        the four factions, tech origins, prestige, lore codex
+js/factions.js        the five powers, tech origins, summoning rites, prestige, lore
 js/towers2.js         elements, combo table, expansion towers, arena mods, boons
 js/abilities.js       the twelve commander abilities
-js/roster.js          the 21 commanders and their 3×3 tech charts
+js/roster.js          the 26 commanders and their 3×3 tech charts
 js/dialogue.js        portraits, art lookup, pre-battle dialogue
 js/commanders.js      trait folding, persistent meta progression, the soul ledger
 js/audio.js           Web Audio synthesis engine + music scheduler
@@ -297,6 +297,7 @@ js/entities.js        Path, Enemy, Tower, Drone, Mine, Projectile
 js/entities2.js       Minion, Barricade, expansion tower behaviours and sprites
 js/ai.js              the opponent commander
 js/galaxy.js          galaxy generation, systems, worlds, ownership
+js/net.js             lockstep duels: BroadcastChannel and hand-signalled WebRTC
 js/game.js            N-sided state, fixed-timestep loop, world rendering
 js/ui.js              screens, HUD, inspector, draft overlay
 js/main.js            bootstrap and keyboard
@@ -304,7 +305,7 @@ build.js              inlines everything into the two bundles
 ```
 
 Classic script tags rather than ES modules, so the game runs from `file://`.
-`build.js` lists the same sixteen modules in the same order; if you add one, add
+`build.js` lists the same seventeen modules in the same order; if you add one, add
 it in both places.
 
 **Ownership** is a single field: every unit carries `hostileTo`, the side it

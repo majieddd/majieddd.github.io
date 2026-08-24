@@ -248,9 +248,16 @@ session. That is how the NG+ work was proved sim-neutral (13/18007 on both
 sides). A number compared against one written down on a different day proves
 nothing at all.
 
-**The maxed move (25 → 31) is the number to watch.** It is not a defect — the
-health curve's terminus still bites and every run ended by wave 34 — but it
-means expert matches now run about six waves longer, which pulls against the
-standing rule that rounds should end promptly. Re-measure this table after the
-difficulty pass; if the maxed median has not come back toward the high
-twenties, the honest lever is the post-wave-20 ramp, not the rites.
+~~**The maxed move (25 → 31) is the number to watch.**~~ **RETRACTED.** That
+sentence was written from a cross-session comparison and is exactly the mistake
+the paragraph above warns about: 25 was measured on a different day. Measured
+properly — both builds served at fresh paths and run back to back in one
+session — the maxed loss median is **33 before the rites and 31 after**, so the
+summoning doctrines made expert matches marginally *shorter*. The terminus
+still bites: every run ended by wave 34.
+
+**What is still worth watching** is the absolute number, not the delta. A maxed
+median of 31 is a long match, and the standing rule is that rounds end
+promptly. If it is to come down, the honest lever is the post-wave-20 ramp —
+`RAMP_PRESETS` and the health curve — rather than the rites, which have now
+been measured and are not the cause.

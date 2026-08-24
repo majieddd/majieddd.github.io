@@ -1230,6 +1230,12 @@ limit. Work is on **`session-21/backlog`** (off `main`) and one commit on
 | The soul price cut (basket 533 → 288 souls) | **owner** — the fix is correct; the magnitude is a balance decision |
 | The fifteen held-back mechanics, "THE HARBINGER ENRAGES", grandfathered saves | **owner**, unchanged from Session 20 |
 
+> **Superseded the same session.** The owner then ruled on the docket and
+> picked two of the fifteen — #1 recoverable objective and #4 variable
+> footprints — both shipped in ROUND TWO below. Session 22 shipped a third,
+> #8 as THE SPLICE. Twelve remain held.
+
+
 ---
 
 # SESSION 21, ROUND TWO — THE OWNER'S DOCKET, EXECUTED

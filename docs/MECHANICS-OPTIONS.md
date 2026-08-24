@@ -1,5 +1,9 @@
 # Mechanics Options — from the Tower Defense Mechanics Dossier
 
+> **Three of the fifteen have shipped** — #1 and #4 in Session 21, #8 in
+> Session 22. Each is marked at its own heading. The other twelve remain held
+> and their reasoning below is unchanged.
+
 Source: *Tower Defense Mechanics Dossier and Master Index* — 31 pages, 75 games,
 168 distinct mechanics across 23 categories, 418 game-to-mechanic associations.
 
@@ -17,6 +21,11 @@ make. They are written up rather than built. Say the word on any of them and I w
 ---
 
 ## 1. Recoverable stolen objective — a leak becomes a timed recovery window
+
+> ✅ **SHIPPED, Session 21 round two** (`4a8fd73`). A leak spawns a carrier that
+> runs the objective off the board; kill it and the life comes back. Recovery
+> and offence became the same action, exactly as argued below.
+
 
 **Effort** M  ·  **Seen in** Defense Grid: The Awakening (TD-MECH-105). Dossier calls it apparently unique and ranks it #1 'Most innovative'.
 
@@ -53,6 +62,11 @@ make. They are written up rather than built. Say the word on any of them and I w
 **Why I held it back.** A runaway leader buys board faster — cap purchases per battle. The re-tune of all nine maps is the real cost and is why this is not S. Do not implement the purchase version without the owner explicitly reopening 'tiles are finite'.
 
 ## 4. Variable tower footprints
+
+> ✅ **SHIPPED, Session 21 round two** (`7523182`). Ten 2x2 heavies plus a
+> footprint engine touching 23 call sites; the arsenal went 50 → 60 towers,
+> twelve per origin.
+
 
 **Effort** M  ·  **Seen in** Emberward (unusual tower footprints alongside tetromino walls); dossier Tower Placement row 'variable footprints', ranked top-10 in 'Tower mechanics'.
 
@@ -101,6 +115,13 @@ make. They are written up rather than built. Say the word on any of them and I w
 **Why I held it back.** The dossier's named risk is hidden-information hard-lock and frustration. The specific danger here is that a player who cannot see the rival's board also cannot understand why their reanimates are dying — turning the game's most satisfying feedback loop opaque. Prototype behind a flag and A/B it before committing.
 
 ## 8. Mutable destination — or its cheap approximation, a second spawn mouth
+
+> ✅ **SHIPPED, Session 22**, as the cheap approximation this section
+> recommends. THE SPLICE: kill a Parallel SPLICER on your ground and it cuts a
+> temporary second lane into your board for one wave (`Game.openSplice`). It is
+> a rival-triggered event rather than a player-bought one, which keeps the
+> pathing cost bounded to a single wave.
+
 
 **Effort** L  ·  **Seen in** Axon TD (TD-MECH-009 destination relocation); dossier ranks it 'very high' potential and very rare.
 

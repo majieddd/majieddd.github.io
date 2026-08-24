@@ -1,5 +1,11 @@
 # Tower uniqueness audit — Session 19
 
+> **Status as of Session 22.** This is the Session-19 snapshot and its counts
+> are historical: the arsenal is **60 towers, twelve per origin** today, and
+> every gap this document opens has since been closed. Read it for the method
+> and the per-tower reasoning, not for the totals. Where a proposal here was
+> answered differently in the end, the difference is marked inline.
+
 Answers roadmap items **19.19–19.22**: *"Double check all towers are properly
 outfitted to be absolutely unique from all other towers in their own way."*
 
@@ -70,6 +76,18 @@ and CUSTODIAN — being Federation of Light — becomes something its lore actua
 supports: escorts that **shield and buff the player's own mustered units** rather
 than blocking enemies. That also serves the owner's "buffing your own
 army/troops" ask, and it makes the two minion towers answer opposite questions.
+
+> **How this was actually answered — SUPERSEDED, Session 21.** The escort
+> proposal was not built. CUSTODIAN was differentiated along a different axis
+> instead: it became a `vigil` tower that shoots nothing and blocks nothing, and
+> spends a standing watch of wardens to catch **breaches** — one warden per
+> leak, on a `vigilEvery` cooldown (`towers2.js:419`). That pairs it with the
+> recoverable-objective mechanic rather than with FOUNDRY, so the two minion
+> towers do now answer opposite questions; the question CUSTODIAN answers is
+> just "what happens when something gets through" rather than "how do I buff my
+> own army". The buff-your-own-army ask was answered separately and more
+> directly by the **summoning rites** in Session 22 — see
+> [`docs/ROADMAP.md`](ROADMAP.md) § Session 22.
 
 ---
 

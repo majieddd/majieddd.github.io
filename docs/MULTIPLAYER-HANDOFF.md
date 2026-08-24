@@ -14,7 +14,7 @@
 > forever with no verdict, the seat lens escaping on the draw path, and a
 > stranded draft modal starting a zombie match. All seven were fixed, plus the
 > audit's two remaining majors (a join with no deadline; `ctl` as an open
-> command port), under NET_PROTOCOL 2. **MPT: 40 pass / 0 fail.** The section
+> command port), under NET_PROTOCOL 5 (2 at the time of writing; the bumps carried targeting, the summoning rites, the relay/splice/compile state and finally unit talents). **MPT: 37 pass / 0 fail, 3 INFO.** The section
 > below is kept as history — read it as the state of Session 20, not of the
 > code.
 
@@ -139,7 +139,7 @@ lockstep, the seat lens and the guards run **unchanged**: the adapter is
 
 **What is verified.** The blobs generate and carry the protocol; a wrong-build
 blob is refused with the honest message; the panel exists and Esc cancels it;
-and the shipped same-machine path is provably untouched — **MPT 40 pass / 0
+and the shipped same-machine path is provably untouched — **MPT 37 pass / 0
 fail** with the RTC code in the build.
 
 **What is verified — the ritual end to end, across two independent browsing

@@ -32,7 +32,7 @@ served from cache and you are testing the previous build while believing you are
 testing this one. It reads as your change having no effect.
 
 To test a change, verify against the **bundle** — `node build.js`, then
-`aegis-protocol.html?v=N` — which inlines all sixteen modules into the document
+`aegis-protocol.html?v=N` — which inlines all seventeen modules into the document
 the query actually busts. Use `index.html` for hand-play, the bundle for proof.
 
 To produce the single-file build:
@@ -211,8 +211,9 @@ Nothing to install, nothing to import.
 // 0. serve the repo (§1), open aegis-protocol.html?v=1, and FRONT the tab.
 
 // 1. paste the entire contents of tools/owner-sweep.js
-//    → 26 behaviour checks. Returns {pass, fail, info, checks} and parks the
-//      same object on window.__SWEEP. Green is fail:0 — last run 27/0.
+//    → 36 behaviour probes, 40 verdicts. Returns {pass, fail, info, checks}
+//      and parks the same object on window.__SWEEP. Green is fail:0 — last
+//      run 40 pass / 0 fail.
 //    → it MUTATES game state. Reload before you do anything else.
 //    → run it from the LOADOUT screen: checks 19.12 and 19.15 read live DOM and
 //      report INFO (a skip, not a failure) anywhere else, or in a hidden tab.
@@ -231,8 +232,14 @@ PINS.tick(20000)       // repeat until {done: true}
 **The pins.** Mirror-AI on both seats, loadout pinned to
 `bolt/cryo/mortar/flak/beacon`:
 
-- fresh profile → **loss median wave 8** (seeds 1000-1005; losses at 5, 6, 10, 13)
-- maxed unlocks at **galaxy tier 0** → **loss median wave 22** (losses at 21, 22, 27)
+- fresh profile → **loss median wave 11** (seeds 1000-1005)
+- maxed unlocks at **galaxy tier 0** → **loss median wave 31** (seeds 1000-1005)
+
+Both were re-based in Session 22 for the summoning rites and the gentler early
+ramp; the Session-21 figures were 8 and 22. Read
+[`docs/BALANCE-BASELINE.md`](docs/BALANCE-BASELINE.md) before you treat a
+movement as a regression — **this harness is only comparable inside one browser
+session**, and a cross-session comparison has already produced one false alarm.
 
 **Seed them, or the numbers mean nothing.** `PINS.begin(map, diff, seed)` takes
 a seed and the run replays exactly; unseeded, one map has produced death waves
@@ -244,8 +251,8 @@ harness into a page that has **not yet run a match**, because the AI-prototype
 snapshot it restores has to be pristine.
 
 The old unseeded claim that *every loss is under wave 10* is **false** and was
-never true: `coil` loses at 10 and `shattered` at 13, reproducibly. The old
-maxed pin of *27* is the top of the range, not the median.
+never true: `coil` loses at 10 and `shattered` at 13, reproducibly. The
+Session-20 maxed pin of *27* was the top of its range, not the median.
 
 Two ways to measure these wrong, both of which have produced a false alarm:
 

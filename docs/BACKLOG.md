@@ -148,7 +148,7 @@ All ten Session-19 items were closed in 20.7. What is left:
 
 ---
 
-## E. The held-back mechanics — TWO SHIPPED, THIRTEEN HELD
+## E. The held-back mechanics — THREE SHIPPED, TWELVE HELD
 
 The owner picked **#1** and **#4** from the docket. Both are in and live:
 
@@ -162,7 +162,7 @@ The owner picked **#1** and **#4** from the docket. Both are in and live:
 
 Thirteen remain written up and unbuilt in
 [`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md), unchanged: #2 scarring, #3 land
-as a resource, #5 economy exposure, #6 FOCUS, #7 fog, #8 second spawn mouth,
+as a resource, #5 economy exposure, #6 FOCUS, #7 fog,
 #9 per-tower XP, #10 upkeep, #11 territory income, #12 rewind, #13 mazing,
 #14 deployment points, #15 multi-deck.
 
@@ -178,7 +178,7 @@ Full write-ups with build notes in [`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md
 5. Economy structures must survive to pay (jam gates VAULT income)
 6. Commander attention as an economic resource (FOCUS)
 7. Fog over the rival board / visibility-gated placement
-8. Mutable destination, or a second spawn mouth
+8. ~~Mutable destination, or a second spawn mouth~~ — **SHIPPED** in Session 22 as THE SPLICE: a Parallel SPLICER killed on your ground cuts a temporary second lane into your board for one wave (`Game.openSplice`)
 9. Per-tower usage XP
 10. Tower upkeep / supply priority
 11. Territory-linked income
