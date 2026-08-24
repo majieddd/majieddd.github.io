@@ -365,8 +365,23 @@ const UI = {
    */
   confirmAbandon() {
     Sound.play('click');
-    const c = Meta.campaign();
-    if (!c) { this.toMenu(); return; }
+    /* THE DUEL QUESTION IS ASKED FIRST AND THE SKIRMISH QUESTION SECOND, because
+       a duel answers `Game._skirmish` true and answers the campaign lookup null.
+       With the lookup first, abandoning a duel returned to the title without
+       ever calling endMatch — the only path Net.finish hangs off — so the relay
+       stayed live: the peer waited on a heartbeat that never stopped, and the
+       next Game.start built Game.sides through a lens still switched on and died
+       on undefined.faction with no try/catch above it. */
+    if (Net.live) {
+      /* No garrison holds a duel board — the other commander does, and leaving
+         hands them the win the moment the concession lands (net.js posts
+         `quit`, and the peer resolves it as a win). */
+      this.confirmBox('CONCEDE THE DUEL?',
+        '<p>Your rival <b>takes the win</b> the moment you leave the field. ' +
+        'Nothing in your campaign changes &mdash; a duel never writes to it.</p>',
+        'CONCEDE', () => Game.endMatch(false, true));
+      return;
+    }
     if (Game._skirmish) {
       /* A garrison skirmish never touched the campaign ledger, so it must not
          threaten it either. */
@@ -375,6 +390,12 @@ const UI = {
         'ABANDON', () => Game.endMatch(false, true));
       return;
     }
+    const c = Meta.campaign();
+    /* No campaign and no skirmish is a board that should not exist, and it still
+       leaves through endMatch: an exit that skips endMatch skips everything
+       endMatch tears down. */
+    if (!c) { Game.endMatch(false, true); return; }
+
     this.confirmBox('ABANDON CAMPAIGN?',
       '<p>Abandoning <b>forfeits the whole campaign</b>: this galaxy and every ' +
       'star on it are gone, and your next campaign rolls a fresh galaxy. Souls ' +
@@ -386,9 +407,19 @@ const UI = {
   },
 
   toMenu() {
+    /* THE LAST GATE ON THE ONE-EXIT RULE. Every road out of a battle is meant to
+       pass through endMatch, which is the only caller of Net.finish; a road that
+       does not leaves a relay live behind a title screen, and the next
+       Game.start dies building its sides through a lens nobody switched off.
+       Callers that already ended properly read `live` false and pay nothing. */
+    if (Net.live) Game.endMatch(false, true);
     Game.state = 'menu'; Sound.stopMusic();
     this.el.endOverlay.classList.add('hidden');
-    this.el.choiceOv.classList.add('hidden');
+    /* Through hideChoice, which is the one place that also EMPTIES the body.
+       Adding the class alone left the cards bound to Game.takeMod, standing
+       invisibly behind the title screen with a click still able to reach the
+       engine. */
+    this.hideChoice();
     this.renderTitle();
     this.show('screen-title');
   },
@@ -1557,7 +1588,9 @@ const UI = {
         <div class="br-rows">${w.contested ? `<div class="br-row"><span class="br-ic">⚔</span>
           <span>A three-way board. Every kill reanimates toward BOTH rivals.</span></div>` : ''}
           <div class="br-row"><span class="br-ic">⚔</span>
-          <span>Click to open a duel table here, or to join one already open.</span></div></div></div>`);
+          <span>${Net.duelRefusal(w)
+            ? 'No duel table opens here — this board seats more commanders than a duel does. Click for the garrison.'
+            : 'Click to open a duel table here, or to join one already open.'}</span></div></div></div>`);
       g.addEventListener('mouseenter', brief);
       g.addEventListener('focus', brief);
       g.addEventListener('focus', () => GalaxyFX.bring(g));
@@ -1592,6 +1625,24 @@ const UI = {
       body.innerHTML = `<b class="mv-title">NO RELAY IN THIS BROWSER</b>
         <p class="mv-text">A duel needs BroadcastChannel, which this browser does not
            provide. Everything else still works — the garrison of <b>${w.name}</b> will oblige.</p>
+        <div class="modal-actions">
+          <button id="btn-mv-practice" class="btn btn-primary">SKIRMISH THE GARRISON</button>
+          <button id="btn-mv-cancel" class="btn">CANCEL</button></div>`;
+      this.bindMpFooter(w);
+      return;
+    }
+
+    /* A world the relay will not seat is said so here, in full, rather than
+       quietly swapped for a different board or left to open a table that
+       freezes on wave 5. The garrison skirmish below still fights this exact
+       map -- a three-way board is only broken between two WINDOWS, never
+       against the machine -- so the way in is offered, not withheld. */
+    const refused = Net.duelRefusal(w);
+    if (refused) {
+      body.innerHTML = `<b class="mv-title">NO DUEL OVER ${w.name}</b>
+        <p class="mv-text">${refused}</p>
+        <p class="mv-text">Every uncontested world in the universe will host one, and the
+           garrison of <b>${w.name}</b> will still fight you for this board.</p>
         <div class="modal-actions">
           <button id="btn-mv-practice" class="btn btn-primary">SKIRMISH THE GARRISON</button>
           <button id="btn-mv-cancel" class="btn">CANCEL</button></div>`;
@@ -3734,7 +3785,7 @@ const UI = {
     const up = $('[data-upgrade]', root);
     if (up) up.addEventListener('click', () => { Game.upgrade(t); this.renderInspector(true); });
     $$('[data-branch]', root).forEach(b => b.addEventListener('click', () => { Game.upgrade(t, +b.dataset.branch); this.renderInspector(true); }));
-    $$('[data-mode]', root).forEach(b => b.addEventListener('click', () => { t.targetMode = b.dataset.mode; Sound.play('click'); this.renderInspector(true); }));
+    $$('[data-mode]', root).forEach(b => b.addEventListener('click', () => { Game.setTargetMode(t, b.dataset.mode); this.renderInspector(true); }));
     const sell = $('[data-sell]', root);
     if (sell) sell.addEventListener('click', () => { Game.sell(t); this.renderInspector(true); });
     const mv = $('[data-move]', root);
@@ -4200,7 +4251,13 @@ const UI = {
       b.addEventListener('click', () => Game.takeMod(options[+b.dataset.choice]));
     });
   },
-  hideChoice() { this.el.choiceOv.classList.add('hidden'); },
+  /* HIDING IS NOT CLOSING. The cards stay bound to Game.takeMod, so a modal left
+     standing when a duel voided was still a live control: one click reached the
+     engine's own takeMod, set the state back to 'playing', and handed Game.loop
+     a dead board to step behind an overlay that had just said nothing was
+     recorded — which then paid XP, tower mastery and a recorded run when it
+     resolved. Emptying the body is what makes the close a close. */
+  hideChoice() { this.el.choiceOv.classList.add('hidden'); this.el.choiceBody.innerHTML = ''; },
 
   /* ======================================================= ABILITIES ==== */
 

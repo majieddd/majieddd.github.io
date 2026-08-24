@@ -93,6 +93,11 @@ const MPT = (function () {
       case 'sell':   return { k: 's', gx: a.gx, gy: a.gy };
       case 'abil':   return { k: 'a', i: a.i, gx: a.gx === undefined ? -1 : a.gx,
                                               gy: a.gy === undefined ? -1 : a.gy };
+      /* The mode travels as an INDEX, which is the shape hookCommands puts on
+         the wire. A log that carried the string would be measuring a command
+         the relay does not send. */
+      case 'targ':   return { k: 't', gx: a.gx, gy: a.gy,
+                              mode: TARGET_MODES.map(m => m.id).indexOf(a.mode) };
     }
     return null;
   }
@@ -113,6 +118,9 @@ const MPT = (function () {
          and nothing in the other. */
       case 'abil':   useAbility(Game.sides[0], Game, a.i,
                                 a.gx === undefined ? undefined : { gx: a.gx, gy: a.gy }); break;
+      /* Game.setTargetMode is the entry point the panel and the Tab key both
+         reach now, so it is the one the log has to drive. */
+      case 'targ':   { const t = Game.towerAt(a.gx, a.gy); if (t) Game.setTargetMode(t, a.mode); break; }
     }
   }
 
@@ -262,6 +270,23 @@ const MPT = (function () {
     return { tiles, tiers, types };
   }
 
+  /** One tower for `seat`, on the first tile the engine will accept, placed
+      through Game.build's ORIGINAL rather than the wrapped one: a check about
+      a targeting command needs a tower standing, not a build command in
+      flight ahead of it. */
+  function putTower(seat) {
+    const S = Net._realSides[seat];
+    S.gold = Math.max(S.gold, 9999);
+    for (let gy = 0; gy < FIELD.rows; gy++)
+      for (let gx = 0; gx < FIELD.cols; gx++) {
+        /* Through suspend because `seat` here means the REAL seat -- the same
+           reason probe() calls canBuild through it. */
+        const t = Net.suspend(Net._orig.cmd_build, Game, [seat, S.loadout[0], gx, gy]);
+        if (t) return t;
+      }
+    return null;
+  }
+
   /** A match's worth of input for both seats, exercising the whole surface. */
   function buildLog(p) {
     const L = [];
@@ -288,6 +313,12 @@ const MPT = (function () {
     push(92, 1, 'abil', { i: 0 });
     push(150, 0, 'sell', { gx: t0[5][0], gy: t0[5][1] });
     push(152, 1, 'sell', { gx: t1[5][0], gy: t1[5][1] });
+    /* Retarget a tower that is neither the one upgraded nor the one sold, so
+       the only thing the two clients have to agree about here is the MODE.
+       WEAK and CLOSE because no tower defaults to either -- a mode a tower
+       already held would make the entry pass without carrying anything. */
+    push(70, 0, 'targ', { gx: t0[1][0], gy: t0[1][1], mode: 'weak' });
+    push(72, 1, 'targ', { gx: t1[1][0], gy: t1[1][1], mode: 'close' });
     return L;
   }
 
@@ -469,6 +500,79 @@ const MPT = (function () {
            'engine sees side ' + asEngine + ', the inspector sees side ' + asUI);
         closeMatch();
       });
+
+      /* THE OVERLAYS RUN LENS-SUSPENDED ON PURPOSE -- draw must keep true seat
+         order -- so a literal 0 inside one is the REAL seat 0, and nothing
+         above ever enters draw. Both checks spy on the SEAT the overlay asks
+         about, because that number is what the lie is made of; the build ghost
+         also measures the ring it actually paints. */
+      const seatSpy = function (seen) {
+        return function (k) {
+          const orig = Game[k];
+          Game[k] = function (s) { seen.push(k + '=' + s); return orig.apply(this, arguments); };
+          return function () { Game[k] = orig; };
+        };
+      };
+
+      T('net.lens the build ghost is drawn for the LOCAL seat', function () {
+        openMatch(cfg, 1);
+        const can = Net._orig.seat_canBuild;
+        let mine = null;
+        for (let gy = 0; gy < FIELD.rows && !mine; gy++)
+          for (let gx = 0; gx < FIELD.cols && !mine; gx++)
+            if (Net.suspend(can, Game, [1, gx, gy])) mine = [gx, gy];
+        /* Two different multipliers, so the radius names which seat answered. */
+        Net._realSides[0].mods.range = 1;
+        Net._realSides[1].mods.range = 2;
+        Net._realSides[1].gold = 99999;
+        const type = Net._realSides[1].loadout[0];
+        Game.selectedType = type;
+        Game.hover.gx = mine[0]; Game.hover.gy = mine[1]; Game.hover.active = true;
+        Game.state = 'playing';
+
+        const seen = [], spy = seatSpy(seen);
+        const undo = [spy('canBuild'), spy('canAffordBuild')];
+        const ctx = Game.ctx, realArc = ctx.arc;
+        let radius = -1;
+        ctx.arc = function (x, y, rr) { radius = rr; return realArc.apply(this, arguments); };
+        /* Through suspend, which is exactly how Game.draw reaches it. */
+        try { Net.suspend(Game.drawBuildOverlay, Game, [ctx]); }
+        finally { ctx.arc = realArc; for (const u of undo) u(); }
+
+        const want = TOWER_TYPES[type].base.range * TILE * 2;
+        const mineOnly = seen.length === 2 && seen.every(s => s.slice(-2) === '=1');
+        Game.selectedType = null; Game.hover.active = false;
+        closeMatch();
+        ok('net.lens the build ghost is drawn for the LOCAL seat',
+           mineOnly && Math.abs(radius - want) < 1e-9,
+           seen.join(' ') + ' | ring r=' + radius + ', the local seat would give ' + want);
+      });
+
+      T('net.lens the radial ring prices the LOCAL seat', function () {
+        openMatch(cfg, 1);
+        Game.state = 'playing';
+        const type = Net._realSides[1].loadout[0];
+        /* Hand-built: openRadial runs on the INPUT path, where the lens is
+           already on, so it cannot show what draw does with the same ring. */
+        Game.radial = { gx: 1, gy: 1, cx: TILE, cy: TILE, mx: TILE, my: TILE,
+                        hover: -1, born: performance.now(),
+                        items: [{ type: type, ang: 0, cost: 0, life: 0, afford: false, value: 0 }] };
+        const seen = [], spy = seatSpy(seen);
+        const undo = [spy('towerCost'), spy('towerLifeCost'), spy('canAffordBuild')];
+        try { Net.suspend(Game.drawRadial, Game, [Game.ctx]); }
+        finally { for (const u of undo) u(); }
+        Game.radial = null;
+        /* EVERY call, not a fixed count of calls: drawRadial re-prices an item
+           for its label as well as its ring slot, so the same function is
+           legitimately asked more than once per frame. The claim under test is
+           that no ask names seat 0 — a count assertion here failed the fix for
+           pricing correctly one extra time. */
+        const fns = ['towerCost', 'towerLifeCost', 'canAffordBuild'];
+        const mineOnly = seen.length >= 3 && seen.every(s => s.slice(-2) === '=1') &&
+                         fns.every(f => seen.some(s => s.indexOf(f) === 0));
+        closeMatch();
+        ok('net.lens the radial ring prices the LOCAL seat', mineOnly, seen.join(' '));
+      });
       return api;
     },
 
@@ -609,6 +713,374 @@ const MPT = (function () {
            ' halted while one waited=' + (halfway === 'choosing') +
            ' seat0 paid=' + paid0 + ' seat1 paid=' + paid1);
         closeMatch();
+      });
+      /* TARGETING. The mode is read inside Tower.acquire on every tick, so it
+         is simulation state, and it used to be written raw by the inspector
+         and by the Tab key -- one click and the duel voided. What is measured
+         is the whole route: held locally, addressed by tile, applied on
+         replay, and refused when the seat sending it does not own the tower. */
+      T('net.rules a targeting change crosses the wire', function () {
+        openMatch(cfg, 0);
+        const MODES = TARGET_MODES.map(m => m.id);
+        const mine = putTower(0), rival = putTower(1);
+        /* Both halves of every turn, or the board sits waiting on a peer that
+           does not exist. A half already filled is left alone, which is how an
+           injected packet survives the pump. Whole turns only: a packet may be
+           dropped in for the turn about to run, never for one that has run. */
+        const pump = turns => {
+          for (let i = 0; i < turns * NET_TURN_TICKS; i++) {
+            const box = (Net.inbox[Net.turn] = Net.inbox[Net.turn] || [null, null]);
+            if (!box[0]) box[0] = [];
+            if (!box[1]) box[1] = [];
+            Game.step(STEP);
+          }
+        };
+        const was = mine.targetMode;
+        Game.setTargetMode(mine, 'weak');
+        /* A lockstep command does not take effect where it is typed. Reading
+           'weak' on this line would mean the write had gone round the relay. */
+        const held = mine.targetMode === was;
+        const c = Net.queued.length === 1 && Net.queued[0];
+        const addressed = !!c && c.k === 't' && c.gx === mine.gx && c.gy === mine.gy &&
+                          MODES[c.mode] === 'weak';
+        pump(NET_INPUT_DELAY + 3);
+        const landed = mine.targetMode === 'weak';
+        /* the packet a real peer would send for a tower it owns */
+        Net.inbox[Net.turn] = [[], [{ k: 't', gx: rival.gx, gy: rival.gy,
+                                      mode: MODES.indexOf('close') }]];
+        pump(2);
+        const remote = rival.targetMode === 'close';
+        /* ...and one for a tower it does not own, refused on replay exactly as
+           a sell or a relocate of someone else's tower is. */
+        Net.inbox[Net.turn] = [[], [{ k: 't', gx: mine.gx, gy: mine.gy,
+                                      mode: MODES.indexOf('last') }]];
+        pump(2);
+        const refused = mine.targetMode === 'weak';
+        closeMatch();
+        ok('net.rules a targeting change crosses the wire',
+           held && addressed && landed && remote && refused,
+           'held locally=' + held + ' addressed by tile=' + addressed +
+           ' landed=' + landed + ' peer retargeted its own=' + remote +
+           ' peer refused seat 0s tower=' + refused);
+      });
+      /* The turn fingerprint is the tripwire for the NEXT field somebody
+         writes out of band, and it can only trip on what it reads. Every poke
+         below sets a field the old sum was blind to and asks whether the sum
+         moves; a false is a field two boards could disagree about for a whole
+         wave with the turn check reporting nothing. */
+      T('net.rules the fingerprint carries the choice, not just the count', function () {
+        openMatch(cfg, 0);
+        const t = putTower(0), S = Net._realSides[0];
+        const shifts = (set, undo) => {
+          const before = Net.fingerprint(); set();
+          const after = Net.fingerprint(); undo();
+          return before !== after;
+        };
+        const mode0 = t.targetMode, drift0 = Game.drift.speed;
+        const mode = shifts(() => { t.targetMode = 'close'; }, () => { t.targetMode = mode0; });
+        const branch = shifts(() => { t.branch = t.def.branches[0]; }, () => { t.branch = null; });
+        const roll = shifts(() => { t.rolls.push(LEVEL_ROLLS[0]); }, () => { t.rolls.pop(); });
+        const drift = shifts(() => { Game.drift.speed = drift0 + 0.055; },
+                             () => { Game.drift.speed = drift0; });
+        /* SAME LENGTH, different card -- the one case a count could never see,
+           and the only one worth measuring here. */
+        const mods0 = Game.enemyMods;
+        Game.enemyMods = [ENEMY_MODS[0]];
+        const escA = Net.fingerprint();
+        Game.enemyMods = [ENEMY_MODS[1]];
+        const esc = Net.fingerprint() !== escA;
+        Game.enemyMods = mods0;
+        S.taken.push(PLAYER_MODS[0]);
+        const drawnA = Net.fingerprint();
+        S.taken[S.taken.length - 1] = PLAYER_MODS[1];
+        const drawn = Net.fingerprint() !== drawnA;
+        S.taken.pop();
+        closeMatch();
+        ok('net.rules the fingerprint carries the choice, not just the count',
+           mode && branch && roll && drift && esc && drawn,
+           'targetMode=' + mode + ' branch=' + branch + ' level roll=' + roll +
+           ' wave drift=' + drift + ' escalation identity=' + esc +
+           ' drafted card identity=' + drawn);
+      });
+T('net.rules conceding a duel does not promise a garrison', function () {
+        /* A duel starts through Game.start({skirmish:true}), so the abandon
+           dialog fell into the garrison branch: it offered a defender who is
+           not on this board and said nothing about the human who takes the
+           win. The garrison line is still TRUE outside a duel, so the fix has
+           to be a fork -- both halves are read here. */
+        openMatch(cfg, 1);
+        UI.confirmAbandon();
+        const title = document.getElementById('cfm-title').textContent;
+        const duel = document.getElementById('cfm-body').textContent;
+        document.getElementById('confirm-ov').classList.add('hidden');
+        closeMatch();
+        Game._skirmish = true;
+        let solo = '';
+        if (Meta.campaign()) {
+          UI.confirmAbandon();
+          solo = document.getElementById('cfm-body').textContent;
+          document.getElementById('confirm-ov').classList.add('hidden');
+        }
+        ok('net.rules conceding a duel does not promise a garrison',
+           !/garrison/i.test(duel) && /rival/i.test(duel) && /win/i.test(duel) &&
+           (solo === '' || /garrison/i.test(solo)),
+           'duel: ' + title + ' / ' + duel +
+           (solo ? ' || solo: ' + solo : ' || solo copy unmeasured: no campaign on this profile'));
+      });
+      /* THE ONLY CHECK IN THIS FILE THAT DRIVES A FRAME RATHER THAN A TICK.
+         Every other check steps with a bare `Game.step(STEP)` in a for-loop,
+         which is a batch of exactly one and can therefore never see a halt
+         that lands mid-batch. That is precisely how the wave-5 draft came to
+         stop the two clients on different ticks: Game.loop read `state` once
+         before its while, so a client with steps left in the frame ran the
+         next tick BEFORE the mod applied while the other ran it after, and
+         applyOob seeded _hash(this.tick, ...) off two different numbers. */
+      T('net.lockstep a batched frame halts on the tick the draft opens', function () {
+        openMatch(cfg, 0);
+        /* Enough sealed turns that nothing here can stall for a reason other
+           than the one being measured. */
+        for (let t = 0; t < 4; t++) Net.inbox[t] = [[], []];
+        const openAt = Net.tick + 1;
+        const realStep = Net._orig.step;
+        const realDraw = Game.draw;
+        const raf = window.requestAnimationFrame;
+        let left = 0;
+        try {
+          /* The draft arrives the way onWaveSpawned delivers it: the rival's
+             inert brain hands its offer to Net from INSIDE the engine step,
+             which sets state to 'choosing' in the middle of the batch. */
+          Net._orig.step = function (dt) {
+            realStep.call(this, dt);
+            if (Net.tick === openAt && !Net.offers[1])
+              Net.pendDraft(1, Game.drawMods(Net._realSides[1]));
+          };
+          Game.draw = function () {};
+          window.requestAnimationFrame = function () { return 0; };
+          /* One rAF frame at 3x carrying a whole batch -- the frame shape that
+             made which step the draft landed on a coin flip per client. */
+          Game.speed = 3;
+          Game.paused = false;
+          Game.lastTs = 0;
+          Game.acc = 0;
+          Game.loop(100);
+          left = Game.acc;
+        } finally {
+          Net._orig.step = realStep;
+          Game.draw = realDraw;
+          window.requestAnimationFrame = raf;
+          Game.speed = 1;
+        }
+        const st = Game.state;
+        const stoppedOn = Net.tick;
+        Net.offers = [null, null];
+        Net.syncDraft();
+        ok('net.lockstep a batched frame halts on the tick the draft opens',
+           st === 'choosing' && stoppedOn === openAt + 1,
+           'draft opened on tick ' + openAt + ', the frame stopped at tick ' + stoppedOn +
+           ' (expected ' + (openAt + 1) + '), state=' + st +
+           ', time left in the accumulator=' + left.toFixed(4));
+        closeMatch();
+      });
+      T('net.stall a heartbeat carries the turn, and a frozen peer is called', function () {
+        openMatch(cfg, 0);
+        const sent = [];
+        const post = Net.post;
+        Net.post = function (m) { sent.push(m); };
+        let carries = false, refreshed = false, spared = false, voided = false;
+        try {
+          Net.turn = 7;
+          Net.lastBeat = 0;
+          Net.tickWall();
+          const beat = sent.filter(m => m.t === 'beat').pop();
+          carries = !!beat && beat.turn === 7;
+
+          /* Stalled, and stalled for longer than the ceiling. */
+          Net.stalled = true;
+          Net.stallSince = Date.now() - NET_STALL_VOID_MS - 1000;
+          Net.lastHeard = Date.now();
+          Net.peerTurn = -1;
+
+          /* A peer that is STILL PLAYING keeps raising the turn it beats, and
+             that has to clear the clock rather than start it -- otherwise this
+             ceiling would void a duel every time our own window is throttled. */
+          Net.receive({ v: NET_PROTOCOL, from: 'ghost', to: Net.id, t: 'beat', turn: 9 });
+          refreshed = Date.now() - Net.lastProgress < 500;
+          Net.tickWall();
+          spared = Net.live === true;
+
+          /* The frozen tab: it answers, it just never gets anywhere. */
+          Net.lastProgress = Date.now() - NET_STALL_VOID_MS - 1;
+          Net.receive({ v: NET_PROTOCOL, from: 'ghost', to: Net.id, t: 'beat', turn: 9 });
+          Net.tickWall();
+          voided = Net.live === false && Net.phase === 'lost';
+        } finally { Net.post = post; }
+        const el = document.getElementById('net-fatal');
+        const named = !!el && /background/i.test(el.textContent) && /void/i.test(el.textContent);
+        if (el) el.classList.add('hidden');
+        ok('net.stall a heartbeat carries the turn, and a frozen peer is called',
+           carries && refreshed && spared && voided && named,
+           'beat carries turn=' + carries + ' progress refreshed=' + refreshed +
+           ' a playing peer is spared=' + spared + ' a frozen one is voided=' + voided +
+           ' the notice names the tab=' + named);
+        closeMatch();
+      });
+      /* THE WAVE-5 DEADLOCK, and why no test saw it. Every CONTESTED world is
+         dealt a three-way map by the galaxy generator, a tri map deals a third
+         Side, and the only `oob` producer stamps the seat THIS client holds --
+         so seat 2's draft parked in Net.offers on wave 5 and syncDraft, which
+         halts the board on any parked offer and has no timeout behind it,
+         never handed it back. Ten of the thirty-five clickable worlds hung a
+         duel dead, and every check above fights MAPS[0], which is not one of
+         them. Swept over the whole universe map rather than one hand-picked
+         world: the property is about every world a player can click. */
+      T('net.rules no clickable world can open a duel it cannot finish', function () {
+        /* The same galaxy renderMultiverse draws -- seed and all. */
+        const gx = generateGalaxy(777001, Meta.faction() || 'human');
+        let clicked = 0, refused = 0;
+        const wrong = [];
+        for (const sys of gx.systems) for (const w of sys.worlds) {
+          clicked++;
+          const seats = Net.seatsOnMap(w.map);
+          const why = Net.duelRefusal(w);
+          if (why) refused++;
+          /* BOTH directions, or refusing everything would pass: a two-seat
+             board must be accepted, and anything else must be refused. */
+          if ((seats === 2) === !!why) wrong.push(w.id + ' ' + w.map + ' seats=' + seats);
+        }
+        ok('net.rules no clickable world can open a duel it cannot finish',
+           clicked > 0 && refused > 0 && wrong.length === 0,
+           clicked + ' worlds, ' + refused + ' refused for seating, mismatched: ' +
+           (wrong.slice(0, 3).join(' | ') || 'none'));
+      });
+      T('net.rules a three-seat board is refused at the table and at the start', function () {
+        const tri = MAPS.find(m => m.tri);
+        const world = { id: 'tri-test', name: 'TEST CONFLUENCE', map: tri.id,
+                        kind: 'fortress', owner: 'xeno', arena: null, contested: true };
+        const said = Net.duelRefusal(world);
+        const phase = Net.phase, table = Net.table;
+        const hosted = Net.host(world);
+        const untouched = Net.phase === phase && Net.table === table;
+
+        /* And the contract that arrives anyway. A PEER authors this message,
+           so refusing it in host() is not the same as refusing it. */
+        const bad = contract(SEED);
+        bad.world = world; bad.map = tri.id;
+        openMatch(bad, 0);
+        const live = Net.live;
+        const el = document.getElementById('net-fatal');
+        const told = !!el && !el.classList.contains('hidden') && /duel board/i.test(el.textContent);
+        if (el) el.classList.add('hidden');
+        closeMatch();
+
+        /* The positive half, and the deadlock's absence stated as an equality:
+           a legal duel gives EVERY seat on the board a slot this relay has a
+           producer for. An unanswerable offer has nowhere left to park. */
+        openMatch(contract(SEED), 0);
+        const covered = Net.offers.length === Net.cfg.seats.length &&
+                        Net.offers.length === Game.sides.length;
+        const slots = Net.offers.length + '/' + Game.sides.length;
+        closeMatch();
+
+        ok('net.rules a three-seat board is refused at the table and at the start',
+           !!said && hosted === false && untouched && live === false && told && covered,
+           'refused=' + !!said + ' host=' + hosted + ' lobby untouched=' + untouched +
+           ' went live=' + live + ' player told=' + told +
+           ' offer slots per seat=' + slots);
+      });
+            return api;
+    },
+
+    /**
+     * THE ONE-EXIT RULE, measured. Every road out of a duel has to pass through
+     * the same teardown. These are the two roads that did not, and neither of
+     * them needs a second window, a backgrounded tab or a lost packet: the first
+     * needs only a profile with no campaign, which is what a fresh profile and
+     * every finished campaign leave behind.
+     */
+    exit() {
+      T('net.exit abandoning with no campaign ends the duel, not just the screen', function () {
+        const cfg = contract(SEED);
+        openMatch(cfg, 0);
+        const sent = [];
+        const post = Net.post, camp = Meta.campaign, end = UI.showEnd, menu = UI.toMenu;
+        let wentToTitle = false;
+        /* Pinned, so the save file this browser happens to hold cannot decide
+           whether the check runs. blankProfile ships `campaign: null` and
+           campaignEnd puts it back there, and the multiplayer entry path never
+           creates one at all -- so null is the ordinary state here, not a
+           contrivance. */
+        Meta.campaign = () => null;
+        Net.post = function (m) { sent.push(m.t); };
+        UI.showEnd = function () {};
+        UI.toMenu = function () { wentToTitle = true; };
+        try {
+          /* The real handler behind #btn-quit, answered at its real modal. */
+          UI.confirmAbandon();
+          const okB = document.getElementById('cfm-ok');
+          if (okB) okB.click();
+        } finally {
+          Net.post = post; Meta.campaign = camp; UI.showEnd = end; UI.toMenu = menu;
+          const cf = document.getElementById('confirm-ov');
+          if (cf) cf.classList.add('hidden');
+        }
+        const torn = Net.live === false && Net.lens.on === false;
+        const conceded = sent.indexOf('quit') >= 0;
+        /* THE CONSEQUENCE, not the flag. With `live` and the lens both still on,
+           `this.sides = [...]` inside Game.start goes through the lens SETTER
+           and the pushes after it through the GETTER, rebuildView discards what
+           was pushed, and the faction assignment reads undefined -- a TypeError
+           with no try/catch above it and a dead page until reload. The opts are
+           the ones beginMatch itself hands Game.start, so a throw here is the
+           stranded lens and cannot be a malformed call. */
+        let restart = '';
+        try {
+          Game.start({ skirmish: true, map: cfg.map, difficulty: cfg.difficulty,
+                       commander: cfg.seats[0].commander, faction: cfg.seats[0].faction,
+                       loadout: cfg.seats[0].loadout.slice(),
+                       musterLoadout: cfg.seats[0].muster.slice(),
+                       rival: cfg.seats[1].commander, rivalFaction: cfg.seats[1].faction,
+                       worldKind: cfg.world.kind, arena: cfg.world.arena, boons: [] });
+        } catch (e) { restart = e.message; }
+        closeMatch();
+        ok('net.exit abandoning with no campaign ends the duel, not just the screen',
+           torn && conceded && !wentToTitle && restart === '',
+           'relay torn down=' + torn + ' peer told=' + conceded +
+           ' straight to the title=' + wentToTitle +
+           ' | the next Game.start ' + (restart ? 'THREW ' + restart : 'ran clean'));
+      });
+
+      T('net.exit a voided duel takes the draft modal with it', function () {
+        const cfg = contract(SEED);
+        openMatch(cfg, 0);
+        Net.enterSim(3);
+        Net.pendDraft(0, Game.drawMods(Net._realSides[0]));
+        Net.exitSim();
+        const ov = document.getElementById('overlay-choice');
+        const wasUp = !ov.classList.contains('hidden') && Game.state === 'choosing';
+        /* The peer goes quiet with the modal open, through the same wall-clock
+           timer a real one goes quiet through. */
+        Net.lastHeard = Date.now() - NET_PEER_TIMEOUT_MS - 100;
+        Net.tickWall();
+        const cleared = ov.classList.contains('hidden') &&
+                        !Net.offers.filter(Boolean).length && Game.pendingChoice === null;
+        /* THE ZOMBIE. A hidden card is still a bound card: click one and the
+           engine's own takeMod runs, sets the state back to 'playing', and
+           Game.loop steps a dead board behind the void notice -- then pays XP,
+           tower mastery and a recorded run when that board finally resolves. */
+        const card = ov.querySelector('[data-choice]');
+        if (card) card.click();
+        const after = Game.state;
+        const fatal = document.getElementById('net-fatal');
+        /* `required` is what keeps Esc off the only explanation on screen. */
+        const explained = !!fatal && !fatal.classList.contains('hidden') &&
+                          fatal.classList.contains('required');
+        if (fatal) fatal.classList.add('hidden');
+        closeMatch();
+        ok('net.exit a voided duel takes the draft modal with it',
+           wasUp && cleared && !card && after !== 'playing' && explained,
+           'draft was up=' + wasUp + ' offer cleared=' + cleared +
+           ' stranded card=' + (card ? 'STILL BOUND' : 'none') +
+           ' state after the click=' + after + ' notice up and Esc-proof=' + explained);
       });
       return api;
     },
@@ -845,6 +1317,7 @@ const MPT = (function () {
       api.rng();
       api.lens();
       api.rules();
+      api.exit();
       api.pvp();
       api.isolation();
       api.twoClients(2400);

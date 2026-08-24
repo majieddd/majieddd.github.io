@@ -1342,6 +1342,35 @@ const Game = {
     if (tower.side === 0) UI.syncAll();
   },
 
+  /* THE ONE WRITER of a tower's targeting. Tower.acquire switches on
+     targetMode for every tower on every tick (entities.js), which makes it
+     simulation state -- and the inspector and the Tab key both used to assign
+     it raw. The mode changed on one screen only, that client's guns started
+     picking a different enemy, and the duel died on the next agreement check
+     with THE BOARDS HAVE PARTED about a hundred milliseconds later. A single
+     entry point is what gives the relay something to wrap (js/net.js).
+
+     Ownership is deliberately NOT tested here. The inspector already gates on
+     `mine` and the relay gates a replayed command on `_side === c.seat`; a
+     test in the writer would refuse the RIVAL's own command at the moment
+     this client replays it, which is the one place it must not. */
+  setTargetMode(tower, mode) {
+    if (!tower) return false;
+    /* A mode arriving off the wire is not trusted to be one of ours. acquire's
+       switch falls through to FIRST on anything else, so a garbled string
+       would not part the boards -- it would quietly mislabel the panel and
+       make the Tab cycle skip a step. Refuse it where it can still be. */
+    if (!TARGET_MODES.some(m => m.id === mode)) return false;
+    tower.targetMode = mode;
+    /* Nothing is spent and no stat is rebuilt: the mode is read at aim time,
+       never baked into recompute. The sound and the panel are the whole of it,
+       and the sound lives here so the relay's own press-click is not doubled
+       by a second one at the call site. */
+    if (tower.side === this.viewSide) Sound.play('click');
+    if (tower.side === 0) UI.syncAll();
+    return true;
+  },
+
   recomputeAuras() {
     for (const S of this.sides) {
       for (const t of S.towers) { t.aura.dmg = 0; t.aura.rate = 0; t.aura.range = 0; }
@@ -2465,7 +2494,22 @@ const Game = {
     if (this.state === 'playing' && !this.paused) {
       this.acc += dtReal * this.speed;
       let steps = 0;
-      while (this.acc >= STEP && steps < MAX_STEPS) { this.step(STEP); this.acc -= STEP; steps++; }
+      /* THE GATE IS RE-READ EVERY PASS, and that is the whole point. A step can
+         halt the board from the inside -- onWaveSpawned hands the rival its
+         draft, and in a duel that brain is Net.pendDraft, which sets state to
+         'choosing' from inside step() -- and reading `state` once before the
+         loop let the rest of the frame's batch run straight past the halt. At
+         speed 2 or 3 almost every frame carries two or three steps, and the two
+         windows' frame phases are independent, so which step of the batch the
+         wave-5 draft landed on was a coin flip per client: one board ran a tick
+         with the drafted mod live that the other ran without it, and applyOob
+         then seeded its tie-breaks off two different tick numbers. The same
+         read stops a batch simulating past the tick endMatch resolved on. */
+      while (this.acc >= STEP && steps < MAX_STEPS &&
+             this.state === 'playing' && !this.paused) { this.step(STEP); this.acc -= STEP; steps++; }
+      /* A batch cut short by a halt leaves time in the accumulator. The branch
+         below spends it on the next frame, so answering a draft never hands
+         the board back fast-forwarded. */
       if (steps >= MAX_STEPS) this.acc = 0;
     } else {
       this.acc = 0;
@@ -3030,12 +3074,20 @@ const Game = {
     const def = TOWER_TYPES[this.selectedType];
     const { gx, gy } = this.hover;
     const cx = (gx + 0.5) * TILE, cy = (gy + 0.5) * TILE;
-    const ok = this.canBuild(0, gx, gy) && this.canAffordBuild(0, this.selectedType);
+    /* THE SEAT IN FRONT OF THIS SCREEN, not seat 0. draw runs with Net's lens
+       suspended so the canvas keeps true seat order, which means a literal 0
+       here reached the engine as the REAL seat 0: the guest's ghost went green
+       over the HOST's half of the board and red over their own, priced itself
+       out of the host's purse, and drew the host's range mod. viewSide is the
+       field that already means "me" on both clients -- net.js sets it to the
+       local seat -- and it is a real index, so it needs no lens to be right. */
+    const me = this.viewSide;
+    const ok = this.canBuild(me, gx, gy) && this.canAffordBuild(me, this.selectedType);
     ctx.save();
     ctx.fillStyle = ok ? 'rgba(74,222,128,0.09)' : 'rgba(239,68,68,0.11)';
     ctx.strokeStyle = ok ? 'rgba(74,222,128,0.9)' : 'rgba(239,68,68,0.9)';
     ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(cx, cy, def.base.range * TILE * this.sides[0].mods.range, 0, TAU); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, def.base.range * TILE * this.sides[me].mods.range, 0, TAU); ctx.fill(); ctx.stroke();
     ctx.setLineDash([5, 5]); ctx.strokeRect(gx * TILE + 2, gy * TILE + 2, TILE - 4, TILE - 4); ctx.setLineDash([]);
     ctx.globalAlpha = 0.6; ctx.fillStyle = ok ? def.color : '#ef4444';
     ctx.beginPath(); ctx.roundRect(cx - 13, cy - 13, 26, 26, 5); ctx.fill();
@@ -3049,8 +3101,11 @@ const Game = {
     const def = this.aimedDef();
     if (!def || !this.hover.active || this.state !== 'playing') return;
     const { gx, gy } = this.hover;
-    const ok = this.canAim(0, gx, gy, def);
-    const anchor = (ok && def.lane) ? this.laneAnchor(0, gx, gy) : null;
+    /* Suspended draw again: a literal 0 is the real seat 0, so the guest was
+       told the HOST's lanes would take the wall. See drawBuildOverlay. */
+    const me = this.viewSide;
+    const ok = this.canAim(me, gx, gy, def);
+    const anchor = (ok && def.lane) ? this.laneAnchor(me, gx, gy) : null;
     const cx = anchor ? anchor.x : (gx + 0.5) * TILE;
     const cy = anchor ? anchor.y : (gy + 0.5) * TILE;
     ctx.save();
@@ -3158,7 +3213,11 @@ const Game = {
       const f = this.fxRing; f.t += 1 / 60;
       const k = f.t / f.dur;
       const e = 1 - Math.pow(1 - k, 3);
-      const b = FIELD.bases[0];
+      /* useAbility only raises fxRing behind `side.index === game.viewSide`
+         (abilities.js), so the ring belongs to the local commander and has to
+         radiate from the local commander's base. Seat 0's base threw the
+         guest's every unaimed ability out of the opponent's ground. */
+      const b = FIELD.bases[this.viewSide];
       /* An aimed ability carries its own origin; everything else still
          radiates from the base. */
       const cx0 = f.x !== undefined ? f.x : (b[0] + 0.5) * TILE;
@@ -3459,16 +3518,21 @@ const Game = {
     if (!r) return;
     /* A finished battle cannot take a build, so the ring goes with it. */
     if (this.state !== 'playing') { this.radial = null; return; }
-    const S = this.sides[0];
 
     /* Every price on the ring is asked of Game.towerCost on the frame it is
        drawn. A number cached at open would be a number the build no longer
        charges the moment anything on the board changed — which is the one
        desync this codebase keeps re-shipping. */
+    /* Asked FOR THE VIEWER. openRadial runs on the input path with the lens
+       on, where 0 already means the local seat; drawRadial runs inside the
+       suspended draw, where 0 means seat 0 -- so the ring a guest opened on
+       their own ground quoted the host's prices and greyed against the host's
+       purse, every frame, on the most common action in the game. */
+    const me = this.viewSide;
     for (const it of r.items) {
-      it.cost = this.towerCost(0, it.type);
-      it.life = this.towerLifeCost(0, it.type);
-      it.afford = this.canAffordBuild(0, it.type);
+      it.cost = this.towerCost(me, it.type);
+      it.life = this.towerLifeCost(me, it.type);
+      it.afford = this.canAffordBuild(me, it.type);
     }
 
     const grow = clamp((performance.now() - r.born) / (RADIAL_GROW_SECS * 1000), 0, 1);

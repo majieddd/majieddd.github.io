@@ -51,7 +51,11 @@
 /* One channel for the whole game, versioned: a protocol change must refuse to
    half-link an old window to a new one rather than desync silently. */
 const NET_CHANNEL = 'cosmic-conquest-duel/1';
-const NET_PROTOCOL = 1;
+/* 2: targeting became a command kind and the turn fingerprint learnt four
+   more fields. An unpatched window would drop every `t` packet it received
+   and hash a different set of state, so the two boards would part on turn
+   zero for a reason nobody could read off the overlay. Refuse the link. */
+const NET_PROTOCOL = 2;
 /* A turn is six ticks — 100ms at 1x. Smaller windows stall constantly the
    moment one browser deprioritises anything; larger ones are felt as lag. */
 const NET_TURN_TICKS = 6;
@@ -68,6 +72,13 @@ const NET_PEER_TIMEOUT_MS = 5000;
 /* How long a stall may last before the waiting player is told why the board
    stopped. Under this it is invisible, and saying anything would be noise. */
 const NET_STALL_NOTICE_MS = 450;
+/* And how long before it is CALLED. A notice with no ceiling is not a verdict.
+   `beat` refreshes lastHeard, so a window that is open but not simulating --
+   a background tab, whose setInterval keeps heartbeating while its rAF is
+   parked -- answered the peer timeout forever while producing no turns, and
+   the other commander sat in front of a frozen board with no end to it. This
+   is measured against the peer's own turn counter, never against silence. */
+const NET_STALL_VOID_MS = 20000;
 /* Fixed-point scale for the agreement fingerprint. Positions compare to
    1/1024 px: fine enough to catch a real divergence within a few ticks,
    coarse enough that the fingerprint is never itself the false alarm. */
@@ -100,6 +111,11 @@ const Net = {
   queued: [], inbox: null, sums: null,
   stallSince: 0, stalled: false, desync: null,
   lastHeard: 0, lastBeat: 0, lastAdvert: 0,
+  /* Silence and STASIS are two different failures. lastHeard answers "is the
+     window still there", which a heartbeat can answer while the simulation
+     behind it is parked; peerTurn and lastProgress answer "is it still
+     playing", which only a RISING turn number can. */
+  peerTurn: -1, lastProgress: 0,
   offers: [null, null],    // a parked draft offer per seat
 
   /* ── 1. transport ──────────────────────────────────────────────────── */
@@ -146,10 +162,28 @@ const Net = {
     }
     if ((this.phase === 'linked' || this.phase === 'playing') && now - this.lastBeat > NET_HEARTBEAT_MS) {
       this.lastBeat = now;
-      this.post({ t: 'beat', to: this.peer && this.peer.id });
+      /* The turn rides along. A bare heartbeat proves a window exists; it does
+         not prove the simulation inside it is moving, and that distinction is
+         the whole of the frozen-tab failure. */
+      this.post({ t: 'beat', to: this.peer && this.peer.id, turn: this.turn });
     }
     if ((this.phase === 'linked' || this.phase === 'playing') &&
         now - this.lastHeard > NET_PEER_TIMEOUT_MS) this.dropPeer('timeout');
+    /* The stall's ceiling, measured from the LATER of "when WE began waiting"
+       and "the peer's last real progress" — never from lastProgress alone. A
+       draft halts both boards without sealing anything, so lastProgress goes
+       arbitrarily stale during a long deliberation and a lastProgress-only
+       clock would void a duel against a peer that never stopped on the first
+       stalled tick after it. And never from stallSince alone either: a peer
+       that advanced once mid-wait and then froze would satisfy "moved since
+       the wait began" forever and never be called. The max starts the clock at
+       whichever sign of life was most recent; a peer genuinely still playing
+       keeps raising the turn it beats and keeps resetting it — including when
+       THIS window is the backgrounded one, where a stalled-alone test would
+       blame the peer for our own throttle. */
+    if (this.live && this.stalled &&
+        now - Math.max(this.stallSince, this.lastProgress) > NET_STALL_VOID_MS)
+      this.dropPeer('frozen');
     /* Tables go stale the moment the window advertising one closes. */
     const before = this.tables.length;
     this.tables = this.tables.filter(t => now - t.seen < NET_ADVERT_MS * 4);
@@ -209,6 +243,9 @@ const Net = {
       case 'pkt': {                                   // a sealed turn of input
         if (!this.inbox) break;
         (this.inbox[m.turn] = this.inbox[m.turn] || [null, null])[m.seat] = m.cmds || [];
+        /* A sealed turn IS progress, and the strongest evidence of it -- a
+           client that seals turns is a client that is stepping. */
+        this.notePeerTurn(m.turn);
         if (m.sum !== undefined && m.sum !== null) {
           (this.sums[m.sumTurn] = this.sums[m.sumTurn] || [null, null])[m.seat] = m.sum;
           this.checkSum(m.sumTurn);
@@ -254,7 +291,10 @@ const Net = {
     if (!this.open()) return false;
     this.name = String(name || this.profileName()).toUpperCase().slice(0, 14);
     this.tables = [];
-    if (this.phase === 'lost') this.phase = 'idle';
+    /* Any phase that is not a LOBBY phase is a leftover: the lobby is entered
+       from the star map, with no table open and no duel running. Clearing only
+       'lost' let a finished duel's link walk into the next lobby with it. */
+    if (this.phase !== 'hosting' && this.phase !== 'joining') { this.phase = 'idle'; this.peer = null; }
     this.post({ t: 'hello' });
     return true;
   },
@@ -264,7 +304,45 @@ const Net = {
     return (Meta._root && Meta._root.active) || 'COMMANDER';
   },
 
+  /* THE SEAT LAW. A duel contract carries exactly one profile, one input
+     stream, one offers slot and one `oob` producer PER SEAT -- and the only
+     producer there is stamps `seat: N.seat`, which is only ever a seat THIS
+     client holds. A board that deals more seats than the contract has
+     profiles therefore hands the extra seat to nobody: its first draft parks
+     in offers[] on wave 5 (draftEvery 5, commanders.js), syncDraft halts the
+     board on any parked offer, and there is no timeout behind it. That is a
+     permanent freeze, so the count is checked where a table is opened rather
+     than discovered where the board is dealt.
+
+     Mirrors Game.start's own `FIELD.seats || (triMode ? 3 : 2)` off the map
+     DEFINITION, which is the same table buildField is built from. */
+  seatsOnMap(mapId) {
+    const m = MAPS.find(x => x.id === mapId);
+    if (!m) return 0;                       // an unknown board is not a duel board
+    return m.seats || (m.tri ? 3 : 2);
+  },
+
+  /**
+   * Why this world cannot host a duel, in the words a player is owed, or null
+   * when it can. Every CONTESTED world is dealt a three-way map by the galaxy
+   * generator, which is ten of the thirty-five clickable worlds -- so this
+   * refusal is common enough that it has to read like a rule, not an error.
+   */
+  duelRefusal(world) {
+    if (!world) return 'There is no world here to fight a duel over.';
+    const n = this.seatsOnMap(world.map);
+    if (n === 2) return null;
+    if (!n) return 'This world is fought on a board this build does not carry.';
+    return 'This world is already a ' + n + '-way war. A duel seats two commanders, ' +
+           'and the third chair here would sit empty -- nobody to answer its command ' +
+           'draft, and a board that never starts again once it stops.';
+  },
+
   host(world) {
+    /* Refused BEFORE the channel opens, so a board nobody can finish is never
+       advertised into the other window in the first place. */
+    const why = this.duelRefusal(world);
+    if (why) { this.status(why); return false; }
     if (!this.open()) return false;
     this.table = { id: world.id, name: world.name, map: world.map, kind: world.kind,
                    owner: world.owner, arena: world.arena || null, contested: !!world.contested };
@@ -278,6 +356,11 @@ const Net = {
     if (!this.open()) return false;
     const row = this.tables.find(t => t.id === tableId);
     if (!row) return false;
+    /* A table is a message, and a message can come from a window running any
+       build. The seat law is the guest's to enforce too, or a host from before
+       this change could still seat this client at the board that freezes. */
+    const why = this.duelRefusal(row.world);
+    if (why) { this.status(why); return false; }
     this.phase = 'joining';
     this.table = row.world;
     this.post({ t: 'join', to: tableId, name: this.name, profile: this.localProfile() });
@@ -596,6 +679,19 @@ const Net = {
     cmd('relocate', (t, gx, gy) => (t ? { k: 'r', gx: t.gx, gy: t.gy, tx: gx, ty: gy } : null),
         c => { const t = Game.towerAt(c.gx, c.gy);
                if (t && t._side === c.seat) O.cmd_relocate.call(Game, t, c.tx, c.ty); });
+    /* TARGETING IS SIMULATION STATE, not a display preference. Tower.acquire
+       switches on it every tick, so a mode set on one screen and nowhere else
+       aims that client's guns at a different enemy and the two boards part
+       inside a second. Addressed by tile like the three above it, and carried
+       as an INDEX into TARGET_MODES so no string off the wire ever reaches
+       acquire's switch -- the replay looks the id back up here or drops the
+       command. */
+    cmd('setTargetMode', (t, mode) => {
+          const i = TARGET_MODES.map(m => m.id).indexOf(mode);
+          return (t && i >= 0) ? { k: 't', gx: t.gx, gy: t.gy, mode: i } : null;
+        },
+        c => { const t = Game.towerAt(c.gx, c.gy), m = TARGET_MODES[c.mode];
+               if (t && m && t._side === c.seat) O.cmd_setTargetMode.call(Game, t, m.id); });
 
     /* Abilities enter through one global function for both the aimed and the
        unaimed kind, so that is the only place they have to be caught. */
@@ -723,6 +819,19 @@ const Net = {
 
   stepLockstep(dt) {
     if (this.desync) return;
+    /* A HALTED BOARD DOES NOT TICK, whoever is asking. Game.loop re-reads the
+       state on every pass of its batch now, but it must not be the only thing
+       that knows: a draft opened from inside step() has to stop the tick
+       counter on the exact tick it opened on, or applyOob seeds
+       _hash(this.tick, ...) from two different numbers and the two boards
+       break the same card's ties differently. The halt is a fact about the
+       simulation; the frame that noticed it is not. */
+    if (Game.state !== 'playing') {
+      /* The halt outranks the wait: a WAITING notice left standing behind the
+         draft modal would blame the peer for a pause this client asked for. */
+      if (this.stalled) { this.stalled = false; this.showStall(false); }
+      return;
+    }
     if (this.tickInTurn === 0 && !this.turnReady(this.turn)) {
       if (!this.stalled) { this.stalled = true; this.stallSince = Date.now(); }
       if (Date.now() - this.stallSince > NET_STALL_NOTICE_MS) this.showStall(true);
@@ -755,6 +864,17 @@ const Net = {
     return !!(p && p[0] && p[1]);
   },
 
+  /** The peer's turn counter, and the moment it last ROSE. A number that only
+      repeats is a window that is open and not playing, which is exactly the
+      case the stall ceiling exists to end. Silently ignores a missing turn so
+      a peer whose beats predate this field is judged on its packets alone --
+      and a peer sending neither is not stepping, which is the right verdict. */
+  notePeerTurn(t) {
+    if (typeof t !== 'number' || t <= this.peerTurn) return;
+    this.peerTurn = t;
+    this.lastProgress = Date.now();
+  },
+
   /** Ship this client's commands for a future turn, and the agreement
       fingerprint for the turn just finished. */
   seal(forTurn) {
@@ -782,7 +902,8 @@ const Net = {
 
   execute(c, fromSeat) {
     const K = { b: 'build', m: 'muster', l: 'buyBaseLevel', e: 'buyEnrage',
-                c: 'clearTerrain', u: 'upgrade', s: 'sell', r: 'relocate', a: 'ability' };
+                c: 'clearTerrain', u: 'upgrade', s: 'sell', r: 'relocate', a: 'ability',
+                t: 'setTargetMode' };
     /* A packet names its own seat; a command inside it may not claim another. */
     c.seat = fromSeat;
     const fn = this._run[K[c.k]];
@@ -884,13 +1005,40 @@ const Net = {
     const mix = v => { h = Math.imul(h ^ (v | 0), 0x01000193) >>> 0; };
     mix(Game.wave); mix(this.tick); mix(q(Game.prepTimer)); mix(Game.waveRunning ? 1 : 0);
     mix(Game.spawnQueue.length); mix(Game.projectiles.length); mix(Game.enemyMods.length);
+    const modeIds = TARGET_MODES.map(m => m.id);
+    /* IDENTITY, not merely count, for everything the seeded stream CHOSE. An
+       escalation is drawn at random out of ENEMY_MODS and a drift is one
+       statistic picked out of three at every startWave: two boards can hold
+       the same NUMBER of escalations and not the same escalations, and the
+       same count of drift and not the same creep. Neither shows anywhere at
+       all until the next wave spawns under it, so a length-only sum names a
+       turn nowhere near the turn that actually went wrong. */
+    for (const m of Game.enemyMods) mix(ENEMY_MODS.indexOf(m));
+    mix(q(Game.drift.hp)); mix(q(Game.drift.speed)); mix(q(Game.drift.armor));
     for (const S of this._realSides) {
       mix(S.gold); mix(S.lives); mix(S.enrage || 0); mix(q(S.musterIncome));
       mix(S.towers.length); mix(S.cleared.size); mix(S.taken.length);
+      /* Same rule as the escalations above: the draft SPLICES cards out of
+         PLAYER_MODS at random, so which cards a commander holds is a decision
+         of the stream and the count of them proves nothing about it. */
+      for (const m of S.taken) mix(PLAYER_MODS.indexOf(m));
       mix(S.baseLevel || 1); mix(S.stats.sent); mix(S.stats.kills); mix(S.stats.leaked);
       for (const t of S.towers) {
         mix(t.gx); mix(t.gy); mix(t.level); mix(t.asc || 0);
         mix(t.invested || 0); mix(t.kills || 0); mix(q(t.damageDealt));
+        /* A branch and every ascension after it leave `level` sitting at 4
+           while changing what the gun does, so level cannot tell two
+           differently specialised towers apart. Rolls are the other die the
+           engine throws at a tower, and `level` does not count them either --
+           applyBaseLevelTo raises a tower to level 3 and adds no rolls at all,
+           so rolls.length is not derivable from anything else here. */
+        mix(t.def.branches ? t.def.branches.indexOf(t.branch) : -1);
+        for (const r of t.rolls) mix(LEVEL_ROLLS.indexOf(r));
+        /* Targeting is carried because a writer outside the relay shipped for
+           this field once already. It is a lockstep command now; this is what
+           names the NEXT out-of-band writer at the turn boundary it happened
+           on, instead of by the damage it eventually does. */
+        mix(modeIds.indexOf(t.targetMode));
       }
     }
     for (const e of Game.enemies) {
@@ -904,7 +1052,11 @@ const Net = {
     if (!s || s[0] === null || s[1] === null || s[0] === undefined || s[1] === undefined) return;
     if (s[0] !== s[1] && !this.desync) {
       this.desync = { turn: t, mine: s[this.seat], theirs: s[1 - this.seat] };
-      this.showFatal('THE BOARDS HAVE PARTED',
+      /* Through voidMatch, not showFatal. Raising the overlay was the whole of
+         what a parting used to do: `live` and the lens stayed on behind it, the
+         draft modal stayed up and still clickable, and the heartbeat kept the
+         peer's own timeout from ever firing — until somebody clicked RETURN. */
+      this.voidMatch('THE BOARDS HAVE PARTED',
         'The two simulations stopped agreeing at turn ' + t + '. The duel is halted rather ' +
         'than played out on two different boards. Nothing has been recorded.');
     }
@@ -914,14 +1066,39 @@ const Net = {
   /* ── 9. match lifecycle ────────────────────────────────────────────── */
 
   beginMatch(seat) {
+    /* THE LAST LINE OF THE SEAT LAW, and the only one that runs on both
+       clients whichever of them opened the table. host() and join() already
+       refuse, but neither of them AUTHORS the contract -- a peer does, and
+       sends it. Refusing here costs a lobby round trip; not refusing costs a
+       duel that halts on wave 5 with no way out of it. */
+    const cfg0 = this.cfg;
+    const dealt = cfg0 ? this.seatsOnMap(cfg0.map) : 0;
+    if (!cfg0 || !cfg0.seats || dealt !== cfg0.seats.length) {
+      this.live = false;
+      this.phase = 'idle';
+      this.post({ t: 'bye', to: this.peer && this.peer.id });
+      this.peer = null; this.table = null;
+      this.showFatal('THAT WORLD IS NOT A DUEL BOARD',
+        'It is fought on a board for ' + (dealt || 'a number of') + ' commanders, and this ' +
+        'table seats ' + ((cfg0 && cfg0.seats) ? cfg0.seats.length : 0) + '. It has been closed ' +
+        'rather than opened onto a battle an empty chair would stall forever. ' +
+        'Nothing has been recorded.');
+      return false;
+    }
     this.hook();
     this.seat = seat;
     this.tick = 0; this.turn = 0; this.tickInTurn = 0;
     this.queued = []; this.inbox = {}; this.sums = {};
     this.desync = null; this.stalled = false;
-    this.offers = [null, null];
+    /* Sized from the contract rather than from the number two: offers[] is the
+       array the seat law is actually about, and a literal here would go on
+       claiming two seats on a board that had dealt three. */
+    this.offers = this.cfg.seats.map(() => null);
     this._peerDone = false; this._conceded = false;
     this.lastHeard = Date.now();
+    /* Both start at the opening whistle, or the first tickWall of a fresh duel
+       would measure the peer's progress against the epoch and void instantly. */
+    this.peerTurn = -1; this.lastProgress = Date.now();
     this.showStall(false);
 
     /* Both clients hold the first NET_INPUT_DELAY turns open with empty
@@ -1032,6 +1209,27 @@ const Net = {
        draws from the seeded stream. The budgets it is handed come from local
        save files, so those draws would move the stream by a different amount
        on each client. Answer from the wire and consume nothing. */
+    /* THE PRICE OF A SEAT IS THE CONTRACT'S, NOT THIS SAVE'S. Game.start
+       budgets every seat past the first off Meta.techSpent and off seat 0's
+       own talent depth -- both read from the LOCAL profile, which is a
+       different number in each window. Seat 1 never showed it because the wire
+       rebuilds that seat below, but Game.rivalTech and Game.rivalDepth are
+       computed either way and they ARE the board for any further seat: two
+       clients would spend a different budget on the same commander and the
+       fingerprint would part on gold and base level. Answered from the
+       contract so both windows do the same arithmetic. */
+    const sets0 = this.talentSetsFor(cfg.seats[0]);
+    keep.techSpent = M.techSpent;
+    keep.talentMods = M.talentMods;
+    M.techSpent = () => {
+      const p = cur || cfg.seats[0];
+      const cmd = COMMANDERS.find(c => c.id === p.commander);
+      if (!cmd) return 0;
+      let n = 0;
+      for (const t of cmd.tech) if ((p.tech || []).indexOf(t.id) >= 0) n += t.cost;
+      return n;
+    };
+    M.talentMods = id => sets0[id] || [];
     keep.pickLoadout = AI.pickLoadout;
     keep.pickMuster = AI.pickMusterLoadout;
     keep.pickTalents = AI.pickTalents;
@@ -1043,38 +1241,80 @@ const Net = {
   unlensProfile() {
     const k = this._metaKeep; if (!k) return;
     for (const n of ['faction', 'prestigeOf', 'isUnlocked', 'hasSecondAbility',
-                     'campaign', 'applyTo', 'applyToAI']) if (k[n]) Meta[n] = k[n];
+                     'campaign', 'applyTo', 'applyToAI',
+                     'techSpent', 'talentMods']) if (k[n]) Meta[n] = k[n];
     AI.pickLoadout = k.pickLoadout;
     AI.pickMusterLoadout = k.pickMuster;
     AI.pickTalents = k.pickTalents;
     this._metaKeep = null;
   },
 
-  /** The duel is over on this client. The relay stays open for another. */
-  finish() {
+  /* THERE IS EXACTLY ONE PLACE THAT ENDS A MATCH, AND EVERY EXIT ROUTES THROUGH
+     IT. For the relay that place is `finish`: Game.endMatch's wrapper calls it
+     from a `finally`, and voidMatch calls it for a duel that has no result to
+     record. Everything a live duel switched on is switched off here and nowhere
+     else -- there used to be four half-teardowns, and every bug in this section
+     was one of them forgetting a line another one remembered. */
+  finish(voided) {
+    const peer = this.peer;
     this.live = false;
     this.lens.on = false;
     this.showStall(false);
-    this.phase = this.peer ? 'linked' : 'idle';
+    /* A PARKED OFFER OUTLIVES THE BOARD. #overlay-choice is body-level and
+       nothing but this hides it; left standing, its cards are still bound to
+       Game.takeMod, and with `live` already false that reaches the engine's own
+       takeMod -- which sets the state back to 'playing' and hands Game.loop a
+       dead board to step behind the notice saying nothing was recorded. */
+    this.offers = [];
+    Game.pendingChoice = null;
+    UI.hideChoice();
+    /* A FINISHED DUEL IS NOT A STANDING PARTNERSHIP. Keeping `peer` and phase
+       'linked' left enterLobby -- which only ever reset 'lost' -- to greet the
+       next lobby with "The other commander closed their window." about a window
+       that had merely finished its match. */
+    this.phase = 'idle';
+    this.peer = null;
     /* `done`, not `bye`: a resolved duel and a closed window are different
-       news, and the peer must not hear the second when it is the first. */
-    this.post({ t: 'done', to: this.peer && this.peer.id });
+       news, and the peer must not hear the second when it is the first. A
+       VOIDED duel is neither and says nothing: the peer reads the same parted
+       fingerprints, or the same silence, and reaches the same verdict itself. */
+    if (!voided) this.post({ t: 'done', to: peer && peer.id });
+  },
+
+  /**
+   * The same exit for a duel with NO result — the boards parted, or the peer
+   * stopped answering. Game.endMatch is deliberately not called: there is
+   * nothing to record and a forfeit would be inventing one. The teardown is the
+   * identical one, because a duel that ends without tearing down is the whole
+   * of what went wrong here.
+   */
+  voidMatch(title, text) {
+    if (!this.live) return;
+    Game.state = 'over';
+    Sound.stopMusic();
+    this.finish(true);
+    this.showFatal(title, text);
   },
 
   dropPeer(why) {
     const wasLive = this.live;
     this.peer = null;
-    this.phase = 'lost';
-    if (!wasLive) { this.status('The other commander closed their window.'); return; }
+    if (!wasLive) { this.phase = 'lost'; this.status('The other commander closed their window.'); return; }
     /* Halt rather than resolve. A duel that lost half its inputs has no result
        to record, and calling it a forfeit would be inventing one. */
-    this.live = false;
-    this.lens.on = false;
-    Game.state = 'over';
-    this.showFatal('THE RELAY CLOSED',
-      why === 'timeout'
+    /* Three different silences, and a player who is told the wrong one goes
+       looking for the wrong problem. 'frozen' is the common one and the one
+       that used to have no words at all: a second WINDOW read as a second TAB,
+       throttled by the browser into heartbeating without stepping. */
+    this.voidMatch('THE RELAY CLOSED',
+      why === 'frozen'
+        ? 'The other commander\'s window is open but has stopped simulating. A background TAB is throttled by the browser and cannot fight a duel — the second window has to be visible. The duel is void — nothing has been recorded.'
+        : why === 'timeout'
         ? 'The other commander stopped answering. The duel is void — nothing has been recorded.'
         : 'The other commander closed their window. The duel is void — nothing has been recorded.');
+    /* AFTER the teardown, which lands on 'idle'. The lobby has to know this
+       link is gone rather than merely finished, and enterLobby clears 'lost'. */
+    this.phase = 'lost';
   },
 
   /* ── 10. the two overlays a duel owns ──────────────────────────────── */
@@ -1091,7 +1331,12 @@ const Net = {
         'padding:7px 16px;border:1px solid rgba(56,232,255,.35);border-radius:4px;' +
         'background:rgba(8,14,23,.92);color:#7dd3fc;font:600 11px/1.4 system-ui,sans-serif;' +
         'letter-spacing:.12em;pointer-events:none';
-      el.textContent = 'WAITING FOR THE OTHER COMMANDER';
+      /* The notice says WHY it might not end. Told this while the board is
+         still stopped, a player can front the other window and recover the
+         duel; told nothing, they wait out the ceiling and lose the match. */
+      el.innerHTML = 'WAITING FOR THE OTHER COMMANDER' +
+        '<div style="margin-top:4px;font-weight:400;letter-spacing:.06em;opacity:.7">' +
+        'a background tab is throttled — keep both windows visible</div>';
       document.body.appendChild(el);
     }
     el.style.display = on ? 'block' : 'none';
@@ -1102,7 +1347,11 @@ const Net = {
     let el = document.getElementById('net-fatal');
     if (!el) {
       el = document.createElement('div');
-      el.id = 'net-fatal'; el.className = 'overlay';
+      /* `required` keeps Esc off it (closeTopOverlay, js/main.js). Esc HIDES an
+         overlay and does nothing else, so dismissing this one left a frozen
+         board carrying no explanation and no road off it. RETURN is the only
+         way out because RETURN is the thing that leaves the board. */
+      el.id = 'net-fatal'; el.className = 'overlay required';
       document.body.appendChild(el);
     }
     el.classList.remove('hidden');
@@ -1112,7 +1361,11 @@ const Net = {
       '</div></div></div>';
     document.getElementById('net-fatal-ok').addEventListener('click', () => {
       el.classList.add('hidden');
-      this.live = false; this.lens.on = false;
+      /* The duel was torn down by voidMatch before this overlay was ever
+         raised. The button only decides where the player stands afterwards:
+         doing half a teardown here as well is what let an OVERLAY be the thing
+         that ends a match, and left every path that skipped it half-ended. */
+      Game.state = 'menu';
       UI.show('screen-multiverse'); UI.renderMultiverse();
     });
   }
