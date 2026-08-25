@@ -300,12 +300,25 @@ const Game = {
        two-column grid past 1240px. Guarded against zero: a hidden screen
        measures nothing, and writing 0 would fit the next frame to a lie. */
     if (document.body.classList.contains('immersive')) {
+      /* RECT-BASED, not offsetWidth: the rail and the HUD are floating CARDS
+         now, inset from the window edges, and the carve-out has to cover the
+         card AND its inset -- "everything right of the card's left edge" and
+         "everything above the card row's bottom", each plus a small gap. The
+         rail is measured first because the HUD's own right edge is defined by
+         --rail-w, so its rect is only correct once the rail's is written. */
       const sb = document.getElementById('sidebar');
+      if (sb) {
+        const sr = sb.getBoundingClientRect();
+        if (sr.width > 0)
+          document.body.style.setProperty('--rail-w',
+            Math.max(0, Math.round(window.innerWidth - sr.left + 8)) + 'px');
+      }
       const hud = document.getElementById('hud');
-      if (sb && sb.offsetWidth > 0)
-        document.body.style.setProperty('--rail-w', (sb.offsetWidth + 8) + 'px');
-      if (hud && hud.offsetHeight > 0)
-        document.body.style.setProperty('--hud-h', (hud.offsetHeight + 8) + 'px');
+      if (hud) {
+        const hr = hud.getBoundingClientRect();
+        if (hr.height > 0)
+          document.body.style.setProperty('--hud-h', Math.round(hr.bottom + 8) + 'px');
+      }
     }
     /* clientWidth INCLUDES padding, so the immersive carve-out above would be
        invisible to a bare clientWidth read -- the fit would still use the full

@@ -314,14 +314,43 @@ body.immersive #canvas-wrap {
   position: absolute; inset: 0;
   padding: var(--hud-h, 96px) var(--rail-w, 312px) 12px 12px;
 }
-/* The HUD ends where the rail begins, or the rival's own panel is buried
-   under the shop. */
+/* THE HUD IS CARDS, NOT A SMEAR. The gradient strip read as furniture bolted
+   over the board; the galaxy's chrome never does that -- its legend, its
+   briefing, its zoom chips all FLOAT, each a small bordered card with its own
+   shadow and the map running underneath. Same treatment here: the container
+   is invisible and click-through, and each of its three groups -- your panel,
+   the wave centre, the rival-and-controls -- wears the galaxy's card. It
+   still ends where the rail begins, or the rival's card is buried under it. */
 body.immersive #hud {
-  position: absolute; top: 0; left: 0; right: var(--rail-w, 312px); z-index: 20;
-  background: linear-gradient(180deg, rgba(4,8,14,.92), rgba(4,8,14,.55) 70%, rgba(4,8,14,0));
+  position: absolute; top: 10px; left: 12px; right: var(--rail-w, 312px); z-index: 20;
+  background: none;
   pointer-events: none;
 }
 body.immersive #hud > * { pointer-events: auto; }
+body.immersive #hud > .hud-side,
+body.immersive #hud > .hud-centre {
+  background: rgba(8, 13, 21, .78);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 7px 10px;
+}
+/* The centre card hugs its content instead of stretching the row's full
+   height -- a wave badge floating mid-air must not drag a card frame down
+   with it. */
+body.immersive #hud > .hud-centre { align-self: flex-start; }
+
+/* THE GALAXY'S OWN HINT LINE, for the board's camera. The galaxy prints
+   "drag or arrows to pan" in the bottom-left corner in the same faint voice;
+   a battle board that pans and zooms identically should say so identically. */
+body.immersive #stage::after {
+  content: 'drag or arrows to pan  b7 scroll to zoom  b7 0 recentres  b7 space pauses';
+  position: absolute; left: 14px; bottom: 10px; z-index: 5;
+  font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--text-mute); opacity: .7; pointer-events: none;
+}
 /* The rail: parked off the right edge, showing a hand-width of itself, and
    sliding home the moment it is wanted. */
 /* THE RIGHT COLUMN IS A LAYER OVER THE BOARD, not a wall beside it and not a
@@ -339,12 +368,21 @@ body.immersive #hud > * { pointer-events: auto; }
    content-box, so the 10px side padding rides OUTSIDE the width style.css
    promised the columns rather than being taken out of them. */
 body.immersive #sidebar {
-  position: absolute; top: 0; right: 0; bottom: 0; z-index: 21;
+  position: absolute; top: 10px; right: 12px; bottom: auto; z-index: 21;
+  /* The whole budget, spelled out: 10px top inset + 12px bottom gap + 18px of
+     its own padding + 2px of border = 42px the card occupies AROUND its
+     content-box height, and max-height on a content-box element bounds the
+     CONTENT alone -- budgeting only the insets left the card 16px past the
+     window bottom on a short viewport. A couple of pixels spare, measured. */
+  max-height: calc(100% - 44px);
   box-sizing: content-box;
-  background: linear-gradient(270deg, rgba(4,8,14,.93) 78%, rgba(4,8,14,.72));
+  background: rgba(8, 13, 21, .82);
   backdrop-filter: blur(7px);
   -webkit-backdrop-filter: blur(7px);
-  padding: 8px 10px; border-left: 1px solid var(--line);
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, .5);
   overflow-y: auto;
   transition: opacity .18s var(--e-tap);
 }
