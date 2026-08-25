@@ -9,9 +9,13 @@
    nobody could say what fraction of real defects those checks would actually
    catch. A pass count is not a detection rate. This turns it into one.
 
-   RESULT AT THE TIME OF WRITING: 7 of 7 planted defects caught, every one by
+   RESULT AT THE TIME OF WRITING: 8 of 8 planted defects caught, every one by
    the check predicted for it up front, and the clean control stayed green.
-   Re-verified after the Session 30 survive-board work: still 7 of 7.
+   Re-verified after the Session 30 survive-board work: still 7 of 7. Session
+   32 added the 8th, a layout mutant, which is why the shared viewport below
+   moved from 1600x900 to 1024x900: the check it targets (28.1, the mobile
+   fold regression) can only fail at a width the old viewport never reached,
+   and the other seven were confirmed viewport-independent by this same run.
 
    TWO EQUIVALENT MUTANTS were found on the way, and they are the reason the
    `plant` functions look the way they do:
@@ -97,6 +101,29 @@ const RUN = `
                      };
                      return () => { L.applyLate = o; }; } },
 
+    { id: 'layout-fold-cap-removed',
+      why: 'layout: the mobile plate/map height caps are removed, reproducing the ' +
+           'Session 32 regression that put the commander bar 259.8px below the fold',
+      expect: '28.1',
+      /* Runs at 1024x900 (see module.exports below), the width this whole
+         file's viewport was moved to specifically so this mutant means
+         something: at the old 1600x900, 28.1 reports INFO for every input
+         and this would be an equivalent mutant, proving nothing, exactly the
+         trap this file's own header warns about. An injected stylesheet, not
+         an edit to the checked-in CSS: the plant/restore pair must be able to
+         remove itself cleanly, and a <style> node is trivial to add and take
+         back out again. */
+      plant: () => {
+        const el = document.createElement('style');
+        el.id = 'planted-fold-regression';
+        el.textContent = '.brief.inline.has-art .br-plate { max-height: none !important; ' +
+          'aspect-ratio: 16/5 !important; } .brief.inline .br-pv { height: 170px !important; ' +
+          'min-height: 128px !important; }';
+        document.head.appendChild(el);
+        return () => { const e2 = document.getElementById('planted-fold-regression');
+                        if (e2) e2.remove(); };
+      } },
+
     { id: 'CONTROL-clean',
       why: 'the clean control: nothing is planted, the suite must stay green',
       expect: 'none',
@@ -130,4 +157,9 @@ const RUN = `
     controlStayedGreen: out.find(o => o.expected === 'none').CAUGHT
   };
 })()`;
-module.exports = [{ size: [1600, 900] }, { wait: 3000 }, { eval: RUN }];
+/* 1024x900, not 1600x900: this is <= the 1050px breakpoint check 28.1 needs to
+   be a real check rather than a permanent INFO, and none of the other seven
+   mutants are viewport-sensitive, so moving the one shared size does not risk
+   the track record above. Re-verify that claim, do not just trust it, if a
+   future mutant here ever IS viewport-sensitive in the other direction. */
+module.exports = [{ size: [1024, 900] }, { wait: 3000 }, { eval: RUN }];

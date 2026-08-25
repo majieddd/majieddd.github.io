@@ -487,6 +487,24 @@ body.rm-user.immersive #sidebar { transition: none; }
      declarations of the same one. Both must be set here. */
   .brief.inline .br-pv { height: 96px; min-height: 96px; }
 }
+/* A SECOND, NARROWER TIER (owner audit tooling, Session 32): the 96px budget
+   above was verified against ONE world and reported fixed, but a genuine
+   fresh page load at 390px wide (not a resize down from desktop, which left
+   the layout in a state that undercounted this) picks a world whose
+   .br-mapname wraps to its full two lines -- 54px instead of the 32px a
+   single-line row measures -- and the bar landed 12.8px past the fold again.
+   .br-mapname holds a variable number of chips (adjective, kind, arena,
+   sealed, the system name) and forcing it to one line would truncate
+   whichever of those did not fit, which is a worse defect than a taller row.
+   Reclaiming the room from the plate and the map instead, at true phone
+   widths, covers a two-line mapname with margin to spare rather than exactly
+   erasing today's specific 12.8px. tools/breakpoint-sweep.js check 28.1 is
+   what caught this; it is also what re-proves it, at every width, every time
+   this file changes. */
+@media (max-width: 480px) {
+  .brief.inline.has-art .br-plate { max-height: 72px; }
+  .brief.inline .br-pv { height: 72px; min-height: 72px; }
+}
 /* And the victory panel, which arrives after the class comes off: it owns the
    whole absolute body, centred, and scrolls if it must. */
 #screen-theatre .theatre-body > #worldmap-wrap:not(.gx-viewport) {

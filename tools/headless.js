@@ -29,37 +29,87 @@
    HARNESS ORDER STILL APPLIES: owner-sweep before MPT, each on a fresh load. */
 'use strict';
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
 
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const PORT = 9333;
+/* A RANDOM port, not a fixed one (owner audit, Session 32). PORT = 9333 was
+   hardcoded, so two agents running this at once fought over the same debugger
+   port -- one silently attaches to the OTHER's browser rather than its own, a
+   defect that reads as a passing sweep against the wrong page. A different
+   base range from aegis-mcp.js's own 9222-9621 (mcp/aegis-mcp.js:49) keeps the
+   two tools from colliding with EACH OTHER too, on top of not colliding with
+   themselves. */
+const PORT = 9700 + Math.floor(Math.random() * 400);
 const [, , URL_, OUTDIR, STEPFILE] = process.argv;
-const USERDIR = path.join(OUTDIR, '_chromeprofile');
+/* An OS temp dir, not a folder inside OUTDIR (owner audit, Session 32): the
+   old USERDIR lived under the harness's own output directory and was never
+   removed, so every run left a full Chrome profile behind next to whatever
+   the run was actually meant to produce. */
+const USERDIR = fs.mkdtempSync(path.join(os.tmpdir(), 'aegis-headless-'));
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+/* --hide-scrollbars is OPT-IN, not default (owner audit, Session 32). Two
+   findings in one session traced back to it hiding the real scrollbar gutter:
+   a layout gate measuring a viewport the player never actually gets, because
+   the browser under test was silently wider than the one people play in. Set
+   AEGIS_HIDE_SCROLLBARS=1 for the rare case a screenshot needs a clean edge. */
+const chromeFlags = [
+  '--headless=new', '--disable-gpu', '--no-sandbox',
+  '--mute-audio', '--no-first-run', '--no-default-browser-check',
+  '--disable-extensions', '--disable-background-networking',
+  `--remote-debugging-port=${PORT}`, `--user-data-dir=${USERDIR}`,
+  '--window-size=1600,900', 'about:blank',
+];
+if (process.env.AEGIS_HIDE_SCROLLBARS) chromeFlags.splice(3, 0, '--hide-scrollbars');
+
+async function cleanup(chrome) {
+  /* kill() returning is not the process being GONE (owner audit, Session 32,
+     found by measurement: a synchronous kill()-then-rmSync left the profile
+     directory behind on every successful run, 1 for 1). Windows in particular
+     can hold the profile's file locks for a short window after the signal is
+     sent, so rmSync raced a process that was still shutting down and lost
+     silently under the old bare catch. Wait for the real 'exit' event first
+     (bounded, in case it never fires), then retry the removal a few times: a
+     removal failure is reported, not hidden, if every retry still fails. */
+  try { chrome.kill(); } catch (e) { /* already gone */ }
+  await Promise.race([
+    new Promise(r => chrome.once('exit', r)),
+    sleep(2000),
+  ]);
+  for (let i = 0; i < 5; i++) {
+    try { fs.rmSync(USERDIR, { recursive: true, force: true }); return; }
+    catch (e) { if (i === 4) console.error('cleanup: could not remove ' + USERDIR + ': ' + e.message);
+                else await sleep(200); }
+  }
+}
+
 async function main() {
   fs.mkdirSync(OUTDIR, { recursive: true });
-  const chrome = spawn(CHROME, [
-    '--headless=new', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
-    '--mute-audio', '--no-first-run', '--no-default-browser-check',
-    '--disable-extensions', '--disable-background-networking',
-    `--remote-debugging-port=${PORT}`, `--user-data-dir=${USERDIR}`,
-    '--window-size=1600,900', 'about:blank',
-  ], { stdio: 'ignore', detached: false });
+  const chrome = spawn(CHROME, chromeFlags, { stdio: 'ignore', detached: false });
+  let ws = null;
 
+  /* EVERY EXIT PATH CLEANS UP, not just the two that used to remember to
+     (owner audit, Session 32). An exception thrown by any `await send(...)`
+     between here and the results log used to skip cleanup entirely: the
+     catch in main().catch(...) below has no access to `chrome` at all, so a
+     mid-script failure left the browser running and its temp profile on
+     disk. try/finally is unconditional by construction; there is no path
+     through this function that can forget it again. */
+  try {
   // wait for the debugger endpoint
   let ver = null;
   for (let i = 0; i < 60; i++) {
     try { ver = await (await fetch(`http://127.0.0.1:${PORT}/json/version`)).json(); break; }
     catch { await sleep(250); }
   }
-  if (!ver) { chrome.kill(); throw new Error('chrome debugger never came up'); }
+  if (!ver) throw new Error('chrome debugger never came up');
 
   const targets = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json();
   const page = targets.find(t => t.type === 'page');
-  const ws = new WebSocket(page.webSocketDebuggerUrl);
+  ws = new WebSocket(page.webSocketDebuggerUrl);
   await new Promise(r => ws.addEventListener('open', r, { once: true }));
 
   let id = 0;
@@ -121,9 +171,13 @@ async function main() {
     }
   }
 
-  console.log(JSON.stringify({ results, consoleErrors: consoleErrors.slice(0, 20) }, null, 1));
-  ws.close();
-  chrome.kill();
+
+    console.log(JSON.stringify({ results, consoleErrors: consoleErrors.slice(0, 20) }, null, 1));
+  } finally {
+    if (ws) { try { ws.close(); } catch (e) { /* already closed */ } }
+    await cleanup(chrome);
+  }
   process.exit(0);
 }
+
 main().catch(e => { console.error('FATAL', e.message); process.exit(1); });

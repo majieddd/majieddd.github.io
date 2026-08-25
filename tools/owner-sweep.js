@@ -1349,6 +1349,52 @@
        ', flyer sends fly a 2-point chord: ' + chord);
   });
 
+  /* ---- 28.1 who you fight stays in view without scrolling, at the width
+     that matters -------------------------------------------------------
+     A CSS regression at the max-width:1050px breakpoint (Session 32) put the
+     commander bar up to 259.8px below #theatre-detail's fold at rest: the
+     card, opened fresh, showed nothing but banner art until you scrolled.
+     Nothing caught it, because nothing had ever asserted the invariant. This
+     check does, but it can only mean something AT that breakpoint: the
+     desktop layout does not put #theatre-detail in a scrolling strip at all,
+     so run this SWEEP AT max-width:1050px or narrower for it to exercise
+     anything (tools/breakpoint-sweep.js does this automatically). At a wider
+     viewport it reports INFO, not a silent PASS, so a green sweep can never
+     be mistaken for one that actually looked. */
+  T('28.1 the commander bar stays in view without scrolling, at width <= 1050px', function () {
+    const id = '28.1 the commander bar stays in view without scrolling, at width <= 1050px';
+    if (!window.matchMedia('(max-width: 1050px)').matches) {
+      skip(id, 'viewport ' + window.innerWidth + 'px is wider than the breakpoint this check ' +
+               'exists for; run at <= 1050px (tools/breakpoint-sweep.js) to exercise it');
+      return;
+    }
+    let c = Meta.campaign();
+    if (!c) c = Meta.campaignStart('human');
+    const gx = Meta.galaxy();
+    let w = null;
+    outer:
+    for (let si = 0; si < gx.systems.length; si++)
+      for (let wi = 0; wi < gx.systems[si].worlds.length; wi++) {
+        const w2 = gx.systems[si].worlds[wi];
+        if (!worldScenarioOf(w2).noCommander) { w = w2; break outer; }
+      }
+    if (!w) { ok(id, false, 'no commander-bearing world in this galaxy to test against'); return; }
+    c.chosen = { world: w.id };
+    Meta.save();
+    UI.show('screen-theatre');
+    UI.renderTheatre();
+    const host = document.getElementById('theatre-detail');
+    const brief = host && host.querySelector('.brief');
+    const bar = brief && brief.querySelector('.br-cmdbar');
+    if (!host || !brief || !bar) { ok(id, false, 'briefing card or commander bar did not render'); return; }
+    const hostBottom = host.getBoundingClientRect().bottom;
+    const barBottom = bar.getBoundingClientRect().bottom;
+    const pastFold = Math.round((barBottom - hostBottom) * 10) / 10;
+    ok(id, pastFold <= 1,
+       'commander bar bottom is ' + pastFold + 'px past the pane fold at ' +
+       window.innerWidth + 'px wide (<=1 is PASS, a positive margin is scroll required)');
+  });
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;
