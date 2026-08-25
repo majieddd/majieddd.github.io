@@ -21,7 +21,11 @@ CACHE = os.path.join(HERE, 'cache')
 os.makedirs(CACHE, exist_ok=True)
 
 sys.path.insert(0, HERE)
-from krea_jobs import build_jobs, NEG, FACTION_TROOPS      # noqa: E402
+from krea_jobs import build_jobs, NEG, FACTION_TROOPS, COMMANDERS   # noqa: E402
+
+# The machine commanders, derived from the roster rather than listed here, so
+# a sixth Parallel commander is styled correctly the day it is added.
+ROBOT_COMMANDERS = {cid for cid, fac, _ in COMMANDERS if fac == 'robot'}
 from krea_gen import fit, quality_for                      # noqa: E402
 
 # CLIP truncates at 77 tokens, and at guidance 0 the negative prompt has no
@@ -42,7 +46,12 @@ SDXL_PREFIX = ('cyberpunk sci-fi vaporwave painted cutscene illustration, neon m
 # dropped the words 'cyberpunk science fiction' and the whole class regressed
 # to medieval knights -- the setting must be in the prefix, not the tail.
 FACTION_COLOUR = { 'human': 'neon cyan', 'light': 'radiant gold',
-                   'xeno': 'xeno violet', 'pirate': 'blood crimson' }
+                   'xeno': 'xeno violet', 'pirate': 'blood crimson',
+                   # THE PARALLEL. Without an entry here the lookup falls back
+                   # to bare 'neon', which is precisely the failure this file
+                   # documents two comments down: a neon prefix repainting a
+                   # monochrome brief, and grey is the easiest thing to repaint.
+                   'robot': 'white chrome' }
 
 # FACTION TROOPS ARE NOT SPECIMENS. Both machines and troops are keyed foe_*,
 # so both were getting the 'foe' prefix below -- a clinical greyscale specimen
@@ -100,6 +109,19 @@ def prefix_for(key):
     # so no game-side art lookup has to change.
     if parts[0] == 'foe' and '_'.join(parts[1:]) in FACTION_TROOPS:
         return TROOP_PREFIX
+    # THE PARALLEL'S COMMANDERS, checked before the class table for the same
+    # reason: the key cannot tell you the faction, only the roster can.
+    #
+    # A comment in krea_jobs.py asserted that this function 'returns '' for
+    # the cmd class'. It does not and never did -- cmd has no entry in
+    # PREFIX_BY_CLASS, so it falls through to SDXL_PREFIX, whose second clause
+    # is 'neon magenta cyan violet palette'. That is the FIRST colour named in
+    # the prompt, so it beat a faction brief whose entire content is 'no colour
+    # at all', and three machine commanders rendered magenta. For the other
+    # twenty-one that prefix is the approved look and stays exactly as it is.
+    if parts[0] == 'cmd' and ROBOT_COMMANDERS and '_'.join(parts[1:]) in ROBOT_COMMANDERS:
+        return ('monochrome white chrome painted cutscene illustration, pure white and black '
+                'only, no colour, brushed metal, gothic engraved linework, ')
     if parts[0] == 'fac':
         c = FACTION_COLOUR.get(parts[1], 'neon')
         return (f'strict monochrome {c} engraved gothic emblem on pure black, every line '
