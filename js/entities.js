@@ -9,6 +9,14 @@
 'use strict';
 
 const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
+/* THE FINITE GUARD. `clamp` above returns NaN unchanged -- NaN compares false
+   against everything, so neither branch fires -- which is correct for the
+   simulation (every pin was measured through it) and fatal at any boundary
+   where a non-finite value can enter and then persist. `fin` is what those
+   boundaries use: not a number, or not finite, means take the fallback.
+   Deliberately separate from clamp so hardening a boundary can never move the
+   simulation. */
+const fin = (v, d) => (typeof v === 'number' && isFinite(v)) ? v : d;
 const lerp = (a, b, t) => a + (b - a) * t;
 const rand = (a, b) => a + Math.random() * (b - a);
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];

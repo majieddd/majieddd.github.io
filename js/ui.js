@@ -77,6 +77,12 @@ const UI = {
   _inspKey: null,          // signature of what the inspector currently shows
 
   init() {
+    /* A PROFILE SWORN BEFORE STARTER DENIZENS EXISTED gets its banner's own
+       first soldier here, once, at boot. Idempotent -- it returns immediately
+       when the unit is already vaulted -- and deliberately OUTSIDE
+       Meta.vault(), because calling vault() from inside vault()'s migration
+       block is unbounded recursion. */
+    try { const f = Meta.faction(); if (f) Meta.grantStarterDenizen(f); } catch (err) {}
     const e = this.el;
     e.screens    = $$('.screen');
     e.myLives = $('#my-lives'); e.myGold = $('#my-gold'); e.myBar = $('#my-bar'); e.myTowers = $('#my-towers');

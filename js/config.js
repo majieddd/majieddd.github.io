@@ -3415,6 +3415,37 @@ const XENO_INC_CAP = 10;
    balance pins (fresh median 7, maxed 26-27) without a re-tune. */
 const MUSTER_LOADOUT_SIZE = 3;          /* picks a detachment may carry        */
 const MUSTER_BASE_UNLOCK = ['crawler']; /* everyone can send these on day one  */
+/**
+ * YOUR OWN POWER'S FIRST SOLDIER, granted with the banner.
+ *
+ * Every profile used to open with `crawler` and nothing else -- one Vigil
+ * machine, which belongs to nobody. That is fine for the rites that read a
+ * loadout as a bag, and it QUIETLY BROKE the two that read it as a LIST:
+ * THE PROCESSION marches its detachment in order and swells each lap, and
+ * THE DRAFT rolls a random pick from it. With exactly one entry there is no
+ * order to see and nothing to roll -- the Federation of Light marched the
+ * same crawler forever and its defining mechanic was invisible. Reported by
+ * the owner as "the federation of light doesn't send a selected unit in order
+ * every round like it should", and they were right: it cannot, on a list of
+ * one.
+ *
+ * So a banner brings its own lightest soldier. DERIVED, not tabled, so a
+ * power added later is covered without anyone remembering this constant --
+ * and lightest specifically because that is the power-neutral choice: the
+ * five open between 46 and 96 health against the crawler's 62, so a profile
+ * gains an IDENTITY on day one rather than a stat advantage.
+ */
+function starterDenizenOf(faction) {
+  if (!faction || typeof UNIT_TYPES === 'undefined') return null;
+  let best = null;
+  for (const id in UNIT_TYPES) {
+    if (typeof unitFactionOf === 'function' && unitFactionOf(id) !== faction) continue;
+    const e = ENEMY_TYPES[id];
+    if (!e || !musterSendable(id)) continue;
+    if (!best || e.hp < ENEMY_TYPES[best].hp) best = id;
+  }
+  return best;
+}
 /* Nothing that bites more than this many lives on a leak may be bought: a
    juggernaut pack at wave scaling on wave 4 is a base kill, not a tempo play.
    Bosses and minibosses are refused outright. */

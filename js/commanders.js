@@ -319,6 +319,7 @@ const Meta = {
       r.vault.musterUnlocked = MUSTER_BASE_UNLOCK.slice();
       this.save();
     }
+
     /* ARSENAL SHELVES. Tower unlocks used to be ONE install-wide list while
        souls were -- and still are -- per profile. So a Xeno file could bank
        the souls, buy TOXIN, and a Federation file that never paid a soul
@@ -1034,8 +1035,40 @@ const Meta = {
   /** Swearing to a banner takes the unsworn shelf with you. A profile can
       reach the shop before it has a faction, and stranding those unlocks on a
       shelf nothing reads again would charge souls for nothing. */
+  /** THE BANNER'S OWN FIRST SOLDIER, granted once and then owned like any
+      other vaulted unit. Idempotent: a profile that already has it is left
+      alone, so this is safe to call on every load and every banner change,
+      and an EXISTING save picks its starter up the first time it swears. */
+  grantStarterDenizen(faction, vaultRef) {
+    if (typeof starterDenizenOf !== 'function') return null;
+    const id = starterDenizenOf(faction);
+    if (!id) return null;
+    /* `vaultRef` exists so a CALLER ALREADY INSIDE vault() can hand its own
+       object in. Calling this.vault() from within vault()'s own migration
+       block is unbounded recursion -- a stack overflow, which on this project
+       presents as exactly the freeze this session is chasing. */
+    const v = vaultRef || this.vault();
+    if (!Array.isArray(v.musterUnlocked)) v.musterUnlocked = MUSTER_BASE_UNLOCK.slice();
+    if (v.musterUnlocked.includes(id)) return null;
+    v.musterUnlocked.push(id);
+    /* And put it IN the detachment, not merely in the vault. A unit sitting
+       unslotted changes nothing: musterLoadout() only ever returns what was
+       picked, so the rites would still be reading a list of one. */
+    const p = this.load();
+    if (!Array.isArray(p.musterLoadout)) p.musterLoadout = [];
+    if (p.musterLoadout.length < MUSTER_LOADOUT_SIZE && !p.musterLoadout.includes(id)) {
+      /* The crawler comes first only because it was there first; a sworn
+         banner leads with its own. */
+      p.musterLoadout = [id].concat(p.musterLoadout.filter(x => x !== id))
+                            .slice(0, MUSTER_LOADOUT_SIZE);
+    }
+    this.save();
+    return id;
+  },
+
   adoptShelf(id) {
     if (!id) return;
+    this.grantStarterDenizen(id);
     const v = this.vault();
     const from = v.unlockedBy[NO_BANNER_SHELF] || [];
     const to = (v.unlockedBy[id] = v.unlockedBy[id] || STARTER_TOWERS.slice());

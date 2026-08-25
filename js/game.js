@@ -3424,17 +3424,60 @@ const Game = {
 
   /* ================================================================ LOOP */
 
+  /**
+   * THE FRAME. It must never be possible for this to be the LAST one.
+   *
+   * Everything below used to run bare, and the `requestAnimationFrame` that
+   * keeps the game alive sits at the BOTTOM of it. So a single throw anywhere
+   * in step() or draw() -- one undefined field on one entity, on one frame --
+   * skipped the reschedule and the loop simply stopped. The board froze
+   * mid-wave with no error visible to the player, the HUD kept accepting
+   * clicks, and the pause button toggled a flag nothing was left to read:
+   * "it randomly freezes" and "pause will not un-pause" are the same defect
+   * wearing two faces.
+   *
+   * `finally` is the whole fix: the next frame is booked before anything can
+   * decide not to book it. What is NOT done here is swallowing the error --
+   * this project's signature defect is a catch that hides the thing it caught,
+   * so the throw is reported once per distinct message, parked on
+   * `Game.loopErrors` for the sweep to read, and the frame is abandoned rather
+   * than half-run.
+   */
   loop(ts) {
+    let rescheduled = false;
+    try {
+      this.frame(ts);
+    } catch (e) {
+      this.recordLoopError(e);
+    } finally {
+      /* Booked LAST and unconditionally. A second guard in case `frame` itself
+         somehow schedules -- two rAFs racing would double the game speed. */
+      if (!rescheduled) requestAnimationFrame(t => this.loop(t));
+    }
+  },
+
+  /** Every distinct failure once, with a count, so a per-frame throw cannot
+      flood the console into uselessness -- and so the sweep has something to
+      assert against. */
+  recordLoopError(e) {
+    const msg = (e && e.message) || String(e);
+    this.loopErrors = this.loopErrors || {};
+    const first = !this.loopErrors[msg];
+    this.loopErrors[msg] = (this.loopErrors[msg] || 0) + 1;
+    if (first) {
+      console.error('FRAME THREW (the loop survived it; the frame did not): ' + msg,
+                    (e && e.stack) || '');
+    }
+  },
+
+  frame(ts) {
     const dtReal = Math.min(0.1, (ts - this.lastTs) / 1000 || 0);
     this.lastTs = ts;
     /* In the menu the canvas is hidden, yet this loop kept simulating particles
        and DRAWING the finished battle's full entity set every frame -- which is
        why menus grew sluggish after long sessions and snapped back the moment a
        new match cleared the arrays. Idle completely instead. */
-    if (this.state === 'menu') {
-      requestAnimationFrame(t => this.loop(t));
-      return;
-    }
+    if (this.state === 'menu') return;
     if (this.state === 'playing' && !this.paused) {
       this.acc += dtReal * this.speed;
       let steps = 0;
@@ -3467,7 +3510,8 @@ const Game = {
       this.draw();
       if (this.state === 'over') this._overDrawn = true;
     }
-    requestAnimationFrame(t => this.loop(t));
+    /* No reschedule here: `loop` books the next frame in a finally, so this
+       function is free to throw without taking the game down with it. */
   },
 
   step(dt) {
@@ -4682,29 +4726,59 @@ const Game = {
      button, the arrow keys and 0. Left-drag belongs to the radial build ring
      and right-click to cancel, and neither is touched. */
   cam: { x: 0, y: 0, z: 1 },
-  camZoom() { return clamp((this.cam && this.cam.z) || 1, 1, BATTLE_ZOOM_MAX); },
+  /**
+   * THE CAMERA IS NAN-PROOF AT ITS BOUNDARY, and it has to be, because
+   * `clamp` is not: `clamp = (v,a,b) => v < a ? a : (v > b ? b : v)` returns
+   * NaN unchanged, since NaN compares false against everything. So a single
+   * non-finite value reaching cam.x stayed there for the rest of the match --
+   * no later pan, zoom or clamp could wash it out -- and every frame after it
+   * built its transform from NaN. `ctx.setTransform` silently IGNORES a
+   * non-finite matrix, so the board simply stopped moving on screen while the
+   * simulation carried on underneath: the game "froze" with no error.
+   *
+   * One value could produce it. The drag handler divides by
+   * `getBoundingClientRect().width`, which is 0 whenever the canvas is hidden
+   * or mid-layout -- a screen switch, an immersive-mode toggle, a resize --
+   * and `0 * (width / 0)` is `0 * Infinity`, which is NaN.
+   *
+   * `fin` is the whole guard: anything not finite falls back rather than
+   * propagating. Deliberately NOT a change to `clamp` itself, which the
+   * simulation uses everywhere and which must keep behaving exactly as the
+   * balance pins measured it.
+   */
+  camZoom() { return clamp(fin((this.cam && this.cam.z), 1), 1, BATTLE_ZOOM_MAX); },
   /** The camera's top-left in world pixels, clamped so the view can never
       leave the board. At zoom 1 the view IS the board, so this is the
       origin and the transform above collapses to the fitted one. */
   camClamped() {
     const z = this.camZoom();
     const vw = this.width / z, vh = this.height / z;
-    return { x: clamp(this.cam.x, 0, Math.max(0, this.width - vw)),
-             y: clamp(this.cam.y, 0, Math.max(0, this.height - vh)) };
+    /* `this.cam` guarded like camZoom already guards it: draw() reads this
+       every frame, and an undefined camera threw a TypeError straight out of
+       the frame. */
+    const cx = fin(this.cam && this.cam.x, 0), cy = fin(this.cam && this.cam.y, 0);
+    return { x: clamp(cx, 0, Math.max(0, this.width - vw)),
+             y: clamp(cy, 0, Math.max(0, this.height - vh)) };
   },
   /** Zoom about a fixed world point, so the tile under the cursor stays put. */
   zoomAt(worldX, worldY, factor) {
     const z0 = this.camZoom();
-    const z1 = clamp(z0 * factor, 1, BATTLE_ZOOM_MAX);
+    const z1 = clamp(fin(z0 * factor, z0), 1, BATTLE_ZOOM_MAX);
     if (z1 === z0) return;
-    this.cam.x = worldX - (worldX - this.cam.x) * (z0 / z1);
-    this.cam.y = worldY - (worldY - this.cam.y) * (z0 / z1);
+    /* The anchor point comes from a pointer event, so it is exactly as
+       trustworthy as the rect it was derived from. */
+    const wx = fin(worldX, 0), wy = fin(worldY, 0);
+    this.cam.x = fin(wx - (wx - fin(this.cam.x, 0)) * (z0 / z1), 0);
+    this.cam.y = fin(wy - (wy - fin(this.cam.y, 0)) * (z0 / z1), 0);
     this.cam.z = z1;
     const c = this.camClamped();
     this.cam.x = c.x; this.cam.y = c.y;
   },
   panBy(dx, dy) {
-    this.cam.x += dx; this.cam.y += dy;
+    /* A non-finite delta is DROPPED, not applied and then clamped -- clamping
+       it would keep the NaN. This is the line the whole freeze came through. */
+    this.cam.x = fin(this.cam.x, 0) + fin(dx, 0);
+    this.cam.y = fin(this.cam.y, 0) + fin(dy, 0);
     const c = this.camClamped();
     this.cam.x = c.x; this.cam.y = c.y;
   },
@@ -4762,6 +4836,11 @@ const Game = {
     cv.addEventListener('pointermove', e => {
       if (!panning || e.pointerId !== panning.id) return;
       const r = this.canvas.getBoundingClientRect();
+      /* A HIDDEN OR MID-LAYOUT CANVAS MEASURES ZERO, and dividing by it is
+         where the camera used to be poisoned for the rest of the match. There
+         is nothing sensible to pan by when the board has no size on screen, so
+         the drag is simply ignored until it does. */
+      if (!(r.width > 0) || !(r.height > 0)) { panning.x = e.clientX; panning.y = e.clientY; return; }
       const z = this.camZoom();
       this.panBy(-(e.clientX - panning.x) * (this.width / r.width) / z,
                  -(e.clientY - panning.y) * (this.height / r.height) / z);
