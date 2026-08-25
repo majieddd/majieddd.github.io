@@ -1,8 +1,8 @@
 /* ==========================================================================
-   COSMIC CONQUEST — Polish Layer
+   COSMIC CONQUEST, Polish Layer
    --------------------------------------------------------------------------
-   Loaded after style.css. Modernises the base theme — glass surfaces, layered
-   depth, refined motion — and styles the campaign, soul shop, drift readout
+   Loaded after style.css. Modernises the base theme, glass surfaces, layered
+   depth, refined motion, and styles the campaign, soul shop, drift readout
    and expansion components. Overrides win by order, not by !important.
    ========================================================================== */
 
@@ -111,7 +111,7 @@ body.rm-user .bi-line { opacity: 1; }
 /* --- chips: bigger, named, hoverable ------------------------------------ */
 .chip {
   font-size: 12px; padding: 4px 11px; border-radius: 9px;
-  cursor: default; transition: all 0.15s var(--ease);
+  cursor: default; transition: background-color, border-color, color, box-shadow, transform, opacity, filter 0.15s var(--ease);
   backdrop-filter: blur(6px);
 }
 .chip b { font-weight: 700; letter-spacing: 0.05em; }
@@ -200,7 +200,7 @@ body.rm-user .bi-line { opacity: 1; }
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   background: rgba(255, 255, 255, 0.035); border: 1px solid var(--line);
   border-top: 3px solid var(--cc); border-radius: 11px; padding: 11px 8px;
-  cursor: pointer; transition: all 0.15s var(--ease);
+  cursor: pointer; transition: background-color, border-color, color, box-shadow, transform, opacity, filter 0.15s var(--ease);
 }
 .soul-item:hover:not(:disabled) { background: color-mix(in srgb, var(--cc) 14%, transparent); transform: translateY(-2px); }
 /* `aria-disabled` carries the same look as `:disabled` and none of its cost:
@@ -237,17 +237,17 @@ body.rm-user .bi-line { opacity: 1; }
 /* --- title screen lift --------------------------------------------------- */
 .title-logo { letter-spacing: 0.18em; }
 .title-panel { border-radius: 18px; }
-.profile-row { border-radius: 11px; transition: all 0.15s var(--ease); }
+.profile-row { border-radius: 11px; transition: background-color, border-color, color, box-shadow, transform, opacity, filter 0.15s var(--ease); }
 .profile-row:hover { transform: translateX(3px); }
 #profile-name { border-radius: 10px; }
 
 /* --- inspector & shop polish -------------------------------------------- */
-.tower-card { border-radius: 10px; transition: all 0.14s var(--ease); }
+.tower-card { border-radius: 10px; transition: background-color, border-color, color, box-shadow, transform, opacity, filter 0.14s var(--ease); }
 .tower-card:hover { transform: translateX(2px); }
 .tower-card.active { box-shadow: 0 0 0 1px var(--tc), 0 6px 22px -6px var(--tc); }
 .stat-grid { border-radius: 10px; }
 .upgrade-btn, .branch-btn, .asc-btn { border-radius: 11px; }
-.tal-node { border-radius: 11px; transition: all 0.15s var(--ease); }
+.tal-node { border-radius: 11px; transition: background-color, border-color, color, box-shadow, transform, opacity, filter 0.15s var(--ease); }
 .choice-card { border-radius: 15px; backdrop-filter: blur(10px); }
 .toast { border-radius: 12px; backdrop-filter: blur(12px); }
 
@@ -646,6 +646,11 @@ body.rm-user.immersive #sidebar { transition: none; }
 @keyframes rwPop { 0% { transform: scale(1); } 45% { transform: scale(1.6); color: #fff; } 100% { transform: scale(1); } }
 .rw-bar { height: 9px; border-radius: 5px; background: rgba(0,0,0,.45);
           border: 1px solid var(--line); overflow: hidden; }
+/* DELIBERATE EXCEPTION to the no-layout-animation rule. This is a one-shot 1s
+   reveal on the results screen, not a per-frame update, so the layout cost is
+   one element once. scaleX would STRETCH the gradient rather than reveal it,
+   a visible regression, so width is the correct property here. The HUD bars in
+   style.css, which DO update every tick, were converted to scaleX. */
 .rw-bar i { display: block; height: 100%; width: 0;
             background: linear-gradient(90deg, var(--cc, var(--cyan)), #fff);
             transition: width 1s var(--e-tap); }
@@ -828,15 +833,15 @@ body.rm-user.immersive #sidebar { transition: none; }
 .codex-entry .cb-recipe, .codex-entry .cx-abil { color: var(--tc); }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   ACCENT TREATMENT — replacing the left-rail card
+   ACCENT TREATMENT, replacing the left-rail card
 
    huashu-design explicitly lists "rounded corners with left border accents" as
    an AI-slop tell, and it was the dominant motif here: ten separate card types
    were a rounded rectangle with a 4px coloured rail down one edge.
 
    The replacement is chosen for the subject rather than for novelty. These are
-   military readouts on alien hardware, so panels are CHAMFERED — one corner
-   cut, the way a bezel is machined — and the accent becomes a thin rule across
+   military readouts on alien hardware, so panels are CHAMFERED, one corner
+   cut, the way a bezel is machined, and the accent becomes a thin rule across
    the top edge plus a faint wash pulled from the same colour. It reads as a
    fabricated component instead of a web card, and it costs nothing to render.
    ══════════════════════════════════════════════════════════════════════════ */
@@ -872,7 +877,7 @@ body.rm-user.immersive #sidebar { transition: none; }
     transparent 42%);
 }
 
-/* keep the reward summary and lore panels plain — they are documents, not
+/* keep the reward summary and lore panels plain, they are documents, not
    components, and chamfering everything would flatten the distinction */
 .rw-track, .lore-entry, .extract-box, .gv-stats, .rw-stats { clip-path: none; border-radius: 10px; }
 .rw-track::before, .lore-entry::before, .extract-box::before { content: none; }
@@ -921,7 +926,7 @@ body.rm-user.immersive #sidebar { transition: none; }
 @media (prefers-reduced-motion: reduce) { .mv-spin { animation: none; } }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   DESIGN PASS — typography, states, motion
+   DESIGN PASS, typography, states, motion
    (huashu / hyperframes / taste digests: two faces + numeric mono, modular
     scale, 60-30-10 colour, all interactive states, 150-250ms ease-out motion,
     nothing animated that fights the canvas loop)
@@ -1004,7 +1009,7 @@ h1, h2, h3, .logo, .title-logo, .section-label, .menu-btn, .btn-big,
   .screen:not(.hidden), .menu-main .menu-btn, .em-ring { animation: none !important; }
 }
 
-/* ═════════════ DESIGN PASS II — digest refinements ═════════════════════ */
+/* ═════════════ DESIGN PASS II, digest refinements ═════════════════════ */
 /* One motion curve everywhere (taste-skill: 0.16,1,0.3,1), transform/opacity only */
 .btn, .abil, .tower-card, .lo-card, .cmd-card, .fac-card, .soul-item,
 .profile-row, .gx-world, .menu-btn {
@@ -1028,7 +1033,7 @@ h1, .logo, .title-logo, .cd-name, .gv h2, .rw-verdict b, .end-title { font-weigh
 .gx-link.on { stroke: rgba(168,189,208,.55); }
 .wm-hint { color: var(--text-mute); }
 
-/* Glow discipline: ONE meaningful glow — the thing you have selected. */
+/* Glow discipline: ONE meaningful glow, the thing you have selected. */
 .title-emblem svg { filter: drop-shadow(0 0 18px rgba(56,232,255,.10)); }
 .fac-crest svg { filter: none; }
 .fac-card.on .fac-crest svg {
@@ -1108,7 +1113,7 @@ h1, .logo, .title-logo, .cd-name, .gv h2, .rw-verdict b, .end-title { font-weigh
 .cmd-icon svg, .cd-icon svg { display: block; }
 @media (prefers-reduced-motion: reduce) { .bi-line { animation: none; opacity: 1; } }
 
-/* ══════════════════════════ GALAXY MAP II — depth + routes ═════════════ */
+/* ══════════════════════════ GALAXY MAP II, depth + routes ═════════════ */
 .gx-link { stroke-width: .32; stroke-dasharray: 1.1 1.5; }
 .gx-ring { fill: none; stroke: var(--fc); stroke-width: .35; opacity: .8; }
 .gx-world .gx-dot { fill: #0d1622; stroke: none; }
@@ -1124,7 +1129,7 @@ h1, .logo, .title-logo, .cd-name, .gv h2, .rw-verdict b, .end-title { font-weigh
 .gx-pip.on { fill: var(--gold); }
 .gx-halo { stroke-dasharray: .5 1.1; opacity: .4; }
 
-/* ════════════ GLOBAL BACKDROP — the whole app sits in space ════════════ */
+/* ════════════ GLOBAL BACKDROP, the whole app sits in space ════════════ */
 body::before {
   content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background:
@@ -1337,7 +1342,7 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
 .rb-foot { display: flex; justify-content: space-between; gap: 8px; font-size: 10px;
   color: var(--text-mute); font-variant-numeric: tabular-nums; }
 
-/* ═════════════════ FACTION SCREEN — compact, centred ═══════════════════ */
+/* ═════════════════ FACTION SCREEN, compact, centred ═══════════════════ */
 /* height:100% (polish.css:347) pins the wrap to the viewport, so once the
    screen became scrollable the content still could not grow past the fold and
    BEGIN CONQUEST stayed 6px under it. min-height lets the wrap stretch with
@@ -1578,7 +1583,7 @@ body.tri-field #hud { gap: 8px; padding: 8px 10px; }
 .rw-saved span { font-size: 10.5px; color: var(--tc, #e05555); }
 .rw-saved em { font-style: normal; font-size: 9px; color: var(--text-mute); width: 100%; }
 
-/* ═════════════════ GALAXY VIEWPORT — a window onto world space ═════════ */
+/* ═════════════════ GALAXY VIEWPORT, a window onto world space ═════════ */
 /* THE VIEWPORT NEEDS A DEFINITE SIZE. It used to be a grid that sized itself
    to its own contents, which is only ever going to produce a window exactly
    as big as the thing inside it -- and a window exactly as big as its map has
@@ -1795,7 +1800,7 @@ body.tri-field #hud { gap: 8px; padding: 8px 10px; }
   letter-spacing: .1em; text-transform: uppercase;
 }
 
-/* ═════════════════ PRE-BATTLE EXCHANGE — paced, not clumped ════════════ */
+/* ═════════════════ PRE-BATTLE EXCHANGE, paced, not clumped ════════════ */
 .bi-sit { margin: 2px 0 12px; padding: 9px 12px; border-radius: 10px;
   border: 1px solid var(--line); background: rgba(255,255,255,.02);
   display: flex; flex-direction: column; gap: 4px; }
@@ -1897,7 +1902,7 @@ body.tri-field #hud { gap: 8px; padding: 8px 10px; }
 
 /* The arena spends RIVAL II's slot on the ladder rather than adding a fourth
    box to a row that is already tight at 1180px. Like the rule above it this
-   sets no width and no height — it only takes the box out of the flow, so it
+   sets no width and no height, it only takes the box out of the flow, so it
    cannot resize one axis of a box the base rule sized. */
 body.arena-field #rival3 { display: none; }
 
@@ -1929,7 +1934,7 @@ body:not(.arena-field) .arena-ladder { display: none; }
 .arena-ladder .pip.out { background: #1e293b; box-shadow: none; opacity: 0.5; }
 
 
-/* ═════════════ PROGRESSIVE TOWER CARDS — the loadout grid ══════════════ */
+/* ═════════════ PROGRESSIVE TOWER CARDS, the loadout grid ══════════════ */
 /* Thirty-nine towers across five origins is a wall on first glance, so a card
    rests as glyph + name + cost + origin mark and reveals the rest only when
    hovered, focused or tapped. The geometry that makes this safe is in
@@ -1997,14 +2002,14 @@ body:not(.arena-field) .arena-ladder { display: none; }
 }
 
 
-/* ═══════════════ THE FOUR-COLUMN LOADOUT — 19.12 / 19.15 ═══════════════ */
+/* ═══════════════ THE FOUR-COLUMN LOADOUT, 19.12 / 19.15 ═══════════════ */
 /*
      UNIT DETAIL │ UNITS │ TOWERS │ TOWER DETAIL
 
    The two middle columns are the same decision made twice, so they share ONE
    grid rule, ONE header rule and ONE card (the card itself is .lo-card, in
    style.css, unchanged). They cannot be styled apart by a later edit to
-   either one, which is the point — a player has to read them as a pair.
+   either one, which is the point, a player has to read them as a pair.
 
    The two outer columns are the opposite register: no frame, no hairline
    grid, longer leading, quieter ground. Density on the inside, calm on the
@@ -2015,12 +2020,12 @@ body:not(.arena-field) .arena-ladder { display: none; }
 /* THE ONE SCREEN THAT GENUINELY WANTS THE WIDTH. At the shared 1400 wrap each
    picker holds exactly two tracks and the towers column becomes twenty rows of
    scrolling; at 1720 it holds three and the two columns still end level. Every
-   other screen keeps 1400 — this is a property of four columns, not a taste. */
+   other screen keeps 1400, this is a property of four columns, not a taste. */
 #screen-loadout .setup-wrap { max-width: 1720px; }
 
 .lo-columns {
   /* 2×272 + 2×(2×138 + 9 + 28) + 3×14 = 1212 of content, inside a wrap that
-     spends 48 more on padding — which is where LO_FOUR_COL_MIN_PX (1280,
+     spends 48 more on padding, which is where LO_FOUR_COL_MIN_PX (1280,
      with headroom) comes from. Keep the two in step. */
   --lo-detail-w: 272px;
   --lo-card-min: 138px;
@@ -2055,7 +2060,7 @@ body:not(.arena-field) .arena-ladder { display: none; }
 .lo-col-n.ready { color: var(--green); text-shadow: 0 0 14px rgba(74, 222, 128, .45); }
 
 /* THE SAME GRID, BOTH COLUMNS. auto-fill rather than a hand-set count, so at
-   any viewport the two carry the same number of tracks — a fixed count would
+   any viewport the two carry the same number of tracks, a fixed count would
    let one column show three cards and the other two, and the pairing would be
    a claim the layout was not honouring. */
 .lo-pick-body {
@@ -2119,7 +2124,7 @@ body:not(.arena-field) .arena-ladder { display: none; }
   color: var(--text-mute); text-transform: uppercase;
 }
 /* `transition: none` is load-bearing, not tidiness. .icon-btn carries
-   `transition: all .13s`, and `all` includes the visibility this button
+   `transition: background-color, border-color, color, box-shadow, transform, opacity, filter .13s`, and `all` includes the visibility this button
    INHERITS from the drawer -- so on opening, the button computed as
    `visibility: hidden` for the first 130ms while its parent was already
    visible, and an element that is not visible cannot take focus. MEASURED:
@@ -2163,7 +2168,7 @@ body:not(.arena-field) .arena-ladder { display: none; }
   border: 1px dashed var(--line-2); border-radius: 8px; padding: 8px 10px;
 }
 .lo-d-gate b { color: var(--text-dim); }
-/* A hairline with a word sitting in it — the engraved-linework half of the
+/* A hairline with a word sitting in it, the engraved-linework half of the
    identity, doing the work a second heading would otherwise do. */
 .lo-d-sep { display: flex; align-items: center; gap: 9px; margin: 14px 0 9px; }
 .lo-d-sep::before, .lo-d-sep::after {
@@ -2186,7 +2191,7 @@ body:not(.arena-field) .arena-ladder { display: none; }
 .lo-detail-open:hover { background: rgba(255, 255, 255, .1); }
 
 /* ═══ NARROW: the detail columns become a drawer, the pickers do not move ═══
-   Must stay equal to LO_FOUR_COL_MIN_PX in ui.js — the drawer is opened from
+   Must stay equal to LO_FOUR_COL_MIN_PX in ui.js, the drawer is opened from
    there and laid out here, and a disagreement is a drawer that opens
    invisibly. Reflowing the PICKERS to one column was the alternative and it
    is worse: it stacks the two decisions the screen exists to pair, which
@@ -2238,7 +2243,7 @@ body:not(.arena-field) .arena-ladder { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* Instant, never absent — the panel is the information. */
+  /* Instant, never absent, the panel is the information. */
   .lo-detail-col { transition: none; }
   .lo-chip { transition: none; }
 }
@@ -2255,20 +2260,29 @@ body:not(.arena-field) .arena-ladder { display: none; }
      data URI that decodes asynchronously, so an intrinsically-sized img has no
      height until it decodes -- measured at 2px (the border alone) and then
      jumping to 132px. Reserving the box means the detail column's layout is
-     final before the pixels arrive, and object-fit crops rather than squashes. */
-  height: 132px;
-  object-fit: cover;
+     final before the pixels arrive, and object-fit fits rather than squashes. */
+  height: 156px;
+  object-fit: contain;
+  /* CONTAIN, not COVER (Session 29, owner report: "the unit banner pic is
+     cutoff"). Measured: every foe_ plate is 224x224 and every twr_ plate is
+     square too, while this slot is full-width by a fixed height. `cover` on a
+     1:1 source in a wide short box crops the top and bottom off the subject,
+     which is exactly what was reported. `contain` shows the whole plate and
+     the panel below frames the letterbox so it reads as a mount, not a gap.
+     The fixed height is still load-bearing for the reason above. */
+  background: rgba(8, 14, 24, 0.55);
+  padding: 4px;
   border-radius: 10px;
   margin: 8px 0 2px;
   border: 1px solid rgba(110, 165, 210, 0.18);
 }
 
 
-/* ═════════════ 20.3 — A CLAIMED WORLD WEARS YOUR FACTION'S COLOUR ══════
+/* ═════════════ 20.3. A CLAIMED WORLD WEARS YOUR FACTION'S COLOUR ══════
    Four channels, deliberately redundant, because one of them is hue and hue
    is the channel that fails first. HUE says WHOSE (--yc, straight out of
-   FACTIONS). FILL says HOW MUCH — the tide rises a third of the disc per
-   star. SHAPE says DONE — the claim ring is an open arc until it closes.
+   FACTIONS). FILL says HOW MUCH, the tide rises a third of the disc per
+   star. SHAPE says DONE, the claim ring is an open arc until it closes.
    WEIGHT and a SIGIL say it a fourth time for the far-out zoom, where every
    hue on this map washes to the same pale grey and a colour-blind player has
    nothing else left to read. */
@@ -2287,7 +2301,7 @@ body:not(.arena-field) .arena-ladder { display: none; }
 .gx-world.mine .gx-seat { stroke: var(--fc); stroke-dasharray: none; opacity: .95; }
 .gx-sigil-bg { fill: rgba(6,11,18,.86); stroke: var(--yc, var(--fc)); stroke-width: .18; }
 .gx-sigil { fill: var(--yc, var(--fc)); font-family: var(--sans, sans-serif); }
-/* On an overview the sigil is a two-pixel glyph — noise, not information —
+/* On an overview the sigil is a two-pixel glyph, noise, not information
    and the tide and the closed ring carry the read there without it. */
 .gx-viewport.gx-far .gx-claimed-mark { display: none; }
 /* A world already yours is not a destination, so it does not breathe with the
@@ -2436,7 +2450,7 @@ body:not(.arena-field) .arena-ladder { display: none; }
 /* ── THE RENEGADE WORLD ────────────────────────────────────────────────
    A splinter of your own power, flying your own colours on ground you do
    not hold. It is the only world on the map whose faction tint is also
-   YOUR tint, so without a mark of its own it reads as already conquered —
+   YOUR tint, so without a mark of its own it reads as already conquered
    which is the one thing it must never read as. A dashed ring says
    "contested from within" without inventing a sixth palette. */
 /* BOTH spellings, because the two maps emit different classes: the campaign
@@ -2543,3 +2557,144 @@ body:not(.arena-field) .arena-ladder { display: none; }
   border: 1px solid var(--line); background: rgba(255,255,255,.05);
   color: var(--text-dim); }
 .mu-rolemark { font-size: 10px; opacity: .8; margin-right: 2px; }
+
+/* ACHIEVEMENTS on the results screen. Mirrors .rw-saved so a defeat and a
+   victory read as the same kind of ledger, not two different screens. */
+.rw-achv { display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+           padding: 10px 12px; margin-top: 8px; border-radius: 8px;
+           background: rgba(250, 204, 21, 0.06);
+           border: 1px solid rgba(250, 204, 21, 0.22); }
+.rw-achv > b { font-size: 10.5px; letter-spacing: .18em; color: var(--gold); }
+.rw-achv > span { display: inline-flex; align-items: center; gap: 6px;
+                  padding: 3px 9px; border-radius: 999px; font-size: 11.5px;
+                  color: var(--text); background: rgba(0,0,0,.32);
+                  border: 1px solid rgba(250, 204, 21, 0.3); }
+.rw-achv > span i { font-style: normal; font-weight: 800; color: var(--gold); }
+.rw-achv > em { flex-basis: 100%; font-size: 11px; color: var(--text-mute); }
+
+/* ═════════ 29.1  THE PREVIEW PANE, REBUILT ═══════════════════════════════
+   Reading order is the decision order: who holds it, what the board is, what
+   the scenario asks and pays, the board shape, then flavor. Motion here obeys
+   the interface law: transform and opacity only, under 300ms, ease-out, and
+   nothing animates on an action a player takes dozens of times a session. */
+
+/* The commander rides the banner. Grid, not flex, so the portrait stays dead
+   centre no matter how many icons each side actually resolved. */
+.br-cmdrow { position: absolute; left: 0; right: 0; bottom: 0;
+             display: grid; grid-template-columns: 1fr auto 1fr;
+             align-items: end; gap: 8px; padding: 8px 10px;
+             background: linear-gradient(180deg, transparent, rgba(4,8,14,.88) 55%); }
+.br-plate { position: relative; }
+.br-plate.bare { min-height: 68px; background: rgba(8,14,24,.5);
+                 border: 1px solid var(--line); border-radius: 10px; }
+.br-side { display: flex; gap: 4px; align-items: center; min-width: 0; }
+.br-side.right { justify-content: flex-end; }
+.br-face { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.br-face b { font-size: 11px; letter-spacing: .1em; white-space: nowrap; }
+.br-ci { display: inline-flex; align-items: center; justify-content: center;
+         width: 24px; height: 24px; border-radius: 6px; font-size: 13px;
+         color: var(--tc, var(--text)); background: rgba(4,8,14,.72);
+         border: 1px solid color-mix(in oklab, var(--tc, #7aa) 45%, transparent);
+         transition: transform .14s var(--e-tap); }
+@media (hover: hover) and (pointer: fine) { .br-ci:hover { transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) { .br-ci { transition: none; } }
+.br-ci.un { line-height: 0; }
+
+/* "Barren Forge": two halves, each with its own tooltip. */
+.br-mapname { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px;
+              padding: 6px 0 2px; }
+.br-adj { font-size: 15px; font-weight: 700; letter-spacing: .02em; color: var(--text);
+          border-bottom: 1px dotted color-mix(in oklab, var(--text) 40%, transparent);
+          cursor: help; }
+.br-kind { font-size: 11.5px; letter-spacing: .08em; color: var(--text-dim);
+           padding: 2px 7px; border-radius: 999px; background: rgba(255,255,255,.05);
+           border: 1px solid var(--line); cursor: help; }
+.br-kind.sealed { color: var(--red); border-color: color-mix(in oklab, var(--red) 45%, transparent); }
+.br-sys { margin-left: auto; font-size: 10.5px; letter-spacing: .14em;
+          color: var(--text-mute); }
+
+/* The scenario block, directly under the banner, stars living inside it. */
+.br-scen { margin: 8px 0 6px; padding: 9px 10px; border-radius: 9px;
+           background: rgba(10,18,30,.55); border: 1px solid var(--line); }
+.br-scen-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.br-scen-name { font-size: 11px; font-weight: 800; letter-spacing: .18em;
+                color: var(--gold); }
+.br-scen-brief { font-size: 12px; color: var(--text-dim); }
+.br-mobs { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+.br-mob { display: inline-flex; align-items: center; justify-content: center;
+          width: 26px; height: 26px; line-height: 0; border-radius: 6px;
+          background: rgba(4,8,14,.6);
+          border: 1px solid color-mix(in oklab, var(--tc, #7aa) 40%, transparent); }
+
+/* One row per star: what it asks, what it pays. */
+.br-stars { margin-top: 8px; display: flex; flex-direction: column; gap: 3px; }
+.br-srow { display: grid; grid-template-columns: 42px 1fr auto; gap: 8px;
+           align-items: center; padding: 4px 6px; border-radius: 6px;
+           background: rgba(0,0,0,.22); font-size: 11.5px; }
+.br-srow.got { background: color-mix(in oklab, var(--gold) 12%, transparent);
+               border: 1px solid color-mix(in oklab, var(--gold) 34%, transparent); }
+.br-srow.none { opacity: .55; }
+.br-sn { color: var(--text-mute); letter-spacing: -1px; font-size: 10px; }
+.br-srow.got .br-sn { color: var(--gold); }
+.br-sc { color: var(--text); }
+.br-sr { color: var(--text-dim); text-align: right; cursor: help;
+         border-bottom: 1px dotted color-mix(in oklab, var(--text-dim) 40%, transparent); }
+.br-srow.got .br-sr { color: var(--green); }
+
+/* Flavor is always last, always italic, always quiet. */
+.br-flavor { margin-top: 8px; font-size: 11.5px; line-height: 1.55;
+             color: var(--text-mute); font-style: italic; }
+
+/* The course badge is now the commander who is waiting there. */
+.course-set { display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+              margin-bottom: 8px; border-radius: 9px; cursor: help;
+              background: color-mix(in oklab, var(--gold) 9%, transparent);
+              border: 1px solid color-mix(in oklab, var(--gold) 30%, transparent); }
+.course-set b { font-size: 12.5px; letter-spacing: .08em; }
+.course-set em { font-size: 11px; color: var(--text-mute); font-style: italic; }
+
+.br-ci.tw { line-height: 0; }
+
+/* ═════════ 29.2  THE STANDING COMMAND BAR ═══════════════════════════════
+   OWNER-SET (Session 29): one rounded box running END TO END behind the
+   portrait AND both icon rails, so the commander and the loadout it fields
+   read as a single standing order rather than three things that happen to sit
+   on the same row. The portrait is the anchor and is sized to say so. */
+.br-cmdrow {
+  position: absolute; left: 8px; right: 8px; bottom: 8px;
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  align-items: center; gap: 10px;
+  padding: 7px 12px; border-radius: 14px;
+  /* The bar is its own surface, not a gradient veil over the plate. A veil
+     let the artwork behind it decide the contrast, and the art varies per
+     world and per holder tint, so the same text passed on one plate and
+     failed on another. An opaque ground is the only version that measures
+     the same on all 106 of them. */
+  background: rgba(6, 11, 19, 0.86);
+  border: 1px solid color-mix(in oklab, var(--fc, #7aa) 34%, transparent);
+  box-shadow: 0 6px 20px -8px rgba(0, 0, 0, .7);
+}
+.br-plate { position: relative; padding-bottom: 4px; }
+.br-plate.bare { min-height: 104px; background: rgba(8,14,24,.5);
+                 border: 1px solid var(--line); border-radius: 12px; }
+
+/* The rails hug the portrait: units end at it, towers begin at it. */
+.br-side { display: flex; gap: 5px; align-items: center; min-width: 0; }
+.br-side.left  { justify-content: flex-end; }
+.br-side.right { justify-content: flex-start; }
+
+.br-face { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.br-face img, .br-face canvas { border-radius: 12px;
+  border: 1px solid color-mix(in oklab, var(--fc, #7aa) 55%, transparent); }
+.br-face b { font-size: 12px; letter-spacing: .12em; white-space: nowrap; }
+
+/* Icons scale with the taller bar. */
+.br-ci { width: 30px; height: 30px; border-radius: 8px; }
+
+@media (max-width: 760px) {
+  /* At phone width three columns cannot hold eight icons and a portrait, so
+     the rails wrap under the portrait rather than squeezing every tile below
+     a readable size. */
+  .br-cmdrow { grid-template-columns: 1fr; justify-items: center; gap: 6px; }
+  .br-side.left, .br-side.right { justify-content: center; }
+}

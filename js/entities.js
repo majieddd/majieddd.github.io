@@ -1,5 +1,5 @@
 /* ==========================================================================
-   COSMIC CONQUEST — Entities & Simulation
+   COSMIC CONQUEST, Entities & Simulation
    --------------------------------------------------------------------------
    Every unit carries `hostileTo`, the side index it is marching on. Towers
    only ever engage units hostile to their own side, which is what lets both
@@ -195,7 +195,7 @@ class Enemy {
 
     /* Reanimated units are faster but markedly frailer, and a leak from one
        costs roughly half what the living unit would. Both matter: at 1:1 kills
-       and full leak cost the loop runs away — whichever side is marginally
+       and full leak cost the loop runs away, whichever side is marginally
        ahead floods the other and the match is decided in the opening waves.
        Halving the pressure keeps reanimates a real threat you must answer
        without letting a small lead snowball into an instant win. */
@@ -229,7 +229,7 @@ class Enemy {
   /** Resistances and armour include whatever nearby aura carriers are granting. */
   get totalSlowResist() { return Math.min(0.97, this.slowResist + this.auraSlowResist); }
   get totalPullResist() {
-    /* Full immunity (elites, Wardens) is absolute — the cap only applies to
+    /* Full immunity (elites, Wardens) is absolute, the cap only applies to
        stacked partial resistances. */
     if (this.pullResist >= 1) return 1;
     return Math.min(0.98, this.pullResist + this.auraPullResist);
@@ -438,7 +438,7 @@ class Enemy {
     if (this.revealT > 0) supp *= (1 - Math.min(REVEAL_CAP, this.revealAmt || 0));
     /* Shelled mobs shrug off area damage -- splash alone stops clearing maps. */
     if (opts.splash && this.def.splashResist) amount *= (1 - this.def.splashResist * supp);
-    /* A phased Wraith simply cannot be hurt — sustained damage is wasted on it. */
+    /* A phased Wraith simply cannot be hurt, sustained damage is wasted on it. */
     if (this.phaseOn) { this.flash = 0.05; return 0; }
     amount *= (1 + this.vulnAmt);
     /* CANTOR's and VORN's slow-vulnerability rows -- six talents that wrote
@@ -825,7 +825,7 @@ class Enemy {
 
     const ang = Math.atan2(this.uy, this.ux);
     const hurt = this.flash > 0;
-    /* Phased units render as a hollow ghost — you can see it is untouchable. */
+    /* Phased units render as a hollow ghost, you can see it is untouchable. */
     if (this.phaseOn) ctx.globalAlpha = 0.35;
     ctx.shadowColor = c; ctx.shadowBlur = this.boss ? 24 : this.miniboss ? 18 : 9;
     ctx.fillStyle = hurt ? '#ffffff' : c;
@@ -1097,7 +1097,7 @@ class Enemy {
   drawWarden(ctx, a) {
     const r = this.radius;
     ctx.save(); ctx.rotate(a);
-    /* an anchored, braced block — visually immovable */
+    /* an anchored, braced block, visually immovable */
     ctx.beginPath(); ctx.roundRect(-r * 0.85, -r * 0.85, r * 1.7, r * 1.7, 3); ctx.fill(); ctx.stroke();
     ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 3;
     ctx.beginPath();
@@ -1362,7 +1362,7 @@ function requisitionFor(tower) {
 }
 
 /**
- * THE OATH — spend a Custodian warden on a breach. True when one was spent.
+ * THE OATH, spend a Custodian warden on a breach. True when one was spent.
  *
  * The deepest bench goes first so a thin watch is held in reserve, which is
  * what stops a CORDON being drained by a wave a VIGIL beside it could have
@@ -1454,7 +1454,7 @@ class Tower {
 
   /**
    * Applies a technology option. Keys ending in `Mul` multiply the matching
-   * base stat; everything else adds. `statusMul` is the one special case — it
+   * base stat; everything else adds. `statusMul` is the one special case, it
    * scales this tower's status effects rather than a stat of its own.
    */
   applyTech(s, mods) {
@@ -1488,7 +1488,7 @@ class Tower {
     }
     for (const r of this.rolls) this.applyTech(s, r.mods);
 
-    /* SURGE every N ascensions — N and strength are commander-dependent. */
+    /* SURGE every N ascensions. N and strength are commander-dependent. */
     const surgeEvery = traits ? traits.surgeEvery : ASCENSION.surgeEvery;
     const surgeMul = traits ? traits.surgeMul : 1;
     const surges = Math.floor(this.asc / surgeEvery);
@@ -1567,7 +1567,7 @@ class Tower {
     this.ascRate   = Math.pow(ASCENSION.rate,   this.asc);
     this.ascRange  = Math.pow(ASCENSION.range,  this.asc);
 
-    /* Drone count can change on upgrade — rebuild the flight. */
+    /* Drone count can change on upgrade, rebuild the flight. */
     if (this.def.attack === 'drones') {
       const want = s.drones || 0;
       while (this.drones.length > want) this.drones.pop();
@@ -1663,7 +1663,7 @@ class Tower {
     return { isCrit: false, mult: 1 };
   }
 
-  /** Granted automatically on each level-up — no decision, just a small boon. */
+  /** Granted automatically on each level-up, no decision, just a small boon. */
   addRoll() {
     const roll = LEVEL_ROLLS[Math.floor(Math.random() * LEVEL_ROLLS.length)];
     this.rolls.push(roll);
@@ -1918,7 +1918,7 @@ class Tower {
     return best;
   }
 
-  /** All hostile units within range — used by area mechanics. */
+  /** All hostile units within range, used by area mechanics. */
   acquireAll(enemies, rangeOverride) {
     const R = rangeOverride || this.rangePx, r2 = R * R;
     const out = [];
@@ -1932,7 +1932,7 @@ class Tower {
   }
 
   /**
-   * MORTAR — is anything on this side currently holding `e`?
+   * MORTAR, is anything on this side currently holding `e`?
    *
    * WEAPONS only: a Beacon is not an observation post, and a jammed tower has
    * no radio, which is what stops a sabotaged line quietly extending an
@@ -1980,7 +1980,7 @@ class Tower {
       if (this.sabLingerT <= 0) this.sabLingerAmt = 0;
     }
 
-    /* A jammed tower is completely offline. Economy keeps ticking — Jammers
+    /* A jammed tower is completely offline. Economy keeps ticking. Jammers
        silence weapons, they do not seize the treasury. */
     if (this.jamTimer > 0) {
       this.jamTimer -= dt;
@@ -2133,7 +2133,7 @@ class Tower {
     game.shake(crit.isCrit ? 4 : 2);
   }
 
-  /** TETHER — the only mechanic that moves enemies backward down the lane. */
+  /** TETHER, the only mechanic that moves enemies backward down the lane. */
   fireTether(target, game) {
     const s = this.stats;
     Sound.play('tether');
@@ -2157,7 +2157,7 @@ class Tower {
     game.spawnBurst(target.x, target.y, 6, this.def.color, 70);
   }
 
-  /** PRISM — damage ramps while focus is held, resets the instant it breaks. */
+  /** PRISM, damage ramps while focus is held, resets the instant it breaks. */
   updateBeam(dt, game) {
     const s = this.stats;
     const target = this.acquire(game.enemies);
@@ -2186,7 +2186,7 @@ class Tower {
     if (Math.random() < dt * 8) Sound.play('prism');
   }
 
-  /** SAPPER — seeds mines onto the lane and banks them between waves. */
+  /** SAPPER, seeds mines onto the lane and banks them between waves. */
   updateMines(dt, game) {
     const s = this.stats;
     this.mineTimer -= dt;
@@ -2206,7 +2206,7 @@ class Tower {
     for (const d of this.drones) d.update(dt, game);
   }
 
-  /** SINGULARITY — compresses a strung-out wave into one knot. */
+  /** SINGULARITY, compresses a strung-out wave into one knot. */
   updateGravity(dt, game) {
     const s = this.stats;
     this.cooldown -= dt;
@@ -2235,7 +2235,7 @@ class Tower {
   }
 
   /**
-   * BEACON — consecrate the best gun inside the field, then the next.
+   * BEACON, consecrate the best gun inside the field, then the next.
    *
    * The grant is written onto the LIT tower with a lifetime rather than
    * recomputed from here every frame, so nothing has to be unwound when the
@@ -2292,7 +2292,7 @@ class Tower {
   }
 
   /**
-   * CUSTODIAN — keep the bench full.
+   * CUSTODIAN, keep the bench full.
    *
    * The interception itself lives in Enemy.update, at the only moment it can
    * happen: the step a unit reaches the line. All this does is raise wardens
@@ -2314,7 +2314,7 @@ class Tower {
   }
 
   /**
-   * ARC — earth the discharge into the lane and let it run.
+   * ARC, earth the discharge into the lane and let it run.
    *
    * Selection is by distance ALONG the path, not by proximity, which is the
    * whole separation from a chain: CONCORD asks who else is near this body,
@@ -2348,7 +2348,7 @@ class Tower {
                       color: this.def.color, width: 3, jagged: true });
   }
 
-  /** VAULT — mints gold on a timer; the kill skim is paid by Game.killEnemy. */
+  /** VAULT, mints gold on a timer; the kill skim is paid by Game.killEnemy. */
   updateEconomy(dt, game) {
     const s = this.stats;
     this.incomeTimer += dt;
@@ -2533,7 +2533,7 @@ class Tower {
   /**
    * The per-hit half of the tech origins.
    *
-   * HUMAN and ROBOTIC have no clause here on purpose — their identities are
+   * HUMAN and ROBOTIC have no clause here on purpose, their identities are
    * the node rule and the lattice, both of which are stat-block work already
    * done in recompute(). An origin that reached into every damage event AND
    * the stat block would be two origins wearing one name.
@@ -2665,7 +2665,7 @@ class Tower {
     ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
 
-    /* A silenced tower has to be unmistakable — you need to see the hole in
+    /* A silenced tower has to be unmistakable, you need to see the hole in
        your line the instant a Jammer opens up. */
     if (this.jamTimer > 0) {
       ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
@@ -2917,7 +2917,7 @@ class Tower {
     ctx.fillStyle = d.dark; ctx.beginPath(); ctx.roundRect(-11, -11, 22, 22, 4); ctx.fill();
     this.aimed(ctx, () => {
       ctx.fillStyle = d.color;
-      /* twin elevated barrels — reads as anti-air at a glance */
+      /* twin elevated barrels, reads as anti-air at a glance */
       for (const off of [-3.4, 3.4]) { ctx.beginPath(); ctx.roundRect(1, off - 1.4, this.branch ? 17 : 13, 2.8, 1.4); ctx.fill(); }
       ctx.fillStyle = d.dark; ctx.beginPath(); ctx.arc(0, 0, 4.5, 0, TAU); ctx.fill();
     });
@@ -3136,7 +3136,7 @@ class Projectile {
 }
 
 /* ==========================================================================
-   SESSION 19 — THE SIX: READERS
+   SESSION 19. THE SIX: READERS
    --------------------------------------------------------------------------
    Every base key the six new towers carry is SPENT here. The rule this file
    is held to (docs/TOWER-AUDIT.md) is that a key without a reader is an
@@ -3370,7 +3370,7 @@ function onEnemyDeath(e) {
 
 /* ------------------------------------------------------ BEHAVIOUR: THE SIX */
 
-/* SEPULCHRE — hold the line for towers that are no longer on it. */
+/* SEPULCHRE, hold the line for towers that are no longer on it. */
 Tower.prototype.atk_sepulchre = function (dt, game) {
   const s = this.stats;
   if (!this.wards) this.wards = [];
@@ -3438,7 +3438,7 @@ Tower.prototype.atk_sepulchre = function (dt, game) {
   }
 };
 
-/* ORISON — name one creature the offering, and settle what it owes. */
+/* ORISON, name one creature the offering, and settle what it owes. */
 Tower.prototype.atk_orison = function (dt, game) {
   const s = this.stats;
   const e = this.offering;
@@ -3507,7 +3507,7 @@ Tower.prototype.atk_orison = function (dt, game) {
   }
 };
 
-/* ANTIPHON — spend what your losses on rival ground have banked. */
+/* ANTIPHON, spend what your losses on rival ground have banked. */
 Tower.prototype.atk_antiphon = function (dt, game) {
   ensurePaidSendLedger();
   const s = this.stats;
@@ -3531,7 +3531,7 @@ Tower.prototype.atk_antiphon = function (dt, game) {
   if (this.side === game.viewSide) game.addFloater(this.x, this.y - 22, 'ANSWERED', false, this.def.color, 13);
 };
 
-/* GESTALT — grow on every body that dies in reach; forget the lot on a lull. */
+/* GESTALT, grow on every body that dies in reach; forget the lot on a lull. */
 Tower.prototype.atk_gestalt = function (dt, game) {
   const s = this.stats;
   /* USE IT OR LOSE IT. The whole stack goes at once, not a point at a time:
@@ -3555,7 +3555,7 @@ Tower.prototype.atk_gestalt = function (dt, game) {
   if (target && this.cooldown <= 0) { this.cooldown = 1 / this.effRate; this.recoil = 1; this.fireProjectile(target, game); }
 };
 
-/* MAW — remove one creature from the board and digest it into gold. */
+/* MAW, remove one creature from the board and digest it into gold. */
 Tower.prototype.atk_maw = function (dt, game) {
   const s = this.stats;
 
@@ -3631,7 +3631,7 @@ Tower.prototype.atk_maw = function (dt, game) {
   }
 };
 
-/* HUNGERING VEIL — call in what a creature has been given. */
+/* HUNGERING VEIL, call in what a creature has been given. */
 Tower.prototype.atk_veil = function (dt, game) {
   const s = this.stats;
   const tax = s.veilHealTax || 0;

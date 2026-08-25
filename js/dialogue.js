@@ -2,8 +2,8 @@
    PORTRAITS AND PRE-BATTLE DIALOGUE
 
    Portraits are procedural: an abstract armored bust drawn from the
-   commander's faction silhouette and colours. Deliberately geometric — an
-   insignia, not a face — so twenty-one of them stay consistent and none of
+   commander’s faction silhouette and colours. Deliberately geometric, an
+   insignia, not a face, so twenty-one of them stay consistent and none of
    them fall into the uncanny valley.
    ========================================================================== */
 
@@ -16,14 +16,14 @@ function art(key) {
   return (typeof ARTPACK !== 'undefined' && ARTPACK[key]) || '';
 }
 
-/** An <img> for an art key, or '' — safe to interpolate straight into HTML. */
+/** An <img> for an art key, or '', safe to interpolate straight into HTML. */
 function artImg(key, cls, alt) {
   const src = art(key);
   return src ? `<img class="${cls}" src="${src}" alt="${alt || ''}" loading="lazy">` : '';
 }
 
 /** The painted planet for a world: one of up to three variants per KIND,
-    chosen deterministically from the world's own id so a system reads as a
+    chosen deterministically from the world’s own id so a system reads as a
     set of distinct places rather than four repeated stamps, and so the same
     world always shows the same planet. Falls back to the base key. */
 function planetArtFor(w) {
@@ -88,7 +88,7 @@ function _proceduralPortrait(cmd, size) {
 }
 
 /* --------------------------------------------------------------------------
-   DIALOGUE — the two commanders address each other before a battle.
+   DIALOGUE, the two commanders address each other before a battle.
    One opener per commander, reply pools per faction, and special exchanges
    for matchups with history.
 -------------------------------------------------------------------------- */
@@ -121,14 +121,14 @@ const DIALOGUE = {
     human:  ['We adapted to worse than you. Hold the line.',
              'Humanity buried every empire that called itself inevitable.'],
     light:  ['The Light does not bargain with what it must save.',
-             'All life is one life. Yours included: surrendered or not.'],
+             'All life is one life. You will agree to it, and the record will show that you agreed.'],
     xeno:   ['You are not an enemy. You are an acquisition.',
-             'Everything you are will be folded into us by nightfall.'],
+             'Everything you are will be owed to someone by nightfall.'],
     pirate: ['No flags on my hull, no mercy in my hold.',
              'The swarm eats whoever loses. Try to make it you.'],
     /* THE PARALLEL speaks for itself. Without this entry the lookup below
        falls through to `human`, and a machine commander opened every battle
-       with Humanity's line about burying empires -- the one faction whose
+       with Humanity’s line about burying empires -- the one faction whose
        whole identity is that it is not human, saying so in a human voice.
        The Parallel only ever REPLIES: it holds no worlds and seats no
        bosses, so it never opens an exchange and needs no `openers` entry. */
@@ -186,9 +186,9 @@ function battleDialogue(playerCmd, rivalCmd, playerFaction) {
 }
 
 /* --------------------------------------------------------------------------
-   ABILITY FX — a per-commander activation signature.
+   ABILITY FX, a per-commander activation signature.
    Kind decides the shape (offense radiates out, defense draws in); the
-   commander's colour and roster index decide tint and pitch.
+   commander’s colour and roster index decide tint and pitch.
 -------------------------------------------------------------------------- */
 function abilityFxFor(side, abilityDef) {
   const cmd = side.commander || {};

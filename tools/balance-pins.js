@@ -1,5 +1,5 @@
 /* Balance pin harness. Mirror-AI drives BOTH seats so a run reflects competent
-   play, and the loadout is PINNED — passing a pool to AI.pickLoadout only sets
+   play, and the loadout is PINNED, passing a pool to AI.pickLoadout only sets
    a budget, it never filters cores, so an unpinned run silently re-bases. */
 window.PINS = (function () {
   const PIN = ['bolt', 'cryo', 'mortar', 'flak', 'beacon'];
@@ -98,7 +98,7 @@ window.PINS = (function () {
        same page, run 2 -> wave 20, steps 26129   SAME SEED, DIFFERENT RESULT
 
      That was the AI prototype carrying per-match state between runs, and it is
-     fixed below — `resetAI()` runs at the top of every `begin()`. `selfTest()`
+     fixed below, `resetAI()` runs at the top of every `begin()`. `selfTest()`
      is the regression test. Load this harness in a page that has not yet run a
      match, or the snapshot it restores is already dirty. */
   let NATIVE = null;
@@ -232,7 +232,7 @@ window.PINS = (function () {
     resetAI: resetAI,
     /* The regression test for the AI-prototype leak: the same seed twice in one
        page must now agree. `reproducible: false` means the reset above has
-       stopped covering everything a match leaves behind — treat any number the
+       stopped covering everything a match leaves behind, treat any number the
        harness produces as untrustworthy until it is true again. */
     selfTest(mapIdx, s) {
       maxProfile(0); const a = runOne(mapIdx || 0, 'contested', s === undefined ? 1234 : s);

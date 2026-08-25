@@ -1,5 +1,5 @@
 /* ==========================================================================
-   COSMIC CONQUEST — Expansion Mechanics
+   COSMIC CONQUEST, Expansion Mechanics
    --------------------------------------------------------------------------
    Behaviours for the sixteen expansion towers, plus the Minion and Barricade
    entities they field. Loaded after entities.js; everything here extends the
@@ -179,7 +179,7 @@ class Barricade {
 
 /* ------------------------------------------------- TOWER BEHAVIOUR EXTENSIONS */
 
-/* FOUNDRY — forge and maintain a fighting flock. */
+/* FOUNDRY, forge and maintain a fighting flock. */
 Tower.prototype.atk_minions = function (dt, game) {
   this.minionList = this.minionList || [];
   this.forgeT = (this.forgeT || 0) - dt;
@@ -197,7 +197,7 @@ Tower.prototype.atk_minions = function (dt, game) {
   }
 };
 
-/* SABOTEUR — reach across the field and knock rival towers offline. */
+/* SABOTEUR, reach across the field and knock rival towers offline. */
 Tower.prototype.atk_sabotage = function (dt, game) {
   this.sabT = (this.sabT === undefined ? (this.stats.sabotageEvery || 10) * 0.6 : this.sabT) - dt;
   if (this.sabT > 0) return;
@@ -235,7 +235,7 @@ Tower.prototype.atk_sabotage = function (dt, game) {
   if (this.side === game.viewSide) Sound.play('sabotage');
 };
 
-/* RAMPART — keep barricades standing on the nearest lane stretch. */
+/* RAMPART, keep barricades standing on the nearest lane stretch. */
 Tower.prototype.atk_barricade = function (dt, game) {
   this.wallList = this.wallList || [];
   this.wallT = (this.wallT || 0) - dt;
@@ -262,7 +262,7 @@ Tower.prototype.atk_barricade = function (dt, game) {
   }
 };
 
-/* CHRONO — rewind everything in range by its own recent motion. */
+/* CHRONO, rewind everything in range by its own recent motion. */
 Tower.prototype.atk_chrono = function (dt, game) {
   this.cooldown -= dt;
   if (this.cooldown > 0) return;
@@ -289,7 +289,7 @@ Tower.prototype.atk_chrono = function (dt, game) {
   } else this.cooldown = 0.2;
 };
 
-/* ECHO — repeat the strongest neighbours' hits on its own target. */
+/* ECHO, repeat the strongest neighbours' hits on its own target. */
 Tower.prototype.atk_echo = function (dt, game) {
   this.cooldown -= dt;
   if (this.cooldown > 0) return;
@@ -317,7 +317,7 @@ Tower.prototype.atk_echo = function (dt, game) {
   if (this.side === game.viewSide) Sound.play('echo');
 };
 
-/* QUAKE — slam every ground enemy on this side of the field. */
+/* QUAKE, slam every ground enemy on this side of the field. */
 Tower.prototype.atk_quake = function (dt, game) {
   this.cooldown -= dt;
   if (this.cooldown > 0) return;
@@ -346,7 +346,7 @@ Tower.prototype.atk_quake = function (dt, game) {
   if (this.side === game.viewSide) Sound.play('quake');
 };
 
-/* SIREN — convert the strongest affordable enemy and send it onward. */
+/* SIREN, convert the strongest affordable enemy and send it onward. */
 Tower.prototype.atk_siren = function (dt, game) {
   this.charmT = (this.charmT === undefined ? (this.stats.charmEvery || 18) * 0.5 : this.charmT) - dt;
   if (this.charmT > 0) return;
@@ -397,7 +397,7 @@ Tower.prototype.atk_siren = function (dt, game) {
   if (this.side === game.viewSide) Sound.play('siren');
 };
 
-/* GLAIVE — a blade that travels the lane path outward and back. */
+/* GLAIVE, a blade that travels the lane path outward and back. */
 Tower.prototype.atk_glaive = function (dt, game) {
   this.glaiveList = this.glaiveList || [];
   this.cooldown -= dt;
@@ -444,7 +444,7 @@ Tower.prototype.atk_glaive = function (dt, game) {
   }
 };
 
-/* CYCLONE — lift, hold, drop. */
+/* CYCLONE, lift, hold, drop. */
 Tower.prototype.atk_cyclone = function (dt, game) {
   this.cooldown -= dt;
   if (this.cooldown > 0) return;
@@ -473,7 +473,7 @@ Tower.prototype.atk_cyclone = function (dt, game) {
   if (this.side === game.viewSide) Sound.play('cyclone');
 };
 
-/* CAPACITOR — charge in peace, nova in war. */
+/* CAPACITOR, charge in peace, nova in war. */
 Tower.prototype.atk_capacitor = function (dt, game) {
   const s = this.stats;
   const cap = waveScaled((s.chargeMax || 400) * (s.chargeMaxMul || 1));
@@ -504,7 +504,7 @@ Tower.prototype.atk_capacitor = function (dt, game) {
 Tower.prototype.atk_shepherd = function () {};
 Tower.prototype.atk_ward = function () {};
 
-/* ARBALEST — the shot winds tighter the longer it waits. */
+/* ARBALEST, the shot winds tighter the longer it waits. */
 Tower.prototype.atk_patience = function (dt, game) {
   const s = this.stats;
   this.windT = (this.windT || 0) + dt * (s.windRate || 0.3) * (s.windRateMul || 1);
@@ -581,7 +581,7 @@ Tower.prototype.drawExpansionField = function (ctx) {
  */
 /* Barricade health and minion output ride the same curve enemy health does.
    The galaxy-tier term was missing here while Game.waveHpMul carries it, so by
-   galaxy IV enemies were 1.9x tougher and walls were unchanged — which does not
+   galaxy IV enemies were 1.9x tougher and walls were unchanged, which does not
    make the tier harder, it deletes RAMPART and FOUNDRY from the roster. The
    tier is meant to raise the whole board, not retire two archetypes. */
 function waveScaled(v) {
@@ -634,7 +634,7 @@ Tower.prototype.estimateDps = function () {
 class AbilityOwner {
   constructor(side, color, stats) {
     this.side = side.index;
-    /* `element: null` on purpose — a construct must not seed elemental marks,
+    /* `element: null` on purpose, a construct must not seed elemental marks,
        or a free ability would out-combo the towers built to do it. */
     this.def = { color, element: null, name: 'CONSTRUCT' };
     this.stats = Object.assign({ dmgType: 'physical' }, stats);
@@ -655,8 +655,8 @@ class AbilityOwner {
   get effPierce() { return Math.min(0.95, (this.stats.pierce || 0) + this.sideMods.pierce); }
   get effStatus() { return this.sideMods.status * (this.stats.techStatus || 1); }
 }
-/* Crit and booking must behave identically to a tower's — including the
-   command upgrades that widen them — so they are borrowed, not copied. */
+/* Crit and booking must behave identically to a tower's, including the
+   command upgrades that widen them, so they are borrowed, not copied. */
 AbilityOwner.prototype.rollCrit = Tower.prototype.rollCrit;
 AbilityOwner.prototype.registerDamage = Tower.prototype.registerDamage;
 
@@ -834,7 +834,7 @@ class AbilityConstruct {
     this.drawFuse(ctx, this.x, this.y);
   }
 
-  /** Remaining duration as an arc — a temporary thing must look temporary. */
+  /** Remaining duration as an arc, a temporary thing must look temporary. */
   drawFuse(ctx, x, y) {
     const k = clamp(this.life / this.maxLife, 0, 1);
     ctx.save();

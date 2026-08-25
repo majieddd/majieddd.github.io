@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cosmic Conquest</title>
-<meta name="description" content="A PvPvE tower defense: neutral waves attack both commanders, and everything you kill is reanimated and sent at your rival.">
+<meta name="description" content="A PvPvE tower defense: neutral waves attack both commanders, and under most banners everything you kill gets back up and marches on your rival.">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/polish.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0e17'/><path d='M16 5l9 4v7c0 6-4 9.5-9 11-5-1.5-9-5-9-11V9z' fill='none' stroke='%2338e8ff' stroke-width='2.5'/></svg>">
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════ SCREEN 0 — TITLE ═════════ -->
+<!-- ═══════════════════════════════════════ SCREEN 0. TITLE ═════════ -->
 <div id="screen-title" class="screen">
   <div class="title-wrap">
     <h1 class="title-logo">COSMIC<span>CONQUEST</span></h1>
@@ -92,7 +92,7 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════ SCREEN 1 — COMMAND ═══════ -->
+<!-- ═══════════════════════════════════════ SCREEN 1. COMMAND ═══════ -->
 <div id="screen-command" class="screen hidden">
   <div class="setup-wrap">
     <header class="setup-head">
@@ -119,7 +119,7 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════ SCREEN 2 — THEATRE ═══════ -->
+<!-- ═══════════════════════════════════════ SCREEN 2. THEATRE ═══════ -->
 
 <div id="screen-multiverse" class="screen hidden">
   <div class="setup-wrap">
@@ -170,12 +170,12 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════ SCREEN 3 — LOADOUT ═══════ -->
+<!-- ═══════════════════════════════════════ SCREEN 3. LOADOUT ═══════ -->
 <div id="screen-loadout" class="screen hidden">
   <div class="setup-wrap">
     <header class="setup-head compact">
       <h1 class="logo sm">DEPLOYMENT LOADOUT</h1>
-      <p id="loadout-tagline" class="tagline">You may take <b>five</b> towers into battle. Everything else stays home.</p>
+      <p id="loadout-tagline" class="tagline">You may take <b>four</b> towers into battle. Everything else stays home.</p>
     </header>
     <div class="loadout-bar">
       <span id="loadout-unlocked" class="lo-unlocked"></span>
@@ -194,7 +194,7 @@
         <header class="lo-col-head">
           <span class="lo-col-kind">DETACHMENT</span>
           <h2 class="lo-col-name">UNITS</h2>
-          <span id="unit-count" class="lo-col-n">0 / 3</span>
+          <span id="unit-count" class="lo-col-n">0 / 4</span>
           <button class="lo-detail-open" type="button" data-opens="unit" hidden></button>
           <div id="unit-chosen" class="lo-chosen"></div>
         </header>
@@ -205,7 +205,7 @@
         <header class="lo-col-head">
           <span class="lo-col-kind">ARSENAL</span>
           <h2 class="lo-col-name">TOWERS</h2>
-          <span id="loadout-count" class="lo-col-n">0 / 5</span>
+          <span id="loadout-count" class="lo-col-n">0 / 4</span>
           <button class="lo-detail-open" type="button" data-opens="tower" hidden></button>
           <div id="tower-chosen" class="lo-chosen"></div>
         </header>
@@ -354,7 +354,7 @@
       <section class="bc-sec">
         <h3>THE ONE RULE</h3>
         <p>One wave, identical for every commander still standing: same units, same
-           instants, every base. What a <b>kill</b> becomes is your commander's
+           instants, every base. What a <b>kill</b> becomes is your commander’s
            <b>rite</b>: it may return as itself, as a different soldier from your
            roster, as something incubating where it fell: or as nothing, for the
            two rites that march on a clock and on gold instead. The pair over NEXT
@@ -389,8 +389,8 @@
       <section class="bc-sec">
         <h3>MONEY &amp; PRESSURE</h3>
         <p>Gold still in hand when a wave finishes <b>spawning</b> pays <b>6%</b>,
-           capped at <b>35%</b> of that wave's own reward, and it is read before the
-           reward lands: so it prices what you chose to hold. Each tower's price rises
+           capped at <b>35%</b> of that wave’s own reward, and it is read before the
+           reward lands: so it prices what you chose to hold. Each tower’s price rises
            with every copy you own, and every tower standing inflates every price on
            top of that. <b>Resonant field</b> buys the next wave more health for more
            bounty: your wave alone, a bet on your own defence and never a weapon aimed

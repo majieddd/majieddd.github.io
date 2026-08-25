@@ -1,12 +1,12 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   THE DUEL RELAY — two humans, two clients, one battle.
+   THE DUEL RELAY, two humans, two clients, one battle.
 
    WHY THIS SHAPE. The house rule is no external libraries, ever, and the game
    must run offline from one inlined HTML file. That rules out every signalling
    service, SDK and matchmaking backend there is. It rules IN the browser's own
    APIs, and of those BroadcastChannel is the only one that needs no third
    party at all: two tabs or two windows of the same origin, on one machine,
-   talking directly, offline, with no setup. So that is what ships — a duel
+   talking directly, offline, with no setup. So that is what ships, a duel
    between two windows that genuinely works, rather than an internet mode that
    genuinely does not. Everything above the wire is transport-agnostic (see
    Net.attach) so a hand-signalled RTCDataChannel can be dropped underneath it
@@ -34,7 +34,7 @@
         exception was one open-coded roll in Game.applyElement, and that is the
         one-line reorder this patch makes to js/game.js.
      3. THE RIVAL BRAIN IS OFF. Both seats are human, so Game.brains is emptied
-        — a duel has nothing for the machine to decide.
+ a duel has nothing for the machine to decide.
 
    WHAT CROSSES THE WIRE. Commands, not state. Every player action becomes a
    small record, scheduled NET_INPUT_DELAY turns ahead, and executed on both
@@ -74,13 +74,13 @@ const NET_CHANNEL = 'cosmic-conquest-duel/1';
    and must refuse each other with a sentence instead of desyncing at the
    first engagement. */
 const NET_PROTOCOL = 6;
-/* A turn is six ticks — 100ms at 1x. Smaller windows stall constantly the
+/* A turn is six ticks. 100ms at 1x. Smaller windows stall constantly the
    moment one browser deprioritises anything; larger ones are felt as lag. */
 const NET_TURN_TICKS = 6;
 /* Two turns of scheduling headroom. One leaves no slack at all: a packet a
    frame late then stalls the peer on every single turn. */
 const NET_INPUT_DELAY = 2;
-/* Advertising cadence for an open table — fast enough that a second window
+/* Advertising cadence for an open table, fast enough that a second window
    opening the lobby sees it within a blink. */
 const NET_ADVERT_MS = 900;
 const NET_HEARTBEAT_MS = 700;
@@ -162,7 +162,7 @@ const Net = {
   /**
    * The seam a second transport hangs off. Anything with postMessage(msg) and
    * an onmessage callback is a relay as far as every line below here is
-   * concerned — a hand-signalled RTCDataChannel would attach here and need no
+   * concerned, a hand-signalled RTCDataChannel would attach here and need no
    * other change in the file.
    */
   attach(transport) {
@@ -205,7 +205,7 @@ const Net = {
     if ((this.phase === 'linked' || this.phase === 'playing') &&
         now - this.lastHeard > NET_PEER_TIMEOUT_MS) this.dropPeer('timeout');
     /* The stall's ceiling, measured from the LATER of "when WE began waiting"
-       and "the peer's last real progress" — never from lastProgress alone. A
+       and "the peer's last real progress", never from lastProgress alone. A
        draft halts both boards without sealing anything, so lastProgress goes
        arbitrarily stale during a long deliberation and a lastProgress-only
        clock would void a duel against a peer that never stopped on the first
@@ -213,7 +213,7 @@ const Net = {
        that advanced once mid-wait and then froze would satisfy "moved since
        the wait began" forever and never be called. The max starts the clock at
        whichever sign of life was most recent; a peer genuinely still playing
-       keeps raising the turn it beats and keeps resetting it — including when
+       keeps raising the turn it beats and keeps resetting it, including when
        THIS window is the backgrounded one, where a stalled-alone test would
        blame the peer for our own throttle. */
     if (this.live && this.stalled &&
@@ -230,11 +230,11 @@ const Net = {
     if (m.v !== NET_PROTOCOL) return;
     if (m.to && m.to !== this.id) return;
     /* THE MATCH FAMILY SPEAKS ONLY FOR THE PEER. Every in-family sender posts
-       addressed messages, but BroadcastChannel is same-origin — any tab on
-       this origin can post a `to`-less packet — and before this gate a forged
+       addressed messages, but BroadcastChannel is same-origin, any tab on
+       this origin can post a `to`-less packet, and before this gate a forged
        'ctl' reached applyCtl and a forged 'quit' conceded a duel the player
        was winning. Lobby traffic ('hello', 'table', 'join', ...) stays open:
-       it is how strangers meet. 'bye' is not listed because it is both — from
+       it is how strangers meet. 'bye' is not listed because it is both, from
        the peer it is a drop, from anyone else it merely clears a lobby row,
        and its own case already tells them apart by sender. */
     if (NET_PEER_ONLY.indexOf(m.t) >= 0 &&
@@ -497,7 +497,7 @@ const Net = {
   /* ── 4. determinism ────────────────────────────────────────────────── */
 
   /* mulberry32: thirty-two bits of state and nothing but Math.imul, which is
-     exactly why it is here — identical arithmetic in every engine. */
+     exactly why it is here, identical arithmetic in every engine. */
   _rngState: 0,
   _native: null,
   _isolate: true,          // the test flips this off to measure the effect
@@ -528,7 +528,7 @@ const Net = {
    * Run a cosmetic effect on the NATIVE generator. A particle burst behind an
    * `=== viewSide` branch would otherwise draw from the simulation stream on
    * one client and not on the other. Nothing in here may touch simulation
-   * state — that is the whole contract, and the audit behind it is in the
+   * state, that is the whole contract, and the audit behind it is in the
    * header of this file.
    */
   fx(fn, self, args) {
@@ -543,14 +543,14 @@ const Net = {
   /* THE PROBLEM THIS SOLVES. Every screen in js/ui.js reads Game.sides[0] as
      "you" and Game.sides[1] as "the rival", and every button hands the engine
      a literal 0. That is right for singleplayer and right for whichever
-     duellist holds seat 0 — and a lie to the other one, whose lives, gold,
+     duellist holds seat 0, and a lie to the other one, whose lives, gold,
      arsenal and upgrade buttons would every one of them describe an opponent.
      The simulation cannot be re-seated to fix it: seat order decides tower
      update order, which decides the order floating-point damage accumulates
      in, which decides agreement. So the relabelling happens at the
      PRESENTATION boundary instead. While the lens is on, index 0 means "the
      commander in front of this screen". It is suspended for the whole of
-     step, start, draw and command execution — which is every line of engine
+     step, start, draw and command execution, which is every line of engine
      code that means a real seat. */
 
   lens: { on: false, pi: [0, 1] },
@@ -787,7 +787,7 @@ const Net = {
     };
 
     /* RUSH IS OFF IN A DUEL. rushWave pays the rusher a bonus and every other
-       seat a fixed fraction of it — a ratio calibrated against a machine that
+       seat a fixed fraction of it, a ratio calibrated against a machine that
        does not care when the wave starts. Between two people it is a purchase
        the other cannot answer, so the button greys out rather than shipping an
        asymmetry with no reply to it. */
@@ -817,7 +817,7 @@ const Net = {
     };
 
     /* ESCALATIONS ARE DEALT, NOT DRAFTED. The engine prices that choice in the
-       RIVAL's draft — take the severe card and your own draft widens, duck it
+       RIVAL's draft, take the severe card and your own draft widens, duck it
        and theirs does. That bid is meaningful against a machine and merely
        unfair between two people, since only one of them can hold the modal.
        So the card is drawn from the shared stream, taken through the engine's
@@ -983,7 +983,7 @@ const Net = {
     if (c.seat === this.seat) UI.syncAll();
   },
 
-  /* Commands taken while the simulation is HALTED — a draft modal is open, so
+  /* Commands taken while the simulation is HALTED, a draft modal is open, so
      no tick passes on either client. There is no tick to schedule against and
      no ordering question to answer: the two picks apply to different sides, so
      the result is the same whichever lands first. */
@@ -1065,7 +1065,7 @@ const Net = {
 
   /**
    * A fingerprint of everything the simulation decides and nothing it merely
-   * draws. Particles, floaters, beams and banners are deliberately absent —
+   * draws. Particles, floaters, beams and banners are deliberately absent
    * they are ALLOWED to differ between two clients, and folding them in would
    * report every cosmetic difference as a desync.
    */
@@ -1167,7 +1167,7 @@ const Net = {
       /* Through voidMatch, not showFatal. Raising the overlay was the whole of
          what a parting used to do: `live` and the lens stayed on behind it, the
          draft modal stayed up and still clickable, and the heartbeat kept the
-         peer's own timeout from ever firing — until somebody clicked RETURN. */
+         peer's own timeout from ever firing, until somebody clicked RETURN. */
       this.voidMatch('THE BOARDS HAVE PARTED',
         'The two simulations stopped agreeing at turn ' + t + '. The duel is halted rather ' +
         'than played out on two different boards. Nothing has been recorded.');
@@ -1300,7 +1300,7 @@ const Net = {
   /**
    * Game.start builds a seat out of THIS machine's save file. For the duration
    * of one start every profile read is answered from the wire instead, for
-   * whichever seat is being built — which Meta.applyTo names in its own first
+   * whichever seat is being built, which Meta.applyTo names in its own first
    * argument. Without this the guest's client would hand the host's seat the
    * guest's technology, and the two boards would begin life disagreeing.
    */
@@ -1324,14 +1324,14 @@ const Net = {
     };
     /* Seat 1 is a person, not a rival brain: it is built by exactly the code
        that builds seat 0, out of its own commander's own technology. This is
-       also what lets both duellists field the SAME commander — start()
+       also what lets both duellists field the SAME commander, start()
        reassigns a mirrored rival, and the wire overrules it. */
     keep.applyToAI = M.applyToAI;
     M.applyToAI = function (side, cmdId, depth) {
       if (!side || side.index > 1) return keep.applyToAI.call(M, side, cmdId, depth);
       return M.applyTo(side, cmdId);
     };
-    /* The rival drafts nothing in a duel — and every draft it would have made
+    /* The rival drafts nothing in a duel, and every draft it would have made
        draws from the seeded stream. The budgets it is handed come from local
        save files, so those draws would move the stream by a different amount
        on each client. Answer from the wire and consume nothing. */
@@ -1408,7 +1408,7 @@ const Net = {
   },
 
   /**
-   * The same exit for a duel with NO result — the boards parted, or the peer
+   * The same exit for a duel with NO result, the boards parted, or the peer
    * stopped answering. Game.endMatch is deliberately not called: there is
    * nothing to record and a forfeit would be inventing one. The teardown is the
    * identical one, because a duel that ends without tearing down is the whole
@@ -1498,13 +1498,13 @@ const Net = {
 };
 
 /* ═══════════════════════════════════════════════════════════════════════
-   THE SECOND WIRE — the same duel, fought across two machines.
+   THE SECOND WIRE, the same duel, fought across two machines.
 
    Everything above this line is transport-agnostic on purpose: Net.attach
    takes anything with postMessage(msg) and an onmessage callback, and the
    lobby, the lockstep, the fingerprints and the liveness clocks run over it
-   unchanged. This section is the transport the header promised — a
-   hand-signalled RTCDataChannel — and it touches nothing above the seam.
+   unchanged. This section is the transport the header promised, a
+   hand-signalled RTCDataChannel, and it touches nothing above the seam.
 
    THERE IS NO SERVER, AND THE PLAYERS ARE TOLD SO. WebRTC still needs the
    two session descriptions carried between the machines somehow, and every
@@ -1515,7 +1515,7 @@ const Net = {
    the rule, and the UI copy says so in as many words.
 
    NO ICE SERVERS EITHER. A bare RTCPeerConnection gathers host candidates
-   only, which reach across one LAN — two machines in one room, the
+   only, which reach across one LAN, two machines in one room, the
    realistic shape of this duel for a game that ships as a single offline
    file. A public STUN url would cross NATs and would also put a third
    party in every duel; NET_RTC_CONFIG below is where one would go, and it
@@ -1527,7 +1527,7 @@ const NetRTC = {
 
   supported: (typeof RTCPeerConnection === 'function'),
   pc: null,          // the connection being built, or the one in use
-  dc: null,          // its single channel — ordered and reliable by default,
+  dc: null,          // its single channel, ordered and reliable by default,
                      // which is exactly what lockstep already assumes
   adapter: null,     // the postMessage/onmessage shim Net is attached to
   onState: null,     // UI hook: a line of ritual progress
@@ -1535,7 +1535,7 @@ const NetRTC = {
 
   state(text) { if (this.onState) this.onState(text); },
 
-  /* A blob is base64 over JSON so it survives whatever carries it — chat
+  /* A blob is base64 over JSON so it survives whatever carries it, chat
      clients that mangle newlines, mail that folds lines, clipboards that
      smart-quote. Whitespace picked up in transit is stripped on the way in.
      escape/unescape keep the round trip unicode-safe with no library. */
@@ -1543,7 +1543,7 @@ const NetRTC = {
   _dec(s) { return JSON.parse(decodeURIComponent(escape(atob(String(s).replace(/\s+/g, ''))))); },
 
   /* ONE BLOB PER DIRECTION. Trickling candidates needs a wire, and the wire
-     is the thing being built — so gathering must FINISH before the blob is
+     is the thing being built, so gathering must FINISH before the blob is
      worth copying, and iceGatheringState 'complete' is how the browser says
      it has. With no ICE servers to consult this is milliseconds. */
   _gathered(pc) {
@@ -1612,7 +1612,7 @@ const NetRTC = {
 
   /* The channel is open: wrap it in the exact shape Net.attach was built
      for. BroadcastChannel carries structured clones and a DataChannel
-     carries text, so JSON is the whole of the adaptation — post() gains a
+     carries text, so JSON is the whole of the adaptation, post() gains a
      stringify, receive() gains a parse, and nothing else differs. */
   _live(dc) {
     const R = this;
@@ -1625,7 +1625,7 @@ const NetRTC = {
       let m; try { m = JSON.parse(ev.data); } catch (e) { return; }   // not JSON, not ours
       if (adapter.onmessage) adapter.onmessage({ data: m });
     };
-    /* The same-machine channel retires first — two live transports would
+    /* The same-machine channel retires first, two live transports would
        double every lobby message. The next same-machine lobby rebuilds a
        fresh BroadcastChannel through Net.open() as if this never happened. */
     if (Net.ch && Net.ch !== adapter && typeof Net.ch.close === 'function') { try { Net.ch.close(); } catch (e) {} }
@@ -1646,8 +1646,8 @@ const NetRTC = {
     if (this.onLink) this.onLink();
   },
 
-  /* Every way the wire dies lands here — dc.onclose, connectionState failed
-     or closed, the peer's window closing — and routes into the SAME dropPeer
+  /* Every way the wire dies lands here, dc.onclose, connectionState failed
+     or closed, the peer's window closing, and routes into the SAME dropPeer
      the heartbeat timeout uses. Mid-duel that voids with the existing copy;
      in the lobby it reads as the closed window it is. A death before the
      link ever opened is neither: it is the ritual failing, said in ritual

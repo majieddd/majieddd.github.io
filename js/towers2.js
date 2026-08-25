@@ -1,5 +1,5 @@
 /* ==========================================================================
-   COSMIC CONQUEST — Expansion Pack
+   COSMIC CONQUEST, Expansion Pack
    --------------------------------------------------------------------------
    The elemental system, twenty-two additional towers (each built on a verb no
    other tower uses), the campaign arena modifiers and campaign boons.
@@ -12,7 +12,7 @@
    ELEMENTS
    Five marking elements. A tower's hit leaves its element's MARK on the
    target for four seconds; a hit from a DIFFERENT element consumes the mark
-   and triggers the combo. Kinetic and Radiant towers are non-elemental —
+   and triggers the combo. Kinetic and Radiant towers are non-elemental
    they neither mark nor trigger, which keeps pure-physical boards honest.
 -------------------------------------------------------------------------- */
 const ELEMENTS = {
@@ -419,7 +419,7 @@ const TOWER_TYPES_2 = {
   custodian: {
     id:'custodian', element:'radiant', origin:'light', name:'CUSTODIAN', role:'The last line: spends wardens on breaches', cost:286, costGrowth:1.82,
     color:'#fde68a', dark:'#78500a', attack:'vigil', glyph:'⛨',
-    desc:'Federation wardens who surrendered their lives to the cause years ago and have been waiting since to be told where. It shoots nothing and it blocks nothing. When something finally reaches the line inside its watch, a warden walks into it and both are simply gone: no bounty paid, no corpse sent onward, no life off your counter. CONDITIONAL: worth nothing on a board that holds, and the difference between a bad wave and a lost run on one that does not. A Foundry stops the assault out in the lane; a Custodian answers what got past it.',
+    desc:'Federation wardens who signed a consent record naming this exact scope, and have been waiting since to be told where. It shoots nothing and it blocks nothing. When something finally reaches the line inside its watch, a warden walks into it and both are simply gone: no bounty paid, no corpse sent onward, no life off your counter. CONDITIONAL: worth nothing on a board that holds, and the difference between a bad wave and a lost run on one that does not. A Foundry stops the assault out in the lane; a Custodian answers what got past it.',
     base:{ range:3.4, dmgType:'none', vigilHold:2, vigilEvery:11 },
     levels:[ { cost:180, name:'SENTINEL', mods:{ vigilHold:3, vigilEvery:9.5, range:3.7 } },
              { cost:340, name:'PARAGON',  mods:{ vigilHold:4, vigilEvery:8, range:4.0 } } ],
@@ -431,7 +431,7 @@ const TOWER_TYPES_2 = {
       { id:'cu_more',  row:2, col:0, name:'DEEP RESERVE',       desc:'+2 wardens on watch.',       mods:{ vigilHold:2 } },
       { id:'cu_last',  row:2, col:1, name:'ETERNAL',            desc:'Wardens return 45% sooner.', mods:{ vigilEveryMul:0.55 } } ],
     branches:[
-      { id:'vigil',   name:'VIGIL',   cost:430, mods:{ vigilHold:8, vigilEvery:9.5, range:4.2 },
+      { id:'vigil',   name:'GARRISON', cost:430, mods:{ vigilHold:8, vigilEvery:9.5, range:4.2 },
         surge:{ vigilHold:1 }, note:'A deep bench. Nothing gets through while anyone is left to stand in front of it.' },
       { id:'cordon',  name:'CORDON',  cost:430, mods:{ vigilHold:3, vigilEvery:3.2, range:4.8 },
         surge:{ vigilEveryMul:0.94 }, note:'A thin watch that is never left unrelieved for long.' } ]
@@ -639,7 +639,7 @@ const TOWER_TYPES_2 = {
 };
 
 Object.assign(TOWER_TYPES_2, {
-  /* SESSION 19 — THE SIX. Three Federation and three Xeno, each carrying a
+  /* SESSION 19. THE SIX. Three Federation and three Xeno, each carrying a
      base key that appears nowhere else in the arsenal and a reader for it in
      entities.js. Three of the six do not watch the enemy at all: SEPULCHRE
      watches your own tower list, ORISON watches one named creature for its
@@ -1125,7 +1125,7 @@ TOWER_ORDER.splice(TOWER_ORDER.length, 0,
                    'monstrance', 'pharos');
 
 /* --------------------------------------------------------------------------
-   CAMPAIGN CONTENT — arena modifiers shown on the world-path nodes, and the
+   CAMPAIGN CONTENT, arena modifiers shown on the world-path nodes, and the
    boons you keep for the rest of a campaign after clearing a node.
 -------------------------------------------------------------------------- */
 const ARENA_MODS = [
@@ -1177,16 +1177,16 @@ const BOONS = [
     apply:t => { t.bonusDraft = (t.bonusDraft||0) + 1;
                  t.draftSooner = (t.draftSooner||0) + 1; } },
 
-  /* ── FEDERATION OF LIGHT ── a member surrenders their life eternally to
-     the cause. Their allies call it conscience; their critics call it a cult
-     that took everyone's free will and named the loss a gift. */
-  { id:'l_vigil', f:'light', k:'standard', name:'THE VIGIL', icon:'✧',
+  /* ── FEDERATION OF LIGHT ── protection offered as an Accord and signed
+     under pressure. Nothing in its charter asks for your will. Its critics
+     say the terms of the signature never needed to. */
+  { id:'l_vigil', f:'light', k:'standard', name:'THE LONG WATCH', icon:'✧',
     desc:'Each wave you survive restores one life.',
     lore:'Someone is always awake.',
     apply:t => t.waveHeal = (t.waveHeal||0) + 1 },
   { id:'l_oath', f:'light', k:'fortress', name:'THE OATH', icon:'✞',
     desc:'The first blow that would end you does not.',
-    lore:'Your life was surrendered already. It is only lent back.',
+    lore:'Your signature says you keep standing. Nobody asked you again.',
     apply:t => t.immortalLine = true },
   { id:'l_reliquary', f:'light', k:'forge', name:'RELIQUARY', icon:'◈',
     desc:'Ascension costs 25% less and grants half again as much.',
@@ -1200,12 +1200,12 @@ const BOONS = [
                  t.status = (t.status||0) + 0.25; } },
   { id:'l_eternal', f:'light', k:'apex', name:'ETERNAL SERVICE', icon:'♁',
     desc:'Your dead return 40% stronger and march a quarter faster.',
-    lore:'Eternally, the tenet says. It was not a figure of speech.',
+    lore:'Their signatures carried no end date. The Accord read that as consent.',
     apply:t => { t.reanimMul = (t.reanimMul||0) + 0.40;
                  t.reanimSpeedMul = (t.reanimSpeedMul||1) * 1.25; } },
 
-  /* ── THE XENO ── not an alliance, an appetite. Everything it meets it has
-     eaten or is still eating, folding the mass into itself. */
+  /* ── THE XENO ── not a species, a cartel. The Extraction Compact binds
+     what it meets into dependency and lives off what it yields. */
   { id:'x_digest', f:'xeno', k:'standard', name:'DIGESTION', icon:'◑',
     desc:'Every kill feeds the next: damage climbs as a wave dies.',
     lore:'Hunger is not a state. It is a method.',
@@ -1233,8 +1233,8 @@ const BOONS = [
     apply:t => { t.eliteDamageMul = (t.eliteDamageMul||1) * 1.35;
                  t.eliteBountyMul = (t.eliteBountyMul||1) * 1.50; } },
 
-  /* ── THE PIRATES ── no allegiance, enemy of every power, and the
-     creature-swarms that boil out of the dark answer to them. */
+  /* ── THE PIRATES ── no allegiance, enemy of every power, and better
+     than anyone at being where the Vigil is already going. */
   { id:'p_plunder', f:'pirate', k:'standard', name:'PLUNDER', icon:'◆',
     desc:'+18% gold from every source.',
     lore:'It was going somewhere. Now it is going here.',

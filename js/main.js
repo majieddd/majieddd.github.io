@@ -1,13 +1,15 @@
 /* ==========================================================================
-   COSMIC CONQUEST — Bootstrap & Keyboard
+   COSMIC CONQUEST, Bootstrap & Keyboard
    ========================================================================== */
 
 'use strict';
 
 (function boot() {
 
-  /* Only five towers deploy, so 1-5 covers the whole loadout. */
-  const HOTKEYS = ['1', '2', '3', '4', '5'];
+  /* DERIVED, not literal. This was ['1'..'5'] against a LOADOUT_SIZE of 4, so
+     key 5 was bound to a slot that does not exist. Reading the constant means
+     the bindings and the loadout can never disagree again. */
+  const HOTKEYS = Array.from({ length: LOADOUT_SIZE }, (_, i) => String(i + 1));
 
   function start() {
     Sound.init();
@@ -23,7 +25,7 @@
   function closeTopOverlay() {
     /* Some overlays are REQUIRED decisions and Esc must not skip them: hiding
        one leaves Game.state parked ('choosing', 'escalating') with no way back,
-       which froze the battle outright — every control gates on state
+       which froze the battle outright, every control gates on state
        'playing', and the only writer back to it is the modal's own click
        handler. The two static overlays were listed by id; the escalation modal
        is created dynamically and was missed. Mark them with a class instead,
@@ -112,7 +114,7 @@
         case 'u':
           if (Game.selected && Game.selected.side === Game.viewSide) {
             const next = Game.selected.nextUpgrade();
-            /* A branch fork is a permanent identity choice — never auto-pick. */
+            /* A branch fork is a permanent identity choice, never auto-pick. */
             if (next.kind === 'branch') Sound.play('denied');
             else Game.upgrade(Game.selected);
           }

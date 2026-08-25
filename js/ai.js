@@ -1,5 +1,5 @@
 /* ==========================================================================
-   COSMIC CONQUEST — Opponent Commander
+   COSMIC CONQUEST, Opponent Commander
    --------------------------------------------------------------------------
    The AI is not a script of "build X on wave Y". It runs the same loop a
    decent human does:
@@ -7,14 +7,14 @@
      1. SCOUT   read the next wave plus whatever is already marching at it,
                 and turn that into a threat profile (how much health, how much
                 of it airborne, armoured, shielded, swarming, boss).
-     2. VALUE   score every affordable action — build any of the 16 towers on
-                any free tile, or upgrade anything it already owns — as
+     2. VALUE   score every affordable action, build any of the 16 towers on
+                any free tile, or upgrade anything it already owns, as
                 effective damage per gold *against that specific profile*.
      3. COMMIT  take the best action, then re-evaluate.
 
    Because the score is threat-relative, it naturally teches into Flak when the
    sky fills, into magic when armour shows up, into splash when swarms arrive,
-   and into Prism/Railgun for bosses — without any of that being hardcoded.
+   and into Prism/Railgun for bosses, without any of that being hardcoded.
    ========================================================================== */
 
 'use strict';
@@ -78,8 +78,8 @@ const AI = {
   },
 
   /**
-   * Drafts five towers that actually function as a set. Every viable loadout
-   * needs damage, an answer to armour, an answer to air, and control — so the
+   * Drafts a loadout that actually functions as a set. Every viable loadout
+   * needs damage, an answer to armour, an answer to air, and control, so the
    * AI picks one archetype and fills the gaps rather than taking the five
    * highest-DPS towers and losing to the first Wisp wave.
    */
@@ -114,7 +114,14 @@ const AI = {
       ['prism', 'concord', 'ward', 'chrono', 'custodian'],         // federation order
       ['toxin', 'executioner', 'ichor', 'flak', 'reckoning'],      // xeno cull
       ['pyre', 'sapper', 'capacitor', 'flak', 'tether'],           // pirate scrapyard
-      ['railgun', 'echo', 'pylon', 'quake', 'dronebay']            // robotic lattice
+      /* VAULT lives here as well as in the throughput core. Measured in
+         Session 29: after the fifth slot became reachable, seven of the eight
+         previously-undraftable ids appeared within 2000 drafts and vault did
+         not, because its only core needs all five of its members to clear the
+         rival's budget gate at once and rarely does. A second home in an
+         origin-coherent core (vault is robotic) is the smallest fix that does
+         not touch a cost or a balance number. */
+      ['railgun', 'echo', 'pylon', 'quake', 'vault']               // robotic lattice
     ];
     /* Anything whose primary job is killing. The expansion roster added ten
        more of these; leaving them out made the guard below treat a perfectly
@@ -145,7 +152,7 @@ const AI = {
     /* The rival is held to the SAME PROGRESSION as the player without being
        handed the player's exact shelf: it fields an arsenal of equal size,
        drawn from its own deterministic slice of the roster. Unlock three
-       towers and the enemy commander has three more of its own — never more,
+       towers and the enemy commander has three more of its own, never more,
        never fewer. The seed comes from the roster size and the map so a given
        theatre reads consistently rather than rerolling every retry. */
     const budget = Math.max(LOADOUT_SIZE, (pool && pool.length) || TOWER_ORDER.length);
@@ -155,7 +162,7 @@ const AI = {
     let set = (viable.length
       ? viable[Math.floor(rng() * viable.length)]
       : this.improviseSet(allowed, DAMAGE, AIR)).slice();
-    /* Skirmish opponents sometimes bring a worse set on purpose — but never
+    /* Skirmish opponents sometimes bring a worse set on purpose, but never
        one that leaves them unable to deal damage at all. */
     if (diff.aiSkill < 0.7 && rng() < 0.5) {
       const swap = Math.floor(rng() * set.length);
@@ -165,6 +172,25 @@ const AI = {
       const candidate = allowed[Math.floor(rng() * allowed.length)];
       const after = set.slice(); after[swap] = candidate;
       if (after.filter(t => DAMAGE.includes(t)).length >= 2) set[swap] = candidate;
+    }
+    /* THE FIFTH SLOT (Session 29). Every core is authored five long against a
+       LOADOUT_SIZE of four, so the tail was discarded on every single draft.
+       MEASURED at HEAD: eight ids appeared ONLY in a discarded fifth slot,
+       beacon, vault, siphon, reckoning, siren, canister, quartermaster and
+       custodian, and the rival commander could never build any of them.
+
+       Dropping a SEEDED entry instead of always the last one keeps each battle
+       at four coherent towers while making all five reachable across a
+       campaign. The guard is the one the difficulty swap above already uses:
+       never leave a set that cannot deal damage or answer air. If the drawn
+       drop would break either, fall back to the old behaviour rather than
+       field a set that cannot fight. */
+    if (set.length > LOADOUT_SIZE) {
+      const drop = Math.floor(rng() * set.length);
+      const kept = set.filter((_, i) => i !== drop);
+      const canFight = kept.filter(t => DAMAGE.includes(t)).length >= 2;
+      const canReachAir = kept.some(t => AIR.includes(t));
+      set = (canFight && canReachAir) ? kept : set.slice(0, LOADOUT_SIZE);
     }
     const out = Array.from(new Set(set)).filter(t => allowed.includes(t)).slice(0, LOADOUT_SIZE);
     /* Backstop: top up from the allowed roster if dedup leaves the set thin. */
@@ -256,7 +282,7 @@ const AI = {
     return out;
   },
 
-  /** No canned core fits the shelf — assemble one that can still fight. */
+  /** No canned core fits the shelf, assemble one that can still fight. */
   improviseSet(allowed, DAMAGE, AIR) {
     const out = [];
     for (const d of DAMAGE) if (allowed.includes(d) && out.length < 3) out.push(d);
@@ -273,7 +299,7 @@ const AI = {
     for (const p of Game.defendedPaths(this.side.index)) {
       for (let d = 0; d < p.total; d += TILE * 0.5) {
         const pt = p.posAt(d, {});
-        /* Lane tiles nearer the AI's own base matter more — a leak there is
+        /* Lane tiles nearer the AI's own base matter more, a leak there is
            immediate, and towers deep in the lane get more total shots. */
         this.samples.push({ x: pt.x, y: pt.y, w: 1 + 0.8 * (d / p.total) });
       }
@@ -467,7 +493,7 @@ const AI = {
     const econ = this.diff.aiEcon;
     switch (type) {
       case 'cryo':
-        /* Slow is a force multiplier — worth a lot early, less once saturated. */
+        /* Slow is a force multiplier, worth a lot early, less once saturated. */
         return this.countOf('cryo') < 2 ? 190 * (1 + prof.swarm * 0.4) : 40;
       case 'tether':
         return this.countOf('tether') < 1 && n >= 3 ? 150 : 30;
@@ -580,7 +606,7 @@ const AI = {
     const minRange = def.base.minRange || 0;
     const foot = towerFoot(def);
     let best = null, bestScore = -1;
-    /* Only consider the strongest candidates — full search every tick is waste. */
+    /* Only consider the strongest candidates, full search every tick is waste. */
     let checked = 0;
     for (const s of this.spots) {
       if (Game.towerAt(s.gx, s.gy)) continue;
@@ -616,7 +642,7 @@ const AI = {
   },
 
   /**
-   * Enumerate every move — affordable or not — and return both the best it can
+   * Enumerate every move, affordable or not, and return both the best it can
    * buy right now and the best it could buy if it waited. The caller compares
    * them, which is what lets the AI SAVE for a high-value ascension instead of
    * dribbling its last 80 gold into another tier-1 emplacement.
@@ -629,7 +655,7 @@ const AI = {
        as the coverage UPLIFT over the best ground this side can already use.
        Without a reference the option has no denominator. */
     let bestBuild = null;
-    /* The dream window is deliberately narrow — roughly one wave of income.
+    /* The dream window is deliberately narrow, roughly one wave of income.
        A wide window makes the AI chase an ever-receding ascension forever,
        because each ascension costs more than the last. */
     const consider = c => {
@@ -665,7 +691,7 @@ const AI = {
          of tier-1 emplacements instead of ascending a few good ones. */
       gain *= this.covMul(this.coverage(t.x, t.y, t.effRange));
 
-      /* Amplified towers are worth upgrading first — the aura multiplies it. */
+      /* Amplified towers are worth upgrading first, the aura multiplies it. */
       if (t.aura.dmg > 0) gain *= (1 + t.aura.dmg);
 
       /* An owed specialisation genuinely costs nothing, so the denominator
@@ -698,7 +724,7 @@ const AI = {
       else {
         value = this.effectiveness(def, probe.stats, probe.estimateDps(), prof);
         value += this.utilityValue(type, prof, spot.spot);
-        /* Coverage gates everything — a great tower on a dead tile is dead. */
+        /* Coverage gates everything, a great tower on a dead tile is dead. */
         value *= this.covMul(spot.cov);
       }
       /* Diversity: heavy diminishing returns on a fifth copy of the same tower.
@@ -731,7 +757,7 @@ const AI = {
       /* LOOK AHEAD. Valuing only the NEXT level is a local-minimum trap: a
          board already at MK III gains literally nothing from base level 2 or
          3 (applyBaseLevelTo caps the MK target at 3), so a one-step valuation
-         reads 0 and the rival never climbs to level 4 — which is where the
+         reads 0 and the rival never climbs to level 4, which is where the
          free specialisation and the ascension ladder actually live. Scan the
          next few levels, price each against the CUMULATIVE cost of reaching
          it, and buy the next step if any reachable rung pays. */
@@ -1002,7 +1028,7 @@ const AI = {
 
   /**
    * Drafts a talent build for each tower before the match. Picks one talent
-   * from each row, favouring raw output — it cannot see the coming waves yet,
+   * from each row, favouring raw output, it cannot see the coming waves yet,
    * so it plays to the tower's strength rather than to a counter.
    */
   /* `diff` is a PARAMETER, and that is the fix. It used to read `this.diff`
@@ -1041,7 +1067,7 @@ const AI = {
       for (const t of def.talents) (rows[t.row] = rows[t.row] || []).push(t);
       const chosen = [];
       /* The rival's tech runs exactly as deep as the player's mastery lets
-         THEIRS run — a level-1 profile does not get ambushed by a fully
+         THEIRS run, a level-1 profile does not get ambushed by a fully
          teched opponent. `depth` is supplied by the match setup. */
       const cap = Math.max(1, Math.min(TALENT_POINTS, depth === undefined ? TALENT_POINTS : depth));
       for (const r of Object.keys(rows).sort()) {
@@ -1133,12 +1159,12 @@ const AI = {
 
     /* SAVE instead of spending badly. If waiting briefly unlocks something
        clearly better per gold, bank the difference rather than buying the only
-       thing currently affordable — this is what stops the AI sprawling into
+       thing currently affordable, this is what stops the AI sprawling into
        dozens of cheap tier-1 towers whenever its purse is thin.
        `patience` bounds it: without a cap the AI hoards indefinitely, because
        every ascension it saves toward costs more than the last one. */
     /* Sitting on a fortune is never right. Once the purse dwarfs the best
-       available purchase, buy something — this is the release valve that stops
+       available purchase, buy something, this is the release valve that stops
        a hesitant commander from banking thousands it will never spend. */
     const rich = S.gold > best.cost * 4;
 
@@ -1182,7 +1208,7 @@ const AI = {
    * The rival fires its commander abilities on the same terms the player
    * does. For an AIMED one that means choosing a POINT, not merely a moment.
    * It will not spend a cooldown on a straggler, and it never aims at
-   * geometry — only at where the attackers actually are.
+   * geometry, only at where the attackers actually are.
    */
   commandAbilities(dt, game) {
     const S = this.side;
@@ -1209,7 +1235,7 @@ const AI = {
    * The densest knot of attackers, snapped forward onto ground this side
    * holds. Walking FORWARD along an attacker's own path moves deeper into the
    * territory this commander defends, so the probe converges on a legal tile
-   * instead of wandering off the lane — and a naive centroid, which would
+   * instead of wandering off the lane, and a naive centroid, which would
    * happily land on its own base, never gets the chance.
    */
   aimPoint(game, def, marching) {

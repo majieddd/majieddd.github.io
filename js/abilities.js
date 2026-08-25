@@ -169,7 +169,7 @@ function tickAbilities(side, game, dt) {
 }
 
 /**
- * Fire ability `i`. `at` is the aimed tile — `{gx, gy}` — and is required by
+ * Fire ability `i`. `at` is the aimed tile, `{gx, gy}`, and is required by
  * anything carrying an `aim` flag. Returns true if it actually went off.
  */
 function useAbility(side, game, i, at) {

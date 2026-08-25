@@ -1,9 +1,9 @@
 /* ==========================================================================
-   COMMANDER ROSTER — five per faction, twenty in all.
+   COMMANDER ROSTER, five per faction, twenty in all.
 
    One per faction is free; the rest are bought with souls. Every commander
    carries a signature trait, a 3x3 technology chart, and two active abilities
-   (offensive first, defensive second — the second gated until the chart is
+   (offensive first, defensive second, the second gated until the chart is
    fully allocated or the ability is unlocked with souls).
 
    Technology charts are built from a compact column spec rather than 180
@@ -169,8 +169,8 @@ const COMMANDER_ROSTER = [
        ['FARSIGHT','⊙','+10% more range.', t=>t.rng+=0.10],
        ['REVELATION','✧','+12% more range and +8% rate.', t=>{t.rng+=0.12;t.rate+=0.08;}]],
       [['COMMUNION','✚','+3 maximum lives and 25% better life recovery.', (t,s)=>{ if(s){s.maxLives+=3;s.lives+=3;} t.lifeGainMul+=0.25; }],
-       ['THE VOW','⛨','+5 more lives. The cause keeps what it is given.', (t,s)=>{ if(s){s.maxLives+=5;s.lives+=5;} }],
-       ['ETERNAL SERVICE','∞','+8 more lives, and survive one lethal leak per battle.', (t,s)=>{ if(s){s.maxLives+=8;s.lives+=8;} t.immortal=true; }]]
+       ['THE VOW','⛨','+5 more lives. Signatories are counted, not spent.', (t,s)=>{ if(s){s.maxLives+=5;s.lives+=5;} }],
+       ['STANDING ACCORD','∞','+8 more lives, and survive one lethal leak per battle.', (t,s)=>{ if(s){s.maxLives+=8;s.lives+=8;} t.immortal=true; }]]
     ])
   },
   {
@@ -340,7 +340,7 @@ const COMMANDER_ROSTER = [
     color: '#6d28d9', icon: '◉',
     blurb: 'Only interested in the big ones. Ulgrim measures a battle by what it managed to swallow whole.',
     abilities: ['broadside', 'consume'],
-    trait: { name: 'APEX PREDATOR',
+    trait: { name: 'ELITE CAPTURE',
       desc: '+25% damage against bosses and minibosses, and they pay double bounty.',
       apply: t => { t.eliteDamage = 1.25; t.eliteBounty = 2; } },
     tech: chart('u', [
@@ -440,7 +440,7 @@ const COMMANDER_ROSTER = [
   {
     id: 'dregg', faction: 'pirate', name: 'DREGG', title: 'The Warlord',
     color: '#b91c1c', icon: '⛧',
-    blurb: 'Rules by being the largest thing in the room. Dregg does not negotiate and has never needed to.',
+    blurb: 'Rules by being the largest thing in the room. +15% damage and +15% rate, paid for with 15% steeper price growth and taken back out of the enemy in tribute. <em>Every Captain negotiates. Dregg simply names the number first.</em>',
     abilities: ['broadside', 'dampen'],
     trait: { name: 'WARLORD',
       desc: '+15% damage and +15% rate, but per-copy price growth is 15% steeper.',
@@ -459,12 +459,12 @@ const COMMANDER_ROSTER = [
   },
 
   /* ======================================================================
-     THE PARALLEL — the fifth banner, and the machines' answer to the four.
+     THE PARALLEL, the fifth banner, and the machines' answer to the four.
 
      Every one of these COMPILES: it opens the battle weaker than the
      commander it was copied from and rewrites itself as the battle teaches
      it, crossing the original somewhere in the middle and finishing past
-     them. That is the owner's achilles heel stated as an engine rather than
+     them. That is the owner’s achilles heel stated as an engine rather than
      as a number -- the drawback is real and front-loaded, the payoff is real
      and needs the match to last.
 

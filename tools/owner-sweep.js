@@ -1,5 +1,5 @@
 /* ==========================================================================
-   OWNER-NOTE SWEEP — every instruction from Sessions 13-17, checked against
+   OWNER-NOTE SWEEP, every instruction from Sessions 13-17, checked against
    the RUNNING engine rather than against the ledger that claims it is done.
 
    Each check proves BEHAVIOUR or reads a real rendered surface. Nothing here
@@ -36,7 +36,7 @@
     if (leaks.length) {
       skip('14.1 the word "enrage" still appears in some player copy',
            leaks.length + ' occurrence(s): ' + leaks.slice(0, 4).join(', ') +
-           ' — boss phase flavour, distinct from the wave mechanic; owner call');
+           ', boss phase flavour, distinct from the wave mechanic; owner call');
     } else {
       ok('14.1 no player copy still says "enrage"', true, 'none found');
     }
@@ -61,14 +61,69 @@
        'fee ' + fee + ' / invested ' + invested + ' = ' + (ratio * 100).toFixed(1) + '%');
   });
 
-  /* ---- 16.5 souls are twice the stars earned --------------------------- */
-  T('16.5 souls are twice the stars', function () {
-    if (!Meta.soulsForStar) { skip('16.5 souls are twice the stars', 'no soulsForStar entry point'); return; }
-    let one = Meta.soulsForStar(1);
-    let three = 0;
-    for (let n = 1; n <= 3; n++) three += Meta.soulsForStar(n);
-    ok('16.5 souls are twice the stars', one === 2 && three === 6,
-       'first star pays ' + one + ', three stars pay ' + three + ' (want 2 and 6)');
+  /* ---- 16.6 every world is counted by exactly one power -----------------
+     OWNER-SET (Session 29): a renegade world counts toward the POLITICAL total
+     of the power whose splinter holds it, which for a renegade is always the
+     player's own banner. Before this, renegade worlds sat in their own bucket
+     and were counted by nobody, so the ownership bar drew your power holding
+     less ground than it actually did.
+
+     The invariant that catches BOTH failure modes in one assertion: the
+     per-faction political tallies must sum to exactly the world count. Too low
+     means worlds are orphaned again; too high means one is double counted. The
+     separate `conquered` figure must stay 0 on an untouched galaxy, which is
+     what stops the fix from claiming worlds the player never fought for. */
+  T('16.6 every world is counted by exactly one power', function () {
+    if (typeof generateGalaxy !== 'function' || typeof galaxyHoldings !== 'function') {
+      skip('16.6 every world is counted by exactly one power', 'no galaxy entry point'); return;
+    }
+    var bad = [];
+    ['human', 'light', 'xeno', 'pirate'].forEach(function (f) {
+      var gx = generateGalaxy(4242, f, null);
+      var h = galaxyHoldings(gx, {});
+      var total = gx.systems.reduce(function (a, sy) { return a + sy.worlds.length; }, 0);
+      var ren = gx.systems.reduce(function (a, sy) {
+        return a + sy.worlds.filter(function (w) { return w.renegade; }).length; }, 0);
+      var sum = ['human', 'light', 'xeno', 'pirate', 'robot'].reduce(function (a, k) {
+        return a + (h[k] || 0); }, 0);
+      if (sum !== total) bad.push(f + ' sums ' + sum + ' of ' + total);
+      if (h[f] !== ren) bad.push(f + ' political ' + h[f] + ' should equal renegade ' + ren);
+      if (h.conquered !== 0) bad.push(f + ' claims ' + h.conquered + ' conquered on a fresh galaxy');
+    });
+    ok('16.6 every world is counted by exactly one power', bad.length === 0,
+       bad.length ? bad.join('; ') : 'four banners, tallies sum to the world count, conquered stays 0');
+  });
+
+  /* ---- 16.5 souls: a flat base once, then one per star ------------------
+     OWNER-SET (Session 29). The old rule was flat 2 per star. The new one is
+     SOULS_BASE on the first clear plus 1 per star, which keeps a clean sweep
+     at 6 (one TOWER_UNLOCK_COST, unchanged) while raising the one-star floor
+     from 2 to 4 so a stuck player still banks progress.
+
+     This asserts the PAYOUT FUNCTION, not just the per-star rate, because the
+     base is what makes the floor move and a per-star-only check cannot see it. */
+  T('16.5 souls are a flat base plus one per star', function () {
+    if (!Meta.soulsForStar || Meta.SOULS_BASE == null) {
+      skip('16.5 souls are a flat base plus one per star', 'no soulsForStar or SOULS_BASE entry point'); return;
+    }
+    /* The same arithmetic recordWorld runs, mirrored here so the check cannot
+       drift from the payer without someone noticing. */
+    const pay = function (prev, stars) {
+      let s = 0;
+      if (prev < 1 && stars >= 1) s += Meta.SOULS_BASE;
+      for (let n = prev + 1; n <= stars; n++) s += Meta.soulsForStar(n);
+      return s;
+    };
+    const one = pay(0, 1), two = pay(0, 2), three = pay(0, 3);
+    const replay = pay(1, 3), again = pay(3, 3);
+    const unlock = (typeof TOWER_UNLOCK_COST !== 'undefined') ? TOWER_UNLOCK_COST : 6;
+    ok('16.5 souls are a flat base plus one per star',
+       Meta.SOULS_BASE === 3 && Meta.soulsForStar(1) === 1 &&
+       one === 4 && two === 5 && three === 6 && three === unlock &&
+       replay === 2 && again === 0,
+       'first clear pays ' + one + '/' + two + '/' + three + ' at 1/2/3 stars, ' +
+       'replay 1 to 3 pays ' + replay + ', a repeat pays ' + again +
+       ', unlock cost ' + unlock);
   });
 
   /* ---- 16.4 one new type on wave 1, one more every THIRD wave, cap 8 ---
@@ -202,7 +257,7 @@
       if (foreign.length) bad.push(fac + ' fields ' + foreign.join(','));
       /* A shelf of five staples would pass the foreign test while proving
          nothing, which is exactly how the miscall hid. Demand a real one. */
-      if (arsenal.length < 10) bad.push(fac + ' shelf is only ' + arsenal.length + ' — the call is not reaching the roster');
+      if (arsenal.length < 10) bad.push(fac + ' shelf is only ' + arsenal.length + ', the call is not reaching the roster');
     });
     ok('17.4 a rival never fields a third power’s towers', bad.length === 0,
        bad.length ? bad.join(' | ')
@@ -473,6 +528,13 @@
     cv.width = 286; cv.height = 96;
     var ctx = cv.getContext('2d');
     var blank = [];
+    /* A HARNESS MAY NEVER SWALLOW AN EXCEPTION IT DOES NOT REPORT. This loop
+       used to `catch (e) {}`, so a tower whose draw function THREW was scored
+       on whatever ink the previous tower left behind. It is the only check in
+       the suite that runs render code, which made it the only place a render
+       crash could hide. Throws are collected and asserted separately from the
+       ink, so "it drew nothing" and "it threw" are two different failures. */
+    var threw = [];
     for (var i = 0; i < TOWER_ORDER.length; i++) {
       var id = TOWER_ORDER[i], t = TOWER_TYPES[id];
       ctx.clearRect(0, 0, 286, 96);
@@ -484,15 +546,36 @@
         if (fn) fn.call(stub, ctx, stub.age);
         else if (t.glyph) Tower.prototype.draw_glyph.call(stub, ctx, stub.age);
         else Tower.prototype.draw_bolt.call(stub, ctx, stub.age);
-      } catch (e) {}
+      } catch (e) { threw.push(id + ': ' + (e && e.message ? e.message : e)); }
       ctx.restore();
       var px = ctx.getImageData(0, 0, 286, 96).data, ink = 0;
       for (var p = 3; p < px.length; p += 4) if (px[p] > 8) ink++;
       if (ink <= 40) blank.push(id);
     }
-    ok('22.10 every tower draws itself in the shop preview', blank.length === 0,
+    ok('22.10 every tower draws itself in the shop preview',
+       blank.length === 0 && threw.length === 0,
        (TOWER_ORDER.length - blank.length) + '/' + TOWER_ORDER.length +
-       ' render; blank: ' + (blank.join(' ') || 'none'));
+       ' render; blank: ' + (blank.join(' ') || 'none') +
+       '; threw: ' + (threw.join(' | ') || 'none'));
+  });
+
+  /* ---- 22.12 the loop error buffer has a reader --------------------------
+     js/game.js wraps the frame in a try/catch and parks the message on
+     `Game.loopErrors`, and its own comment at :3695 says that is "for the
+     sweep to read". MEASURED in Session 29: grep across all three harnesses
+     returned 0, 0 and 0. Nothing read it, so a frame could throw on every
+     single tick and the suite would still report a clean run.
+
+     This is the reader. It runs LAST in this block so it sees whatever the
+     checks above provoked, and it prints the messages rather than a count,
+     because a count of 3 tells you nothing about what broke. */
+  T('22.12 no frame threw during the sweep', function () {
+    var buf = (typeof Game !== 'undefined' && Game.loopErrors) || {};
+    var keys = Object.keys(buf);
+    ok('22.12 no frame threw during the sweep', keys.length === 0,
+       keys.length
+         ? keys.map(function (k) { return k + ' x' + buf[k]; }).join(' | ')
+         : 'Game.loopErrors is empty');
   });
 
   T('22.11 the Parallel arsenal opens only once the game is beaten', function () {
@@ -566,7 +649,7 @@
     });
     ok('22.13 nothing renders blank, and the art ledger is on the record',
        blank.length === 0 && mute.length === 0,
-       'unpainted — towers ' + twr.length + '/' + TOWER_ORDER.length +
+       'unpainted, towers ' + twr.length + '/' + TOWER_ORDER.length +
        ', commanders ' + cmd.length + '/' + COMMANDER_ROSTER.length +
        ', units ' + uni.length + '/' + UNIT_ORDER.length +
        ', factions ' + fac.length + '/' + Object.keys(FACTIONS).length +
@@ -867,7 +950,7 @@
     ok('23.5 every minRange tower states its dead zone',
        (rows || /Dead zone/.test(uiSrc)) &&
        /minRange/.test(String(Game.drawSelection)) && /minRange/.test(String(Game.drawBuildOverlay)),
-       dz.join(', ') + ' — printed as a stat row and punched out of both range rings');
+       dz.join(', ') + ', printed as a stat row and punched out of both range rings');
   });
 
   /* ---- 23.6 the rival can upgrade a tower that does no damage ---------- */
@@ -963,7 +1046,7 @@
     const machineBoons = BOONS.filter(function (b) { return b.f === 'robot'; }).length;
     ok('24.2 THE PARALLEL has no renegade world and no own-power boon',
        ren === 0 && machineBoons === 0,
-       ren + ' renegade worlds over six machine galaxies, ' + machineBoons + ' machine boons — ' +
+       ren + ' renegade worlds over six machine galaxies, ' + machineBoons + ' machine boons, ' +
        'a splinter would pay another power advantage and seat a machine commander behind it');
   });
 
@@ -1123,12 +1206,28 @@
     });
     const L = seen.light, X = seen.xeno, P = seen.pirate, H = seen.human;
     /* Each claim is the OWNER'S BRIEF, asserted rather than described. */
-    const defensive = L && H && L.lives > H.lives && L.leak < H.leak;
+    /* DEFENSIVE IS MEASURED IN LEAKS SURVIVED, not in raw lives.
+       js/factions.js states the Federation's identity in its own words: their
+       defence "is measured in lives rather than in damage: a leak costs them
+       less". The two halves of that are maxLives AND leakCost, and only the
+       ratio is the defensive axis.
+
+       MEASURED at HEAD: light 25 lives at 2 a leak survives 12.5 leaks; human
+       30 lives at 3 a leak survives 10.0. Light IS the more defensive power.
+       The old clause compared raw lives alone (25 > 30, false) and so failed a
+       faction that is doing exactly what it was designed to do, while a human
+       +10 lives bonus that is half of a broad generalist package got counted
+       as defence. Session 29. */
+    const leaksOf = f => f.lives / Math.max(1, f.leak);
+    const defensive = L && H && leaksOf(L) > leaksOf(H) && L.leak < H.leak;
     const difficult = X && H && X.gold < H.gold && X.brood > H.brood;
     const scrappy   = P && H && P.dmg > H.dmg && P.range < H.range;
     ok('25.3 every power is skewed differently',
        !!(defensive && difficult && scrappy),
-       'light lives ' + (L && L.lives) + ' leak ' + (L && L.leak) +
+       'light survives ' + (L && leaksOf(L).toFixed(1)) + ' leaks vs human ' +
+       (H && leaksOf(H).toFixed(1)) + ' | light lives ' + (L && L.lives) + ' leak ' + (L && L.leak) +
+       ' | human lives ' + (H && H.lives) + ' leak ' + (H && H.leak) +
+       ' gold ' + (H && H.gold) + ' brood ' + (H && H.brood) +
        ' | xeno purse ' + (X && X.gold) + ' brood ' + (X && X.brood) +
        ' | pirate dmg ' + (P && P.dmg) + ' range ' + (P && P.range) +
        ' | human ' + (H && H.dmg) + '/' + (H && H.range));

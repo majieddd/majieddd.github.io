@@ -1,5 +1,5 @@
 /* ==========================================================================
-   COSMIC CONQUEST — Interface Styling
+   COSMIC CONQUEST, Interface Styling
    Cyan is yours, rose is the rival's. That pairing is used everywhere so
    ownership never needs a label.
    ========================================================================== */
@@ -78,7 +78,7 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 .icon-btn {
   font-family: var(--mono); width: 32px; height: 32px; display: grid; place-items: center;
   color: var(--text-dim); background: rgba(255,255,255,0.05); border: 1px solid var(--line);
-  border-radius: 8px; cursor: pointer; font-size: 14px; transition: all .13s var(--e-tap); flex-shrink: 0;
+  border-radius: 8px; cursor: pointer; font-size: 14px; transition: background-color, border-color, color, box-shadow, transform, opacity, filter .13s var(--e-tap); flex-shrink: 0;
 }
 .icon-btn:hover { color: var(--cyan); border-color: var(--cyan); background: rgba(56,232,255,0.12); }
 
@@ -94,7 +94,7 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 #screen-title { overflow-y: auto; display: grid; place-items: center; padding: 30px 20px; }
 .title-wrap { max-width: 620px; width: 100%; text-align: center; }
 
-/* Two lanes converging on a contested core — the game in one image. */
+/* Two lanes converging on a contested core, the game in one image. */
 .title-art { position: relative; height: 78px; margin-bottom: 6px; display: grid; place-items: center; }
 .ta-lane { position: absolute; top: 50%; width: 40%; height: 3px; border-radius: 2px; }
 .ta-l { left: 0;  background: linear-gradient(90deg, transparent, var(--cyan)); }
@@ -121,7 +121,7 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
                align-items: flex-start; gap: 2px; text-align: left;
                background: rgba(255,255,255,.035); border: 1px solid var(--line);
                border-left: 4px solid var(--line-2); border-radius: 8px; padding: 9px 12px;
-               color: var(--text); cursor: pointer; transition: all .13s var(--e-tap); }
+               color: var(--text); cursor: pointer; transition: background-color, border-color, color, box-shadow, transform, opacity, filter .13s var(--e-tap); }
 .profile-row:hover { background: rgba(255,255,255,.07); }
 .profile-row.active { border-left-color: var(--cyan); background: rgba(56,232,255,.11);
                       box-shadow: 0 0 0 1px rgba(56,232,255,.35); }
@@ -190,7 +190,7 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 .cmd-card {
   font-family: var(--mono); display: flex; align-items: center; gap: 12px; text-align: left;
   background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--cc);
-  border-radius: var(--r); padding: 12px 14px; color: var(--text); cursor: pointer; transition: all .14s var(--e-tap);
+  border-radius: var(--r); padding: 12px 14px; color: var(--text); cursor: pointer; transition: background-color, border-color, color, box-shadow, transform, opacity, filter .14s var(--e-tap);
 }
 .cmd-card:hover { background: var(--panel-2); border-color: var(--cc); }
 .cmd-card.active { background: color-mix(in srgb, var(--cc) 16%, transparent);
@@ -258,7 +258,7 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
   position: relative; font-family: var(--mono); width: 52px; height: 52px;
   display: grid; place-items: center; cursor: pointer;
   background: #0b1220; border: 2px solid #33405a;
-  border-radius: 8px; color: var(--text); transition: all .13s var(--e-tap);
+  border-radius: 8px; color: var(--text); transition: background-color, border-color, color, box-shadow, transform, opacity, filter .13s var(--e-tap);
 }
 .tal-node.can { border-color: var(--cc); box-shadow: 0 0 0 1px color-mix(in srgb, var(--cc) 40%, transparent); }
 .tal-node.can:hover { background: color-mix(in srgb, var(--cc) 24%, transparent); transform: translateY(-2px); }
@@ -326,7 +326,7 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 @media (max-width: 760px) { .diff-row { grid-template-columns: 1fr; } }
 .diff-pill {
   font-family: var(--mono); text-align: left; background: var(--panel); border: 1px solid var(--line);
-  border-radius: var(--r); padding: 12px 14px; color: var(--text); cursor: pointer; transition: all .14s var(--e-tap);
+  border-radius: var(--r); padding: 12px 14px; color: var(--text); cursor: pointer; transition: background-color, border-color, color, box-shadow, transform, opacity, filter .14s var(--e-tap);
   display: flex; flex-direction: column; gap: 4px;
 }
 .diff-pill:hover { border-color: var(--line-2); }
@@ -359,7 +359,7 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 .lo-card {
   font-family: var(--mono); text-align: left; display: flex; flex-direction: column; gap: 0;
   background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--tc);
-  border-radius: var(--r); padding: 10px 12px; color: var(--text); cursor: pointer; transition: all .14s var(--e-tap);
+  border-radius: var(--r); padding: 10px 12px; color: var(--text); cursor: pointer; transition: background-color, border-color, color, box-shadow, transform, opacity, filter .14s var(--e-tap);
 }
 /* The card is lifted OUT of the slot's flow, so growing it cannot reach the
    grid at all. BOTH axes are pinned in this one rule -- left/right to the
@@ -415,8 +415,14 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 .s-lives { color: var(--red); } .s-lives b { color: var(--text); }
 .s-gold  { color: var(--gold); } .s-gold b { color: var(--text); }
 .s-tow   { color: var(--text-mute); } .s-tow b { color: var(--text-dim); font-size: 15px; }
+/* THE HUD BARS SCALE, THEY DO NOT RESIZE. `syncHUD` runs every UI tick and
+   these three fills used to take `style.width`, so every tick forced layout
+   on them. `transform: scaleX()` is compositor-only and animates the same
+   way. transform-origin is pinned left so the fill still drains rightward. */
 .bar { display: block; width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
-.bar i { display: block; height: 100%; background: var(--cyan); transition: width .25s var(--e-tap); }
+.bar i { display: block; height: 100%; width: 100%; background: var(--cyan);
+         transform-origin: left center; transform: scaleX(1);
+         transition: transform .25s var(--e-tap); }
 .cmdr.right .bar i { background: var(--rose); }
 @keyframes goldflash { 0%,100% { background: transparent; } 30% { background: rgba(239,68,68,.4); } }
 .s-gold.flash { animation: goldflash .45s ease; }
@@ -426,7 +432,9 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 .wave-badge b { font-size: 24px; color: var(--text); letter-spacing: 0; margin-left: 5px; }
 .phase { font-size: 12px; letter-spacing: .14em; color: var(--gold); font-weight: 700; }
 .prep { display: block; width: 290px; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
-.prep i { display: block; height: 100%; background: var(--gold); transition: width .2s linear; }
+.prep i { display: block; height: 100%; width: 100%; background: var(--gold);
+          transform-origin: left center; transform: scaleX(1);
+          transition: transform .2s linear; }
 .prep i.running { background: var(--red); }
 
 .chip-rows { display: flex; flex-direction: column; gap: 3px; align-items: center; }
@@ -441,7 +449,7 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 .ctl-group { display: flex; gap: 4px; align-items: center; }
 .speed-btn { font-family: var(--mono); font-size: 12px; width: 32px; height: 32px;
              background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 8px;
-             color: var(--text-dim); cursor: pointer; transition: all .13s var(--e-tap); }
+             color: var(--text-dim); cursor: pointer; transition: background-color, border-color, color, box-shadow, transform, opacity, filter .13s var(--e-tap); }
 .speed-btn.active { color: #eafcff; border-color: var(--cyan); background: rgba(56,232,255,.18); }
 
 /* ---- stage: the sidebar is a strict flex column so it can never overflow -- */
@@ -501,7 +509,7 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 .tower-card { font-family: var(--mono); display: flex; align-items: center; gap: 9px; width: 100%;
               text-align: left; background: rgba(255,255,255,0.035); border: 1px solid var(--line);
               border-left: 4px solid var(--tc); border-radius: 7px; padding: 8px 10px;
-              color: var(--text); cursor: pointer; transition: all .12s var(--e-tap); }
+              color: var(--text); cursor: pointer; transition: background-color, border-color, color, box-shadow, transform, opacity, filter .12s var(--e-tap); }
 .tower-card:hover { background: rgba(255,255,255,.08); border-color: var(--tc); }
 .tower-card.active { background: color-mix(in srgb, var(--tc) 20%, transparent);
                      border-color: var(--tc); box-shadow: 0 0 0 1px var(--tc); }
@@ -546,7 +554,7 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 .mode-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
 .mode-btn { font-family: var(--mono); font-size: 10px; padding: 7px 1px; cursor: pointer;
             background: rgba(255,255,255,.035); border: 1px solid var(--line); border-radius: 5px;
-            color: var(--text-mute); transition: all .12s var(--e-tap); }
+            color: var(--text-mute); transition: background-color, border-color, color, box-shadow, transform, opacity, filter .12s var(--e-tap); }
 .mode-btn.active { color: #eafcff; background: color-mix(in srgb, var(--tc) 24%, transparent); border-color: var(--tc); }
 
 .tech-offer { display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--gold);
@@ -639,7 +647,7 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 .choice-card { position: relative; font-family: var(--mono); display: flex; flex-direction: column;
   align-items: center; gap: 8px; padding: 20px 12px; cursor: pointer; text-align: center;
   background: rgba(74,222,128,.05); border: 1px solid rgba(74,222,128,.3); border-radius: 12px;
-  color: var(--text); transition: all .15s var(--e-tap); }
+  color: var(--text); transition: background-color, border-color, color, box-shadow, transform, opacity, filter .15s var(--e-tap); }
 .choice-card:hover { background: rgba(74,222,128,.17); border-color: var(--green); transform: translateY(-3px); }
 .cc-key { position: absolute; top: 8px; left: 9px; font-size: 11px; color: var(--text-mute); }
 .cc-icon { font-size: 28px; color: var(--green); }

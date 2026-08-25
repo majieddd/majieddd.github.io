@@ -1,5 +1,5 @@
 /* ==========================================================================
-   COSMIC CONQUEST — Core State, Simulation & World Rendering
+   COSMIC CONQUEST, Core State, Simulation & World Rendering
    ========================================================================== */
 
 'use strict';
@@ -9,7 +9,7 @@ const MAX_STEPS = 8;
 const MAX_PARTICLES = 420;
 const MAX_FLOATERS = 80;
 
-/* REDUCED MOTION — the OS preference OR the OPTIONS checkbox. Cached, and
+/* REDUCED MOTION, the OS preference OR the OPTIONS checkbox. Cached, and
    read through one function: the gates below run per spawned particle, and a
    matchMedia() construction per call would cost more than the particles do.
    The checkbox is the USER'S switch for machines whose OS preference is out
@@ -34,11 +34,11 @@ function seededDraw(seed) {
 }
 function setReducedMotion(user) { RM_USER = !!user; }
 
-/* DAMAGE NUMBERS — same cached-gate shape as reduced motion, and for the same
+/* DAMAGE NUMBERS, same cached-gate shape as reduced motion, and for the same
    reason: the check runs once per landed hit. Default ON because a new player
    learning which tower is doing the work needs the numbers; the OPTIONS
    checkbox exists for the player who finds them noise. The gate lives in
-   registerDamage, not addFloater — floaters also carry gold and MUSTER
+   registerDamage, not addFloater, floaters also carry gold and MUSTER
    notices, and those must survive the toggle. */
 let DMG_NUMBERS = true;
 function damageNumbersOn() { return DMG_NUMBERS; }
@@ -139,7 +139,7 @@ class Side {
     this.killLog = {};
   }
   get alive() { return this.lives > 0; }
-  /** How many of a tower type this side already fields — drives price growth. */
+  /** How many of a tower type this side already fields, drives price growth. */
   countOf(type) { let n = 0; for (const t of this.towers) if (t.type === type) n++; return n; }
 }
 
@@ -395,7 +395,13 @@ const Game = {
     this.difficulty = DIFFICULTIES.find(d => d.id === opts.difficulty) || DIFFICULTIES[1];
     /* THE MAELSTROM is synthesised from its seat count rather than authored,
        so it is not in MAPS and cannot be reached from the campaign trail. */
-    this.map = opts.maelstrom ? maelstromMap(opts.maelstrom)
+    /* THE EPOCH IS CAPTURED ONCE, HERE. Passing it explicitly means the map
+       object this match runs on can never be reshaped by an hour boundary
+       crossing mid-battle, and a replay handed the same epoch rebuilds the
+       same arena exactly. */
+    this.maelstromEpoch = opts.maelstrom
+      ? (opts.epoch !== undefined ? (opts.epoch | 0) : maelstromEpoch()) : null;
+    this.map = opts.maelstrom ? maelstromMap(opts.maelstrom, this.maelstromEpoch)
                               : (MAPS.find(m => m.id === opts.map) || MAPS[0]);
     FIELD = buildField(this.map);
 
@@ -451,8 +457,8 @@ const Game = {
     this.airLanes  = FIELD.airLanes.map(p => new Path(p));
 
     /* Unbuildable = every lane tile plus map terrain. Send paths are no longer
-       separate ground — a reanimate retraces your own lane backwards and then
-       runs your rival's forwards — so they contribute no tiles of their own.
+       separate ground, a reanimate retraces your own lane backwards and then
+       runs your rival's forwards, so they contribute no tiles of their own.
        They stay in the loop below because the union is free and the code stays
        correct if a future map ever routes them elsewhere. */
     this.blocked = new Set(FIELD.terrain);
@@ -547,7 +553,7 @@ const Game = {
     if (rival.id === this.sides[0].commander.id)
       rival = COMMANDERS.find(c => c.faction === this.sides[1].faction &&
                                    c.id !== rival.id) || rivalPool[0];
-    /* The rival is a fully-realised commander too — but realised to the same
+    /* The rival is a fully-realised commander too, but realised to the same
        DEPTH you are. A flat "near-complete tree" meant a level-one profile met
        a rival with sixteen of eighteen tech points and no way to answer it.
        The rival's budget now tracks the player's own spend, magnified by the
@@ -615,7 +621,7 @@ const Game = {
       applyPrestigeBonus(this.sides[1], rival.faction || this.sides[1].faction || 'human', 1);
     }
 
-    /* Loadouts: five towers each. The rival drafts its own coherent set. */
+    /* Loadouts: LOADOUT_SIZE towers each. The rival drafts its own coherent set. */
     this.sides[0].loadout = (opts.loadout && opts.loadout.length ? opts.loadout : TOWER_ORDER.slice(0, LOADOUT_SIZE)).slice(0, LOADOUT_SIZE);
     /* The rival drafts under the SAME origin law the player unlocks under:
        its own power's hardware plus the human and robotic commons, never a
@@ -654,7 +660,7 @@ const Game = {
       Math.max(1, this.sides[0].musterLoadout.length - (this.rivalStage === 0 ? 1 : 0))));
 
     /* Talents are prepared before the match: yours from the saved trees, the
-       rival's drafted to suit its own loadout — and only as deep as your own
+       rival's drafted to suit its own loadout, and only as deep as your own
        tower mastery currently reaches, plus a row on Overrun. */
     /* Soul investment: yours as banked, the rival's mirrored to the same average
        so progression parity holds the way the loadout roster already does. */
@@ -886,7 +892,7 @@ const Game = {
   },
 
   /** Composition summary used by the preview panel and by the AI's scouting. */
-  /* THE health multiplier for a wave — the single definition every consumer
+  /* THE health multiplier for a wave, the single definition every consumer
      reads. It existed three times before (startWave, waveProfile and the UI's
      roster panel), and the third copy silently omitted the galaxy-tier term,
      so from galaxy II onward the preview understated every enemy by 30% per
@@ -1189,7 +1195,7 @@ const Game = {
     }
     Sound.play('waveClear');
 
-    /* Every 10 waves the enemy escalates — and the later steps stack harder. */
+    /* Every 10 waves the enemy escalates, and the later steps stack harder. */
     if (this.wave % 10 === 0) {
       const n = this.wave >= 30 ? 3 : this.wave >= 20 ? 2 : 1;
       for (let i = 0; i < n; i++) this.addEnemyMod();
@@ -1312,7 +1318,7 @@ const Game = {
   drawMods(side) {
     const S0 = side || this.sides[0];
     /* A land card on a map with no rubble is a dead draw, so gate the pool. */
-    /* MEASURED: comparing the two SIZES is meaningless — THE COIL has 50
+    /* MEASURED: comparing the two SIZES is meaningless. THE COIL has 50
        clearable rubble tiles and 112 lane tiles, so the old test returned
        false and silently deleted both land cards from every draft on the one
        map built around fragmented ground. Count the terrain that is actually
@@ -1657,7 +1663,7 @@ const Game = {
         : 'No room there: that ground is a lane, rubble, not yours, or already built on', false);
       return null;
     }
-    /* Only the five towers you deployed with may be built. */
+    /* Only the towers you deployed with may be built. */
     if (!S.loadout.includes(type)) {
       if (side === this.viewSide) UI.denied(def.name + ' is not in the loadout you deployed with', false);
       return null;
@@ -1701,7 +1707,7 @@ const Game = {
         return false;
       }
       S.gold -= cost; tower.invested += cost; tower.level++;
-      /* Each level also rolls one random minor buff — no decision to make. */
+      /* Each level also rolls one random minor buff, no decision to make. */
       const roll = tower.addRoll();
       if (tower.side === this.viewSide) {
         Sound.play('upgrade');
@@ -1748,7 +1754,7 @@ const Game = {
     /* An armed MOVE must die with its tower. Without this the next click on
        empty ground charged the relocate fee for a tower that is no longer on
        the board, re-selected it, and opened a phantom inspector whose upgrade
-       buttons all still worked — 54k gold could be burned on a tower that
+       buttons all still worked. 54k gold could be burned on a tower that
        never fires and never renders. Nothing sets `dead` on a Tower, so the
        downstream `!movingTower.dead` guard could never have caught it. The
        `S` hotkey reaches sell too, so the panel is not the only vector. */
@@ -2067,7 +2073,7 @@ const Game = {
   },
 
   /**
-   * WHAT A BREACH ACTUALLY COSTS — one definition, three readers.
+   * WHAT A BREACH ACTUALLY COSTS, one definition, three readers.
    *
    * The reap charged this, and the HUD's lives-in-flight figure and the theft
    * floater both printed the RAW `livesCost` instead, under a comment
@@ -2186,8 +2192,20 @@ const Game = {
        what this battle actually earned on the galaxy map. */
     const c0 = this._skirmish ? null : Meta.campaign();
     const node = c0 && c0.chosen;
+    /* The WORLD, not just its id: ratingFor needs it to ask which scenario this
+       board ran, and the scenario owns the star thresholds. Resolved here, once,
+       so the rating and the preview card cannot consult different objects. */
+    this.worldRecord = null;
+    if (node && node.world && typeof Meta.galaxy === 'function') {
+      const gx = Meta.galaxy();
+      if (gx) for (const sy of gx.systems) {
+        const w = sy.worlds.find(x => x.id === node.world);
+        if (w) { this.worldRecord = w; break; }
+      }
+    }
     this.lastStars = node
-      ? Meta.recordWorld(node.world, ratingFor(won, this.sides[0].lives, this.sides[0].maxLives, this.wave))
+      ? Meta.recordWorld(node.world, ratingFor(won, this.sides[0].lives, this.sides[0].maxLives,
+                                               this.wave, this.worldRecord))
       : null;
     this.campaignResult = c0
       ? (won ? Meta.campaignAdvance(this)
@@ -2210,6 +2228,31 @@ const Game = {
          disagrees. */
       Meta.recordRivalMoves(this.rivalMoves);
     } else this.rivalMoves = null;
+    /* ACHIEVEMENT COUNTERS (Session 29). Placed HERE, after lastStars and
+       campaignResult are resolved, because three of the counters read them.
+       Runs on a DEFEAT exactly as on a win, which is the entire point: the
+       participation rows are the soul income for a player who is stuck.
+
+       Every figure comes from a counter the match already kept, so this adds
+       no bookkeeping to the hot loop. `built` is the running total of towers
+       RAISED, not the ones left standing, so selling or losing one does not
+       quietly un-earn progress. `galaxies` is absent on purpose: it is
+       DERIVED from galaxyTier inside Meta.stats, because bumping it here
+       would count every battle fought after the last galaxy fell. */
+    const rs = this.sides[0].stats || {};
+    const starsGained = this.lastStars && this.lastStars.improved
+      ? (this.lastStars.stars - this.lastStars.previous) : 0;
+    Meta.bumpStats({
+      battles: 1,
+      waves: Math.max(0, this.wave),
+      kills: rs.kills || 0,
+      built: rs.built || 0,
+      losses: won ? 0 : 1,
+      stars: starsGained,
+      systems: (this.lastStars && this.lastStars.systemTaken) ? 1 : 0,
+      vaulted: (this.lastStars && this.lastStars.saved) ? this.lastStars.saved.length : 0
+    });
+    this.lastAchievements = Meta.claimAchievements();
     Storage.recordRun(this, won);
     UI.showEnd(won);
   },
@@ -2252,7 +2295,7 @@ const Game = {
   /** Live rivals a muster from `side` would march on. */
   /* THE single answer to "who does this side send at". Two-sided boards have
      exactly one rival, tri boards have two, and THE MAELSTROM has up to twenty
-     — so `1 - side`, which three call sites still open-coded, is undefined the
+ so `1 - side`, which three call sites still open-coded, is undefined the
      moment a third seat exists. Returns a live opponent, or -1 if none remain. */
   rivalOf(side) {
     const v = this.musterVictims(side);
@@ -2472,7 +2515,7 @@ const Game = {
   },
 
   /**
-   * THE CORPSE BUDGET — the one conservation number.
+   * THE CORPSE BUDGET, the one conservation number.
    *
    * A doctrine may change the SHELL a kill returns in; it may never change
    * the MASS. Every rite that spends a corpse spends exactly this, so the
@@ -2736,7 +2779,7 @@ const Game = {
   },
 
   /**
-   * CONSCRIPTION — the human rite. The fallen return as a soldier drawn from
+   * CONSCRIPTION, the human rite. The fallen return as a soldier drawn from
    * YOUR roster, at the mass of the corpse that paid for them.
    */
   conscript(e) {
@@ -2810,7 +2853,7 @@ const Game = {
   },
 
   /**
-   * THE BROOD — the xeno rite. A kill does not march; it stays where it fell
+   * THE BROOD, the xeno rite. A kill does not march; it stays where it fell
    * and becomes something else. Kills near a clutch hurry it along, which is
    * the combo the whole faction is built to play.
    */
@@ -2914,7 +2957,7 @@ const Game = {
   },
 
   /**
-   * THE PROCESSION — the Federation's clock. Ticked from step(), never from
+   * THE PROCESSION, the Federation's clock. Ticked from step(), never from
    * draw(): a rite that fires on a frame rate is a rite two clients disagree
    * about.
    */
@@ -2978,7 +3021,7 @@ const Game = {
   },
 
   /**
-   * THE SPLICE — the Parallel's survey rig, and the one mechanic that edits
+   * THE SPLICE, the Parallel's survey rig, and the one mechanic that edits
    * the board itself.
    *
    * The detour is DERIVED rather than authored per map: it enters the
@@ -3325,7 +3368,7 @@ const Game = {
       Sound.play('split');
     }
 
-    /* Reanimation — but a reanimated unit can never be reanimated again, and
+    /* Reanimation, but a reanimated unit can never be reanimated again, and
        inside THE MAELSTROM nothing reanimates at all. The gate is the ARENA's
        (`noReanim` comes off the field), not a side's: killing an attacker in
        the arena leaves you nothing to send, for every seat equally. What you
@@ -3337,7 +3380,7 @@ const Game = {
 
   /* ============================================================= HELPERS */
 
-  /** Paths carrying units hostile to `side` — its lanes plus incoming reanimates. */
+  /** Paths carrying units hostile to `side`, its lanes plus incoming reanimates. */
   defendedPaths(side) {
     /* In the arena everything hostile to a seat -- its own wave and every send
        aimed at it -- comes out of the singularity down that seat's ONE lane, so
@@ -3397,7 +3440,7 @@ const Game = {
       this.spawnParticle(x, y, Math.cos(a) * s, Math.sin(a) * s, rand(0.24, 0.55), rand(2, 5), Math.random() < 0.45 ? '#ffd166' : color, 'fire');
     }
   },
-  /** Inward-collapsing ring — the Singularity's signature. */
+  /** Inward-collapsing ring, the Singularity's signature. */
   spawnImplosion(x, y, radius, color) {
     if (motionReduced()) return;
     this.particles.push({ x, y, vx: 0, vy: 0, life: 0.4, maxLife: 0.4, size: radius, color, kind: 'implode' });
@@ -3447,7 +3490,7 @@ const Game = {
 
   /** Is this a legal tile for an aimed ability? The rival is held to exactly
       the same rule, which is what stops it aiming into ground it does not
-      hold — or at its own base. */
+      hold, or at its own base. */
   canAim(side, gx, gy, def) {
     if (this.state !== 'playing') return false;
     if (gx < 0 || gy < 0 || gx >= FIELD.cols || gy >= FIELD.rows) return false;
@@ -3611,7 +3654,7 @@ const Game = {
     if (!t) return false;
     const S = this.sides[t.side];
     /* MEMBERSHIP, not a `dead` flag. Nothing in the codebase ever sets `dead`
-       on a Tower — all 18 writers are enemies, projectiles or constructs — so
+       on a Tower, all 18 writers are enemies, projectiles or constructs, so
        the old guard was vestigial and a sold tower could still be relocated,
        charged for, and re-selected. Being in its side's list is the only
        honest test of whether a tower is still on the board. */
@@ -4093,7 +4136,7 @@ const Game = {
       trace(p, x); x.strokeStyle = 'rgba(90,150,200,0.18)'; x.lineWidth = TILE - 7; x.stroke();
     }
 
-    /* Impassable terrain — rubble that removes build space entirely. */
+    /* Impassable terrain, rubble that removes build space entirely. */
     for (const key of FIELD.terrain) {
       if (this.clearedTerrain.has(key)) continue;   /* bought and demolished */
       const [gx, gy] = key.split(',').map(Number);
@@ -4307,7 +4350,7 @@ const Game = {
   },
 
   /** The singularity. The ground it has already taken is baked into the
-      background, so this draws only what moves — and the horizon is drawn as
+      background, so this draws only what moves, and the horizon is drawn as
       the DIAMOND the rule is actually measured in, not as a circle it is not. */
   drawSingularity(ctx) {
     if (!FIELD.radial) return;
@@ -4397,7 +4440,7 @@ const Game = {
 
   /** Ghost for an armed aimed ability: where the construct would land and
       whether the tile will take it. It deliberately mirrors the build ghost,
-      because aiming should feel like placing — it is placing. */
+      because aiming should feel like placing, it is placing. */
   drawAimOverlay(ctx) {
     const def = this.aimedDef();
     if (!def || !this.hover.active || this.state !== 'playing') return;
@@ -4699,7 +4742,7 @@ const Game = {
 
   /**
    * Value-per-gold of putting `type` on this tile, in the units
-   * AI.bestAction already scores a build in — the same effectiveness,
+   * AI.bestAction already scores a build in, the same effectiveness,
    * utility, coverage and diversity terms, read through a scratch scorer
    * bound to the player's side. The ordering the ring recommends is therefore
    * the ordering the RIVAL would act on: one model of the board, shown to
@@ -4719,7 +4762,7 @@ const Game = {
     else {
       v = scorer.effectiveness(def, probe.stats, probe.estimateDps(), prof)
         + scorer.utilityValue(type, prof, spot);
-      /* Coverage gates everything — a great tower on a dead tile is dead. */
+      /* Coverage gates everything, a great tower on a dead tile is dead. */
       v *= scorer.covMul(scorer.coverage(probe.x, probe.y, probe.effRange));
     }
     v *= Math.pow(BUILD_DIVERSITY_FALLOFF, scorer.countOf(type));
@@ -4787,7 +4830,7 @@ const Game = {
     }));
 
     /* SMART ORDER: what you can afford leads, and inside each group the best
-       value-per-gold leads. The ORDER is frozen here on purpose — gold moves
+       value-per-gold leads. The ORDER is frozen here on purpose, gold moves
        every time something dies, and a ring that re-sorted under the player's
        thumb would build the tower they had stopped pointing at. Only the
        order is frozen: the prices and the greying are re-read every frame,
@@ -4851,7 +4894,7 @@ const Game = {
   },
 
   /**
-   * Release. Builds through Game.build — the same call the shop makes — so
+   * Release. Builds through Game.build, the same call the shop makes, so
    * loadout membership, tile ownership, blocked ground and the purse are all
    * still decided in one place, and an unaffordable choice is refused there
    * rather than being talked out of here.
@@ -4867,7 +4910,7 @@ const Game = {
     return t;
   },
 
-  /** The tower's REAL sprite, painted once per type through UI.towerStub —
+  /** The tower's REAL sprite, painted once per type through UI.towerStub
       the same stand-in every other tower preview draws through, so the menu
       can never show art the board will not. */
   radialIcon(type) {
@@ -4899,7 +4942,7 @@ const Game = {
 
     /* Every price on the ring is asked of Game.towerCost on the frame it is
        drawn. A number cached at open would be a number the build no longer
-       charges the moment anything on the board changed — which is the one
+       charges the moment anything on the board changed, which is the one
        desync this codebase keeps re-shipping. */
     /* Asked FOR THE VIEWER. openRadial runs on the input path with the lens
        on, where 0 already means the local seat; drawRadial runs inside the
@@ -4928,8 +4971,8 @@ const Game = {
     ctx.fillStyle = g;
     ctx.beginPath(); ctx.arc(r.mx, r.my, ring + iconR * 1.9, 0, TAU); ctx.fill();
 
-    /* The tile the build lands on, and — when the ring slid inboard off an
-       edge — the stalk that says the two are the same decision. */
+    /* The tile the build lands on, and, when the ring slid inboard off an
+       edge, the stalk that says the two are the same decision. */
     ctx.strokeStyle = 'rgba(125,211,252,0.9)'; ctx.lineWidth = 2;
     if (r.mx !== r.cx || r.my !== r.cy) {
       ctx.globalAlpha = ease * 0.5;
@@ -5198,7 +5241,7 @@ const Game = {
       /* An armed ability consumes the next click ahead of everything else:
          while it is aimed, the cursor means one thing only. Arming it already
          cleared the build and relocate modes, so the order below is a
-         formality — but it is the order the player sees. */
+         formality, but it is the order the player sees. */
       if (this.aimingAbility !== null) {
         const i = this.aimingAbility;
         this.aimingAbility = null;
@@ -5242,18 +5285,18 @@ const Game = {
 
     /* ---- drag-out radial placement -------------------------------------
        The gesture only ever ARMS on a press that could already have become a
-       build. Every other cursor mode on this canvas — an aimed ability, a
-       tower armed for relocation, a shop-armed tower type — already means one
+       build. Every other cursor mode on this canvas, an aimed ability, a
+       tower armed for relocation, a shop-armed tower type, already means one
        thing, and a ring that overrode any of them would be a second meaning
        for the same press. */
     cv.addEventListener('pointerdown', e => {
       if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
       /* Cleared here rather than in the click handler, so a release that
-         lands off-canvas — which produces no click at all — cannot leave the
+         lands off-canvas, which produces no click at all, cannot leave the
          suppression armed for the next genuine one. */
       this._radialAte = false;
-      /* Self-healing: a ring left open by a gesture that never released — a
-         pointerup swallowed by another window, a second finger — must not
+      /* Self-healing: a ring left open by a gesture that never released, a
+         pointerup swallowed by another window, a second finger, must not
          outlive the next press. */
       this.radial = null;
       drag.live = false; drag.open = false; drag.id = e.pointerId;
@@ -5279,7 +5322,7 @@ const Game = {
       const b = this.pointerToBoard(e);
       if (!drag.open) {
         /* The threshold is in CSS pixels, so the gesture feels identical at
-           every board scale — the player's hand does not scale with the
+           every board scale, the player's hand does not scale with the
            fitted canvas, so the number that gates it must not either. */
         /* Board distance back to SCREEN pixels, so the ring opens after the
            same physical drag at any fit -- and at any zoom, which multiplies
@@ -5300,7 +5343,7 @@ const Game = {
       this.radial.hover = this.radialPick(b.x, b.y);
       this.radialCommit();
       /* The release also produces a click on the canvas, and that click must
-         not reach the select/place handler — the gesture has already been
+         not reach the select/place handler, the gesture has already been
          answered. */
       this._radialAte = true;
     });

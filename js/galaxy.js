@@ -3,7 +3,7 @@
 
    A campaign is a galaxy: a handful of solar systems, each a cluster of worlds
    held by the three rival powers and by the pirates. Take a world by winning on
-   it; CONQUER it by taking it cleanly — three stars. Conquer enough of a system
+   it; CONQUER it by taking it cleanly, three stars. Conquer enough of a system
    and its holding commander comes out to meet you personally.
 
    Everything here is deterministic from the campaign seed, so a galaxy is the
@@ -41,7 +41,7 @@ if (RENEGADE_BOON_KINDS.length + 1 !== SYSTEMS_PER_GALAXY)
    MEASURED (Session 16): seeds are STRINGS ('seed1', a profile name), and
    `'seed1' >>> 0` is 0 for every string, so `|| 1` fired every time and every
    galaxy ever generated used the identical stream. Seeds did nothing: the same
-   five systems, the same worlds, the same maps, forever — and any map landing
+   five systems, the same worlds, the same maps, forever, and any map landing
    in an unreached slot (THE ANVIL, and RIFT before it) was unreachable content.
    Hash the seed to an integer first. */
 function galaxyRng(seed) {
@@ -59,7 +59,7 @@ const WORLD_NAMES = [
 const SYSTEM_NAMES = ['CORVUS', 'ARDENT', 'TALLOW REACH', 'THE SPINDLE', 'BLACKGLASS',
                       'HELIX', 'MOURNE', 'VAST'];
 
-/* The renderer squashes every world's y by this before drawing, so generation
+/* The renderer squashes every world’s y by this before drawing, so generation
    divides by it to keep orbits visually circular. Keep the two in step. */
 const GX_RENDER_SQUASH = 0.64;
 /* Three rings and the golden angle: seven worlds land evenly instead of the
@@ -106,8 +106,14 @@ const WORLD_KINDS = {
               note: 'Dug in. The garrison starts with more lives.' },
   forge:    { id: 'forge',    label: 'Forge',      icon: '⚙', weight: 12,
               note: 'Industrial. Both sides begin richer.' },
-  nest:     { id: 'nest',     label: 'Pirate Nest',icon: '☠', weight: 14,
-              note: 'Swarm-infested. Waves arrive larger and sooner.' }
+  /* CANON (lore v0.2.0, continuity rule 6): the swarm is THE VIGIL, legacy Old
+     Weather enforcement, and it is nobody’s army. Labelling it a Pirate Nest
+     also produced a second-order bug: `kind` is rolled independently of
+     `owner`, so a Federation world could be labelled a Pirate Nest, and a
+     PIRATE player’s own worlds were labelled Pirate Nests. A neutral Vigil
+     nest is correct under every owner, which is what a kind roll needs. */
+  nest:     { id: 'nest',     label: 'Vigil Nest', icon: '☠', weight: 14,
+              note: 'Waves arrive larger and sooner. Old Weather routines still run here, and they do not check banners.' }
 };
 
 /* --------------------------------------------------------------------------
@@ -122,7 +128,7 @@ function generateGalaxy(seed, playerFaction, mapPool) {
   const rnd = galaxyRng(seed);
   const rivals = rivalFactionsOf(playerFaction);
   /* WHO SQUATS the ordinary worlds. Naming the pirates outright put a fifth
-     of a PIRATE player's galaxy under their own banner and marched them into
+     of a PIRATE player’s galaxy under their own banner and marched them into
      battle against their own faction, commander included. Derived once and
      threaded to every site that names the squatter, so no two sites can
      disagree. The Xeno stand in because they hold the fewest systems of the
@@ -143,11 +149,11 @@ function generateGalaxy(seed, playerFaction, mapPool) {
        edge in the first place. */
     const slot = GX_SYSTEM_SLOTS[si % GX_SYSTEM_SLOTS.length];
     /* Slots are authored in RENDERED units -- what the viewBox actually shows
-       -- while a system's STORED y is generation space, which the renderer
+       -- while a system’s STORED y is generation space, which the renderer
        squashes again on the way out. Converting here rather than in the table
        keeps the table readable against GX_WORLD, which is the one rectangle
        the slots have to fit inside. Nothing draws from rnd() in this
-       conversion, so no saved campaign's maps, arenas or boons move. */
+       conversion, so no saved campaign’s maps, arenas or boons move. */
     const cx = slot[0], cy = slot[1] / GX_RENDER_SQUASH;
 
     /* Each system is dominated by one rival power, which supplies its commander. */
@@ -160,7 +166,7 @@ function generateGalaxy(seed, playerFaction, mapPool) {
       /* Even angular spacing with a per-system phase, and two alternating
          orbit radii. The old random angle+radius let pairs land on top of each
          other, which is what made the map read as a clump of bubbles. */
-      /* MEASURED (Session 16): worlds were overlapping — minimum centre-to-
+      /* MEASURED (Session 16): worlds were overlapping, minimum centre-to-
          centre distance 4.17 against a combined dot+ring radius of ~4.7. The
          cause was a DOUBLE vertical squash: this loop multiplied the y offset
          by 0.72, and the renderer multiplies world.y by 0.64 again, so a
@@ -171,7 +177,7 @@ function generateGalaxy(seed, playerFaction, mapPool) {
       const phase = (si * 0.7) % (Math.PI * 2);
       const wa = wi * GX_GOLDEN_ANGLE + phase;
       const wr = GX_RINGS[wi % GX_RINGS.length];
-      /* The last world of a system is the holding commander's own seat. */
+      /* The last world of a system is the holding commander’s own seat. */
       const isSeat = wi === WORLDS_PER_SYSTEM - 1;
       const kinds = Object.values(WORLD_KINDS);
       let roll = rnd() * kinds.reduce((a, k) => a + k.weight, 0);
@@ -200,13 +206,13 @@ function generateGalaxy(seed, playerFaction, mapPool) {
         seat: isSeat,
         /* The raider holds roughly a fifth of the ordinary worlds. The roll
            is drawn either way rather than short-circuited, so the PRNG stream
-           is identical for every profile and no saved galaxy's maps, arenas
+           is identical for every profile and no saved galaxy’s maps, arenas
            or boons move. */
         owner: worldOwner,
         /* Three-way maps are reserved for CONTESTED worlds only. */
         /* Drawn from the PREFIX the campaign pinned at creation (c.mapPool),
            because the modulus is the save contract: adding maps without the
-           pin remaps every saved galaxy's boards even though not one rnd()
+           pin remaps every saved galaxy’s boards even though not one rnd()
            draw moves. Clamped, so a newer save on an older build falls back
            to everything rather than throwing. One rnd() call, same position,
            as ever. */
@@ -230,7 +236,7 @@ function generateGalaxy(seed, playerFaction, mapPool) {
        two worlds of a system (a three-way war is no way to open one), and
        deterministic per seed -- these slots are derived from the system index
        rather than drawn from rnd(), so nominating a second world cannot shift
-       every later world's roll. */
+       every later world’s roll. */
     {
       const slots = [2 + (si % 2), 4 + (si % 2)];
       slots.forEach((pick, k) => {
@@ -244,26 +250,26 @@ function generateGalaxy(seed, playerFaction, mapPool) {
         w.map = TRI_MAP_IDS[(si * CONTESTED_PER_SYSTEM + k) % TRI_MAP_IDS.length];
         w.kind = 'fortress';
         /* Two powers were already fighting over this one, so it pays the
-           holder's APEX boon -- the only place those five are reachable.
+           holder’s APEX boon -- the only place those five are reachable.
            Deterministic like the rest of this block: taking a roll here
-           would shift every later world's stream. */
+           would shift every later world’s stream. */
         w.boon = boonFor(w.owner, w.kind, true, 0).id;
       });
     }
 
-    /* THE RENEGADE WORLD — one per system, and the only place your OWN power's
+    /* THE RENEGADE WORLD, one per system, and the only place your OWN power’s
        five boons can be taken.
        ────────────────────────────────────────────────────────────────────
        Until now they could not be taken at all. `rivals` excludes you by
        construction (rivalFactionsOf), every world owner is drawn from it or
-       from `raider`, and boonFor filters `b.f === owner` — so playing human,
+       from `raider`, and boonFor filters `b.f === owner`, so playing human,
        the five human boons were dead data in every galaxy ever generated.
        Five of the TWENTY (four powers, five each), unreachable by
        construction rather than by design.
 
        A splinter of your own power holds this one and will not stand down.
-       Taking it back is how you carry your own power's advantage forward, and
-       it is deliberately the one place your OWN soldiers march against you —
+       Taking it back is how you carry your own power’s advantage forward, and
+       it is deliberately the one place your OWN soldiers march against you
        which is why `renegade` is an explicit flag and not merely
        `owner === playerFaction`. battleHostFaction spent a whole session
        driving accidental own-troop garrisons from 15.3% to 0.0%, and this must
@@ -271,15 +277,15 @@ function generateGalaxy(seed, playerFaction, mapPool) {
 
        NOT ONE NEW rnd() CALL. The slot is derived from the system index
        exactly as the contested block above derives its two, because
-       galaxy.js's standing rule is that the draw sequence must never move or
-       every saved galaxy's maps, arenas and boons shift underneath its owner.
+       galaxy.js’s standing rule is that the draw sequence must never move or
+       every saved galaxy’s maps, arenas and boons shift underneath its owner.
        Measured over 4 powers x 40 seeds: every non-renegade field is
        byte-identical. */
     {
       /* THE PARALLEL HOLDS NO WORLDS AND OWNS NO BOONS. BOONS has twenty
          entries across the four powers that fight over the galaxy and none
          for the machines, so a renegade world on a Parallel profile would pay
-         a fallback boon belonging to somebody else — and worldBossOf would
+         a fallback boon belonging to somebody else, and worldBossOf would
          seat a MACHINE commander behind it, spoiling the secret faction to a
          player who has only just unlocked it. No splinter for a power that
          holds nothing. */
@@ -293,20 +299,20 @@ function generateGalaxy(seed, playerFaction, mapPool) {
       if (w && !w.seat && !w.contested) {
         w.owner = playerFaction;
         w.renegade = true;
-        /* THE BOON KEY IS NOT THE WORLD'S KIND, and that distinction is the
+        /* THE BOON KEY IS NOT THE WORLD’S KIND, and that distinction is the
            whole of O1 being delivered rather than merely attempted.
 
-           Reading the world's own rolled kind looked right and is not: the
+           Reading the world’s own rolled kind looked right and is not: the
            kinds are weighted (standard 58, fortress 16, forge 12, nest 14),
            so four independent draws land all four kind-keyed boons in only
-           about 4% of galaxies — 2.3 of 4 on average. Five own boons would
+           about 4% of galaxies. 2.3 of 4 on average. Five own boons would
            have been "reachable" in the sense that a long enough sequence of
            runs eventually shows them, which is not what was asked for.
 
            Cycling the key by system index pays a DIFFERENT one of the four in
-           every galaxy, and the last system pays the APEX — so all five are
-           reachable in every single run. The world's own `kind` is left
-           untouched: it is the world's identity, it drives the briefing card
+           every galaxy, and the last system pays the APEX, so all five are
+           reachable in every single run. The world’s own `kind` is left
+           untouched: it is the world’s identity, it drives the briefing card
            and the garrison rules, and a fortress that calls itself a forge to
            move a boon would be a lie on the card to save a line here. */
         const bk = RENEGADE_BOON_KINDS[si % RENEGADE_BOON_KINDS.length];
@@ -343,10 +349,10 @@ function generateGalaxy(seed, playerFaction, mapPool) {
    property the campaign would otherwise only have by luck:
 
      1. Inside a system, the graph is the UNION of a minimum spanning tree over
-        its ORDINARY worlds and every world's GX_ROUTE_NEAR_K nearest
+        its ORDINARY worlds and every world’s GX_ROUTE_NEAR_K nearest
         neighbours. The tree is what guarantees no orphan; the nearest pass is
         what guarantees at least two ways out of every world, because a world
-        contributes K edges of its own before anybody else's are counted.
+        contributes K edges of its own before anybody else’s are counted.
 
      2. The tree deliberately EXCLUDES the seat. A seat opens only once most of
         its system has fallen, so a world whose only path from the door ran
@@ -372,7 +378,7 @@ function generateGalaxy(seed, playerFaction, mapPool) {
    that look far apart and skip the ones sitting next to each other.
 -------------------------------------------------------------------------- */
 
-/** An ORDINARY world: neither a commander's seat nor a three-way war. Only
+/** An ORDINARY world: neither a commander’s seat nor a three-way war. Only
     these are eligible to be a door into a system -- a door that lands you in
     a three-way war, or on the seat you are supposed to finish at, is not a way
     in, it is the wall the system ends at. */
@@ -392,7 +398,7 @@ function buildRoutes(galaxy) {
   const seen = new Set();
   /* The graph is UNDIRECTED. A tree edge that the nearest-neighbour pass finds
      again must not become a second arc drawn on top of the first, and must not
-     count twice toward a world's degree -- an inflated degree is exactly the
+     count twice toward a world’s degree -- an inflated degree is exactly the
      kind of number that reads as a guarantee and is not one. */
   const link = (a, b, kind) => {
     if (a === b) return false;
@@ -404,7 +410,7 @@ function buildRoutes(galaxy) {
     /* THREE keys, and every one has a reader: `a`/`b` are looked up by
        UI.gxRoutes to place the arc, `kind` picks which way it bows and whether
        the far zoom keeps it. A tier span was written here too and deleted
-       again -- nothing consulted it, and an unread key is this project's
+       again -- nothing consulted it, and an unread key is this project’s
        signature defect. The span is Math.abs(a.tier - b.tier) for anyone who
        needs it. */
     routes.push({ a: a.id, b: b.id, kind: kind });
@@ -519,14 +525,14 @@ function routeNeighbours(system, world, galaxy) {
 }
 
 /**
- * Who actually commands THIS world. A system's boss holds the SYSTEM, but a
+ * Who actually commands THIS world. A system’s boss holds the SYSTEM, but a
  * world taken out from under them is commanded by whoever took it -- and
- * shipping `sys.boss` regardless paired a holder's commander with a
- * squatter's banner on about one battle in seven, so a Federation commander
+ * shipping `sys.boss` regardless paired a holder’s commander with a
+ * squatter’s banner on about one battle in seven, so a Federation commander
  * fought under a pirate crest and collected the pirate economy bonus.
  *
  * Index-derived rather than drawn from rnd(): stable for a seed, and it costs
- * the galaxy stream nothing, so no existing campaign's layout moves.
+ * the galaxy stream nothing, so no existing campaign’s layout moves.
  */
 function worldBossOf(sys, w) {
   if (!w || w.owner === sys.holder) return sys.boss;
@@ -536,13 +542,55 @@ function worldBossOf(sys, w) {
     : sys.boss;
 }
 
+/**
+ * Which SCENARIO this world runs.
+ *
+ * Index-derived from the same expression worldBossOf and worldGrantsUnit use,
+ * so it is stable for a seed, survives a reload, agrees on both clients of a
+ * duel, and costs the galaxy PRNG stream nothing. Every saved campaign keeps
+ * its exact layout when this dial moves.
+ *
+ * The standing duel is the default and the overwhelming majority. One world in
+ * SCENARIO_VARIANT_EVERY runs a variant, and WHICH variant is the same index
+ * folded across the non-duel entries, so the two variants alternate rather
+ * than clumping.
+ */
+function worldScenarioOf(w) {
+  if (!w) return SCENARIOS[0];
+  const i = w.si * WORLDS_PER_SYSTEM + w.wi;
+  if (i % SCENARIO_VARIANT_EVERY !== 0) return SCENARIOS[0];
+  /* A seat is the system's boss fight and is always the duel: a commander seat
+     that could not be taken by beating its commander would strand the system. */
+  if (w.seat) return SCENARIOS[0];
+  const variants = SCENARIOS.length - 1;
+  if (variants < 1) return SCENARIOS[0];
+  return SCENARIOS[1 + ((i / SCENARIO_VARIANT_EVERY) | 0) % variants];
+}
+
+/**
+ * Does this world pay a SOLDIER, or only progress and a boon?
+ *
+ * One world in UNIT_REWARD_EVERY does. Index-derived from exactly the same
+ * expression worldBossOf uses, for exactly the same reason: it is stable for a
+ * seed, it survives a reload, and it costs the galaxy stream nothing, so no
+ * saved campaign’s layout moves when the cadence changes.
+ *
+ * Deliberately NOT a property stamped on the world at generation time. A
+ * stamped flag would have to be migrated into every existing save; a derived
+ * one is simply true the next time it is asked.
+ */
+function worldGrantsUnit(w) {
+  if (!w) return false;
+  return ((w.si * WORLDS_PER_SYSTEM + w.wi) % UNIT_REWARD_EVERY) === 0;
+}
+
 /* --------------------------------------------------------------------------
    STATE QUERIES  (progress is stored separately, as id -> stars)
 -------------------------------------------------------------------------- */
 
 /** Stars earned on a world, 0-3. */
 function starsOn(progress, worldId) { return (progress && progress[worldId]) || 0; }
-/** A world is CONQUERED at three stars — that is what transfers territory. */
+/** A world is CONQUERED at three stars, that is what transfers territory. */
 function isConquered(progress, worldId) { return starsOn(progress, worldId) >= 3; }
 
 /** Every world in a system that the player has fully taken. */
@@ -590,7 +638,7 @@ function isWorldOpen(system, world, progress, galaxy) {
   return near.some(n => starsOn(progress, n.id) > 0);
 }
 
-/** A system is open once the previous system's seat has fallen. */
+/** A system is open once the previous system’s seat has fallen. */
 function isSystemOpen(galaxy, system, progress) {
   if (system.index === 0) return true;
   /* TWO doors now, either opens the system (owner, Session 26): the seat of
@@ -610,7 +658,7 @@ function isSystemOpen(galaxy, system, progress) {
 
    A campaign is a record of who holds what, and until Session 20 the map that
    exists to show it said almost none of it: a world painted in its ORIGINAL
-   power's colour whatever you had done to it, and the only trace of a conquest
+   power’s colour whatever you had done to it, and the only trace of a conquest
    was a star count three pixels tall. Everything a node paints itself from now
    comes out of worldAllegiance(), so the map, the class list and the
    accessible name cannot disagree about who holds a world.
@@ -625,17 +673,17 @@ const GX_CLAIM_STARS = 3;
 /* How far outside the world disc the claim ring is drawn. Deliberately under
    GX_MARK_HALF - r on BOTH world sizes (2.0 ordinary, 2.7 seat), so the widest
    mark on the map is still the seat ring: GX_MARK_HALF is baked into
-   generation's x-clamp, and a mark that outgrew it would start dragging worlds
+   generation’s x-clamp, and a mark that outgrew it would start dragging worlds
    back off their own orbits. */
 const GX_CLAIM_RING_PAD = 1.15;
 
 /* Where the claim sigil sits, as fractions of the world radius: the offset of
-   its centre from the world's, then its own radius. Fractions rather than
+   its centre from the world’s, then its own radius. Fractions rather than
    absolutes so a seat and an ordinary world wear the same badge at their own
    scale and neither one crosses its claim ring. */
 const GX_SIGIL_OFF = 0.62, GX_SIGIL_R = 0.46;
 
-/* One word per state, for the node's accessible name. The map has to say in
+/* One word per state, for the node’s accessible name. The map has to say in
    text whatever it says in paint or the colour work is decoration for the
    people who can see it and nothing at all for everyone else. */
 const GX_STATE_LABEL = {
@@ -662,7 +710,7 @@ const GX_STATE_LABEL = {
 function worldAllegiance(galaxy, system, world, progress) {
   const stars = Math.max(0, Math.min(GX_CLAIM_STARS, starsOn(progress, world.id)));
   const claimed = stars >= GX_CLAIM_STARS;
-  /* A world you have played is open under today's unlock rule, so LOCKED
+  /* A world you have played is open under today’s unlock rule, so LOCKED
      cannot currently hide a claim in progress. Ordered anyway, rather than
      assumed, so a future unlock rule cannot silently grey out your own work. */
   const open = isSystemOpen(galaxy, system, progress) &&
@@ -697,7 +745,7 @@ function worldAllegiance(galaxy, system, world, progress) {
   };
 }
 
-/** The state in words, for the node's accessible name and the map key. */
+/** The state in words, for the node’s accessible name and the map key. */
 function allegianceLabel(al) {
   return GX_STATE_LABEL[al && al.state] || GX_STATE_LABEL.held;
 }
@@ -706,11 +754,18 @@ function allegianceLabel(al) {
  * Star rating for a finished battle. Three stars is a clean take: you won, and
  * you did it without giving up much ground.
  */
-function ratingFor(won, livesLeft, maxLives, wave) {
-  if (!won) return 0;
-  const kept = livesLeft / Math.max(1, maxLives);
-  if (kept >= 0.9) return 3;
-  if (kept >= 0.55) return 2;
+function ratingFor(won, livesLeft, maxLives, wave, world) {
+  const r = { won: !!won, kept: livesLeft / Math.max(1, maxLives), wave: wave || 0 };
+  /* THE SCENARIO DECIDES, not this function. Passing `world` is optional so
+     every existing caller keeps the duel ladder it already had; a caller that
+     knows the world gets that world's conditions instead. One test function
+     per scenario means a new win condition is data, never a branch here. */
+  const sc = (world && typeof worldScenarioOf === 'function')
+    ? worldScenarioOf(world) : (typeof SCENARIOS !== 'undefined' ? SCENARIOS[0] : null);
+  if (sc && typeof sc.test === 'function') return sc.test(r);
+  if (!r.won) return 0;
+  if (r.kept >= 0.9) return 3;
+  if (r.kept >= 0.55) return 2;
   return 1;
 }
 
@@ -727,23 +782,35 @@ function seatsRemaining(galaxy, progress) {
 function galaxyHoldings(galaxy, progress) {
   const out = {};
   for (const f of FACTION_ORDER) out[f] = 0;
-  /* The player's own banner may not be one of the galaxy's four powers -- THE
+  /* The player’s own banner may not be one of the galaxy’s four powers -- THE
      PARALLEL holds no worlds and so is absent from FACTION_ORDER. Without a
      slot of its own the first conquest increments `undefined` and every
      holdings figure on the screen becomes NaN. */
   out[galaxy.playerFaction] = out[galaxy.playerFaction] || 0;
-  /* A RENEGADE world is owned by your own power and is NOT yours until you
-     take it. Tallied by owner alone it would credit the status strip with
-     worlds the player has never fought for -- "12 / 35 worlds held" on a fresh
-     galaxy -- so the splinter gets its own bucket. It is deliberately not a
-     FACTION_ORDER key: the ownership bar iterates that list, and a segment in
-     your own colour for ground you do not hold is the same lie in a different
-     shape. */
+  /* A RENEGADE world is held by a SPLINTER of your own power. Two different
+     questions get asked about it and they have two different answers, so this
+     returns both rather than picking one:
+
+       out[f]        POLITICAL tally. What that faction holds as a power. A
+                     renegade world flies your banner, so it counts here for
+                     the player’s faction. This is what the ownership bar draws.
+       out.conquered What YOU actually took. A renegade world is NOT yours
+                     until you beat it, so it is excluded here. This is what
+                     the "N / total worlds held" line reports.
+       out.renegade  The splinter’s own count, kept so the split can be shown.
+
+     OWNER-SET (Session 29): the previous build kept renegade worlds out of
+     every faction bucket entirely, which meant the ownership bar showed your
+     power holding less ground than it really did. Counting them politically is
+     the fix; keeping `conquered` separate is what stops that fix from
+     re-introducing the "12 / 35 on a fresh galaxy" lie the old comment warned
+     about. */
   out.renegade = 0;
+  out.conquered = 0;
   for (const sys of galaxy.systems)
     for (const w of sys.worlds) {
-      if (isConquered(progress, w.id)) { out[galaxy.playerFaction]++; continue; }
-      if (w.renegade) { out.renegade++; continue; }
+      if (isConquered(progress, w.id)) { out[galaxy.playerFaction]++; out.conquered++; continue; }
+      if (w.renegade) { out.renegade++; out[galaxy.playerFaction]++; continue; }
       out[w.owner]++;
     }
   return out;
@@ -752,12 +819,12 @@ function galaxyHoldings(galaxy, progress) {
 /**
  * Rival commanders expand on their own while you are busy. Each time you finish
  * a battle, every rival that still holds a seat takes one contested world
- * somewhere in the galaxy — so leaving a system alone has a cost.
+ * somewhere in the galaxy, so leaving a system alone has a cost.
  */
 function advanceRivals(galaxy, progress, rnd) {
   const moves = [];
   /* The same substitution generateGalaxy made. Naming the pirates here left a
-     PIRATE player's rivals with no worlds to expand into at all, so they
+     PIRATE player’s rivals with no worlds to expand into at all, so they
      never took ground back and leaving a system alone stopped costing
      anything. The fallback covers a galaxy generated before this existed. */
   const raider = galaxy.raider || 'pirate';

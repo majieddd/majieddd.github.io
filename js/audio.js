@@ -1,5 +1,5 @@
 /* ==========================================================================
-   COSMIC CONQUEST — Procedural Audio Engine
+   COSMIC CONQUEST, Procedural Audio Engine
    --------------------------------------------------------------------------
    Every sound in the game is synthesised at runtime with the Web Audio API.
    There are no audio files, which keeps the game a single self-contained
@@ -166,7 +166,7 @@ const Sound = (() => {
     osc.stop(t0 + attack + rel + 0.05);
   }
 
-  /** A filtered noise burst — the basis of every impact, hiss and explosion. */
+  /** A filtered noise burst, the basis of every impact, hiss and explosion. */
   function noise(opts) {
     if (!ready || !settings.sfxEnabled) return;
     const {
@@ -283,21 +283,21 @@ const Sound = (() => {
 
     /* --- new archetypes --------------------------------------------- */
 
-    /** TETHER — a mechanical winch: ratchet click then a rising cable haul. */
+    /** TETHER, a mechanical winch: ratchet click then a rising cable haul. */
     tether() {
       if (throttled('tether', 0.09)) return;
       noise({ dur: 0.06, gain: 0.09, freq: 2200, freqEnd: 800, type: 'bandpass', q: 2.5 });
       tone({ freq: 220, endFreq: 520, type: 'sawtooth', dur: 0.26, gain: 0.11, filter: 1600, filterEnd: 700 });
     },
 
-    /** PRISM — a pure sustained tone; the pitch rides the focus ramp. */
+    /** PRISM, a pure sustained tone; the pitch rides the focus ramp. */
     prism() {
       if (throttled('prism', 0.11)) return;
       tone({ freq: 1300, endFreq: 1750, type: 'sine', dur: 0.24, gain: 0.055, attack: 0.05 });
       tone({ freq: 2600, endFreq: 3500, type: 'sine', dur: 0.22, gain: 0.028, attack: 0.06 });
     },
 
-    /** SINGULARITY — everything sucked inward: a downward pitch collapse. */
+    /** SINGULARITY, everything sucked inward: a downward pitch collapse. */
     gravity() {
       if (throttled('gravity', 0.16)) return;
       tone({ freq: 640, endFreq: 62, type: 'sine', dur: 0.45, gain: 0.16, release: 0.4 });
@@ -336,7 +336,7 @@ const Sound = (() => {
 
     /* --- PvP ---------------------------------------------------------- */
 
-    /** Reanimation: a hollow, inverted "kill" — something getting back up. */
+    /** Reanimation: a hollow, inverted "kill", something getting back up. */
     reanimate() {
       if (throttled('reanimate', 0.09)) return;
       tone({ freq: 130, endFreq: 420, type: 'sawtooth', dur: 0.22, gain: 0.075, filter: 900, filterEnd: 2200 });
@@ -349,7 +349,7 @@ const Sound = (() => {
       noise({ dur: 0.26, gain: 0.04, freq: 3000, freqEnd: 9000, type: 'bandpass', delay: 0.06 });
     },
 
-    /** Enemy escalation — an ugly, dissonant swell. */
+    /** Enemy escalation, an ugly, dissonant swell. */
     escalation() {
       [0, 0.16, 0.32].forEach(d => {
         tone({ freq: 73,  type: 'sawtooth', dur: 0.9, gain: 0.2,  delay: d, filter: 420 });
@@ -358,7 +358,7 @@ const Sound = (() => {
       noise({ dur: 1.3, gain: 0.07, freq: 200, freqEnd: 1400, type: 'bandpass', q: 0.5, attack: 0.6 });
     },
 
-    /** Command upgrade offered — a bright, hopeful arpeggio. */
+    /** Command upgrade offered, a bright, hopeful arpeggio. */
     choice() {
       [392, 523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
         tone({ freq: f, type: 'triangle', dur: 0.4, gain: 0.12, delay: i * 0.08 }));
@@ -440,7 +440,7 @@ const Sound = (() => {
       noise({ dur: 0.55, gain: 0.1, freq: 2600, freqEnd: 300, type: 'bandpass', q: 0.7 });
     },
 
-    /** BLINK: a short inverted whoosh — something skipping space. */
+    /** BLINK: a short inverted whoosh, something skipping space. */
     blink() {
       if (throttled('blink', 0.12)) return;
       tone({ freq: 1500, endFreq: 380, type: 'sine', dur: 0.13, gain: 0.09 });

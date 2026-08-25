@@ -1,5 +1,5 @@
 /* ==========================================================================
-   COSMIC CONQUEST — Configuration & Game Data
+   COSMIC CONQUEST, Configuration & Game Data
    ========================================================================== */
 
 'use strict';
@@ -117,13 +117,13 @@ const SPAWN_TEMPO = 0.58;   /* spacing between units in a wave. Raised from 0.46
 /* --------------------------------------------------------------------------
    BATTLEFIELDS
    Only the LEFT side is authored; the right is mirrored, so symmetry cannot
-   drift. A map may carry SEVERAL lanes per side — a true fork you must hold in
-   two places at once — and `blocks` marks impassable terrain that removes
+   drift. A map may carry SEVERAL lanes per side, a true fork you must hold in
+   two places at once, and `blocks` marks impassable terrain that removes
    build space entirely.
 -------------------------------------------------------------------------- */
 const MAPS = [
   {
-    id: 'spine', name: 'THE SPINE', tier: 1,
+    id: 'spine', name: 'THE SPINE', adj: 'Barren', tier: 1,
     denizens: ['sprinter', 'wisp'], sigNote: 'Open ground. Outrunners and Lanterns run the whole arc.',
     roster: ['sprinter', 'crawler', 'wisp', 'blink', 'aegis', 'jammer', 'herald', 'warden'],
     blurb: 'One long serpentine with generous shoulders. Every tile you own sees the lane at least twice: the cleanest board in the theatre.',
@@ -135,7 +135,7 @@ const MAPS = [
     nodes: [[7, 4, 'frost', 'build'], [7, 10, 'void', 'build'], [5, 9, 'fire', 'lane']]
   },
 {
-    id: 'delta', name: 'THE DELTA', tier: 2,
+    id: 'delta', name: 'THE DELTA', adj: 'Flooded', tier: 2,
     denizens: ['mender', 'cluster'], sigNote: 'Wetlands. Restorers and Dividers hold the confluence.',
     roster: ['crawler', 'wisp', 'mender', 'cluster', 'shardling', 'wraith', 'nullifier', 'carrier'],
     blurb: 'Two channels that never share a tile, divided by a silt bank no tower shoots across. Whichever mouth you fortify is the one they leave alone.',
@@ -156,7 +156,7 @@ const MAPS = [
     nodes: [[8, 4, 'storm', 'build'], [8, 12, 'void', 'build'], [6, 3, 'frost', 'lane']]
   },
 {
-    id: 'narrows', name: 'THE NARROWS', tier: 2,
+    id: 'narrows', name: 'THE NARROWS', adj: 'Sheer', tier: 2,
     denizens: ['bulwark', 'basalt'], sigNote: 'Chokepoints. Palisades and slow-immune Basalt Marchers dig in.',
     roster: ['crawler', 'aegis', 'shardling', 'bulwark', 'basalt', 'anchorite', 'bastion', 'juggernaut'],
     blurb: 'Rubble has taken everything but three alcoves. Each one watches a single leg of the corridor, and nothing you build in one can help another.',
@@ -176,7 +176,7 @@ const MAPS = [
     nodes: [[9, 3, 'frost', 'build'], [5, 4, 'void', 'build'], [4, 8, 'venom', 'lane']]
   },
 {
-    id: 'shattered', name: 'SHATTERED', tier: 3,
+    id: 'shattered', name: 'SHATTERED', adj: 'Broken', tier: 3,
     denizens: ['blink', 'wraith'], sigNote: 'Broken ground. Phase Couriers and Ghost Chassis slip between the cracks.',
     roster: ['sprinter', 'crawler', 'blink', 'aegis', 'wraith', 'revenant', 'nullifier', 'warden'],
     blurb: 'Four surviving islands, each hanging off one bend of a long fall through the craters. There is no second-best tile and no way to reinforce a mistake.',
@@ -191,7 +191,7 @@ const MAPS = [
     nodes: [[8, 3, 'void', 'build'], [8, 11, 'storm', 'build'], [7, 5, 'frost', 'lane']]
   },
 {
-    id: 'crossroads', name: 'CROSSROADS', tier: 3,
+    id: 'crossroads', name: 'CROSSROADS', adj: 'Windswept', tier: 3,
     denizens: ['warchief', 'aegis'], sigNote: 'Contested crossroads: pylon columns march with their escorts.',
     roster: ['crawler', 'wisp', 'aegis', 'jammer', 'herald', 'warchief', 'anchorite', 'bastion'],
     blurb: 'Two lanes that cross each other twice on the way in. Both intersections are lane tiles, so the ground that watches them is the ground beside them: and there is a monument in the way.',
@@ -210,7 +210,7 @@ const MAPS = [
     nodes: [[7, 8, 'storm', 'build'], [1, 4, 'venom', 'build'], [8, 7, 'fire', 'lane']]
   },
 {
-    id: 'coil', name: 'THE COIL', tier: 4,
+    id: 'coil', name: 'THE COIL', adj: 'Coiled', tier: 4,
     denizens: ['jammer', 'sprinter'], sigNote: 'The coil crawls with Interdictors jamming everything they pass.',
     roster: ['sprinter', 'crawler', 'blink', 'cluster', 'jammer', 'wraith', 'bulwark', 'warden'],
     blurb: 'The longest march in the theatre: a full inward spiral that then cuts straight back out across every ring it just wound. One good tile is worth four elsewhere.',
@@ -226,7 +226,7 @@ const MAPS = [
   }
 ,
 {
-    id: 'expanse', name: 'THE EXPANSE', tier: 4,
+    id: 'expanse', name: 'THE EXPANSE', adj: 'Open', tier: 4,
     blurb: 'A colossal drift of dead hulks with two long approaches that never come within reach of each other. Nothing you own covers much; you simply have to own more of it.',
     /* THE TWO HEAVIEST SENDABLE BODIES ON ITS OWN ROSTER. This map used to
        offer `juggernaut` (5 lives) and `carrier` (4), and musterSendable
@@ -258,7 +258,7 @@ const MAPS = [
             [6, 15, 'void', 'build'], [8, 6, 'void', 'lane']]
   },
 {
-    id: 'rift', name: 'THE RIFT', tier: 3,
+    id: 'rift', name: 'THE RIFT', adj: 'Torn', tier: 3,
     blurb: 'Both lanes loop away from each other and are pinched back through the same scarred throat, twice over. Four tiles decide this battle; the rest of the board is scenery.',
     trait: 'Twin loops · one throat, taken twice', denizens: ['wraith', 'shardling'],
     sigNote: 'Rift-touched. Ghost Chassis and Shard Sentries bleed through.',
@@ -275,7 +275,7 @@ const MAPS = [
     nodes: [[5, 6, 'void', 'build'], [5, 10, 'venom', 'build'], [6, 8, 'frost', 'lane']]
   },
 {
-    id: 'confluence', name: 'THE CONFLUENCE', tier: 5, tri: true,
+    id: 'confluence', name: 'THE CONFLUENCE', adj: 'Contested', tier: 5, tri: true,
     blurb: 'Three powers, one spawn, no allies. Every kill reanimates toward BOTH rivals: the dead walk twice as thick.',
     trait: 'THREE-WAY WAR · doubled reanimates', denizens: ['revenant', 'warchief'],
     sigNote: 'The confluence draws Reconstructors and pylon columns from every front.',
@@ -309,7 +309,7 @@ const MAPS = [
     lanes: [[[15, 11], [15, 7], [10, 7], [10, 5], [3, 5]]]
   },
   {
-    id: 'crown', name: 'THE CROWN', tier: 5, tri: true,
+    id: 'crown', name: 'THE CROWN', adj: 'Walled', tier: 5, tri: true,
     blurb: 'A walled ring sits over the spawn with exactly three doors, one per commander. Nothing leaves without passing a wall every side can shoot at.',
     trait: 'THREE-WAY WAR · one walled crown, three doors',
     roster: ['crawler', 'wisp', 'aegis', 'herald', 'revenant', 'warden', 'bastion', 'juggernaut'],
@@ -346,7 +346,7 @@ const MAPS = [
     lanes: [[[17, 13], [12, 13], [7, 13], [7, 6], [2, 6]]]
   },
   {
-    id: 'carousel', name: 'THE CAROUSEL', tier: 5, tri: true,
+    id: 'carousel', name: 'THE CAROUSEL', adj: 'Hooked', tier: 5, tri: true,
     blurb: 'Three arms, each hooking a full turn around its own island before it reaches a base. Every commander watches their lane twice: if they can afford both bends.',
     trait: 'THREE-WAY WAR · three hooks, three islands',
     roster: ['crawler', 'sprinter', 'blink', 'wisp', 'wraith', 'nullifier', 'warchief', 'carrier'],
@@ -370,7 +370,7 @@ const MAPS = [
     lanes: [[[16, 13], [16, 9], [11, 9], [11, 15], [6, 15], [6, 8], [2, 8]]]
   },
   {
-    id: 'orrery', name: 'THE ORRERY', tier: 5, tri: true,
+    id: 'orrery', name: 'THE ORRERY', adj: 'Ringed', tier: 5, tri: true,
     blurb: 'Two rings of wall around one spawn, three gaps in each. Every march threads the inner gap, crosses the annulus and threads the outer one: and the annulus belongs to nobody.',
     trait: 'THREE-WAY WAR · nested rings, six gaps',
     roster: ['crawler', 'wisp', 'blink', 'shardling', 'revenant', 'basalt', 'warden', 'juggernaut'],
@@ -402,7 +402,7 @@ const MAPS = [
     lanes: [[[16, 14], [12, 14], [9, 14], [9, 8], [11, 8], [11, 5], [11, 8], [3, 8]]]
   },
   {
-    id: 'lattice', name: 'THE LATTICE', tier: 3,
+    id: 'lattice', name: 'THE LATTICE', adj: 'Woven', tier: 3,
     roster: ['mite', 'crawler', 'sprinter', 'wisp', 'cluster', 'jammer', 'herald', 'anchorite'],
     denizens: ['herald', 'mite'], sigNote: 'Signal lattice: heralds and mites pour down every line at once.',
     blurb: 'Three lanes, one gate. Every wave arrives in thirds, and the only ground that answers all three is the last five tiles before your base.',
@@ -424,7 +424,7 @@ const MAPS = [
             [2, 7, 'void', 'build'], [9, 4, 'venom', 'lane']]
   },
   {
-    id: 'causeway', name: 'THE CAUSEWAY', tier: 4,
+    id: 'causeway', name: 'THE CAUSEWAY', adj: 'Narrow', tier: 4,
     roster: ['crawler', 'wisp', 'aegis', 'shardling', 'nullifier', 'basalt', 'warden', 'bastion'],
     denizens: ['warden', 'nullifier'], sigNote: 'The causeway garrison: wardens and nullifiers hold the span.',
     blurb: 'Two lanes run the far edges of a broken span and never turn back. Every tile you own is on the bridge between them, and the middle of the bridge reaches neither.',
@@ -444,7 +444,7 @@ const MAPS = [
     nodes: [[8, 4, 'fire', 'build'], [8, 10, 'frost', 'build'], [6, 2, 'storm', 'lane']]
   },
   {
-    id: 'anvil', name: 'THE ANVIL', tier: 2,
+    id: 'anvil', name: 'THE ANVIL', adj: 'Terraced', tier: 2,
     roster: ['spawnling', 'crawler', 'sprinter', 'cluster', 'aegis', 'bulwark', 'anchorite', 'warchief'],
     denizens: ['anchorite', 'spawnling'], sigNote: 'Anvil terraces: anchorites advance behind their own spawn.',
     blurb: 'The shortest approach in the theatre, walled in by terraces. There is no long lane to whittle anything down on: whatever you build has to kill it in nineteen tiles.',
@@ -470,7 +470,7 @@ const MAPS = [
      cross the mirror axis, interleaved combs, an authored no-reanimation
      rule, and a full enclosure ring. */
   {
-    id: 'lance', name: 'THE LANCE', tier: 2,
+    id: 'lance', name: 'THE LANCE', adj: 'Level', tier: 2,
     denizens: ['blink', 'herald'],
     sigNote: 'Open run: Phase Couriers and Cadence Pylons sprint the lance.',
     roster: ['sprinter', 'crawler', 'blink', 'wisp', 'herald', 'jammer', 'warchief', 'warden'],
@@ -486,7 +486,7 @@ const MAPS = [
     nodes: [[12, 2, 'storm', 'build'], [6, 8, 'void', 'build'], [10, 5, 'venom', 'lane']]
   },
   {
-    id: 'skew', name: 'THE SKEW', tier: 3,
+    id: 'skew', name: 'THE SKEW', adj: 'Tilted', tier: 3,
     denizens: ['sprinter', 'bulwark'],
     sigNote: 'Split march: Outrunners take the short road, Palisades the long.',
     roster: ['sprinter', 'crawler', 'wisp', 'aegis', 'bulwark', 'jammer', 'basalt', 'warchief'],
@@ -507,7 +507,7 @@ const MAPS = [
     nodes: [[10, 2, 'frost', 'build'], [2, 14, 'venom', 'build'], [4, 7, 'fire', 'lane']]
   },
   {
-    id: 'strait', name: 'THE STRAIT', tier: 4,
+    id: 'strait', name: 'THE STRAIT', adj: 'Tidal', tier: 4,
     denizens: ['cluster', 'jammer'],
     sigNote: 'Strait traffic: Dividers and Interdictors ride the crossing current.',
     roster: ['crawler', 'wisp', 'cluster', 'jammer', 'aegis', 'wraith', 'nullifier', 'carrier'],
@@ -527,7 +527,7 @@ const MAPS = [
     nodes: [[9, 2, 'frost', 'build'], [2, 12, 'storm', 'build'], [14, 7, 'void', 'lane']]
   },
   {
-    id: 'loom', name: 'THE LOOM', tier: 3,
+    id: 'loom', name: 'THE LOOM', adj: 'Threaded', tier: 3,
     denizens: ['mender', 'shardling'],
     sigNote: 'Woven ranks: Restorers mend across both threads at once.',
     roster: ['crawler', 'mite', 'mender', 'shardling', 'cluster', 'herald', 'bulwark', 'bastion'],
@@ -547,7 +547,7 @@ const MAPS = [
     nodes: [[4, 7, 'void', 'build'], [12, 4, 'frost', 'build'], [8, 4, 'fire', 'lane']]
   },
   {
-    id: 'ossuary', name: 'THE OSSUARY', tier: 5, noReanim: true,
+    id: 'ossuary', name: 'THE OSSUARY', adj: 'Silent', tier: 5, noReanim: true,
     denizens: ['revenant', 'aegis'],
     sigNote: 'Barrow silence: Reconstructors and Aegis Sentinels walk the rings.',
     roster: ['crawler', 'wisp', 'aegis', 'shardling', 'revenant', 'wraith', 'anchorite', 'juggernaut'],
@@ -563,7 +563,7 @@ const MAPS = [
     nodes: [[6, 2, 'fire', 'build'], [2, 12, 'frost', 'build'], [4, 9, 'void', 'lane']]
   },
   {
-    id: 'atoll', name: 'THE ATOLL', tier: 4,
+    id: 'atoll', name: 'THE ATOLL', adj: 'Reefbound', tier: 4,
     denizens: ['wisp', 'anchorite'],
     sigNote: 'Reef watch: Lanterns drift over the ring the Anchor Pylons hold.',
     roster: ['mite', 'crawler', 'wisp', 'sprinter', 'mender', 'anchorite', 'warden', 'carrier'],
@@ -815,11 +815,11 @@ function buildTriField(map) {
 }
 
 /* --------------------------------------------------------------------------
-   THE MAELSTROM — the N-seat black hole arena
+   THE MAELSTROM, the N-seat black hole arena
 
    The universe map's singularity opens onto one board seating up to twenty
    commanders. It is buildTriField's shape taken to N: one spawn at the centre,
-   one lane and one base per seat, an ownership grid, and a send matrix — none
+   one lane and one base per seat, an ownership grid, and a send matrix, none
    of it special-cased to twenty, all of it solved from the seat count.
 
    THE GEOMETRY IS BUILT IN THE L1 (TAXICAB) METRIC ON PURPOSE. Lanes have to
@@ -827,14 +827,14 @@ function buildTriField(map) {
    only stays one tile wide while they are. But the taxicab length of an
    axis-aligned lane out to a point on a CIRCLE swings by 41% with its angle,
    which would hand the seats on the diagonals half again as much firing lane
-   as the seats on the axes. Bases therefore sit on the L1 circle — a diamond —
+   as the seats on the axes. Bases therefore sit on the L1 circle, a diamond
    where every seat's lane is exactly MAELSTROM radius tiles long by
    construction, and the event horizon (also L1) takes a similar slice out of
    every wedge at once instead of favouring whoever points at a corner.
 
    THE ARENA RULE, from the owner: incoming troops do NOT reanimate for the
    defender. Killing an attacker gives you nothing to send. You send by MUSTER
-   alone — and every reanimation bonus you own still rides what you send. The
+   alone, and every reanimation bonus you own still rides what you send. The
    rule lives on the FIELD (`noReanim`) rather than on a side, so it applies
    identically to all twenty seats; see Game.killEnemy.
 -------------------------------------------------------------------------- */
@@ -849,11 +849,23 @@ const MAELSTROM_MIN_SEATS = 4;
    from this, so adding seats grows the board instead of thinning every wedge
    until nobody can field a defence. Measured on the built field: 29-32 tiles
    a seat at twenty, 22 at four. */
-const MAELSTROM_SEAT_GROUND = 18;
-/* Radius clamps, in tiles. The upper one is what stops a full house from
-   producing a board too large to read: 22 gives a 47x47 field. */
+/* OWNER-SET (Session 29): "really big for enough space and make it feel
+   large". Seat ground drives the radius solver, so raising it GROWS THE BOARD
+   rather than thinning the wedges: every seat still owns an equal share, there
+   is just more of it.
+
+   52 was solved, not guessed, against the same equation maelstromRadius uses:
+     G=18 (old)  4 seats 19x19,  20 seats 47x47
+     G=52 (new)  4 seats 27x27,  20 seats 63x63
+   That is 1.8x the ground at a full house and 2.0x at four, and 52 is the
+   smallest value that reaches the 30-tile radius ceiling at 20 seats, so it
+   buys the whole increase the clamp allows and nothing is wasted. */
+const MAELSTROM_SEAT_GROUND = 52;
+/* Radius clamps, in tiles. The upper one stops a full house producing a board
+   too large to read. Raised to 30 in Session 29 for the owner's "feel large":
+   30 gives a 63x63 field against the old 47x47, which is 1.8x the ground. */
 const MAELSTROM_MIN_RADIUS = 8;
-const MAELSTROM_MAX_RADIUS = 22;
+const MAELSTROM_MAX_RADIUS = 30;
 
 /* The hub the lanes radiate from belongs to nobody, exactly as
    TRI_CORE_RADIUS does on a three-way board -- but measured in L1 and scaled
@@ -939,6 +951,39 @@ const MV_PULL_TAU = 26;
 const MV_SWIRL_TURNS = 0.55;
 
 /** Board radius for a seat count, in tiles. */
+/**
+ * THE HOUR THE MAELSTROM IS IN.
+ *
+ * The board rotates on the hour, so a returning player finds a different
+ * arena. Derived from wall-clock rather than stored, so nothing has to be
+ * migrated and no two clients can drift out of agreement about which hour it
+ * is by more than the clock skew between them.
+ *
+ * A MATCH CAPTURES THIS ONCE, at Game.start, and never reads it again. Reading
+ * it per frame would let an hour boundary reshape the board mid-battle, which
+ * is the one thing a lockstep sim can never survive.
+ */
+function maelstromEpoch(now) {
+  return Math.floor((now === undefined ? Date.now() : now) / 3600000);
+}
+
+/**
+ * The rotation this epoch puts the seat ring at, in rim units (0..4).
+ *
+ * A plain hash of the epoch, so consecutive hours are not adjacent rotations
+ * and the sequence does not read as a slow drift. Rotating the ring is the
+ * ONE safe way to reshape this board: every fairness property (equal lane
+ * length, equal wedge area) is defined relative to the ring, so turning the
+ * whole ring preserves all of them exactly.
+ */
+function maelstromRotation(epoch) {
+  let h = (epoch | 0) >>> 0;
+  h = (h ^ 61) ^ (h >>> 16); h = (h + (h << 3)) >>> 0;
+  h = (h ^ (h >>> 4)) >>> 0; h = (h * 0x27d4eb2d) >>> 0;
+  h = (h ^ (h >>> 15)) >>> 0;
+  return (h % 4096) / 1024;          /* 0 to 4, in 4096 steps */
+}
+
 function maelstromRadius(seats) {
   /* Solves 2T^2/n - 1.25T = MAELSTROM_SEAT_GROUND. The diamond holds 2T^2
      tiles, every seat owns an equal share of them, and its own lane swallows
@@ -954,19 +999,26 @@ function maelstromRadius(seats) {
  * arena is entered through the singularity and never from the campaign trail,
  * and a map in MAPS is a world the galaxy can hand you.
  */
-function maelstromMap(seats) {
+function maelstromMap(seats, epoch) {
   const n = clamp(Math.round(seats) || MAELSTROM_MAX_SEATS, MAELSTROM_MIN_SEATS, MAELSTROM_MAX_SEATS);
   const T = maelstromRadius(n);
+  /* The epoch is PART OF THE MAP, not read from the clock inside the builder.
+     buildMaelstromField is called more than once for the same match (preview,
+     then start), and a clock read in there could hand the two calls different
+     boards. */
+  const ep = (epoch === undefined) ? maelstromEpoch() : (epoch | 0);
+  const rot = maelstromRotation(ep);
   /* One tile of ground behind even the bases that sit on an axis. */
   const dim = 2 * T + 3;
   return {
-    id: 'maelstrom', name: 'THE MAELSTROM', tier: 5, maelstrom: n,
+    id: 'maelstrom', name: 'THE MAELSTROM', adj: 'Collapsing', tier: 5, maelstrom: n,
+    epoch: ep, rot: rot,
     cols: dim, rows: dim,
     roster: MAELSTROM_ROSTER.slice(), denizens: MAELSTROM_DENIZENS.slice(),
     sigNote: 'The singularity throws back everything it has swallowed.',
     blurb: 'A singularity with ' + n + ' seats around it. Nothing you kill comes back to you here, ' +
            'the dead fall inward. You may still summon for gold, and every POWER bonus you hold rides what you send.',
-    trait: n + ' SEATS · no reanimation · the horizon contracts'
+    trait: n + ' SEATS · no reanimation · the horizon contracts · rotates hourly'
   };
 }
 
@@ -1021,10 +1073,14 @@ function buildMaelstromField(map) {
     return 3 + x;
   };
 
+  /* THE HOUR'S ROTATION. Turning the whole ring keeps every fairness property
+     the wedge maths depends on, because all of them are defined relative to
+     the ring rather than to the axes. */
+  const rot = ((map.rot || 0) % 4 + 4) % 4;
   const bases = [], lanes = [];
   const seen = new Set();
   for (let i = 0; i < n; i++) {
-    const p = rim(4 * i / n);
+    const p = rim((4 * i / n + rot) % 4);
     /* Rounding the x and DERIVING the y keeps |dx| + |dy| exactly T, which is
        the whole reason every seat's lane comes out the same length. */
     let bx = Math.round(p[0]);
@@ -1044,7 +1100,7 @@ function buildMaelstromField(map) {
      bigger cell. Bounded by midpoints, every cell is a triangle on an equal
      length of rim with the same height, so every cell has the same area. */
   const mids = [];
-  for (let i = 0; i < n; i++) mids.push((4 * (i + 0.5) / n) % 4);
+  for (let i = 0; i < n; i++) mids.push((4 * (i + 0.5) / n + rot) % 4);
   const owner = [], voidTiles = new Set();
   for (let gy = 0; gy < map.rows; gy++) {
     owner[gy] = [];
@@ -1157,14 +1213,14 @@ function buildMaelstromField(map) {
 const DIFFICULTIES = [
   { id: 'skirmish',  name: 'SKIRMISH',  hp: 0.80, gold: 1050, lives: 25, aiSkill: 0.60, aiEcon: 0.9,
     blurb: 'A forgiving opponent. Learn the roster here.' },
-  { id: 'contested', name: 'CONTESTED', hp: 1.00, gold: 900, lives: 20, aiSkill: 0.86, aiEcon: 1.0,
+  { id: 'contested', name: 'CONTESTED', adj: 'Contested', hp: 1.00, gold: 900, lives: 20, aiSkill: 0.86, aiEcon: 1.0,
     blurb: 'A competent rival that scouts, counters and rushes.' },
   { id: 'overrun',   name: 'OVERRUN',   hp: 1.22, gold: 780, lives: 15, aiSkill: 1.00, aiEcon: 1.2,
     blurb: 'Ruthless and economically ahead. Punishes every wasted tile.' }
 ];
 
 /* --------------------------------------------------------------------------
-   NEW GAME PLUS — the ramp you choose once you have finished a galaxy.
+   NEW GAME PLUS, the ramp you choose once you have finished a galaxy.
 
    A first galaxy is not a difficulty menu; it is the tutorial the campaign
    never admits to being, and asking a new commander to pick a slope before
@@ -1183,7 +1239,7 @@ const DIFFICULTIES = [
 -------------------------------------------------------------------------- */
 const RAMP_PRESETS = {
   veteran: {
-    id: 'veteran', name: 'VETERAN', tierHpStep: 0.30, soulsMul: 1.00,
+    id: 'veteran', name: 'VETERAN', adj: 'Hardened', tierHpStep: 0.30, soulsMul: 1.00,
     diffFor: si => (si < 1 ? 'skirmish' : si < 3 ? 'contested' : 'overrun'),
     escFor: si => Math.floor(si * 0.8),
     blurb: 'The galaxy as you fought it. Garrisons 30% stronger per tier.'
@@ -1237,17 +1293,17 @@ function tier0ReliefMul(n, ease) {
 }
 
 /* --------------------------------------------------------------------------
-   ASCENSION — the price roughly 2.3x per step against 1.34x power.
+   ASCENSION, the price roughly 2.3x per step against 1.34x power.
 -------------------------------------------------------------------------- */
 /**
  * Ascension. The FIRST ascension already costs more than twice the tier-4
  * specialisation that preceded it, and every step after that multiplies again.
  * Power grows 1.34x per step, so each ascension is deliberately less efficient
- * than the last — you ascend because tiles are finite, not because it is cheap.
+ * than the last, you ascend because tiles are finite, not because it is cheap.
  */
 const ASCENSION = {
   damage: 1.34, rate: 1.07, range: 1.035,
-  /* cost_n = (2 x paid specialisation) ^ (1.1618 ^ (n-1)) — the EXPONENT
+  /* cost_n = (2 x paid specialisation) ^ (1.1618 ^ (n-1)), the EXPONENT
      itself compounds by the golden step, so ascending quickly becomes
      absurd compared with placing yet another (geometrically pricier) tower. */
   expBase: 2, expGolden: 1.1618, surgeEvery: 2
@@ -1393,7 +1449,7 @@ const AI_ORIGIN_LATTICE_VALUE = 46;
 
 /* --------------------------------------------------------------------------
    LEVEL ROLLS
-   Tiers 2 and 3 no longer present a choice — each grants one RANDOM minor
+   Tiers 2 and 3 no longer present a choice, each grants one RANDOM minor
    buff from this pool. The deliberate decisions live in the pre-match talent
    tree and the tier-4 specialisation.
 -------------------------------------------------------------------------- */
@@ -1411,7 +1467,7 @@ const LEVEL_ROLLS = [
 /* --------------------------------------------------------------------------
    TOWERS
 
-   `costGrowth` is the per-copy price multiplier — the main lever deciding how
+   `costGrowth` is the per-copy price multiplier, the main lever deciding how
    many of a tower you will ever field.
 
    `talents` is a 2x2 tree spent BEFORE the match from a 2-point budget. The
@@ -1573,7 +1629,7 @@ const REQUISITION_MAX = 0.45;
    upgrades one. */
 const VIGIL_REF_HP = 40;
 
-/* ══ SESSION 19 — THE SIX (Federation of Light · The Xeno) ═════════════════
+/* ══ SESSION 19. THE SIX (Federation of Light · The Xeno) ═════════════════
    Six towers built on a reaction the arsenal has never watched: your own
    tower leaving the board, one named creature living or dying, your paid
    dead falling on someone else's ground, a lull in the killing, a creature
@@ -2232,10 +2288,166 @@ const TOWER_ORDER = ['bolt', 'cryo', 'mortar', 'arc', 'pyre', 'railgun', 'toxin'
    towers and three units; the owner asked for a matched pair of fours, which
    also makes the two columns read as siblings instead of as two different
    rules. The shop's number keys run 1-4 with it. */
+/* ══════════════════════════════════════════ ACHIEVEMENTS ═══════════════
+   OWNER-SET (Session 29): a soul income that does not require winning.
+
+   The problem this solves, in the owner's words: a player stuck on a hard
+   world has no way to earn souls, so they cannot buy the tower that would
+   unstick them. Every row whose `stat` is a PARTICIPATION counter (battles,
+   waves, kills, built, losses) accrues on a DEFEAT exactly as it does on a
+   win, which is what breaks that deadlock.
+
+   SHAPE: `stat` names a counter on the profile, `need` is the threshold, and
+   `souls` is paid once when it is crossed. Claimed ids are stored as STRINGS,
+   never indices, so this table may be reordered or have rows removed without
+   invalidating a save. That is deliberately unlike the lockstep tables, which
+   are index-coupled and append-only; nothing here crosses the wire.
+
+   Counters are cumulative across the whole install and never reset. */
+const ACHIEVEMENTS = [
+  /* ---- participation: these pay whether you win or lose ---------------- */
+  { id: 'deploy10',  stat: 'battles', need: 10,   souls: 2, name: 'FIRST TOURS',
+    desc: 'Deploy into 10 battles.' },
+  { id: 'deploy25',  stat: 'battles', need: 25,   souls: 3, name: 'CAMPAIGNER',
+    desc: 'Deploy into 25 battles.' },
+  { id: 'deploy60',  stat: 'battles', need: 60,   souls: 5, name: 'CAREER OFFICER',
+    desc: 'Deploy into 60 battles.' },
+  { id: 'waves100',  stat: 'waves',   need: 100,  souls: 3, name: 'HELD THE LINE',
+    desc: 'Survive 100 waves in total.' },
+  { id: 'waves400',  stat: 'waves',   need: 400,  souls: 5, name: 'UNBROKEN LINE',
+    desc: 'Survive 400 waves in total.' },
+  { id: 'kills1k',   stat: 'kills',   need: 1000, souls: 3, name: 'ATTRITION',
+    desc: 'Destroy 1,000 attackers.' },
+  { id: 'kills5k',   stat: 'kills',   need: 5000, souls: 5, name: 'GRINDSTONE',
+    desc: 'Destroy 5,000 attackers.' },
+  { id: 'built200',  stat: 'built',   need: 200,  souls: 3, name: 'ENGINEER',
+    desc: 'Raise 200 towers.' },
+  /* The two that exist specifically for a player who is losing. */
+  { id: 'losses5',   stat: 'losses',  need: 5,    souls: 3, name: 'STUBBORN',
+    desc: 'Lose 5 battles and deploy again anyway.' },
+  { id: 'losses20',  stat: 'losses',  need: 20,   souls: 6, name: 'IMPLACABLE',
+    desc: 'Lose 20 battles and deploy again anyway.' },
+  /* ---- progress: these need results ------------------------------------ */
+  { id: 'star1',     stat: 'stars',   need: 1,    souls: 1, name: 'FIRST BLOOD',
+    desc: 'Earn a star.' },
+  { id: 'stars25',   stat: 'stars',   need: 25,   souls: 4, name: 'DECORATED',
+    desc: 'Earn 25 stars.' },
+  { id: 'stars75',   stat: 'stars',   need: 75,   souls: 6, name: 'STAR MARSHAL',
+    desc: 'Earn 75 stars.' },
+  { id: 'system1',   stat: 'systems', need: 1,    souls: 4, name: 'SYSTEM TAKEN',
+    desc: 'Conquer every world in one system.' },
+  { id: 'galaxy1',   stat: 'galaxies',need: 1,    souls: 8, name: 'GALAXY CLAIMED',
+    desc: 'Conquer a galaxy.' },
+  { id: 'vault10',   stat: 'vaulted', need: 10,   souls: 4, name: 'RECRUITER',
+    desc: 'Bring 10 soldiers home to the vault.' }
+];
+
+/* The counters ACHIEVEMENTS reads. Declared so a profile can be migrated to a
+   complete shape rather than accumulating keys by accident. */
+const ACHIEVEMENT_STATS = ['battles', 'waves', 'kills', 'built', 'losses',
+                           'stars', 'systems', 'galaxies', 'vaulted'];
+
+/** A complete, zeroed counter block. One writer, so a new counter cannot be
+    added to ACHIEVEMENT_STATS and then be missing on a fresh profile. */
+function blankAchievementStats() {
+  const o = {};
+  for (const k of ACHIEVEMENT_STATS) o[k] = 0;
+  return o;
+}
+
+/* ═══════════════════════════════════════════ SCENARIOS ══════════════════
+   OWNER-SET (Session 29). A world's battle is no longer always "outlast the
+   rival". A SCENARIO names the win condition, the three star thresholds and
+   the flavor, all as DATA, so a later world can raise the bar without new code.
+
+   THE STAR LADDER IS FIXED ACROSS EVERY SCENARIO, because it is what the
+   reward means, not what the board asks:
+     1 star  progression, xp and souls. Nothing else.
+     2 stars a soldier, on the worlds that carry one (see UNIT_REWARD_EVERY).
+     3 stars the victory boon.
+   Only the CONDITIONS move between scenarios. `stars` holds the three
+   condition strings in order and `test` decides them from the finished match.
+
+   `kind` is what the simulation has to do differently:
+     duel     the standing tug of war. Beat the rival commander.
+     survive  hold a fixed number of waves. The rival is weather, not a seat.
+     endless  no end. Every star is a deeper wave count.
+
+   APPEND ONLY, and never reorder. worldScenarioOf indexes this array, and an
+   insert would silently move every world in every saved galaxy onto a
+   different scenario. Same law as the lockstep tables, for the same reason. */
+const SCENARIOS = [
+  {
+    id: 'assault', name: 'ASSAULT', kind: 'duel', icon: '⚔',
+    brief: 'Outlast the rival commander.',
+    stars: ['Win the battle',
+            'Win holding 55% of your lives',
+            'Win holding 90% of your lives'],
+    flavor: 'A line drawn on ground that belongs to somebody else, and held.',
+    /* kept is the fraction of maxLives still standing at the end. */
+    test: function (r) {
+      if (!r.won) return 0;
+      if (r.kept >= 0.90) return 3;
+      if (r.kept >= 0.55) return 2;
+      return 1;
+    }
+  },
+  {
+    id: 'swarm', name: 'THE SWARM', kind: 'survive', icon: '☠',
+    waves: [12, 16, 20],
+    brief: 'Survive the swarm. There is no commander to beat.',
+    stars: ['Survive 12 waves', 'Survive 16 waves', 'Survive 20 waves'],
+    flavor: 'Nothing here wants the ground. It wants the ground empty.',
+    test: function (r) {
+      const w = r.wave;
+      if (w >= 20) return 3;
+      if (w >= 16) return 2;
+      if (w >= 12) return 1;
+      return 0;
+    }
+  },
+  {
+    id: 'vigil', name: 'THE LONG VIGIL', kind: 'endless', icon: '∞',
+    waves: [15, 25, 35],
+    brief: 'No end. Stand as long as you can.',
+    stars: ['Reach wave 15', 'Reach wave 25', 'Reach wave 35'],
+    flavor: 'Old Weather routines do not stop. They are not deciding anything.',
+    test: function (r) {
+      const w = r.wave;
+      if (w >= 35) return 3;
+      if (w >= 25) return 2;
+      if (w >= 15) return 1;
+      return 0;
+    }
+  }
+];
+
+/* What each star PAYS. Fixed, and the same on every scenario, so the preview
+   can state it without consulting the board. */
+const STAR_REWARDS = [
+  { n: 1, what: 'progression, xp and souls' },
+  { n: 2, what: 'a new soldier for your vault' },
+  { n: 3, what: 'the victory boon, and the world' }
+];
+
+/* One world in this many runs a scenario other than the standing duel. Kept
+   low on purpose: the duel is the game, the variants are punctuation. */
+const SCENARIO_VARIANT_EVERY = 6;
+
+/* THE UNIT REWARD CADENCE (owner, Session 29). A soldier used to fall out of
+   EVERY three-star conquest, which made the reward wallpaper: 35 worlds paid 35
+   units and none of them felt like a prize. One world in this many carries a
+   unit instead, so the ones that do are worth routing towards.
+
+   Read by worldGrantsUnit() in galaxy.js, which derives the answer from the
+   world's INDEX rather than a draw, so turning this dial cannot move the galaxy
+   PRNG stream and every saved campaign keeps its exact layout. */
+const UNIT_REWARD_EVERY = 3;
+
 const LOADOUT_SIZE = 4;
 
 /* --------------------------------------------------------------------------
-   UNLOCK LAW — what souls buy, what the story issues, and what one purchase
+   UNLOCK LAW, what souls buy, what the story issues, and what one purchase
    costs the next one.
 -------------------------------------------------------------------------- */
 
@@ -3367,7 +3579,7 @@ const AIM_AI_THINK = 1.1;
    The dossier flags this family as the most snowball-prone in the book, so
    two guards sit on it and both are load-bearing.
 
-   ONE — the income is stored as a PERCENT of the wave's own reward, not as
+   ONE, the income is stored as a PERCENT of the wave's own reward, not as
    a flat number, so it keeps pace with the economy. By the owner's spec each
    purchase adds its tier's percent FLAT -- additive, no falloff -- which
    makes the hard cap (MUSTER_INCOME_CAP_PCT) the ONLY bound on it; it must
@@ -3375,7 +3587,7 @@ const AIM_AI_THINK = 1.1;
    compounding alone with no board play at all -- the same failure the
    interest cap already guards against, arriving through a second door.
 
-   TWO — mustered units carry MUSTER_DAMP, the identical 0.6 damping every
+   TWO, mustered units carry MUSTER_DAMP, the identical 0.6 damping every
    reanimate carries, and are flagged `reanimated` so a bought unit can never
    itself be reanimated into a third life. */
 const MUSTER_DAMP = 0.6;              /* matches reanimate() exactly          */
@@ -3482,7 +3694,7 @@ const MUSTER_AI_SAFE_LIVES = 0.8;         /* ceiling 1.12^10 = 3.11x base cost  
 const MUSTER_PER_WAVE = 2;
 
 /* ==========================================================================
-   THE SUMMONING DOCTRINES — tunables
+   THE SUMMONING DOCTRINES, tunables
 
    Five rites, one conservation law (see SUMMON_DOCTRINES in factions.js and
    Game.corpseBudget). Everything here bounds a rite that would otherwise run
@@ -3999,9 +4211,9 @@ const AI_CLEAR_MAX_UPLIFT = 2.0;   /* caps the no-ground-left case, which would
    a campaign node threads a system index in, and only the campaign therefore
    sees a rival that starts below today's strength and climbs past it.
 
-     T0  build, upgrade, base level, muster            — the opening galaxy
+     T0  build, upgrade, base level, muster, the opening galaxy
      T1  + clear terrain, + enrage
-     T2  + relocate                                    — TODAY, and the floor
+     T2  + relocate. TODAY, and the floor
                                                          everywhere but the
                                                          campaign
      T3  + RE-AIM: it re-points its guns as the threat changes

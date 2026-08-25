@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MULTIPLAYER — the duel relay, measured.
+   MULTIPLAYER, the duel relay, measured.
 
    Paste into the console of a SERVED, cache-busted build (aegis-protocol.html
    ?v=N, or index.html after `node build.js`), then:
@@ -362,7 +362,7 @@ const MPT = (function () {
         const a = runClient(cfg, 0, log, ticks);
         const b = runClient(cfg, 1, log, ticks);
         const agree = same(a, b);
-        const where = agree ? '' : ' | first difference — ' + firstDiff(a, b);
+        const where = agree ? '' : ' | first difference, ' + firstDiff(a, b);
         /* A duel can END before the tick budget is spent -- one commander is
            eliminated and the board resolves. That is a finished match, not a
            short one, so the requirement is that both clients ran the same
@@ -387,7 +387,7 @@ const MPT = (function () {
         const b = runClient(cfg, 0, log, ticks);
         ok('net.determinism the same seed replays identically over ' + ticks + ' ticks',
            same(a, b), 'wave=' + a.wave + ' sum=' + a.sum + '/' + b.sum +
-           (same(a, b) ? '' : ' | first difference — ' + firstDiff(a, b)));
+           (same(a, b) ? '' : ' | first difference, ' + firstDiff(a, b)));
       });
       T('net.determinism a different seed is a different match', function () {
         const p = probe(contract(SEED));
@@ -436,8 +436,8 @@ const MPT = (function () {
         } finally { Net._isolate = true; }
         off = !same(a, b);
         ok('net.isolation OFF: the same two clients diverge', off,
-           off ? 'diverged as expected — ' + firstDiff(a, b)
-               : 'STILL AGREED — the isolation is not what is holding them together');
+           off ? 'diverged as expected, ' + firstDiff(a, b)
+               : 'STILL AGREED, the isolation is not what is holding them together');
       });
       info('net.isolation verdict', 'isolation on -> agree=' + on + ', isolation off -> diverge=' + off);
       return api;
@@ -1247,7 +1247,7 @@ T('net.rules conceding a duel does not promise a garrison', function () {
         ok('net.pvp both windows raise the same dead',
            a.ticks === b.ticks && statsAgree && bodiesAgree,
            'seat0 client: ' + line(a) + '  ||  seat1 client: ' + line(b) +
-           (statsAgree && bodiesAgree ? '' : ' | first difference — ' + firstDiff(a, b)));
+           (statsAgree && bodiesAgree ? '' : ' | first difference, ' + firstDiff(a, b)));
       });
       T('net.pvp a remote muster puts units on THIS clients lane', function () {
         const cfg = contract(SEED);
@@ -1358,7 +1358,7 @@ T('net.rules conceding a duel does not promise a garrison', function () {
           }, 16);
         }, 260);
       }, 260);
-      info('net.wire', 'asynchronous — pass a callback, or read MPT.report() a second later');
+      info('net.wire', 'asynchronous, pass a callback, or read MPT.report() a second later');
       return api;
     },
 
@@ -1389,7 +1389,7 @@ T('net.rules conceding a duel does not promise a garrison', function () {
       api.twoClients(2400);
       api.determinism(2400);
       if (typeof BroadcastChannel === 'function') api.wire(done || (r => r));
-      else info('net.wire', 'no BroadcastChannel in this browser — the relay is unavailable');
+      else info('net.wire', 'no BroadcastChannel in this browser, the relay is unavailable');
       return api.report();
     }
   };

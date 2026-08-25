@@ -36,3 +36,8 @@ venv/
 .vscode/
 .idea/
 *.swp
+
+# The canon pack (v0.2.0) is its own repository with its own publishing
+# workflow. It is the SOURCE for the game copy, not part of the game site;
+# publishing it is a separate decision the owner makes deliberately.
+lore/

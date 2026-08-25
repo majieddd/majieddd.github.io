@@ -283,6 +283,26 @@ FACTION_TROOPS = {
 }
 
 # The six boards added in Session 16.
+# THE SIX BOARDS ADDED IN SESSION 26 SHIPPED WITH NO ART AT ALL. Measured in
+# Session 29: MAPS holds 22 ids, this catalogue held 16, and js/ui.js:2644 fell
+# through both the tinted key and the base key to a bare boss row. Each prompt
+# below is written from that board's own `trait` and `sigNote` in js/config.js,
+# so the plate shows the shape the player will actually fight on.
+WORLDS.update({
+    'lance':      'a single dead-straight causeway of pale stone running to a vanishing point '
+                  'across a flat open plain, no cover on either flank, hard low sun',
+    'skew':       'two roads of wildly unequal length crossing a tilted basin, one a short '
+                  'direct cut and one a long sweeping detour, seen from a high angle',
+    'strait':     'a narrow sea strait between two landmasses with a fast crossing current, '
+                  'traffic passing head-on through the channel, steel-grey water',
+    'loom':       'a vast weaving frame of parallel metal threads stretched across a canyon, '
+                  'two combs of cable meeting in one band, industrial and taut',
+    'ossuary':    'a long silent barrow of pale bone-white stone rings receding into fog, '
+                  'burial architecture, absolutely still, nothing moving',
+    'atoll':      'a broken ring reef enclosing a still lagoon with a dark citadel on the inner '
+                  'island, seen from above, drifting lights over the water',
+})
+
 WORLDS.update({
     'lattice':  'a vast signal lattice of luminous cabling strung between colossal relay pylons, '
                 'many parallel lines running to a single distant gate',

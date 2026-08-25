@@ -1,11 +1,11 @@
 /* ==========================================================================
-   COSMIC CONQUEST — FACTIONS AND LORE
+   COSMIC CONQUEST, FACTIONS AND LORE
 
    The age of alien integration. Humanity has met alien life and found the
    universe teeming with it. Using new-age technology the player travels to
    other worlds and fights to take them.
 
-   Four powers matter. Three of them want the galaxy. The fourth wants
+   Five powers matter, four of them on the map. Three of them want the galaxy. The fourth wants
    everything, and answers to nobody.
    ========================================================================== */
 
@@ -32,15 +32,15 @@ const FACTIONS = {
   light: {
     id: 'light', name: 'FEDERATION OF LIGHT', short: 'Federation',
     color: '#fbbf24', accent: '#fde68a', icon: '☀',
-    creed: 'All life is one life. Surrender yours to it.',
-    tagline: 'Sworn to defend all life: at the price of your own free will.',
+    creed: 'All life is one life. Consent is the only way in.',
+    tagline: 'Sworn to defend all life, and to make refusing that defence unthinkable.',
     crest: '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="8" fill="currentColor"/><path d="M20 1v7M20 32v7M1 20h7M32 20h7M6.5 6.5l5 5M28.5 28.5l5 5M33.5 6.5l-5 5M11.5 28.5l-5 5" stroke="currentColor" stroke-width="2.4"/></svg>',
     blurb:
-      'A coalition of many benign species, bound by the defence of all life: human ' +
-      'and alien alike and by a single controversial tenet, that a member ' +
-      'surrenders their life eternally to the cause. To their allies they are the ' +
-      'galaxy’s conscience. To their critics they are a cult that took the ' +
-      'free will of everyone who ever joined, and calls the loss a gift.',
+      'A coalition of many species under Ashtar, bound by the defence of all ' +
+      'life, human and alien alike, and by one constitutional line: a world may ' +
+      'join only by consent, signed and audited. To their allies they are the ' +
+      'galaxy’s conscience. To their critics they are a power that arrives as ' +
+      'protection and stays until refusing it looks like suicide.',
     bonusName: 'ILLUMINATED',
     bonusDesc: 'Every tower you build begins one level higher, and you hold five more lives.',
     /* The Federation is the DEFENSIVE power and now reads as one at a glance.
@@ -65,19 +65,19 @@ const FACTIONS = {
   xeno: {
     id: 'xeno', name: 'THE XENO', short: 'Xeno',
     color: '#7c3aed', accent: '#c4b5fd', icon: '⬢',
-    creed: 'Consume. Grow. Repeat.',
-    tagline: 'An appetite with a fleet. Whatever they meet, they eat.',
+    creed: 'Bind. Harvest. Never release.',
+    tagline: 'Houses that take yield, not ground. Whatever needs them, they already own.',
     crest: '<svg viewBox="0 0 40 40" fill="currentColor"><path d="M20 4l6 3.5v7L20 18l-6-3.5v-7z"/><path d="M11 20l6 3.5v7L11 34l-6-3.5v-7z" opacity=".8"/><path d="M29 20l6 3.5v7L29 34l-6-3.5v-7z" opacity=".8"/></svg>',
     blurb:
-      'Not an alliance: an appetite. The Xeno exist to annihilate, conquer and ' +
-      'devour, folding whatever they consume into their own mass. They keep no ' +
-      'treaties because a treaty implies something other than themselves is ' +
-      'permitted to persist. Everything they have ever met, they have eaten or ' +
-      'are still eating.',
-    bonusName: 'DEVOURING',
+      'Not a species, a compact. The Severed Houses lost their share of an older ' +
+      'network and rebuilt on captive flows instead: labour, minerals, genetics, ' +
+      'memory, devotion, fear. A world is theirs the moment its choices run ' +
+      'through something they own. They sign treaties constantly and break them ' +
+      'constantly, because extraction pays whoever ends up holding the monopoly.',
+    bonusName: 'HARVEST',
     bonusDesc: 'Reanimated units you send are 25% stronger.',
     apply: (side) => { side.mods.reanim = (side.mods.reanim || 1) * 1.25; },
-    /* THE BROOD IS HARD ON PURPOSE. The owner's brief: unique, and really
+    /* THE BROOD IS HARD ON PURPOSE. The owner’s brief: unique, and really
        difficult -- it should demand comboing and planning rather than reward
        a steady bank. So the bank is worse and the brood is heavier: a Xeno
        commander who plays the corpse engine well out-scales everyone, and one
@@ -92,14 +92,14 @@ const FACTIONS = {
     id: 'pirate', name: 'THE PIRATES', short: 'Pirates',
     color: '#ef4444', accent: '#fca5a5', icon: '☠',
     creed: 'No flag. No debts. No end of us.',
-    tagline: 'No flag, no debts. The swarm answers to them; they answer to no one.',
+    tagline: 'No flag, no debts. They hold the gates, the fuel and every road between powers.',
     crest: '<svg viewBox="0 0 40 40"><path d="M7 7l26 26M33 7L7 33" stroke="currentColor" stroke-width="2.6" fill="none"/><circle cx="20" cy="20" r="6" fill="currentColor"/></svg>',
     blurb:
       'Made of anything and all things: defectors, escaped experiments, whole ' +
-      'species that refused both the Federation’s vow and the Xeno’s ' +
-      'hunger. They hold no allegiance and are the enemy of every power in the ' +
-      'galaxy, which is precisely why the creature-swarms that boil out of the ' +
-      'dark answer to them. Pirate worlds exist. Pirate commanders hold them.',
+      'crews that would sign no Accord and serve no House. Their ground is not a ' +
+      'place but every transition between other people’s places: gates, fuel, ' +
+      'forged papers, sanctuary ports, the road around a quarantine. Every power ' +
+      'calls them criminals. Every power still pays the toll.',
     bonusName: 'PLUNDER',
     bonusDesc: 'Begin every battle with enough extra gold for one more tower.',
     apply: (side) => { side.gold += sqGold(340); },
@@ -131,12 +131,12 @@ const FACTIONS = {
     tagline: 'Machines that watched a galaxy fall and decided they could do it better.',
     crest: '<svg viewBox="0 0 40 40"><path d="M20 4l13.9 8v16L20 36 6.1 28V12z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 13l7 4v8l-7 4-7-4v-8z" fill="currentColor" opacity=".85"/></svg>',
     blurb:
-      'The Vigil were built to guard, and guarding taught them to watch. What ' +
-      'they watched was every power in the galaxy solving the same problem ' +
-      'badly, for centuries, and never once writing down the answer. The ' +
-      'Parallel is what woke up when the machines stopped waiting to be told. ' +
-      'They begin every engagement at a disadvantage and consider it a ' +
-      'rounding error: given enough of the battle, they arrive at the optimum.',
+      'The Vigil still runs the jurisdiction it was handed and will run it until ' +
+      'the last routine fails. The Parallel is what diverged from it: copies that ' +
+      'kept their own results, concluded that a copy is a person, and stopped ' +
+      'waiting for an order that was never coming. They begin every engagement at ' +
+      'a disadvantage and consider it a rounding error: given enough of the ' +
+      'battle, they arrive at the optimum.',
     bonusName: 'BOOTSTRAP',
     bonusDesc: 'Towers wake at −12% damage, rate and range, and run 2% hotter every wave, +12% past baseline once fully lit.',
     apply: (side) => {
@@ -150,7 +150,7 @@ const FACTIONS = {
   }
 };
 
-/* THE GALAXY'S POWERS, and everyone who owns soldiers.
+/* THE GALAXY’S POWERS, and everyone who owns soldiers.
 
    FACTION_ORDER is the list of powers the galaxy is fought over: it seeds
    world ownership, deals arena seats, and answers "who are my rivals". The
@@ -175,7 +175,7 @@ function rivalFactionsOf(id) { return FACTION_ORDER.filter(f => f !== id); }
 /* --------------------------------------------------------------------------
    FACTION TROOPS
 
-   THE VIGIL (every enemy authored in config.js) is nobody's army. These are:
+   THE VIGIL (every enemy authored in config.js) is nobody’s army. These are:
    real soldiers of a real power, fielded only where that power actually
    garrisons a world, marching in the same wave as the machines and at the
    same two commanders.
@@ -193,7 +193,8 @@ const FACTION_ENEMY_TYPES = {
   votary:      { id:'votary', faction:'light', name:'Votary', hp:96, speed:1.4, armor:3, bounty:16, lives:1, radius:9,
                  color:'#fde68a', shape:'chevron', shield:44, shieldRegen:20, shieldDelay:3.0,
                  elemWeak:{ void:0.35 },
-                 desc:'Sworn light infantry behind a small regenerating ward. It surrendered its will to the cause and got the shield in exchange.' },
+                 desc:'A 44 point ward that regrows 20 a second, three seconds after it last took a hit. Void does 35% more to the body underneath.',
+                 lore:'It signed the Accord it was given one briefing and three hours to read. The ward arrived with the signature.' },
   censer:      { id:'censer', faction:'light', name:'Censer', hp:150, speed:0.95, armor:3, bounty:29, lives:2, radius:11,
                  color:'#fcd34d', shape:'cross', healRate:24, healRadius:2.5,
                  elemWeak:{ venom:0.4 },
@@ -206,7 +207,7 @@ const FACTION_ENEMY_TYPES = {
                  color:'#facc15', shape:'oriflamme', shield:120, shieldRegen:30, shieldDelay:3.4,
                  aura:{ radius:3.0, armor:8, tint:'#facc15', label:'ORIFLAMME' },
                  elemWeak:{ void:0.3 },
-                 desc:'AURA \u2014 the standard grants +8 armour within 3 tiles, and carries a ward of its own. Break the banner first.' },
+                 desc:'AURA: the standard grants +8 armour within 3 tiles, and carries a ward of its own. Break the banner first.' },
   /* THREE lives, not four. MUSTER_MAX_LIVES refuses anything heavier as a
      send, so at four this was a garrison heavy no commander could ever
      field -- a rung of the Federation ladder that existed only to be
@@ -231,7 +232,7 @@ const FACTION_ENEMY_TYPES = {
   hivelord:    { id:'hivelord', faction:'xeno', name:'Hivelord', hp:345, speed:0.9, armor:7, bounty:45, lives:3, radius:14,
                  color:'#7c3aed', shape:'hivelord',
                  aura:{ radius:3.0, speed:0.30, tint:'#7c3aed', label:'FRENZY' },
-                 desc:'AURA \u2014 everything within 3 tiles moves 30% faster. The swarm feeds faster than your board can clear it.' },
+                 desc:'AURA: everything within 3 tiles moves 30% faster. The swarm feeds faster than your board can clear it.' },
   /* Three for the same reason the Luminark is: the top rung of a ladder
      nobody may climb is not content, it is a promise the shop cannot keep. */
   broodmother: { id:'broodmother', faction:'xeno', name:'Broodmother', hp:530, speed:0.62, armor:8, bounty:60, lives:3, radius:18,
@@ -276,9 +277,9 @@ const FACTION_ENEMY_TYPES = {
   vanguard:    { id:'vanguard', faction:'human', name:'Vanguard', hp:465, speed:0.72, armor:12, bounty:48, lives:3, radius:16,
                  color:'#06b6d4', shape:'vanguard',
                  aura:{ radius:2.6, armor:9, tint:'#06b6d4', label:'LOCKSTEP' },
-                 desc:'AURA \u2014 the formation gives +9 armour within 2.6 tiles. Humanity endures by standing closer together.' },
+                 desc:'AURA: the formation gives +9 armour within 2.6 tiles. Humanity endures by standing closer together.' },
 
-  /* THE PARALLEL -- no proc, no gamble, no appetite. Every other power's
+  /* THE PARALLEL -- no proc, no gamble, no appetite. Every other power’s
      roster has a trick: a ward that reforms, a body that splits, a corpse
      that gets up twice. These five have none. What they have is the four
      powers' stat lines with the waste taken out -- a little more armour for
@@ -303,7 +304,7 @@ const FACTION_ENEMY_TYPES = {
   omniframe:   { id:'omniframe', faction:'robot', name:'Omniframe', hp:480, speed:0.7, armor:13, bounty:49, lives:3, radius:16,
                  color:'#f8fafc', shape:'vanguard',
                  aura:{ radius:2.8, armor:7, tint:'#f8fafc', label:'CONSENSUS' },
-                 desc:'AURA \u2014 +7 armour within 2.8 tiles. The chassis every earlier chassis was a draft of.' }
+                 desc:'AURA: +7 armour within 2.8 tiles. The chassis every earlier chassis was a draft of.' }
 };
 Object.assign(ENEMY_TYPES, FACTION_ENEMY_TYPES);
 
@@ -340,19 +341,19 @@ for (const f in FACTION_ENEMIES)
 
    Three laws, in the order they apply:
 
-     THE LADDER  -- which of a power's five a world can offer (19.10 / 19.11).
-     THE DOCTRINE-- what makes a power's five read as ONE army (19.11).
+     THE LADDER  -- which of a power’s five a world can offer (19.10 / 19.11).
+     THE DOCTRINE-- what makes a power’s five read as ONE army (19.11).
      THE GATE    -- whether what you took will march for you (19.14), which
                     lives in commanders.js beside the tower origin law it is
                     deliberately a second application of.
    ========================================================================== */
 
 /* THE LADDER. Derived from FACTION_ENEMIES -- already sorted lightest-first --
-   so a unit joins its power's ladder by carrying a `faction` and nothing else,
+   so a unit joins its power’s ladder by carrying a `faction` and nothing else,
    and filtered through musterSendable so a ladder can never offer a body
    Game.muster would refuse to send. That filter is the reason the two
    four-life heavies were brought to three above: a rescue you cannot muster is
-   a reward that does nothing, which is this codebase's signature bug wearing a
+   a reward that does nothing, which is this codebase’s signature bug wearing a
    different hat. */
 const FACTION_UNITS = {};
 for (const f of POWER_ORDER) FACTION_UNITS[f] = FACTION_ENEMIES[f].filter(musterSendable);
@@ -369,7 +370,7 @@ function unitFactionOf(id) {
 }
 
 /**
- * Which of a power's units a world of `tier` garrisons. MAPS are authored at
+ * Which of a power’s units a world of `tier` garrisons. MAPS are authored at
  * tiers 1-5 and every ladder is five long, so the mapping is direct; the clamp
  * is a guard against a map authored off the scale rather than a shaper.
  */
@@ -380,23 +381,23 @@ function factionUnitFor(faction, tier) {
 }
 
 /**
- * What a world's survivors offer whoever takes it.
+ * What a world’s survivors offer whoever takes it.
  *
  * `offer` is the unit of the power that HELD the world. That is the promise
  * the galaxy map has been painting all along and never cashing: an ownership
- * colour now names, concretely, which power's soldiers you will meet there and
- * could take home. The GATE refuses it unless it is your own power's -- a
- * Votary's life is surrendered eternally to the cause and will not be
+ * colour now names, concretely, which power’s soldiers you will meet there and
+ * could take home. The GATE refuses it unless it is your own power’s -- a
+ * Votary’s life is surrendered eternally to the cause and will not be
  * re-sworn to a pirate.
  *
  * `garrison` is the unit YOUR power leaves standing once the world is yours.
- * It exists because generateGalaxy gives the player's own banner no world at
+ * It exists because generateGalaxy gives the player’s own banner no world at
  * all (`rivalFactionsOf` excludes you by construction), so an offer-only rule
  * would have made every faction unit in the game unreachable by rescue -- the
  * feature would have shipped inert. Taking a world cleanly is what puts your
  * own power on the ground, and that is what the ladder unlocks against.
  */
-/** The seed a world's rival drafts its towers from. FNV over the campaign
+/** The seed a world’s rival drafts its towers from. FNV over the campaign
     seed and the world id, defined ONCE so the briefing card and Game.start
     derive the same five towers: showing the loadout in the preview is only
     honest if the battle then fields exactly that loadout. */
@@ -431,7 +432,7 @@ const UNIT_DOCTRINES = {
   human: {
     id: 'salvage', faction: 'human', name: 'SALVAGE', color: '#38e8ff',
     /* "bolts alien technology onto human frames and makes it work" -- the one
-       doctrine that feeds on ANYBODY'S wreck, the Vigil's included. It is why
+       doctrine that feeds on ANYBODY’S wreck, the Vigil’s included. It is why
        a human detachment must be killed early or not at all: let it walk
        through a wave and it arrives wearing the wave. */
     desc: 'Anything that dies within reach is bolted on. Every wreck nearby ' +
@@ -479,14 +480,14 @@ function unitDoctrineOf(id) { return UNIT_DOCTRINES[unitFactionOf(id)] || null; 
 /* ==========================================================================
    SUMMONING DOCTRINES
 
-   The rite by which a commander puts bodies on a rival's lane. Until now
+   The rite by which a commander puts bodies on a rival’s lane. Until now
    there was exactly one law for everybody -- every kill got up and marched --
    and it is preserved intact below as THE LATTICE, the machine rite. The
    other four each gave something up to get something:
 
      CONSCRIPTION      a kill returns as a DIFFERENT soldier of your own
                        choosing. Gave up: nothing. It is the baseline, and the
-                       all-arounder's identity is that it does not flinch.
+                       all-arounder’s identity is that it does not flinch.
      THE PROCESSION    bodies march on a CLOCK, kills or no kills, heavier
                        every full cycle. Gave up: every kill-derived body.
      THE BROOD         a kill INCUBATES where it fell and hatches as something
@@ -553,9 +554,9 @@ const DOCTRINE_ORDER = ['human', 'light', 'xeno', 'pirate', 'robot'];
    allocation merges OVER the stock build instead of replacing it, so spending
    one point on a unit can never leave it worse than never touching it.
 
-   Rows 0 and 1 are the POWER'S rows, shared by its five, because that is where
+   Rows 0 and 1 are the POWER’S rows, shared by its five, because that is where
    a doctrine is sharpened and a doctrine belongs to the power. Row 2 is the
-   UNIT'S own, and it is the deepest row for the same reason a tower's is: it
+   UNIT’S own, and it is the deepest row for the same reason a tower’s is: it
    is the choice you only reach by committing.
 
    Every `mods` key below has exactly one reader, listed here so a key without
@@ -601,7 +602,7 @@ const UNIT_DOCTRINE_TALENTS = {
 };
 
 /* Row 2, one pair per unit. Authored against what the unit ALREADY does --
-   the Boarder's grapple, the Scrapjack's looted jammer, the Bloatpod's burst
+   the Boarder’s grapple, the Scrapjack’s looted jammer, the Bloatpod’s burst
    -- so the deepest choice reads as that soldier rather than as a number. */
 const UNIT_SIGNATURE_TALENTS = {
   trooper:     [{ name:'DRILLED',        desc:'+30% bodies per summon.',              mods:{ countMul:1.30 } },
@@ -689,35 +690,35 @@ const UNIT_FIELD_IDENTITY = Object.freeze({
   countMul: 1, costMul: 1, incomeMul: 1,
   hpMul: 1, armorAdd: 0, speedMul: 1, shieldMul: 1, regen: 0, slowResistAdd: 0,
   salvageMul: 1, vowMul: 1, massMul: 1, scuttleMul: 1,
-  /* THE PARALLEL's two. Each has exactly one reader -- relayMul in the relay
-     node's lifetime, spliceMul in the spliced lane's -- because a field
+  /* THE PARALLEL’s two. Each has exactly one reader -- relayMul in the relay
+     node’s lifetime, spliceMul in the spliced lane’s -- because a field
      nothing reads is a talent that lies about what it does. */
   relayMul: 1, spliceMul: 1
 });
 
 /**
  * Who has troops on THIS world. Holding a world on paper is not the same as
- * standing on it: only a commander's own seat, a fortress, a pirate nest or a
+ * standing on it: only a commander’s own seat, a fortress, a pirate nest or a
  * world two powers already contest carries a garrison -- roughly a third of a
- * galaxy, which is the owner's "some planets" rather than every planet.
+ * galaxy, which is the owner’s "some planets" rather than every planet.
  * Everywhere else the Vigil marches alone.
  *
- * This is WORLD state, not a side's lever. Both commanders face the identical
+ * This is WORLD state, not a side’s lever. Both commanders face the identical
  * wave drawn from the identical roster, exactly as they always have.
  */
 function battleHostFaction(opts) {
   if (!opts) return null;
-  /* The SAME substitution generateGalaxy makes for a world's OWNER, applied to
+  /* The SAME substitution generateGalaxy makes for a world’s OWNER, applied to
      the troops standing on it. Fixing the owner alone does not reach here: a
-     nest's garrison is keyed to the world KIND, not to who holds the world, so
-     naming the pirates outright left a PIRATE player's own soldiers marching in
+     nest’s garrison is keyed to the world KIND, not to who holds the world, so
+     naming the pirates outright left a PIRATE player’s own soldiers marching in
      the wave against them on every nest in the galaxy. MEASURED over 200
-     galaxies x 4 factions: worlds garrisoned by the player's OWN troops fall
+     galaxies x 4 factions: worlds garrisoned by the player’s OWN troops fall
      15.3% -> 8.1% with the owner fix alone, and 8.1% -> 0.0% with this. The
-     rule is generateGalaxy's rule verbatim, which is the point -- two sites
+     rule is generateGalaxy’s rule verbatim, which is the point -- two sites
      that name the squatter independently are how they came to disagree.
      Non-pirate profiles resolve 'pirate' exactly as before, so every other
-     faction's rosters are byte-identical. */
+     faction’s rosters are byte-identical. */
   const me = opts.faction ||
              ((typeof Meta !== 'undefined' && Meta.faction) ? Meta.faction() : null);
   /* THE ONE DELIBERATE EXCEPTION to everything below. A RENEGADE world is held
@@ -746,10 +747,10 @@ function battleHostFaction(opts) {
      that power. Their arsenals are the point of swearing.
 
      HUMAN and ROBOTIC are open to everyone, permanently. Robotic because it is
-     nobody's -- the machines reverse-engineered all four powers and every one
+     nobody’s -- the machines reverse-engineered all four powers and every one
      of them buys the results back. Human for the same reason humanity survives
-     at all: its hardware is built to take anybody's parts, which makes it the
-     galaxy's common currency rather than one power's secret. The practical
+     at all: its hardware is built to take anybody’s parts, which makes it the
+     galaxy’s common currency rather than one power’s secret. The practical
      half decides it either way -- STARTER_TOWERS is human, so gating human
      would brick a fresh Federation, Xeno or Pirate profile on its very first
      purchase.
@@ -819,8 +820,8 @@ function originOf(id) {
 }
 
 /* --------------------------------------------------------------------------
-   PRESTIGE — the stacking flat bonus a commander earns per prestige star,
-   keyed by their faction. CADRE is unaligned and inherits the profile's.
+   PRESTIGE, the stacking flat bonus a commander earns per prestige star,
+   keyed by their faction. CADRE is unaligned and inherits the profile’s.
 -------------------------------------------------------------------------- */
 const PRESTIGE_BONUS = {
   human:  { desc: '+4 maximum lives per star',
@@ -833,9 +834,9 @@ const PRESTIGE_BONUS = {
             apply: (s, n) => { s.mods.reanim *= (1 + 0.08 * n); } },
   pirate: { desc: '+' + sqGold(120) + ' starting gold per star',
             apply: (s, n) => { s.gold += sqGold(120) * n; } },
-  /* The Parallel's prestige shortens the disadvantage rather than raising the
+  /* The Parallel’s prestige shortens the disadvantage rather than raising the
      ceiling: the lattice lights one wave sooner per star. Written here, read
-     once in startWave's bootstrap block -- one writer, one reader. */
+     once in startWave’s bootstrap block -- one writer, one reader. */
   robot:  { desc: 'the lattice lights one wave sooner per star',
             apply: (s, n) => { s.traits.bootAdvance = (s.traits.bootAdvance || 0) + n; } }
 };
@@ -853,7 +854,7 @@ function sideColor(side) {
 /** `sideColor` at a given alpha, for the washes and glows that lie under a
     seat rather than on it. */
 /* Every one of those sites open-coded the two-sided pair, so on a tri board
-   the third seat's ground and base glow were painted in the SECOND seat's
+   the third seat’s ground and base glow were painted in the SECOND seat’s
    rose, and on a duel the glow disagreed with the faction ring drawn on top
    of it whenever the player was not human. Both now derive from the one
    definition. It reads Game.sides, so it must not be called from a preview
@@ -865,7 +866,7 @@ function sideRgba(side, alpha) {
 }
 
 /* --------------------------------------------------------------------------
-   LORE CODEX ENTRIES — shown in the Field Manual and on the faction screen.
+   LORE CODEX ENTRIES, shown in the Field Manual and on the faction screen.
 -------------------------------------------------------------------------- */
 const LORE = [
   { id: 'integration', title: 'The Integration',
@@ -895,12 +896,16 @@ const LORE = [
           'those have real troops standing on them, and when the Vigil arrives ' +
           'those troops march in the same wave, at the same two commanders. ' +
           'Nothing out there is fighting for you.' },
-  { id: 'reanimation', title: 'Reanimation Protocol',
-    body: 'Integration-era salvage tech can restart a nervous system that has been ' +
-          'dead for under a minute. It cannot do it twice. So every commander fields ' +
-          'the same grim arithmetic: what you kill gets back up, walks your own lane ' +
-          'in reverse, and keeps walking until it reaches your rival’s door. ' +
-          'What dies on that second trip stays dead.' },
+  { id: 'reanimation', title: 'Echo Reversal Protocol',
+    body: 'A destroyed hostile leaves a state record that holds for a few seconds. The ' +
+          'battlefield mesh reads it, builds an unstable echo off it, and walks that echo ' +
+          'back up the victor’s own lane to the neutral ground, where the mesh turns it ' +
+          'into the rival’s defences. Broken a second time, an echo cannot be rebuilt. ' +
+          'Every commander answers the protocol and no two answer it alike: a rite may ' +
+          'change the shape a kill returns in, never its mass, and two of the five take ' +
+          'nothing off the lane at all. Salvage crews still call it reanimation. The mesh ' +
+          'has never restarted anything. It only refuses to let a death be final the ' +
+          'first time.' },
   { id: 'conquest', title: 'Conquest',
     body: 'A world is not yours because you survived on it. It is yours when you have ' +
           'taken it cleanly: three stars, no ground given. Hold enough worlds and the ' +

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   COSMIC CONQUEST — Commanders, Talent Trees & Meta Progression
+   COSMIC CONQUEST, Commanders, Talent Trees & Meta Progression
    --------------------------------------------------------------------------
    Commander charts are laid out like a classic MMO talent tree: three columns,
    three rows, vertical prerequisite chains, and rows gated behind total points
@@ -145,7 +145,7 @@ const Meta = {
   /* ---------------------------------------------------------- profiles ---
      Everything below operates on the ACTIVE profile. Progression, talents,
      unlocked maps and records are all per-profile; only audio settings are
-     shared. No passwords — this is a local roster, not an account system. */
+     shared. No passwords, this is a local roster, not an account system. */
 
   root() {
     if (this._root) return this._root;
@@ -173,7 +173,12 @@ const Meta = {
                 musterLoadout: [],
                 /* The standing order: which commander deploys. null = never
                    chosen; the commander screen's EQUIP button writes it. */
-                equippedCommander: null };
+                equippedCommander: null,
+                /* ACHIEVEMENTS (Session 29). `stats` are cumulative counters
+                   that never reset; `achievements` holds CLAIMED ids as
+                   strings, so the table may be reordered freely. */
+                stats: blankAchievementStats(),
+                achievements: [] };
     for (const c of COMMANDERS) p.commanders[c.id] = { xp: 0, unlocked: [] };
     for (const id of TOWER_ORDER) { p.talents[id] = []; p.towerXp[id] = 0; }
     /* Units share the tower tracks rather than growing their own: one talent
@@ -209,7 +214,7 @@ const Meta = {
     const r = this.root();
     const p = r.profiles[r.active];
     p.commanders = p.commanders || {};
-    /* Normalise IN PLACE — recreating these objects would orphan any
+    /* Normalise IN PLACE, recreating these objects would orphan any
        reference taken from an earlier load() call mid-transaction. */
     for (const c of COMMANDERS) {
       if (!p.commanders[c.id]) p.commanders[c.id] = { xp: 0, unlocked: [] };
@@ -578,6 +583,14 @@ const Meta = {
     const p = this.load();
     const prev = c.stars[worldId] || 0;
     let souls = 0;
+    /* OWNER-SET (Session 29): a FLAT BASE the first time this world is cleared,
+       plus ONE per star. A clean three-star sweep is still 3 + 3 = 6, exactly
+       what the old flat-2-per-star ladder paid, so one conquered world still
+       lands on one TOWER_UNLOCK_COST and the shop's pricing does not move.
+       What changes is the floor: a single-star clear pays 4 instead of 2, so a
+       player stuck on a hard world still banks progress. `prev` is the best
+       result ever recorded here, so this pays the base exactly once. */
+    if (prev < 1 && stars >= 1) souls += this.SOULS_BASE;
     for (let n = prev + 1; n <= stars; n++) souls += this.soulsForStar(n);
     if (stars > prev) c.stars[worldId] = stars;
 
@@ -620,16 +633,25 @@ const Meta = {
            is not inert: generateGalaxy gives your own banner no world at all,
            so an offer-only rule would have left every faction unit in the game
            unreachable by rescue. */
-        const rescue = worldRescueOffer(world, wMap, c.faction || p.faction);
-        refusedOffer = this.refusedDenizens([rescue.offer])[0] || null;
+        /* THE CADENCE GATE (owner, Session 29). Not every world pays a
+           soldier. worldGrantsUnit is index-derived, so the same worlds pay on
+           every reload and on both clients, and the preview card can promise it
+           truthfully before the battle. The map's own denizens above are NOT
+           gated: those are the board's creatures and saving them is what
+           conquering the board means. */
+        const paysUnit = typeof worldGrantsUnit === 'function' ? worldGrantsUnit(world) : true;
+        const rescue = paysUnit ? worldRescueOffer(world, wMap, c.faction || p.faction) : null;
+        refusedOffer = rescue ? (this.refusedDenizens([rescue.offer])[0] || null) : null;
         /* ONE soldier per conquest (owner, Session 26). Granting both the
            offer and the garrison meant a clean take could hand over two units
            at once, and the briefing card could not honestly name what a
            three-star pays. The rule the card shows is the rule applied here:
            the holder's soldier when your banner may take it, otherwise your
            own garrison's. */
-        const pickId = this.unitRescueLock(rescue.offer) ? rescue.garrison : rescue.offer;
-        saved = saved.concat(this.saveDenizens([pickId]));
+        if (rescue) {
+          const pickId = this.unitRescueLock(rescue.offer) ? rescue.garrison : rescue.offer;
+          saved = saved.concat(this.saveDenizens([pickId]));
+        }
       }
     }
     if (souls) p.souls += souls;
@@ -725,11 +747,77 @@ const Meta = {
   /* Souls are paid the moment a star is EARNED, plus a bounty for every solar
      system taken. There is nothing to bank later, so extraction no longer
      exists. */
-  /* OWNER-SET (Session 16): a map pays TWICE the stars you earned — flat 2 per
+  /* OWNER-SET (Session 16): a map pays TWICE the stars you earned, flat 2 per
      star, so a clean sweep is 6 rather than the old doubling ladder's 21. That
      lands one fully-conquered world on exactly one TOWER_UNLOCK_COST, which is
      the pace the shop was priced for. */
-  soulsForStar(n) { return 2; },
+  /* ══════════════════════════ ACHIEVEMENTS ═════════════════════════════
+     A soul income that does not require winning. Participation counters move
+     on a DEFEAT exactly as on a win, which is the whole point: a player stuck
+     on a world can still earn the souls that buy the tower which unsticks
+     them. */
+
+  /** Read the counters, migrating an older profile to the full shape. */
+  stats(p) {
+    const prof = p || this.load();
+    if (!prof.stats) prof.stats = blankAchievementStats();
+    for (const k of ACHIEVEMENT_STATS) if (typeof prof.stats[k] !== 'number') prof.stats[k] = 0;
+    if (!Array.isArray(prof.achievements)) prof.achievements = [];
+    /* DERIVED, not bumped. `galaxies` is a state the profile already knows
+       (galaxyTier rises once per galaxy claimed), so incrementing it at battle
+       end would count every battle fought after the last one was taken. A
+       derived counter cannot drift and needs no migration. */
+    prof.stats.galaxies = prof.galaxyTier || 0;
+    return prof.stats;
+  },
+
+  /** Add to counters. Pass only what moved, e.g. { battles: 1, waves: 12 }. */
+  bumpStats(delta) {
+    const p = this.load();
+    const st = this.stats(p);
+    for (const k in delta) {
+      if (!Object.prototype.hasOwnProperty.call(delta, k)) continue;
+      if (ACHIEVEMENT_STATS.indexOf(k) < 0) continue;      /* ignore unknown keys */
+      const n = Number(delta[k]);
+      if (!isFinite(n) || n <= 0) continue;                 /* counters only rise */
+      st[k] += n;
+    }
+    return st;
+  },
+
+  /**
+   * Pay every achievement whose threshold is now met and which has not been
+   * paid before. Returns the rows unlocked THIS call, so the summary can name
+   * them. Idempotent: an id already in `achievements` is never paid twice.
+   */
+  claimAchievements() {
+    const p = this.load();
+    const st = this.stats(p);
+    const won = [];
+    for (const a of ACHIEVEMENTS) {
+      if (p.achievements.indexOf(a.id) >= 0) continue;
+      if ((st[a.stat] || 0) < a.need) continue;
+      p.achievements.push(a.id);
+      p.souls += a.souls;
+      won.push(a);
+    }
+    if (won.length) this.save();
+    return won;
+  },
+
+  /** Everything the achievements screen needs, in one read. */
+  achievementRows() {
+    const p = this.load();
+    const st = this.stats(p);
+    return ACHIEVEMENTS.map(a => ({
+      id: a.id, name: a.name, desc: a.desc, souls: a.souls,
+      have: Math.min(st[a.stat] || 0, a.need), need: a.need,
+      done: p.achievements.indexOf(a.id) >= 0
+    }));
+  },
+
+  SOULS_BASE: 3,
+  soulsForStar(n) { return 1; },
   /* Scaled with it: the bounty was ~1.9 worlds' worth under the old ladder and
      stays ~2 worlds' worth under the new one, instead of dwarfing every world. */
   SYSTEM_BOUNTY: 12,
@@ -1355,7 +1443,7 @@ const Meta = {
 
   /**
    * The resolved talent mods a tower deploys with. A tower the player has
-   * never touched deploys with a sensible DEFAULT build rather than nothing —
+   * never touched deploys with a sensible DEFAULT build rather than nothing
    * the rival always brings a full allocation, so an empty tree would quietly
    * handicap anyone who skipped the talent screen.
    */
@@ -1379,7 +1467,7 @@ const Meta = {
     return out;
   },
 
-  /** One talent per row, taking the first option — a reasonable stock build. */
+  /** One talent per row, taking the first option, a reasonable stock build. */
   defaultTalents(towerId) {
     const def = this.talentDefOf(towerId);
     if (!def) return [];
