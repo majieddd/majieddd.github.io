@@ -229,6 +229,46 @@ function generateGalaxy(seed, playerFaction) {
       });
     }
 
+    /* THE RENEGADE WORLD — one per system, and the only place your OWN power's
+       five boons can be taken.
+       ────────────────────────────────────────────────────────────────────
+       Until now they could not be taken at all. `rivals` excludes you by
+       construction (rivalFactionsOf), every world owner is drawn from it or
+       from `raider`, and boonFor filters `b.f === owner` — so playing human,
+       the five human boons were dead data in every galaxy ever generated.
+       Five of the twenty-five, unreachable by construction rather than by
+       design.
+
+       A splinter of your own power holds this one and will not stand down.
+       Taking it back is how you carry your own power's advantage forward, and
+       it is deliberately the one place your OWN soldiers march against you —
+       which is why `renegade` is an explicit flag and not merely
+       `owner === playerFaction`. battleHostFaction spent a whole session
+       driving accidental own-troop garrisons from 15.3% to 0.0%, and this must
+       read as the exception that proves that rule rather than as its return.
+
+       NOT ONE NEW rnd() CALL. The slot is derived from the system index
+       exactly as the contested block above derives its two, because
+       galaxy.js's standing rule is that the draw sequence must never move or
+       every saved galaxy's maps, arenas and boons shift underneath its owner.
+       The kind is left alone for the same reason it matters — a world's kind
+       drives its garrison — so which of the four kind-keyed boons a renegade
+       pays varies with the galaxy, and the APEX falls on the last system,
+       where a run that goes the distance is the thing being paid for. */
+    {
+      /* Never the seat, never the two opening worlds, and never a world the
+         contested block already took: those slots are 2+(si%2) and 4+(si%2),
+         so 3+(si%2) always threads between them and 6 is the seat. */
+      const pick = 3 + (si % 2);
+      const w = worlds[pick];
+      if (w && !w.seat && !w.contested) {
+        w.owner = playerFaction;
+        w.renegade = true;
+        w.boon = boonFor(playerFaction, w.kind,
+                         si === SYSTEMS_PER_GALAXY - 1, 0).id;
+      }
+    }
+
     systems.push({
       id: 'sys' + si, index: si,
       name: SYSTEM_NAMES[si % SYSTEM_NAMES.length],
@@ -613,9 +653,20 @@ function galaxyHoldings(galaxy, progress) {
      slot of its own the first conquest increments `undefined` and every
      holdings figure on the screen becomes NaN. */
   out[galaxy.playerFaction] = out[galaxy.playerFaction] || 0;
+  /* A RENEGADE world is owned by your own power and is NOT yours until you
+     take it. Tallied by owner alone it would credit the status strip with
+     worlds the player has never fought for -- "12 / 35 worlds held" on a fresh
+     galaxy -- so the splinter gets its own bucket. It is deliberately not a
+     FACTION_ORDER key: the ownership bar iterates that list, and a segment in
+     your own colour for ground you do not hold is the same lie in a different
+     shape. */
+  out.renegade = 0;
   for (const sys of galaxy.systems)
-    for (const w of sys.worlds)
-      out[isConquered(progress, w.id) ? galaxy.playerFaction : w.owner]++;
+    for (const w of sys.worlds) {
+      if (isConquered(progress, w.id)) { out[galaxy.playerFaction]++; continue; }
+      if (w.renegade) { out.renegade++; continue; }
+      out[w.owner]++;
+    }
   return out;
 }
 

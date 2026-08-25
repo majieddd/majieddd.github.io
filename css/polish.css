@@ -2346,3 +2346,29 @@ body:not(.arena-field) .arena-ladder { display: none; }
 /* Inside the stack the keys are laid out BY the stack, so they must give up
    the absolute placement each of them was written with. */
 .gx-keys .gx-legend { position: static; top: auto; left: auto; }
+
+/* ── THE RENEGADE WORLD ────────────────────────────────────────────────
+   A splinter of your own power, flying your own colours on ground you do
+   not hold. It is the only world on the map whose faction tint is also
+   YOUR tint, so without a mark of its own it reads as already conquered —
+   which is the one thing it must never read as. A dashed ring says
+   "contested from within" without inventing a sixth palette. */
+.gx-world.renegade circle,
+.gx-world.renegade .gx-disc {
+  stroke-dasharray: 2 1.6;
+  stroke-width: 0.55;
+  opacity: 0.95;
+}
+.gx-world.renegade { filter: saturate(0.72); }
+
+.br-renegade {
+  margin: 0.5rem 0 0.35rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px dashed color-mix(in srgb, var(--fc, #e2e8f0) 55%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--fc, #e2e8f0) 8%, transparent);
+  display: grid;
+  gap: 0.25rem;
+}
+.br-renegade b { color: var(--fc, #e2e8f0); letter-spacing: 0.02em; font-size: 0.78rem; }
+.br-renegade span { font-size: 0.74rem; line-height: 1.45; opacity: 0.86; }

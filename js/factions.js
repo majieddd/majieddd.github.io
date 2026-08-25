@@ -684,6 +684,13 @@ function battleHostFaction(opts) {
      faction's rosters are byte-identical. */
   const me = opts.faction ||
              ((typeof Meta !== 'undefined' && Meta.faction) ? Meta.faction() : null);
+  /* THE ONE DELIBERATE EXCEPTION to everything below. A RENEGADE world is held
+     by a splinter of your OWN power (galaxy.js), so your own soldiers on the
+     field is the entire point of it rather than the defect the rest of this
+     function exists to prevent. Checked FIRST, because the nest rule below
+     would otherwise substitute the squatter and quietly throw the feature
+     away on every renegade world that happened to roll a nest. */
+  if (opts.renegade) return me || null;
   if (opts.worldKind === 'nest') return me === 'pirate' ? 'xeno' : 'pirate';
   if (opts.seat || opts.contested || opts.worldKind === 'fortress')
     return opts.rivalFaction || null;

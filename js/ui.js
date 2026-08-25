@@ -492,16 +492,16 @@ const UI = {
                  /* Both are read by battleHostFaction: they decide whether the
                     holder has troops on the ground or only a claim on a map. */
                  contested: node.contested, worldKind: node.kind,
+                 /* A splinter of your own power holds this one, so your own
+                    soldiers hold the line on it -- read by battleHostFaction,
+                    which forbids that everywhere else. */
+                 renegade: !!node.renegade,
                  map: node.map, difficulty: node.difficulty,
                  /* The EQUIPPED commander is the standing order and outranks
                     the session's browsing pick -- that is what EQUIP means.
                     With no standing order: the session pick if visited, else
                     your faction's own commander rather than an arbitrary one. */
-                 commander: Meta.equipped() ||
-                   ((this.sel.commander && Meta.isCommanderUnlocked(this.sel.commander))
-                   ? this.sel.commander
-                   : (Meta.isCommanderUnlocked(freeCommanderOf(Meta.faction() || 'human'))
-                       ? freeCommanderOf(Meta.faction() || 'human') : 'cadre')),
+                 commander: this.battleCommander(),
                  loadout: this.sel.loadout.slice(),
                  arena: node.arena, boons: c.boons, rival: node.rival,
                  escStart: node.escStart,
@@ -1579,6 +1579,40 @@ const UI = {
   /** The ramp a campaign is being played on, resolved once. */
   rampOf(c) { return (c && RAMP_PRESETS[c.ramp]) || RAMP_PRESETS[RAMP_DEFAULT]; },
 
+  /** THE STANDING ORDER, resolved in ONE place.
+   *
+   *  EQUIP means "field this commander", and it used to mean that on exactly
+   *  one of the three ways to start a battle. The campaign read
+   *  `Meta.equipped()`; the garrison skirmish and the Maelstrom both threw it
+   *  away and fielded the free commander of your sworn banner instead. That
+   *  is not only the wrong portrait -- js/game.js resolves the summoning rite
+   *  from `S2.commander.faction` BEFORE the banner ("the COMMANDER carries the
+   *  summoning, not the banner"), so a substituted commander silently handed
+   *  the player a different rite, and the whole mixing contract with it.
+   *
+   *  The fallback chain is the campaign's, verbatim: the standing order first,
+   *  then the commander you were browsing if you actually own them, then your
+   *  own power's free commander, then CADRE, who answers to nobody and is
+   *  therefore always a legal answer. */
+  battleCommander() {
+    const equipped = Meta.equipped();
+    if (equipped) return equipped;
+    if (this.sel && this.sel.commander && Meta.isCommanderUnlocked(this.sel.commander))
+      return this.sel.commander;
+    const fac = Meta.faction() || 'human';
+    const free = freeCommanderOf(fac);
+    return Meta.isCommanderUnlocked(free) ? free : 'cadre';
+  },
+
+  /** The five towers a skirmish fields. Prefers the set you actually arranged
+      on the loadout screen over the first five the vault happens to list --
+      `Meta.unlockedTowers()` is acquisition order, which is nobody's plan. */
+  battleLoadout(owned) {
+    const picked = (this.sel && this.sel.loadout || []).filter(id => owned.indexOf(id) >= 0);
+    if (picked.length) return picked.slice(0, LOADOUT_SIZE);
+    return owned.slice(0, Math.min(LOADOUT_SIZE, owned.length));
+  },
+
   /** THE OPTIONS BATTLE SEED, read in ONE place.
    *
    *  It used to be read inline at the campaign launch and nowhere else, so a
@@ -1799,6 +1833,10 @@ const UI = {
       const pick = () => {
         if (!isSystemOpen(gx, sys, prog) || !isWorldOpen(sys, w, prog)) { Sound.play('denied'); return; }
         c.chosen = { world: w.id, map: w.map, arena: w.arena, boon: w.boon,
+                     /* Carried onto the node so the battle can be told; a
+                        saved course from before renegade worlds existed simply
+                        reads undefined and behaves exactly as it always did. */
+                     renegade: !!w.renegade,
                      /* The world's own commander, not the system's -- these
                         two ship together into sides[1] and nothing
                         downstream reconciles them. */
@@ -1952,7 +1990,10 @@ const UI = {
         const of = FACTIONS[w.owner];
         const wy = w.y * GX_RENDER_SQUASH;
         const wr2 = w.seat ? 2.7 : 2.0;
+        /* A RENEGADE world flies your own colours and is not yours, so it
+           needs a mark of its own or the map reads as ground already taken. */
         const cls = ['gx-world', 'open', w.seat ? 'seat' : '',
+                     w.renegade ? 'renegade' : '',
                      planetArtFor(w) ? 'has-planet' : ''].join(' ');
         svg.push(`<g class="${cls}" data-mv="${w.id}" style="--fc:${of.color}" tabindex="0"
                    role="button" aria-label="${w.name}, ${of.short}">`);
@@ -1975,7 +2016,8 @@ const UI = {
       const mp = MAPS.find(x => x.id === w.map);
       const brief = ev => this.showTooltip(ev, `<div class="brief">
         <div class="br-head"><b>${w.name}</b>
-          <span class="tag" style="color:${FACTIONS[w.owner].color}">${FACTIONS[w.owner].short}</span></div>
+          <span class="tag" style="color:${FACTIONS[w.owner].color}">${
+            w.renegade ? FACTIONS[w.owner].short + ' RENEGADE' : FACTIONS[w.owner].short}</span></div>
         <div class="br-trait">${sys.name} · ${WORLD_KINDS[w.kind].icon} ${WORLD_KINDS[w.kind].label}</div>
         ${mp ? `<div class="br-map"><b>${mp.name}</b> — ${mp.trait}</div>` : ''}
         ${mp && mp.blurb ? `<p class="br-blurb">${mp.blurb}</p>` : ''}
@@ -2254,12 +2296,36 @@ const UI = {
     const pr = $('#btn-mv-practice');
     if (pr) pr.addEventListener('click', () => {
       ov.classList.add('hidden'); Net.cancel(); Sound.resume();
-      const fac = Meta.faction() || 'human';
-      const cmd = Meta.isCommanderUnlocked(freeCommanderOf(fac)) ? freeCommanderOf(fac) : 'cadre';
       const owned = Meta.unlockedTowers();
-      Game.start({ skirmish: true, map: w.map, difficulty: 'contested', commander: cmd,
-                   loadout: owned.slice(0, Math.min(LOADOUT_SIZE, owned.length)),
+      Game.start({ skirmish: true, map: w.map, difficulty: 'contested',
+                   /* THE STANDING ORDER HOLDS HERE TOO. This used to field the
+                      free commander of your sworn banner and nothing else, so a
+                      player who equipped a commander and then took a practice
+                      board was handed somebody they did not pick -- and, because
+                      the rite follows the COMMANDER (game.js resolves
+                      `S2.commander.faction` before the banner), a different
+                      summoning rite as well. The three ways to start a battle
+                      now read the same standing order. */
+                   commander: this.battleCommander(),
+                   loadout: this.battleLoadout(owned),
+                   /* And the detachment you picked, which this path never
+                      passed at all: the Maelstrom already honoured it, so the
+                      two skirmish paths disagreed about whose soldiers you
+                      brought. */
+                   musterLoadout: Meta.musterLoadout(),
                    rivalFaction: w.owner, worldKind: w.kind, arena: w.arena,
+                   renegade: !!w.renegade,
+                   /* A CONTESTED WORLD IS A THREE-WAY WAR ON EVERY PATH.
+                      `triMode` comes from the MAP, so this board already dealt
+                      three seats -- but without these two fields Game.start
+                      could not name the two powers actually fighting over it
+                      and fell back to a generic pair from the core four. The
+                      campaign path has always passed them; the garrison path
+                      is the one that fights this world when a duel is refused
+                      (net.js `duelRefusal` closes every tri table), so it is
+                      the ONLY way most players ever see a contested world
+                      outside the campaign. It now fields the right powers. */
+                   contested: !!w.contested, contestedBy: w.contestedBy,
                    seed: this.battleSeed() });
       this.show('screen-game'); this.buildShop(); this.buildAbilityBar(); Game.resize();
     });
@@ -2486,11 +2552,14 @@ const UI = {
     this.stopMaelstromDrift();
     Sound.resume();
     const fac = Meta.faction() || 'human';
-    const cmd = Meta.isCommanderUnlocked(freeCommanderOf(fac)) ? freeCommanderOf(fac) : 'cadre';
     const owned = Meta.unlockedTowers();
     Game.start({ skirmish: true, maelstrom: seats, difficulty: 'contested',
-                 commander: cmd, faction: fac,
-                 loadout: owned.slice(0, Math.min(LOADOUT_SIZE, owned.length)),
+                 /* Same standing order as the campaign and the garrison. The
+                    banner stays sworn -- `faction` is who you fight FOR -- but
+                    the commander is the one you equipped, and the rite comes
+                    with them. */
+                 commander: this.battleCommander(), faction: fac,
+                 loadout: this.battleLoadout(owned),
                  musterLoadout: Meta.musterLoadout(),
                  seed: this.battleSeed() });
     this.show('screen-game'); this.buildShop(); this.buildAbilityBar(); Game.resize();
@@ -2557,8 +2626,15 @@ const UI = {
     return `<div class="brief ${inline ? 'inline' : ''} ${plate ? 'has-art' : ''}">
       ${plate ? `<div class="br-plate" style="--fc:${of.color}">${plate}</div>` : ''}
       <div class="br-head"><b>${w.name}</b>
-        <span class="tag" style="color:${of.color}">${of.short}</span></div>
+        <span class="tag" style="color:${of.color}">${
+          (w.renegade && !mine) ? of.short + ' RENEGADE' : of.short}</span></div>
       <div class="br-trait">${sys.name} &middot; ${kind.icon} ${kind.label}${w.seat ? ' &middot; COMMANDER SEAT' : ''}</div>
+      ${(w.renegade && !mine) ? `<div class="br-renegade">
+        <b>A SPLINTER OF YOUR OWN POWER HOLDS THIS WORLD.</b>
+        <span>They fly your colours, field your soldiers and will not stand
+        down. It is the only ground in the galaxy that pays
+        <b>${FACTIONS[gx.playerFaction].short}</b>'s own advantage &mdash; take
+        it and you carry your power's doctrine forward yourself.</span></div>` : ''}
       ${m ? `<div class="br-map"><b>${m.name}</b> &mdash; ${m.trait}</div>` : ''}
       ${m ? this.mapPreviewBlock(m, { size: inline ? 'brief' : 'tip' }) : ''}
       ${m && m.blurb ? `<p class="br-blurb">${m.blurb}</p>` : ''}
