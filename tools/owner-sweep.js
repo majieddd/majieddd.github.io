@@ -1027,6 +1027,132 @@
        seen.campaignOpen + '; baseline refuses re-aim and sell, tier 4 allows both');
   });
 
+  /* ---- 25.1 the galaxy is the same galaxy every time it is asked for --- */
+  T('25.1 a galaxy is byte-stable across regeneration', function () {
+    if (typeof generateGalaxy !== 'function') { skip('25.1 a galaxy is byte-stable across regeneration', 'no generator'); return; }
+    /* The owner reported "the maps keep changing in the galaxy just from
+       loading in/out". A galaxy is rebuilt from its seed on every load, so
+       that can only happen if generation is impure -- this asserts it is not,
+       for the fields a player would SEE change. */
+    function fp(seed, fac) {
+      const g = generateGalaxy(seed, fac);
+      const rows = [];
+      g.systems.forEach(function (sys) {
+        sys.worlds.forEach(function (w) {
+          rows.push([w.id, w.map, w.arena, w.kind, w.owner, w.boon,
+                     w.seat ? 1 : 0, w.contested ? 1 : 0, w.renegade ? 1 : 0].join(':'));
+        });
+      });
+      return rows.join('|');
+    }
+    const bad = [];
+    ['human', 'light', 'xeno', 'pirate'].forEach(function (fac) {
+      for (let seed = 1; seed <= 4; seed++) {
+        const a = fp(seed, fac), b = fp(seed, fac);
+        if (a !== b) bad.push(fac + ' seed' + seed);
+      }
+    });
+    ok('25.1 a galaxy is byte-stable across regeneration', bad.length === 0,
+       bad.length ? 'drifted: ' + bad.join(', ')
+       : 'four powers x four seeds, regenerated twice each: maps, arenas, kinds, owners and boons identical');
+  });
+
+  /* ---- 25.2 the Procession marches in order and compounds -------------- */
+  T('25.2 THE PROCESSION sends in order, compounding, and not only mid-wave', function () {
+    if (typeof SUMMON_DOCTRINES === 'undefined' || !SUMMON_DOCTRINES.light) {
+      skip('25.2 THE PROCESSION sends in order, compounding, and not only mid-wave', 'no light rite'); return;
+    }
+    const light = COMMANDERS.filter(function (c) { return c.faction === 'light'; })[0];
+    Game.start({ map: 'spine', difficulty: 'contested', seed: 77, faction: 'light',
+                 commander: light.id, loadout: PIN.slice(),
+                 musterLoadout: ['crawler', 'trooper', 'votary'] });
+    const S = Game.sides[0];
+    const sent = [];
+    const realPush = Game.pendingSpawns.push.bind(Game.pendingSpawns);
+    Game.pendingSpawns.push = function (e) {
+      if (e && e.reanimated && e.owner === 0) sent.push(e.def.id);
+      return realPush(e);
+    };
+    try {
+      let n = 0;
+      while (Game.state !== 'over' && Game.wave < 8 && n < 22000) {
+        if (Game.state === 'choosing' && Game.pendingChoice) Game.takeMod(Game.pendingChoice[0]);
+        else if (Game.state === 'escalating' && Game.pendingEscalation)
+          (Game.takeEscalation || Game.takeMod).call(Game, Game.pendingEscalation[0]);
+        else { S.lives = 999; Game.step(1 / 30); }
+        n++;
+      }
+    } finally { Game.pendingSpawns.push = realPush; }
+    /* ORDER: collapse repeats and check the distinct sequence cycles the
+       detachment rather than repeating one entry. */
+    const seq = [];
+    sent.forEach(function (id) { if (seq[seq.length - 1] !== id) seq.push(id); });
+    const list = S.musterLoadout || [];
+    let inOrder = seq.length >= 4;
+    for (let i = 1; i < seq.length && inOrder; i++) {
+      const prev = list.indexOf(seq[i - 1]), cur = list.indexOf(seq[i]);
+      if (prev < 0 || cur < 0 || cur !== (prev + 1) % list.length) inOrder = false;
+    }
+    ok('25.2 THE PROCESSION sends in order, compounding, and not only mid-wave',
+       sent.length >= 12 && inOrder && S.procCycle >= 1,
+       sent.length + ' bodies by wave ' + Game.wave + ', ' + S.procCycle +
+       ' full laps, sequence ' + seq.slice(0, 6).join('>') +
+       (inOrder ? ' (in detachment order)' : ' (OUT OF ORDER)'));
+  });
+
+  /* ---- 25.3 the five skews are five different games -------------------- */
+  T('25.3 every power is skewed differently', function () {
+    const seen = {};
+    ['human', 'light', 'xeno', 'pirate', 'robot'].forEach(function (f) {
+      const c = COMMANDERS.filter(function (x) { return x.faction === f; })[0];
+      if (!c) return;
+      Game.start({ map: 'spine', difficulty: 'contested', seed: 9, faction: f,
+                   commander: c.id, loadout: PIN.slice() });
+      const S = Game.sides[0];
+      seen[f] = {
+        lives: S.maxLives,
+        dmg: +S.mods.damage.toFixed(3),
+        range: +S.mods.range.toFixed(3),
+        gold: +(S.mods.gold || 1).toFixed(3),
+        leak: Game.leakCostOf({ livesCost: 3, hostileTo: 0 }),
+        brood: +(S.traits.musterHpMul || 1).toFixed(3)
+      };
+    });
+    const L = seen.light, X = seen.xeno, P = seen.pirate, H = seen.human;
+    /* Each claim is the OWNER'S BRIEF, asserted rather than described. */
+    const defensive = L && H && L.lives > H.lives && L.leak < H.leak;
+    const difficult = X && H && X.gold < H.gold && X.brood > H.brood;
+    const scrappy   = P && H && P.dmg > H.dmg && P.range < H.range;
+    ok('25.3 every power is skewed differently',
+       !!(defensive && difficult && scrappy),
+       'light lives ' + (L && L.lives) + ' leak ' + (L && L.leak) +
+       ' | xeno purse ' + (X && X.gold) + ' brood ' + (X && X.brood) +
+       ' | pirate dmg ' + (P && P.dmg) + ' range ' + (P && P.range) +
+       ' | human ' + (H && H.dmg) + '/' + (H && H.range));
+  });
+
+  /* ---- 25.4 a banner brings its own first soldier ---------------------- */
+  T('25.4 every power starts with a soldier of its own', function () {
+    if (typeof starterDenizenOf !== 'function') {
+      ok('25.4 every power starts with a soldier of its own', false, 'starterDenizenOf is missing');
+      return;
+    }
+    const got = {}, bad = [];
+    ['human', 'light', 'xeno', 'pirate', 'robot'].forEach(function (f) {
+      const id = starterDenizenOf(f);
+      got[f] = id;
+      if (!id) { bad.push(f + ': none'); return; }
+      if (typeof unitFactionOf === 'function' && unitFactionOf(id) !== f) bad.push(f + ': ' + id + ' is not theirs');
+      /* Power-neutral: it must sit near the crawler it stands beside, or the
+         grant is a stat advantage rather than an identity. */
+      const hp = ENEMY_TYPES[id] && ENEMY_TYPES[id].hp, base = ENEMY_TYPES.crawler.hp;
+      if (!(hp > 0) || hp > base * 1.8) bad.push(f + ': ' + id + ' hp ' + hp + ' vs crawler ' + base);
+    });
+    ok('25.4 every power starts with a soldier of its own', bad.length === 0,
+       bad.length ? bad.join('; ')
+       : Object.keys(got).map(function (f) { return f + '=' + got[f]; }).join(' '));
+  });
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;
