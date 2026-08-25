@@ -240,13 +240,13 @@ const FACTION_ENEMY_TYPES = {
                  desc:'Births Chitlings continuously the whole way down the lane. The lane is a nursery until she stops.' },
 
   /* THE PIRATES -- fast, dirty, and gone before you have finished aiming. */
-  cutter:      { id:'cutter', faction:'pirate', name:'Cutter', hp:46, speed:2.4, armor:0, bounty:11, lives:1, radius:8,
+  cutter:      { id:'cutter', stealth:true, faction:'pirate', name:'Cutter', hp:46, speed:2.4, armor:0, bounty:11, lives:1, radius:8,
                  color:'#f87171', shape:'chevron',
                  desc:'A stolen hull with the mass stripped out of it. Nothing aboard but engine and intent.' },
-  boarder:     { id:'boarder', faction:'pirate', name:'Boarder', hp:124, speed:1.3, armor:2, bounty:29, lives:2, radius:10,
+  boarder:     { id:'boarder', stealth:true, faction:'pirate', name:'Boarder', hp:124, speed:1.3, armor:2, bounty:29, lives:2, radius:10,
                  color:'#fb7185', shape:'blink', teleport:{ tiles:3.0, interval:4.2 },
                  desc:'GRAPPLES three tiles down the lane every four seconds. Aim where it is going, not where it is.' },
-  scrapjack:   { id:'scrapjack', faction:'pirate', name:'Scrapjack', hp:215, speed:1.1, armor:4, bounty:36, lives:2, radius:12,
+  scrapjack:   { id:'scrapjack', stealth:true, faction:'pirate', name:'Scrapjack', hp:215, speed:1.1, armor:4, bounty:36, lives:2, radius:12,
                  color:'#ef4444', shape:'jammer', jam:{ radius:2.4, duration:2.0, interval:6.8 },
                  desc:'SILENCES nearby towers for 2.0s on a timer, with a jammer looted off a Vigil Interdictor.' },
   wrecker:     { id:'wrecker', faction:'pirate', name:'Wrecker', hp:268, speed:1.25, armor:4, bounty:45, lives:3, radius:13,

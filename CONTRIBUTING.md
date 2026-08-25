@@ -218,6 +218,11 @@ Nothing to install, nothing to import.
 //    → run it from the LOADOUT screen: checks 19.12 and 19.15 read live DOM and
 //      report INFO (a skip, not a failure) anywhere else, or in a hidden tab.
 
+// ORDER MATTERS when sharing one page: run the OWNER SWEEP before the
+//    multiplayer harness. MPT wraps UI methods for instrumentation, and three
+//    sweep checks grep function SOURCE; run after MPT they read the wrappers
+//    and fail with details that look like passes. Measured, Session 26.
+
 // 2. paste the entire contents of tools/balance-pins.js → 'PINS ready'
 PINS.fresh(6)          // fresh profile, six maps, one call
 PINS.maxed(3, 0)       // maxed profile at galaxy TIER 0, three maps, one call

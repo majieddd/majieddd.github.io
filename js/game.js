@@ -433,6 +433,11 @@ const Game = {
     /* Each side may have SEVERAL lanes; lanes[side] is an array of Paths. */
     this.lanes     = FIELD.lanes.map(side => side.map(p => new Path(p)));
     this.sendPaths = FIELD.sendPaths.map(p => new Path(p));
+    /* AIR SEND ROUTES (Session 26): a sent flyer flies base to base, the
+       straight chord, instead of walking the whole ground send route while
+       flagged flying. Derived from bases with zero rnd() draws. */
+    this.airSendPaths = FIELD.bases.map((a, i) =>
+      FIELD.bases.map((b, j) => (i === j || !a || !b) ? null : new Path([a, b])));
     /* In the arena every send route IS its victim's own lane -- the singularity
        is the only road in -- so the matrix points at the Paths built on the
        line above instead of at N^2 fresh copies of them. Four hundred
@@ -2575,8 +2580,7 @@ const Game = {
        does there -- the map's identity, not a muster-specific bonus. */
     let sentUnits = 0;
     for (const vic of this.musterVictims(side)) {
-      const path = (this.triMode && this.sendTriPaths && this.sendTriPaths[side])
-        ? this.sendTriPaths[side][vic] : this.sendPaths[side];
+      const path = this.sendPathFor(side, vic, base);
       if (!path) continue;
       const dbl = S.mods.doubleReanim || 0;
       for (let i = 0; i < tier.count; i++) {
@@ -2626,6 +2630,104 @@ const Game = {
    * from a kill at all -- that is precisely what they traded away -- so they
    * return here having done nothing, and that is not an omission.
    */
+  /** The path a body OWNED BY `side` marches at `vic`: the tri table, the
+      duo send lane, or the air chord for a flyer. One function, because four
+      spawn sites picking paths independently is how a flyer walked. */
+  sendPathFor(side, vic, def) {
+    if (UNIT_ROLES_ON && def && def.flying && this.airSendPaths &&
+        this.airSendPaths[side] && this.airSendPaths[side][vic])
+      return this.airSendPaths[side][vic];
+    return (this.triMode && FIELD.sendTri) ? this.sendTriPaths[side][vic] : this.sendPaths[side];
+  },
+
+  /**
+   * MELEE (Session 26). Infantry fights the first enemy unit it meets.
+   *
+   * Deterministic and O(N): every live grounded body is bucketed by tile,
+   * each infantry attacker scans its 3x3 neighbourhood for the nearest
+   * opposing infantry, and an engaged pair halts and trades timed strikes.
+   * Runs INSIDE step, after movement and before the reap, so deaths book
+   * through the unchanged funnel and both clients of a duel walk the same
+   * frames; the one random draw is a cosmetic spark that rides the seeded
+   * stream the way every particle inside step does.
+   *
+   * THE GATE THAT KEEPS IT SANE: at least one of the pair must be a
+   * player-sent body (owner >= 0). Wave against wave stays the ghost-through
+   * it has always been, because mirrored waves spawn on adjacent or shared
+   * tiles and would otherwise lock the spawn mouth into a killball on every
+   * board, worst on tri and radial fields where lanes share their opening
+   * tiles outright. Carriers are exempt both ways: a carrier is already a
+   * fixed-pace special state, and infantry pinning stolen lives would
+   * silently reprice every leak. Bosses and minibosses swing but are never
+   * halted, the same exemption the Barricade grants.
+   */
+  resolveMelee(dt) {
+    if (!UNIT_ROLES_ON) return;
+    const es = this.enemies;
+    /* Cheap gate: melee needs at least one sent grounded infantry body. */
+    let anySent = false;
+    for (let i = 0; i < es.length; i++) {
+      const e = es[i];
+      if (!e.dead && !e.leaked && e.owner >= 0 && e.role === 'infantry' && !e.carrier) { anySent = true; break; }
+    }
+    if (!anySent) return;
+    /* Bucket grounded, meleeable bodies by tile. Integer keys, insertion
+       ordered, deterministic. */
+    const buckets = new Map();
+    for (let i = 0; i < es.length; i++) {
+      const e = es[i];
+      if (e.dead || e.leaked || e.carrier || e.role !== 'infantry') continue;
+      if (e.flying && !e.grounded) continue;
+      const k = ((e.x / TILE) | 0) << 8 | ((e.y / TILE) | 0);
+      let b = buckets.get(k);
+      if (!b) buckets.set(k, b = []);
+      b.push(e);
+    }
+    const held = new Map();
+    for (let i = 0; i < es.length; i++) {
+      const e = es[i];
+      if (e.dead || e.leaked || e.carrier || e.role !== 'infantry') continue;
+      if (e.flying && !e.grounded) continue;
+      const gx = (e.x / TILE) | 0, gy = (e.y / TILE) | 0;
+      let best = null, bd = Infinity;
+      for (let oy = -1; oy <= 1; oy++) for (let ox = -1; ox <= 1; ox++) {
+        const b = buckets.get((gx + ox) << 8 | (gy + oy));
+        if (!b) continue;
+        for (let j = 0; j < b.length; j++) {
+          const v = b[j];
+          if (v === e || v.dead || v.hostileTo === e.hostileTo) continue;
+          /* THE WAVE-WEATHER GATE: no pair of unowned bodies ever fights. */
+          if (e.owner < 0 && v.owner < 0) continue;
+          const reach = e.radius + v.radius + MELEE_RANGE_PAD;
+          const d2 = dist2(e.x, e.y, v.x, v.y);
+          if (d2 <= reach * reach && d2 < bd) { bd = d2; best = v; }
+        }
+      }
+      if (!best) { e._meleeRef = null; continue; }
+      const holders = held.get(best) || 0;
+      if (holders >= MELEE_HOLD_CAP) { e._meleeRef = null; continue; }
+      held.set(best, holders + 1);
+      if (e._meleeRef !== best) { e._meleeRef = best; e._meleeAt = e.dist; e.meleeT = Math.min(e.meleeT || 0, MELEE_PERIOD * 0.5); }
+      if (!e.boss && !e.miniboss) {
+        e.dist = Math.min(e.dist, e._meleeAt);
+        e.updatePosition();
+      }
+      e.meleeT -= dt;
+      if (e.meleeT <= 0) {
+        e.meleeT = MELEE_PERIOD;
+        const dealt = best.takeDamage(Math.max(1, Math.round(e.maxHp * MELEE_STRIKE_FRAC)), 'physical', {});
+        /* THE DRAW COMES BEFORE THE GATE. viewSide differs between the two
+           clients of a duel, so a draw gated on it would move the seeded
+           stream on one machine and not the other: the same desync the
+           damage-number toggle shipped in Session 22, and the same fix. */
+        const sparkRoll = Math.random();
+        if (dealt > 0 && (e.hostileTo === this.viewSide || best.hostileTo === this.viewSide) &&
+            sparkRoll < dt * 8)
+          this.spawnBurst((e.x + best.x) / 2, (e.y + best.y) / 2, 3, '#e2e8f0', 40);
+      }
+    }
+  },
+
   doctrineOnKill(e) {
     const d = this.doctrineOf(e.hostileTo);
     if (d.onKill === 'clone') return this.reanimate(e);
@@ -2685,7 +2787,7 @@ const Game = {
        the machine rite obeys. The debt was charged once, above, per kill. */
     const vics = this.musterVictims(killer);
     for (const vic of vics) {
-      const path = (this.triMode && FIELD.sendTri) ? this.sendTriPaths[killer][vic] : this.sendPaths[killer];
+      const path = this.sendPathFor(killer, vic, base);
       if (!path) continue;
       let copies = 1;
       if (S.mods.doubleReanim > 0 && Math.random() < S.mods.doubleReanim) copies = 2;
@@ -2772,7 +2874,7 @@ const Game = {
     if (!S || !base) return;
     const vics = this.musterVictims(pod.side);
     for (const vic of vics) {
-      const path = (this.triMode && FIELD.sendTri) ? this.sendTriPaths[pod.side][vic] : this.sendPaths[pod.side];
+      const path = this.sendPathFor(pod.side, vic, base);
       if (!path) continue;
       let copies = 1;
       if (S.mods.doubleReanim > 0 && Math.random() < S.mods.doubleReanim) copies = 2;
@@ -2839,7 +2941,7 @@ const Game = {
       if (base && vics.length) {
         const count = Math.min(1 + S.procCycle, FOL_CYCLE_COUNT_CAP);
         for (const vic of vics) {
-          const path = (this.triMode && FIELD.sendTri) ? this.sendTriPaths[S.index][vic] : this.sendPaths[S.index];
+          const path = this.sendPathFor(S.index, vic, base);
           if (!path) continue;
           for (let n = 0; n < count; n++) {
             let copies = 1;
@@ -3728,6 +3830,8 @@ const Game = {
       } else { e.dampSpeed = 1; e.dampPower = 1; }
       e.update(dt);
     }
+
+    this.resolveMelee(dt);
 
     /* --- delayed effects (cyclone drops, aftershocks) --- */
     for (let i = this.delayed.length - 1; i >= 0; i--) {

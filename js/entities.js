@@ -126,6 +126,10 @@ class Enemy {
     this.livesCost = def.lives || 1;
     this.radius = def.radius || 10;
     this.flying = !!def.flying;
+    /* THE ROLE (Session 26): how this body treats other units. Derived, not
+       stored anywhere else, and read only by Game.resolveMelee and the UI. */
+    this.role = def.flying ? 'air' : (def.stealth ? 'stealth' : 'infantry');
+    this.meleeT = 0; this._meleeRef = null; this._meleeAt = 0;
     this.boss = !!def.boss;
 
     this.maxShield = (def.shield || 0) * (o.hpMul || 1);

@@ -29,11 +29,23 @@ Two PERMANENT style rules arrived with this batch and are saved to memory:
 | 14 | The other effect chips above those two: make them clear as well | shipped (kind note, terrain note and sealed state are chips with hover text) |
 | 15 | Remove the SOULS tooltip at the bottom of the preview | shipped (soul-note block deleted) |
 | 16 | Preview clarity: show exactly which unit a 3-star rescues; ensure only ONE unit per planet | shipped (card names the ONE unit a 3-star rescues via the same rule recordWorld now applies; recordWorld grants one unit instead of two) |
-| 17 | Unit roles: Infantry (marches, fights the first enemy unit it meets), Stealth (passes infantry, only towers hit it), Air (flies, skips the route, no collide) | open |
+| 17 | Unit roles: Infantry (marches, fights the first enemy unit it meets), Stealth (passes infantry, only towers hit it), Air (flies, skips the route, no collide) | shipped (role derived per unit: 7 stealth by the slip-the-line rule, flyers air, the rest infantry. Melee runs inside step, deterministic and O(N): infantry halts and trades timed strikes, at most 3 attackers per body, bosses swing unhalted. The load-bearing gate: at least one of the pair must be player-SENT, wave against wave stays weather, which kills the spawn-mouth killball on every tri and radial board. Stealth is skipped both ways, sent flyers fly the base-to-base chord. NET_PROTOCOL 5 to 6 in the same commit. Measured: 7 exact stealth ids, thousands of engaged frames with zero wave-vs-wave and zero stealth melee, pins A/B in one session with UNIT_ROLES_ON flip reproduces exactly and moves the sim modestly, MPT both-windows determinism PASSES with melee live) |
 | 18 | Rename "clutch" to incubation/incubator in all Brood copy | shipped (incubator/incubating in doctrine desc, coach text, engine strip and codex) |
 | 19 | Reduce entity counts: fewer enemies and fewer towers on the board over time | shipped (COUNT_SCALE 0.35 to 0.30 with the lost mass moved into per-body health, COST_GROWTH_STEEPEN 2.5 to 2.75, MUSTER_COUNT_MAX 6 to 4; a deliberate sim movement, pins re-baseline) |
 | 20 | Use Huashu Design and high-level design skills for UI work | blocked: no skill named Huashu Design is installed in this environment; using the installed design agents instead. Owner: if Huashu is a plugin, install it and say the word |
 
 ## Notes per item (filled as work lands)
 
-(running)
+### The instrument lesson of the batch
+
+Three sweep checks "failed" after the roles patch with details that read like
+passes. The cause was harness ORDER, not the game: MPT wraps UI methods for
+instrumentation, and those three checks grep function SOURCE. Run after MPT
+on a shared page they read the 208-char wrappers instead of the functions.
+Sweep first, then MPT; recorded in CONTRIBUTING.
+
+And net.pvp's failure was the WORLD changing, not a desync: a mute rival now
+gets CREDITED kills when your sent infantry dies in melee against the wave
+marching at it, the same crediting law a leak has always followed. The
+determinism check (both windows raise the same dead) passed throughout. The
+silence clause now measures what a seat DOES, not what it is credited.

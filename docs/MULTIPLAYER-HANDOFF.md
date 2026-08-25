@@ -14,7 +14,7 @@
 > forever with no verdict, the seat lens escaping on the draw path, and a
 > stranded draft modal starting a zombie match. All seven were fixed, plus the
 > audit's two remaining majors (a join with no deadline; `ctl` as an open
-> command port), under NET_PROTOCOL 5 (2 at the time of writing; the bumps carried targeting, the summoning rites, the relay/splice/compile state and finally unit talents). **MPT: 37 pass / 0 fail, 3 INFO.** The section
+> command port), under NET_PROTOCOL 6 (2 at the time of writing; the bumps carried targeting, the summoning rites, the relay/splice/compile state, unit talents, and in Session 26 the unit-role melee). **MPT: 37 pass / 0 fail, 3 INFO.** The section
 > below is kept as history — read it as the state of Session 20, not of the
 > code.
 

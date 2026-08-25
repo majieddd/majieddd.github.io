@@ -1220,8 +1220,13 @@ T('net.rules conceding a duel does not promise a garrison', function () {
          wire away and watch them go to zero while seat 0's own stay. */
       T('net.pvp the RIVAL\'s reanimation is carried by the connection', function () {
         const wired = raised(a.sides[1]) > 0 && bought(a.sides[1]) > 0;
-        const silent = built(deaf.sides[1]) === 0 && kills(deaf.sides[1]) === 0 &&
-                       sends(deaf.sides[1]) === 0;
+        /* Since Session 26 unit roles, a MUTE seat can still be CREDITED
+           kills: the peer's sent infantry dies in melee against the wave
+           marching at it, and killEnemy books that death to the seat the
+           body was marching ON, the same law a leak has always followed. So
+           silence is measured by what the seat DOES (build, send), not by
+           what it is credited. */
+        const silent = built(deaf.sides[1]) === 0 && sends(deaf.sides[1]) === 0;
         /* Seat 0 is issued locally in BOTH runs, so it must keep raising the
            dead when the peer goes quiet. Without this the check would also
            pass if deafening the wire had simply broken the whole board. */

@@ -3569,7 +3569,9 @@ const UI = {
       ? Object.keys(obj).map(k => `<span class="ei-el" style="--el:${ELEMENTS[k].color}">${
           ELEMENTS[k].icon} ${ELEMENTS[k].name} ${sign}${Math.round(obj[k] * 100)}%</span>`).join('')
       : '';
-    const marks = els(def.elemWeak, '+') + els(def.elemResist, '−');
+    const roleId = unitRole(def);
+    const marks = `<span class="lo-rolemark" data-tt="${roleId.toUpperCase()}|${ROLE_COPY[roleId]}">${
+      ROLE_GLYPHS[roleId]} ${roleId}</span>` + els(def.elemWeak, '+') + els(def.elemResist, '−');
     panel.innerHTML = this.detailChromeHTML('unit', host.name) + `
       <div class="lo-d-head" style="--tc:${def.color}; --og:${host.color}">
         <span class="lo-d-fig">${this.unitIconHTML(id, 46)}</span>
@@ -4876,9 +4878,10 @@ const UI = {
           addPct}% of every wave reward to your ECON for the rest of the battle, worth ◈${
           formatNum(gain)} next wave. Every buy also hardens what you send by +${
           Math.round(doc.powerPerBuy * 100)}%${uncapped ? ' (no ceiling, by the MARQUE)' : ''}. Summoned bodies arrive at ${
-          Math.round(MUSTER_DAMP * 100)}% and never rise again${earlyTxt}. ${
+          Math.round(MUSTER_DAMP * 100)}% and never rise again${earlyTxt}. ${ROLE_COPY[unitRole(base)]} ${
           uncapped ? 'Your ECON has no ceiling.' : 'ECON is flat additive, capped at +' + Math.round(capPct * 100) + '%.'}">
         <span class="mu-ic">${tier.icon}</span>
+        <span class="mu-rolemark" title="${unitRole(base)}">${ROLE_GLYPHS[unitRole(base)]}</span>
         <span class="mu-body"><b class="mu-n">${sent}×</b>
           <em class="mu-figs"><span class="mu-cost">◈${formatNum(cost)}</span>
             <span class="mu-pow">💪${formatNum(powDelivered)}</span>

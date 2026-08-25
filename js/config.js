@@ -2375,7 +2375,7 @@ const ENEMY_TYPES = {
                 desc:'A walking slab of sintered stone. Nothing slows it; heat is the only thing that reaches what thinks inside.' },
   crawler:    { id:'crawler', name:'Picket', hp:62, speed:1.15, armor:0, bounty:9, lives:1, radius:10,
                 color:'#e05555', shape:'block', desc:'The standing guard of the Vigil, issued by the thousand. It does not ask who you are before it starts.' },
-  sprinter:   { id:'sprinter', name:'Outrunner', hp:44, speed:2.35, armor:0, bounty:10, lives:1, radius:8,
+  sprinter:   { id:'sprinter', stealth:true, name:'Outrunner', hp:44, speed:2.35, armor:0, bounty:10, lives:1, radius:8,
                 color:'#fbbf24', shape:'chevron', desc:'A scout frame stripped of everything but legs. Fragile, and always first to the line.' },
   mite:       { id:'mite', name:'Mote', hp:24, speed:1.65, armor:0, bounty:3, lives:1, radius:6,
                 color:'#f472b6', shape:'dot', desc:'A fingernail of chassis with one instruction left in it. Arrives in numbers nobody counted.' },
@@ -2401,16 +2401,16 @@ const ENEMY_TYPES = {
   juggernaut: { id:'juggernaut', elemResist:{fire:0.5}, name:'Ironmarch', hp:980, speed:0.56, armor:16, bounty:75, lives:5, radius:17,
                 elemWeak:{ frost:0.3 },
                 color:'#94a3b8', shape:'jugger', slowResist:0.45, desc:'A mobile fortification that was never meant to leave its wall.' },
-  jammer:     { id:'jammer', name:'Interdictor', hp:210, speed:1.05, armor:4, bounty:35, lives:2, radius:12,
+  jammer:     { id:'jammer', stealth:true, name:'Interdictor', hp:210, speed:1.05, armor:4, bounty:35, lives:2, radius:12,
                 color:'#f59e0b', shape:'jammer', jam:{ radius:2.6, duration:2.2, interval:6.5 },
                 desc:'SILENCES every tower around it for 2.2s on a timer. The containment routine was written for hostile emplacements; yours qualify.' },
-  blink:      { id:'blink', name:'Phase Courier', hp:120, speed:1.25, armor:2, bounty:28, lives:2, radius:10,
+  blink:      { id:'blink', stealth:true, name:'Phase Courier', hp:120, speed:1.25, armor:2, bounty:28, lives:2, radius:10,
                 color:'#a78bfa', shape:'blink', teleport:{ tiles:3.2, interval:4.0 },
                 desc:'TELEPORTS three tiles down the lane every four seconds, still running dispatches to a garrison that fell centuries ago.' },
   warden:     { id:'warden', name:'Warden', hp:420, speed:0.88, armor:11, bounty:46, lives:3, radius:15,
                 color:'#fb923c', shape:'warden', slowResist:1, pullImmune:true,
                 desc:'Wholly IMMUNE to slows and displacement. It was told to hold a line and has never been told the line moved.' },
-  wraith:     { id:'wraith', elemResist:{void:0.6}, name:'Ghost Chassis', hp:230, speed:1.3, armor:3, bounty:40, lives:2, radius:11,
+  wraith:     { id:'wraith', stealth:true, elemResist:{void:0.6}, name:'Ghost Chassis', hp:230, speed:1.3, armor:3, bounty:40, lives:2, radius:11,
                 elemWeak:{ fire:0.35 },
                 color:'#c4b5fd', shape:'wraith', phase:{ on:1.3, off:3.0 },
                 desc:'Phases INVULNERABLE for 1.3s out of every 4.3s. Half of it is somewhere your guns are not.' },
@@ -3662,7 +3662,40 @@ const MUSTER_MAX_LIVES = 3;
    measured against single-digit sends. */
 const MUSTER_COUNT_K = 32;
 const MUSTER_COUNT_MIN = 1;
-const MUSTER_COUNT_MAX = 4; /* was 6; fewer bodies per send (owner, Session 26) */
+const MUSTER_COUNT_MAX = 4;
+
+/* ══════════════ UNIT ROLES (owner item 17, Session 26) ═══════════════════
+   Three roles decide how a unit treats OTHER UNITS. Infantry marches the
+   lane and fights the first enemy unit it meets; stealth slips past
+   infantry and only towers can stop it; air flies its own straight route
+   and touches nothing on the ground.
+
+   MELEE ONLY EVER INVOLVES A PLAYER-SENT BODY. Wave against wave stays the
+   ghost-through it has always been, and that gate is load-bearing: mirrored
+   waves spawn simultaneously on adjacent or SHARED tiles (every tri board
+   shares its first two waypoints, the maelstrom spawns every seat at the
+   centre), so wave-vs-wave melee would lock the whole spawn mouth into a
+   killball nobody asked for. The owner's fantasy is armies meeting armies;
+   the wave is weather.
+
+   `let`, not const, on the switch: the balance pins A/B this in ONE loaded
+   page by flipping it between runs, and a const cannot be flipped. */
+let UNIT_ROLES_ON = true;
+const MELEE_RANGE_PAD = 6;      /* px beyond radius sum before two infantry engage   */
+const MELEE_HOLD_CAP = 3;       /* attackers one body can halt; overflow squeezes by */
+const MELEE_STRIKE_FRAC = 0.14; /* of striker maxHp per swing, physical, no pierce   */
+const MELEE_PERIOD = 0.8;       /* seconds between swings                            */
+
+const ROLE_GLYPHS = { infantry: '⚔', stealth: '◇', air: '▲' };
+const ROLE_COPY = {
+  infantry: 'INFANTRY: marches the lane and fights the first enemy unit it meets. Held while it fights; at most three attackers pile onto one body, the rest push past.',
+  stealth: 'STEALTH: slips past enemy infantry without being stopped and never fights units. Only towers can hit it.',
+  air: 'AIR: flies its own straight route to the base. Never touches ground units or ground effects.'
+};
+/* The rule, stated so it GENERATES the table: flying is air; a unit whose
+   mechanic is already slip-the-line (teleport, phase, jam) or whose speed is
+   2.0+ is stealth; everything else grounded is infantry. */
+function unitRole(def) { return def.flying ? 'air' : (def.stealth ? 'stealth' : 'infantry'); } /* was 6; fewer bodies per send (owner, Session 26) */
 /* Cost and income are LINEAR in mass: bigger mobs cost more AND pay more, in
    proportion, so no pick is a strictly dominant buy. Anchored at the crawler. */
 const MUSTER_COST_BASE = 0.40;          /* share of next wave reward at 0 mass */

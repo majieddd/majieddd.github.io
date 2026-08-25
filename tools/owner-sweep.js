@@ -1208,6 +1208,48 @@
        ' of ' + Game.width + 'x' + Game.height);
   });
 
+  /* ---- 26.1 unit roles: infantry fights, stealth slips, waves ghost ---- */
+  T('26.1 the three unit roles behave as specified', function () {
+    if (typeof unitRole !== 'function' || typeof UNIT_ROLES_ON === 'undefined') {
+      ok('26.1 the three unit roles behave as specified', false, 'role system missing');
+      return;
+    }
+    /* Derivation: exactly the authored seven are stealth, flyers are air. */
+    const stealth = Object.keys(ENEMY_TYPES).filter(function (id) { return unitRole(ENEMY_TYPES[id]) === 'stealth'; });
+    const wantStealth = ['sprinter', 'jammer', 'blink', 'wraith', 'cutter', 'boarder', 'scrapjack'];
+    const stealthOk = stealth.length === 7 && wantStealth.every(function (id) { return stealth.indexOf(id) >= 0; });
+    /* Behaviour: drive a battle with sends flowing; infantry engages, no
+       wave-vs-wave pair ever does, stealth never does. */
+    Game.start({ map: 'spine', difficulty: 'contested', seed: 21, loadout: PIN.slice(),
+                 musterLoadout: ['crawler', 'sprinter'] });
+    const S = Game.sides[0]; S.gold = 99999;
+    let engaged = 0, waveVwave = 0, stealthMelee = 0, n = 0;
+    while (Game.state !== 'over' && Game.wave < 5 && n < 9000) {
+      if (Game.state === 'choosing' && Game.pendingChoice) Game.takeMod(Game.pendingChoice[0]);
+      else if (Game.state === 'escalating' && Game.pendingEscalation)
+        (Game.takeEscalation || Game.takeMod).call(Game, Game.pendingEscalation[0]);
+      else {
+        if ((n & 63) === 0) { const t = Game.musterTiers(0)[0]; if (t && Game.canMuster(0, t)) Game.muster(0, t); }
+        S.lives = 999; Game.step(1 / 30);
+        for (const e of Game.enemies) {
+          if (!e._meleeRef) continue;
+          engaged++;
+          if (e.owner < 0 && e._meleeRef.owner < 0) waveVwave++;
+          if (e.role === 'stealth' || e._meleeRef.role === 'stealth') stealthMelee++;
+        }
+      }
+      n++;
+    }
+    /* And a sent flyer flies the chord. */
+    const flyer = Object.keys(ENEMY_TYPES).find(function (id) { return ENEMY_TYPES[id].flying && musterSendable(id); });
+    const chord = flyer ? Game.sendPathFor(0, 1, ENEMY_TYPES[flyer]).pts.length === 2 : false;
+    ok('26.1 the three unit roles behave as specified',
+       stealthOk && engaged > 0 && waveVwave === 0 && stealthMelee === 0 && chord,
+       'stealth set ' + (stealthOk ? 'exact' : 'WRONG') + ', ' + engaged +
+       ' engaged frames, wave-vs-wave ' + waveVwave + ', stealth melee ' + stealthMelee +
+       ', flyer sends fly a 2-point chord: ' + chord);
+  });
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;

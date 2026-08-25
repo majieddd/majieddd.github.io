@@ -69,7 +69,11 @@ const NET_CHANNEL = 'cosmic-conquest-duel/1';
    sends only the tower half, so a 4 and a 5 derive different pack sizes from
    the same summon -- and pack size moves gold, stats.sent and musterIncome,
    all three of them hashed. Refuse the link. */
-const NET_PROTOCOL = 5;
+/* 6: Session 26 unit roles. Melee moves enemy x/y/hp the fingerprint already
+   hashes, so builds on either side of the feature simulate different worlds
+   and must refuse each other with a sentence instead of desyncing at the
+   first engagement. */
+const NET_PROTOCOL = 6;
 /* A turn is six ticks — 100ms at 1x. Smaller windows stall constantly the
    moment one browser deprioritises anything; larger ones are felt as lag. */
 const NET_TURN_TICKS = 6;

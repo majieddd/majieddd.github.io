@@ -2534,3 +2534,12 @@ body:not(.arena-field) .arena-ladder { display: none; }
 
 /* Flavor text everywhere: brief, italic, dimmer, visibly not mechanics. */
 .flavor { font-style: italic; opacity: .72; font-size: 11px; line-height: 1.45; }
+
+/* Unit role marks (Session 26). A fresh class: .lo-role already styles the
+   tower role STRING and must not be touched. */
+.lo-rolemark { display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 6px; font-size: 10px; font-style: normal;
+  letter-spacing: .08em; text-transform: uppercase;
+  border: 1px solid var(--line); background: rgba(255,255,255,.05);
+  color: var(--text-dim); }
+.mu-rolemark { font-size: 10px; opacity: .8; margin-right: 2px; }
