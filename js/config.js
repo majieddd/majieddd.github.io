@@ -41,6 +41,10 @@ const PAN_OPEN_PX = 5;
    exists to prevent. Past this the camera pulls back and the surplus is
    centred instead. */
 const BOARD_COVER_MAX = 2.6;
+/* How far past the exact whole-board view the camera may pull back: 0.82
+   shows the field with a ring of space around it, which reads as a tactical
+   overview rather than as a rendering mistake. */
+const ZOOM_OUT_EXTRA = 0.82;
 
 /* THE THEFT, and whether it happens at all (owner call, Session 26).
    ────────────────────────────────────────────────────────────────────

@@ -612,7 +612,14 @@ const Meta = {
            unreachable by rescue. */
         const rescue = worldRescueOffer(world, wMap, c.faction || p.faction);
         refusedOffer = this.refusedDenizens([rescue.offer])[0] || null;
-        saved = saved.concat(this.saveDenizens([rescue.offer, rescue.garrison]));
+        /* ONE soldier per conquest (owner, Session 26). Granting both the
+           offer and the garrison meant a clean take could hand over two units
+           at once, and the briefing card could not honestly name what a
+           three-star pays. The rule the card shows is the rule applied here:
+           the holder's soldier when your banner may take it, otherwise your
+           own garrison's. */
+        const pickId = this.unitRescueLock(rescue.offer) ? rescue.garrison : rescue.offer;
+        saved = saved.concat(this.saveDenizens([pickId]));
       }
     }
     if (souls) p.souls += souls;

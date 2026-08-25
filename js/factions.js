@@ -396,6 +396,17 @@ function factionUnitFor(faction, tier) {
  * feature would have shipped inert. Taking a world cleanly is what puts your
  * own power on the ground, and that is what the ladder unlocks against.
  */
+/** The seed a world's rival drafts its towers from. FNV over the campaign
+    seed and the world id, defined ONCE so the briefing card and Game.start
+    derive the same five towers: showing the loadout in the preview is only
+    honest if the battle then fields exactly that loadout. */
+function worldLoadoutSeed(campaignSeed, worldId) {
+  let h = (2166136261 ^ (campaignSeed | 0)) >>> 0;
+  const sId = String(worldId || '');
+  for (let i = 0; i < sId.length; i++) h = Math.imul(h ^ sId.charCodeAt(i), 16777619) >>> 0;
+  return h >>> 0;
+}
+
 function worldRescueOffer(world, map, myFaction) {
   const tier = (map && map.tier) || 1;
   return {
@@ -513,7 +524,7 @@ const SUMMON_DOCTRINES = {
     id: 'xeno', name: 'THE BROOD', onKill: 'incubate', scheduler: false, noPurchase: false,
     incomeCapPct: MUSTER_INCOME_CAP_PCT, costGrowth: MUSTER_COST_GROWTH, costSteps: MUSTER_COST_STEPS,
     powerPerBuy: POWER_PER_BUY, powerCap: SUMMON_POWER_CAP,
-    desc: 'What you kill does not die. It incubates where it fell and hatches as something else — and a kill beside a clutch hurries it along.'
+    desc: 'What you kill does not die. It incubates where it fell and hatches as something else. A kill beside an incubator hurries it along.'
   },
   pirate: {
     id: 'pirate', name: 'LETTERS OF MARQUE', onKill: null, scheduler: false, noPurchase: false,

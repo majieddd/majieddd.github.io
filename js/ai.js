@@ -83,7 +83,11 @@ const AI = {
    * AI picks one archetype and fills the gaps rather than taking the five
    * highest-DPS towers and losing to the first Wisp wave.
    */
-  pickLoadout(map, diff, pool, faction) {
+  /* `rng` is optional and defaults to the native generator. A campaign world
+     passes a seeded one derived from worldLoadoutSeed, so the five towers the
+     briefing card shows are the five the battle fields. */
+  pickLoadout(map, diff, pool, faction, rng) {
+    rng = rng || Math.random;
     /* Every core carries at least two genuine damage dealers plus an answer to
        air. A set built purely from control and support towers cannot kill
        anything and collapses in the opening waves. */
@@ -149,13 +153,16 @@ const AI = {
 
     const viable = cores.filter(c => c.every(t => allowed.includes(t)));
     let set = (viable.length
-      ? viable[Math.floor(Math.random() * viable.length)]
+      ? viable[Math.floor(rng() * viable.length)]
       : this.improviseSet(allowed, DAMAGE, AIR)).slice();
     /* Skirmish opponents sometimes bring a worse set on purpose — but never
        one that leaves them unable to deal damage at all. */
-    if (diff.aiSkill < 0.7 && Math.random() < 0.5) {
-      const swap = Math.floor(Math.random() * set.length);
-      const candidate = pick(allowed);
+    if (diff.aiSkill < 0.7 && rng() < 0.5) {
+      const swap = Math.floor(rng() * set.length);
+      /* NOT the global pick(): that helper draws Math.random internally, and
+         it was the last unthreaded draw on this path. One hidden native draw
+         makes the whole seeded promise a coin flip. */
+      const candidate = allowed[Math.floor(rng() * allowed.length)];
       const after = set.slice(); after[swap] = candidate;
       if (after.filter(t => DAMAGE.includes(t)).length >= 2) set[swap] = candidate;
     }
@@ -165,7 +172,7 @@ const AI = {
       if (out.length >= LOADOUT_SIZE) break;
       if (allowed.includes(d) && !out.includes(d)) out.push(d);
     }
-    return this.flyTheBanner(out, allowed, faction, DAMAGE, AIR);
+    return this.flyTheBanner(out, allowed, faction, DAMAGE, AIR, rng);
   },
 
   /**
@@ -184,14 +191,19 @@ const AI = {
    * damage dealers or the answer to air every draft guarantees, which is the
    * same guard the skirmish downgrade above uses.
    */
-  flyTheBanner(set, allowed, faction, DAMAGE, AIR) {
+  /* `rng` rides through from pickLoadout: this is the LAST random draw on the
+     loadout path, and it was the one left unthreaded, so the same seed drew
+     the same core and then swapped in different banner towers. The briefing
+     card's promise is only as good as the least deterministic line. */
+  flyTheBanner(set, allowed, faction, DAMAGE, AIR, rng) {
+    rng = rng || Math.random;
     if (!faction) return set;
     const own = allowed.filter(t => (TOWER_TYPES[t] || {}).origin === faction &&
                                     !set.includes(t));
     let flown = set.filter(t => (TOWER_TYPES[t] || {}).origin === faction).length;
     for (let i = set.length - 1; i >= 0 && flown < LOADOUT_OWN_ORIGIN && own.length; i--) {
       if ((TOWER_TYPES[set[i]] || {}).origin === faction) continue;
-      const k = Math.floor(Math.random() * own.length);
+      const k = Math.floor(rng() * own.length);
       const after = set.slice(); after[i] = own[k];
       if (after.filter(t => DAMAGE.includes(t)).length >= 2 &&
           after.some(t => AIR.includes(t))) { set = after; own.splice(k, 1); flown++; }

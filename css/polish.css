@@ -336,10 +336,15 @@ body.immersive #game {
    is invisible and click-through, and each of its three groups -- your panel,
    the wave centre, the rival-and-controls -- wears the galaxy's card. It
    still ends where the rail begins, or the rival's card is buried under it. */
+/* AT THE BOTTOM, per the owner: the wave and hp strip lives along the lower
+   edge now, cards still floating, and the top of the window belongs to the
+   board. `align-items: flex-end` so the three cards sit on the same baseline
+   whatever their heights. */
 body.immersive #hud {
-  position: absolute; top: 10px; left: 12px; right: var(--rail-w, 312px); z-index: 20;
+  position: absolute; top: auto; bottom: 10px; left: 12px; right: var(--rail-w, 312px); z-index: 20;
   background: none;
   pointer-events: none;
+  align-items: flex-end;
 }
 body.immersive #hud > * { pointer-events: auto; }
 body.immersive #hud > .hud-side,
@@ -355,14 +360,14 @@ body.immersive #hud > .hud-centre {
 /* The centre card hugs its content instead of stretching the row's full
    height -- a wave badge floating mid-air must not drag a card frame down
    with it. */
-body.immersive #hud > .hud-centre { align-self: flex-start; }
+body.immersive #hud > .hud-centre { align-self: flex-end; }
 
 /* THE GALAXY'S OWN HINT LINE, for the board's camera. The galaxy prints
    "drag or arrows to pan" in the bottom-left corner in the same faint voice;
    a battle board that pans and zooms identically should say so identically. */
 body.immersive #stage::after {
   content: 'drag or arrows to pan  b7 scroll to zoom  b7 0 recentres  b7 space pauses';
-  position: absolute; left: 14px; bottom: 10px; z-index: 5;
+  position: absolute; left: 14px; top: 10px; z-index: 5;
   font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase;
   color: var(--text-mute); opacity: .7; pointer-events: none;
 }
@@ -2475,3 +2480,57 @@ body:not(.arena-field) .arena-ladder { display: none; }
   border: 1px dashed var(--line-2); background: rgba(255,255,255,.03);
   color: var(--text-mute); font-size: 10.5px; letter-spacing: .06em;
   text-align: center; }
+
+
+/* Symbol-only muster figures (owner, Session 26). The riser is the green up
+   arrow beside the econ percent; small and bright so the eye reads gain. */
+.mu-up { font-style: normal; color: #4ade80; font-size: 9px; margin-left: 1px; }
+.mu-n { font-family: var(--display); letter-spacing: .06em; }
+.mu-pow { color: #fbbf24; }
+
+/* ── THE BRIEFING CARD, Session 26 ─────────────────────────────────────
+   The sitting commander rides the banner; arena and boon are chips that
+   stand out and explain themselves on hover; the rescue and the rival's
+   five towers each get one compact row. */
+.br-boss { position: absolute; left: 8px; bottom: 6px; display: flex;
+  align-items: center; gap: 6px; z-index: 2;
+  background: rgba(5,9,16,.72); border: 1px solid var(--line);
+  border-radius: 999px; padding: 3px 10px 3px 4px;
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.br-boss img, .br-boss canvas { border-radius: 50%; display: block; }
+.br-boss b { font-size: 10.5px; letter-spacing: .1em; }
+.br-boss.bare { position: static; margin-bottom: 2px; }
+.br-plate { position: relative; }
+
+.br-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.br-chip { display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 9px; border-radius: 7px; font-size: 10px;
+  letter-spacing: .08em; text-transform: uppercase; cursor: default;
+  border: 1px solid var(--line); background: rgba(255,255,255,.04);
+  color: var(--text-dim); }
+.br-chip.arena { border-color: rgba(251,191,36,.6);
+  background: rgba(251,191,36,.1); color: #fde68a; font-weight: 700; }
+.br-chip.boon { border-color: rgba(74,222,128,.5);
+  background: rgba(74,222,128,.08); color: #86efac; }
+.br-chip.sealed { border-color: rgba(248,113,113,.5); color: #fca5a5; }
+
+.br-rescue { display: flex; align-items: center; gap: 7px;
+  padding: 5px 8px; border-radius: 8px;
+  border: 1px dashed rgba(125,211,252,.45); background: rgba(125,211,252,.06); }
+.br-rescue .br-rq-star { color: #fbbf24; font-size: 10px; letter-spacing: .1em; }
+.br-rescue .br-rq-txt { font-size: 11px; }
+.br-rescue.owned { border-style: solid; opacity: .65; }
+
+.br-rival { display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 5px 8px; border-radius: 8px;
+  border: 1px solid var(--line); background: rgba(255,255,255,.03); }
+.br-rv-face img, .br-rv-face canvas { border-radius: 50%; display: block; }
+.br-rv-name { font-size: 10.5px; color: var(--text-dim); }
+.br-rv-set { display: inline-flex; gap: 4px; }
+.br-rv-tw { font-style: normal; width: 22px; height: 22px; display: inline-grid;
+  place-items: center; border-radius: 5px; font-size: 12px;
+  border: 1px solid color-mix(in srgb, var(--tc, #94a3b8) 55%, transparent);
+  background: color-mix(in srgb, var(--tc, #94a3b8) 12%, transparent); }
+
+/* Flavor text everywhere: brief, italic, dimmer, visibly not mechanics. */
+.flavor { font-style: italic; opacity: .72; font-size: 11px; line-height: 1.45; }

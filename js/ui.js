@@ -502,6 +502,7 @@ const UI = {
                     soldiers hold the line on it -- read by battleHostFaction,
                     which forbids that everywhere else. */
                  renegade: !!node.renegade,
+                 loadoutSeed: node.loadoutSeed,
                  map: node.map, difficulty: node.difficulty,
                  /* The EQUIPPED commander is the standing order and outranks
                     the session's browsing pick -- that is what EQUIP means.
@@ -597,7 +598,7 @@ const UI = {
           text: 'THE PROCESSION marches on a clock, kills or no kills — and every full cycle it marches heavier.' };
         if (id === 'xeno') return {
           at: () => !Game.noReanim && Game.incubators.some(p => p.side === 0),
-          text: 'That kill did not die — it is incubating where it fell. Kills beside a clutch hatch it sooner.' };
+          text: 'That kill did not die. It is incubating where it fell, and kills beside an incubator hatch it sooner.' };
         if (id === 'pirate') return {
           at: () => Game.canMuster(0) && Game.musterTiers(0).some(t => Game.canMuster(0, t)),
           text: 'Nothing rises free under your flag. Bodies are bought — and your POWER and ECON have no ceiling.' };
@@ -1855,6 +1856,7 @@ const UI = {
                         because the first galaxy's flattening is indexed by
                         solar system, and the battle must be told which. */
                      si: w.si,
+                     loadoutSeed: worldLoadoutSeed(c.seed, w.id),
                      difficulty: this.rampOf(c).diffFor(w.si),
                      escStart: this.rampOf(c).escFor(w.si) };
         Meta.save(); Sound.play('click'); this.renderTheatre();
@@ -1877,16 +1879,13 @@ const UI = {
     $('#theatre-detail').innerHTML = (chosenW
       ? '<div class="course-set">&#9672; COURSE SET</div>' +
         this.worldBriefing(gx, gx.systems[chosenW.si], chosenW, prog, true)
-      : '<p class="hint">Select a world on the map to plot your course.</p>') +
-      `<div class="soul-note">
-         <b>◉ SOULS</b>
-         <p>Stars pay souls the moment you earn them — <b>${Meta.soulsForStar(1)}</b>
-            per star, so a clean three-star conquest is <b>${[1, 2, 3].reduce((a, n) => a + Meta.soulsForStar(n), 0)}</b>,
-            and <b>+${Meta.SYSTEM_BOUNTY}</b> for every solar system taken whole.
-            Spend them in the Soul Shop.</p>
-       </div>`;
+      : '<p class="hint">Select a world on the map to plot your course.</p>');
+    /* The SOULS explainer that used to sit under this card is gone (owner,
+       Session 26): the soul ledger at the top of the screen already carries
+       the same numbers. */
 
 
+    this.bindChipTips($('#theatre-detail'));
     $('#btn-to-loadout').disabled = !c.chosen;
   },
 
@@ -2618,9 +2617,13 @@ const UI = {
   },
 
   worldBriefing(gx, sys, w, prog, inline) {
-    /* `blurb` and `sigNote` are authored on all fifteen maps and were rendered
-       nowhere: the card named the WORLD and never the board you would actually
-       be standing on, which is the one thing a loadout is chosen against. */
+    /* THE PREVIEW, redesigned to the owner's Session 26 notes: the sitting
+       commander's PORTRAIT rides the banner instead of a sentence, the arena
+       and boon are CHIPS that stand out and explain themselves on hover, the
+       ONE unit a conquest rescues is named, and the rival's actual five
+       towers are shown, derivable here only because the battle drafts them
+       from worldLoadoutSeed, the same seed this card reads. No em dashes in
+       any of this copy, per the standing rule. */
     const m = MAPS.find(x => x.id === w.map);
     const stars = starsOn(prog, w.id);
     const mine = stars >= 3;
@@ -2630,35 +2633,68 @@ const UI = {
     const arena = w.arena && ARENA_MODS.find(a => a.id === w.arena);
     const boon = BOONS.find(b => b.id === w.boon);
     const open = isSystemOpen(gx, sys, prog) && isWorldOpen(sys, w, prog);
-    /* The battlefield itself, painted. Falls back to the plain header when
-       the art pack has no plate for this map. */
-    /* Held worlds take the holder's duotone plate so the card reads as THEIR
-       territory at a glance; fall back to the neutral painting. */
     const holder = mine ? gx.playerFaction : w.owner;
     const plate = artImg('world_' + w.map + '_' + holder, 'br-art', w.name)
                || artImg('world_' + w.map, 'br-art', w.name);
-    /* --fc on the ROOT, not only on the plate. `.br-renegade` reads it and is
-       a SIBLING of `.br-plate`, so every one of its three var(--fc) uses was
-       resolving to the grey fallback -- the panel rendered the same colour for
-       all four powers, which is the one thing a faction tint exists not to
-       do. Harmless to the plate, which keeps its own. */
+    const c = Meta.campaign();
+    /* The rival's five, drafted from the SAME seed the battle will use. */
+    let rivalRow = '';
+    /* NEVER on a contested world: tri mode re-seats both rival factions from
+       the contest pair, so the single set this row would promise is not the
+       set either of them fields. The CONTESTED block already tells that
+       world's story. */
+    if (c && boss && !w.contested && typeof AI !== 'undefined' && AI.pickLoadout) {
+      try {
+        const diff = DIFFICULTIES.find(d => d.id === this.rampOf(c).diffFor(w.si)) || DIFFICULTIES[1];
+        /* The SAME pool Game.start passes: pool sets the rival's budget, and
+           a different budget walks the seeded draw down a different branch.
+           Every argument here must equal the battle's or the promise lies. */
+        const set = AI.pickLoadout(m, diff, Meta.unlockedTowers(), w.owner,
+                                   seededDraw(worldLoadoutSeed(c.seed, w.id)));
+        rivalRow = `<div class="br-rival">
+          <span class="br-rv-face">${commanderPortrait(boss, 30)}</span>
+          <span class="br-rv-name"><b>${boss.name}</b> fields</span>
+          <span class="br-rv-set">${set.map(id => {
+            const t = TOWER_TYPES[id];
+            return t ? `<i class="br-rv-tw" style="--tc:${t.color}" data-tt="${t.name}|${t.role}">${t.glyph || '?'}</i>` : '';
+          }).join('')}</span></div>`;
+      } catch (e) { rivalRow = ''; }
+    }
+    /* THE ONE UNIT a three-star conquest rescues: the holder's soldier when
+       your banner may take it, otherwise your own garrison's. The SAME rule
+       recordWorld applies, so the promise and the grant cannot differ. */
+    let rescueRow = '';
+    if (!mine && typeof worldRescueOffer === 'function') {
+      const ro = worldRescueOffer(w, m, gx.playerFaction);
+      const rid = (Meta.unitRescueLock && Meta.unitRescueLock(ro.offer)) ? ro.garrison : ro.offer;
+      const ru = rid && ENEMY_TYPES[rid];
+      if (ru && !(Meta.isMusterUnlocked && Meta.isMusterUnlocked(rid)))
+        rescueRow = `<div class="br-rescue" data-tt="RESCUE|Conquer this world with three stars and ${ru.name} joins your vault, usable by any commander.">
+          <span class="br-rq-star">&#9733;&#9733;&#9733;</span>
+          <span class="br-rq-ic" style="--uc:${ru.color}">${this.unitIconHTML(rid, 26)}</span>
+          <span class="br-rq-txt">rescues <b>${ru.name}</b></span></div>`;
+      else if (ru)
+        rescueRow = `<div class="br-rescue owned"><span class="br-rq-star">&#9733;&#9733;&#9733;</span>
+          <span class="br-rq-txt"><b>${ru.name}</b> already serves you</span></div>`;
+    }
     return `<div class="brief ${inline ? 'inline' : ''} ${plate ? 'has-art' : ''}" style="--fc:${of.color}">
-      ${plate ? `<div class="br-plate" style="--fc:${of.color}">${plate}</div>` : ''}
+      ${plate ? `<div class="br-plate" style="--fc:${of.color}">${plate}
+        <span class="br-boss" data-tt="${boss.name}, ${boss.title}|${w.owner === sys.holder ? 'Commands this system.' : 'Holds this world.'}">${
+          commanderPortrait(boss, 44)}<b style="color:${boss.color}">${boss.name}</b></span></div>`
+      : `<div class="br-boss bare" data-tt="${boss.name}, ${boss.title}|${w.owner === sys.holder ? 'Commands this system.' : 'Holds this world.'}">${
+          commanderPortrait(boss, 44)}<b style="color:${boss.color}">${boss.name}</b></div>`}
       <div class="br-head"><b>${w.name}</b>
         <span class="tag" style="color:${of.color}">${
           (w.renegade && !mine) ? of.short + ' RENEGADE' : of.short}</span></div>
       <div class="br-trait">${sys.name} &middot; ${kind.icon} ${kind.label}${w.seat ? ' &middot; COMMANDER SEAT' : ''}</div>
       ${(w.renegade && !mine) ? `<div class="br-renegade">
         <b>A SPLINTER OF YOUR OWN POWER HOLDS THIS WORLD.</b>
-        <span>They fly your colours, field your soldiers and will not stand
-        down. It is the only ground in the galaxy that pays
-        <b>${FACTIONS[gx.playerFaction].short}</b>'s own advantage &mdash; take
-        it and you carry your power's doctrine forward yourself.</span></div>` : ''}
-      ${m ? `<div class="br-map"><b>${m.name}</b> &mdash; ${m.trait}</div>` : ''}
+        <span>The only ground that pays <b>${FACTIONS[gx.playerFaction].short}</b>'s own boon. Your own soldiers hold its line.</span></div>` : ''}
+      ${m ? `<div class="br-map"><b>${m.name}</b>: ${m.trait}</div>` : ''}
       ${m ? this.mapPreviewBlock(m, { size: inline ? 'brief' : 'tip' }) : ''}
-      ${m && m.blurb ? `<p class="br-blurb">${m.blurb}</p>` : ''}
+      ${m && m.blurb ? `<p class="br-blurb flavor">${m.blurb}</p>` : ''}
       ${w.contested ? `<div class="br-contested">
-        <b>⚔ CONTESTED — THREE-WAY WAR</b>
+        <b>&#9876; CONTESTED. THREE-WAY WAR.</b>
         <span>${w.contestedBy.map(f => `<i style="color:${FACTIONS[f].color}">${FACTIONS[f].icon} ${FACTIONS[f].short}</i>`).join(' vs ')}
         vs <i style="color:${FACTIONS[gx.playerFaction].color}">you</i>. Every kill reanimates toward BOTH rivals.</span>
       </div>` : ''}
@@ -2668,17 +2704,17 @@ const UI = {
       <div class="br-starreq">
         <div class="${stars >= 1 ? 'got' : ''}"><span>&#9733;</span><em>Win the battle</em></div>
         <div class="${stars >= 2 ? 'got' : ''}"><span>&#9733;&#9733;</span><em>Win keeping 55%+ of your lives</em></div>
-        <div class="${stars >= 3 ? 'got' : ''}"><span>&#9733;&#9733;&#9733;</span><em>Win keeping 90%+ — conquers the world</em></div>
+        <div class="${stars >= 3 ? 'got' : ''}"><span>&#9733;&#9733;&#9733;</span><em>Win keeping 90%+, conquers the world</em></div>
       </div>
-      <div class="br-rows">
-        ${kind.note ? `<div class="br-row"><span class="br-ic">${kind.icon}</span><span>${kind.note}</span></div>` : ''}
-        ${m && m.sigNote ? `<div class="br-row"><span class="br-ic">&#8258;</span><span>${m.sigNote}</span></div>` : ''}
-        <div class="br-row"><span class="br-ic">&#9760;</span><span><b>${boss.name}</b>, ${boss.title} &mdash; ${
-          w.owner === sys.holder ? 'commands this system' : 'holds this world'}</span></div>
-        <div class="br-row"><span class="br-ic">&#9709;</span><span>${arena ? '<b>' + arena.name + '</b> &mdash; ' + arena.desc : 'No arena modifier'}</span></div>
-        <div class="br-row"><span class="br-ic gold">&#9829;</span><span>Victory boon: <b>${boon.name}</b> &mdash; ${boon.desc}</span></div>
-        ${open ? '' : '<div class="br-row esc"><span class="br-ic">&#8856;</span><span><b>Sealed.</b> Take an adjacent world first.</span></div>'}
+      <div class="br-chips">
+        ${arena ? `<span class="br-chip arena" data-tt="ARENA: ${arena.name}|${arena.desc}">${arena.icon || '&#11041;'} ${arena.name}</span>` : ''}
+        <span class="br-chip boon" data-tt="VICTORY BOON: ${boon.name}|${boon.desc}">&#9829; ${boon.name}</span>
+        ${kind.note ? `<span class="br-chip" data-tt="${kind.label.toUpperCase()}|${kind.note}">${kind.icon} ${kind.label}</span>` : ''}
+        ${m && m.sigNote ? `<span class="br-chip" data-tt="THE BOARD|${m.sigNote}">&#8258; terrain</span>` : ''}
+        ${open ? '' : '<span class="br-chip sealed" data-tt="SEALED|Take an adjacent world first.">&#8856; sealed</span>'}
       </div>
+      ${rescueRow}
+      ${rivalRow}
       <div class="br-foot">A conquered world is territory: it counts toward the seat, and rivals cannot take it back.</div>
     </div>`;
   },
@@ -2700,12 +2736,12 @@ const UI = {
         '</span>').join('') + '</div>' : '') +
       '<div class="br-rows">' +
         '<div class="br-row"><span class="br-ic" style="color:' + rv.color + '">' + rv.icon + '</span>' +
-          '<span><b>' + rv.name + '</b>, ' + rv.title + ' — commands here</span></div>' +
+          '<span><b>' + rv.name + '</b>, ' + rv.title + ', commands here</span></div>' +
         '<div class="br-row">' + (ar
-          ? '<span class="br-ic gold">' + ar.icon + '</span><span><b>' + ar.name + '</b> — ' + ar.desc + '</span>'
-          : '<span class="br-ic">—</span><span>No arena modifier</span>') + '</div>' +
+          ? '<span class="br-ic gold">' + ar.icon + '</span><span><b>' + ar.name + '</b>: ' + ar.desc + '</span>'
+          : '<span class="br-ic">&middot;</span><span>No arena modifier</span>') + '</div>' +
         '<div class="br-row"><span class="br-ic green">' + bn.icon + '</span>' +
-          '<span>Victory boon: <b>' + bn.name + '</b> — ' + bn.desc + '</span></div>' +
+          '<span>Victory boon: <b>' + bn.name + '</b>: ' + bn.desc + '</span></div>' +
         (o.escStart ? '<div class="br-row esc"><span class="br-ic">☠</span>' +
           '<span>Opens with <b>' + o.escStart + '</b> escalation' + (o.escStart > 1 ? 's' : '') + ' already active</span></div>' : '') +
       '</div>' +
@@ -4811,28 +4847,34 @@ const UI = {
          health range and the per-wave gold move into the tooltip: three
          numbers is what a glance can hold. */
       const powDelivered = hps.reduce((a, b) => a + b, 0) * tier.count;
+      /* SYMBOLS, NOT WORDS, on the button face (owner, Session 26): the
+         unit's own icon with its count, then cost, then POWER as the flexing
+         arm, then ECON as gold-percent with a green riser. The WORDS live in
+         the tooltip, where there is room for them; the face is what a glance
+         mid-wave has to read. The em dash is banned from all copy, so the
+         tooltip is punctuated without it. */
       return `<button class="muster-btn ${ok ? '' : 'poor'}" data-muster="${tier.id}"${ok ? '' : ' disabled'}
         aria-label="Summon ${tier.name}: ${sent} ${base.name} for ${cost} gold, ${powDelivered} power, econ plus ${addPct} percent"
-        data-tt="SUMMON — ${tier.name}|◈${formatNum(cost)} marches ${sent} × ${base.name} at ${hpTxt} health each — ${
-          formatNum(powDelivered)} POWER into the lane${vics.length > 1 ? ', split across ' + vics.length + ' rivals' : ''} — and adds ${
+        data-tt="SUMMON ${tier.name}|◈${formatNum(cost)} marches ${sent} × ${base.name} at ${hpTxt} health each, ${
+          formatNum(powDelivered)} POWER into the lane${vics.length > 1 ? ', split across ' + vics.length + ' rivals' : ''}. Adds ${
           addPct}% of every wave reward to your ECON for the rest of the battle, worth ◈${
           formatNum(gain)} next wave. Every buy also hardens what you send by +${
-          Math.round(doc.powerPerBuy * 100)}%${uncapped ? ' — with no ceiling, by the MARQUE' : ''}. Summoned bodies arrive at ${
+          Math.round(doc.powerPerBuy * 100)}%${uncapped ? ' (no ceiling, by the MARQUE)' : ''}. Summoned bodies arrive at ${
           Math.round(MUSTER_DAMP * 100)}% and never rise again${earlyTxt}. ${
           uncapped ? 'Your ECON has no ceiling.' : 'ECON is flat additive, capped at +' + Math.round(capPct * 100) + '%.'}">
         <span class="mu-ic">${tier.icon}</span>
-        <span class="mu-body"><b>${sent}× ${base.name.toUpperCase()}</b>
+        <span class="mu-body"><b class="mu-n">${sent}×</b>
           <em class="mu-figs"><span class="mu-cost">◈${formatNum(cost)}</span>
-            <span class="mu-pow">+${formatNum(powDelivered)} PWR</span>
-            <span class="mu-eco">+${addPct}% ECON</span></em></span>
+            <span class="mu-pow">💪${formatNum(powDelivered)}</span>
+            <span class="mu-eco">◈+${addPct}%<i class="mu-up">▲</i></span></em></span>
       </button>`;
     }).join('');
 
     bar.innerHTML = `${this.engineStripHtml(S, doc)}<div class="muster-head" data-tt="ECON|Every commander earns the BASE wave reward. Summons stack a flat percent of it on top, every wave, for the rest of the battle — so aggression and economy stop being opposite choices.${
         uncapped ? ' Under LETTERS OF MARQUE that percent has NO ceiling; what prices it instead is a summon cost that never stops climbing.' : ''} Pick your roster on the loadout screen; conquer worlds to save more denizens for it.">
-        <span>BASE</span><b>+◈${formatNum(baseIncome)}/wave</b>
-        <span class="mu-sep">ECON</span><b class="${capped ? 'capped' : ''}${uncapped ? ' uncapped' : ''}">+${Math.round((uncapped ? (S.musterIncome || 0) : pct) * 100)}%</b>
-        <span class="mu-sep mu-powchip" tabindex="0" data-power="1">POWER</span><b>×${Game.powerOf(0).toFixed(2)}</b>
+        <span>◈/wave</span><b>+◈${formatNum(baseIncome)}</b>
+        <span class="mu-sep">◈%<i class="mu-up">▲</i></span><b class="${capped ? 'capped' : ''}${uncapped ? ' uncapped' : ''}">+${Math.round((uncapped ? (S.musterIncome || 0) : pct) * 100)}%</b>
+        <span class="mu-sep mu-powchip" tabindex="0" data-power="1">💪</span><b>×${Game.powerOf(0).toFixed(2)}</b>
         <em>${doc.noPurchase && !Game.noReanim ? 'NO TRADE'
               : uncapped ? 'NO CAP' : capped ? 'AT CAP' : left + ' left'}</em>
       </div>${doc.noPurchase && !Game.noReanim ? this.latticePlateHtml(S) : rows}`;
@@ -4890,7 +4932,7 @@ const UI = {
     } else if (doc.onKill === 'incubate') {
       let n = 0, soon = Infinity;
       for (const p of Game.incubators) if (p.side === S.index) { n++; if (p.t < soon) soon = p.t; }
-      state = 'CLUTCHES ' + n + '/' + XENO_INC_CAP + (n ? ' · NEXT ' + Math.max(0, Math.ceil(soon)) + 's' : '');
+      state = 'INCUBATING ' + n + '/' + XENO_INC_CAP + (n ? ' · NEXT ' + Math.max(0, Math.ceil(soon)) + 's' : '');
     } else if (doc.onKill === 'roll') state = 'EVERY KILL DRAFTS · ' + free + ' RAISED';
     else if (doc.onKill === 'clone') state = 'EVERY KILL RETURNS AS ITSELF · ' + free + ' REBUILT';
     else if (doc.noPurchase) state = 'THE LATTICE DOES NOT BUY';
@@ -6899,14 +6941,14 @@ const UI = {
            a commander of another power brings their own rite to your flag, while your roster supplies the
            soldiers. One law binds all five: a rite may change the <em>shape</em> a kill returns in, never
            its <em>mass</em>.</p>
-        <p><b>${SUMMON_DOCTRINES.human.name}</b> — ${SUMMON_DOCTRINES.human.desc}<br>
-           <b>${SUMMON_DOCTRINES.light.name}</b> — ${SUMMON_DOCTRINES.light.desc} It begins on wave
+        <p><b>${SUMMON_DOCTRINES.human.name}</b>: ${SUMMON_DOCTRINES.human.desc}<br>
+           <b>${SUMMON_DOCTRINES.light.name}</b>: ${SUMMON_DOCTRINES.light.desc} It begins on wave
            ${FOL_START_WAVE}, and pays a steeper tax than a bought body because nobody paid for it.<br>
-           <b>${SUMMON_DOCTRINES.xeno.name}</b> — ${SUMMON_DOCTRINES.xeno.desc} A clutch keeps
+           <b>${SUMMON_DOCTRINES.xeno.name}</b>: ${SUMMON_DOCTRINES.xeno.desc} An incubator keeps
            ${Math.round(XENO_INC_SHARE * 100)}% of what it was, hatches on its own clock, and a kill within
            ${XENO_INC_FEED_RADIUS} tiles takes ${XENO_INC_FEED_SEC}s off it. At most
            ${XENO_INC_CAP} at once.<br>
-           <b>${SUMMON_DOCTRINES.pirate.name}</b> — ${SUMMON_DOCTRINES.pirate.desc} What prices it is a
+           <b>${SUMMON_DOCTRINES.pirate.name}</b>: ${SUMMON_DOCTRINES.pirate.desc} What prices it is a
            summon cost that never stops climbing.<br>
            <b>${SUMMON_DOCTRINES.robot.name}</b> — ${SUMMON_DOCTRINES.robot.desc}</p>
         <p>On a board where nothing rises — the Maelstrom — every rite's free half is switched off and

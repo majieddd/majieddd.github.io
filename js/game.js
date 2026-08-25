@@ -313,12 +313,10 @@ const Game = {
           document.body.style.setProperty('--rail-w',
             Math.max(0, Math.round(window.innerWidth - sr.left + 8)) + 'px');
       }
-      const hud = document.getElementById('hud');
-      if (hud) {
-        const hr = hud.getBoundingClientRect();
-        if (hr.height > 0)
-          document.body.style.setProperty('--hud-h', Math.round(hr.bottom + 8) + 'px');
-      }
+      /* --hud-h is gone: nothing consumes it since the board became the
+         background, and with the HUD anchored to the BOTTOM edge its
+         rect.bottom is the window height, which would have written a
+         nonsense figure had anything still read it. */
     }
     /* clientWidth INCLUDES padding, so the immersive carve-out above would be
        invisible to a bare clientWidth read -- the fit would still use the full
@@ -574,7 +572,9 @@ const Game = {
        third power's. A shelf the player is forbidden is not a difficulty
        setting, it is an asymmetry. */
     this.sides[1].loadout = AI.pickLoadout(this.map, this.difficulty,
-                                           Meta.unlockedTowers(), this.sides[1].faction);
+                                           Meta.unlockedTowers(), this.sides[1].faction,
+                                           (typeof opts.loadoutSeed === 'number')
+                                             ? seededDraw(opts.loadoutSeed) : undefined);
     /* Variety parity: the rival fields exactly as many tower TYPES as you do.
        Once you have claimed two worlds it earns one more than you -- never
        more than the loadout maximum. */
@@ -4871,7 +4871,10 @@ const Game = {
       is 1 and the clamp is the one that always shipped. */
   camMinZoom() {
     if (!(this.fitScale > 0) || !(this.viewScale > 0)) return 1;
-    return Math.min(1, this.fitScale / this.viewScale);
+    /* ZOOM_OUT_EXTRA widens the floor past the exact whole-board view, so
+       pulling back buys real margin around the field: the larger FOV the
+       owner asked for, with the surplus centred by camClamped. */
+    return Math.min(1, (this.fitScale / this.viewScale) * ZOOM_OUT_EXTRA);
   },
   camZoom() { return clamp(fin((this.cam && this.cam.z), 1), this.camMinZoom(), BATTLE_ZOOM_MAX); },
   /** The camera's top-left in world pixels, clamped so the view can never
@@ -4899,7 +4902,11 @@ const Game = {
   /** Zoom about a fixed world point, so the tile under the cursor stays put. */
   zoomAt(worldX, worldY, factor) {
     const z0 = this.camZoom();
-    const z1 = clamp(fin(z0 * factor, z0), 1, BATTLE_ZOOM_MAX);
+    /* Floored at camMinZoom, NOT at 1. Under the cover fit, 1 is the cropped
+       default view, and clamping here at 1 meant the WHEEL could never reach
+       the whole-board view that the 0 key reaches: scroll-out simply stopped.
+       That is the exact complaint this line answers. */
+    const z1 = clamp(fin(z0 * factor, z0), this.camMinZoom(), BATTLE_ZOOM_MAX);
     if (z1 === z0) return;
     /* The anchor point comes from a pointer event, so it is exactly as
        trustworthy as the rect it was derived from. */
