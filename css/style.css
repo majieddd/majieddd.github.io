@@ -84,7 +84,20 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 
 .section-label { font-size: 11px; letter-spacing: 0.2em; color: var(--text-mute); margin-bottom: 9px; font-weight: 700; }
 .section-label.gold { color: var(--gold); }
-.hint { color: var(--text-mute); font-size: 12.5px; line-height: 1.65; }
+/* MEASURE. Audited at 1600px: .hint ran to 138 characters a line and
+   .cd-blurb to 147, against the 65 to 75 the detector asks for. Past about
+   75 the eye loses the line it is returning to, and these are the two
+   longest prose blocks in the game.
+
+   65ch, NOT 72ch, and the difference is measured. The CSS ch unit is the
+   advance width of the digit ZERO, which in this face is 7.28px at 13.5px
+   while the average lowercase glyph is 6.55px. So a 72ch cap renders 524px
+   and holds about 80 real characters, not 72. 65ch lands at roughly 72
+   characters, which is inside the 65 to 75 band. Anyone implementing a
+   measure cap from a ch number straight out of a style guide will overshoot
+   by about a tenth. */
+.hint { color: var(--text-mute); font-size: 12.5px; line-height: 1.65;
+        max-width: 65ch; }
 .hint b { color: var(--text-dim); }
 .tag { font-size: 11px; letter-spacing: .12em; color: var(--text-mute); border: 1px solid var(--line);
        border-radius: 20px; padding: 3px 10px; }
@@ -230,7 +243,8 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 .xpbar { display: block; width: 180px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
 .xpbar i { display: block; height: 100%; background: var(--gold); }
 .xp-num { font-size: 11px; color: var(--text-mute); }
-.cd-blurb { font-size: 13.5px; color: var(--text-dim); margin-bottom: 14px; }
+.cd-blurb { font-size: 13.5px; color: var(--text-dim); margin-bottom: 14px;
+            max-width: 65ch; }
 .cd-trait { background: color-mix(in srgb, var(--cc) 12%, transparent); border: 1px solid var(--cc);
             border-radius: 9px; padding: 12px 14px; margin-bottom: 18px; }
 .cd-trait b { display: block; color: var(--cc); font-size: 13px; letter-spacing: .13em; margin-bottom: 5px; }
