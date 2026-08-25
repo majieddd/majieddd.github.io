@@ -713,7 +713,13 @@ const AI = {
 
       const score = value / cost;
       if (!bestBuild || value > bestBuild.value) bestBuild = { value, cov: spot.cov };
-      if (score > 0) consider({ kind: 'build', type, spot: spot.spot, cost, score });
+      /* STAGE 0 CAP: in the first solar system the rival never fields more
+         towers than you minus one, floored at two, read LIVE so it tracks
+         you all battle. Null stage means no cap, which is every non-campaign
+         battle and every later system. */
+      if (Game.rivalStage === 0 &&
+          S.towers.length >= Math.max(2, Game.sides[0].towers.length - 1)) { /* capped */ }
+      else if (score > 0) consider({ kind: 'build', type, spot: spot.spot, cost, score });
     }
 
     /* --- base level: the retrofit that lifts the WHOLE board at once ---
@@ -1092,8 +1098,10 @@ const AI = {
 
     this.think -= dt;
     if (this.think > 0) return;
-    /* Weaker opponents deliberate longer, so they fall behind on tempo. */
-    this.think = 0.55 / this.diff.aiSkill;
+    /* Weaker opponents deliberate longer, so they fall behind on tempo, and
+       a STAGE 0 rival (the first solar system) deliberates slower still:
+       "the AI is slow" is the owner's own specification for it. */
+    this.think = (0.55 / this.diff.aiSkill) * (Game.rivalStage === 0 ? 1.7 : 1);
 
     const prof = this.profile();
     this.lastProfile = prof;

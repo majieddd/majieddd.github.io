@@ -71,7 +71,11 @@ const GX_RENDER_SQUASH = 0.64;
    back under the ~4.7-unit combined dot-and-ring width by one ring having been
    rounded harder than its neighbours. That is the Session 16 double-squash
    failure in a different costume. */
-const GX_RINGS = [14.0, 20.0, 26.0];
+/* Wider than they were (14/20/26): the owner asked for the worlds to spread
+   inside their zone, and with the dotted halo gone the orbits can use the
+   room the circle used to fence off. Positions only; not one rnd() draw
+   moves. */
+const GX_RINGS = [17.0, 25.0, 33.0];
 /* The outermost orbit. The halo radius and both system labels in config.js are
    pitched against this, and naming it is what stops a raised ring quietly
    leaving the furniture sitting on top of the worlds. */
@@ -487,11 +491,21 @@ function buildRoutes(galaxy) {
     landing already made in its own system; what lets you into the system at
     all is isSystemOpen, one tier gate above. Answering both questions from one
     list is how a route would come to skip a tier. */
-function routeNeighbours(system, world) {
+/* `galaxy` is optional for compatibility, and it is the whole of item 8:
+   without it a GATEWAY link to the next system is a line the map draws and
+   the unlock rule cannot see, which is exactly the "trailing lines to
+   planets I cannot travel to" the owner reported. With it, every link the
+   map draws is a link the rules honour. */
+function routeNeighbours(system, world, galaxy) {
   const out = [];
   if (!world || !world.links) return out;
   for (const id of world.links) {
-    const n = system.worlds.find(w => w.id === id);
+    let n = system.worlds.find(w => w.id === id);
+    if (!n && galaxy)
+      for (const sys of galaxy.systems) {
+        n = sys.worlds.find(w => w.id === id);
+        if (n) break;
+      }
     if (n) out.push(n);
   }
   return out;
@@ -552,10 +566,14 @@ function systemProgress(system, progress) {
  * The old rule was `wi === 0 || stars on wi - 1`: a single-file queue through
  * a system in generation order, which is what note 20.1 is about.
  */
-function isWorldOpen(system, world, progress) {
+function isWorldOpen(system, world, progress, galaxy) {
   if (world.seat) return systemProgress(system, progress).seatOpen;
-  if (world.entry) return true;
-  const near = routeNeighbours(system, world);
+  if (world.entry && system.index === 0) return true;
+  /* A gateway ENTRY world in a later system is only a free door once its
+     system is reachable at all; inside system 0 it is landfall and always
+     open. Reached gateways are covered by the neighbour rule below, which
+     now sees across systems. */
+  const near = routeNeighbours(system, world, galaxy);
   /* A galaxy assembled by something other than generateGalaxy -- a harness, a
      future editor -- has no graph to read. Falling back to the old linear rule
      keeps such a galaxy playable; sealing it would be a blank map. */
@@ -568,8 +586,16 @@ function isWorldOpen(system, world, progress) {
 /** A system is open once the previous system's seat has fallen. */
 function isSystemOpen(galaxy, system, progress) {
   if (system.index === 0) return true;
+  /* TWO doors now, either opens the system (owner, Session 26): the seat of
+     the previous system falls, as it always has, OR a world in THIS system
+     sits at the far end of a drawn route from a world you have conquered.
+     Beating the planet on the line lets you travel the line. */
   const prev = galaxy.systems[system.index - 1];
-  return isConquered(progress, prev.worlds[prev.worlds.length - 1].id);
+  if (isConquered(progress, prev.worlds[prev.worlds.length - 1].id)) return true;
+  for (const w of system.worlds)
+    for (const n of routeNeighbours(system, w, galaxy))
+      if (n.si !== system.index && isConquered(progress, n.id)) return true;
+  return false;
 }
 
 /* --------------------------------------------------------------------------
@@ -633,7 +659,7 @@ function worldAllegiance(galaxy, system, world, progress) {
      cannot currently hide a claim in progress. Ordered anyway, rather than
      assumed, so a future unlock rule cannot silently grey out your own work. */
   const open = isSystemOpen(galaxy, system, progress) &&
-               isWorldOpen(system, world, progress);
+               isWorldOpen(system, world, progress, galaxy);
   const state = claimed ? 'claimed'
               : !open ? 'locked'
               : stars > 0 ? 'foothold'

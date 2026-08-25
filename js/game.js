@@ -406,6 +406,29 @@ const Game = {
        is world state and not a lever either commander holds. */
     this.hostFaction = battleHostFaction(opts);
     this.battleRoster = battleRosterFor(this.map, this.hostFaction);
+    /* AT MOST TWO SPECIES YOU HAVE NEVER FOUGHT, per planet (owner, Session
+       26). The campaign remembers what its battles have fielded; a roster may
+       carry everything already met plus the first two strangers, and the rest
+       wait for a later world. Bosses and minibosses are exempt, as specified,
+       and they do not travel through this roster anyway. Campaign only: a
+       skirmish, a duel and the pins have no memory and get the full roster,
+       which is exactly what they got before. */
+    {
+      const cN = (!this._skirmish && typeof opts.systemIndex === 'number') ? Meta.campaign() : null;
+      if (cN) {
+        if (!Array.isArray(cN.seenTypes)) cN.seenTypes = [];
+        const seen = new Set(cN.seenTypes);
+        let strangers = 0;
+        this.battleRoster = this.battleRoster.filter(id => {
+          const d = ENEMY_TYPES[id];
+          if (!d || d.boss || d.miniboss) return true;
+          if (seen.has(id)) return true;
+          return ++strangers <= 2;
+        });
+        for (const id of this.battleRoster) if (!seen.has(id)) cN.seenTypes.push(id);
+        Meta.save();
+      }
+    }
 
     /* Each side may have SEVERAL lanes; lanes[side] is an array of Paths. */
     this.lanes     = FIELD.lanes.map(side => side.map(p => new Path(p)));
@@ -526,6 +549,10 @@ const Game = {
        threat level, with a small floor so it is never a walkover. */
     const playerTech = Meta.techSpent(this.sides[0].commander.id);
     let rivalTech = clamp(Math.round(Math.max(2, playerTech) * (0.9 + 0.8 * this.difficulty.aiSkill)), 2, 18);
+    /* Stage 0: a shallow commander regardless of yours. Stage 1: never deeper
+       than yours. Stage 2 keeps the scaled figure. */
+    if (this.rivalStage === 0) rivalTech = Math.min(rivalTech, 4);
+    else if (this.rivalStage === 1) rivalTech = Math.min(rivalTech, Math.max(2, playerTech));
     /* A commander's own seat is a duel, not another skirmish: they field their
        complete technology chart and both abilities regardless of where the
        player's progression happens to be. */
@@ -558,12 +585,30 @@ const Game = {
       this.aiTier = (si === null || this._skirmish) ? AI_TIER_BASELINE
         : (AI_TIER_STEPS[Math.min(AI_TIER_STEPS.length - 1,
                                   (this.galaxyTier || 0) * SYSTEMS_PER_GALAXY + si)]);
+      /* THE RIVAL STAGE (owner, Session 26), the second half of the ramp. The
+         tactic ladder says WHAT the rival may do; the stage says how BIG and
+         how SHARP it is. Solar system 1: it fields fewer towers than you,
+         one fewer soldier, a shallow commander, and it thinks slowly. System
+         2: the caps lift and its commander is at or below your level. System
+         3 on, and every NG+ galaxy: prestiged commander, full loadout, its
+         own pace. null outside the campaign, and every stage rule gates on
+         that, so skirmishes, duels, the Maelstrom and the pins see none of
+         this. */
+      this.rivalStage = (si === null || this._skirmish) ? null
+        : ((this.galaxyTier || 0) > 0 ? 2 : Math.min(2, si));
       /* Bounded so a hand-built save or a future galaxy shape can never hand
          the brain a tier the ladder has no rung for. */
       if (!(this.aiTier >= 0)) this.aiTier = AI_TIER_BASELINE;
     }
     if (this.isSeatBattle) rivalTech = 18;
     Meta.applyToAI(this.sides[1], rival.id, rivalTech);
+    /* Stage 2: the commander arrives PRESTIGED, the way a late-campaign power
+       should. One star, through the same applyPrestigeBonus every prestiged
+       player commander uses, applied after the fold exactly as applyTo does. */
+    if (this.rivalStage === 2 && typeof applyPrestigeBonus === 'function') {
+      this.sides[1].prestigeStars = Math.max(1, this.sides[1].prestigeStars || 0);
+      applyPrestigeBonus(this.sides[1], rival.faction || this.sides[1].faction || 'human', 1);
+    }
 
     /* Loadouts: five towers each. The rival drafts its own coherent set. */
     this.sides[0].loadout = (opts.loadout && opts.loadout.length ? opts.loadout : TOWER_ORDER.slice(0, LOADOUT_SIZE)).slice(0, LOADOUT_SIZE);
@@ -582,8 +627,12 @@ const Game = {
       const c = this._skirmish ? null : Meta.campaign();
       let conquered = 0;
       if (c && c.stars) for (const k in c.stars) if (c.stars[k] >= 3) conquered++;
-      const variety = Math.min(LOADOUT_SIZE,
+      let variety = Math.min(LOADOUT_SIZE,
         this.sides[0].loadout.length + (conquered >= 2 ? 1 : 0));
+      /* Stage 2 fields its FULL draft; stage 0 fields one type fewer than
+         you, floored at two so it is still a rival. */
+      if (this.rivalStage === 2) variety = LOADOUT_SIZE;
+      if (this.rivalStage === 0) variety = Math.max(2, this.sides[0].loadout.length - 1);
       if (this.sides[1].loadout.length > variety)
         this.sides[1].loadout = this.sides[1].loadout.slice(0, variety);
     }
@@ -596,7 +645,8 @@ const Game = {
        list, so they cannot disagree. */
     this.setMusterLoadout(0, (opts.musterLoadout && opts.musterLoadout.length)
       ? opts.musterLoadout : Meta.musterLoadout());
-    this.setMusterLoadout(1, AI.pickMusterLoadout(Meta.musterUnlocked(), this.sides[0].musterLoadout.length));
+    this.setMusterLoadout(1, AI.pickMusterLoadout(Meta.musterUnlocked(),
+      Math.max(1, this.sides[0].musterLoadout.length - (this.rivalStage === 0 ? 1 : 0))));
 
     /* Talents are prepared before the match: yours from the saved trees, the
        rival's drafted to suit its own loadout — and only as deep as your own

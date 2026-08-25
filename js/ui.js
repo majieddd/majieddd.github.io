@@ -1478,7 +1478,7 @@ const UI = {
     for (const sys of gx.systems) {
       if (!isSystemOpen(gx, sys, prog)) continue;
       for (const w of sys.worlds)
-        if (isWorldOpen(sys, w, prog) && !isConquered(prog, w.id)) return w;
+        if (isWorldOpen(sys, w, prog, gx) && !isConquered(prog, w.id)) return w;
     }
     return gx.systems[0].worlds[0];
   },
@@ -1495,7 +1495,7 @@ const UI = {
     for (const sys of gx.systems) {
       if (!isSystemOpen(gx, sys, prog)) continue;
       for (const w of sys.worlds)
-        if (isWorldOpen(sys, w, prog) && !isConquered(prog, w.id)) out.push(w);
+        if (isWorldOpen(sys, w, prog, gx) && !isConquered(prog, w.id)) out.push(w);
     }
     return out;
   },
@@ -1533,7 +1533,7 @@ const UI = {
        handler gates on exactly these three terms; a fourth definition of them
        is how a line comes to promise a world the rules refuse. */
     const playable = w => sysOpen[w.si] &&
-                          isWorldOpen(gx.systems[w.si], w, prog) &&
+                          isWorldOpen(gx.systems[w.si], w, prog, gx) &&
                           !isConquered(prog, w.id);
     /* A crossing needs BOTH ends to be somewhere you have standing: ground you
        have already fought on, or a world you may attack right now.
@@ -1771,11 +1771,17 @@ const UI = {
       const sp = systemProgress(sys, prog);
       const hf = FACTIONS[sys.holder];
       const sy = sys.y * GX_RENDER_SQUASH;
+      /* NO HALO (owner, Session 26). The dotted fence said nothing the
+         worlds themselves do not say, and it capped how far they could
+         spread. The system's ALLEGIANCE moved into its title: the DOMINANT
+         force's colour, and dominance is the owner's own threshold, four of
+         the seven worlds at three stars makes it yours. */
+      let taken3 = 0;
+      for (const w2 of sys.worlds) if (starsOn(prog, w2.id) >= GX_CLAIM_STARS) taken3++;
+      const domColor = taken3 >= 4 ? FACTIONS[gx.playerFaction].color : hf.color;
       svg.push(`<g class="gx-sys ${open ? '' : 'locked'}">`);
-      svg.push(`<circle class="gx-halo" cx="${sys.x.toFixed(2)}" cy="${sy.toFixed(2)}" r="${GX_SYS_HALO_R}"
-                 style="--fc:${hf.color}"/>`);
       svg.push(`<text class="gx-sysname" x="${sys.x.toFixed(2)}" y="${(sy + GX_SYS_NAME_DY).toFixed(2)}"
-                 text-anchor="middle">${sys.name}</text>`);
+                 text-anchor="middle" style="fill:${domColor}">${sys.name}</text>`);
       svg.push(`<text class="gx-sysmeta" x="${sys.x.toFixed(2)}" y="${(sy + GX_SYS_META_DY).toFixed(2)}"
                  text-anchor="middle">${open ? sp.taken + '/' + sp.total + ' TAKEN' : 'SEALED'}</text>`);
       for (const w of sys.worlds) {
@@ -1784,7 +1790,7 @@ const UI = {
            can never again say one thing in colour and another in words. */
         const al = worldAllegiance(gx, sys, w, prog);
         const stars = al.stars, mine = al.claimed;
-        const canPlay = open && isWorldOpen(sys, w, prog);
+        const canPlay = open && isWorldOpen(sys, w, prog, gx);
         const of = FACTIONS[al.faction];
         const wy = w.y * GX_RENDER_SQUASH;
         const cls = ['gx-world', canPlay ? 'open' : 'shut', mine ? 'mine' : '',
@@ -1838,7 +1844,7 @@ const UI = {
       g.addEventListener('mouseleave', () => this.hideTooltip());
       g.addEventListener('blur', () => this.hideTooltip());
       const pick = () => {
-        if (!isSystemOpen(gx, sys, prog) || !isWorldOpen(sys, w, prog)) { Sound.play('denied'); return; }
+        if (!isSystemOpen(gx, sys, prog) || !isWorldOpen(sys, w, prog, gx)) { Sound.play('denied'); return; }
         c.chosen = { world: w.id, map: w.map, arena: w.arena, boon: w.boon,
                      /* Carried onto the node so the battle can be told; a
                         saved course from before renegade worlds existed simply
@@ -1985,10 +1991,8 @@ const UI = {
       const hf = FACTIONS[sys.holder];
       const sy = sys.y * GX_RENDER_SQUASH;
       svg.push(`<g class="gx-sys">`);
-      svg.push(`<circle class="gx-halo" cx="${sys.x.toFixed(2)}" cy="${sy.toFixed(2)}" r="${GX_SYS_HALO_R}"
-                 style="--fc:${hf.color}"/>`);
       svg.push(`<text class="gx-sysname" x="${sys.x.toFixed(2)}" y="${(sy + GX_SYS_NAME_DY).toFixed(2)}"
-                 text-anchor="middle">${sys.name}</text>`);
+                 text-anchor="middle" style="fill:${hf.color}">${sys.name}</text>`);
       svg.push(`<text class="gx-sysmeta" x="${sys.x.toFixed(2)}" y="${(sy + GX_SYS_META_DY).toFixed(2)}"
                  text-anchor="middle">${sys.worlds.length} WORLDS OPEN</text>`);
       for (const w of sys.worlds) {
@@ -2632,7 +2636,7 @@ const UI = {
     const kind = WORLD_KINDS[w.kind];
     const arena = w.arena && ARENA_MODS.find(a => a.id === w.arena);
     const boon = BOONS.find(b => b.id === w.boon);
-    const open = isSystemOpen(gx, sys, prog) && isWorldOpen(sys, w, prog);
+    const open = isSystemOpen(gx, sys, prog) && isWorldOpen(sys, w, prog, gx);
     const holder = mine ? gx.playerFaction : w.owner;
     const plate = artImg('world_' + w.map + '_' + holder, 'br-art', w.name)
                || artImg('world_' + w.map, 'br-art', w.name);

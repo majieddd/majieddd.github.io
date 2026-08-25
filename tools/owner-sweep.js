@@ -71,10 +71,13 @@
        'first star pays ' + one + ', three stars pay ' + three + ' (want 2 and 6)');
   });
 
-  /* ---- 16.4 one new type on wave 1, one more every second wave, cap 8 -- */
+  /* ---- 16.4 one new type on wave 1, one more every THIRD wave, cap 8 ---
+     The cadence was 2 until Session 26, when the owner slowed it: "I feel
+     like every 3 rounds is good." The check pins the CURRENT owner number,
+     which is what it is for. */
   T('16.4 roster cadence and cap are the owner numbers', function () {
     ok('16.4 roster cadence and cap are the owner numbers',
-       ROSTER_MAX === 8 && ROSTER_INTRO_EVERY === 2,
+       ROSTER_MAX === 8 && ROSTER_INTRO_EVERY === 3,
        'ROSTER_MAX=' + ROSTER_MAX + ' ROSTER_INTRO_EVERY=' + ROSTER_INTRO_EVERY);
   });
 

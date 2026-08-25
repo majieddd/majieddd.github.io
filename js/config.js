@@ -1093,7 +1093,7 @@ const RAMP_DEFAULT = 'veteran';
    bit-identical to what it always was, so rounds still end when they end.
 -------------------------------------------------------------------------- */
 const TIER0_HP_EASE = [0.35, 0.15, 0, 0, 0];
-const TIER0_INTRO_EVERY = [3, 2, 2, 2, 2];
+const TIER0_INTRO_EVERY = [4, 4, 3, 3, 3];
 const TIER0_MINIBOSS_DELAY = [5, 0, 0, 0, 0];
 const TIER0_EASE_PEAK_WAVE = 8;
 const TIER0_EASE_END_WAVE = 15;
@@ -1297,7 +1297,9 @@ const TALENT_POINTS = 3;
    copies of one tower. It is a named const because four player-facing
    surfaces quote the rate and one function charges it: quoting the authored
    figure understated the fourth Bolt by 76% and the fourth Vault by 88%. */
-const COST_GROWTH_STEEPEN = 2.5;
+/* 2.5 -> 2.75 (owner, Session 26): repeat copies of a tower price up a tenth
+   steeper, thinning tower counts over a long match from the cost side. */
+const COST_GROWTH_STEEPEN = 2.75;
 
 /**
  * The per-copy price growth actually in force. ONE definition, five readers:
@@ -2387,7 +2389,9 @@ const WAVES = [
     minibosses are exempt from it and from the schedule below. */
 const ROSTER_MAX = 8;
 /** Waves between introductions: one new type on wave 1, then 3, 5, 7 ... */
-const ROSTER_INTRO_EVERY = 2;
+/* Every THIRD wave now (owner, Session 26): a new species every second wave
+   read as a parade. TIER0's flattening below stays gentler still. */
+const ROSTER_INTRO_EVERY = 3;
 /** Faction troops on a garrisoned world. They REPLACE machine slots rather
     than adding to them, because ROSTER_MAX caps the battle, not the machines.
 
@@ -2724,12 +2728,16 @@ function waveHpMultiplier(w) {
 /* Fewer enemies per wave (less lag), each substantially stronger. */
 /* Half the bodies, each markedly stronger. The measured complaint was that
    clumping made the field unreadable and slow; volume is the lever. */
-const COUNT_SCALE = 0.35;
+/* 0.35 -> 0.30 (owner, Session 26: fewer entities on the board). The mass
+   the count no longer carries moves into per-body health through
+   UNIT_HP_SCALE below, so the wave's total threat holds while the body count
+   drops about one in seven. */
+const COUNT_SCALE = 0.30;
 /* NUMBER SQUISH. Health and damage are divided by the SAME factor, so every
    time-to-kill is untouched while the numbers a player reads shrink by 2.5x.
    Wave-1 crawler goes ~161hp -> ~64hp and a MK I Bolt from ~5 -> ~2. */
 const NUM_SQUISH = 2.5;
-const UNIT_HP_SCALE = 2.60 / NUM_SQUISH;
+const UNIT_HP_SCALE = (2.60 * 0.35 / 0.30) / NUM_SQUISH; /* mass moved from count into health, see COUNT_SCALE */
 /* Every tower's output is scaled down globally: the opening waves were still
    melting before they reached the line. Applied in effDamage/effDamageFor so
    the whole curve shifts, not just level one. */
@@ -3527,7 +3535,7 @@ const MUSTER_MAX_LIVES = 3;
    measured against single-digit sends. */
 const MUSTER_COUNT_K = 32;
 const MUSTER_COUNT_MIN = 1;
-const MUSTER_COUNT_MAX = 6;
+const MUSTER_COUNT_MAX = 4; /* was 6; fewer bodies per send (owner, Session 26) */
 /* Cost and income are LINEAR in mass: bigger mobs cost more AND pay more, in
    proportion, so no pick is a strictly dominant buy. Anchored at the crawler. */
 const MUSTER_COST_BASE = 0.40;          /* share of next wave reward at 0 mass */
