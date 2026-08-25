@@ -225,6 +225,12 @@ const Meta = {
     for (const id of alwaysUnlocked()) if (!p.cmdUnlocked.includes(id)) p.cmdUnlocked.push(id);
     if (!Array.isArray(p.abilUnlocked)) p.abilUnlocked = [];
     if (!Array.isArray(p.musterLoadout)) p.musterLoadout = [];
+    /* Saves written before the map-pool pin regenerate against the ELEVEN
+       non-tri boards that existed then (spine through anvil). A frozen
+       literal on purpose: recomputing it from live MAPS would re-break the
+       exact thing the pin exists to protect. */
+    if (p.campaign && (typeof p.campaign.mapPool !== 'number' || !isFinite(p.campaign.mapPool)))
+      p.campaign.mapPool = 11;
     if (p.faction === undefined) p.faction = null;
     /* The equipped commander arrived after every profile in existence was
        written, so it is defaulted on READ the way the unit tracks were. null
@@ -492,6 +498,10 @@ const Meta = {
        the galaxy itself is regenerated from the seed, so a save stays tiny and
        a given campaign is always the same campaign. */
     p.campaign = { seed, depth: 0, boons: [], totalWaves: 0, options: null,
+                   /* The non-tri map pool AS IT STANDS TODAY, pinned so this
+                      campaign's galaxy keeps its boards when maps are added
+                      later. Live-counted here, frozen-literal in migration. */
+                   mapPool: MAPS.filter(m => !m.tri).length,
                    faction: p.faction || 'human', tier: p.galaxyTier || 0,
                    /* A first galaxy never chooses its slope -- the choice is
                       the reward for finishing one, and VETERAN is the law the
@@ -508,9 +518,9 @@ const Meta = {
   galaxy() {
     const c = this.campaign();
     if (!c) return null;
-    if (!this._gx || this._gxSeed !== c.seed) {
-      this._gx = generateGalaxy(c.seed, c.faction || 'human');
-      this._gxSeed = c.seed;
+    if (!this._gx || this._gxSeed !== (c.seed + ':' + (c.mapPool || 0))) {
+      this._gx = generateGalaxy(c.seed, c.faction || 'human', c.mapPool);
+      this._gxSeed = c.seed + ':' + (c.mapPool || 0);
       /* Generation is PURE: it derives every world's owner from the seed, so
          it always hands back the galaxy as it stood on day one. advanceRivals
          moves owners on the live object only, which meant every world the

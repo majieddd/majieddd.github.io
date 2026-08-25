@@ -118,7 +118,7 @@ const WORLD_KINDS = {
  * Build a whole galaxy from a seed. Systems are laid out around a spiral so the
  * map reads as a galaxy rather than a grid; worlds orbit their system centre.
  */
-function generateGalaxy(seed, playerFaction) {
+function generateGalaxy(seed, playerFaction, mapPool) {
   const rnd = galaxyRng(seed);
   const rivals = rivalFactionsOf(playerFaction);
   /* WHO SQUATS the ordinary worlds. Naming the pirates outright put a fifth
@@ -204,8 +204,15 @@ function generateGalaxy(seed, playerFaction) {
            or boons move. */
         owner: worldOwner,
         /* Three-way maps are reserved for CONTESTED worlds only. */
+        /* Drawn from the PREFIX the campaign pinned at creation (c.mapPool),
+           because the modulus is the save contract: adding maps without the
+           pin remaps every saved galaxy's boards even though not one rnd()
+           draw moves. Clamped, so a newer save on an older build falls back
+           to everything rather than throwing. One rnd() call, same position,
+           as ever. */
         map: (() => { const pool = MAPS.filter(m => !m.tri);
-                      return pool[Math.floor(rnd() * pool.length)].id; })(),
+                      const n2 = (mapPool >= 1 && mapPool <= pool.length) ? mapPool : pool.length;
+                      return pool[Math.floor(rnd() * n2)].id; })(),
         arena: rnd() < 0.55 ? ARENA_MODS[Math.floor(rnd() * ARENA_MODS.length)].id : null,
         /* Still exactly ONE rnd() call, in the same position: boonFor
            takes the VALUE, never the generator. */

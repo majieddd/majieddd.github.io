@@ -460,6 +460,129 @@ const MAPS = [
        wave of tempo. */
     nodes: [[5, 8, 'venom', 'build'], [2, 12, 'storm', 'build'], [4, 6, 'frost', 'lane']]
   }
+,
+  /* ═════════ SESSION 26: SIX NEW BOARDS (owner item 10) ═══════════════════
+     APPEND-ONLY FOREVER. generateGalaxy draws world maps from the non-tri
+     PREFIX of this array pinned per campaign (c.mapPool), so inserting or
+     reordering above this line remaps every saved galaxy. New boards go at
+     the END, after these. Each exercises an engine capability no earlier
+     board used: a dead-straight lane, a wildly asymmetric fork, lanes that
+     cross the mirror axis, interleaved combs, an authored no-reanimation
+     rule, and a full enclosure ring. */
+  {
+    id: 'lance', name: 'THE LANCE', tier: 2,
+    denizens: ['blink', 'herald'],
+    sigNote: 'Open run: Phase Couriers and Cadence Pylons sprint the lance.',
+    roster: ['sprinter', 'crawler', 'blink', 'wisp', 'herald', 'jammer', 'warchief', 'warden'],
+    blurb: 'A dead-straight lane and nothing else. No bends will save you.',
+    trait: 'One straight run · open flanks',
+    cols: 40, rows: 11,
+    /* The middle waypoint is deliberately collinear: spliceWaypoints returns
+       null on a 2-point lane and the Splicer would be inert here without it.
+       20 on-board tiles, x0..19 at y5; ANVIL keeps "shortest approach" at 19. */
+    lanes: [[[19, 5], [10, 5], [-1, 5]]],
+    blocks: [[15, 3, 15, 3], [15, 7, 15, 7], [9, 3, 9, 3], [9, 7, 9, 7], [3, 3, 3, 3], [3, 7, 3, 7]],
+    /* Heralds are frost-weak, so frost is nowhere on offer. */
+    nodes: [[12, 2, 'storm', 'build'], [6, 8, 'void', 'build'], [10, 5, 'venom', 'lane']]
+  },
+  {
+    id: 'skew', name: 'THE SKEW', tier: 3,
+    denizens: ['sprinter', 'bulwark'],
+    sigNote: 'Split march: Outrunners take the short road, Palisades the long.',
+    roster: ['sprinter', 'crawler', 'wisp', 'aegis', 'bulwark', 'jammer', 'basalt', 'warchief'],
+    blurb: 'The short road is cruel and the long road is patient.',
+    trait: 'Two lanes · seventeen tiles against forty-one',
+    cols: 28, rows: 17,
+    /* Lane 0: 17 tiles. Lane 1: 41, crossing itself once at (5,9) before
+       joining lane 0's tail at (5,7). Both leave at [-1,7]. */
+    lanes: [
+      [[13, 4], [9, 4], [9, 7], [-1, 7]],
+      [[13, 12], [11, 12], [11, 15], [3, 15], [3, 9], [8, 9], [8, 12], [5, 12], [5, 7], [-1, 7]]
+    ],
+    /* The island fills the long road's fold, the CONFLUENCE fix in duo form. */
+    blocks: [[6, 10, 7, 11], [0, 0, 1, 1], [0, 15, 1, 16]],
+    /* Bulwarks are storm-weak, so storm is withheld; frost is offered exactly
+       because they RESIST it, the NARROWS precedent. The lane node on the
+       shared tail primes both roads. */
+    nodes: [[10, 2, 'frost', 'build'], [2, 14, 'venom', 'build'], [4, 7, 'fire', 'lane']]
+  },
+  {
+    id: 'strait', name: 'THE STRAIT', tier: 4,
+    denizens: ['cluster', 'jammer'],
+    sigNote: 'Strait traffic: Dividers and Interdictors ride the crossing current.',
+    roster: ['crawler', 'wisp', 'cluster', 'jammer', 'aegis', 'wraith', 'nullifier', 'carrier'],
+    blurb: 'Both armies share the strait. Neither shore can reach it cheaply.',
+    trait: 'Lanes cross the axis · waves pass head-on',
+    cols: 28, rows: 15,
+    /* Eastward first, INTO the rival's forecourt (x16 is their first
+       buildable column), then home. The mirror does the reverse, so the two
+       processions share the strait at (13,7)-(14,7) AND the southern band
+       (11,11)..(16,11), passing head-on through both. Towers filter on
+       hostileTo, so shared ground is legal; it is also the whole point. */
+    lanes: [[[13, 7], [16, 7], [16, 11], [8, 11], [8, 4], [4, 4], [4, 9], [-1, 9]]],
+    blocks: [[5, 6, 6, 7]],
+    /* Clusters are fire-weak, so fire is withheld. The lane node at (14,7)
+       sits on a tile BOTH sides' lanes run through: it primes both armies,
+       the RIFT throat trick taken across the mirror. */
+    nodes: [[9, 2, 'frost', 'build'], [2, 12, 'storm', 'build'], [14, 7, 'void', 'lane']]
+  },
+  {
+    id: 'loom', name: 'THE LOOM', tier: 3,
+    denizens: ['mender', 'shardling'],
+    sigNote: 'Woven ranks: Restorers mend across both threads at once.',
+    roster: ['crawler', 'mite', 'mender', 'shardling', 'cluster', 'herald', 'bulwark', 'bastion'],
+    blurb: 'Two lanes weave past each other. The middle rows watch everything.',
+    trait: 'Two combs · one band reads both',
+    cols: 30, rows: 15,
+    /* Upper comb rows 2-6, lower comb rows 9-13; they merge in column 2 and
+       leave at [-1,4]. Rows 7-8 are the only ground that reads both. */
+    lanes: [
+      [[14, 2], [11, 2], [11, 6], [8, 6], [8, 2], [5, 2], [5, 6], [2, 6], [2, 4], [-1, 4]],
+      [[14, 13], [11, 13], [11, 9], [8, 9], [8, 13], [5, 13], [5, 9], [2, 9], [2, 4], [-1, 4]]
+    ],
+    /* The monument thins the double-coverage band so it is a choice, not an
+       answer. */
+    blocks: [[6, 7, 7, 8], [0, 0, 0, 1], [0, 13, 0, 14]],
+    /* Menders are venom-weak and shardlings storm-weak; neither is on offer. */
+    nodes: [[4, 7, 'void', 'build'], [12, 4, 'frost', 'build'], [8, 4, 'fire', 'lane']]
+  },
+  {
+    id: 'ossuary', name: 'THE OSSUARY', tier: 5, noReanim: true,
+    denizens: ['revenant', 'aegis'],
+    sigNote: 'Barrow silence: Reconstructors and Aegis Sentinels walk the rings.',
+    roster: ['crawler', 'wisp', 'aegis', 'shardling', 'revenant', 'wraith', 'anchorite', 'juggernaut'],
+    blurb: 'Nothing you kill marches back. Spend gold like it matters.',
+    trait: 'No reanimation · one long barrow lane',
+    cols: 28, rows: 15,
+    /* 40 on-board tiles, crossing itself once at (4,7): kills are plentiful
+       and, uniquely here, worth nothing to send. buildField carries the
+       noReanim flag through; everything downstream already reads it. */
+    lanes: [[[13, 7], [11, 7], [11, 3], [4, 3], [4, 11], [9, 11], [9, 7], [-1, 7]]],
+    /* The massif splits around the exit road rather than sitting on it. */
+    blocks: [[6, 5, 8, 6], [6, 8, 8, 9]],
+    nodes: [[6, 2, 'fire', 'build'], [2, 12, 'frost', 'build'], [4, 9, 'void', 'lane']]
+  },
+  {
+    id: 'atoll', name: 'THE ATOLL', tier: 4,
+    denizens: ['wisp', 'anchorite'],
+    sigNote: 'Reef watch: Lanterns drift over the ring the Anchor Pylons hold.',
+    roster: ['mite', 'crawler', 'wisp', 'sprinter', 'mender', 'anchorite', 'warden', 'carrier'],
+    blurb: 'The lane circles your best ground, then cuts straight through it.',
+    trait: 'One ring · a citadel inside it',
+    cols: 28, rows: 15,
+    /* A 53-tile ring enclosing the citadel (x3-11, rows 3-11), then the exit
+       road bisects it at y8, passing through the ring's own west wall. The
+       air lane is the straight chord: fliers skip the whole reef, which is
+       why this garrison flies. COIL keeps "longest march" at 61. */
+    lanes: [[[13, 7], [13, 2], [2, 2], [2, 12], [12, 12], [12, 8], [-1, 8]]],
+    /* One rock in the north citadel so no single tile reads three walls. */
+    blocks: [[6, 4, 7, 5]],
+    /* Wisps are storm-weak, so storm is withheld; venom on the outer reef is
+       the one reason to build outside the ring. Anchorites have no elemWeak,
+       which is what makes venom LEGAL here; they carry no venom resistance,
+       whatever ANVIL's older comment claims about them. */
+    nodes: [[7, 10, 'fire', 'build'], [0, 7, 'venom', 'build'], [8, 8, 'frost', 'lane']]
+  }
 ];
 
 /** Builds the full mirrored geometry for a map. */
@@ -506,6 +629,10 @@ function buildField(map) {
   const allCentreX = lanes0.concat(lanes1).map(l => l[0][0]);
   return {
     cols: map.cols, rows: map.rows,
+    /* The board's own law, exactly as the maelstrom field states it; the
+       engine reads Game.noReanim generically and this is the one line that
+       lets an AUTHORED board declare it. */
+    noReanim: !!map.noReanim,
     lanes: [lanes0, lanes1],                       // arrays of lanes per side
     sendPaths: [send0, send1],
     airLanes: [[c0, base0], [c1, base1]],

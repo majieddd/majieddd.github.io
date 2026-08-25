@@ -4922,7 +4922,7 @@ const UI = {
     const free = S.stats.sent - S.stats.mustered;
     let state;
     if (Game.noReanim && (doc.scheduler || doc.onKill))
-      state = 'ENGINE COLD — THE MAELSTROM PERMITS PAID SUMMONS ONLY';
+      state = 'ENGINE COLD: THIS FIELD PERMITS PAID SUMMONS ONLY';
     else if (doc.scheduler) {
       const list = S.musterLoadout || [];
       const nxt = ENEMY_TYPES[list[S.procIdx % Math.max(1, list.length)]];
