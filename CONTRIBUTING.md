@@ -8,7 +8,7 @@ several people can work on it at the same time without standing on each other.
 
 ## 1. Run it
 
-You need **git**, any **Python 3** (used only as a static file server — the game
+You need **git**, any **Python 3** (used only as a static file server, the game
 never executes Python), and **Node 20 or newer** (used only by `node build.js`).
 There is no `package.json`, no lockfile and nothing to install.
 
@@ -24,15 +24,15 @@ Port **8471** is not arbitrary: `.claude/launch.json` declares the same server
 under the name `cosmic-conquest`, so an agent session starts it by name and lands
 on the same URL a human would.
 
-`file://` will *not* work — the browser blocks the module loads. Use the server.
+`file://` will *not* work, the browser blocks the module loads. Use the server.
 
 **Cache-busting: `index.html?v=2` DOES NOT WORK.** The query is on the document,
 not on the `<script src="js/game.js">` tags inside it, so every module is still
 served from cache and you are testing the previous build while believing you are
 testing this one. It reads as your change having no effect.
 
-To test a change, verify against the **bundle** — `node build.js`, then
-`aegis-protocol.html?v=N` — which inlines all seventeen modules into the document
+To test a change, verify against the **bundle**, `node build.js`, then
+`aegis-protocol.html?v=N`, which inlines all seventeen modules into the document
 the query actually busts. Use `index.html` for hand-play, the bundle for proof.
 
 To produce the single-file build:
@@ -43,13 +43,13 @@ node build.js
 
 That inlines `css/*` and the sixteen JS modules into `aegis-protocol.html`
 (standalone, openable from disk) and `aegis-artifact.html` (body-only, for an
-embedding host). **The bundles are outputs — never edit them.** Any change you
+embedding host). **The bundles are outputs, never edit them.** Any change you
 make there is erased by the next build, and the reviewer will see a 6MB diff
 instead of your three lines.
 
 ---
 
-## 2. Pick your lane — the module map
+## 2. Pick your lane, the module map
 
 Four of these files run past 3,500 lines and `ui.js` is past 6,000. If two people
 edit `ui.js` in the same week without coordinating, the merge will be genuinely
@@ -66,13 +66,13 @@ weight, not a contract, and they only ever grow.
 | `js/game.js` | 3769 | Core state and the simulation step. Board, economy, waves, N-side seat logic, relocation, the radial. |
 | `js/net.js` | 1415 | The duel relay: BroadcastChannel lobby, deterministic lockstep, the seat lens, the agreement fingerprint. |
 | `js/config.js` | 3697 | Tunables, tower/enemy/wave data, maps, talent trees. **Every magic number belongs here**, named, with a comment saying what it protects against. |
-| `js/commanders.js` | 1200 | `Meta` — the save file, profiles, progression, the soul vault. |
+| `js/commanders.js` | 1200 | `Meta`, the save file, profiles, progression, the soul vault. |
 | `js/ai.js` | 1118 | The rival commander. Loadout drafting, build/upgrade scoring, musters. |
-| `js/entities2.js` | 1048 | The expansion behaviours — siren, saboteur, reanimation, marks. |
+| `js/entities2.js` | 1048 | The expansion behaviours, siren, saboteur, reanimation, marks. |
 | `js/towers2.js` | 996 | Elements, the combo table, the expansion towers, arena modifiers, the twenty boons. |
 | `js/audio.js` | 801 | Procedural Web Audio. No sample files anywhere. |
 | `js/factions.js` | 670 | The four powers, their bonuses, and the twenty faction units with their doctrines. |
-| `js/galaxy.js` | 646 | Galaxy generation — systems, worlds, contested slots. |
+| `js/galaxy.js` | 646 | Galaxy generation, systems, worlds, contested slots. |
 | `js/roster.js` | 473 | Commander roster and their traits. |
 | `js/abilities.js` | 193 | Commander abilities. |
 | `js/dialogue.js` | 192 | Portraits, the `art()` lookup, pre-battle dialogue. |
@@ -91,7 +91,7 @@ the served version still works.
 ## 3. Working at the same time as other people
 
 - **Branch per change.** `git checkout -b fix/siren-nside`. Never commit to
-  `main` directly — `main` is what <https://majieddd.github.io> serves.
+  `main` directly, `main` is what <https://majieddd.github.io> serves.
 - **Every change ships to all three surfaces.** A change is not done when it
   works locally: push to `main` (which deploys the site), and republish the
   Artifact. Landing on one surface and not the others is how the live game
@@ -107,7 +107,7 @@ the served version still works.
   diff into an unreviewable one, and it will collide with everyone else.
 
 If you genuinely must make a sweeping change across a big module, say so first
-and let the others land their work — it is cheaper than the merge.
+and let the others land their work, it is cheaper than the merge.
 
 ### What CI will fail you on
 
@@ -119,7 +119,7 @@ cheap, and it is strict:
   `<script src=`, and `aegis-artifact.html` must still open with its
   `charset="utf-8"` prefix.
 - **Every module in `js/` must be listed in `build.js`.** A module added to the
-  folder but not the list works served and breaks bundled — the worst shape.
+  folder but not the list works served and breaks bundled, the worst shape.
 - **No CRLF.** `.gitattributes` pins the whole tree to `* text=auto eol=lf`, and
   CI fails on any file the index reports as `i/crlf` or `i/mixed`. This is the
   one that catches Windows contributors, and a patch script that rewrites a file
@@ -136,13 +136,13 @@ git ls-files --eol | grep -E 'i/crlf|i/mixed'    # must print nothing
 ```
 
 `.github/workflows/pages.yml` deploys `main` to <https://majieddd.github.io> on
-its own — you never publish the site by hand. The **Artifact** surface named
+its own, you never publish the site by hand. The **Artifact** surface named
 above is the one that still needs a human; its permanent URL is at the top of
 [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ### Multiplayer
 
-Merged and live since Session 21 — `js/net.js`, a BroadcastChannel duel relay
+Merged and live since Session 21, `js/net.js`, a BroadcastChannel duel relay
 with deterministic lockstep, protocol version `NET_PROTOCOL`. It merged only
 after an adversarial audit found seven blocking defects the green suite could
 not see; [`docs/MULTIPLAYER-HANDOFF.md`](docs/MULTIPLAYER-HANDOFF.md) carries
@@ -152,7 +152,7 @@ the owner sweep:
 
 ```js
 // paste tools/multiplayer_test.js, then:
-MPT.all()        // must pass clean; the wire suite is async — pass a callback
+MPT.all()        // must pass clean; the wire suite is async, pass a callback
 ```
 
 Changing the command set or the fingerprint formula means bumping
@@ -162,7 +162,7 @@ Changing the command set or the fingerprint formula means bumping
 
 [`docs/ROADMAP.md`](docs/ROADMAP.md) is the resume-here document: every session's
 decisions and what each item actually turned out to be. Its "REMAINING WORK"
-block near the top is a Session-12 artifact and is marked superseded — plan from
+block near the top is a Session-12 artifact and is marked superseded, plan from
 [`docs/BACKLOG.md`](docs/BACKLOG.md), which is the live list.
 [`docs/BRAND.md`](docs/BRAND.md) is binding before any art work,
 [`docs/TOWER-AUDIT.md`](docs/TOWER-AUDIT.md) is why no two towers share an
@@ -182,14 +182,14 @@ These are not style preferences. Each one shipped a real bug.
   relocate both fire and burn 54,000 gold.
 - **`FIELD.terrain` is a `Set`.** `.includes()` throws. Use `.has()`.
 - **Path length is `path.total`**, not `path.length`.
-- **`sendPaths` has exactly TWO entries** on the tri and radial builders — it is a
+- **`sendPaths` has exactly TWO entries** on the tri and radial builders, it is a
   legacy accessor. Indexing it by seat breaks at seat 2 and up, which froze the
   whole battle because `Game.loop` has no try/catch. Use `Game.rivalOf(side)` and
   `sendTriPaths[side][victim]`, the way `Game.muster` does.
 - **Any number the UI prints must equal what the engine computes.** Seven separate
   desyncs have shipped: a preview that forgot the galaxy tier, a tooltip quoting
   the authored growth rate instead of the charged one, a panel promising 21 souls
-  while paying 6. `Game.waveHpMul(n, rage)` is *the* definition — call it, never
+  while paying 6. `Game.waveHpMul(n, rage)` is *the* definition, call it, never
   re-derive it.
 - **`build.js` aborts** if the literal word `stylesheet` or `<script src=`
   survives into the bundle. That is a guard, not a bug.
@@ -212,7 +212,7 @@ Nothing to install, nothing to import.
 
 // 1. paste the entire contents of tools/owner-sweep.js
 //    → 36 behaviour probes, 40 verdicts. Returns {pass, fail, info, checks}
-//      and parks the same object on window.__SWEEP. Green is fail:0 — last
+//      and parks the same object on window.__SWEEP. Green is fail:0, last
 //      run 40 pass / 0 fail.
 //    → it MUTATES game state. Reload before you do anything else.
 //    → run it from the LOADOUT screen: checks 19.12 and 19.15 read live DOM and
@@ -231,7 +231,7 @@ PINS.maxed(3, 0)       // maxed profile at galaxy TIER 0, three maps, one call
 // so the loop is deliberately resumable:
 PINS.maxProfile(0); PINS.begin(0, 'contested');
 PINS.tick(20000)       // repeat until {done: true}
-// Read `.outcome` ('loss' | 'win' | 'capped'), never `.wave` alone — see below.
+// Read `.outcome` ('loss' | 'win' | 'capped'), never `.wave` alone, see below.
 ```
 
 **The pins.** Mirror-AI on both seats, loadout pinned to
@@ -243,7 +243,7 @@ PINS.tick(20000)       // repeat until {done: true}
 Both were re-based in Session 22 for the summoning rites and the gentler early
 ramp; the Session-21 figures were 8 and 22. Read
 [`docs/BALANCE-BASELINE.md`](docs/BALANCE-BASELINE.md) before you treat a
-movement as a regression — **this harness is only comparable inside one browser
+movement as a regression, **this harness is only comparable inside one browser
 session**, and a cross-session comparison has already produced one false alarm.
 
 **Seed them, or the numbers mean nothing.** `PINS.begin(map, diff, seed)` takes
@@ -251,7 +251,7 @@ a seed and the run replays exactly; unseeded, one map has produced death waves
 5, 6, 13, 19, 19, 20 and 21 on the same build. Use map index `i` with seed
 `1000 + i` to reproduce the table in
 [`docs/BALANCE-BASELINE.md`](docs/BALANCE-BASELINE.md), and run
-`PINS.selfTest(0, 1234)` first — it must report `reproducible: true`. Load the
+`PINS.selfTest(0, 1234)` first, it must report `reproducible: true`. Load the
 harness into a page that has **not yet run a match**, because the AI-prototype
 snapshot it restores has to be pristine.
 
@@ -261,13 +261,13 @@ Session-20 maxed pin of *27* was the top of its range, not the median.
 
 Two ways to measure these wrong, both of which have produced a false alarm:
 
-1. **Passing a tower pool to `AI.pickLoadout` does not filter cores** — `pool`
+1. **Passing a tower pool to `AI.pickLoadout` does not filter cores**, `pool`
    only sets a budget. An unpinned run silently re-bases the whole measurement.
 2. **Measure the maxed pin at tier 0.** Galaxy tier feeds `waveScaled`, so a
    maxed profile stamped tier 4 dies around wave 12 and reads as a catastrophe
    when nothing changed.
 
-Also note a run can end *either way* — a maxed `delta` run finishes at wave 7
+Also note a run can end *either way*, a maxed `delta` run finishes at wave 7
 having eliminated the rival. Compare losses with losses.
 
 If you touched economy, AI, or anything in a talent tree, re-measure both pins
@@ -279,7 +279,7 @@ banner since 19.6, so writing the retired flat `v.unlocked` list leaves the
 every shelf; if you fork it, keep that.
 
 **Anything animated must be verified in a FRONTED tab.** A backgrounded tab
-throttles `requestAnimationFrame` to *zero* frames — measured: 0 frames in
+throttles `requestAnimationFrame` to *zero* frames, measured: 0 frames in
 400ms hidden, 59 visible. Every rAF-dependent assertion then fails, and it
 fails with entirely plausible messages ("0 frames in 400ms", "got 80 want 0")
 that read exactly like a real animation bug. That cost five spurious failures
@@ -319,8 +319,8 @@ python -c "import sys, torch; print(sys.executable, torch.__version__, torch.cud
 ```
 
 On the machine this was built on, the interpreter that answers is
-`%LOCALAPPDATA%\Programs\Python\Python312\python.exe` — Python 3.12.10, torch
-2.5.1+cu121, CUDA `True`, with diffusers and transformers — while the bare
+`%LOCALAPPDATA%\Programs\Python\Python312\python.exe`, Python 3.12.10, torch
+2.5.1+cu121, CUDA `True`, with diffusers and transformers, while the bare
 `python` first on PATH is a 3.11 virtualenv carrying Pillow and no torch. Call
 that full path for anything that renders, or put it first on PATH for the
 session. The Python that serves the game in §1 is unrelated: any Python 3 does.
@@ -335,7 +335,7 @@ node build.js
 
 The pipeline lives **inside this repository** at `artgen/`, along with its
 `cache/`, `cache_krea/` and the `krea2-turbo/` model checkout (all three
-gitignored — the model alone is 34GB, and `python artgen/dl_krea.py` is the only
+gitignored, the model alone is 34GB, and `python artgen/dl_krea.py` is the only
 thing that fetches it; nothing else in the pipeline will). It used to sit in a
 sibling directory,
 and that cost a whole session of art work: the Session 19 troop prefix was
@@ -344,7 +344,7 @@ shipped correct while the source that produced it did not exist in the repo.
 Run the scripts from the repository root and there is only one copy to edit.
 
 `artgen/krea_jobs.py` is the single catalogue for both models. Read
-[`docs/BRAND.md`](docs/BRAND.md) before generating anything — the visual identity
+[`docs/BRAND.md`](docs/BRAND.md) before generating anything, the visual identity
 is locked, and two prompt rules are load-bearing:
 
 - **CLIP truncates at 77 tokens.** Anything past that is silently discarded. All
@@ -353,8 +353,8 @@ is locked, and two prompt rules are load-bearing:
 - **Guidance is 0, so the negative prompt is inert.** You cannot subtract; you can
   only lead with what you want.
 
-Hue cannot be reliably prompted. Where an exact colour matters — the faction
-crests — it is forced in code by `derive_crests.py`, which lands within 4.5°.
+Hue cannot be reliably prompted. Where an exact colour matters, the faction
+crests, it is forced in code by `derive_crests.py`, which lands within 4.5°.
 
 ---
 

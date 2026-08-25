@@ -1,4 +1,4 @@
-# Tower uniqueness audit — Session 19
+# Tower uniqueness audit. Session 19
 
 > **Status as of Session 22.** This is the Session-19 snapshot and its counts
 > are historical: the arsenal is **60 towers, twelve per origin** today, and
@@ -12,7 +12,7 @@ outfitted to be absolutely unique from all other towers in their own way."*
 Method: parse every tower's `base` block and count which **mechanic keys** it
 carries beyond the five every tower has (`damage`, `range`, `rate`, `projSpeed`,
 `dmgType`, `splash`). A tower whose base is only those five has no mechanic of
-its own — it is a stat block wearing a name.
+its own, it is a stat block wearing a name.
 
 ---
 
@@ -20,7 +20,7 @@ its own — it is a stat block wearing a name.
 
 The arsenal is in better shape than the `attack` field suggests. Nine towers
 share `attack: 'projectile'`, but seven of those nine differentiate underneath
-it — the attack field is a *rendering* mode, not an identity.
+it, the attack field is a *rendering* mode, not an identity.
 
 ### The three that are pure stat blocks
 
@@ -31,7 +31,7 @@ it — the attack field is a *rendering* mode, not an identity.
 | `flak` | human | Anti-air only |
 
 These are the three human starters, and there is a real argument that a game
-needs a plain baseline to measure everything else against — `bolt`'s own
+needs a plain baseline to measure everything else against, `bolt`'s own
 description leans on it ("a wall of Bolts is a real strategy"). But *plain* and
 *characterless* are different things, and all three are currently the latter.
 Each should earn a small signature that does not cost it its simplicity.
@@ -45,15 +45,15 @@ towers feel like the same tower.
 
 | Pair | Shared keys | Verdict |
 |---|---|---|
-| `toxin` ↔ `canister` | `poisonDps`, `poisonPct`, `poisonDur`, `maxStacks` | **Being fixed — roadmap 19.18.** The owner spotted this one unaided. Canister moves to armour-stripping stacks and max-health damage at ~⅓ the damage percentage. |
-| `foundry` ↔ `custodian` | `minions`, `minionHp`, `minionDps`, `minionSlow`, `forgeTime` | Two spawners sharing a whole mechanic. One must become something else — see below. |
+| `toxin` ↔ `canister` | `poisonDps`, `poisonPct`, `poisonDur`, `maxStacks` | **Being fixed, roadmap 19.18.** The owner spotted this one unaided. Canister moves to armour-stripping stacks and max-health damage at ~⅓ the damage percentage. |
+| `foundry` ↔ `custodian` | `minions`, `minionHp`, `minionDps`, `minionSlow`, `forgeTime` | Two spawners sharing a whole mechanic. One must become something else, see below. |
 | `beacon` ↔ `pylon` | `auraDmg`, `auraRange`, `auraRate` | Two support auras with the same three knobs. |
 | `vault` ↔ `quartermaster` | `income`, `incomeEvery` | Two economy towers on one timer mechanic. |
 | `arc` ↔ `concord` | `chains`, `chainRange`, `falloff` | Concord at least adds `vuln`; arc is the plain one. |
 | `pyre` ↔ `ichor` | `cone`, `burn`, `burnDur` | Same cone, same burn, different faction. |
 
 Two lesser ones, both fine as they stand: `railgun` ↔ `reclaimer` share
-`pierce`, and `reclaimer` ↔ `concord` share `vuln` — but in both cases it is one
+`pierce`, and `reclaimer` ↔ `concord` share `vuln`, but in both cases it is one
 stat inside an otherwise distinct kit, not the identity itself.
 
 ---
@@ -63,30 +63,30 @@ stat inside an otherwise distinct kit, not the identity itself.
 The owner asked for *"a tower that creates troops that fight against oncoming
 troops, stopping them until they die."*
 
-**FOUNDRY already is exactly that** (`towers2.js:71`) — it forges automata that
+**FOUNDRY already is exactly that** (`towers2.js:71`), it forges automata that
 march onto the lane, grapple the first enemy they meet and grind it down, with
 `minionSlow` as the hold and `minionBlast` on the CORE BREACH talent. Its own
 description calls it *"the only structure that fights with BODIES instead of
-fire"* — which is true of the intent and false of the arsenal, because CUSTODIAN
+fire"*, which is true of the intent and false of the arsenal, because CUSTODIAN
 does the same thing.
 
 So this is not a build request, it is a **differentiation** request. The most
 promising split: FOUNDRY keeps the grapple-and-hold identity (a wall of bodies),
-and CUSTODIAN — being Federation of Light — becomes something its lore actually
+and CUSTODIAN, being Federation of Light, becomes something its lore actually
 supports: escorts that **shield and buff the player's own mustered units** rather
 than blocking enemies. That also serves the owner's "buffing your own
 army/troops" ask, and it makes the two minion towers answer opposite questions.
 
-> **How this was actually answered — SUPERSEDED, Session 21.** The escort
+> **How this was actually answered. SUPERSEDED, Session 21.** The escort
 > proposal was not built. CUSTODIAN was differentiated along a different axis
 > instead: it became a `vigil` tower that shoots nothing and blocks nothing, and
-> spends a standing watch of wardens to catch **breaches** — one warden per
+> spends a standing watch of wardens to catch **breaches**, one warden per
 > leak, on a `vigilEvery` cooldown (`towers2.js:419`). That pairs it with the
 > recoverable-objective mechanic rather than with FOUNDRY, so the two minion
 > towers do now answer opposite questions; the question CUSTODIAN answers is
 > just "what happens when something gets through" rather than "how do I buff my
 > own army". The buff-your-own-army ask was answered separately and more
-> directly by the **summoning rites** in Session 22 — see
+> directly by the **summoning rites** in Session 22, see
 > [`docs/ROADMAP.md`](ROADMAP.md) § Session 22.
 
 ---
@@ -105,7 +105,7 @@ army/troops" ask, and it makes the two minion towers answer opposite questions.
 the design constraint is explicit: *a new tower is not approved until it names a
 `base` key that appears nowhere else in the arsenal.*
 
-Robotic is a special case — roadmap **19.5** makes that whole line story
+Robotic is a special case, roadmap **19.5** makes that whole line story
 unlocks, DRONE BAY first, so its two additions are also two more solar-system
 rewards and should be paced against how many systems a campaign actually has.
 
@@ -116,13 +116,13 @@ rewards and should be paced against how many systems a campaign actually has.
 The owner wants towers that are deliberately early- or late-game rather than
 uniformly fair. The levers already in the data model, no new machinery needed:
 
-- **`cost` + `costGrowth`** — `bolt` is 115 at 1.50 growth (the gentlest in the
+- **`cost` + `costGrowth`**, `bolt` is 115 at 1.50 growth (the gentlest in the
   arsenal, hence the wall strategy); `foundry` is 300 at 1.78. Growth is the
   strongest single knob for when a tower stops being worth it.
-- **Time on field** — `forgeTime`, `incomeEvery` and stack builders pay out over
+- **Time on field**, `forgeTime`, `incomeEvery` and stack builders pay out over
   seconds, so they are structurally weak the wave they are placed and strong on
   a board that has held. That is a late-game curve expressed as a mechanic.
-- **Level jumps** — a tower whose MK III is a large multiple is a late-game
+- **Level jumps**, a tower whose MK III is a large multiple is a late-game
   investment; one whose base is already most of its power is an opener.
 
 Each of the eleven new towers should state which shape it is aiming at, and the
@@ -134,7 +134,7 @@ pins must be re-measured after they land: fresh loss median 6–7, maxed tier-0
 ## Soul shop inflation (19.9)
 
 Tracked with the unlock work rather than here: each purchase raises every *other*
-purchase from that faction by +1 soul. Worth noting the interaction — **eleven
+purchase from that faction by +1 soul. Worth noting the interaction, **eleven
 new towers means eleven more purchasables**, so an inflation rule that felt gentle
 at seven towers per faction compounds harder at ten. Model the full unlock curve
 for one faction before committing the number.

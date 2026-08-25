@@ -117,7 +117,7 @@ compatibility FIRST, prose LAST.
 |---|---|---|---|
 | H1 | Sweep check 25.3 fails: light.lives 25 vs human.lives 30. Fix the check or the data | DONE | FIXED: 25.3 now measures leaks survived, not raw lives. light 12.5 vs human 10.0. Sweep 0 FAIL |
 | H2 | 8 towers undraftable by AI: cores are 5 long, LOADOUT_SIZE is 4 | DONE | FIXED: seeded drop makes the 5th core slot reachable, and vault got a second origin-coherent core. All 8 reachable in 2000 drafts, every set still exactly 4 |
-| H3 | 10 escaped `—` em dashes in player-facing strings | DONE | tools/emdash.js --fix: 341 occurrences, 331 lines, zero remaining. Includes the 10 escaped forms the S26 pass missed |
+| H3 | 10 escaped `, ` em dashes in player-facing strings | DONE | tools/emdash.js --fix: 341 occurrences, 331 lines, zero remaining. Includes the 10 escaped forms the S26 pass missed |
 | H4 | 21 `transition: all` rules, 2 rules animating `width` | DONE | 16 transition:all replaced with explicit paint/compositor list. HUD bars .bar i/.prep i converted width->scaleX. .rw-bar i kept as documented exception |
 | H5 | `Game.loopErrors` written but read by zero harnesses; bare `catch (e) {}` at owner-sweep.js:487 | DONE | FIXED: 22.10 now reports throws separately from blank ink; new check 22.12 reads Game.loopErrors |
 

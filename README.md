@@ -2,18 +2,18 @@
 
 A **PvPvE** tower defence built on plain Canvas 2D and the Web Audio API. No
 runtime dependencies and no framework: every sound is synthesised on the fly and
-every unit on the battlefield is drawn by code. The menu art — portraits,
-crests, dossiers, world plates — is rendered offline and shipped inlined; see
+every unit on the battlefield is drawn by code. The menu art, portraits,
+crests, dossiers, world plates, is rendered offline and shipped inlined; see
 *The art pipeline* below.
 
 ### Play it: <https://majieddd.github.io>
 
-Or run it locally — `python -m http.server 8471 --bind 127.0.0.1`, then open
+Or run it locally, `python -m http.server 8471 --bind 127.0.0.1`, then open
 <http://127.0.0.1:8471/index.html>. (`file://` blocks the module loads, so the
 served copy is the one to use.)
 
 `node build.js` produces `aegis-protocol.html`: about 6.4 MB, fully
-self-contained, and the one file that *does* run straight from `file://` — the
+self-contained, and the one file that *does* run straight from `file://`, the
 whole game, art and audio in a single document you can email to someone. The
 original single-player version is kept at
 `docs/archive/v1-aegis-protocol-solo.html`.
@@ -27,14 +27,14 @@ same 6,000-line file, what CI will fail you on, and the traps that have each cos
 somebody a day.
 
 **Where the rest of the paper lives.** [`docs/ROADMAP.md`](docs/ROADMAP.md) is
-the one to open if work stopped and is resuming — every session's decisions, and
+the one to open if work stopped and is resuming, every session's decisions, and
 what each item actually turned out to be once someone read the code.
 [`docs/BRAND.md`](docs/BRAND.md) is the binding visual contract,
 [`docs/TOWER-AUDIT.md`](docs/TOWER-AUDIT.md) is why no two towers share an
 identity, and [`docs/MECHANICS-OPTIONS.md`](docs/MECHANICS-OPTIONS.md) holds
 fifteen designed-but-unbuilt mechanics awaiting a pick.
 
-**Multiplayer is on `main` and live.** Two humans, one lockstep duel — no
+**Multiplayer is on `main` and live.** Two humans, one lockstep duel, no
 server, no dependency, offline. Two windows of one browser talk over
 `BroadcastChannel`; two machines talk over an `RTCDataChannel` the two players
 signal by hand, because every signalling service there is to rent is a
@@ -49,12 +49,12 @@ see, and all seven were fixed; the whole story, including the audit, is in
 ## The idea
 
 Humanity has met alien life and found the universe full of it. Four powers
-matter — Humanity, the Federation of Light, the Xeno and the Pirates — and the
+matter. Humanity, the Federation of Light, the Xeno and the Pirates, and the
 war for the galaxy is fought one world at a time.
 
 You and a rival commander sit on opposite ends of one mirrored field. Neutral
 waves spawn in the centre and march on both bases simultaneously. Everything
-you kill gets back up and walks to your rival's door — and a reanimated unit
+you kill gets back up and walks to your rival's door, and a reanimated unit
 that dies is gone for good, so kills never cascade.
 
 Your dead walk **your own lane in reverse**. There is no separate corridor for
@@ -64,9 +64,9 @@ set of ground, travelled both directions.
 
 Around that core sits a roguelike campaign: a galaxy of solar systems, each
 world with its own battlefield, arena modifier, named rival commander and a
-boon you keep on victory. A defeat keeps the campaign — the galaxy and every
+boon you keep on victory. A defeat keeps the campaign, the galaxy and every
 star on it survive; only abandoning a campaign forfeits it. Stars pay SOULS the
-moment they are earned — permanent unlocks for commanders and towers.
+moment they are earned, permanent unlocks for commanders and towers.
 
 ## What ships
 
@@ -76,8 +76,8 @@ moment they are earned — permanent unlocks for commanders and towers.
 | The Maelstrom | a **20**-seat arena, its board solved from the seat count rather than authored |
 | Towers | **60**, twelve per tech origin (ten of them 2×2 heavies) |
 | Enemies | **54**, including 5 minibosses and 1 boss |
-| Commanders | **26**, across 5 powers — the fifth is unlocked by conquering a galaxy |
-| Commander abilities | **12** — 6 offensive, 6 defensive |
+| Commanders | **26**, across 5 powers, the fifth is unlocked by conquering a galaxy |
+| Commander abilities | **12**, 6 offensive, 6 defensive |
 | Arena modifiers | **8** |
 | Victory boons | **20**, five per faction, keyed to the world you took them from |
 | Faction units | **25**, five per power, rescued from the maps their power holds or bought with souls |
@@ -86,7 +86,7 @@ moment they are earned — permanent unlocks for commanders and towers.
 ## Sixty towers, five slots, five origins
 
 Every tower is built by somebody, and the builder is a mechanical identity
-rather than a label — each origin carries a rider the engine actually reads.
+rather than a label, each origin carries a rider the engine actually reads.
 No tower shares its identifying mechanic with another; the newest ten were
 built against that rule explicitly (`docs/TOWER-AUDIT.md`).
 
@@ -96,7 +96,7 @@ built against that rule explicitly (`docs/TOWER-AUDIT.md`).
 | **ROBOTIC** | 12 | No proc, no gamble. Machines placed within reach of each other form a lattice, and every link pays |
 | **PIRATE** | 12 | Governors removed. Strikes sometimes overload far past their rating, and the heat that builds takes the gun offline when the bank fills |
 | **XENO** | 12 | Grows on wounds. Every hit carries a rider that scales off how hurt the target already is |
-| **FEDERATION** | 12 | Holds a target's protections open — every resistance it has is worth less for a few seconds — and cannot itself be jammed or sabotaged |
+| **FEDERATION** | 12 | Holds a target's protections open, every resistance it has is worth less for a few seconds, and cannot itself be jammed or sabotaged |
 
 You deploy five of them. You begin owning one (BOLT) and 6 souls, which is
 exactly the price of a second. Since Session 19 the loadout has a second column:
@@ -124,22 +124,22 @@ behind owning one specific tower. A marked unit wears its element as a ringed
 glyph, and the loadout screen lists exactly which reactions your five picks can
 produce.
 
-Twelve enemies resist a specific element — a **Palisade** takes half damage from
-frost — and twenty-two are weak to one. Reactions need two different marking
+Twelve enemies resist a specific element, a **Palisade** takes half damage from
+frost, and twenty-two are weak to one. Reactions need two different marking
 elements to overlap on the same stretch of lane, which makes tower placement an
 elemental decision as well as a spatial one.
 
 ## Progression
 
-- **Commander tech charts** (3×3, row-gated) — levels from battle XP
-- **Tower mastery** — each tower earns XP when deployed; mastery unlocks its
+- **Commander tech charts** (3×3, row-gated), levels from battle XP
+- **Tower mastery**, each tower earns XP when deployed; mastery unlocks its
   six talents one at a time, M1 through M6, on a 3-row × 2-column grid
 - **Tower talents** activate only when their tier is reached in battle
-- **Souls** — paid by STARS, the moment you earn them: 2 a star, so a clean
+- **Souls**, paid by STARS, the moment you earn them: 2 a star, so a clean
   three-star conquest is 6. Spend them on commanders (12 in your own faction,
   18 outside it), a commander's second ability, and **unlocking towers** at 6
   each
-- **The arsenal** — your rival is held to the same ceiling: it fields an arsenal
+- **The arsenal**, your rival is held to the same ceiling: it fields an arsenal
   of equal size drawn from its own deterministic slice of the roster, and its
   commander tech and tower talents run only as deep as yours do. Progression is
   a race, not a wall.
@@ -147,7 +147,7 @@ elemental decision as well as a spatial one.
 ## The economy is a vice
 
 Tower prices grow per copy owned AND inflate **7.5%** with every tower you have,
-of any kind — `Math.pow(1.075, towers.length)`.
+of any kind, `Math.pow(1.075, towers.length)`.
 
 Ascension is unlimited and priced on a golden exponent:
 `cost = (2 × paid specialisation) ^ (1.1618ⁿ)`, with `n` counting from zero. The
@@ -177,12 +177,12 @@ per galaxy tier** once you claim a galaxy and start the next, and the enrage
 term.
 
 The build window is 22s before the first wave, then 15s shrinking by 0.35s a
-wave to a 7s floor it reaches at wave 23 — so the field stays busy rather than
+wave to a 7s floor it reaches at wave 23, so the field stays busy rather than
 idle.
 
 Enemies come fewer but individually stronger. Bosses and minibosses are wholly
 immune to slow, displacement and stun. **Eight** aura carriers protect their
-neighbours from your control tools — Marshal Pylon (RESOLVE), Anchor Pylon
+neighbours from your control tools. Marshal Pylon (RESOLVE), Anchor Pylon
 (ANCHOR), Cadence Pylon (HASTE), Bastion Pylon (PLATING), Oriflamme, Hivelord
 (FRENZY), Vanguard (LOCKSTEP) and Omniframe (CONSENSUS). Kill the carrier and the buff dies with it.
 
@@ -194,9 +194,9 @@ neighbours from your control tools — Marshal Pylon (RESOLVE), Anchor Pylon
 |---|---|
 | `1`–`5` | Select tower from your loadout |
 | `Shift` + click | Place several without reselecting |
-| Click a tower | Inspect / upgrade / retarget — rival towers too |
+| Click a tower | Inspect / upgrade / retarget, rival towers too |
 | `U` / `S` | Upgrade / sell selected |
-| `Q` / `E` | Commander abilities — offensive slot / defensive slot |
+| `Q` / `E` | Commander abilities, offensive slot / defensive slot |
 | `Tab` | Cycle targeting mode |
 | `Space` or `P` | Pause |
 | `N` or `Enter` | Rush the next wave |
@@ -214,14 +214,14 @@ node build.js
 
 writes both bundles from `index.html`, `css/` and `js/`:
 
-- `aegis-protocol.html` — a complete document, openable straight from `file://`
-- `aegis-artifact.html` — the same page without the document-level tags, for a
+- `aegis-protocol.html`, a complete document, openable straight from `file://`
+- `aegis-artifact.html`, the same page without the document-level tags, for a
   host that supplies its own shell
 
 The build refuses to write a bundle that still points at an external file, so a
 missed inline is a failed build rather than a broken download.
 
-For development, serve the folder and open `index.html` — the modules load as
+For development, serve the folder and open `index.html`, the modules load as
 plain scripts, so there is no watcher and no transpile step:
 
 ```
@@ -234,8 +234,8 @@ files cache hard and you will otherwise test stale code.
 ## The art pipeline
 
 Sound and battlefield sprites are generated at runtime. The **menu** art is not:
-it is rendered offline by the generator in `artgen/` — inside this repository,
-not beside it — and baked into `js/artpack.js` as one object of base64 WebP data
+it is rendered offline by the generator in `artgen/`, inside this repository,
+not beside it, and baked into `js/artpack.js` as one object of base64 WebP data
 URIs, which is why the bundle is 6.4 MB rather than 500 KB: `js/artpack.js`
 alone is 4.96 MB.
 
@@ -254,7 +254,7 @@ The pack holds **188** keys:
 | Key art | `title`, `nebula`, `blackhole` | 3 |
 
 Every lookup goes through `art(key)` / `artImg(key, …)` in `js/dialogue.js`,
-both of which return empty for a missing key — so a partial pack degrades to the
+both of which return empty for a missing key, so a partial pack degrades to the
 procedural artwork each surface shipped with rather than breaking it.
 
 To regenerate (see [`docs/BRAND.md`](docs/BRAND.md) for the style contract, which is binding):
@@ -268,7 +268,7 @@ node build.js                      # inline into the two bundles
 ```
 
 Run these from the repository root. **The `python` on your PATH is probably not
-the one that can render** — only `sdxl_all.py` needs torch, and on an
+the one that can render**, only `sdxl_all.py` needs torch, and on an
 interpreter without it that command dies at `import torch` while the other
 three succeed on Pillow alone, which reads as a broken pipeline rather than a
 wrong interpreter. CONTRIBUTING §6 has the check and the fix.
@@ -334,5 +334,5 @@ chart slowly inward for as long as the screen is watched.
 
 **Tower previews are the towers.** Every menu that names a tower draws it by
 calling the same `draw_*` routine the battlefield uses, on a lightweight stub
-posed mid-animation — so the loadout grid, the shop, the tooltips, the talent
+posed mid-animation, so the loadout grid, the shop, the tooltips, the talent
 trees and the soul shop all show real artwork rather than an icon font.

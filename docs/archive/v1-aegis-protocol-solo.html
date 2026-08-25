@@ -7,7 +7,7 @@
 <meta name="description" content="A tower defense game with eight branching tower types, eleven enemy archetypes and a fully synthesised soundtrack.">
 <style>
 /* ==========================================================================
-   AEGIS PROTOCOL — Interface Styling
+   AEGIS PROTOCOL, Interface Styling
    ========================================================================== */
 
 :root {
@@ -608,7 +608,7 @@ kbd {
       <button class="btn" data-open="settings">AUDIO</button>
     </div>
 
-    <p class="credits">Canvas &amp; Web Audio, no dependencies. Sound is synthesised live — nothing is pre-recorded.</p>
+    <p class="credits">Canvas &amp; Web Audio, no dependencies. Sound is synthesised live, nothing is pre-recorded.</p>
   </div>
 </div>
 
@@ -675,7 +675,7 @@ kbd {
     <div id="end-body"></div>
     <div class="modal-actions">
       <button id="btn-end-retry" class="btn">RUN IT AGAIN</button>
-      <button id="btn-end-endless" class="btn btn-primary">CONTINUE — ENDLESS</button>
+      <button id="btn-end-endless" class="btn btn-primary">CONTINUE, ENDLESS</button>
       <button id="btn-end-menu" class="btn">MAIN MENU</button>
     </div>
   </div>
@@ -714,7 +714,7 @@ kbd {
         <span>Music volume</span>
         <input type="range" id="set-music" min="0" max="100" value="45">
       </label>
-      <p class="hint">The score is generated at runtime and layers up as the waves escalate — bass and drums enter at wave 4, the full arrangement at wave 8.</p>
+      <p class="hint">The score is generated at runtime and layers up as the waves escalate, bass and drums enter at wave 4, the full arrangement at wave 8.</p>
     </div>
   </div>
 </div>
@@ -722,7 +722,7 @@ kbd {
 <script>
 /* ── config.js ─────────────────────────────────── */
 /* ==========================================================================
-   AEGIS PROTOCOL — Configuration & Game Data
+   AEGIS PROTOCOL, Configuration & Game Data
    --------------------------------------------------------------------------
    All balance numbers, map geometry, tower trees, enemy stats and wave
    scripts live here. Nothing in this file executes game logic; it is pure
@@ -746,7 +746,7 @@ const MAPS = [
   {
     id: 'serpentine',
     name: 'SERPENTINE',
-    blurb: 'A long single lane that doubles back three times. Generous build space — ideal for learning the towers.',
+    blurb: 'A long single lane that doubles back three times. Generous build space, ideal for learning the towers.',
     difficulty: 'Introductory',
     cols: 22, rows: 13,
     paths: [
@@ -806,7 +806,7 @@ const DIFFICULTIES = [
    Upgrade model
    -------------
    `base` is level 1. `levels[]` holds the level 2 and level 3 upgrades.
-   `branches[]` holds two mutually exclusive level 4 specialisations — picking
+   `branches[]` holds two mutually exclusive level 4 specialisations, picking
    one permanently defines the tower's endgame identity.
 
    `mods` are ABSOLUTE replacement values merged over the running stat block,
@@ -847,7 +847,7 @@ const TOWER_TYPES = {
     color: '#ff9b3d', glow: 'rgba(255,155,61,0.55)', dark: '#7a4210',
     attack: 'lobbed',
     groundOnly: true,
-    desc: 'Lobs shells in an arc that detonate on impact. Devastating against packed ground formations — but the shells cannot track flyers.',
+    desc: 'Lobs shells in an arc that detonate on impact. Devastating against packed ground formations, but the shells cannot track flyers.',
     base: { damage: 32, range: 3.9, rate: 0.55, projSpeed: 8, dmgType: 'physical', splash: 1.25, pierce: 0 },
     levels: [
       { cost: 115, name: 'HEAVY',  mods: { damage: 52, splash: 1.45 },
@@ -887,7 +887,7 @@ const TOWER_TYPES = {
         note: 'Maximum control. 22% chance to freeze a target solid for 0.9s on top of a crushing 68% slow.' },
       { id: 'shatter', name: 'SHATTER', cost: 275,
         mods: { damage: 62, slow: 0.5, slowDur: 2.2, splash: 1.4, brittle: 2.0 },
-        note: 'Weaponised cold. Deals DOUBLE damage to any enemy that is already slowed — pairs with a second Cryo or a Glacier.' }
+        note: 'Weaponised cold. Deals DOUBLE damage to any enemy that is already slowed, pairs with a second Cryo or a Glacier.' }
     ]
   },
 
@@ -898,7 +898,7 @@ const TOWER_TYPES = {
     cost: 155,
     color: '#c084fc', glow: 'rgba(192,132,252,0.6)', dark: '#4c1d95',
     attack: 'chain',
-    desc: 'Discharges lightning that leaps between nearby enemies, losing power with each jump. Magic damage — armour is irrelevant.',
+    desc: 'Discharges lightning that leaps between nearby enemies, losing power with each jump. Magic damage, armour is irrelevant.',
     base: { damage: 20, range: 3.1, rate: 0.95, dmgType: 'magic', chains: 3, chainRange: 2.2, falloff: 0.75 },
     levels: [
       { cost: 135, name: 'CONDUIT',  mods: { damage: 31, chains: 4 },
@@ -912,7 +912,7 @@ const TOWER_TYPES = {
         note: 'Nine near-lossless jumps. A single Storm can clear an entire swarm wave by itself.' },
       { id: 'overload', name: 'OVERLOAD', cost: 415,
         mods: { damage: 145, chains: 3, falloff: 0.7, rate: 0.8, vuln: 0.3, vulnDur: 3.0 },
-        note: 'Fewer, far heavier strikes that leave targets CONDUCTIVE — they take 30% increased damage from all sources for 3s.' }
+        note: 'Fewer, far heavier strikes that leave targets CONDUCTIVE, they take 30% increased damage from all sources for 3s.' }
     ]
   },
 
@@ -923,7 +923,7 @@ const TOWER_TYPES = {
     cost: 115,
     color: '#ff6b4a', glow: 'rgba(255,107,74,0.6)', dark: '#7c2410',
     attack: 'cone',
-    desc: 'Projects a continuous cone of flame — no travel time, hits everything in front of it at once, and leaves targets burning after they leave.',
+    desc: 'Projects a continuous cone of flame, no travel time, hits everything in front of it at once, and leaves targets burning after they leave.',
     base: { damage: 24, range: 2.3, rate: 1, dmgType: 'magic', cone: 0.62, burn: 9, burnDur: 2.2 },
     levels: [
       { cost: 100, name: 'STOKED',   mods: { damage: 40, burn: 16 },
@@ -949,7 +949,7 @@ const TOWER_TYPES = {
     cost: 190,
     color: '#4ade80', glow: 'rgba(74,222,128,0.55)', dark: '#14532d',
     attack: 'hitscan',
-    desc: 'Extreme range, instant hit, huge per-shot damage that partially bypasses armour. Slow to cycle — it is an execution tool, not a crowd tool.',
+    desc: 'Extreme range, instant hit, huge per-shot damage that partially bypasses armour. Slow to cycle, it is an execution tool, not a crowd tool.',
     base: { damage: 75, range: 8.0, rate: 0.42, dmgType: 'physical', pierce: 0.5, splash: 0,
             preferStrongest: true },
     levels: [
@@ -975,12 +975,12 @@ const TOWER_TYPES = {
     cost: 125,
     color: '#a3e635', glow: 'rgba(163,230,53,0.55)', dark: '#3f5f0b',
     attack: 'projectile',
-    desc: 'Deals almost no impact damage. Instead it applies stacking venom that ignores armour AND shields and scales off the target\'s maximum health — the only tower that does not care how big something is.',
+    desc: 'Deals almost no impact damage. Instead it applies stacking venom that ignores armour AND shields and scales off the target\'s maximum health, the only tower that does not care how big something is.',
     base: { damage: 8, range: 3.3, rate: 1.1, projSpeed: 10, dmgType: 'magic', splash: 1.0,
             poisonDps: 7, poisonPct: 0.004, poisonDur: 4.0, maxStacks: 5 },
     levels: [
       { cost: 110, name: 'VIRULENT', mods: { damage: 12, poisonDps: 11, poisonPct: 0.007 },
-        note: 'A nastier strain — more damage per stack.' },
+        note: 'A nastier strain, more damage per stack.' },
       { cost: 200, name: 'PANDEMIC', mods: { damage: 18, poisonDps: 17, poisonPct: 0.011, maxStacks: 8, range: 3.6 },
         note: 'Stacks up to eight deep and lingers further out.' }
     ],
@@ -1012,10 +1012,10 @@ const TOWER_TYPES = {
     branches: [
       { id: 'overclock', name: 'OVERCLOCK', cost: 520,
         mods: { auraDmg: 0.48, auraRate: 0.65, auraRange: 0.08, range: 3.5 },
-        note: 'Prioritises speed — a colossal +65% fire rate. Best over Bolts, Pyres and Marksmen.' },
+        note: 'Prioritises speed, a colossal +65% fire rate. Best over Bolts, Pyres and Marksmen.' },
       { id: 'amplifier', name: 'AMPLIFIER', cost: 520,
         mods: { auraDmg: 0.90, auraRate: 0.16, auraRange: 0.26, range: 3.5 },
-        note: 'Prioritises power — +90% damage and +26% range. Best over Railguns, Mortars and Overloads.' }
+        note: 'Prioritises power, +90% damage and +26% range. Best over Railguns, Mortars and Overloads.' }
     ]
   }
 };
@@ -1046,7 +1046,7 @@ const ENEMY_TYPES = {
   bulwark: {
     id: 'bulwark', name: 'Bulwark', hp: 330, speed: 0.72, armor: 9, bounty: 27, lives: 3,
     radius: 15, color: '#7d93b8', shape: 'hex',
-    desc: 'Heavy armour plating. Physical damage barely scratches it — bring magic or armour shred.'
+    desc: 'Heavy armour plating. Physical damage barely scratches it, bring magic or armour shred.'
   },
   wisp: {
     id: 'wisp', name: 'Wisp', hp: 88, speed: 1.55, armor: 2, bounty: 14, lives: 1,
@@ -1172,7 +1172,7 @@ function waveBountyMultiplier(wave) {
 
 /* Targeting modes available on every attacking tower. */
 const TARGET_MODES = [
-  { id: 'first',    name: 'FIRST',    desc: 'Closest to your exit — the default and usually correct choice.' },
+  { id: 'first',    name: 'FIRST',    desc: 'Closest to your exit, the default and usually correct choice.' },
   { id: 'last',     name: 'LAST',     desc: 'Furthest from your exit. Useful for holding a chokepoint.' },
   { id: 'strong',   name: 'STRONGEST', desc: 'Highest current health. Good for Railguns hunting Juggernauts.' },
   { id: 'weak',     name: 'WEAKEST',  desc: 'Lowest current health. Maximises kill count and bounty flow.' },
@@ -1182,7 +1182,7 @@ const TARGET_MODES = [
 
 /* ── audio.js ─────────────────────────────────── */
 /* ==========================================================================
-   AEGIS PROTOCOL — Procedural Audio Engine
+   AEGIS PROTOCOL, Procedural Audio Engine
    --------------------------------------------------------------------------
    Every sound in the game is synthesised at runtime with the Web Audio API.
    There are no audio files, which keeps the game a single self-contained
@@ -1315,7 +1315,7 @@ const Sound = (() => {
     osc.stop(t0 + attack + rel + 0.05);
   }
 
-  /** A filtered noise burst — the basis of every impact, hiss and explosion. */
+  /** A filtered noise burst, the basis of every impact, hiss and explosion. */
   function noise(opts) {
     if (!ready || !settings.sfxEnabled) return;
     const {
@@ -1741,7 +1741,7 @@ const Sound = (() => {
 
 /* ── entities.js ─────────────────────────────────── */
 /* ==========================================================================
-   AEGIS PROTOCOL — Entities & Simulation
+   AEGIS PROTOCOL, Entities & Simulation
    --------------------------------------------------------------------------
    Path, Enemy, Tower, Projectile and the lightweight effect objects.
    Each entity owns both its simulation step and its own rendering, which
@@ -1764,7 +1764,7 @@ function angleLerp(a, b, t) {
   return a + d * t;
 }
 
-/** Squared distance — used everywhere in the hot loop to avoid sqrt. */
+/** Squared distance, used everywhere in the hot loop to avoid sqrt. */
 function dist2(ax, ay, bx, by) {
   const dx = ax - bx, dy = ay - by;
   return dx * dx + dy * dy;
@@ -1868,7 +1868,7 @@ class Enemy {
     this.slowResist = def.slowResist || 0;
     this.slowCap = def.slowCap !== undefined ? def.slowCap : 0.85;
 
-    /* status effects — all countdown timers in seconds */
+    /* status effects, all countdown timers in seconds */
     this.slowFactor = 0; this.slowTimer = 0;
     this.burnDps = 0;    this.burnTimer = 0;
     this.poisonStacks = 0; this.poisonTimer = 0; this.poisonDps = 0; this.poisonPct = 0;
@@ -3139,7 +3139,7 @@ class Projectile {
 
 /* ── game.js ─────────────────────────────────── */
 /* ==========================================================================
-   AEGIS PROTOCOL — Core Game State, Simulation Loop & World Rendering
+   AEGIS PROTOCOL, Core Game State, Simulation Loop & World Rendering
    ========================================================================== */
 
 'use strict';
@@ -3262,7 +3262,7 @@ const Game = {
 
   waveReward(n) { return this.waveDef(n).reward; },
 
-  /** Seconds of spawning still pending — drives the early-call bonus. */
+  /** Seconds of spawning still pending, drives the early-call bonus. */
   remainingSpawnTime() {
     if (!this.spawnQueue.length) return 0;
     return Math.max(0, this.spawnQueue[this.spawnQueue.length - 1].t - this.clock);
@@ -3306,7 +3306,7 @@ const Game = {
     Sound.setTempo(96 + Math.min(28, this.wave * 3));
 
     if (def.boss) { Sound.play('bossWarn'); this.banner('⚠  ' + def.name + '  ⚠', 3.4, '#ef4444'); }
-    else { Sound.play('waveStart'); this.banner('WAVE ' + this.wave + ' — ' + def.name, 2.2); }
+    else { Sound.play('waveStart'); this.banner('WAVE ' + this.wave + ', ' + def.name, 2.2); }
 
     UI.syncAll();
   },
@@ -3683,7 +3683,7 @@ const Game = {
       this.onFieldClear();
     }
 
-    /* Cheap periodic HUD refresh — the DOM does not need 60fps. */
+    /* Cheap periodic HUD refresh, the DOM does not need 60fps. */
     this.uiTick = (this.uiTick || 0) + dt;
     if (this.uiTick > 0.12) { this.uiTick = 0; UI.syncLive(); }
   },
@@ -3823,7 +3823,7 @@ const Game = {
     }
 
     /* Flyers ignore the lane and cut straight across, so the air corridor is
-       drawn too — faint normally, lit up when flyers are inbound or present.
+       drawn too, faint normally, lit up when flyers are inbound or present.
        Without this the first Wisp wave reads as an unfair ambush. */
     const airborne = this.enemies.some(e => e.flying);
     const incoming = !airborne && this.flyersExpected();
@@ -4160,7 +4160,7 @@ const Storage = {
 
 /* ── ui.js ─────────────────────────────────── */
 /* ==========================================================================
-   AEGIS PROTOCOL — Interface Layer
+   AEGIS PROTOCOL, Interface Layer
    --------------------------------------------------------------------------
    The playfield is canvas; everything else is DOM. That keeps text crisp,
    makes the panels keyboard- and screen-reader-navigable, and means the
@@ -4328,7 +4328,7 @@ const UI = {
   refreshBest() {
     const b = Storage.best(this.menuMap, this.menuDiff);
     this.el.bestLine.textContent = b
-      ? `Best on this configuration — wave ${b.wave}${b.won ? ' (cleared)' : ''}, ${b.kills} kills, ${b.lives} lives remaining.`
+      ? `Best on this configuration, wave ${b.wave}${b.won ? ' (cleared)' : ''}, ${b.kills} kills, ${b.lives} lives remaining.`
       : 'No recorded run for this map and difficulty yet.';
   },
 
@@ -4444,7 +4444,7 @@ const UI = {
         </button>
         <p class="branch-note">${u.note}</p>`;
     } else {
-      upgradeHtml = `<div class="branch-title">CHOOSE A SPECIALISATION — permanent</div>` +
+      upgradeHtml = `<div class="branch-title">CHOOSE A SPECIALISATION, permanent</div>` +
         next.data.map((b, i) => {
           const afford = Game.gold >= b.cost;
           return `
@@ -4546,7 +4546,7 @@ const UI = {
 
     return `
       <div class="wave-info">
-        <div class="section-label">INCOMING — WAVE ${next}${def.boss ? ' ⚠' : ''}</div>
+        <div class="section-label">INCOMING, WAVE ${next}${def.boss ? ' ⚠' : ''}</div>
         <div class="wave-name ${def.boss ? 'boss' : ''}">${def.name}</div>
         <div class="roster">${list}</div>
         <div class="wave-reward">Clear bonus <b>◈${def.reward}</b></div>
@@ -4560,7 +4560,7 @@ const UI = {
       </div>`;
   },
 
-  bindWaveInfo() { /* nothing interactive yet — placeholder for symmetry */ },
+  bindWaveInfo() { /* nothing interactive yet, placeholder for symmetry */ },
 
   /* ================================================================ CODEX */
 
@@ -4572,8 +4572,8 @@ const UI = {
           <div class="ce-head"><b>${t.name}</b><span>◈${t.cost} · ${t.role}</span></div>
           <p>${t.desc}</p>
           <div class="ce-branches">
-            <div><b>${t.branches[0].name}</b> — ${t.branches[0].note}</div>
-            <div><b>${t.branches[1].name}</b> — ${t.branches[1].note}</div>
+            <div><b>${t.branches[0].name}</b>, ${t.branches[0].note}</div>
+            <div><b>${t.branches[1].name}</b>, ${t.branches[1].note}</div>
           </div>
         </div>`;
     }).join('');
@@ -4590,7 +4590,7 @@ const UI = {
         <div class="codex-note">
           <p><b>Physical</b> is reduced by a flat amount equal to the target's armour (never below 12% of the hit).
              Bolt, Mortar and Railgun are physical.</p>
-          <p><b>Magic</b> ignores armour entirely. Cryo, Arc and Pyre are magic — they are the answer to Bulwarks and Juggernauts.</p>
+          <p><b>Magic</b> ignores armour entirely. Cryo, Arc and Pyre are magic, they are the answer to Bulwarks and Juggernauts.</p>
           <p><b>Pure</b> ignores armour <i>and</i> shields. Only Toxin's venom deals pure damage, which makes it the
              cleanest counter to Aegis units.</p>
         </div>
@@ -4601,7 +4601,7 @@ const UI = {
 
   /* ================================================================ SYNC */
 
-  /** Full rebuild — call after any state change that alters panel contents. */
+  /** Full rebuild, call after any state change that alters panel contents. */
   syncAll() {
     this.syncLive();
     this.syncShop();
@@ -4753,7 +4753,7 @@ const UI = {
 
 /* ── main.js ─────────────────────────────────── */
 /* ==========================================================================
-   AEGIS PROTOCOL — Bootstrap & Keyboard Controls
+   AEGIS PROTOCOL, Bootstrap & Keyboard Controls
    ========================================================================== */
 
 'use strict';
@@ -4840,7 +4840,7 @@ const UI = {
         case 'u':
           if (Game.selected) {
             const next = Game.selected.nextUpgrade();
-            /* A branch choice is deliberate — never auto-pick one. */
+            /* A branch choice is deliberate, never auto-pick one. */
             if (next && next.kind === 'level') Game.upgrade(Game.selected);
             else if (next) Sound.play('denied');
           }

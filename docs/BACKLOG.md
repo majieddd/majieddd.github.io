@@ -1,4 +1,4 @@
-# Cosmic Conquest — the standing backlog
+# Cosmic Conquest, the standing backlog
 
 Everything not finished, in one place. Rebuilt at the end of Session 20.
 
@@ -6,13 +6,13 @@ Everything not finished, in one place. Rebuilt at the end of Session 20.
 written down; *not started* means nobody has looked.
 
 **Currently shipped and green on `main`:** owner sweep 0 FAIL (the pass/info
-split varies with tab visibility — rAF checks report INFO in a hidden tab),
+split varies with tab visibility, rAF checks report INFO in a hidden tab),
 duel harness `MPT.all()` clean, Sessions 19 through 22 complete, both balance
 pins holding, duel / tri / twenty-seat arena soaking clean.
 
 **The inventory, measured from the live registries rather than counted by
 hand** (this line said 50 towers and 20 units for two sessions after the game
-had 60 and 25 — and the missing ten and five were exactly the content with no
+had 60 and 25, and the missing ten and five were exactly the content with no
 art, so the undercount hid the gap twice over): **60 towers** (12 per origin,
 10 of them 2×2), **26 commanders** across **5 powers**, **25 units**, 20 boons,
 15 maps, 188 art plates. Live on all three surfaces.
@@ -21,11 +21,11 @@ art, so the undercount hid the gap twice over): **60 towers** (12 per origin,
 
 ## Outstanding
 
-### 1. Multiplayer — SHIPPED (Session 21)
+### 1. Multiplayer. SHIPPED (Session 21)
 `feature/multiplayer-20.6` is merged to `main` and live. The path there matters
 more than the destination:
 
-- The two harness failures closed — and the handoff's diagnosis of them was
+- The two harness failures closed, and the handoff's diagnosis of them was
   wrong. Not a test window: `contract()` read the LOCAL SAVE, so both
   commanders fielded a one-tower loadout, nothing died, and reanimation was
   unreachable by construction. The same root cause explains the isolation
@@ -42,16 +42,16 @@ more than the destination:
 
 Full story: [`MULTIPLAYER-HANDOFF.md`](MULTIPLAYER-HANDOFF.md). Still open,
 deliberately: WebRTC manual signalling for two MACHINES (BroadcastChannel is
-same-origin, one machine) — designed for, not built.
+same-origin, one machine), designed for, not built.
 
-### 2. Soul-shop surcharge (20.7i) — SHIPPED (Session 21)
+### 2. Soul-shop surcharge (20.7i). SHIPPED (Session 21)
 The per-shop ladder is live: `soulPrice(kind, id)` is the one price expression,
 `chargeSouls(kind, id)` books against `boughtBy[banner/kind]`, and the sharp
-bug — CRYO costing 6 souls if you opened the arsenal first and 22 if you
-recruited first — is gone. Migration proved against a legacy save; nobody is
+bug. CRYO costing 6 souls if you opened the arsenal first and 22 if you
+recruited first, is gone. Migration proved against a legacy save; nobody is
 charged more. Commit `4a7e62f`.
 
-### 3. The art pack re-encode (20.7k) — SHIPPED (Session 21)
+### 3. The art pack re-encode (20.7k). SHIPPED (Session 21)
 `write_pack` now ships cached bytes through untouched when format, mode and
 size already match (188/188 do), and says how many passed through vs were
 rebuilt. Measured: mean RMSE vs the source cache **2.493 → 0.0** across all
@@ -59,7 +59,7 @@ rebuilt. Measured: mean RMSE vs the source cache **2.493 → 0.0** across all
 
 ---
 
-### 4. The balance pins — FIXED, and re-baselined
+### 4. The balance pins. FIXED, and re-baselined
 `tools/balance-pins.js` now takes a **seed** and resets the AI prototype between
 runs, and `PINS.selfTest()` reports `reproducible: true`.
 
@@ -74,7 +74,7 @@ A seeded six-map baseline is now recorded in
 [`BALANCE-BASELINE.md`](BALANCE-BASELINE.md) with the seeds to replay it.
 Two documented claims did not survive it: **"every loss under wave 10" is
 false** (coil 10, shattered 13, reproducibly), and the maxed **"median 27"** is
-the top of the range, not the middle — the loss median is 22.
+the top of the range, not the middle, the loss median is 22.
 
 **Still open, and it is a question rather than a defect:** whether that same
 prototype carry-over changes the real game's second match of a session. `init()`
@@ -92,11 +92,11 @@ looked is worth not re-learning:
 
 | Was | Outcome |
 |---|---|
-| **A1 units (19.10-19.15)** | ✅ Mostly wiring, not building — 20 faction units already existed with art and per-map rescue already worked; they had simply never been connected. 61/62 checks |
+| **A1 units (19.10-19.15)** | ✅ Mostly wiring, not building. 20 faction units already existed with art and per-map rescue already worked; they had simply never been connected. 61/62 checks |
 | **A2 tower identity (19.20)** | ✅ 36 of 39 already unique. Three stat blocks given signatures, all five real pairs separated. 288/288 checks |
 | **A3 boons (19.23-19.24)** | ✅ 20 boons, 5 per power, keyed to power × world kind. All proved live; five dormant engine mechanics woken |
 | **B 11 new towers (19.21-19.22)** | ✅ 50 towers, ten per power, each naming a `base` key that appears nowhere else |
-| **D technical debt** | ✅ All ten Session-19 items closed in 20.7 — plus four extra name collisions the sweep found on its own |
+| **D technical debt** | ✅ All ten Session-19 items closed in 20.7, plus four extra name collisions the sweep found on its own |
 
 The one lesson worth carrying: in four of those five, **reading the code first
 changed what the task was.** The lane-blocking spawner already existed. The
@@ -105,17 +105,17 @@ Measure before building.
 
 ---
 
-## C. Owner decisions — RESOLVED (Session 21, round two)
+## C. Owner decisions. RESOLVED (Session 21, round two)
 
 The owner reviewed the docket and ruled on every row:
 
 | Decision | Ruling |
 |---|---|
-| The one Krea 2 commander plate (`cmd_cadre`) | **1B — leave it.** "All the commanders look fine." The mixed plate is owner-accepted; BRAND.md rule 3's partial-upgrade concern is waived for this one key |
-| "THE HARBINGER ENRAGES" | **2A — keep it.** Boss flavour, not the mechanic |
-| Commander / second-ability unlock scope | **2B... no — 3B: widen the split.** Commanders and abilities are shelved per banner like towers, with the 4A grandfather: every existing flat list seeded onto every shelf, nobody loses anything. Shipped — `cmdUnlockedBy` / `abilUnlockedBy` in `js/commanders.js` |
-| Grandfathered saves | **4A — keep the grandfather**, and it governed the 3B migration above |
-| WebRTC two-machine duels | **5A — queued as the next feature.** In design |
+| The one Krea 2 commander plate (`cmd_cadre`) | **1B, leave it.** "All the commanders look fine." The mixed plate is owner-accepted; BRAND.md rule 3's partial-upgrade concern is waived for this one key |
+| "THE HARBINGER ENRAGES" | **2A, keep it.** Boss flavour, not the mechanic |
+| Commander / second-ability unlock scope | **2B... no. 3B: widen the split.** Commanders and abilities are shelved per banner like towers, with the 4A grandfather: every existing flat list seeded onto every shelf, nobody loses anything. Shipped, `cmdUnlockedBy` / `abilUnlockedBy` in `js/commanders.js` |
+| Grandfathered saves | **4A, keep the grandfather**, and it governed the 3B migration above |
+| WebRTC two-machine duels | **5A, queued as the next feature.** In design |
 
 And from the held-back fifteen: **#1 (recoverable stolen objective)** and **#4
 (variable footprints, as two especially-powerful 2×2 towers per origin)** are
@@ -123,15 +123,15 @@ ordered built. The other thirteen remain held.
 
 ### The old table, for history
 
-#### Owner decisions — nothing is blocked, but these are yours
+#### Owner decisions, nothing is blocked, but these are yours
 
 | Decision | Context |
 |---|---|
-| **"THE HARBINGER ENRAGES"** | The only player-visible string still using the word. It is a *boss phase*, not the wave-bid mechanic — that is correctly named RESONANT FIELD everywhere. Renaming boss flavour is taste, so it was left rather than changed unasked |
+| **"THE HARBINGER ENRAGES"** | The only player-visible string still using the word. It is a *boss phase*, not the wave-bid mechanic, that is correctly named RESONANT FIELD everywhere. Renaming boss flavour is taste, so it was left rather than changed unasked |
 | **Commander / ability unlocks** | Note 19.6 named *towers*. Commander and second-ability unlocks stayed install-wide, and the commander screen already filters to your faction. Widening the split was not assumed |
-| **Grandfathered saves** | Existing profiles keep every tower they already owned on *every* faction shelf, and start the inflation ladder at zero. A stricter migration would take arsenals away from current players — a policy call, not a bug |
-| **The one Krea 2 commander plate** | `cmd_cadre` is a Krea 2 render; the other twenty commanders are SDXL (proved: 0.5/255 mean diff vs `cache_krea`, 97/255 vs `cache`). That is the partial class upgrade BRAND.md rule 3 forbids, live on `main` now. Measured on this machine: Krea 2 is **~138 min/image at 1024px**, not the 83 min the docs recorded — so finishing the commander class is ~46 GPU-hours and the `foe_` class ~113. Re-render `cmd_cadre` on SDXL (minutes), accept the mismatch, or commit the GPU time. Owner's call — see the final amendment in [`BRAND.md`](BRAND.md) |
-| **The fifteen held-back mechanics** | [`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md) — still awaiting picks, see section E |
+| **Grandfathered saves** | Existing profiles keep every tower they already owned on *every* faction shelf, and start the inflation ladder at zero. A stricter migration would take arsenals away from current players, a policy call, not a bug |
+| **The one Krea 2 commander plate** | `cmd_cadre` is a Krea 2 render; the other twenty commanders are SDXL (proved: 0.5/255 mean diff vs `cache_krea`, 97/255 vs `cache`). That is the partial class upgrade BRAND.md rule 3 forbids, live on `main` now. Measured on this machine: Krea 2 is **~138 min/image at 1024px**, not the 83 min the docs recorded, so finishing the commander class is ~46 GPU-hours and the `foe_` class ~113. Re-render `cmd_cadre` on SDXL (minutes), accept the mismatch, or commit the GPU time. Owner's call, see the final amendment in [`BRAND.md`](BRAND.md) |
+| **The fifteen held-back mechanics** | [`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md), still awaiting picks, see section E |
 
 ---
 
@@ -141,18 +141,18 @@ All ten Session-19 items were closed in 20.7. What is left:
 
 | Item | Where | State |
 |---|---|---|
-| Soul-shop surcharge | `Meta.soulPrice` / `Meta.chargeSouls`, `js/commanders.js` | ✅ shipped in Session 21 — per-shop ladders, order-independent, migration proved |
-| `--pack` re-encodes every plate | `artgen/krea_gen.py` `write_pack` | ✅ shipped in Session 21 — byte passthrough when the cache already matches; RMSE 2.493 → 0.0 across 188 keys |
-| `GX_VIEW.x` / `.y` inert | `js/config.js` | ✅ deleted in Session 21 — `GX_VIEW` is `{ w, h }` now, after re-proving `js/ui.js` reads `.w`/`.h` alone |
-| Pinch-zoom | `js/ui.js` `GalaxyFX.pinch` / `zoomAt` | **Verified under synthetic MULTI-pointer events (Session 21)**, which is as far as this environment goes. Two pointers register; spread 100→200px takes z 1.0→2.0; pinch 200→50px takes it back to 0.5; it clamps at both `GX_ZOOM_MIN` 0.36 and `GX_ZOOM_MAX` 2.6; pointers clear on release. `zoomAt`'s anchor math is **exact** — world drift under the anchor is 0 with `clamp()` stubbed, and the drift you see with it live is the camera correctly being held inside the map bounds. Note `pinch()` deliberately ignores separations under 4px (anti-jitter), so a test that drives the fingers together past that point measures nothing. Still unverified on REAL hardware: no multi-touch device here |
+| Soul-shop surcharge | `Meta.soulPrice` / `Meta.chargeSouls`, `js/commanders.js` | ✅ shipped in Session 21, per-shop ladders, order-independent, migration proved |
+| `--pack` re-encodes every plate | `artgen/krea_gen.py` `write_pack` | ✅ shipped in Session 21, byte passthrough when the cache already matches; RMSE 2.493 → 0.0 across 188 keys |
+| `GX_VIEW.x` / `.y` inert | `js/config.js` | ✅ deleted in Session 21, `GX_VIEW` is `{ w, h }` now, after re-proving `js/ui.js` reads `.w`/`.h` alone |
+| Pinch-zoom | `js/ui.js` `GalaxyFX.pinch` / `zoomAt` | **Verified under synthetic MULTI-pointer events (Session 21)**, which is as far as this environment goes. Two pointers register; spread 100→200px takes z 1.0→2.0; pinch 200→50px takes it back to 0.5; it clamps at both `GX_ZOOM_MIN` 0.36 and `GX_ZOOM_MAX` 2.6; pointers clear on release. `zoomAt`'s anchor math is **exact**, world drift under the anchor is 0 with `clamp()` stubbed, and the drift you see with it live is the camera correctly being held inside the map bounds. Note `pinch()` deliberately ignores separations under 4px (anti-jitter), so a test that drives the fingers together past that point measures nothing. Still unverified on REAL hardware: no multi-touch device here |
 
 ---
 
-## E. The held-back mechanics — THREE SHIPPED, TWELVE HELD
+## E. The held-back mechanics. THREE SHIPPED, TWELVE HELD
 
 The owner picked **#1** and **#4** from the docket. Both are in and live:
 
-- **#1 Recoverable stolen objective** — a leak becomes a chase. The unit turns
+- **#1 Recoverable stolen objective**, a leak becomes a chase. The unit turns
   around carrying the lives and only its EXIT charges; kill it and they were
   never lost. BRUTAL carries all three on one carrier. Commit `4a8fd73`.
 - **#4 Variable footprints**, in the owner's shape: **ten 2x2 heavies, two per
@@ -171,14 +171,14 @@ as a resource, #5 economy exposure, #6 FOCUS, #7 fog,
 From the mechanics dossier, deliberately **not** implemented pending your picks.
 Full write-ups with build notes in [`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md).
 
-1. Recoverable stolen objective — a leak becomes a timed recovery window
-2. Persistent battlefield scarring — wreckage denies rival build tiles
+1. Recoverable stolen objective, a leak becomes a timed recovery window
+2. Persistent battlefield scarring, wreckage denies rival build tiles
 3. Land as a purchasable or depleting resource
 4. Variable tower footprints
 5. Economy structures must survive to pay (jam gates VAULT income)
 6. Commander attention as an economic resource (FOCUS)
 7. Fog over the rival board / visibility-gated placement
-8. ~~Mutable destination, or a second spawn mouth~~ — **SHIPPED** in Session 22 as THE SPLICE: a Parallel SPLICER killed on your ground cuts a temporary second lane into your board for one wave (`Game.openSplice`)
+8. ~~Mutable destination, or a second spawn mouth~~, **SHIPPED** in Session 22 as THE SPLICE: a Parallel SPLICER killed on your ground cuts a temporary second lane into your board for one wave (`Game.openSplice`)
 9. Per-tower usage XP
 10. Tower upkeep / supply priority
 11. Territory-linked income
@@ -189,7 +189,7 @@ Full write-ups with build notes in [`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md
 
 ---
 
-## Session 22 — the summoning round
+## Session 22, the summoning round
 
 Eight owner items, all shipped. What is worth knowing later:
 
@@ -198,7 +198,7 @@ Eight owner items, all shipped. What is worth knowing later:
   MASS. CONSCRIPTION drafts from your roster, THE PROCESSION marches on a
   clock, THE BROOD incubates, LETTERS OF MARQUE buys everything with no
   ceiling on either bonus, THE LATTICE clones exactly and cannot buy at all.
-  The **commander** carries the rite, not the banner — that is the mixing
+  The **commander** carries the rite, not the banner, that is the mixing
   contract, and it is why a cross-faction commander brings their summoning to
   your flag while your roster supplies the soldiers.
 - **THE PARALLEL** is real in `FACTIONS` and absent from `FACTION_ORDER`. That
@@ -208,7 +208,7 @@ Eight owner items, all shipped. What is worth knowing later:
   garrisons on the map and machine bosses in seats.
 - **A Parallel player never fields their own soldiers**, and that is by
   construction rather than by oversight: the Lattice clones what it kills and
-  cannot buy. Robot units reach a lane when ANOTHER power captures them —
+  cannot buy. Robot units reach a lane when ANOTHER power captures them
   their technology is a thing to be stolen. The RELAY doctrine and THE SPLICE
   both fire on that path and are proved doing so.
 - **Everything campaign-shaped is a battle OPTION**, never read from the save:
@@ -226,23 +226,23 @@ Still open, and none of it new: the ten heavies have no `twr_` art plates, the
 rival AI draft lists never learnt them, and the soul shop's five new firing
 previews are unwired.
 
-The pacing worry this round raised is CLOSED and was never real — measured
+The pacing worry this round raised is CLOSED and was never real, measured
 properly, pre-doctrine and post-doctrine builds swept back to back in one
 session give a maxed loss median of 33 and 31, so expert matches got shorter
 rather than longer. See BALANCE-BASELINE's "the delta that was not there".
 
 ---
 
-## G. The outside review's unpatched items — ALL SIX SHIPPED (Session 22)
+## G. The outside review's unpatched items. ALL SIX SHIPPED (Session 22)
 
 | # | Item | Where it landed |
 |---|---|---|
-| D2 | Damage-number toggle | OPTIONS row, default ON. The gate sits INSIDE `addFloater` **after** the `rand()` draw — presentation may never be visible to the simulation, or two duel clients with different display settings desync. Proved sim-neutral: pins byte-identical with it on and off |
-| D3 | Escalation queueing | HOLD on the modal parks the sim but opens the board (`Game.boardInteractive`), with a chip to return. Abilities and musters keep their `playing`-only gates — they are timed acts |
+| D2 | Damage-number toggle | OPTIONS row, default ON. The gate sits INSIDE `addFloater` **after** the `rand()` draw, presentation may never be visible to the simulation, or two duel clients with different display settings desync. Proved sim-neutral: pins byte-identical with it on and off |
+| D3 | Escalation queueing | HOLD on the modal parks the sim but opens the board (`Game.boardInteractive`), with a chip to return. Abilities and musters keep their `playing`-only gates, they are timed acts |
 | D4 | ARIA pass | Build bar (name/role/price/hotkey), HUD, speed, summon tiers, profile delete, talent clear. Canvas placement is still pointer-only and the battle card now SAYS so |
 | D5 | Session stats | `Side.killLog` mirrors `leakLog`; a win gets THE HARVEST as a loss gets WHAT KILLED YOU, plus a second stats row from counters the sim already kept |
 | D6 | Soul ceremony | The galaxy claim counts souls onto the total instead of a toast. Souls are banked BEFORE the animation, so a refresh loses the animation and never the souls |
-| A4 | Difficulty ramp → **NEW GAME PLUS** | Converted per the owner: the choice unlocks after a galaxy is finished (`RAMP_PRESETS` veteran/onslaught/apex). VETERAN is provably the identity element — its two functions equal the retired ternaries — so a first galaxy and a veteran NG+ run play the game that shipped. The first galaxy is FLATTENED instead: relief tent to −35% at wave 8 rejoining the authored curve exactly at 15, types every 3 waves instead of 2, and no wave-5 miniboss in the opening system (the rota shifts rather than skips, so the teaching order survives). Every value is a battle OPTION, never read from the save, so skirmishes, duels and the pins keep the engine defaults |
+| A4 | Difficulty ramp → **NEW GAME PLUS** | Converted per the owner: the choice unlocks after a galaxy is finished (`RAMP_PRESETS` veteran/onslaught/apex). VETERAN is provably the identity element, its two functions equal the retired ternaries, so a first galaxy and a veteran NG+ run play the game that shipped. The first galaxy is FLATTENED instead: relief tent to −35% at wave 8 rejoining the authored curve exactly at 15, types every 3 waves instead of 2, and no wave-5 miniboss in the opening system (the rota shifts rather than skips, so the teaching order survives). Every value is a battle OPTION, never read from the save, so skirmishes, duels and the pins keep the engine defaults |
 
 ---
 
@@ -256,10 +256,10 @@ patch. The other five were never built, and I confirmed none of them exists:
 | # | Item | Cost | Note |
 |---|---|---|---|
 | D2 | **Damage-number toggle**, default ON for new players | S | `NUM_SQUISH` already anticipates the readability lever; nothing renders per-hit numbers today |
-| D3 | **Escalation-modal queueing** — let a build action queue, or show a countdown, during the halt | S | the halt is long on 20-seat boards, and the docs already note it |
-| D4 | **ARIA pass** — 35 aria attributes against hundreds of icon buttons | M | and keyboard play is impossible after deploy: canvas placement is mouse-only. Either document that or add a grid-placement keyboard mode |
-| D5 | **Session-stats screen** — deaths by type, reactions triggered, gold spent | M | every number already exists in sim state; this is presentation |
-| D6 | **First-win soul ceremony** — souls pay instantly; a counter animation would land the reward | S | presentation only |
+| D3 | **Escalation-modal queueing**, let a build action queue, or show a countdown, during the halt | S | the halt is long on 20-seat boards, and the docs already note it |
+| D4 | **ARIA pass**, 35 aria attributes against hundreds of icon buttons | M | and keyboard play is impossible after deploy: canvas placement is mouse-only. Either document that or add a grid-placement keyboard mode |
+| D5 | **Session-stats screen**, deaths by type, reactions triggered, gold spent | M | every number already exists in sim state; this is presentation |
+| D6 | **First-win soul ceremony**, souls pay instantly; a counter animation would land the reward | S | presentation only |
 | A4 | **Player-chosen difficulty ramp** | S | the reviewer downgraded this themselves after finding the ramp is deliberate pacing (`commanders.js` depth<2 SKIRMISH, <5 CONTESTED, else OVERRUN). The kernel left is accessibility: no way to opt into an easier ramp |
 
 None is a defect. All six are things a player would feel. Pick any and they get
@@ -267,7 +267,7 @@ built the same way everything else here did.
 
 ---
 
-## Session 23 — the closing round
+## Session 23, the closing round
 
 Everything the Session-22 audit left open, closed. Each item is pinned by a
 new check so it cannot quietly come back.
@@ -290,8 +290,8 @@ both are worth remembering because both looked like defects in the code:
 - The first dead-zone probe centred a 2x2 build ghost mid-TILE instead of
   mid-RECTANGLE and read a displaced hole as a broken one.
 - A contact sheet of new art was read off by one cell, so a round was spent
-  "fixing" `foe_splicer`, which was already correct, while `foe_gantry` — the
-  actual failure — went untouched. Label your sheets.
+  "fixing" `foe_splicer`, which was already correct, while `foe_gantry`, the
+  actual failure, went untouched. Label your sheets.
 
 Gates after: **owner sweep 46 pass / 0 fail / 3 info**, **MPT 37 pass / 0
 fail**, NET_PROTOCOL 5. The three INFOs are the documented skips: the boss
@@ -300,7 +300,7 @@ campaign profile, and a check needing a fronted tab.
 
 ---
 
-## Session 24 — THE OWNER'S FOUR CALLS, ANSWERED
+## Session 24. THE OWNER'S FOUR CALLS, ANSWERED
 
 The four decisions held over from Session 23. The owner ruled on all four;
 what follows is what each turned out to mean once the code was read.
@@ -308,14 +308,14 @@ what follows is what each turned out to mean once the code was read.
 | # | The call | What shipped |
 |---|---|---|
 | O1 | *"Yes they should be, to give replayability to other faction runs."* | **THE RENEGADE WORLD.** One per system: a splinter of your own power that will not stand down. It is the only ground that pays your own power's boons, and deliberately the only place your own soldiers march against you. |
-| O2 | *"Your commander will facilitate the way your units are made. For now it should be that you can mix units between commanders."* | The rite already followed the commander and vaulted units already mixed — both verified before touching anything. What did NOT hold: **EQUIP was obeyed on one battle path out of three.** |
+| O2 | *"Your commander will facilitate the way your units are made. For now it should be that you can mix units between commanders."* | The rite already followed the commander and vaulted units already mixed, both verified before touching anything. What did NOT hold: **EQUIP was obeyed on one battle path out of three.** |
 | O3 | *"As you get through the campaign, the AI should progressively use more advanced tactics."* | **A five-rung tactic ladder.** T2 is today's rival and the floor outside the campaign; the campaign opens below it and climbs past it to re-aiming and selling. |
-| O4 | *"unsure what this means, but use your best judgement."* | The literal question cannot arise — a duel is never fought over a contested world. The **garrison skirmish that replaces the refused duel** was fielding generic rivals instead of the two powers actually fighting over it. |
+| O4 | *"unsure what this means, but use your best judgement."* | The literal question cannot arise, a duel is never fought over a contested world. The **garrison skirmish that replaces the refused duel** was fielding generic rivals instead of the two powers actually fighting over it. |
 
 ### What the adversarial pass caught that I did not
 
 O1 shipped once before it was right. The renegade world read the world's own
-**kind** for its boon key, and kinds are weighted — so four draws landed all
+**kind** for its boon key, and kinds are weighted, so four draws landed all
 four kind-keyed boons in about **4%** of galaxies, 2.3 of 4 on average.
 "Reachable" would have quietly meant "eventually, across many runs" rather
 than "in this run". Cycling the key by system index, apex on the last, makes
@@ -334,7 +334,7 @@ sibling, rendering grey for all four powers.
 1. **Re-aiming made the rival worse and I only knew because I measured it.**
    The first version reasoned freely from the threat profile. config.js had
    already written down why that fails: FIRST is *"the default, and usually
-   correct"*, and WEAK *"maximises kills and reanimation output"* — an
+   correct"*, and WEAK *"maximises kills and reanimation output"*, an
    offensive property on a defensive board.
 2. **My head-to-head rig was not reproducible.** The player-side brain ran
    outside the seeded window, so the same config twice in one page gave wave
@@ -344,7 +344,7 @@ sibling, rendering grey for all four powers.
 ### The evidence
 
 Old and new bundles built, served at parallel paths, measured back to back in
-**one session** — identical step for step:
+**one session**, identical step for step:
 
 | pin | before | after |
 |---|---|---|
@@ -356,7 +356,7 @@ And the galaxy PRNG stream is frozen: **7,000 worlds across 5 powers × 40
 seeds, zero non-renegade fields moved.**
 
 Gates: **sweep 52 pass / 0 fail** (24.1–24.4 added), **MPT 37 pass / 0 fail**,
-NET_PROTOCOL still 5 — nothing changed a message shape, a fingerprint term or
+NET_PROTOCOL still 5, nothing changed a message shape, a fingerprint term or
 an index-coupled table, so no bump is owed.
 
 ---
@@ -366,13 +366,13 @@ an index-coupled table, so no bump is owed.
 Sessions 19–21 closed every technical item above. What remains is either an
 **owner pick** (section E's twelve held mechanics), or **hardware this
 environment lacks** (pinch-zoom on a real touchscreen). The four standing
-owner DECISIONS — O1 boons of your own power, O2 the equipped commander in
-skirmishes, O3 the rival's tactics, O4 the contested-world garrison — were
+owner DECISIONS, O1 boons of your own power, O2 the equipped commander in
+skirmishes, O3 the rival's tactics, O4 the contested-world garrison, were
 ruled on and shipped in Session 24 above. WebRTC manual signalling is no longer on
 this list: it shipped in Session 21 round two and was proved across two
 browsing contexts, sealed turns and all. There is no engineering backlog.
 
-If you touch economy, AI or towers: the pins are SEEDED now — use
+If you touch economy, AI or towers: the pins are SEEDED now, use
 `PINS.once(map, seed)` per page load, run `PINS.selfTest()` first (must say
 `reproducible: true`), and compare against the seeded baseline in
 [`BALANCE-BASELINE.md`](BALANCE-BASELINE.md), same seed to same seed. The old
@@ -382,15 +382,15 @@ or fingerprint changes.
 
 ---
 
-## Session 25 — THE OWNER'S BUG REPORT
+## Session 25. THE OWNER'S BUG REPORT
 
 Six items. Three were bugs, three were "check this was really implemented".
 
 ### The freeze, and the pause that would not lift
 
 They are the same defect seen twice. `Game.loop` booked the next frame on
-its **last line**, with no `try`. `draw()` carries no handler of its own —
-verified, zero in its first 120 lines — so any throw in `step()` or `draw()`
+its **last line**, with no `try`. `draw()` carries no handler of its own
+verified, zero in its first 120 lines, so any throw in `step()` or `draw()`
 skipped the reschedule and the loop stopped for good. The board froze, the HUD
 kept taking clicks, and the pause button toggled a flag nothing was left to
 read. The reschedule now happens in a `finally`; the error is reported once per
@@ -398,14 +398,14 @@ distinct message and parked on `Game.loopErrors`, never swallowed.
 
 Three concrete ways in were found and closed:
 
-1. **A permanently poisoned camera.** `clamp` returns NaN unchanged — NaN
-   compares false against everything — which is right for the simulation and
+1. **A permanently poisoned camera.** `clamp` returns NaN unchanged. NaN
+   compares false against everything, which is right for the simulation and
    fatal at a boundary. The drag handler divided by
    `getBoundingClientRect().width`, which is `0` while the canvas is hidden or
    mid-layout, and `0 * (width / 0)` is NaN. One such frame put NaN in `cam.x`
    and **nothing could wash it out**: `ctx.setTransform` silently ignores a
    non-finite matrix, so the board stopped moving while the sim carried on. A
-   `fin` guard now sits at the camera boundary — deliberately *not* a change to
+   `fin` guard now sits at the camera boundary, deliberately *not* a change to
    `clamp`, which the pins were measured through.
 2. **A hard `ReferenceError` one authored field away from firing every frame.**
    `Tower.updateCone`'s puddle block reads `target`, declared `const` inside
@@ -415,26 +415,26 @@ Three concrete ways in were found and closed:
 3. **The HUD is called from inside the simulation.** `Game.step` ends with
    `UI.syncLive()`, unguarded. A throw there skipped `this.acc -= STEP`, so two
    clients whose HUDs threw on different frames disagreed about the
-   accumulator — a determinism fix as much as a robustness one.
+   accumulator, a determinism fix as much as a robustness one.
 
-### The Federation of Light — two causes, not one
+### The Federation of Light, two causes, not one
 
 The rite was correct all along. What was wrong sat either side of it:
 
 - **Nothing to put in order.** Every profile opened with `['crawler']`, one
   Vigil machine. Two rites read the detachment as a **list** rather than a bag
-  — the Procession marches it in order, the Human draft rolls from it — and on
+ the Procession marches it in order, the Human draft rolls from it, and on
   a list of one there is no order to see. A banner now brings its own lightest
   soldier, derived from the roster: trooper, votary, chitling, cutter, stitch.
 - **The clock kept office hours.** `tickProcession` was gated on
-  `!this.waveRunning`, and `procTimer -= dt` sits *after* the gate — so between
+  `!this.waveRunning`, and `procTimer -= dt` sits *after* the gate, so between
   waves it did not pause, it did not **tick**. Most of the nine-second cadence
   was spent not counting. Measured: 25 bodies to wave 11 before, **63 after**.
 
 All five rites were then verified behaviourally, not read: Human drafts at
 random from the detachment; the Federation marches in order and compounds;
 the Brood leaves live incubators; the Lattice clones the **exact enemy killed**
-(crawler/blink/sprinter — not its own detachment); and the Pirates take **zero**
+(crawler/blink/sprinter, not its own detachment); and the Pirates take **zero**
 free bodies from 78 kills, with power and econ genuinely uncapped.
 
 ### The five skews
@@ -443,21 +443,21 @@ Humanity and the Parallel already read correctly and were left alone. The other
 three each carried a single number that said nothing about how they play. They
 needed a new hook: `FACTIONS[x].apply` runs *before* any commander is seated and
 `Meta.applyTo` then does `side.traits = freshTraits()`, so anything written to
-traits was thrown away before the first wave — which is why every existing
+traits was thrown away before the first wave, which is why every existing
 `apply()` writes mods. `applyLate` runs once every seat is filled and folded.
 
 ### The board is the screen
 
 Immersive mode already did what was asked and was an opt-in toggle nobody
 found. It is the default now, and the right column is a visible layer over the
-board — not a drawer parked off the edge — fading only while you are placing.
+board, not a drawer parked off the edge, fading only while you are placing.
 
 ### What did not reproduce
 
 "The maps keep changing in the galaxy just from loading in/out." A galaxy is
 rebuilt from its seed on every load and generation proved pure across reloads
-and across a real saved campaign. Check **25.1** now asserts it — four powers ×
-four seeds, regenerated twice each, identical every time — so if it does drift,
+and across a real saved campaign. Check **25.1** now asserts it, four powers ×
+four seeds, regenerated twice each, identical every time, so if it does drift,
 the sweep says so rather than a player noticing.
 
 ### The simulation moved, and it is not being reported as neutral

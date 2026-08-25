@@ -2807,7 +2807,11 @@ const UI = {
              collapses to the single fact it is stating. What you will actually
              meet is the mob row inside the scenario box, which comes off the
              MAP rather than off a faction. */
-          '<div class="br-cmdbar wild" data-tt="' + sc.name + '|' + sc.brief + '">' +
+          /* NO TOOLTIP HERE (owner audit, Session 32): its body was sc.name and
+             sc.brief verbatim, the same two facts .br-scen-top already prints
+             34px below. A hover whose content is a copy of visible text is
+             pure cost, not information. */
+          '<div class="br-cmdbar wild">' +
             '<span class="br-face"><i class="br-wild">' + sc.icon + '</i>' +
               '<b>NO COMMANDER</b></span>' +
           '</div>'
@@ -2817,7 +2821,14 @@ const UI = {
               (w.owner === sys.holder ? 'Commands this system.' : 'Holds this world.') + '">' +
               commanderPortrait(boss, 42) +
               '<b style="color:' + boss.color + '">' + boss.name + '</b></span>' +
-            '<span class="br-side right" data-tt="ARSENAL|The four towers this commander drafts here.">' + towerIcons + '</span>' +
+            /* CONTESTED GETS THE SAME COLLAPSE .wild GOT (owner audit, Session 32):
+               towerIcons is deliberately blank here (tri mode re-seats both
+               rivals, so a single loadout would belong to neither), and the rail
+               used to render empty while its tooltip still promised four towers.
+               State the actual fact instead of an empty promise. */
+            (w.contested
+              ? '<span class="br-side right note" data-tt="TWO RIVALS|Arsenals are decided at the drop, not shown in advance.">TWO RIVALS</span>'
+              : '<span class="br-side right" data-tt="ARSENAL|The four towers this commander drafts here.">' + towerIcons + '</span>') +
           '</div>');
 
     return '<div class="brief ' + (inline ? 'inline' : '') + ' ' + (plate ? 'has-art' : '') +
@@ -2852,24 +2863,21 @@ const UI = {
       /* 3b. WHO stands on it, now that the ground has been read. */
       cmdBar +
 
-      /* 4. THE SCENARIO, stars inside it. */
-      '<div class="br-scen">' +
-        '<div class="br-scen-top">' +
-          '<span class="br-scen-name">' + sc.icon + ' ' + sc.name + '</span>' +
-          '<span class="br-scen-brief">' + sc.brief + '</span>' +
-        '</div>' +
-        (mobIcons ? '<div class="br-mobs" data-tt="THE BOARD|What this world fields against you.">' + mobIcons + '</div>' : '') +
-        starBox +
-      '</div>' +
-
-      /* THE SEAT, below the board and the scenario (owner, Session 31): it is
-            a consequence of winning here, so it reads after what the battle IS,
-            not squeezed into the name line as an afterthought. */
+      /* PLAN-LEVEL FACTS BEFORE BATTLE DETAIL (owner audit, Session 32). A
+         tooltip card is `position:fixed`, JS-positioned, and pointer-events:none
+         -- it cannot scroll. On a viewport around 768px tall the card is taller
+         than the window and its BOTTOM gets clipped, and the bottom used to be
+         exactly the seat and three-way notices: the two facts that decide
+         whether to route toward or away from a world, cut off while the star
+         box's per-condition detail survived untouched. Seat and contested (and
+         renegade, grouped with contested as the card's "real notices" before
+         this move) now read right after WHO holds the world and before WHAT the
+         scenario asks in detail, so if anything is clipped on a short viewport
+         it is the more granular, more replaceable half. */
       (w.seat ? '<div class="br-seat" data-tt="COMMANDER SEAT|Take every seat and the ' +
         'galaxy is yours. A seat opens once you hold most of its system.">' +
         '⚔ COMMANDER SEAT<span>take this world and the system falls</span></div>' : '') +
 
-      /* Real, non-duplicated notices. */
       ((w.renegade && !mine) ? '<div class="br-renegade">' +
         '<b>A SPLINTER OF YOUR OWN POWER HOLDS THIS WORLD.</b>' +
         '<span>The only ground that pays <b>' + FACTIONS[gx.playerFaction].short +
@@ -2881,8 +2889,24 @@ const UI = {
         ' vs <i style="color:' + FACTIONS[gx.playerFaction].color + '">you</i>. ' +
         'Every kill reanimates toward BOTH rivals.</span></div>' : '') +
 
+      /* 4. THE SCENARIO, stars inside it. */
+      '<div class="br-scen">' +
+        '<div class="br-scen-top">' +
+          '<span class="br-scen-name">' + sc.icon + ' ' + sc.name + '</span>' +
+          '<span class="br-scen-brief">' + sc.brief + '</span>' +
+        '</div>' +
+        (mobIcons ? '<div class="br-mobs" data-tt="THE BOARD|What this world fields against you.">' +
+          '<span class="br-mobs-label">FIELDS</span>' + mobIcons + '</div>' : '') +
+        starBox +
+      '</div>' +
+
       /* 5. Flavor, italic, last. */
-      '<p class="br-flavor flavor">' + (sc.flavor || (m && m.blurb) || '') + '</p>' +
+      /* THE MAP'S OWN LINE WINS (owner audit, Session 32). sc.flavor always
+         took precedence, so 85.7% of worlds closed on the identical scenario
+         sentence and every map's authored blurb was dead weight. m.blurb is
+         the more specific fact -- it differentiates the world the scenario box
+         already named three blocks above. */
+      '<p class="br-flavor flavor">' + ((m && m.blurb) || sc.flavor || '') + '</p>' +
     '</div>';
   },
 

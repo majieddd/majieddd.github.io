@@ -470,6 +470,22 @@ body.rm-user.immersive #sidebar { transition: none; }
     max-height: 40vh; }
   #worldmap-wrap.gx-viewport > .gx-nav { right: 14px; }
   #worldmap-wrap.gx-viewport > .wm-hint { display: none; }
+  /* THE PANE AT REST WAS NOTHING BUT ARTWORK (owner audit, Session 32).
+     .brief.inline.has-art .br-plate uses aspect-ratio:16/5, tuned for the
+     296px desktop rail. At this breakpoint the pane goes full width, so the
+     SAME ratio scaled the plate to 313px tall at a 1024px viewport -- more
+     than this block's entire 40vh budget on its own. The map preview added a
+     flat, unscaled 170px on top of that. Measured before this fix: the
+     commander bar sat up to 259.8px below the fold at rest, worst at the
+     wide end of this breakpoint, still 84px below the fold on a 390px phone.
+     Both are capped here, and ONLY here -- the desktop rail is untouched. */
+  .brief.inline.has-art .br-plate { max-height: 96px; }
+  /* height alone was not enough: an unscoped `.br-pv { min-height: 128px; }`
+     lower in the file ("the board needs room to be read, not a letterbox")
+     clamps the box back up regardless of this rule's higher specificity,
+     because min-height and height are different properties, not competing
+     declarations of the same one. Both must be set here. */
+  .brief.inline .br-pv { height: 96px; min-height: 96px; }
 }
 /* And the victory panel, which arrives after the class comes off: it owns the
    whole absolute body, centred, and scrolls if it must. */
@@ -2645,6 +2661,10 @@ body:not(.arena-field) .arena-ladder { display: none; }
                 color: var(--gold); }
 .br-scen-brief { font-size: 12px; color: var(--text-dim); }
 .br-mobs { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+/* the only previously-unlabelled block in the card, and it is what the
+   player actually fights (owner audit, Session 32) */
+.br-mobs-label { font-size: 8.5px; letter-spacing: .14em; color: var(--text-mute);
+                  align-self: center; margin-right: 2px; }
 .br-mob { display: inline-flex; align-items: center; justify-content: center;
           width: 26px; height: 26px; line-height: 0; border-radius: 6px;
           background: rgba(4,8,14,.6);
@@ -2759,6 +2779,12 @@ body:not(.arena-field) .arena-ladder { display: none; }
 .br-side { display: flex; gap: 4px; align-items: center; min-width: 0; flex-wrap: nowrap; }
 .br-side.left  { justify-content: flex-end; }
 .br-side.right { justify-content: flex-start; }
+/* A one-line fact standing in for an icon rail that is deliberately empty
+   (contested worlds re-seat both rivals, so no single loadout belongs to
+   either -- see the .br-side.right conditional in worldBriefing, js/ui.js).
+   Sized as a caption, not a label: this rail is built for 20-30px icons. */
+.br-side.note { font-size: 8.5px; letter-spacing: .1em; color: var(--text-mute);
+                 white-space: nowrap; cursor: help; }
 .br-face { display: flex; flex-direction: column; align-items: center; gap: 1px; }
 .br-face img, .br-face canvas { border-radius: 10px; display: block;
   border: 1px solid color-mix(in oklab, var(--fc, #7aa) 55%, transparent); }

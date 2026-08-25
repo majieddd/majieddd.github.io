@@ -79,17 +79,17 @@ harnesses therefore disagree about whether beacon is in the loadout.
 ### A3. Ten escaped em dashes survived the cleanup. VERIFIED.
 
 The Session 26 pass grepped for the literal character and `&mdash;`. It never checked
-`—`, so ten escaped ones remain in player-facing strings:
+`, `, so ten escaped ones remain in player-facing strings:
 
 ```
-js/factions.js:209,234,279,306   desc:'AURA — ...'
-js/ui.js:461                     'ABANDON — FORFEIT GALAXY'
+js/factions.js:209,234,279,306   desc:'AURA, ...'
+js/ui.js:461                     'ABANDON, FORFEIT GALAXY'
 js/ui.js:1114, 6454, 6462, 6857, 6865
 ```
 
 Plus 13 literal em dashes inside string literals. Inconsistency underneath it:
 `js/config.js:2432` writes `'AURA: machines within 3 tiles...'` with a colon while
-`js/factions.js:209` writes `'AURA — ...'`. Same construct, two forms.
+`js/factions.js:209` writes `'AURA, ...'`. Same construct, two forms.
 
 Total across the repo including comments: 285.
 
