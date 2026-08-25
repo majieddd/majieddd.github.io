@@ -395,6 +395,24 @@ const Game = {
     this.difficulty = DIFFICULTIES.find(d => d.id === opts.difficulty) || DIFFICULTIES[1];
     /* THE MAELSTROM is synthesised from its seat count rather than authored,
        so it is not in MAPS and cannot be reached from the campaign trail. */
+    /* THE SCENARIO, RESOLVED AT START. `worldScenarioOf` is index-derived, so
+       asking it here and asking it again in endMatch cannot disagree. Defaults
+       to the standing duel for skirmishes and for any caller that passes no
+       world, which is what keeps every existing battle bit-identical. */
+    this.scenario = (typeof SCENARIOS !== 'undefined') ? SCENARIOS[0] : null;
+    if (opts.scenario) this.scenario = opts.scenario;
+    else if (opts.world && typeof worldScenarioOf === 'function' && typeof Meta !== 'undefined') {
+      const gx0 = Meta.galaxy && Meta.galaxy();
+      if (gx0) for (const sy of gx0.systems) {
+        const w0 = sy.worlds.find(x => x.id === opts.world);
+        if (w0) { this.scenario = worldScenarioOf(w0); break; }
+      }
+    }
+    /* A SURVIVE BOARD HAS NO RIVAL SEAT. The owner's Session 30 note: a card
+       reading "there is no commander to beat" while a commander sat opposite
+       was a contradiction the game stated about itself. */
+    this.soloSurvive = !!(this.scenario && this.scenario.noCommander);
+
     /* THE EPOCH IS CAPTURED ONCE, HERE. Passing it explicitly means the map
        object this match runs on can never be reshaped by an hour boundary
        crossing mid-battle, and a replay handed the same epoch rebuilds the
@@ -478,7 +496,13 @@ const Game = {
        walks into a seat reanimates for its defender (see killEnemy). A rule
        held per-side would have to be re-stated twenty times and would be wrong
        the first time a seat was added. */
-    this.noReanim = !!FIELD.noReanim;
+    /* A SURVIVE BOARD REANIMATES NOTHING. Reanimation exists to send the dead
+       back at a rival; with no rival the bodies march at a phantom seat that
+       cannot be hurt, so the whole mechanic becomes a silent tax on every kill.
+       Reusing the field's own flag rather than inventing a second switch means
+       every existing reader (canMuster's waiver, doctrineOnKill, the carrier
+       path) already honours it. */
+    this.noReanim = !!FIELD.noReanim || !!this.soloSurvive;
     /* Drives the HUD swap below the seat ladder: twenty commanders cannot each
        have a panel, so the arena spends RIVAL II's slot on the ladder instead
        and the row keeps exactly the width a three-way board already ships. */
@@ -804,8 +828,10 @@ const Game = {
       this.applyCompile(S2);
     }
 
-    /* One brain per AI side. The singleton pattern could not host two rivals. */
-    this.brains = this.sides.slice(1).map((S2, i) => {
+    /* One brain per AI side. The singleton pattern could not host two rivals.
+       A SURVIVE BOARD GETS NONE: nobody commands the far seat, so nothing
+       builds there, nothing drafts an arsenal, and nothing sends at you. */
+    this.brains = (this.soloSurvive ? [] : this.sides.slice(1)).map((S2, i) => {
       const b = Object.create(AI); b.init(S2, this.difficulty);
       /* Nineteen brains sharing one 0.55s clock would all deliberate on the
          same frame; the stagger spreads them across the interval instead.
@@ -1097,6 +1123,11 @@ const Game = {
              every one of them walks the whole path purely to leak -- which
              re-enters the defeat path and re-announces the fall on every leak. */
           if (this.sides[side].defeated) continue;
+          /* On a survive board the far seat has no commander and no towers, so
+             queueing its wave would march every body straight into its base,
+             leak it out in a handful of waves, and END THE MATCH the player is
+             supposed to be outlasting. The swarm comes for YOU only. */
+          if (this.soloSurvive && side !== 0) continue;
           /* Identical entry for EVERY side still standing, group scalars
              included: the wave is the same wave for every commander, which is
              the parity the whole attrition loop rests on. */
@@ -1113,11 +1144,19 @@ const Game = {
        same body this loop does. */
     const mb = this.minibossFor(this.wave, def);
     if (mb) {
-      for (let side = 0; side < this.sides.length; side++)
+      for (let side = 0; side < this.sides.length; side++) {
+        /* THE SAME SURVIVE GUARD AS THE GROUP LOOP ABOVE. This is a SECOND
+           queue push and it was missed the first time: with the group loop
+           guarded and this one open, minibosses were still marching at the
+           phantom seat. Measured before the fix: two mb_colossus bodies with
+           owner -1 bound for seat 1 on a swarm board. Any new spawn path must
+           carry this guard too. */
+        if (this.soloSurvive && side !== 0) continue;
         for (let lane = 0; lane < this.lanes[side].length && !this.sides[side].defeated; lane++)
           this.spawnQueue.push({ t: this.clock + 3, type: mb, side, lane,
                                  hpMul: hpMuls[side], rageMul: rageMuls[side],
                                  bountyMul: bountyMuls[side] });
+      }
       this.minibossName = ENEMY_TYPES[mb].name;
     } else this.minibossName = null;
 
@@ -1201,10 +1240,15 @@ const Game = {
       for (let i = 0; i < n; i++) this.addEnemyMod();
     }
 
-    /* Command upgrades arrive on each commander's own cadence. */
-    for (let si = 1; si < this.sides.length; si++)
-      if (this.wave % this.sides[si].traits.draftEvery === 0 && !this.sides[si].defeated)
-        this.brains[si - 1].chooseMod(this.drawMods(this.sides[si]));
+    /* Command upgrades arrive on each commander's own cadence. The brain is
+       read by INDEX and a survive board has none, so the lookup is guarded
+       rather than the loop skipped: a seat with no commander simply never
+       drafts, which is the same statement the card makes about it. */
+    for (let si = 1; si < this.sides.length; si++) {
+      const brain = this.brains[si - 1];
+      if (brain && this.wave % this.sides[si].traits.draftEvery === 0 && !this.sides[si].defeated)
+        brain.chooseMod(this.drawMods(this.sides[si]));
+    }
     if (this.wave % this.sides[0].traits.draftEvery === 0) this.offerChoiceWhenClear();
     UI.syncAll();
   },
@@ -2303,6 +2347,12 @@ const Game = {
   },
 
   musterVictims(side) {
+    /* A SURVIVE BOARD HAS NOBODY TO SEND AT. The far seat has no commander, no
+       towers and no lives that matter, so a send there is gold spent on a
+       phantom. Returning nothing here closes the whole path at once: canMuster
+       reads this, and so does the muster panel, so the button is not merely
+       inert, it is absent. */
+    if (this.soloSurvive) return [];
     /* In the arena a send marches on ONE seat -- the next still standing round
        the ring. Nineteen victims per purchase would put 19x tier.count units on
        the board at a stroke, and the muster panel prints what this returns. */

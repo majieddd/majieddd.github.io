@@ -2698,3 +2698,94 @@ body:not(.arena-field) .arena-ladder { display: none; }
   .br-cmdrow { grid-template-columns: 1fr; justify-items: center; gap: 6px; }
   .br-side.left, .br-side.right { justify-content: center; }
 }
+
+/* ═════════ 30.1  THE PREVIEW PANE AT 296 PIXELS ═════════════════════════
+   #theatre-detail is 296px wide (polish.css:453). Every layout below is
+   solved for THAT, not for a comfortable desktop column, because that panel
+   is where this card actually lives. A container query switches to the wide
+   arrangement only when the card genuinely has the room. */
+.brief { container-type: inline-size; container-name: brief; }
+
+/* THE STANDING COMMAND. Skinny by construction: its height is the portrait
+   plus the padding, nothing else. It sits ABOVE the plate now; riding on top
+   of the artwork meant a 62px portrait covered the picture it introduced. */
+.br-cmdbar {
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  align-items: center; gap: 8px;
+  padding: 5px 8px; margin-bottom: 7px; border-radius: 12px; overflow: hidden;
+  background: rgba(6, 11, 19, 0.86);
+  border: 1px solid color-mix(in oklab, var(--fc, #7aa) 34%, transparent);
+}
+.br-cmdbar.wild { border-color: color-mix(in oklab, var(--gold) 34%, transparent); }
+/* NOWRAP IS LOAD-BEARING. The owner's note asks for the icons at the
+   portrait's DIRECT sides; letting them wrap put four of them on a second row
+   under it, which is a different thing entirely. The sizing below is solved
+   for the 296px panel rather than chosen: 4 icons at 22px with 4px gaps is
+   100px a side, plus a 42px portrait, two 4px gaps and 8px padding, gives a
+   268px row inside the 276px the panel leaves. 8px of slack, no wrap. */
+.br-side { display: flex; gap: 4px; align-items: center; min-width: 0; flex-wrap: nowrap; }
+.br-side.left  { justify-content: flex-end; }
+.br-side.right { justify-content: flex-start; }
+.br-face { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.br-face img, .br-face canvas { border-radius: 10px; display: block;
+  border: 1px solid color-mix(in oklab, var(--fc, #7aa) 55%, transparent); }
+.br-face b { font-size: 9px; letter-spacing: .1em; white-space: nowrap; line-height: 1.1; }
+.br-wild { font-size: 20px; line-height: 1; color: var(--gold); font-style: normal;
+           width: 42px; height: 42px; display: grid; place-items: center;
+           border-radius: 10px; background: rgba(250,204,21,.08);
+           border: 1px solid color-mix(in oklab, var(--gold) 40%, transparent); }
+
+/* Icons: a few pixels under the 42px portrait, so the bar reads as one row
+   with the commander as its tallest element. */
+.br-ci { width: 22px; height: 22px; border-radius: 6px; font-size: 11px; flex: 0 0 auto;
+         display: inline-flex; align-items: center; justify-content: center;
+         color: var(--tc, var(--text)); background: rgba(4,8,14,.72);
+         border: 1px solid color-mix(in oklab, var(--tc, #7aa) 45%, transparent);
+         transition: transform .14s var(--e-tap); }
+.br-ci.un, .br-ci.tw { line-height: 0; }
+@media (hover: hover) and (pointer: fine) { .br-ci:hover { transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) { .br-ci { transition: none; } }
+
+.br-plate { position: relative; }
+.br-plate.bare { min-height: 54px; background: rgba(8,14,24,.5);
+                 border: 1px solid var(--line); border-radius: 10px; }
+
+/* THE STAR BOX. At 296px a three-column grid forced "Win holding 55% of your
+   lives" to wrap over four lines beside a 42px star cell, which is what made
+   the stars unreadable. Narrow stacks the reward under the condition; the
+   container query restores three columns only where they fit. */
+.br-stars { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.br-srow { display: grid; grid-template-columns: auto 1fr; gap: 2px 7px;
+           align-items: baseline; padding: 5px 7px; border-radius: 7px;
+           background: rgba(0,0,0,.22); font-size: 11.5px; }
+.br-srow.got { background: color-mix(in oklab, var(--gold) 12%, transparent);
+               border: 1px solid color-mix(in oklab, var(--gold) 34%, transparent); }
+.br-srow.none { opacity: .55; }
+/* Stars sized to be legible: the old 10px with -1px tracking crushed three
+   glyphs into an illegible smudge. */
+.br-sn { grid-column: 1; grid-row: 1 / span 2; align-self: center;
+         font-size: 12px; letter-spacing: 0; line-height: 1.1;
+         color: var(--text-mute); white-space: nowrap; }
+.br-srow.got .br-sn { color: var(--gold); }
+.br-sc { grid-column: 2; grid-row: 1; color: var(--text); }
+.br-sr { grid-column: 2; grid-row: 2; color: var(--text-dim); text-align: left;
+         font-size: 10.5px; cursor: help;
+         border-bottom: 1px dotted color-mix(in oklab, var(--text-dim) 40%, transparent); }
+.br-srow.got .br-sr { color: var(--green); }
+
+@container brief (min-width: 400px) {
+  .br-srow { grid-template-columns: auto 1fr auto; align-items: center; }
+  .br-sn { grid-row: 1; }
+  .br-sc { grid-row: 1; }
+  .br-sr { grid-column: 3; grid-row: 1; text-align: right; font-size: 11.5px; }
+}
+
+/* The board needs room to be read, not a letterbox. */
+.br-pv { min-height: 128px; }
+.br-pv svg { width: 100%; height: auto; display: block; }
+
+.course-set { display: inline-flex; align-items: center; gap: 6px;
+              padding: 4px 10px; margin-bottom: 7px; border-radius: 999px;
+              font-size: 10px; letter-spacing: .18em; color: var(--gold);
+              background: color-mix(in oklab, var(--gold) 9%, transparent);
+              border: 1px solid color-mix(in oklab, var(--gold) 30%, transparent); }

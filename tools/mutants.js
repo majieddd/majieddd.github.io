@@ -11,6 +11,7 @@
 
    RESULT AT THE TIME OF WRITING: 7 of 7 planted defects caught, every one by
    the check predicted for it up front, and the clean control stayed green.
+   Re-verified after the Session 30 survive-board work: still 7 of 7.
 
    TWO EQUIVALENT MUTANTS were found on the way, and they are the reason the
    `plant` functions look the way they do:
@@ -82,9 +83,19 @@ const RUN = `
     { id: 'faction-skew-flatten',
       why: 'content: the defensive power loses its cheaper leak',
       expect: '25.3',
-      plant: () => { const o = LIGHT_LEAK_SHIELD;
-                     globalThis.LIGHT_LEAK_SHIELD = 0;
-                     return () => { globalThis.LIGHT_LEAK_SHIELD = o; }; } },
+      /* applyLate, NOT apply, and NOT the const. Two earlier versions of this
+         mutant were EQUIVALENT: assigning globalThis.LIGHT_LEAK_SHIELD cannot
+         rebind a top-level const, and patching FACTIONS.light.apply writes a
+         trait that Meta.applyTo then resets. Neither changed observable
+         behaviour, so neither proved anything about the suite. This one is on
+         the path Game.leakCostOf actually reads. */
+      plant: () => { const L = FACTIONS.light, o = L.applyLate;
+                     L.applyLate = function (side) {
+                       const r = o.apply(this, arguments);
+                       if (side && side.traits) side.traits.leakReduction = 0;
+                       return r;
+                     };
+                     return () => { L.applyLate = o; }; } },
 
     { id: 'CONTROL-clean',
       why: 'the clean control: nothing is planted, the suite must stay green',

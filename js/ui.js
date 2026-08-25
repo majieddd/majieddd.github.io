@@ -493,6 +493,11 @@ const UI = {
     Sound.resume();
     const seatWorld = Meta.galaxy() && this.worldById(Meta.galaxy(), node.world);
     Game.start({ seat: !!(seatWorld && seatWorld.seat),
+                 /* The world id, so Game.start can resolve THIS world's
+                    scenario before it builds the board. Passing the id rather
+                    than the resolved scenario keeps one resolver
+                    (worldScenarioOf) and no second opinion. */
+                 world: node.world,
                  rivalFaction: node.rivalFaction,
                  contestedBy: node.contestedBy,
                  /* Both are read by battleHostFaction: they decide whether the
@@ -1886,21 +1891,12 @@ const UI = {
 
     const chosenW = c.chosen && this.worldById(gx, c.chosen.world);
     $('#theatre-detail').innerHTML = (chosenW
-      ? /* THE COURSE BADGE IS THE COMMANDER (owner, Session 29). "COURSE SET"
-             restated what the highlighted world on the map already said; the
-             portrait of the commander waiting there does not. */
-        (() => {
-          const sysOf = gx.systems[chosenW.si];
-          const bId = typeof worldBossOf === 'function' ? worldBossOf(sysOf, chosenW) : null;
-          const bx = bId && COMMANDER_ROSTER.find(x => x.id === bId);
-          return bx
-            ? '<div class="course-set" data-tt="' + bx.name + ', ' + bx.title +
-              '|Waiting for you on ' + chosenW.name + '.">' +
-              commanderPortrait(bx, 34) +
-              '<b style="color:' + bx.color + '">' + bx.name + '</b>' +
-              '<em>' + bx.title + '</em></div>'
-            : '';
-        })() +
+      ? /* ONE PORTRAIT PER CARD (owner, Session 30). This badge carried a
+             second portrait of the same commander the briefing already shows
+             in its command bar, so the panel opened with the same face twice
+             and the plate below both of them. A thin marker says the same
+             thing and costs no vertical space. */
+        '<div class="course-set">◈ COURSE SET</div>' +
         this.worldBriefing(gx, gx.systems[chosenW.si], chosenW, prog, true)
       : '<p class="hint">Select a world on the map to plot your course.</p>');
     /* The SOULS explainer that used to sit under this card is gone (owner,
@@ -2684,7 +2680,7 @@ const UI = {
        world: tri mode re-seats both rivals from the contest pair, so a single
        set would be neither of theirs. ---- */
     let towerIcons = '';
-    if (c && boss && !w.contested && typeof AI !== 'undefined' && AI.pickLoadout) {
+    if (c && boss && !w.contested && !sc.noCommander && typeof AI !== 'undefined' && AI.pickLoadout) {
       try {
         const diff = DIFFICULTIES.find(d => d.id === this.rampOf(c).diffFor(w.si)) || DIFFICULTIES[1];
         const set = AI.pickLoadout(m, diff, Meta.unlockedTowers(), w.owner,
@@ -2770,17 +2766,33 @@ const UI = {
     return '<div class="brief ' + (inline ? 'inline' : '') + ' ' + (plate ? 'has-art' : '') +
            '" style="--fc:' + of.color + '">' +
 
-      /* 1. BANNER with the commander row riding it. */
+      /* 1. THE STANDING COMMAND, above the banner and standing on its own.
+            It used to ride ON the plate, where a 62px portrait covered the
+            artwork it was supposed to introduce. Now it is a skinny bar of its
+            own: one portrait, the soldiers at its left hand, the towers at its
+            right, and the plate below left clean to be looked at.
+
+            A SURVIVE SCENARIO HAS NO COMMANDER. Printing one beside the words
+            "there is no commander to beat" was a contradiction the card stated
+            about itself. */
+      (sc.noCommander
+        ? '<div class="br-cmdbar wild" data-tt="' + sc.name + '|' + sc.brief + '">' +
+            '<span class="br-side left">' + unitIcons + '</span>' +
+            '<span class="br-face"><i class="br-wild">' + sc.icon + '</i>' +
+              '<b>NO COMMANDER</b></span>' +
+            '<span class="br-side right"></span>' +
+          '</div>'
+        : '<div class="br-cmdbar">' +
+            '<span class="br-side left" data-tt="SOLDIERS|The four bodies ' + of.short + ' fields on this world.">' + unitIcons + '</span>' +
+            '<span class="br-face" data-tt="' + boss.name + ', ' + boss.title + '|' +
+              (w.owner === sys.holder ? 'Commands this system.' : 'Holds this world.') + '">' +
+              commanderPortrait(boss, 42) +
+              '<b style="color:' + boss.color + '">' + boss.name + '</b></span>' +
+            '<span class="br-side right" data-tt="ARSENAL|The four towers this commander drafts here.">' + towerIcons + '</span>' +
+          '</div>') +
+
       '<div class="br-plate' + (plate ? '' : ' bare') + '" style="--fc:' + of.color + '">' +
         (plate || '') +
-        '<div class="br-cmdrow">' +
-          '<span class="br-side left" data-tt="SOLDIERS|The four bodies ' + of.short + ' fields on this world.">' + unitIcons + '</span>' +
-          '<span class="br-face" data-tt="' + boss.name + ', ' + boss.title + '|' +
-            (w.owner === sys.holder ? 'Commands this system.' : 'Holds this world.') + '">' +
-            commanderPortrait(boss, 62) +
-            '<b style="color:' + boss.color + '">' + boss.name + '</b></span>' +
-          '<span class="br-side right" data-tt="ARSENAL|The four towers this commander drafts here.">' + towerIcons + '</span>' +
-        '</div>' +
       '</div>' +
 
       /* 2. WHO and WHAT. */

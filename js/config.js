@@ -2393,8 +2393,11 @@ const SCENARIOS = [
     }
   },
   {
+    /* SPAWN 'enemyside': the far base still spawns, but nobody commands it.
+       The seat is a breach the swarm pours through, not a rival: no portrait,
+       no drafted arsenal, no sends back at you. */
     id: 'swarm', name: 'THE SWARM', kind: 'survive', icon: '☠',
-    waves: [12, 16, 20],
+    noCommander: true, spawn: 'enemyside', waves: [12, 16, 20],
     brief: 'Survive the swarm. There is no commander to beat.',
     stars: ['Survive 12 waves', 'Survive 16 waves', 'Survive 20 waves'],
     flavor: 'Nothing here wants the ground. It wants the ground empty.',
@@ -2407,8 +2410,26 @@ const SCENARIOS = [
     }
   },
   {
+    /* SPAWN 'neutral': there is no far side at all. The world is already
+       overrun and the wild comes at your line from the open ground. This is
+       the other half of the owner's Session 30 note, kept as a separate
+       scenario rather than a flag, so the two read as two different battles. */
+    id: 'overrun', name: 'OVERRUN', kind: 'survive', icon: '☣',
+    noCommander: true, spawn: 'neutral', waves: [10, 14, 18],
+    brief: 'The world already fell. Hold your line against what took it.',
+    stars: ['Survive 10 waves', 'Survive 14 waves', 'Survive 18 waves'],
+    flavor: 'No banner flies here. The ground stopped answering to anyone.',
+    test: function (r) {
+      const w = r.wave;
+      if (w >= 18) return 3;
+      if (w >= 14) return 2;
+      if (w >= 10) return 1;
+      return 0;
+    }
+  },
+  {
     id: 'vigil', name: 'THE LONG VIGIL', kind: 'endless', icon: '∞',
-    waves: [15, 25, 35],
+    noCommander: true, spawn: 'neutral', waves: [15, 25, 35],
     brief: 'No end. Stand as long as you can.',
     stars: ['Reach wave 15', 'Reach wave 25', 'Reach wave 35'],
     flavor: 'Old Weather routines do not stop. They are not deciding anything.',
