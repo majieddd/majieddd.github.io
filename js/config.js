@@ -124,9 +124,9 @@ const SPAWN_TEMPO = 0.58;   /* spacing between units in a wave. Raised from 0.46
 const MAPS = [
   {
     id: 'spine', name: 'THE SPINE', tier: 1,
-    denizens: ['sprinter', 'wisp'], sigNote: 'Open ground — Outrunners and Lanterns run the whole arc.',
+    denizens: ['sprinter', 'wisp'], sigNote: 'Open ground. Outrunners and Lanterns run the whole arc.',
     roster: ['sprinter', 'crawler', 'wisp', 'blink', 'aegis', 'jammer', 'herald', 'warden'],
-    blurb: 'One long serpentine with generous shoulders. Every tile you own sees the lane at least twice — the cleanest board in the theatre.',
+    blurb: 'One long serpentine with generous shoulders. Every tile you own sees the lane at least twice: the cleanest board in the theatre.',
     trait: 'Single lane · open ground',
     cols: 28, rows: 15, region: { x: 20, y: 64 },
     lanes: [[[13, 7], [10, 7], [10, 2], [5, 2], [5, 12], [2, 12], [2, 7], [-1, 7]]],
@@ -136,7 +136,7 @@ const MAPS = [
   },
 {
     id: 'delta', name: 'THE DELTA', tier: 2,
-    denizens: ['mender', 'cluster'], sigNote: 'Wetlands — Restorers and Dividers hold the confluence.',
+    denizens: ['mender', 'cluster'], sigNote: 'Wetlands. Restorers and Dividers hold the confluence.',
     roster: ['crawler', 'wisp', 'mender', 'cluster', 'shardling', 'wraith', 'nullifier', 'carrier'],
     blurb: 'Two channels that never share a tile, divided by a silt bank no tower shoots across. Whichever mouth you fortify is the one they leave alone.',
     trait: 'Twin mouths · ground split in two',
@@ -157,7 +157,7 @@ const MAPS = [
   },
 {
     id: 'narrows', name: 'THE NARROWS', tier: 2,
-    denizens: ['bulwark', 'basalt'], sigNote: 'Chokepoints — Palisades and slow-immune Basalt Marchers dig in.',
+    denizens: ['bulwark', 'basalt'], sigNote: 'Chokepoints. Palisades and slow-immune Basalt Marchers dig in.',
     roster: ['crawler', 'aegis', 'shardling', 'bulwark', 'basalt', 'anchorite', 'bastion', 'juggernaut'],
     blurb: 'Rubble has taken everything but three alcoves. Each one watches a single leg of the corridor, and nothing you build in one can help another.',
     trait: 'Three alcoves · no fallback',
@@ -177,7 +177,7 @@ const MAPS = [
   },
 {
     id: 'shattered', name: 'SHATTERED', tier: 3,
-    denizens: ['blink', 'wraith'], sigNote: 'Broken ground — Phase Couriers and Ghost Chassis slip between the cracks.',
+    denizens: ['blink', 'wraith'], sigNote: 'Broken ground. Phase Couriers and Ghost Chassis slip between the cracks.',
     roster: ['sprinter', 'crawler', 'blink', 'aegis', 'wraith', 'revenant', 'nullifier', 'warden'],
     blurb: 'Four surviving islands, each hanging off one bend of a long fall through the craters. There is no second-best tile and no way to reinforce a mistake.',
     trait: 'Four islands · one long fall',
@@ -192,9 +192,9 @@ const MAPS = [
   },
 {
     id: 'crossroads', name: 'CROSSROADS', tier: 3,
-    denizens: ['warchief', 'aegis'], sigNote: 'Contested crossroads — pylon columns march with their escorts.',
+    denizens: ['warchief', 'aegis'], sigNote: 'Contested crossroads: pylon columns march with their escorts.',
     roster: ['crawler', 'wisp', 'aegis', 'jammer', 'herald', 'warchief', 'anchorite', 'bastion'],
-    blurb: 'Two lanes that cross each other twice on the way in. Both intersections are lane tiles, so the ground that watches them is the ground beside them — and there is a monument in the way.',
+    blurb: 'Two lanes that cross each other twice on the way in. Both intersections are lane tiles, so the ground that watches them is the ground beside them: and there is a monument in the way.',
     trait: 'Two lanes · two crossings',
     cols: 30, rows: 15, region: { x: 30, y: 84 },
     lanes: [
@@ -240,7 +240,7 @@ const MAPS = [
        without breaking the send law, and the signature line below still
        describes what actually garrisons the field. */
     trait: 'Massive field · two long lanes', denizens: ['warden', 'revenant'],
-    sigNote: 'Deep space — Ironmarches and Foundry Carriers drift in from the dark.',
+    sigNote: 'Deep space. Ironmarches and Foundry Carriers drift in from the dark.',
     roster: ['crawler', 'wisp', 'cluster', 'shardling', 'revenant', 'warden', 'carrier', 'juggernaut'],
     cols: 36, rows: 20, region: { x: 78, y: 30 },
     lanes: [
@@ -261,7 +261,7 @@ const MAPS = [
     id: 'rift', name: 'THE RIFT', tier: 3,
     blurb: 'Both lanes loop away from each other and are pinched back through the same scarred throat, twice over. Four tiles decide this battle; the rest of the board is scenery.',
     trait: 'Twin loops · one throat, taken twice', denizens: ['wraith', 'shardling'],
-    sigNote: 'Rift-touched — Ghost Chassis and Shard Sentries bleed through.',
+    sigNote: 'Rift-touched. Ghost Chassis and Shard Sentries bleed through.',
     roster: ['sprinter', 'crawler', 'blink', 'aegis', 'shardling', 'wraith', 'herald', 'bastion'],
     cols: 26, rows: 17, region: { x: 55, y: 75 },
     lanes: [
@@ -276,7 +276,7 @@ const MAPS = [
   },
 {
     id: 'confluence', name: 'THE CONFLUENCE', tier: 5, tri: true,
-    blurb: 'Three powers, one spawn, no allies. Every kill reanimates toward BOTH rivals — the dead walk twice as thick.',
+    blurb: 'Three powers, one spawn, no allies. Every kill reanimates toward BOTH rivals: the dead walk twice as thick.',
     trait: 'THREE-WAY WAR · doubled reanimates', denizens: ['revenant', 'warchief'],
     sigNote: 'The confluence draws Reconstructors and pylon columns from every front.',
     roster: ['crawler', 'wisp', 'mender', 'jammer', 'revenant', 'warchief', 'basalt', 'carrier'],
@@ -314,7 +314,7 @@ const MAPS = [
     trait: 'THREE-WAY WAR · one walled crown, three doors',
     roster: ['crawler', 'wisp', 'aegis', 'herald', 'revenant', 'warden', 'bastion', 'juggernaut'],
     denizens: ['bastion', 'herald'],
-    sigNote: 'The crown garrison — bastions and heralds hold the ring.',
+    sigNote: 'The crown garrison: bastions and heralds hold the ring.',
     /* The walled ring is wider than the default hub, so the neutral centre
        is widened to match it -- otherwise the ground inside the crown would
        be split three ways and someone could garrison the spawn itself. */
@@ -347,11 +347,11 @@ const MAPS = [
   },
   {
     id: 'carousel', name: 'THE CAROUSEL', tier: 5, tri: true,
-    blurb: 'Three arms, each hooking a full turn around its own island before it reaches a base. Every commander watches their lane twice — if they can afford both bends.',
+    blurb: 'Three arms, each hooking a full turn around its own island before it reaches a base. Every commander watches their lane twice: if they can afford both bends.',
     trait: 'THREE-WAY WAR · three hooks, three islands',
     roster: ['crawler', 'sprinter', 'blink', 'wisp', 'wraith', 'nullifier', 'warchief', 'carrier'],
     denizens: ['nullifier', 'blink'],
-    sigNote: 'Carousel drift — nullifiers and blink-shifters ride the arms.',
+    sigNote: 'Carousel drift: nullifiers and blink-shifters ride the arms.',
     cols: 33, rows: 29, core: 3.6,
     triLanes: [
       [[16, 13], [16, 9], [11, 9], [11, 15], [6, 15], [6, 8], [2, 8]],
@@ -371,11 +371,11 @@ const MAPS = [
   },
   {
     id: 'orrery', name: 'THE ORRERY', tier: 5, tri: true,
-    blurb: 'Two rings of wall around one spawn, three gaps in each. Every march threads the inner gap, crosses the annulus and threads the outer one — and the annulus belongs to nobody.',
+    blurb: 'Two rings of wall around one spawn, three gaps in each. Every march threads the inner gap, crosses the annulus and threads the outer one: and the annulus belongs to nobody.',
     trait: 'THREE-WAY WAR · nested rings, six gaps',
     roster: ['crawler', 'wisp', 'blink', 'shardling', 'revenant', 'basalt', 'warden', 'juggernaut'],
     denizens: ['warden', 'wisp'],
-    sigNote: 'Orrery shell — wardens grind forward while wisps drift over the walls.',
+    sigNote: 'Orrery shell: wardens grind forward while wisps drift over the walls.',
     cols: 33, rows: 29, core: 3.6,
     triLanes: [
       [[16, 14], [12, 14], [9, 14], [9, 8], [11, 8], [11, 5], [11, 8], [3, 8]],
@@ -404,7 +404,7 @@ const MAPS = [
   {
     id: 'lattice', name: 'THE LATTICE', tier: 3,
     roster: ['mite', 'crawler', 'sprinter', 'wisp', 'cluster', 'jammer', 'herald', 'anchorite'],
-    denizens: ['herald', 'mite'], sigNote: 'Signal lattice — heralds and mites pour down every line at once.',
+    denizens: ['herald', 'mite'], sigNote: 'Signal lattice: heralds and mites pour down every line at once.',
     blurb: 'Three lanes, one gate. Every wave arrives in thirds, and the only ground that answers all three is the last five tiles before your base.',
     trait: 'Three lanes · one shared gate',
     cols: 32, rows: 19,
@@ -426,7 +426,7 @@ const MAPS = [
   {
     id: 'causeway', name: 'THE CAUSEWAY', tier: 4,
     roster: ['crawler', 'wisp', 'aegis', 'shardling', 'nullifier', 'basalt', 'warden', 'bastion'],
-    denizens: ['warden', 'nullifier'], sigNote: 'The causeway garrison — wardens and nullifiers hold the span.',
+    denizens: ['warden', 'nullifier'], sigNote: 'The causeway garrison: wardens and nullifiers hold the span.',
     blurb: 'Two lanes run the far edges of a broken span and never turn back. Every tile you own is on the bridge between them, and the middle of the bridge reaches neither.',
     trait: 'One strip of ground · no second pass',
     cols: 30, rows: 15,
@@ -446,7 +446,7 @@ const MAPS = [
   {
     id: 'anvil', name: 'THE ANVIL', tier: 2,
     roster: ['spawnling', 'crawler', 'sprinter', 'cluster', 'aegis', 'bulwark', 'anchorite', 'warchief'],
-    denizens: ['anchorite', 'spawnling'], sigNote: 'Anvil terraces — anchorites advance behind their own spawn.',
+    denizens: ['anchorite', 'spawnling'], sigNote: 'Anvil terraces: anchorites advance behind their own spawn.',
     blurb: 'The shortest approach in the theatre, walled in by terraces. There is no long lane to whittle anything down on: whatever you build has to kill it in nineteen tiles.',
     trait: 'Shortest lane · terraced ground',
     cols: 22, rows: 21,
@@ -964,7 +964,7 @@ function maelstromMap(seats) {
     cols: dim, rows: dim,
     roster: MAELSTROM_ROSTER.slice(), denizens: MAELSTROM_DENIZENS.slice(),
     sigNote: 'The singularity throws back everything it has swallowed.',
-    blurb: 'A singularity with ' + n + ' seats around it. Nothing you kill comes back to you here — ' +
+    blurb: 'A singularity with ' + n + ' seats around it. Nothing you kill comes back to you here, ' +
            'the dead fall inward. You may still summon for gold, and every POWER bonus you hold rides what you send.',
     trait: n + ' SEATS · no reanimation · the horizon contracts'
   };
@@ -1735,7 +1735,7 @@ const TOWER_TYPES = {
   bolt: {
     id: 'bolt', element: 'kinetic', origin: 'human', name: 'BOLT', role: 'Rapid single-target', cost: 115, costGrowth: 1.50,
     color: '#3ee0ff', dark: '#0b5d75', attack: 'projectile',
-    desc: 'Cheap, fast, reliable, and it feeds itself: a Bolt that kills has the case out before the body drops, so most of the next round is already paid for. EARLY-GAME by design — the refund is worth most in the waves where one round is enough. The gentlest price curve in the arsenal is what makes a wall of Bolts a real strategy; the breech is what makes the wall keep pace.',
+    desc: 'Cheap, fast, reliable, and it feeds itself: a Bolt that kills has the case out before the body drops, so most of the next round is already paid for. EARLY-GAME by design: the refund is worth most in the waves where one round is enough. The gentlest price curve in the arsenal is what makes a wall of Bolts a real strategy; the breech is what makes the wall keep pace.',
     base: { damage: 6, range: 3.2, rate: 1.5, projSpeed: 15, dmgType: 'physical', splash: 0, killReload: 0.15 },
     levels: [
       { cost: 60,  name: 'MK II',  mods: { damage: 21, rate: 1.7, killReload: 0.19 } },
@@ -1753,7 +1753,7 @@ const TOWER_TYPES = {
       { id: 'volley', name: 'VOLLEY', cost: 230, mods: { damage: 30, rate: 2.0, multishot: 3, spread: 0.20, killReload: 0.13 },
         surge: { multishot: 1 }, note: 'A three-bolt fan. Each bolt is small, so few of them finish anything and the breech stays hungry.' },
       { id: 'piercer', name: 'PIERCER', cost: 230, mods: { damage: 88, rate: 1.4, pierce: 0.5, pierceCount: 4, shred: 3, projSpeed: 22, killReload: 0.50 },
-        surge: { pierceCount: 2, shred: 2 }, note: 'A lance through four enemies, stripping armour as it goes — and a lance that kills is very nearly free.' }
+        surge: { pierceCount: 2, shred: 2 }, note: 'A lance through four enemies, stripping armour as it goes: and a lance that kills is very nearly free.' }
     ]
   },
 
@@ -1776,7 +1776,7 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'glacier', name: 'GLACIER', cost: 275, mods: { damage: 26, slow: 0.68, slowDur: 2.8, splash: 1.6, freezeChance: 0.22, freezeDur: 0.9 },
-        surge: { freezeChance: 0.05 }, note: 'Maximum control — a crushing slow plus a real freeze chance.' },
+        surge: { freezeChance: 0.05 }, note: 'Maximum control: a crushing slow plus a real freeze chance.' },
       { id: 'shatter', name: 'SHATTER', cost: 275, mods: { damage: 62, slow: 0.5, slowDur: 2.2, splash: 1.4, brittle: 2.0 },
         surge: { brittle: 0.3 }, note: 'DOUBLE damage to anything already slowed.' }
     ]
@@ -1785,7 +1785,7 @@ const TOWER_TYPES = {
   mortar: {
     id: 'mortar', element: 'fire', origin: 'human', name: 'MORTAR', role: 'Ground splash artillery', cost: 223, costGrowth: 1.66,
     color: '#ff9b3d', dark: '#7a4210', attack: 'lobbed', groundOnly: true,
-    desc: 'Arcing shells, and no sight of its own worth the name. It does not need one: anything another of your weapons currently holds, the Mortar will drop a shell on, well past its own reach. LATE-GAME by design — on a bare board it is a short bombard, and it grows with every gun you build in front of it. Still blind to anything airborne.',
+    desc: 'Arcing shells, and no sight of its own worth the name. It does not need one: anything another of your weapons currently holds, the Mortar will drop a shell on, well past its own reach. LATE-GAME by design: on a bare board it is a short bombard, and it grows with every gun you build in front of it. Still blind to anything airborne.',
     base: { damage: 16, range: 3.9, rate: 0.55, projSpeed: 8, dmgType: 'physical', splash: 1.25, spotting: 0.9 },
     levels: [
       { cost: 115, name: 'HEAVY',   mods: { damage: 52, splash: 1.45, spotting: 1.3 } },
@@ -1810,7 +1810,7 @@ const TOWER_TYPES = {
   arc: {
     id: 'arc', element: 'storm', origin: 'human', name: 'ARC', role: 'Current that runs the lane', cost: 256, costGrowth: 1.74,
     color: '#c084fc', dark: '#4c1d95', attack: 'grounding',
-    desc: 'An alien capacitor on a human mast, earthed straight into the road. The discharge does not hop from body to body — it RUNS along the lane from where it struck, forward and back, through everything standing on that stretch of it. CONDITIONAL: devastating against a column, nearly wasted on a crowd that has spread out, so the shape of your maze decides what it is worth. Magic damage — armour is irrelevant.',
+    desc: 'An alien capacitor on a human mast, earthed straight into the road. The discharge does not hop from body to body: it RUNS along the lane from where it struck, forward and back, through everything standing on that stretch of it. CONDITIONAL: devastating against a column, nearly wasted on a crowd that has spread out, so the shape of your maze decides what it is worth. Magic damage: armour is irrelevant.',
     base: { damage: 12, range: 3.1, rate: 0.95, dmgType: 'magic', runTiles: 2.4, runFalloff: 0.80 },
     levels: [
       { cost: 135, name: 'CONDUIT', mods: { damage: 34, runTiles: 3.2 } },
@@ -1835,7 +1835,7 @@ const TOWER_TYPES = {
   pyre: {
     id: 'pyre', element: 'fire', origin: 'pirate', name: 'PYRE', role: 'Cone burn on a tank that blows', cost: 189, costGrowth: 1.62,
     color: '#ff6b4a', dark: '#7c2410', attack: 'cone',
-    desc: 'Scrap tanks, a salvaged igniter, and no interlock anywhere in it. A continuous cone of flame that hits everything in front at once and leaves targets burning — and, if you hold the trigger long enough, puts its own fuel tank across the lane and then stands there useless while the crew fits another. CONDITIONAL: the blowout is only worth its downtime where there is a crowd in front of it.',
+    desc: 'Scrap tanks, a salvaged igniter, and no interlock anywhere in it. A continuous cone of flame that hits everything in front at once and leaves targets burning: and, if you hold the trigger long enough, puts its own fuel tank across the lane and then stands there useless while the crew fits another. CONDITIONAL: the blowout is only worth its downtime where there is a crowd in front of it.',
     base: { damage: 12, range: 2.3, rate: 1, dmgType: 'magic', cone: 0.62, burn: 9, burnDur: 2.2, overheat: 4.5, blowDmg: 40, blowRadius: 1.6 },
     levels: [
       { cost: 100, name: 'STOKED',        mods: { damage: 40, burn: 16, blowDmg: 120 } },
@@ -1885,7 +1885,7 @@ const TOWER_TYPES = {
   toxin: {
     id: 'toxin', element: 'venom', origin: 'xeno', name: 'TOXIN', role: 'Stacking percent-HP venom', cost: 209, costGrowth: 1.70,
     color: '#a3e635', dark: '#3f5f0b', attack: 'projectile',
-    desc: 'Venom that ignores armour AND shields and scales off the target\'s CURRENT health — ferocious on a full-health giant, feeble once it is nearly dead. It softens targets; it does not finish them.',
+    desc: 'Venom that ignores armour AND shields and scales off the target\'s CURRENT health: ferocious on a full-health giant, feeble once it is nearly dead. It softens targets; it does not finish them.',
     base: { damage: 4, range: 3.3, rate: 1.1, projSpeed: 10, dmgType: 'magic', splash: 1.0,
             poisonDps: 3.5, poisonPct: 0.005, poisonDur: 4.0, maxStacks: 2 },
     levels: [
@@ -1903,7 +1903,7 @@ const TOWER_TYPES = {
     branches: [
       { id: 'plague', name: 'PLAGUE', cost: 350, mods: { damage: 22, poisonDps: 11.0, poisonPct: 0.015, maxStacks: 5, contagion: 2.4 },
         surge: { contagion: 0.35 },
-        note: 'A poisoned enemy that dies infects ONE nearby target — a single jump, never a chain.' },
+        note: 'A poisoned enemy that dies infects ONE nearby target: a single jump, never a chain.' },
       { id: 'corrosion', name: 'CORROSION', cost: 350, mods: { damage: 20, poisonDps: 9.0, poisonPct: 0.011, maxStacks: 4, shredPerStack: 3, corrodeSlow: 0.18 },
         surge: { shredPerStack: 1 }, note: 'Each stack strips 3 armour and slows.' }
     ]
@@ -1912,7 +1912,7 @@ const TOWER_TYPES = {
   beacon: {
     id: 'beacon', element: 'radiant', origin: 'light', name: 'BEACON', role: 'Consecrates one tower at a time', cost: 351, costGrowth: 2.05,
     color: '#fbbf24', dark: '#78500a', attack: 'aura',
-    desc: 'Fires nothing, and spreads nothing. It lights the best gun inside its field and pours everything it has into that ONE emplacement until the beam moves on. LATE-GAME by design: a Beacon is worth exactly what your best tower is worth, so it is dead weight over four cheap emplacements and enormous over one ascended monster — the opposite question a Pylon asks.',
+    desc: 'Fires nothing, and spreads nothing. It lights the best gun inside its field and pours everything it has into that ONE emplacement until the beam moves on. LATE-GAME by design a Beacon is worth exactly what your best tower is worth, so it is dead weight over four cheap emplacements and enormous over one ascended monster, the opposite question a Pylon asks.',
     base: { range: 2.6, dmgType: 'none', focusDmg: 0.40, focusRate: 0.20, focusEvery: 3.2, focusCount: 1 },
     levels: [
       { cost: 180, name: 'RESONATOR', mods: { focusDmg: 0.66, focusRate: 0.30, range: 2.9 } },
@@ -1928,14 +1928,14 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'overclock', name: 'OVERCLOCK', cost: 520, mods: { focusDmg: 0.54, focusRate: 0.90, focusEvery: 2.4, range: 3.5 },
-        surge: { focusRate: 0.11 }, note: 'A short, restless beam — the fire rate goes wherever it lands.' },
+        surge: { focusRate: 0.11 }, note: 'A short, restless beam: the fire rate goes wherever it lands.' },
       { id: 'amplifier', name: 'AMPLIFIER', cost: 520, mods: { focusDmg: 1.80, focusRate: 0.28, focusRange: 0.24, focusEvery: 4.5, range: 3.5 },
         surge: { focusDmg: 0.22 }, note: 'One tower, held in the light a long time, and unrecognisable while it is.' }
     ]
   },
 
   tether: {
-    id: 'tether', element: 'frost', origin: 'pirate', name: 'TETHER', role: 'Displacement — drags enemies back', cost: 202, costGrowth: 1.76,
+    id: 'tether', element: 'frost', origin: 'pirate', name: 'TETHER', role: 'Displacement: drags enemies back', cost: 202, costGrowth: 1.76,
     color: '#f472b6', dark: '#6d1a42', attack: 'tether',
     desc: 'Harpoons a target and winches it BACKWARD. Every tile dragged is a tile your whole defence shoots again.',
     base: { damage: 7, range: 3.4, rate: 0.62, dmgType: 'physical', pull: 1.2, projSpeed: 20 },
@@ -2010,7 +2010,7 @@ const TOWER_TYPES = {
   },
 
   singularity: {
-    id: 'singularity', element: 'void', origin: 'robotic', name: 'SINGULARITY', role: 'Gravity — clumps enemies', cost: 297, costGrowth: 2.10,
+    id: 'singularity', element: 'void', origin: 'robotic', name: 'SINGULARITY', role: 'Gravity: clumps enemies', cost: 297, costGrowth: 2.10,
     color: '#818cf8', dark: '#312e81', attack: 'gravity',
     desc: 'A Federation containment core, stripped off a wreck and rebuilt on a machine chassis. Drags every enemy in range toward one point, compressing a strung-out wave into a knot for your splash.',
     base: { damage: 4, range: 3.2, rate: 0.26, dmgType: 'magic', gravity: 0.9 },
@@ -2035,9 +2035,9 @@ const TOWER_TYPES = {
   },
 
   vault: {
-    id: 'vault', element: 'radiant', origin: 'robotic', name: 'VAULT', role: 'Economy — generates gold', cost: 324, costGrowth: 2.35,
+    id: 'vault', element: 'radiant', origin: 'robotic', name: 'VAULT', role: 'Economy: generates gold', cost: 324, costGrowth: 2.35,
     color: '#fcd34d', dark: '#78350f', attack: 'economy',
-    desc: 'Mints gold on a clock and skims from kills nearby. EARLY-GAME by design: it pays from the moment it is raised and can never be paid for the waves you spent without it. Priced to be nearly unique — a second one costs more than double. The other economy structure mints nothing at all.',
+    desc: 'Mints gold on a clock and skims from kills nearby. EARLY-GAME by design: it pays from the moment it is raised and can never be paid for the waves you spent without it. Priced to be nearly unique: a second one costs more than double. The other economy structure mints nothing at all.',
     base: { range: 3.2, dmgType: 'none', income: 9, incomeEvery: 5, killCut: 2 },
     levels: [
       { cost: 165, name: 'STRONGBOX', mods: { income: 15, killCut: 3, range: 3.5 } },
@@ -2060,9 +2060,9 @@ const TOWER_TYPES = {
   },
 
   flak: {
-    id: 'flak', element: 'kinetic', origin: 'human', name: 'FLAK', role: 'Anti-air — brings flyers down', cost: 216, costGrowth: 1.60,
+    id: 'flak', element: 'kinetic', origin: 'human', name: 'FLAK', role: 'Anti-air: brings flyers down', cost: 216, costGrowth: 1.60,
     color: '#5eead4', dark: '#134e4a', attack: 'projectile', airOnly: true,
-    desc: 'CANNOT TARGET GROUND. What it does instead is bring things DOWN: a hit flyer is crippled onto the deck for a few seconds, crawling, where every ground-only gun on the board can finally reach it. CONDITIONAL — worth nothing against a wave with no sky, and the reason the exact mirror of Mortar is also its partner.',
+    desc: 'CANNOT TARGET GROUND. What it does instead is bring things DOWN: a hit flyer is crippled onto the deck for a few seconds, crawling, where every ground-only gun on the board can finally reach it. CONDITIONAL: worth nothing against a wave with no sky, and the reason the exact mirror of Mortar is also its partner.',
     base: { damage: 23, range: 4.2, rate: 1.1, projSpeed: 17, dmgType: 'physical', splash: 1.4, downFor: 0.6 },
     levels: [
       { cost: 115, name: 'AUTOCANNON', mods: { damage: 78, rate: 1.2, downFor: 0.85 } },
@@ -2143,7 +2143,7 @@ const TOWER_TYPES = {
   canister: {
     id: 'canister', element: 'venom', origin: 'human', name: 'CANISTER', role: 'Armour-stripping gas', cost: 214, costGrowth: 1.64,
     color: '#bef264', dark: '#3f5f0b', attack: 'lobbed', groundOnly: true, glyph: '◍',
-    desc: 'Standard-issue gas shells on a standard-issue tube. The gas eats plate — every stack strips armour with no talent spent on it — and it burns a share of what the target STARTED with rather than what it has left, so it keeps working on a giant that venom has already given up on. It buys that with damage: a third of TOXIN\'s percentage, and nothing at all against a flier.',
+    desc: 'Standard-issue gas shells on a standard-issue tube. The gas eats plate every stack strips armour with no talent spent on it, and it burns a share of what the target STARTED with rather than what it has left, so it keeps working on a giant that venom has already given up on. It buys that with damage: a third of TOXIN\'s percentage, and nothing at all against a flier.',
     /* poisonMaxPct is a share of MAX health per stack per second, and the rung
        figures are set so (pct x maxStacks) lands at ~1/3 of TOXIN's
        (poisonPct x maxStacks) at the matching rung -- 0.0034 vs 0.010 at base,
@@ -2167,7 +2167,7 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'saturation', name: 'SATURATION', cost: 350, mods: { damage: 58, splash: 2.4, poisonDps: 13.0, poisonMaxPct: 0.0050, maxStacks: 5, shredPerStack: 4, rate: 0.66 },
-        surge: { splash: 0.16 }, note: 'The whole approach becomes uninhabitable, and nothing crossing it keeps its plate — 20 armour off at full stacks.' },
+        surge: { splash: 0.16 }, note: 'The whole approach becomes uninhabitable, and nothing crossing it keeps its plate. 20 armour off at full stacks.' },
       { id: 'concentrate', name: 'CONCENTRATE', cost: 350, mods: { damage: 96, splash: 1.5, poisonDps: 15.0, poisonMaxPct: 0.0050, maxStacks: 3, shredPerStack: 6, corrodeSlow: 0.22 },
         surge: { poisonDps: 3.0 }, note: 'A smaller cloud that strips 18 armour and eats a fixed share of whatever walks into it.' }
     ]
@@ -2199,9 +2199,9 @@ const TOWER_TYPES = {
   },
 
   quartermaster: {
-    id: 'quartermaster', element: 'radiant', origin: 'human', name: 'QUARTERMASTER', role: 'Supply — makes gold go further', cost: 300, costGrowth: 2.15,
+    id: 'quartermaster', element: 'radiant', origin: 'human', name: 'QUARTERMASTER', role: 'Supply: makes gold go further', cost: 300, costGrowth: 2.15,
     color: '#fde68a', dark: '#78500a', attack: 'depot', glyph: '⌸',
-    desc: 'Human logistics, which is to say paperwork with a roof on it. It mints nothing at all. Every upgrade bought on a tower inside the depot is requisitioned rather than purchased, and a lump sum lands when a wave ends. LATE-GAME by design — a discount is worth what the thing discounted costs, and nothing bought in wave two costs enough to be worth saving on.',
+    desc: 'Human logistics, which is to say paperwork with a roof on it. It mints nothing at all. Every upgrade bought on a tower inside the depot is requisitioned rather than purchased, and a lump sum lands when a wave ends. LATE-GAME by design: a discount is worth what the thing discounted costs, and nothing bought in wave two costs enough to be worth saving on.',
     base: { range: 3.0, dmgType: 'none', waveBonus: 72, requisition: 0.10 },
     levels: [
       { cost: 155, name: 'DEPOT',     mods: { waveBonus: 125, requisition: 0.15 } },
@@ -2369,7 +2369,7 @@ const CLICK_DETAIL_KEYBOARD = 0;
 const ENEMY_TYPES = {
   shardling:  { id:'shardling', name:'Shard Sentry', hp:210, speed:1.05, armor:6, bounty:26, lives:1, radius:11,
                 color:'#94a3b8', shape:'block', splashResist:0.65, elemWeak:{ storm:0.35 },
-                desc:'Faceted plating scatters blast waves — splash damage does 65% less. Storm shivers the lattice apart.' },
+                desc:'Faceted plating scatters blast waves: splash damage does 65% less. Storm shivers the lattice apart.' },
   basalt:     { id:'basalt', name:'Basalt Marcher', hp:340, speed:0.85, armor:10, bounty:34, lives:2, radius:13,
                 color:'#78716c', shape:'boss', slowResist:1.0, elemWeak:{ fire:0.3 },
                 desc:'A walking slab of sintered stone. Nothing slows it; heat is the only thing that reaches what thinks inside.' },
@@ -2416,7 +2416,7 @@ const ENEMY_TYPES = {
                 desc:'Phases INVULNERABLE for 1.3s out of every 4.3s. Half of it is somewhere your guns are not.' },
   nullifier:  { id:'nullifier', name:'Nullifier', hp:290, speed:0.95, armor:5, bounty:43, lives:3, radius:13,
                 color:'#2dd4bf', shape:'null', magicImmune:true,
-                desc:'IMMUNE to magic damage — a countermeasure frame built against something that used it. Keep physical on the field.' },
+                desc:'IMMUNE to magic damage: a countermeasure frame built against something that used it. Keep physical on the field.' },
   revenant:   { id:'revenant', elemResist:{venom:0.5}, name:'Reconstructor', hp:260, speed:1.0, armor:6, bounty:44, lives:3, radius:13,
                 color:'#94a3b8', shape:'revenant', revive:0.45,
                 desc:'Stands back up once at 45% health. Self-repair was the entire point of the design.' },
@@ -2429,25 +2429,25 @@ const ENEMY_TYPES = {
   warchief:   { id:'warchief', name:'Marshal Pylon', hp:340, speed:0.92, armor:7, bounty:44, lives:3, radius:14,
                 color:'#fb7185', shape:'warchief',
                 aura:{ radius:3.0, slowResist:0.70, tint:'#fb7185', label:'RESOLVE' },
-                desc:'AURA — machines within 3 tiles resist 70% of all slowing. Cryo becomes almost useless while it stands.' },
+                desc:'AURA: machines within 3 tiles resist 70% of all slowing. Cryo becomes almost useless while it stands.' },
   anchorite:  { id:'anchorite', name:'Anchor Pylon', hp:400, speed:0.8, armor:9, bounty:46, lives:3, radius:15,
                 color:'#fbbf24', shape:'anchorite',
                 aura:{ radius:2.8, pullResist:0.90, tint:'#fbbf24', label:'ANCHOR' },
-                desc:'AURA — machines within 2.8 tiles cannot be displaced. Tether and Singularity do nothing near it.' },
+                desc:'AURA: machines within 2.8 tiles cannot be displaced. Tether and Singularity do nothing near it.' },
   herald:     { id:'herald', name:'Cadence Pylon', hp:265, speed:1.2, armor:4, bounty:42, lives:2, radius:12,
                 elemWeak:{ frost:0.35 },
                 color:'#f0abfc', shape:'herald',
                 aura:{ radius:3.2, speed:0.40, tint:'#f0abfc', label:'HASTE' },
-                desc:'AURA — machines within 3.2 tiles move 40% faster, cutting the time your board has to kill them.' },
+                desc:'AURA: machines within 3.2 tiles move 40% faster, cutting the time your board has to kill them.' },
   bastion:    { id:'bastion', name:'Bastion Pylon', hp:460, speed:0.75, armor:12, bounty:48, lives:3, radius:16,
                 elemWeak:{ void:0.3 },
                 color:'#a3a3a3', shape:'bastion',
                 aura:{ radius:2.6, armor:10, tint:'#a3a3a3', label:'PLATING' },
-                desc:'AURA — machines within 2.6 tiles gain +10 armour. Physical damage falls off a cliff around it.' },
+                desc:'AURA: machines within 2.6 tiles gain +10 armour. Physical damage falls off a cliff around it.' },
 
   mb_colossus:{ id:'mb_colossus', elemResist:{fire:0.4}, name:'COLOSSUS', hp:820, speed:0.5, armor:11, bounty:175, lives:4, radius:23,
                 color:'#cbd5e1', shape:'jugger', miniboss:true, slowResist:0.6,
-                desc:'Miniboss. A siege frame under centuries of accreted plate — physical damage struggles.' },
+                desc:'Miniboss. A siege frame under centuries of accreted plate: physical damage struggles.' },
   mb_seraph:  { id:'mb_seraph', name:'VESPER', hp:620, speed:1.15, armor:5, bounty:170, lives:4, radius:20,
                 color:'#67e8f9', shape:'diamond', flying:true, miniboss:true,
                 desc:'Miniboss. A high-altitude interceptor still flying its patrol. Airborne and fast.' },
@@ -4062,7 +4062,7 @@ const PLAYER_MODS = [
        demolition draws on, so the copy has to name the allowance or the card
        reads as free board rather than as two fifths of your clearances used
        for you. The number comes from CLEAR_MAX; it is never typed twice. */
-    desc:'Demolish the two nearest rubble tiles free — they spend two of your ' + CLEAR_MAX +
+    desc:'Demolish the two nearest rubble tiles free: they spend two of your ' + CLEAR_MAX +
          ' base clearances, and every later one costs 35% less.',
     apply:(m, s) => { m.clearDiscount = (m.clearDiscount || 0) + 0.35;
                       if (typeof Game !== 'undefined') Game.grantClearances(s ? s.index : 0, 2); } },
@@ -4103,7 +4103,7 @@ const ENEMY_MODS = [
 ];
 
 const TARGET_MODES = [
-  { id:'first',  name:'FIRST',  desc:'Closest to your base — the default, and usually correct.' },
+  { id:'first',  name:'FIRST',  desc:'Closest to your base: the default, and usually correct.' },
   { id:'last',   name:'LAST',   desc:'Furthest from your base. Good for holding a chokepoint.' },
   { id:'strong', name:'STRONG', desc:'Highest current health. Point Railguns at an Ironmarch.' },
   { id:'weak',   name:'WEAK',   desc:'Lowest health. Maximises kills and reanimation output.' },

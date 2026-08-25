@@ -188,7 +188,7 @@ const Net = {
     if (this.phase === 'joining' && now - this.joinSince > NET_PEER_TIMEOUT_MS) {
       this.tables = this.tables.filter(t => t.id !== this.joinTarget);
       this.phase = 'idle'; this.table = null; this.joinTarget = null;
-      this.status('The table did not answer — the host may have closed that window. Pick another.');
+      this.status('The table did not answer: the host may have closed that window. Pick another.');
       if (this.onLobby) this.onLobby();
     }
     if ((this.phase === 'linked' || this.phase === 'playing') && now - this.lastBeat > NET_HEARTBEAT_MS) {
@@ -1278,7 +1278,7 @@ const Net = {
     Sound.resume();
     UI.show('screen-game');
     UI.buildShop(); UI.buildAbilityBar(); Game.resize(); UI.syncAll();
-    Game.banner('DUEL — ' + ((this.peer && this.peer.name) || 'COMMANDER'), 3,
+    Game.banner('DUEL · ' + ((this.peer && this.peer.name) || 'COMMANDER'), 3,
                 FACTIONS[this._realSides[seat].faction].color);
   },
 
@@ -1430,10 +1430,10 @@ const Net = {
        throttled by the browser into heartbeating without stepping. */
     this.voidMatch('THE RELAY CLOSED',
       why === 'frozen'
-        ? 'The other commander\'s window is open but has stopped simulating. A background TAB is throttled by the browser and cannot fight a duel — the second window has to be visible. The duel is void — nothing has been recorded.'
+        ? 'The other commander\'s window is open but has stopped simulating. A background TAB is throttled by the browser and cannot fight a duel: the second window has to be visible. The duel is void: nothing has been recorded.'
         : why === 'timeout'
-        ? 'The other commander stopped answering. The duel is void — nothing has been recorded.'
-        : 'The other commander closed their window. The duel is void — nothing has been recorded.');
+        ? 'The other commander stopped answering. The duel is void: nothing has been recorded.'
+        : 'The other commander closed their window. The duel is void: nothing has been recorded.');
     /* AFTER the teardown, which lands on 'idle'. The lobby has to know this
        link is gone rather than merely finished, and enterLobby clears 'lost'. */
     this.phase = 'lost';
@@ -1458,7 +1458,7 @@ const Net = {
          duel; told nothing, they wait out the ceiling and lose the match. */
       el.innerHTML = 'WAITING FOR THE OTHER COMMANDER' +
         '<div style="margin-top:4px;font-weight:400;letter-spacing:.06em;opacity:.7">' +
-        'a background tab is throttled — keep both windows visible</div>';
+        'a background tab is throttled: keep both windows visible</div>';
       document.body.appendChild(el);
     }
     el.style.display = on ? 'block' : 'none';
@@ -1580,7 +1580,7 @@ const NetRTC = {
   /** GUEST: take the offer, hand back the answer blob. */
   async answer(blob) {
     if (!this.supported) throw new Error('This browser has no WebRTC.');
-    let o; try { o = this._dec(blob); } catch (e) { throw new Error('That is not an offer blob — copy the WHOLE of it and try again.'); }
+    let o; try { o = this._dec(blob); } catch (e) { throw new Error('That is not an offer blob: copy the WHOLE of it and try again.'); }
     if (o.v !== NET_PROTOCOL) throw new Error('The two machines are running different builds of the game. Reload both from the site, then start over.');
     const pc = this._open();
     pc.ondatachannel = ev => this._arm(ev.channel);
@@ -1592,7 +1592,7 @@ const NetRTC = {
 
   /** HOST, step two: take the answer. The channel opens by itself after. */
   async accept(blob) {
-    let a; try { a = this._dec(blob); } catch (e) { throw new Error('That is not an answer blob — copy the WHOLE of it and try again.'); }
+    let a; try { a = this._dec(blob); } catch (e) { throw new Error('That is not an answer blob: copy the WHOLE of it and try again.'); }
     if (a.v !== NET_PROTOCOL) throw new Error('The two machines are running different builds of the game. Reload both from the site, then start over.');
     if (!this.pc) throw new Error('There is no offer waiting for this answer. Start the ritual again.');
     await this.pc.setRemoteDescription(a.d);
@@ -1733,7 +1733,7 @@ Net.lockstepAudit = function () {
   try {
     const bad = Net.lockstepAudit();
     if (!bad.length) return;
-    console.error('LOCKSTEP CONTRACT BROKEN — an index-coupled table was reordered ' +
+    console.error('LOCKSTEP CONTRACT BROKEN: an index-coupled table was reordered ' +
                   'without a NET_PROTOCOL bump. Duels between builds will desync.');
     for (const b of bad)
       console.error('  ' + b.table + '[' + b.at + '] should be "' + b.want + '", is "' + b.got + '"');

@@ -1594,7 +1594,7 @@ class Tower {
     /* A tower placed by a high base level can carry ascensions BEFORE its
        specialisation is chosen -- the branch is owed, not yet picked. */
     if (this.asc > 0 && this.branch) return this.branch.name + ' +' + this.asc;
-    if (this.asc > 0) return 'MK III +' + this.asc + ' — CHOOSE SPECIALISATION';
+    if (this.asc > 0) return 'MK III +' + this.asc + ' · CHOOSE SPECIALISATION';
     if (this.branch) return this.branch.name;
     return this.level === 1 ? 'MK I' : this.def.levels[this.level - 2].name;
   }

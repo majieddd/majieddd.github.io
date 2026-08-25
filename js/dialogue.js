@@ -121,7 +121,7 @@ const DIALOGUE = {
     human:  ['We adapted to worse than you. Hold the line.',
              'Humanity buried every empire that called itself inevitable.'],
     light:  ['The Light does not bargain with what it must save.',
-             'All life is one life. Yours included — surrendered or not.'],
+             'All life is one life. Yours included: surrendered or not.'],
     xeno:   ['You are not an enemy. You are an acquisition.',
              'Everything you are will be folded into us by nightfall.'],
     pirate: ['No flags on my hull, no mercy in my hold.',

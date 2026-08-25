@@ -71,7 +71,7 @@ const TOWER_TYPES_2 = {
   foundry: {
     id:'foundry', element: 'fire', origin:'robotic', name:'FOUNDRY', role:'Spawns fighting minions', cost:300, costGrowth:1.78,
     color:'#f9a8d4', dark:'#6d2044', attack:'minions', glyph:'⚒',
-    desc:'Forges automata that march onto the lane, grapple the first enemy they meet and grind it down. The only structure that fights with BODIES instead of fire. It is fed by what they kill — every corpse its automata put down goes straight back onto the belt, so a Foundry that is LOSING bodies replaces them markedly faster than one standing idle, and one dropped into a lane already lost never gets started. LATE-GAME by design.',
+    desc:'Forges automata that march onto the lane, grapple the first enemy they meet and grind it down. The only structure that fights with BODIES instead of fire. It is fed by what they kill: every corpse its automata put down goes straight back onto the belt, so a Foundry that is LOSING bodies replaces them markedly faster than one standing idle, and one dropped into a lane already lost never gets started. LATE-GAME by design.',
     base:{ range:3.4, dmgType:'physical', minions:2, minionHp:40, minionDps:9, minionSlow:0.4, forgeTime:6, scrapline:1.1 },
     levels:[ { cost:170, name:'ASSEMBLY', mods:{ minions:3, minionHp:67, minionDps:15, scrapline:1.4 } },
              { cost:340, name:'WARPLANT', mods:{ minions:4, minionHp:107, minionDps:24, forgeTime:5, scrapline:1.8 } } ],
@@ -92,7 +92,7 @@ const TOWER_TYPES_2 = {
   saboteur: {
     id:'saboteur', element: 'venom', origin:'pirate', name:'SABOTEUR', role:'Disables RIVAL towers', cost:290, costGrowth:1.85,
     color:'#94a3b8', dark:'#1e293b', attack:'sabotage', glyph:'⚡',
-    desc:'Fires nothing at enemies. Instead it reaches across the field and periodically knocks a RIVAL tower offline — the only structure that attacks your opponent\'s board directly.',
+    desc:'Fires nothing at enemies. Instead it reaches across the field and periodically knocks a RIVAL tower offline: the only structure that attacks your opponent\'s board directly.',
     base:{ range:99, dmgType:'none', sabotageEvery:11, sabotageDur:3.0, sabotageTargets:1 },
     levels:[ { cost:200, name:'INFILTRATOR', mods:{ sabotageEvery:9, sabotageDur:3.6 } },
              { cost:360, name:'SPYMASTER',  mods:{ sabotageEvery:8, sabotageDur:4.2 } } ],
@@ -113,7 +113,7 @@ const TOWER_TYPES_2 = {
   rampart: {
     id:'rampart', element:'kinetic', origin:'human', name:'RAMPART', role:'Projects a lane barricade', cost:200, costGrowth:1.60,
     color:'#d6bcfa', dark:'#3b2a5a', attack:'barricade', glyph:'▦',
-    desc:'Raises a physical barricade across the lane. Ground enemies must stop and batter it down — but a wall holds only so many at once, and the rest squeeze past.',
+    desc:'Raises a physical barricade across the lane. Ground enemies must stop and batter it down: but a wall holds only so many at once, and the rest squeeze past.',
     /* wallBlocks is how many attackers the wall can hold at one time. The
        overflow walks through, so a wall is throughput you can be swamped on
        rather than an absolute gate. */
@@ -132,13 +132,13 @@ const TOWER_TYPES_2 = {
       { id:'citadel', name:'CITADEL', cost:380, mods:{ wallHp:1900, wallRebuild:7, wallThorns:35, wallBlocks:4 },
         surge:{ wallHp:450, wallThorns:10, wallBlocks:1 }, note:'One monumental wall that bites back, and holds a crowd.' },
       { id:'phalanx', name:'PHALANX', cost:380, mods:{ wallHp:650, wallRebuild:5, walls:2, wallBlocks:2 },
-        surge:{ wallHp:175 }, note:'Two staggered barricades — twice the wall, twice the capacity.' } ]
+        surge:{ wallHp:175 }, note:'Two staggered barricades: twice the wall, twice the capacity.' } ]
   },
 
   executioner: {
     id:'executioner', element:'void', origin:'xeno', name:'EXECUTIONER', role:'Culls weakened enemies', cost:270, costGrowth:1.74,
     color:'#fca5a5', dark:'#5f1616', attack:'projectile', glyph:'⚔',
-    desc:'A heavy blade-thrower whose hits EXECUTE any non-elite enemy below a health threshold outright. It does not care how much health the target started with — only how little is left.',
+    desc:'A heavy blade-thrower whose hits EXECUTE any non-elite enemy below a health threshold outright. It does not care how much health the target started with: only how little is left.',
     base:{ damage:11, range:3.4, rate:0.8, projSpeed:14, dmgType:'physical', execThreshold:0.10 },
     levels:[ { cost:190, name:'HEADSMAN', mods:{ damage:19, execThreshold:0.13 } },
              { cost:350, name:'ARBITER',  mods:{ damage:30, execThreshold:0.16, range:3.8 } } ],
@@ -159,7 +159,7 @@ const TOWER_TYPES_2 = {
   chrono: {
     id:'chrono', element: 'frost', origin:'light', name:'CHRONO', role:'Rewinds enemies through time', cost:250, costGrowth:1.70,
     color:'#93c5fd', dark:'#1e3a5f', attack:'chrono', glyph:'⧖',
-    desc:'Snaps every enemy in range back to where it was seconds ago. The faster a target moves, the further it is thrown back — the definitive answer to Sprinters and Heralds.',
+    desc:'Snaps every enemy in range back to where it was seconds ago. The faster a target moves, the further it is thrown back: the definitive answer to Sprinters and Heralds.',
     base:{ damage:6, range:3.0, rate:0.2, dmgType:'magic', rewindSec:2.2 },
     levels:[ { cost:180, name:'HOURGLASS', mods:{ damage:11, rewindSec:2.8 } },
              { cost:330, name:'EPOCH',     mods:{ damage:18, rewindSec:3.4, range:3.4 } } ],
@@ -180,7 +180,7 @@ const TOWER_TYPES_2 = {
   echo: {
     id:'echo', element: 'storm', origin:'robotic', name:'ECHO', role:'Repeats neighbouring attacks', cost:260, costGrowth:1.76,
     color:'#fda4af', dark:'#5f1f2e', attack:'echo', glyph:'≋',
-    desc:'Has no weapon of its own. It listens to adjacent towers and REPEATS their strikes at reduced power — worth more the stronger the company it keeps.',
+    desc:'Has no weapon of its own. It listens to adjacent towers and REPEATS their strikes at reduced power: worth more the stronger the company it keeps.',
     base:{ range:3.2, echoRange:2.0, rate:0.7, dmgType:'none', echoFrac:0.55 },
     levels:[ { cost:190, name:'REVERB',   mods:{ echoFrac:0.7, rate:0.8 } },
              { cost:350, name:'RESOUND',  mods:{ echoFrac:0.85, rate:0.9, echoRange:2.4 } } ],
@@ -201,7 +201,7 @@ const TOWER_TYPES_2 = {
   quake: {
     id:'quake', element:'kinetic', origin:'robotic', name:'QUAKE', role:'Global ground slam', cost:320, costGrowth:1.80,
     color:'#d4a373', dark:'#4a2e14', attack:'quake', glyph:'⌗',
-    desc:'Hammers the earth itself. Every ground enemy on YOUR ENTIRE SIDE takes the hit, wherever it stands — the only weapon with no range at all.',
+    desc:'Hammers the earth itself. Every ground enemy on YOUR ENTIRE SIDE takes the hit, wherever it stands: the only weapon with no range at all.',
     base:{ damage:8, rate:0.16, range:2.0, dmgType:'physical', stagger:0.25 },
     levels:[ { cost:210, name:'TREMOR',   mods:{ damage:14, rate:0.18 } },
              { cost:390, name:'FAULTLINE',mods:{ damage:23, rate:0.20, stagger:0.35 } } ],
@@ -214,7 +214,7 @@ const TOWER_TYPES_2 = {
       { id:'qk_after', row:2, col:1, name:'AFTERSHOCK', desc:'A second slam at 40% power follows.', mods:{ aftershock:0.4 } } ],
     branches:[
       { id:'epicenter', name:'EPICENTER', cost:500, mods:{ damage:44, rate:0.2, epicenter:2.5, range:3.5 },
-        surge:{ damage:10 }, note:'Triple damage within its own radius — stand your ground there.' },
+        surge:{ damage:10 }, note:'Triple damage within its own radius: stand your ground there.' },
       { id:'cataclysm', name:'CATACLYSM', cost:500, mods:{ damage:34, rate:0.22, aftershock:0.6, stagger:0.5 },
         surge:{ aftershock:0.1 }, note:'Slam after slam after slam.' } ]
   },
@@ -222,7 +222,7 @@ const TOWER_TYPES_2 = {
   siren: {
     id:'siren', element:'void', origin:'xeno', name:'SIREN', role:'Converts enemies to your side', cost:350, costGrowth:1.98,
     color:'#f0abfc', dark:'#5b1d66', attack:'siren', glyph:'♆',
-    desc:'Sings a single enemy out of the assault entirely — it vanishes from your lane and marches on the RIVAL as one of yours. The strongest recruit it can hold, every cooldown.',
+    desc:'Sings a single enemy out of the assault entirely: it vanishes from your lane and marches on the RIVAL as one of yours. The strongest recruit it can hold, every cooldown.',
     base:{ range:3.6, dmgType:'none', charmEvery:18, charmMaxHp:180 },
     levels:[ { cost:240, name:'ALLURE',  mods:{ charmEvery:15, charmMaxHp:440 } },
              { cost:450, name:'COMMAND', mods:{ charmEvery:13, charmMaxHp:1040 } } ],
@@ -243,7 +243,7 @@ const TOWER_TYPES_2 = {
   alchemist: {
     id:'alchemist', element: 'venom', origin:'xeno', name:'ALCHEMIST', role:'Grows stronger with every kill', cost:280, costGrowth:1.76,
     color:'#fbbf24', dark:'#5c4008', attack:'projectile', glyph:'⚗',
-    desc:'Transmutes death into power. Every kill inside its circle adds a PERMANENT grain of damage to its shot — the only tower with no ceiling that money cannot buy.',
+    desc:'Transmutes death into power. Every kill inside its circle adds a PERMANENT grain of damage to its shot: the only tower with no ceiling that money cannot buy.',
     base:{ damage:7, range:3.3, rate:1.0, projSpeed:12, dmgType:'magic', transmute:0.6 },
     levels:[ { cost:200, name:'ADEPT',  mods:{ damage:12, transmute:1.0 } },
              { cost:370, name:'MAGNUS', mods:{ damage:19, transmute:1.6, range:3.6 } } ],
@@ -256,7 +256,7 @@ const TOWER_TYPES_2 = {
       { id:'al_burst', row:2, col:1, name:'UNSTABLE MIX',desc:'Shots splash 0.8 tiles.',   mods:{ splash:0.8 } } ],
     branches:[
       { id:'midas',      name:'MIDAS',       cost:460, mods:{ damage:26, transmute:2.0, transGold:4 },
-        surge:{ transGold:2 }, note:'Death pays twice — in power and in gold.' },
+        surge:{ transGold:2 }, note:'Death pays twice: in power and in gold.' },
       { id:'philosopher',name:'PHILOSOPHER', cost:460, mods:{ damage:22, transmute:4.5, rate:1.1 },
         surge:{ transmute:1.2 }, note:'The great work: growth without limit.' } ]
   },
@@ -264,7 +264,7 @@ const TOWER_TYPES_2 = {
   glaive: {
     id:'glaive', element:'kinetic', origin:'pirate', name:'GLAIVE', role:'Boomerang along the lane', cost:220, costGrowth:1.58,
     color:'#a5f3fc', dark:'#164e63', attack:'glaive', glyph:'↺',
-    desc:'Hurls a whirling blade that follows the LANE itself — out along the path and back again, cutting everything it passes twice.',
+    desc:'Hurls a whirling blade that follows the LANE itself: out along the path and back again, cutting everything it passes twice.',
     base:{ damage:9, range:3.0, rate:0.5, dmgType:'physical', glaiveTiles:7, glaiveSpeed:9 },
     levels:[ { cost:160, name:'TWIN ARC', mods:{ damage:16, glaiveTiles:9 } },
              { cost:300, name:'FARBLADE', mods:{ damage:25, glaiveTiles:11, glaiveSpeed:11 } } ],
@@ -285,7 +285,7 @@ const TOWER_TYPES_2 = {
   cyclone: {
     id:'cyclone', element:'storm', origin:'pirate', name:'CYCLONE', role:'Hurls enemies skyward', cost:240, costGrowth:1.64,
     color:'#7dd3fc', dark:'#0c4a6e', attack:'cyclone', glyph:'๑',
-    desc:'Whips up a vortex that flings ground enemies into the air — held helpless, then dropped for impact damage. Elites are too heavy to lift.',
+    desc:'Whips up a vortex that flings ground enemies into the air: held helpless, then dropped for impact damage. Elites are too heavy to lift.',
     base:{ damage:9, range:2.8, rate:0.3, dmgType:'magic', liftDur:0.9, dropDmg:14 },
     levels:[ { cost:170, name:'GALE',  mods:{ damage:15, dropDmg:26 } },
              { cost:320, name:'VORTEX',mods:{ damage:24, dropDmg:42, liftDur:1.1, range:3.1 } } ],
@@ -327,7 +327,7 @@ const TOWER_TYPES_2 = {
   shepherd: {
     id:'shepherd', element:'radiant', origin:'light', name:'SHEPHERD', role:'Empowers your reanimates', cost:270, costGrowth:1.82,
     color:'#bef264', dark:'#365314', attack:'shepherd', glyph:'♱',
-    desc:'Tends the dead you send onward. Reanimates passing its field march out harder, faster and heavier — the only structure that strengthens your OFFENCE.',
+    desc:'Tends the dead you send onward. Reanimates passing its field march out harder, faster and heavier: the only structure that strengthens your OFFENCE.',
     base:{ range:3.2, dmgType:'none', flockHp:0.30, flockSpeed:0.15 },
     levels:[ { cost:200, name:'PASTOR',   mods:{ flockHp:0.55, flockSpeed:0.22 } },
              { cost:370, name:'HIEROPHANT',mods:{ flockHp:0.85, flockSpeed:0.30, range:3.6 } } ],
@@ -348,7 +348,7 @@ const TOWER_TYPES_2 = {
   ward: {
     id:'ward', element:'radiant', origin:'light', name:'WARD', role:'Shields towers from disruption', cost:210, costGrowth:1.68,
     color:'#e9d5ff', dark:'#4c2673', attack:'ward', glyph:'❖',
-    desc:'Projects a sanctity field. Towers inside CANNOT be jammed or sabotaged — the hard counter to Jammers, Oracles and enemy Saboteurs.',
+    desc:'Projects a sanctity field. Towers inside CANNOT be jammed or sabotaged: the hard counter to Jammers, Oracles and enemy Saboteurs.',
     base:{ range:2.7, dmgType:'none', wardDmg:0.06 },
     levels:[ { cost:160, name:'SANCTIFY', mods:{ range:3.1, wardDmg:0.10 } },
              { cost:300, name:'CONSECRATE', mods:{ range:3.5, wardDmg:0.15 } } ],
@@ -417,9 +417,9 @@ const TOWER_TYPES_2 = {
      same level, specialisation and ascension path as everything else. */
 
   custodian: {
-    id:'custodian', element:'radiant', origin:'light', name:'CUSTODIAN', role:'The last line — spends wardens on breaches', cost:286, costGrowth:1.82,
+    id:'custodian', element:'radiant', origin:'light', name:'CUSTODIAN', role:'The last line: spends wardens on breaches', cost:286, costGrowth:1.82,
     color:'#fde68a', dark:'#78500a', attack:'vigil', glyph:'⛨',
-    desc:'Federation wardens who surrendered their lives to the cause years ago and have been waiting since to be told where. It shoots nothing and it blocks nothing. When something finally reaches the line inside its watch, a warden walks into it and both are simply gone: no bounty paid, no corpse sent onward, no life off your counter. CONDITIONAL — worth nothing on a board that holds, and the difference between a bad wave and a lost run on one that does not. A Foundry stops the assault out in the lane; a Custodian answers what got past it.',
+    desc:'Federation wardens who surrendered their lives to the cause years ago and have been waiting since to be told where. It shoots nothing and it blocks nothing. When something finally reaches the line inside its watch, a warden walks into it and both are simply gone: no bounty paid, no corpse sent onward, no life off your counter. CONDITIONAL: worth nothing on a board that holds, and the difference between a bad wave and a lost run on one that does not. A Foundry stops the assault out in the lane; a Custodian answers what got past it.',
     base:{ range:3.4, dmgType:'none', vigilHold:2, vigilEvery:11 },
     levels:[ { cost:180, name:'SENTINEL', mods:{ vigilHold:3, vigilEvery:9.5, range:3.7 } },
              { cost:340, name:'PARAGON',  mods:{ vigilHold:4, vigilEvery:8, range:4.0 } } ],
@@ -440,7 +440,7 @@ const TOWER_TYPES_2 = {
   concord: {
     id:'concord', element:'storm', origin:'light', name:'CONCORD', role:'Harmonic chain, opens targets', cost:268, costGrowth:1.72,
     color:'#fcd34d', dark:'#78500a', attack:'chain', glyph:'♒',
-    desc:'A tuned discharge that walks the crowd from body to body, wherever they happen to be standing. It is not the damage that matters — everything it touches is left OPEN, and every other tower on the board collects. A chain asks who else is near THIS ONE; an Arc asks who else is on this ROAD. MID-GAME: worth exactly what the rest of your line can convert.',
+    desc:'A tuned discharge that walks the crowd from body to body, wherever they happen to be standing. It is not the damage that matters: everything it touches is left OPEN, and every other tower on the board collects. A chain asks who else is near THIS ONE; an Arc asks who else is on this ROAD. MID-GAME: worth exactly what the rest of your line can convert.',
     base:{ damage:7, range:3.3, rate:0.85, dmgType:'magic', chains:4, chainRange:2.4, falloff:0.80, vuln:0.16, vulnDur:3 },
     /* CANTICLE, not ANTIPHON: Session 19 adds a Federation tower of that
        name and two things in one faction's copy answering to one word is the
@@ -463,7 +463,7 @@ const TOWER_TYPES_2 = {
   },
 
   ichor: {
-    id:'ichor', element:'void', origin:'xeno', name:'ICHOR', role:'Digestive spray — eats the wounded', cost:232, costGrowth:1.70,
+    id:'ichor', element:'void', origin:'xeno', name:'ICHOR', role:'Digestive spray: eats the wounded', cost:232, costGrowth:1.70,
     color:'#a855f7', dark:'#4a1d6b', attack:'cone', glyph:'☣',
     desc:'A short spray of living bile that keeps working long after the stream has moved on. It does not care what the target was; only how much of it is MISSING. On a fresh body it barely registers; on something your line has already opened up it is the fastest thing on the board. LATE-GAME, and the exact mirror of CANISTER, which eats a share of what the target ARRIVED with.',
     base:{ damage:9, range:2.1, rate:1, dmgType:'magic', cone:0.55, digest:0.018, digestDur:3.0 },
@@ -486,7 +486,7 @@ const TOWER_TYPES_2 = {
   pylon: {
     id:'pylon', element:'storm', origin:'robotic', name:'PYLON', role:'Lattice keystone', cost:262, costGrowth:1.90,
     color:'#94a3b8', dark:'#1e293b', attack:'aura', glyph:'⬡',
-    desc:'Fires nothing and buffs almost nothing on its own. What it does is LINK — every robotic emplacement inside its field counts the pylon as part of its lattice, which is the only thing robotic hardware has instead of a trick. A wide, shallow field that pays a little to everything standing near it: EARLY-GAME, and the exact opposite of a Beacon, which pays everything to one.',
+    desc:'Fires nothing and buffs almost nothing on its own. What it does is LINK: every robotic emplacement inside its field counts the pylon as part of its lattice, which is the only thing robotic hardware has instead of a trick. A wide, shallow field that pays a little to everything standing near it: EARLY-GAME, and the exact opposite of a Beacon, which pays everything to one.',
     base:{ range:2.8, dmgType:'none', auraDmg:0.08, auraRate:0.06, auraRange:0.0, latticeBonus:1 },
     levels:[ { cost:160, name:'RELAY',   mods:{ auraDmg:0.13, auraRate:0.09, range:3.1, latticeBonus:2 } },
              { cost:290, name:'MAINLINE',mods:{ auraDmg:0.18, auraRate:0.12, range:3.4, latticeBonus:2 } } ],
@@ -518,7 +518,8 @@ const TOWER_TYPES_2 = {
   pressgang: {
     id:'pressgang', element:'kinetic', origin:'pirate', name:'PRESS GANG', role:'Conscripts the dead into your own line', cost:225, costGrowth:1.66,
     color:'#fca5a5', dark:'#5b1a1a', attack:'press', glyph:'⚓',
-    desc:'A boarding crew with a hook and no scruples. What it kills does not stay down: the body is dragged back onto its feet, handed a weapon and pointed at whatever is behind it. A conscript is built out of the corpse, so a heavy one makes a heavy hand and a mite makes very little — and it serves for a fixed span and then falls apart. FOUNDRY forges bodies and a SIREN sends them at somebody else; this is the reanimation loop pointed INWARD, at your own ground. EARLY-GAME by construction: one extra body is most of a wave when waves are thin and a rounding error when they are not.',
+    desc:'Kills raise the corpse as a timed conscript that fights for you. Heavier corpse, heavier conscript.',
+    lore:'A hook and no scruples.',
     /* pressHp is a SHARE of the corpse, not a figure -- that is what keeps a
        conscript honest at every wave without a second copy of the curve, and
        it is why the tower fades: the share is constant while the number of
@@ -544,7 +545,8 @@ const TOWER_TYPES_2 = {
   privateer: {
     id:'privateer', element:'void', origin:'pirate', name:'PRIVATEER', role:'Robs a rival commander on every kill', cost:255, costGrowth:1.80,
     color:'#fbbf24', dark:'#5c3a05', attack:'projectile', glyph:'⚑',
-    desc:'Sails under a letter of marque nobody issued. It fights the wave like any other gun, but the prize is not the bounty — every kill lifts a share of a RIVAL COMMANDER\'S PURSE and puts it in yours. It takes a share rather than a sum, so a rival banking for an ascension is the richest target on the board and a rival it has already emptied is barely worth shooting: it cannot run away with the match. On a board of many seats it picks a victim rather than assuming there is only one, and when every rival has fallen it is a plain gun with a flag. LATE-GAME, and it compounds.',
+    desc:'Kills steal a share of the aimed rival\'s gold; the PICK THE PURSE talent hunts the richest. Plain gun once they are broke.',
+    lore:'A letter of marque nobody issued.',
     base:{ damage:17, range:3.8, rate:0.95, projSpeed:19, dmgType:'physical', privateerSteal:0.012 },
     levels:[ { cost:165, name:'CORSAIR',  mods:{ damage:31, privateerSteal:0.019 } },
              { cost:305, name:'BUCCANEER',mods:{ damage:50, privateerSteal:0.028, range:4.1 } } ],
@@ -568,7 +570,8 @@ const TOWER_TYPES_2 = {
        resource on the board that cannot be earned back at will. */
     id:'bloodprice', element:'fire', origin:'pirate', name:'BLOOD PRICE', role:'Bought with lives, never with gold', cost:0, costGrowth:1.0,
     color:'#ef4444', dark:'#450a0a', attack:'projectile', glyph:'☩',
-    desc:'No gold changes hands. You pay for it out of the counter in the corner, and you do not get it back — selling it returns nothing, because the bill was never in gold. What arrives is a gun far past anything the wave could otherwise afford, standing on your line immediately. And it reads the ledger it was bought from: every life this commander has PAID into a Blood Price makes every Blood Price fire faster, so the second one is a statement about the run and the third is a different game. Lives lost to a leak buy it nothing. It can never take your last life — five is the floor, for both commanders.',
+    desc:'Costs lives, not gold, and sells for nothing. Lives paid speed all Blood Prices. Never takes your last 5 lives.',
+    lore:'The bill is never in gold.',
     base:{ damage:52, range:4.2, rate:0.85, projSpeed:22, dmgType:'physical', splash:1.05,
            lifeCost:2, bloodRate:0.06 },
     levels:[ { cost:190, name:'EXSANGUINE',   mods:{ damage:98, splash:1.20 } },
@@ -590,7 +593,7 @@ const TOWER_TYPES_2 = {
   replicator: {
     id:'replicator', element:'kinetic', origin:'robotic', name:'REPLICATOR', role:'Builds you a tower, unasked', cost:340, costGrowth:1.86,
     color:'#67e8f9', dark:'#083344', attack:'replicate', glyph:'⧉',
-    desc:'A machine that does not need a commander. Left standing long enough it surveys the ground beside it and puts up another emplacement, free, out of your own five — legal ground only, never on rubble and never on top of anything. It will not build something it cannot account for: the gift\'s price, asked of the same call that would charge you, must be within the Replicator\'s own. So it grows as you invest in it, and it spends the one thing you cannot buy more of — TILES. The longest investment in the arsenal: nothing for several waves, then compounding.',
+    desc:'A machine that does not need a commander. Left standing long enough it surveys the ground beside it and puts up another emplacement, free, out of your own five: legal ground only, never on rubble and never on top of anything. It will not build something it cannot account for: the gift\'s price, asked of the same call that would charge you, must be within the Replicator\'s own. So it grows as you invest in it, and it spends the one thing you cannot buy more of. TILES. The longest investment in the arsenal: nothing for several waves, then compounding.',
     base:{ damage:9, range:3.0, rate:0.7, projSpeed:18, dmgType:'physical',
            replicateEvery:4, replicateReach:3, replicateCount:1 },
     levels:[ { cost:180, name:'FABRICATOR', mods:{ damage:19, replicateEvery:3, replicateReach:4 } },
@@ -612,7 +615,7 @@ const TOWER_TYPES_2 = {
   nullfield: {
     id:'nullfield', element:'void', origin:'robotic', name:'NULL FIELD', role:'Switches enemy abilities off', cost:300, costGrowth:1.80,
     color:'#a5b4fc', dark:'#1e1b4b', attack:'null', glyph:'⊘',
-    desc:'It fires nothing and it blocks nothing. Inside the volume it holds, no mending, no shielding, no regeneration, no blinking, no jamming, no summoning, no phasing and no standing back up — only walking, and dying. The arsenal can out-damage a mechanic; this is the only thing that switches one off. Against a wave built on an ability it is total; against a plain armoured column it does nothing whatsoever, and that is the point. CONDITIONAL: an answer, not an upgrade.',
+    desc:'It fires nothing and it blocks nothing. Inside the volume it holds, no mending, no shielding, no regeneration, no blinking, no jamming, no summoning, no phasing and no standing back up: only walking, and dying. The arsenal can out-damage a mechanic; this is the only thing that switches one off. Against a wave built on an ability it is total; against a plain armoured column it does nothing whatsoever, and that is the point. CONDITIONAL: an answer, not an upgrade.',
     /* `nullRadius` is the authored field, and recompute() publishes it AS
        `range` -- one number for the drawn circle, the printed figure and the
        volume the engine tests. A second authored `range` beside it is exactly
@@ -648,7 +651,7 @@ Object.assign(TOWER_TYPES_2, {
   sepulchre: {
     id:'sepulchre', element:'radiant', origin:'light', name:'SEPULCHRE', role:'Your dead towers keep firing', cost:300, costGrowth:1.86,
     color:'#fef3c7', dark:'#57430c', attack:'sepulchre', glyph:'✞',
-    desc:'A reliquary raised over the ground your emplacements stand on. When one of them leaves that ground — sold for the gold, or taken by the board itself — it does not stop firing: what is left of it holds the line at a share of its old strength until the wave turns over. Worthless over empty tiles, and transformative over a line you are about to rebuild, because selling stops being a loss and becomes a tempo play. INVESTMENT, and the faction tenet stated as a mechanic rather than as flavour.',
+    desc:'A reliquary raised over the ground your emplacements stand on. When one of them leaves that ground sold for the gold, or taken by the board itself, it does not stop firing: what is left of it holds the line at a share of its old strength until the wave turns over. Worthless over empty tiles, and transformative over a line you are about to rebuild, because selling stops being a loss and becomes a tempo play. INVESTMENT, and the faction tenet stated as a mechanic rather than as flavour.',
     /* sepulchreWards is how many departures one chapel can hold at once. It
        is the cap that stops an entire board being sold into a single
        Sepulchre and rebuilt elsewhere while the old board is still shooting. */
@@ -672,7 +675,7 @@ Object.assign(TOWER_TYPES_2, {
   orison: {
     id:'orison', element:'radiant', origin:'light', name:'ORISON', role:'Names one creature the offering', cost:265, costGrowth:1.76,
     color:'#fbbf24', dark:'#78500a', attack:'orison', glyph:'◉',
-    desc:'Once a wave the chapel names the largest thing walking at you and dedicates it. While the offering lives, every tower you own hits harder; when it is finally killed, you are given back a life. It inverts the instinct the rest of the board runs on — you want that one creature to last, and killing it early throws the blessing away. CONDITIONAL: enormous on a wave built round a single heavy body, close to idle on a swarm. An offering that walks into your base, or is taken off the board by something that does not kill it, pays nothing.',
+    desc:'Once a wave the chapel names the largest thing walking at you and dedicates it. While the offering lives, every tower you own hits harder; when it is finally killed, you are given back a life. It inverts the instinct the rest of the board runs on: you want that one creature to last, and killing it early throws the blessing away. CONDITIONAL: enormous on a wave built round a single heavy body, close to idle on a swarm. An offering that walks into your base, or is taken off the board by something that does not kill it, pays nothing.',
     /* range is board-wide on purpose. The chapel does not shoot and does not
        need a target in reach; it names one creature out of the whole wave,
        which is why it argues with your roster instead of scaling with it. */
@@ -696,7 +699,7 @@ Object.assign(TOWER_TYPES_2, {
   antiphon: {
     id:'antiphon', element:'storm', origin:'light', name:'ANTIPHON', role:'Answers your losses on rival ground', cost:245, costGrowth:1.70,
     color:'#facc15', dark:'#713f12', attack:'antiphon', glyph:'♫',
-    desc:'It has no cadence of its own. Every detachment you SUMMON that dies on another commander\'s lane is answered here, and the chapel spends those answers as free volleys over your own ground. It is the only structure whose output is decided by what is happening on somebody else\'s board. CONDITIONAL and purely PvP — silent on a board that never sends, one of the heaviest guns in the arsenal on one that sends constantly. Your reanimated dead do not count: the chapel answers only what you paid for.',
+    desc:'It has no cadence of its own. Every detachment you SUMMON that dies on another commander\'s lane is answered here, and the chapel spends those answers as free volleys over your own ground. It is the only structure whose output is decided by what is happening on somebody else\'s board. CONDITIONAL and purely PvP: silent on a board that never sends, one of the heaviest guns in the arsenal on one that sends constantly. Your reanimated dead do not count: the chapel answers only what you paid for.',
     /* antiphonBank is how many unspent answers it holds. Uncapped, a
        commander could muster all match and dump a hundred volleys into one
        wave, which makes the mechanic a battery rather than pressure. */
@@ -724,7 +727,7 @@ Object.assign(TOWER_TYPES_2, {
   gestalt: {
     id:'gestalt', element:'venom', origin:'xeno', name:'GESTALT', role:'Grows on every kill near it', cost:240, costGrowth:1.80,
     color:'#8b5cf6', dark:'#2e1065', attack:'gestalt', glyph:'⬢',
-    desc:'It does not upgrade. It EATS. Every creature that dies inside its reach — whatever killed it — is folded in permanently, and its gullet widens as it goes, so a Gestalt standing in a killzone feeds itself. Leave it too long without a body and it forgets the whole lot at once. Its real price is not gold, it is the tile: put it where the killing is, or do not put it down. INVESTMENT, and the only one in the arsenal that can be lost without being sold.',
+    desc:'It does not upgrade. It EATS. Every creature that dies inside its reach whatever killed it, is folded in permanently, and its gullet widens as it goes, so a Gestalt standing in a killzone feeds itself. Leave it too long without a body and it forgets the whole lot at once. Its real price is not gold, it is the tile: put it where the killing is, or do not put it down. INVESTMENT, and the only one in the arsenal that can be lost without being sold.',
     /* gestaltMax is the ceiling on permanent accumulation. Without it a
        tower placed in a good killzone at wave 5 is the only tower on the
        board by wave 30 and the rest of the arsenal is decoration. */
@@ -748,7 +751,7 @@ Object.assign(TOWER_TYPES_2, {
   maw: {
     id:'maw', element:'void', origin:'xeno', name:'MAW', role:'Swallows one creature whole', cost:310, costGrowth:1.88,
     color:'#7c3aed', dark:'#2b0f5c', attack:'maw', glyph:'⊙',
-    desc:'It does not shoot. It opens, and the largest thing in reach is GONE — not killed, REMOVED: no bounty, no corpse to send at anybody, nothing left to reanimate, and one fewer creature on the wave. What it swallowed is digested into gold over the next several seconds instead, and that is the only payment you get for it. Against a single elite you cannot out-damage, it is the whole answer; against a swarm it eats one mite and looks foolish. CONDITIONAL, and the hardest counter in the arsenal.',
+    desc:'It does not shoot. It opens, and the largest thing in reach is GONE not killed, REMOVED, no bounty, no corpse to send at anybody, nothing left to reanimate, and one fewer creature on the wave. What it swallowed is digested into gold over the next several seconds instead, and that is the only payment you get for it. Against a single elite you cannot out-damage, it is the whole answer; against a swarm it eats one mite and looks foolish. CONDITIONAL, and the hardest counter in the arsenal.',
     /* mawYield is a multiple of what the swallowed body WOULD have paid.
        At 1.0 removal is gold-neutral and nothing else; below it, deleting a
        creature costs you money, which is the honest price of refusing to
@@ -775,7 +778,8 @@ Object.assign(TOWER_TYPES_2, {
   veil: {
     id:'veil', element:'void', origin:'xeno', name:'HUNGERING VEIL', role:'Bills healing back as damage', cost:225, costGrowth:1.66,
     color:'#c084fc', dark:'#3b0764', attack:'veil', glyph:'◌',
-    desc:'A field that keeps accounts. Every point of health a creature has ever been GIVEN back — by a mender, by a shield rebuilding itself, by a blessing, by its own regeneration, by standing up again after it died — is written down, and inside the veil that ledger is called in as damage no armour and no shield will stop. Menders, Aegis units and regenerating bosses become liabilities to their own side. CONDITIONAL: near-idle against a wave with no support in it, decisive against one built around it. It is the only structure that reads what an enemy HAS BEEN rather than what it is.',
+    desc:'Deals damage equal to all healing a target ever received; ignores armour and shields.',
+    lore:'The field keeps accounts.',
     base:{ range:3.0, dmgType:'pure', veilHealTax:1.0 },
     levels:[ { cost:155, name:'ARREARS',     mods:{ veilHealTax:1.35, range:3.3 } },
              { cost:290, name:'FORECLOSURE', mods:{ veilHealTax:1.75, range:3.6 } } ],
@@ -806,9 +810,10 @@ Object.assign(TOWER_TYPES_2, {
      second BOMBARD; the adjudication renamed it CARRONADE -- the naval
      smasher -- and its talent ids moved bd_* -> cn_* with it. */
   bombard: {
-    id:'bombard', element:'fire', origin:'human', name:'BOMBARD', role:'Siege battery — blind up close', cost:380, costGrowth:1.82,
+    id:'bombard', element:'fire', origin:'human', name:'BOMBARD', role:'Siege battery: blind up close', cost:380, costGrowth:1.82,
     color:'#f97316', dark:'#5f2a08', attack:'lobbed', groundOnly:true, glyph:'✸', foot:[2,2],
-    desc:'The largest gun the coalition ever dragged into a fight. Each shell arcs most of the board and lands as a district-levelling blast — and what a kill did not need is not thrown away: the surplus rolls out of the corpse into the nearest body still standing, and keeps rolling while it keeps killing. The bill is printed on the placard: a barrel this long cannot point at its own feet, so nothing inside three tiles can be fired on at all, and the recoil path alone is why it takes FOUR TILES of board. Site it BEHIND the line, like the artillery it is. Blind to the sky.',
+    desc:'Board-length shells with huge splash; overkill damage rolls to the next enemy. Blind inside 3 tiles and to air.',
+    lore:'The coalition\'s largest gun.',
     /* `minRange` is a DEAD ZONE in tiles: acquire() refuses anything nearer,
        which is the whole placement question this tower asks. `overkill` is
        the share of surplus kill damage the shell rolls into the next body --
@@ -832,9 +837,10 @@ Object.assign(TOWER_TYPES_2, {
   },
 
   coldfront: {
-    id:'coldfront', element:'frost', origin:'human', name:'COLDFRONT', role:'Manufactures weather — the field itself slows', cost:340, costGrowth:1.95,
+    id:'coldfront', element:'frost', origin:'human', name:'COLDFRONT', role:'Manufactures weather: the field itself slows', cost:340, costGrowth:1.95,
     color:'#a5f3fc', dark:'#155e75', attack:'front', glyph:'❄', foot:[2,2],
-    desc:'Not a gun — a refrigeration plant run past every rating on its placard, and the four tiles are the compressor hall: you do not make a CLIMATE with a box the size of a rifle. It fires nothing, ever. It manufactures WEATHER: a standing cold front across its whole field, where every second a body spends inside deepens its EXPOSURE — a slow that climbs toward a ceiling and follows the body OUT rather than expiring. Elites weather it at half speed and nothing here ever dies of it: it multiplies the window every gun you own gets to work in, at a scale CRYO cannot reach.',
+    desc:'Never fires. Its field stacks a slow that deepens with exposure, caps, and follows enemies out. Bosses chill at half rate.',
+    lore:'It makes weather.',
     /* `exposure` is slow ADDED PER SECOND to every body in the field, climbing
        to `exposureCap`; `exposureShed` is how fast a body clear of every front
        loses it again. The meter and the shed rate ride the UNIT (entities.js),
@@ -846,7 +852,7 @@ Object.assign(TOWER_TYPES_2, {
       { id:'cf_wide',  row:0, col:0, name:'WIDE FRONT',  desc:'+35% field radius.',                            mods:{ rangeMul:1.35 } },
       { id:'cf_cool',  row:0, col:1, name:'OVERCOOLED',  desc:'Exposure builds 35% faster.',                   mods:{ exposureMul:1.35 } },
       { id:'cf_ice',   row:1, col:0, name:'BLACK ICE',   desc:'+0.10 to the exposure ceiling.',                mods:{ exposureCap:0.10 } },
-      { id:'cf_linger',row:1, col:1, name:'LONG WINTER', desc:'The cold follows them out — sheds 40% slower.', mods:{ exposureShedMul:0.60 } },
+      { id:'cf_linger',row:1, col:1, name:'LONG WINTER', desc:'The cold follows them out: sheds 40% slower.', mods:{ exposureShedMul:0.60 } },
       { id:'cf_blind', row:2, col:0, name:'SNOWBLIND',   desc:'Bodies at the ceiling take +20% damage.',       mods:{ exposureVuln:0.20 } },
       { id:'cf_chill', row:2, col:1, name:'WINDCHILL',   desc:'+25% radius, and exposure builds 15% faster.',  mods:{ rangeMul:1.25, exposureMul:1.15 } } ],
     branches:[
@@ -884,7 +890,7 @@ Object.assign(TOWER_TYPES_2, {
   reactor: {
     id:'reactor', element:'storm', origin:'robotic', name:'REACTOR', role:'Runs the lattice past its rating', cost:585, costGrowth:2.25,
     color:'#fde047', dark:'#713f12', attack:'aura', glyph:'⌁', foot:[2, 2],
-    desc:'Fires nothing. It is the grid\'s missing half: every machine in its field runs at the reactor\'s RATED lattice, wherever its neighbours actually stand — and the rating climbs past the governed four, which no amount of standing together can reach. Machines stop paying for geometry; the reactor pays for them, in AREA. Four tiles of containment is what a core this size costs, and it is the one price a base-level retrofit can never refund.',
+    desc:'Fires nothing. It is the grid\'s missing half every machine in its field runs at the reactor\'s RATED lattice, wherever its neighbours actually stand, and the rating climbs past the governed four, which no amount of standing together can reach. Machines stop paying for geometry; the reactor pays for them, in AREA. Four tiles of containment is what a core this size costs, and it is the one price a base-level retrofit can never refund.',
     /* latticeFill is a RATING, not a bonus: a machine in the field takes
        max(own links, rating), so it stacks with nothing and cheats nothing.
        Above ORIGIN_LATTICE_MAX it is the only way past the cap, which is
@@ -915,7 +921,8 @@ Object.assign(TOWER_TYPES_2, {
        three overloads to a magazine, then seconds of silence. */
     id:'carronade', element: 'fire', origin:'pirate', name:'CARRONADE', role:'Siege battery whose overloads detonate', cost:425, costGrowth:1.88,
     color:'#fdba74', dark:'#7c2d12', attack:'lobbed', groundOnly:true, glyph:'✹', foot:[2, 2],
-    desc:'A first-rate\'s great gun taken off a wreck with the deck still bolted to it. Arcing shells with a blast worth the reload, and the origin gamble raised to siege stakes: when a shell OVERLOADS, the whole overpayment lands as a DETONATION around the point of impact rather than a surcharge on one skull — and the magazine banks only three overloads before the gun cooks off and stands silent while the crew re-lays her. The footprint is the price of the calibre: a lighter mount would drive itself through the ground on the first discharge. Blind to anything airborne.',
+    desc:'Arcing splash shells. An overload detonates at the impact point; after three the gun jams until re-laid.',
+    lore:'A first-rate\'s gun, deck and all.',
     base:{ damage:62, range:4.6, rate:0.34, projSpeed:12, dmgType:'physical', splash:1.8,
            burn:10, burnDur:2.0, overloadMult:3.4, overloadSplash:1.5, heatBank:3, jamFor:3.5 },
     levels:[ { cost:260, name:'GUN DECK',   mods:{ damage:150, splash:2.0, burn:18 } },
@@ -943,7 +950,7 @@ Object.assign(TOWER_TYPES_2, {
        NOT `heatT`, which PYRE owns. */
     id:'stokehold', element: 'fire', origin:'pirate', name:'STOKEHOLD', role:'Boiler that feeds on the battery\'s heat', cost:390, costGrowth:1.96,
     color:'#f97316', dark:'#5a1e07', attack:'stoke', glyph:'♨', foot:[2, 2],
-    desc:'A capital ship\'s boiler cut out whole and set down still lit. It fires nothing. Friendly pirate guns in reach dump their overload heat into its bank INSTEAD of jamming, and every point banked stokes a furnace field that cooks the lane around the hull — a structure that WANTS the battery reckless, because the bank boils off on its own and a line that stops gambling watches the fire die. Four tiles because nothing smaller holds a battery\'s worth of heat: the footprint is the boiler.',
+    desc:'A capital ship\'s boiler cut out whole and set down still lit. It fires nothing. Friendly pirate guns in reach dump their overload heat into its bank INSTEAD of jamming, and every point banked stokes a furnace field that cooks the lane around the hull: a structure that WANTS the battery reckless, because the bank boils off on its own and a line that stops gambling watches the fire die. Four tiles because nothing smaller holds a battery\'s worth of heat: the footprint is the boiler.',
     base:{ range:2.7, dmgType:'magic', stokeBurn:9, stokePerHeat:7, stokeMax:10, stokeReach:3.6, stokeBleed:0.4 },
     levels:[ { cost:240, name:'BLACK GANG',  mods:{ stokeBurn:16, stokePerHeat:12, stokeMax:14, range:2.9 } },
              { cost:430, name:'DREADNOUGHT', mods:{ stokeBurn:26, stokePerHeat:18, stokeMax:20, stokeReach:4.2, range:3.2 } } ],
@@ -964,7 +971,8 @@ Object.assign(TOWER_TYPES_2, {
   suture: {
     id:'suture', element:'venom', origin:'xeno', name:'SUTURE', role:'Sews the wave into one flesh', cost:430, costGrowth:1.94,
     color:'#bef264', dark:'#2f4a10', attack:'graft', glyph:'≬', foot:[2,2],
-    desc:'It does not fight the wave. It SEWS it. Living cable lashes out and grafts the bodies in reach into ONE FLESH, and while the graft holds a share of every wound any of them takes is repeated in all of the others — your whole line is suddenly hitting everything it is hitting. Against a crowd it is a multiplier on the entire board; against one giant there is nothing to sew it to, and it is a rope with no second post. The footprint is the anchor mass: an organ holding a dozen straining bodies on live sinew would be dragged down the lane by anything smaller than four tiles. LATE-GAME, and the exact inverse of the MAW — that answers the one, this answers the many.',
+    desc:'Links enemies in reach; a share of damage any one takes hits all of them. No effect on a lone target.',
+    lore:'It sews the wave into one flesh.',
     /* graftFrac is a SHARE, and the repeat pays out once per other body, so a
        graft of n is worth frac*(n-1) on every hit -- quadratic in the catch.
        That curve is the tower, and GRAFT_FRAC_MAX is what keeps a surged
@@ -981,7 +989,7 @@ Object.assign(TOWER_TYPES_2, {
       { id:'su_hold',  row:2, col:1, name:'TIGHT WEAVE',   desc:'Grafts hold 4s longer.',              mods:{ graftDur:4 } } ],
     branches:[
       { id:'oneflesh', name:'ONE FLESH',  cost:620, mods:{ damage:66, graftCount:14, graftFrac:0.30, graftDur:10, range:4.0 },
-        surge:{ graftCount:1 }, note:'The whole wave, one body — a wound anywhere is a wound everywhere.' },
+        surge:{ graftCount:1 }, note:'The whole wave, one body: a wound anywhere is a wound everywhere.' },
       { id:'bloodknot', name:'BLOOD KNOT', cost:620, mods:{ damage:88, graftCount:3, graftFrac:0.95, graftDur:8, graftVuln:0.20 },
         surge:{ graftFrac:0.05 }, note:'Three bodies bound so tight that hurting one is hurting all of them, whole.' } ]
   },
@@ -989,7 +997,8 @@ Object.assign(TOWER_TYPES_2, {
   impaler: {
     id:'impaler', element:'fire', origin:'xeno', name:'IMPALER', role:'Falls on the worst wound on the board', cost:470, costGrowth:2.10,
     color:'#fb923c', dark:'#5a2506', attack:'impale', glyph:'⟟', foot:[2,2],
-    desc:'A spine the length of a lane, held over the whole board. It does not patrol a circle — it watches every wound your line opens, ANYWHERE, falls on the worst of them, and the deeper the hurt the harder it lands. It will not touch a fresh body at all: it does not open wounds, it ENDS them, so it is worth nothing behind a line that draws no blood and monstrous behind one that does. The four tiles are the haunch that throws it — reach over every lane at once is bought with ground, not gold. LATE-GAME: the appetite\'s answer to the creature your line can hurt but never finish.',
+    desc:'Strikes the most wounded enemy on the board, harder the deeper the wound. Never hits full health.',
+    lore:'A spine over every lane.',
     /* range is board-wide on purpose, same clause as ORISON: it names one
        wound out of the whole field, which is why it argues with your LINE
        (something must cut first) instead of with its own placement. */
@@ -1007,13 +1016,14 @@ Object.assign(TOWER_TYPES_2, {
       { id:'abattoir',   name:'ABATTOIR',   cost:660, mods:{ damage:120, rate:0.55, impaleScale:3.2, impaleFloor:0.30 },
         surge:{ rate:0.03 }, note:'It stops waiting for the worst wound and works every hurt on the board in turn.' },
       { id:'extinction', name:'EXTINCTION', cost:660, mods:{ damage:340, rate:0.14, impaleScale:6.0, impaleFloor:0.40, splash:1.4 },
-        surge:{ damage:60 }, note:'One spine, held until the wound is worth it — and then the wound is the whole creature.' } ]
+        surge:{ damage:60 }, note:'One spine, held until the wound is worth it: and then the wound is the whole creature.' } ]
   },
 
   monstrance: {
     id:'monstrance', element:'radiant', origin:'light', name:'MONSTRANCE', role:'Holds one body utterly open', cost:432, costGrowth:2.15, foot:[2,2],
     color:'#fef08a', dark:'#6b5407', attack:'beam', glyph:'✶',
-    desc:'A cathedral-class projector: four tiles of plinth, reliquary and ONE lens the size of a chapel window. What the beam holds is REVEALED — armour and every resistance held open, and not for this tower: for EVERY tower you own. It is the Federation rider built at the only scale where it is allowed to reach armour, and the footprint is the licence — an aperture this wide cannot stand on one tile, and nothing narrower could hold a war-engine open. It prefers the strongest body walking, which is the body you wanted opened. Its own beam is honest; the line behind it is what collects.',
+    desc:'Beam holds open a share of one target\'s armour and resistances, for every tower you own. Prefers the strongest enemy.',
+    lore:'A chapel window turned weapon.',
     /* rampMax:1 is deliberate and load-bearing: updateBeam defaults an
        unstated ramp to PRISM's, and a Monstrance that ramped would be a
        gilded Prism. 1 zeroes the ramp term whatever `ramp` defaults to.
@@ -1040,7 +1050,7 @@ Object.assign(TOWER_TYPES_2, {
   pharos: {
     id:'pharos', element:'fire', origin:'light', name:'PHAROS', role:'A turning lamp that owns the approach', cost:398, costGrowth:2.02, foot:[2,2],
     color:'#fdba74', dark:'#7c2d12', attack:'cone', glyph:'☀',
-    desc:'A lighthouse of the Host: a sacred flame on four tiles of foundation, turning on its own clock. It does not aim and it cannot be made to — no jam, no bait, no body on the board changes where the light is pointing; the beam simply comes round, and everything it crosses burns, wades, and is left with its protections held open for whoever shoots next. The footprint is the price of the elevation: a lamp that must see the WHOLE approach cannot stand on one tile. At a board edge half of every revolution lights empty dark — where you put it is most of what it does.',
+    desc:'A lighthouse of the Host: a sacred flame on four tiles of foundation, turning on its own clock. It does not aim and it cannot be made to: no jam, no bait, no body on the board changes where the light is pointing; the beam simply comes round, and everything it crosses burns, wades, and is left with its protections held open for whoever shoots next. The footprint is the price of the elevation: a lamp that must see the WHOLE approach cannot stand on one tile. At a board edge half of every revolution lights empty dark: where you put it is most of what it does.',
     /* sweepRate is radians per second: 1.05 is one full turn every six
        seconds. The lamp reuses the cone verb's geometry, burn and status
        hooks wholesale; the ONLY new behaviour is that `angle` is driven by

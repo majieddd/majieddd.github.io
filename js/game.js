@@ -655,7 +655,7 @@ const Game = {
        so progression parity holds the way the loadout roster already does. */
     if (this.isSeatBattle) {
       const rc = this.sides[1].commander;
-      setTimeout(() => this.banner('⚔  ' + rc.name + ' — ' + rc.title.toUpperCase(), 3.4,
+      setTimeout(() => this.banner('⚔  ' + rc.name + ' · ' + rc.title.toUpperCase(), 3.4,
                                    FACTIONS[this.sides[1].faction].color), 500);
     }
 
@@ -1120,8 +1120,8 @@ const Game = {
        in the wave arrive unannounced. BATCH-C/nside */
     if (def.boss) { Sound.play('bossWarn'); this.banner('⚠  ' + def.name +
       (this.minibossName ? '  +  ' + this.minibossName : '') + '  ⚠', 3.2, '#ef4444'); }
-    else if (this.minibossName) { Sound.play('miniboss'); this.banner('MINIBOSS — ' + this.minibossName, 2.8, '#ffd166'); }
-    else { Sound.play('waveStart'); this.banner('WAVE ' + this.wave + ' — ' + def.name, 2.2); }
+    else if (this.minibossName) { Sound.play('miniboss'); this.banner('MINIBOSS · ' + this.minibossName, 2.8, '#ffd166'); }
+    else { Sound.play('waveStart'); this.banner('WAVE ' + this.wave + ' · ' + def.name, 2.2); }
     /* Announced after the wave banner because it OVERRIDES it: the ground
        going out from under you is the more urgent of the two, and the banner
        it writes carries the wave number so nothing is lost. */
@@ -1299,7 +1299,7 @@ const Game = {
     if (!m) return;
     this.enemyMods.push(m);
     this.escalationOwed = this.escalationOwed.filter(x => x !== m);
-    this.banner('ENEMY ESCALATION — ' + m.name, 3.6, '#ef4444');
+    this.banner('ENEMY ESCALATION · ' + m.name, 3.6, '#ef4444');
     UI.showEscalation(m);
   },
 
@@ -1361,7 +1361,7 @@ const Game = {
     this.pendingChoice = null;
     this.state = 'playing';
     Sound.play('upgrade');
-    this.banner('COMMAND UPGRADE — ' + mod.name, 2.4, '#4ade80');
+    this.banner('COMMAND UPGRADE · ' + mod.name, 2.4, '#4ade80');
     UI.hideChoice();
     UI.syncAll();
   },
@@ -1649,7 +1649,7 @@ const Game = {
          fit -- which is the refusal drawRadial already prints as NO ROOM. */
       if (side === this.viewSide) UI.denied(def && foot > 1 && this.canBuild(side, gx, gy)
         ? def.name + ' needs a clear ' + foot + '×' + foot + ' block'
-        : 'No room there — that ground is a lane, rubble, not yours, or already built on', false);
+        : 'No room there: that ground is a lane, rubble, not yours, or already built on', false);
       return null;
     }
     /* Only the five towers you deployed with may be built. */
@@ -1663,7 +1663,7 @@ const Game = {
          ◈0" -- a refusal naming a price the engine never charges. canAffordBuild
          refuses on the floor as well as on the balance, so the line states both. */
       if (side === this.viewSide) UI.denied(life
-        ? def.name + ' costs ♥' + life + ' — never below ♥' + BLOOD_PRICE_FLOOR + ' left'
+        ? def.name + ' costs ♥' + life + ', never below ♥' + BLOOD_PRICE_FLOOR + ' left'
         : def.name + ' needs ◈' + formatNum(cost), !life);
       return null;
     }
@@ -2338,7 +2338,7 @@ const Game = {
     for (const b of this.brains) b.buildSpots();
     this.recomputeAuras();
     this.renderBackground();
-    this.banner('WAVE ' + this.wave + ' — THE HORIZON CONTRACTS' + (mine ? ' · ' + mine + ' LOST' : ''),
+    this.banner('WAVE ' + this.wave + ' · THE HORIZON CONTRACTS' + (mine ? ' · ' + mine + ' LOST' : ''),
                 3, '#a78bfa');
     if (mine) { Sound.play('wallBreak'); this.shake(7); }
   },
@@ -2440,7 +2440,7 @@ const Game = {
        costGrowthMul, ascCostMul -- write `t` and the engine reads those from
        traits anyway. */
     if (S.index === this.viewSide) {
-      this.addFloater(this.width * 0.5, 128, '⟲ RECOMPILED — ' + spec.name, false, '#e2e8f0', 16);
+      this.addFloater(this.width * 0.5, 128, '⟲ RECOMPILED, ' + spec.name, false, '#e2e8f0', 16);
       Sound.play('branch');
     }
   },
@@ -2806,7 +2806,7 @@ const Game = {
     }
     if (pod.side === this.viewSide) {
       this.spawnBurst(pod.x, pod.y, 14, base.color, 120);
-      this.addFloater(pod.x, pod.y, 'HATCHED — ' + base.name.toUpperCase(), false, base.color, 12);
+      this.addFloater(pod.x, pod.y, 'HATCHED · ' + base.name.toUpperCase(), false, base.color, 12);
       Sound.play('reanimate');
     }
   },
@@ -2868,7 +2868,7 @@ const Game = {
       if (S.procIdx === 0) {
         S.procCycle++;
         if (S.index === this.viewSide)
-          this.addFloater(this.width * 0.5, 108, 'THE PROCESSION SWELLS — ×' + Math.min(1 + S.procCycle, FOL_CYCLE_COUNT_CAP),
+          this.addFloater(this.width * 0.5, 108, 'THE PROCESSION SWELLS · ×' + Math.min(1 + S.procCycle, FOL_CYCLE_COUNT_CAP),
                           false, FACTIONS.light.color, 16);
       }
       S.procTimer = FOL_CADENCE_SEC + S.procCycle * FOL_CADENCE_GROWTH;
@@ -2927,7 +2927,7 @@ const Game = {
     this.spliceState[victim] = { wavesLeft: waves, laneIdx: this.lanes[victim].length - 1, added };
     this.renderBackground();
     if (victim === this.viewSide) {
-      this.banner('LANE SPLICED — THE BOARD FORKS', 2.6, '#e2e8f0');
+      this.banner('LANE SPLICED · THE BOARD FORKS', 2.6, '#e2e8f0');
       Sound.play('wallBreak');
     }
     return true;
@@ -3463,8 +3463,8 @@ const Game = {
          at exactly the moment the player is most confused about why DEMOLISH
          stopped working. */
       if (side === this.viewSide) UI.denied(S && S.cleared.size >= this.clearLimit(side)
-        ? 'No clearances left — ' + this.clearLimit(side) + ' is the allowance for this battle'
-        : 'Nothing to demolish there — authored rubble on your own ground only, never the lane', false);
+        ? 'No clearances left, ' + this.clearLimit(side) + ' is the allowance for this battle'
+        : 'Nothing to demolish there: authored rubble on your own ground only, never the lane', false);
       return false;
     }
     const cost = this.clearCostNow(side);
@@ -3524,7 +3524,7 @@ const Game = {
          in the sentence explaining why it may not move. */
       if (t.side === this.viewSide) UI.denied((t.foot || 1) > 1 && this.canBuild(t.side, gx, gy, 1, t)
         ? t.def.name + ' needs a clear ' + t.foot + '×' + t.foot + ' block to set down'
-        : 'Cannot set down there — that ground is a lane, rubble, not yours, or already built on', false);
+        : 'Cannot set down there: that ground is a lane, rubble, not yours, or already built on', false);
       return false;
     }
     const fee = this.relocateCost(t);

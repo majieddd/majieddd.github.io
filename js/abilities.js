@@ -45,7 +45,7 @@ const ABILITIES = {
   broadside: {
     id: 'broadside', name: 'BROADSIDE', icon: '☠', kind: 'offense', cd: 34, dur: 9,
     aim: 'point', construct: 'battery',
-    desc: 'AIMED. Drops a gun emplacement for {s}. It shells everything in reach and splashes — and ground attackers chew it down.',
+    desc: 'AIMED. Drops a gun emplacement for {s}. It shells everything in reach and splashes: and ground attackers chew it down.',
     start: (S, g, at) => { g.deployConstruct(S, ABILITIES.broadside, at); },
     end:   (S, g) => { g.clearConstructs(S.index, 'broadside'); }
   },
@@ -81,7 +81,7 @@ const ABILITIES = {
   bulwark: {
     id: 'bulwark', name: 'BULWARK', icon: '⛨', kind: 'defense', cd: 40, dur: 11,
     aim: 'point', lane: true, construct: 'blocker',
-    desc: `AIMED at a lane. Throws up a wall that holds ${AIM_BLOCKER_BLOCKS} attackers for {s} and grinds what it holds. It no longer returns lives — a wall buys time, it does not undo a leak.`,
+    desc: `AIMED at a lane. Throws up a wall that holds ${AIM_BLOCKER_BLOCKS} attackers for {s} and grinds what it holds. It no longer returns lives: a wall buys time, it does not undo a leak.`,
     start: (S, g, at) => { g.deployConstruct(S, ABILITIES.bulwark, at); },
     end:   (S, g) => { g.clearConstructs(S.index, 'bulwark'); }
   },

@@ -32,7 +32,7 @@ const COMMANDER_ROSTER = [
   {
     id: 'cadre', faction: null, name: 'CADRE', title: 'The Baseline',
     color: '#94a3b8', icon: '⌂', free: true, always: true,
-    blurb: 'No doctrine, no appetite, no vow. Cadre was trained to hold a line with whatever is to hand, and does exactly that — every structure a little better, nothing spectacular. Most commanders are a bet. Cadre is the house.',
+    blurb: 'No doctrine, no appetite, no vow. Cadre was trained to hold a line with whatever is to hand, and does exactly that: every structure a little better, nothing spectacular. Most commanders are a bet. Cadre is the house.',
     abilities: ['steadyaim', 'attrite'],
     trait: { name: 'EVEN FOOTING',
       desc: 'Every tower gains +6% damage, +6% rate and +6% range, and reanimated attackers are 10% weaker.',
@@ -54,7 +54,7 @@ const COMMANDER_ROSTER = [
   {
     id: 'vanta', faction: 'human', name: 'VANTA', title: 'The Archivist',
     color: '#7dd3fc', icon: '◈', free: true,
-    blurb: 'Fights the long game. Vanta turns the draft itself into a weapon — more choices, more often, and a board that grows stronger with every doctrine filed away.',
+    blurb: 'Fights the long game. Vanta turns the draft itself into a weapon: more choices, more often, and a board that grows stronger with every doctrine filed away.',
     abilities: ['overclock', 'dampen'],
     trait: { name: 'PERPETUAL STUDY',
       desc: 'Command upgrades are drafted every 4 waves instead of 5, and you are offered 4 options instead of 3.',
@@ -156,7 +156,7 @@ const COMMANDER_ROSTER = [
   {
     id: 'seraph', faction: 'light', name: 'SERAPH', title: 'The Radiant', free: true,
     color: '#fbbf24', icon: '☀',
-    blurb: 'Every structure Seraph blesses stands a little taller. The Federation does not field its strongest — it makes everything strong at once.',
+    blurb: 'Every structure Seraph blesses stands a little taller. The Federation does not field its strongest: it makes everything strong at once.',
     abilities: ['zealotry', 'sanctify'],
     trait: { name: 'RADIANCE',
       desc: 'Every tower gains +8% damage and +8% range, and support auras are 30% wider.',
@@ -485,10 +485,10 @@ const COMMANDER_ROSTER = [
     compile: { name: 'BOOT SEQUENCE', metric: 'waves',
       desc: 'Recompiles on a schedule. It needs nothing from you but time.',
       levels: [
-        { at: 3,  desc: 'first pass — +4% damage and rate', apply: (t, S, m) => { m.damage *= 1.04; m.rate *= 1.04; } },
-        { at: 6,  desc: 'second pass — +4% more, and +4% range', apply: (t, S, m) => { m.damage *= 1.04; m.rate *= 1.04; m.range *= 1.04; } },
-        { at: 10, desc: 'optimal — +6% damage, rate and range', apply: (t, S, m) => { m.damage *= 1.06; m.rate *= 1.06; m.range *= 1.06; } },
-        { at: 15, desc: 'rewritten — +8% damage and +8% rate', apply: (t, S, m) => { m.damage *= 1.08; m.rate *= 1.08; } }
+        { at: 3,  desc: 'first pass, +4% damage and rate', apply: (t, S, m) => { m.damage *= 1.04; m.rate *= 1.04; } },
+        { at: 6,  desc: 'second pass, +4% more, and +4% range', apply: (t, S, m) => { m.damage *= 1.04; m.rate *= 1.04; m.range *= 1.04; } },
+        { at: 10, desc: 'optimal, +6% damage, rate and range', apply: (t, S, m) => { m.damage *= 1.06; m.rate *= 1.06; m.range *= 1.06; } },
+        { at: 15, desc: 'rewritten, +8% damage and +8% rate', apply: (t, S, m) => { m.damage *= 1.08; m.rate *= 1.08; } }
       ] },
     tech: chart('x', [
       [['PARSE','◎','+9% damage.', t=>t.dmg+=0.09],
@@ -509,14 +509,14 @@ const COMMANDER_ROSTER = [
     blurb: 'A copy of the Overclocker with the recklessness compiled out. It ascends slower than she did, then never stops.',
     abilities: ['overclock', 'smokescreen'],
     trait: { name: 'COLD BOOT',
-      desc: 'Ascension costs 10% MORE at first, and every ascension you complete cuts it further — past her 25% discount by the fourth.',
+      desc: 'Ascension costs 10% MORE at first, and every ascension you complete cuts it further: past her 25% discount by the fourth.',
       apply: t => { t.ascCostMul = 1.10; t.surgeEvery = 1; } },
     compile: { name: 'COLD BOOT', metric: 'asc',
       desc: 'Every ascension teaches it the next one. Where NYX is cheapest at the start, this is cheapest at the end.',
       levels: [
-        { at: 1, desc: 'first ascension — cost back to normal', apply: t => { t.ascCostMul = 1.00; } },
+        { at: 1, desc: 'first ascension: cost back to normal', apply: t => { t.ascCostMul = 1.00; } },
         { at: 2, desc: 'cost 0.85, +6% ascension damage', apply: t => { t.ascCostMul = 0.85; t.ascDamage = (t.ascDamage || 0) + 0.06; } },
-        { at: 4, desc: 'cost 0.68 — past the original', apply: t => { t.ascCostMul = 0.68; } },
+        { at: 4, desc: 'cost 0.68: past the original', apply: t => { t.ascCostMul = 0.68; } },
         { at: 6, desc: 'cost 0.55, and +10% per ascension held', apply: t => { t.ascCostMul = 0.55; t.perAscDamage = (t.perAscDamage || 0) + 0.10; } }
       ] },
     tech: chart('y', [
@@ -538,15 +538,15 @@ const COMMANDER_ROSTER = [
     blurb: 'The Warden\'s immunity was a fact about the Warden. This one has to earn it, by being jammed enough times to understand jamming.',
     abilities: ['focusfire', 'sanctify'],
     trait: { name: 'INTRUSION TRAINING',
-      desc: 'Begins with NO jam protection. Every intrusion against you hardens it — total immunity once it has seen enough.',
+      desc: 'Begins with NO jam protection. Every intrusion against you hardens it: total immunity once it has seen enough.',
       apply: t => { t.jamResist = 0; } },
     compile: { name: 'INTRUSION TRAINING', metric: 'jams',
       desc: 'Learns from being attacked. Against a board that never jams, it stays a defensive commander with a very good chart.',
       levels: [
-        { at: 2,  desc: 'partial hardening — 35% jam resistance', apply: t => { t.jamResist = Math.max(t.jamResist || 0, 0.35); } },
+        { at: 2,  desc: 'partial hardening. 35% jam resistance', apply: t => { t.jamResist = Math.max(t.jamResist || 0, 0.35); } },
         { at: 5,  desc: '70% jam resistance', apply: t => { t.jamResist = Math.max(t.jamResist || 0, 0.70); } },
-        { at: 9,  desc: 'IMMUNE — and +8% status', apply: (t, S, m) => { t.jamImmune = true; m.status *= 1.08; } },
-        { at: 14, desc: 'counter-intrusion — +10% damage and +10% rate', apply: (t, S, m) => { m.damage *= 1.10; m.rate *= 1.10; } }
+        { at: 9,  desc: 'IMMUNE: and +8% status', apply: (t, S, m) => { t.jamImmune = true; m.status *= 1.08; } },
+        { at: 14, desc: 'counter-intrusion, +10% damage and +10% rate', apply: (t, S, m) => { m.damage *= 1.10; m.rate *= 1.10; } }
       ] },
     tech: chart('z', [
       [['SHIELDING','◎','+9% damage.', t=>t.dmg+=0.09],
@@ -567,15 +567,15 @@ const COMMANDER_ROSTER = [
     blurb: 'A copy of the Devourer trained on no data at all. It begins knowing nothing about killing and ends knowing more than he does.',
     abilities: ['ravenous', 'consume'],
     trait: { name: 'DATASET STARVED',
-      desc: 'No kill ramp at all to begin with. Kills train it — and once trained it ramps harder than the original, forever.',
+      desc: 'No kill ramp at all to begin with. Kills train it: and once trained it ramps harder than the original, forever.',
       apply: t => { t.killRamp = 0; t.goldMul += 0.10; } },
     compile: { name: 'DATASET STARVED', metric: 'kills',
       desc: 'Every kill is a sample. The curve is flat until the set is large enough to mean anything.',
       levels: [
-        { at: 40,  desc: 'first fit — the ramp begins', apply: t => { t.killRamp = 0.00030; } },
-        { at: 120, desc: 'converging — ramp 0.00055', apply: t => { t.killRamp = 0.00055; } },
-        { at: 260, desc: 'past the original — ramp 0.00075', apply: t => { t.killRamp = 0.00075; } },
-        { at: 450, desc: 'overfit — ramp 0.00095 and +12% kill gold', apply: (t, S, m) => { t.killRamp = 0.00095; m.gold *= 1.12; } }
+        { at: 40,  desc: 'first fit: the ramp begins', apply: t => { t.killRamp = 0.00030; } },
+        { at: 120, desc: 'converging: ramp 0.00055', apply: t => { t.killRamp = 0.00055; } },
+        { at: 260, desc: 'past the original: ramp 0.00075', apply: t => { t.killRamp = 0.00075; } },
+        { at: 450, desc: 'overfit: ramp 0.00095 and +12% kill gold', apply: (t, S, m) => { t.killRamp = 0.00095; m.gold *= 1.12; } }
       ] },
     tech: chart('q', [
       [['SAMPLE','◎','+9% damage.', t=>t.dmg+=0.09],
@@ -596,15 +596,15 @@ const COMMANDER_ROSTER = [
     blurb: 'The Warlord paid for his strength with a worse economy. The Audit runs the same books and balances them by wave nine.',
     abilities: ['broadside', 'dampen'],
     trait: { name: 'CAPITAL AUDIT',
-      desc: '+12% damage and rate, and price growth 25% steeper — every gold you invest in the board pays the penalty down.',
+      desc: '+12% damage and rate, and price growth 25% steeper: every gold you invest in the board pays the penalty down.',
       apply: t => { t.dmg += 0.12; t.rate += 0.12; t.costGrowthMul = 1.25; } },
     compile: { name: 'CAPITAL AUDIT', metric: 'invested',
       desc: 'Reads the ledger, not the clock. Build and upgrade and the penalty retires itself; sit on your gold and it never does.',
       levels: [
-        { at: 900,  desc: 'reconciled — growth 1.12', apply: t => { t.costGrowthMul = 1.12; } },
-        { at: 2200, desc: 'balanced — growth 1.00', apply: t => { t.costGrowthMul = 1.00; } },
-        { at: 4200, desc: 'in credit — growth 0.88 and +12% kill gold', apply: (t, S, m) => { t.costGrowthMul = 0.88; m.gold *= 1.12; } },
-        { at: 7000, desc: 'audited — growth 0.78 and +10% damage', apply: (t, S, m) => { t.costGrowthMul = 0.78; m.damage *= 1.10; } }
+        { at: 900,  desc: 'reconciled: growth 1.12', apply: t => { t.costGrowthMul = 1.12; } },
+        { at: 2200, desc: 'balanced: growth 1.00', apply: t => { t.costGrowthMul = 1.00; } },
+        { at: 4200, desc: 'in credit: growth 0.88 and +12% kill gold', apply: (t, S, m) => { t.costGrowthMul = 0.88; m.gold *= 1.12; } },
+        { at: 7000, desc: 'audited: growth 0.78 and +10% damage', apply: (t, S, m) => { t.costGrowthMul = 0.78; m.damage *= 1.10; } }
       ] },
     tech: chart('j', [
       [['LINE ITEM','◎','+10% damage.', t=>t.dmg+=0.10],

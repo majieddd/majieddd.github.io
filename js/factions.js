@@ -18,7 +18,7 @@ const FACTIONS = {
     crest: '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="20" r="4" fill="currentColor"/><path d="M20 2v8M20 30v8M2 20h8M30 20h8" stroke="currentColor" stroke-width="2"/></svg>',
     blurb:
       'Late to the stars and outnumbered on every front. What humanity brought to ' +
-      'integration was not doctrine or appetite but adaptability — the willingness ' +
+      'integration was not doctrine or appetite but adaptability: the willingness ' +
       'to bolt alien technology onto human frames and make it work. Neither ' +
       'selfless nor devouring. Simply unwilling to leave.',
     bonusName: 'RESILIENT',
@@ -33,11 +33,11 @@ const FACTIONS = {
     id: 'light', name: 'FEDERATION OF LIGHT', short: 'Federation',
     color: '#fbbf24', accent: '#fde68a', icon: '☀',
     creed: 'All life is one life. Surrender yours to it.',
-    tagline: 'Sworn to defend all life — at the price of your own free will.',
+    tagline: 'Sworn to defend all life: at the price of your own free will.',
     crest: '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="8" fill="currentColor"/><path d="M20 1v7M20 32v7M1 20h7M32 20h7M6.5 6.5l5 5M28.5 28.5l5 5M33.5 6.5l-5 5M11.5 28.5l-5 5" stroke="currentColor" stroke-width="2.4"/></svg>',
     blurb:
-      'A coalition of many benign species, bound by the defence of all life — human ' +
-      'and alien alike — and by a single controversial tenet: that a member ' +
+      'A coalition of many benign species, bound by the defence of all life: human ' +
+      'and alien alike and by a single controversial tenet, that a member ' +
       'surrenders their life eternally to the cause. To their allies they are the ' +
       'galaxy’s conscience. To their critics they are a cult that took the ' +
       'free will of everyone who ever joined, and calls the loss a gift.',
@@ -69,7 +69,7 @@ const FACTIONS = {
     tagline: 'An appetite with a fleet. Whatever they meet, they eat.',
     crest: '<svg viewBox="0 0 40 40" fill="currentColor"><path d="M20 4l6 3.5v7L20 18l-6-3.5v-7z"/><path d="M11 20l6 3.5v7L11 34l-6-3.5v-7z" opacity=".8"/><path d="M29 20l6 3.5v7L29 34l-6-3.5v-7z" opacity=".8"/></svg>',
     blurb:
-      'Not an alliance — an appetite. The Xeno exist to annihilate, conquer and ' +
+      'Not an alliance: an appetite. The Xeno exist to annihilate, conquer and ' +
       'devour, folding whatever they consume into their own mass. They keep no ' +
       'treaties because a treaty implies something other than themselves is ' +
       'permitted to persist. Everything they have ever met, they have eaten or ' +
@@ -95,7 +95,7 @@ const FACTIONS = {
     tagline: 'No flag, no debts. The swarm answers to them; they answer to no one.',
     crest: '<svg viewBox="0 0 40 40"><path d="M7 7l26 26M33 7L7 33" stroke="currentColor" stroke-width="2.6" fill="none"/><circle cx="20" cy="20" r="6" fill="currentColor"/></svg>',
     blurb:
-      'Made of anything and all things — defectors, escaped experiments, whole ' +
+      'Made of anything and all things: defectors, escaped experiments, whole ' +
       'species that refused both the Federation’s vow and the Xeno’s ' +
       'hunger. They hold no allegiance and are the enemy of every power in the ' +
       'galaxy, which is precisely why the creature-swarms that boil out of the ' +
@@ -138,7 +138,7 @@ const FACTIONS = {
       'They begin every engagement at a disadvantage and consider it a ' +
       'rounding error: given enough of the battle, they arrive at the optimum.',
     bonusName: 'BOOTSTRAP',
-    bonusDesc: 'Towers wake at −12% damage, rate and range, and run 2% hotter every wave — +12% past baseline once fully lit.',
+    bonusDesc: 'Towers wake at −12% damage, rate and range, and run 2% hotter every wave, +12% past baseline once fully lit.',
     apply: (side) => {
       side.mods.damage -= ROBOT_BOOT_FLOOR;
       side.mods.rate -= ROBOT_BOOT_FLOOR;
@@ -512,7 +512,7 @@ const SUMMON_DOCTRINES = {
     id: 'human', name: 'CONSCRIPTION', onKill: 'roll', scheduler: false, noPurchase: false,
     incomeCapPct: MUSTER_INCOME_CAP_PCT, costGrowth: MUSTER_COST_GROWTH, costSteps: MUSTER_COST_STEPS,
     powerPerBuy: POWER_PER_BUY, powerCap: SUMMON_POWER_CAP,
-    desc: 'Every kill drafts. The fallen return as a soldier drawn at random from your own roster — a different shape, never a heavier one.'
+    desc: 'Every kill drafts. The fallen return as a soldier drawn at random from your own roster: a different shape, never a heavier one.'
   },
   light: {
     id: 'light', name: 'THE PROCESSION', onKill: null, scheduler: true, noPurchase: false,
@@ -530,7 +530,7 @@ const SUMMON_DOCTRINES = {
     id: 'pirate', name: 'LETTERS OF MARQUE', onKill: null, scheduler: false, noPurchase: false,
     incomeCapPct: Infinity, costGrowth: PIRATE_COST_GROWTH, costSteps: Infinity,
     powerPerBuy: POWER_PER_BUY_PIRATE, powerCap: Infinity, aiPressureMul: 1.25, aiMinWave: 3,
-    desc: 'Nothing rises free under this flag. Every body is bought — and neither your POWER nor your ECON has a ceiling.'
+    desc: 'Nothing rises free under this flag. Every body is bought: and neither your POWER nor your ECON has a ceiling.'
   },
   robot: {
     id: 'robot', name: 'THE LATTICE', onKill: 'clone', scheduler: false, noPurchase: true,
@@ -773,8 +773,8 @@ const TOWER_ORIGINS = {
     tag: 'NULLIFYING',
     rule: 'SUPPRESSION',
     desc: 'Federation science does not out-shoot anything. It holds a target\'s ' +
-          'protections open — armour aside, every resistance it has is worth ' +
-          'less for a few seconds — and it cannot itself be jammed or sabotaged.'
+          'protections open: armour aside, every resistance it has is worth ' +
+          'less for a few seconds: and it cannot itself be jammed or sabotaged.'
   },
   xeno: {
     id: 'xeno', faction: 'xeno', gated: true,
@@ -782,7 +782,7 @@ const TOWER_ORIGINS = {
     tag: 'PUNISHING',
     rule: 'PUNISH',
     desc: 'Grows on wounds. Every hit carries a rider that scales off how ' +
-          'hurt the target already is — nothing against a fresh enemy, ' +
+          'hurt the target already is: nothing against a fresh enemy, ' +
           'considerable against one that is nearly finished.'
   },
   pirate: {
@@ -804,7 +804,7 @@ const TOWER_ORIGINS = {
     tag: 'LATTICE',
     rule: 'LATTICE',
     desc: 'Everyone else\'s weapons, rebuilt without the flourishes. No proc, ' +
-          'no gamble, nothing conditional — instead machines placed within ' +
+          'no gamble, nothing conditional: instead machines placed within ' +
           'reach of each other form a lattice and every link pays.'
   }
 };
@@ -876,22 +876,22 @@ const LORE = [
           'long time. Humanity was simply the last to be told.' },
   { id: 'expansion', title: 'The Expansion',
     body: 'New-age technology made the jump between worlds a matter of days. What ' +
-          'followed was not exploration but a land rush — every power that could ' +
+          'followed was not exploration but a land rush: every power that could ' +
           'reach a world began taking worlds, and every world taken had to be held ' +
           'against whatever arrived next.' },
   { id: 'vigil', title: 'The Vigil',
     body: 'Someone built machines to protect the galaxy, a very long time before ' +
           'the Integration, and then stopped answering them. They are still ' +
-          'working. A Vigil host is semi-sentient — enough to patrol, plan and ' +
+          'working. A Vigil host is semi-sentient: enough to patrol, plan and ' +
           'repair itself, nowhere near enough to tell a Federation garrison from ' +
-          'a Xeno hive — so it defends every world it finds from everyone standing ' +
+          'a Xeno hive: so it defends every world it finds from everyone standing ' +
           'on it, the inhabitants included. When it comes it comes for both ' +
           'commanders at once, down the same corridor, in the same numbers. ' +
           'Whoever kills it faster decides where the wreckage walks next.' },
   { id: 'garrisons', title: 'Garrisons',
     body: 'Most worlds are held on paper: a flag, a claim, and nobody on the ' +
           'ground. A commander’s own seat, a fortress world, a pirate nest and ' +
-          'any world two powers are already contesting are the exceptions — ' +
+          'any world two powers are already contesting are the exceptions, ' +
           'those have real troops standing on them, and when the Vigil arrives ' +
           'those troops march in the same wave, at the same two commanders. ' +
           'Nothing out there is fighting for you.' },
@@ -903,6 +903,6 @@ const LORE = [
           'What dies on that second trip stays dead.' },
   { id: 'conquest', title: 'Conquest',
     body: 'A world is not yours because you survived on it. It is yours when you have ' +
-          'taken it cleanly — three stars, no ground given. Hold enough worlds and the ' +
+          'taken it cleanly: three stars, no ground given. Hold enough worlds and the ' +
           'system is yours. Hold every system and the galaxy is.' }
 ];

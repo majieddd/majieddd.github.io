@@ -434,7 +434,7 @@ const UI = {
          `quit`, and the peer resolves it as a win). */
       this.confirmBox('CONCEDE THE DUEL?',
         '<p>Your rival <b>takes the win</b> the moment you leave the field. ' +
-        'Nothing in your campaign changes &mdash; a duel never writes to it.</p>',
+        'Nothing in your campaign changes: a duel never writes to it.</p>',
         'CONCEDE', () => Game.endMatch(false, true));
       return;
     }
@@ -456,7 +456,7 @@ const UI = {
       '<p>Abandoning <b>forfeits the whole campaign</b>: this galaxy and every ' +
       'star on it are gone, and your next campaign rolls a fresh galaxy. Souls ' +
       'already banked stay yours.</p>' +
-      '<p><b>Losing the battle does not do this</b> &mdash; a defeat keeps the ' +
+      '<p><b>Losing the battle does not do this</b>: a defeat keeps the ' +
       'galaxy. Cancel and fight on if that is what you want.</p>',
       'ABANDON \u2014 FORFEIT GALAXY',
       () => Game.endMatch(false, true));
@@ -580,7 +580,7 @@ const UI = {
         text: 'Press 1 to take ' + ((first && first.name) || 'your first tower') +
               ', then click a buildable tile on YOUR half of the board.' },
       { at: () => S.towers.length > 0,
-        text: 'It fires on its own. Kills pay gold — U upgrades the tower you have selected, S sells it back.' },
+        text: 'It fires on its own. Kills pay gold. U upgrades the tower you have selected, S sells it back.' },
       /* Keyed to a reanimate ALREADY WALKING, never to the kill counter: a
          carrier kill increments stats.kills too (game.js killEnemy), and a
          carrier hands lives back instead of marching, so the counter would
@@ -595,13 +595,13 @@ const UI = {
         const id = d ? d.id : 'human';
         if (id === 'light') return {
           at: () => !Game.noReanim && S.procCycle + S.procIdx > 0,
-          text: 'THE PROCESSION marches on a clock, kills or no kills — and every full cycle it marches heavier.' };
+          text: 'THE PROCESSION marches on a clock, kills or no kills: and every full cycle it marches heavier.' };
         if (id === 'xeno') return {
           at: () => !Game.noReanim && Game.incubators.some(p => p.side === 0),
           text: 'That kill did not die. It is incubating where it fell, and kills beside an incubator hatch it sooner.' };
         if (id === 'pirate') return {
           at: () => Game.canMuster(0) && Game.musterTiers(0).some(t => Game.canMuster(0, t)),
-          text: 'Nothing rises free under your flag. Bodies are bought — and your POWER and ECON have no ceiling.' };
+          text: 'Nothing rises free under your flag. Bodies are bought: and your POWER and ECON have no ceiling.' };
         if (id === 'robotic') return {
           at: () => !Game.noReanim &&
                     Game.enemies.some(e => e.hostileTo === 0 && e.reanimated && !e.carrier),
@@ -609,14 +609,14 @@ const UI = {
         return {
           at: () => !Game.noReanim &&
                     Game.enemies.some(e => e.hostileTo === 0 && e.reanimated && !e.carrier),
-          text: 'Your kills draft — each one summons a soldier from your own roster and marches it at your rival. That is the INBOUND count in the sidebar.' };
+          text: 'Your kills draft: each one summons a soldier from your own roster and marches it at your rival. That is the INBOUND count in the sidebar.' };
       })(),
       /* THE THEFT, not the loss. A leak no longer spends lives on contact:
          the unit turns around carrying them and only charges you if it walks
          off the spawn edge, so the teachable moment is while the carrier is
          still on the board and still killable. */
       { at: () => Game.enemies.some(e => e.hostileTo === 0 && e.carrier),
-        text: 'That one is carrying your lives to the edge. Nothing is spent until it gets out — kill it first and you pay nothing.' },
+        text: 'That one is carrying your lives to the edge. Nothing is spent until it gets out: kill it first and you pay nothing.' },
     ];
     const fired = steps.map(() => false);
     let shown = 0, done = false, hideT = 0;
@@ -813,7 +813,7 @@ const UI = {
     const body = $('#souls-body');
     body.innerHTML = `
       <div class="soul-bank">◉ <b>${Meta.souls()}</b> souls banked</div>
-      <h3 class="section-label">COMMANDERS — recruit permanently</h3>
+      <h3 class="section-label">COMMANDERS: recruit permanently</h3>
       <div class="soul-grid cmds">${COMMANDER_ROSTER.filter(c => !Meta.isCommanderUnlocked(c.id) &&
           (!Meta.faction() || c.always || c.faction === Meta.faction())).map(c => {
         const f = FACTIONS[c.faction];
@@ -828,7 +828,7 @@ const UI = {
         </button>`;
       }).join('') || '<p class="hint">Every commander is recruited.</p>'}</div>
 
-      <h3 class="section-label">SECOND ABILITY — unlock a commander's defensive power (◉${Meta.abilityCost()})</h3>
+      <h3 class="section-label">SECOND ABILITY: unlock a commander's defensive power (◉${Meta.abilityCost()})</h3>
       <div class="soul-grid cmds">${COMMANDER_ROSTER.filter(c =>
           Meta.isCommanderUnlocked(c.id) && !Meta.hasSecondAbility(c.id)).map(c => {
         const ab = ABILITIES[c.abilities[1]];
@@ -842,10 +842,10 @@ const UI = {
         </button>`;
       }).join('') || '<p class="hint">Every recruited commander has both abilities.</p>'}</div>
 
-      <h3 class="section-label">ARSENAL — unlock a tower permanently (◉${Meta.towerUnlockCost()} each)</h3>
+      <h3 class="section-label">ARSENAL: unlock a tower permanently (◉${Meta.towerUnlockCost()} each)</h3>
       <p class="hint">Human hardware is sold to everyone. A power's own arsenal is only for
         sale while you are sworn to it, and whatever you buy joins <b>that banner's</b>
-        shelf — another commander's file does not inherit it. Each ARSENAL purchase
+        shelf: another commander's file does not inherit it. Each ARSENAL purchase
         raises the next arsenal price on this banner by ${SOUL_INFLATION_STEP};
         commanders and abilities climb their own ladders, not this one.</p>
       <div class="soul-grid unlocks">${TOWER_ORDER.filter(id =>
@@ -872,10 +872,10 @@ const UI = {
         </button>`;
       }).join('') || '<p class="hint">Every tower on sale is unlocked.</p>'}</div>
 
-      <h3 class="section-label">DETACHMENT — recruit a soldier permanently (◉${Meta.unitUnlockCost()} each)</h3>
+      <h3 class="section-label">DETACHMENT: recruit a soldier permanently (◉${Meta.unitUnlockCost()} each)</h3>
       <p class="hint">A unit bought outright is <b>install-wide</b>: any commander, under any
         banner, may field it from then on. Your own power's soldiers are always for sale;
-        another power's are rescued on the battlefield, not bought — and machine soldiers
+        another power's are rescued on the battlefield, not bought: and machine soldiers
         go on sale to everyone once this install has taken a galaxy.</p>
       ${/* THE MISSING DOOR. canUnlockUnit, unlockUnit, soulPrice('unit') and
             the `banner/unit` ledger key all shipped and had NO call site
@@ -899,7 +899,7 @@ const UI = {
         </button>`;
       }).join('') || '<p class="hint">Every soldier on sale is already yours.</p>'}</div>
 
-      <h3 class="section-label">THE MACHINE LINE — issued, never sold</h3>
+      <h3 class="section-label">THE MACHINE LINE: issued, never sold</h3>
       <p class="hint">Robotic hardware answers to no power and is not for sale at any price.
         Conquer a solar system and the next machine on the line is issued to you.</p>
       <!-- Listed in ISSUE order, not roster order: the ladder is the whole
@@ -987,7 +987,7 @@ const UI = {
       const has2 = Meta.hasSecondAbility(c.id);
       const stars = Meta.prestigeOf(c.id);
       return `<button class="cmd-card" data-cmd="${c.id}" style="--cc:${c.color}"
-              data-tt="${c.name}, ${c.title}|${c.trait.name}: ${c.trait.desc} — Q: ${a0.name}, ${a0.desc} — E: ${a1.name}${
+              data-tt="${c.name}, ${c.title}|${c.trait.name}: ${c.trait.desc} · Q: ${a0.name}, ${a0.desc} · E: ${a1.name}${
                 has2 ? ': ' + a1.desc : ' (LOCKED — fill the technology chart, or ' + Meta.abilityCost() + ' souls)'}">
         <span class="cmd-icon">${commanderPortrait(c, 44)}</span>
         <span class="cmd-body">
@@ -1081,7 +1081,7 @@ const UI = {
            <span class="cs-name" style="--cc:${eqc.color}">${eqc.name}</span>
            <em>${eqc.title}</em>`
         : `<b>IN COMMAND</b>
-           <span class="cs-none">No standing order — press ⚑ EQUIP on a commander.</span>`;
+           <span class="cs-none">No standing order: press ⚑ EQUIP on a commander.</span>`;
     }
     const eqBtn = $('[data-equip]');
     if (eqBtn) eqBtn.addEventListener('click', () => {
@@ -1666,10 +1666,10 @@ const UI = {
     const tier = Meta.load().galaxyTier || 0;
     const roman = ['II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][Math.min(tier - 1, 6)] || 'NEXT';
     $('#rc-body').innerHTML = `
-      <p class="ec-eyebrow">GALAXY ${roman} — YOU HAVE DONE THIS BEFORE</p>
+      <p class="ec-eyebrow">GALAXY ${roman}, YOU HAVE DONE THIS BEFORE</p>
       <h2 class="ec-title">NEW GAME PLUS</h2>
       <p class="ec-sub">Choose the slope. Every garrison is already stronger for the
-        ${tier} galax${tier === 1 ? 'y' : 'ies'} behind you — this decides how much harder
+        ${tier} galax${tier === 1 ? 'y' : 'ies'} behind you: this decides how much harder
         again, and what the run pays when you extract.</p>
       <div class="ec-cards">
         ${['veteran', 'onslaught', 'apex'].map(id => {
@@ -1931,7 +1931,7 @@ const UI = {
             <p>The machines have watched you take a galaxy. A fifth banner is now yours to swear.</p>
             <em>A banner is sworn once per commander — raise a new profile to answer it.</em>
           </div>` : ''}
-        <p class="gv-next">Galaxy ${['II','III','IV','V','VI','VII','VIII'][Meta.load().galaxyTier || 0]} is already massing — its garrisons will be
+        <p class="gv-next">Galaxy ${['II','III','IV','V','VI','VII','VIII'][Meta.load().galaxyTier || 0]} is already massing: its garrisons will be
            ${Math.round(RAMP_PRESETS[RAMP_DEFAULT].tierHpStep * 100)}% stronger per tier, and you will set the ramp when it musters.</p>
         <button id="btn-gv-claim" class="btn btn-primary btn-big">◉ CLAIM ${payout} SOULS &amp; ADVANCE</button>
       </div>`;
@@ -1962,7 +1962,7 @@ const UI = {
       Sound.play('branch');
       this.countUp($('#gv-soulnum'), before, before + res.souls, 1400, v => '◉ ' + formatNum(v));
       this.countUp($('#gv-souldelta'), 0, res.souls, 1400, v => '+' + v + ' banked');
-      if (res.firstEver) this.toast('SIGNAL LOGGED — A FIFTH BANNER AWAITS A NEW COMMANDER.');
+      if (res.firstEver) this.toast('SIGNAL LOGGED · A FIFTH BANNER AWAITS A NEW COMMANDER.');
       $('#btn-gv-done').addEventListener('click', () => { this.show('screen-title'); this.renderTitle(); });
     });
   },
@@ -2131,11 +2131,11 @@ const UI = {
     const cmd = COMMANDERS.find(c => c.id === p.commander);
     const towers = p.loadout.map(id => (TOWER_TYPES[id] || { name: id }).name).join(' · ');
 
-    body.innerHTML = `<b class="mv-title">DUEL — ${w.name}</b>
+    body.innerHTML = `<b class="mv-title">DUEL, ${w.name}</b>
       <p class="mv-text">A duel is fought between two windows of this game on this machine.
          Open a second window, take <b>MULTIPLAYER</b> into the same universe there, then one
          of you opens a table and the other joins it. Both commanders fight the whole battle
-         on one simulation. Two machines can fight it too — <b>ACROSS TWO MACHINES</b> below,
+         on one simulation. Two machines can fight it too, <b>ACROSS TWO MACHINES</b> below,
          where the two of you carry the connection by hand.</p>
       <div class="mv-fielding" style="margin:10px 0;padding:8px 10px;border:1px solid rgba(120,180,220,.18);border-radius:4px;font-size:12px;line-height:1.5">
         <span class="mv-fk" style="display:block;font-size:10px;letter-spacing:.16em;opacity:.6">FIELDING</span>
@@ -2204,7 +2204,7 @@ const UI = {
     body.innerHTML = `<b class="mv-title">A DUEL ACROSS TWO MACHINES</b>
       <p class="mv-text">No server exists; <b>you are the wire</b>. One machine writes an
          offer, the other writes an answer, and the two of you carry those blobs across by
-         hand — a chat message, an email, anything that moves text. Paste each one where it
+         hand: a chat message, an email, anything that moves text. Paste each one where it
          is asked for and the machines talk directly from then on. The same network is the
          honest expectation; across the open internet this wire may simply not reach.</p>
       <div class="modal-actions">
@@ -2218,10 +2218,10 @@ const UI = {
       let blob;
       try { blob = await NetRTC.host(); }
       catch (e) { note(e.message || String(e)); return; }
-      body.innerHTML = `<b class="mv-title">HOSTING — CARRY THE OFFER</b>
-        <p class="mv-text">1 — Give this offer to the other commander, whole.</p>
+      body.innerHTML = `<b class="mv-title">HOSTING. CARRY THE OFFER</b>
+        <p class="mv-text">1. Give this offer to the other commander, whole.</p>
         <textarea id="mv-rtc-give" style="${TA}" readonly></textarea>
-        <p class="mv-text">2 — They will hand you an answer back. Paste it here and proceed.</p>
+        <p class="mv-text">2. They will hand you an answer back. Paste it here and proceed.</p>
         <textarea id="mv-rtc-take" style="${TA}" placeholder="the answer blob goes here"></textarea>
         <p class="mv-note" id="mv-rtc-note" style="min-height:14px;font-size:11px;opacity:.7"></p>
         <div class="modal-actions">
@@ -2233,7 +2233,7 @@ const UI = {
       $('#btn-mv-rtc-copy').addEventListener('click', () => {
         const t = $('#mv-rtc-give'); t.select();
         try { navigator.clipboard.writeText(t.value); note('Copied.'); }
-        catch (e) { note('The clipboard refused — select it all and copy by hand.'); }
+        catch (e) { note('The clipboard refused: select it all and copy by hand.'); }
       });
       $('#btn-mv-rtc-go').addEventListener('click', async () => {
         try { await NetRTC.accept($('#mv-rtc-take').value); }
@@ -2242,10 +2242,10 @@ const UI = {
     });
 
     $('#btn-mv-rtc-guest').addEventListener('click', () => {
-      body.innerHTML = `<b class="mv-title">ANSWERING — TAKE THE OFFER</b>
-        <p class="mv-text">1 — Paste the host's offer here and proceed.</p>
+      body.innerHTML = `<b class="mv-title">ANSWERING. TAKE THE OFFER</b>
+        <p class="mv-text">1. Paste the host's offer here and proceed.</p>
         <textarea id="mv-rtc-take" style="${TA}" placeholder="the offer blob goes here"></textarea>
-        <p class="mv-text">2 — Your answer appears below. Carry it back to the host; the
+        <p class="mv-text">2. Your answer appears below. Carry it back to the host; the
            lobby opens on both machines the moment they meet.</p>
         <textarea id="mv-rtc-give" style="${TA}" readonly></textarea>
         <p class="mv-note" id="mv-rtc-note" style="min-height:14px;font-size:11px;opacity:.7"></p>
@@ -2256,10 +2256,10 @@ const UI = {
       $('#btn-mv-rtc-back').addEventListener('click', back);
       $('#btn-mv-rtc-copy').addEventListener('click', () => {
         const t = $('#mv-rtc-give');
-        if (!t.value) { note('Nothing to copy yet — take the offer first.'); return; }
+        if (!t.value) { note('Nothing to copy yet: take the offer first.'); return; }
         t.select();
         try { navigator.clipboard.writeText(t.value); note('Copied. The duel table opens when the host takes it.'); }
-        catch (e) { note('The clipboard refused — select it all and copy by hand.'); }
+        catch (e) { note('The clipboard refused: select it all and copy by hand.'); }
       });
       $('#btn-mv-rtc-go').addEventListener('click', async () => {
         let ans;
@@ -2279,7 +2279,7 @@ const UI = {
     if (host) host.textContent = Net.phase === 'hosting' ? 'CLOSE MY TABLE' : 'OPEN A TABLE';
     if (Net.phase === 'hosting') {
       box.innerHTML = `<div class="mv-table open" style="display:flex;align-items:center;gap:10px;justify-content:space-between;padding:7px 10px;border:1px solid rgba(120,180,220,.18);border-radius:4px;font-size:12px"><span class="mv-spin"></span>
-        <span>Your table over <b>${Net.table.name}</b> is open — waiting for a commander.</span></div>`;
+        <span>Your table over <b>${Net.table.name}</b> is open: waiting for a commander.</span></div>`;
       return;
     }
     if (Net.phase === 'joining') {
@@ -2469,7 +2469,7 @@ const UI = {
       this.mapPreviewBlock(maelstromMap(MAELSTROM_MAX_SEATS), { size: 'tip' }) +
       '<div class="br-rows"><div class="br-row">' +
       '<span class="br-ic">&#9673;</span><span>Every commander holds their own lane and their own base. ' +
-      'Nothing you kill comes back to you — you send by paid summons alone.</span></div></div></div>');
+      'Nothing you kill comes back to you: you send by paid summons alone.</span></div></div></div>');
     /* The label used to be lit by a sibling selector, which the split above
        breaks -- the two are no longer siblings. A class on the buried group
        says the same thing and survives wherever either one is parented. */
@@ -2537,7 +2537,7 @@ const UI = {
       const m = maelstromMap(this._mvSeats);
       lobby.innerHTML = '<b class="mv-title">THE MAELSTROM</b>' +
         '<p class="mv-text">One board, one singularity, a base and a lane for every commander. ' +
-        'Nothing that walks into your lane reanimates for you — killing it leaves you nothing ' +
+        'Nothing that walks into your lane reanimates for you: killing it leaves you nothing ' +
         'to send. You send by <b>PAID SUMMONS</b>, and every POWER bonus you hold still rides ' +
         'what you send. The horizon contracts every ' + MAELSTROM_CONTRACT_WAVES +
         ' waves and keeps whatever is standing inside it.</p>' +
@@ -2951,8 +2951,8 @@ const UI = {
     const sustained = t.attack === 'cone' || t.attack === 'beam';
     return [
       ['Damage', b.damage ? b.damage + (sustained ? ' /sec' : '')
-                          : (b.droneDamage ? b.droneDamage + ' × ' + b.drones : '—')],
-      ['Fire rate', sustained ? 'sustained' : (b.rate ? b.rate.toFixed(2) + ' /s' : '—')],
+                          : (b.droneDamage ? b.droneDamage + ' × ' + b.drones : ' · ')],
+      ['Fire rate', sustained ? 'sustained' : (b.rate ? b.rate.toFixed(2) + ' /s' : ' · ')],
       ['Range', (b.range || 0).toFixed(1) + ' tiles'],
       /* A DEAD ZONE is the only stat that makes a tower worse the closer the
          target gets, so leaving it off the card let BOMBARD read as a
@@ -3146,11 +3146,11 @@ const UI = {
     if (d.jam)      return { key: 'jam',    label: 'JAMS TOWERS FOR ' + f1(d.jam.duration) + 's' };
     if (d.revive)   return { key: 'revive', label: 'RISES ONCE AT ' + Math.round(d.revive * 100) + '%' };
     if (d.healRate) return { key: 'heal',   label: 'HEALS ' + d.healRate + '/s AHEAD OF IT' };
-    if (d.aura)     return { key: 'aura',   label: (d.aura.label || 'AURA') + ' — ' + f1(d.aura.radius) + ' TILES' };
+    if (d.aura)     return { key: 'aura',   label: (d.aura.label || 'AURA') + ' · ' + f1(d.aura.radius) + ' TILES' };
     if (d.shield)   return { key: 'ward',   label: 'WARD ' + d.shield + ', REFORMS IN ' + f1(d.shieldDelay) + 's' };
     if (d.phase)    return { key: 'phase',  label: 'PHASES OUT OF REACH' };
     if (d.flying)   return { key: 'fly',    label: 'FLIES THE MAZE' };
-    if (d.pullImmune || d.slowResist) return { key: 'anchor', label: 'ANCHORED — BARELY SLOWED' };
+    if (d.pullImmune || d.slowResist) return { key: 'anchor', label: 'ANCHORED · BARELY SLOWED' };
     if (d.splashResist) return { key: 'plate', label: 'SPLASH-RESIST ' + Math.round(d.splashResist * 100) + '%' };
     return { key: 'march', label: 'HOLDS FORMATION' };
   },
@@ -3306,13 +3306,22 @@ const UI = {
       because a picker with a cap has three: in the loadout (remove it), room
       for it (equip it), and full (say so rather than fail silently on click,
       which is what the bare card did). */
+  /** ONE renderer for every description: the mechanics sentence leads in the
+      caller's own class, and `lore`, when a def carries it, renders as a
+      brief italic flavor line underneath. Defs without lore render exactly
+      as before, which is what let this ship ahead of the copy rewrites. */
+  copyHTML(def, cls) {
+    return `<p class="${cls}">${def.desc || ''}</p>` +
+           (def.lore ? `<p class="flavor">${def.lore}</p>` : '');
+  },
+
   loadoutButtonHTML(id, at) {
     const cap = this.loadoutTarget();
     if (at >= 0)
       return `<button class="btn lo-equip out" data-lo-equip="${id}">✕ REMOVE FROM LOADOUT</button>`;
     if (this.sel.loadout.length >= cap)
-      return `<div class="lo-equip-full" role="status">LOADOUT FULL — ${cap} of ${cap}. Remove one to take this.</div>`;
-    return `<button class="btn btn-primary lo-equip" data-lo-equip="${id}">⚑ EQUIP — SLOT ${this.sel.loadout.length + 1} OF ${cap}</button>`;
+      return `<div class="lo-equip-full" role="status">LOADOUT FULL, ${cap} of ${cap}. Remove one to take this.</div>`;
+    return `<button class="btn btn-primary lo-equip" data-lo-equip="${id}">⚑ EQUIP. SLOT ${this.sel.loadout.length + 1} OF ${cap}</button>`;
   },
 
   /** The same control for a unit. The detachment is stored in the profile
@@ -3324,8 +3333,8 @@ const UI = {
     if (at >= 0)
       return `<button class="btn lo-equip out" data-unit-equip="${id}">✕ REMOVE FROM DETACHMENT</button>`;
     if (picked.length >= cap)
-      return `<div class="lo-equip-full" role="status">DETACHMENT FULL — ${cap} of ${cap}. Remove one to take this.</div>`;
-    return `<button class="btn btn-primary lo-equip" data-unit-equip="${id}">⚑ EQUIP — SLOT ${picked.length + 1} OF ${cap}</button>`;
+      return `<div class="lo-equip-full" role="status">DETACHMENT FULL, ${cap} of ${cap}. Remove one to take this.</div>`;
+    return `<button class="btn btn-primary lo-equip" data-unit-equip="${id}">⚑ EQUIP. SLOT ${picked.length + 1} OF ${cap}</button>`;
   },
 
   commitPick(kind, id, byKeyboard) {
@@ -3495,9 +3504,11 @@ const UI = {
         ${at >= 0 ? `<span class="lo-d-in">IN LOADOUT · ${at + 1}</span>` : ''}
       </div>
       <canvas class="lo-stage" data-stage="${id}" width="${LO_STAGE_W}" height="${LO_STAGE_H}"></canvas>
-      <p class="lo-desc">${t.desc}</p>
+      ${/* MECHANICS FIRST: the stat rows lead, the prose follows, and flavor
+            renders italic under it (owner rule, Session 26). */ ''}
       <div class="lo-stats">${this.towerStatRows(id).map(r =>
         `<i><span>${r[0]}</span><b>${r[1]}</b></i>`).join('')}</div>
+      ${this.copyHTML(t, 'lo-desc')}
       <p class="lo-d-rule" style="--og:${o.color}"><b>${o.icon} ${o.rule}</b>${o.desc}</p>
       ${/* AN EXPLICIT EQUIP, the same shape the commander screen uses. The
             card itself still toggles -- that is the fast path once you know
@@ -3582,15 +3593,16 @@ const UI = {
         ${at >= 0 ? `<span class="lo-d-in">IN DETACHMENT · ${at + 1}</span>` : ''}
       </div>
       <canvas class="lo-stage" data-ustage="${id}" width="${LO_STAGE_W}" height="${LO_STAGE_H}"></canvas>
-      <p class="lo-desc">${def.desc || ''}</p>
+      ${/* Mechanics first here too; unit defs alias ENEMY_TYPES.desc. */ ''}
       <div class="lo-stats">${rows.map(r =>
         `<i><span>${r[0]}</span><b>${r[1]}</b></i>`).join('')}</div>
+      ${this.copyHTML(def, 'lo-desc')}
       ${marks ? `<div class="lo-chips">${marks}</div>` : ''}
       ${doc ? `<p class="lo-d-rule" style="--og:${doc.color || host.color}"><b>${
           host.icon} ${doc.name}</b>${doc.desc}</p>` : ''}
       ${owned ? '' : `<p class="lo-d-gate">${gate
           ? 'A <b>' + gate.name + '</b> soldier. A campaign rescues only its own power’s units and neutral machines' +
-            (cost != null ? ' — bought outright with <b>◉ ' + cost + '</b> it is install-wide, and any commander may field it.' : '.')
+            (cost != null ? '; bought outright with <b>◉ ' + cost + '</b> it is install-wide, and any commander may field it.' : '.')
           : 'Not yet rescued. ' + (homes
               ? 'Conquer (★★★) a world fought on <b>' + homes + '</b> to bring it home.'
               : 'No world in this galaxy garrisons it.')}</p>`}
@@ -3738,7 +3750,7 @@ const UI = {
     }).join('') + (lockedCount
       ? `<div class="lo-locked-note">
            <b>${lockedCount} more ${lockedCount === 1 ? 'tower' : 'towers'} in the arsenal</b>
-           <p>Unlock them with souls in the SOUL SHOP &mdash; open it from here.</p>
+           <p>Unlock them with souls in the SOUL SHOP: open it from here.</p>
            <button class="btn" id="btn-loadout-souls">&#9673; SOUL SHOP</button>
          </div>`
       : '');
@@ -3781,13 +3793,13 @@ const UI = {
     dep.textContent = need === 0 ? 'DEPLOY' : `SELECT ${need} MORE TOWER${need === 1 ? '' : 'S'}`;
     dep.title = need === 0
       ? ''
-      : `This campaign fields ${target} tower${target === 1 ? '' : 's'}. ${need} slot${need === 1 ? '' : 's'} still empty — pick from the ARSENAL column.`;
+      : `This campaign fields ${target} tower${target === 1 ? '' : 's'}. ${need} slot${need === 1 ? '' : 's'} still empty: pick from the ARSENAL column.`;
     const tag = $('#loadout-tagline');
     if (tag) tag.innerHTML = `You may take <b>${target}</b> tower${target === 1 ? '' : 's'} into battle. Everything else stays home.`;
 
     const unlockedCount = Meta.unlockedTowers().length;
     $('#loadout-unlocked').innerHTML =
-      `<span class="chip" data-tt="ARSENAL|You have unlocked ${unlockedCount} of ${TOWER_ORDER.length} towers. Unlock more with souls in the SOUL SHOP — the button below the grid opens it, and the commander screen carries the same one.">▲ ${unlockedCount}/${TOWER_ORDER.length} unlocked</span>` +
+      `<span class="chip" data-tt="ARSENAL|You have unlocked ${unlockedCount} of ${TOWER_ORDER.length} towers. Unlock more with souls in the SOUL SHOP: the button below the grid opens it, and the commander screen carries the same one.">▲ ${unlockedCount}/${TOWER_ORDER.length} unlocked</span>` +
       `<span class="chip" data-tt="SOULS|Souls buy three things in the SOUL SHOP: recruit a commander, unlock a commander's second ability, and add a tower to your arsenal. Tower mastery is earned in battle, never bought.">◉ ${Meta.souls()}</span>`;
     this.bindChipTips($('#loadout-unlocked'));
 
@@ -3800,8 +3812,8 @@ const UI = {
     const hasMagic = sel.some(id => ['magic', 'pure'].includes(TOWER_TYPES[id].base.dmgType) || TOWER_TYPES[id].base.poisonDps);
     const warn = [];
     if (!hasAir) warn.push('Nothing in this loadout can hit a flyer.');
-    if (!hasMagic) warn.push('No magic damage — armoured Palisades and Ironmarches will be very slow to kill.');
-    if (!hasNonMagic) warn.push('No physical damage — a Nullifier is immune to everything you brought.');
+    if (!hasMagic) warn.push('No magic damage: armoured Palisades and Ironmarches will be very slow to kill.');
+    if (!hasNonMagic) warn.push('No physical damage: a Nullifier is immune to everything you brought.');
 
     /* Which elemental reactions this loadout can actually produce. The combo
        system is invisible until a player is shown, at the moment of choosing,
@@ -3823,7 +3835,7 @@ const UI = {
        this sentence. The count is loadoutTarget(), never a literal five --
        printing five to a profile that can field one was the whole of B3. */
     const gate = need === 0 ? ''
-      : `<div class="lo-hint"><b>${need} more tower${need === 1 ? '' : 's'} to pick.</b> DEPLOY opens when ${target === 1 ? 'the slot is' : `all ${target} slots are`} filled — the rival fields a full arsenal whether or not you do.</div>`;
+      : `<div class="lo-hint"><b>${need} more tower${need === 1 ? '' : 's'} to pick.</b> DEPLOY opens when ${target === 1 ? 'the slot is' : `all ${target} slots are`} filled: the rival fields a full arsenal whether or not you do.</div>`;
     $('#loadout-warn').innerHTML = gate + (!sel.length
       ? '<div class="lo-hint">Coverage warnings appear as you build the set.</div>'
       : (warn.length
@@ -3833,7 +3845,7 @@ const UI = {
             ? `<div class="lo-combos"><b>REACTIONS AVAILABLE</b>${pairs.map(c =>
                  `<span class="chip" data-tt="${c.name}|${c.desc}">${c.name}</span>`).join('')}</div>`
             : (els.some(e => ELEMENTS[e].marks)
-                ? '<div class="lo-hint">No elemental reactions — these towers share elements, or their partners are missing. Overlap two DIFFERENT marking elements on the same stretch of lane to trigger one.</div>'
+                ? '<div class="lo-hint">No elemental reactions: these towers share elements, or their partners are missing. Overlap two DIFFERENT marking elements on the same stretch of lane to trigger one.</div>'
                 : '<div class="lo-hint">Nothing here marks. Kinetic and Radiant deal straight damage and never trigger reactions.</div>')));
     /* THE OTHER HALF OF THE DEPLOY GATE, SAID EARLY. UI.deploy already banners
        NO GROUND FITS A 2×2 EMPLACEMENT when Game.canFitFoot(0, 2) fails, but
@@ -3844,7 +3856,7 @@ const UI = {
        of something already read instead of a second, surprising voice. */
     if (sel.some(id => towerFoot(TOWER_TYPES[id]) > 1))
       $('#loadout-warn').insertAdjacentHTML('beforeend',
-        '<div class="lo-hint">This set carries a 2×2 heavy emplacement. Not every map has four free tiles together — you are told on arrival if this one does not, and the rest of the loadout still fights.</div>');
+        '<div class="lo-hint">This set carries a 2×2 heavy emplacement. Not every map has four free tiles together: you are told on arrival if this one does not, and the rest of the loadout still fights.</div>');
     this.bindChipTips($('#loadout-warn'));
 
     this.bindLoadoutColumns();
@@ -3943,7 +3955,7 @@ const UI = {
       ? `<div class="lo-locked-note">
            <b>${gated.length} ${gated.length === 1 ? 'unit belongs' : 'units belong'} to other powers</b>
            <p>A campaign rescues only its own power&rsquo;s soldiers and neutral machines.
-              A unit bought outright with souls is install-wide &mdash; any commander may field it.</p>
+              A unit bought outright with souls is install-wide: any commander may field it.</p>
            <button class="btn" id="btn-units-souls">&#9673; SOUL SHOP</button>
          </div>`
       : '');
@@ -4059,7 +4071,7 @@ const UI = {
         <span class="tc-mini" aria-hidden="true">${this.towerIconHTML(id, 30)}</span>
         <span class="tc-main">
           <span class="tc-name">${t.name}<i class="tc-og" aria-hidden="true" style="--og:${
-            originOf(id).color}" title="${originOf(id).name} — ${originOf(id).rule}">${
+            originOf(id).color}" title="${originOf(id).name} · ${originOf(id).rule}">${
             originOf(id).icon}</i></span>
           <span class="tc-role">${t.role}</span>
         </span>
@@ -4098,7 +4110,7 @@ const UI = {
        one thing this purchase is not. towerLifeCost is the only statement of
        what it costs, and the radial already quotes it that way. */
     const life = Game.towerLifeCost(0, id);
-    rows.push(['Owned', owned + ' — next costs ' + (life ? '♥' + life : '◈' + Game.towerCost(0, id))]);
+    rows.push(['Owned', owned + ', next costs ' + (life ? '♥' + life : '◈' + Game.towerCost(0, id))]);
     const el = ELEMENTS[t.element];
     return `<div class="tt-head" style="color:${t.color}">${t.name}<span class="tt-cost">${
         life ? '♥' + life : '◈' + Game.towerCost(0, id)}</span></div>
@@ -4106,7 +4118,7 @@ const UI = {
         <span class="elem-badge" style="--el:${el.color}">${el.icon} ${el.name}</span>
         ${this.originBadge(id)}</div>
       <div class="tt-role">${t.role}</div>
-      <div class="tt-origin" style="--og:${originOf(id).color}"><b>${originOf(id).rule}</b> — ${originOf(id).desc}</div>
+      <div class="tt-origin" style="--og:${originOf(id).color}"><b>${originOf(id).rule}</b>, ${originOf(id).desc}</div>
       <p class="tt-desc">${t.desc}</p>
       <div class="tt-stats">${rows.map(r => `<div><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}</div>
       ${t.groundOnly ? '<div class="tt-warn">⚠ Cannot target flying enemies</div>' : ''}
@@ -4149,13 +4161,13 @@ const UI = {
       if (!t || t.def.attack !== 'sepulchre') return null;
       const w = t.wards || [];
       return w.length ? w.map(x => x.name).join(', ')
-                      : 'nothing — it catches the next tower you give up';
+                      : 'nothing: it catches the next tower you give up';
     },
     offering: t => {
       if (!t || t.def.attack !== 'orison') return null;
       const e = t.offering;
-      if (!e) return t.orisonNamed ? 'settled — one rite a wave' : 'nothing named yet';
-      return e.def.name + ' — ' + formatNum(Math.max(0, Math.round(e.hp)))
+      if (!e) return t.orisonNamed ? 'settled: one rite a wave' : 'nothing named yet';
+      return e.def.name + ' · ' + formatNum(Math.max(0, Math.round(e.hp)))
              + ' / ' + formatNum(Math.round(e.maxHp));
     },
     answers: t => (t && t.def.attack === 'antiphon')
@@ -4323,7 +4335,7 @@ const UI = {
         rows.push(['Lends rate', '+' + Math.round((s.focusRate || 0) * 100) + '%', 1]);
         if (s.focusRange) rows.push(['Lends range', '+' + Math.round(s.focusRange * 100) + '%', 1]);
         rows.push(['Relights', (s.focusEvery || 3).toFixed(1) + 's'
-                             + (Math.round(s.focusCount || 1) > 1 ? ' — ' + Math.round(s.focusCount) + ' towers' : '')]);
+                             + (Math.round(s.focusCount || 1) > 1 ? ' · ' + Math.round(s.focusCount) + ' towers' : '')]);
         rows.push(['Lit now', (t.lit && t.lit.length) ? t.lit.map(x => x.def.name).join(', ') : 'nothing in range', 1]);
       } else {
         rows.push(['Damage aura', '+' + Math.round((s.auraDmg || 0) * 100) + '%', 1]);
@@ -4353,7 +4365,7 @@ const UI = {
         rows.push(['Standing', formatNum(Math.round(walls.reduce((a, w) => a + w.hp, 0))) + ' / '
                              + formatNum(Math.round(walls.reduce((a, w) => a + w.maxHp, 0))), 1]);
         rows.push(['At the wall', held + '/' + cap * walls.length
-                                + (over ? ' — ' + over + ' past' : ''), over > 0]);
+                                + (over ? ' · ' + over + ' past' : ''), over > 0]);
       } else {
         rows.push(['Standing', t.wallT > 0 ? 'rebuilding ' + Math.ceil(t.wallT) + 's' : 'no lane in reach']);
       }
@@ -4381,7 +4393,7 @@ const UI = {
         'the offering takes ' + Math.round(s.offeringGuard * 100) + '% less, so it lasts']);
       rows.push(['Names', 'one creature a wave, ' + ORISON_NAMING_DELAY.toFixed(0)
                         + 's after it starts arriving']);
-      rows.push(['Lapses', 'if it leaks, is charmed or is swallowed — nothing is owed']);
+      rows.push(['Lapses', 'if it leaks, is charmed or is swallowed: nothing is owed']);
     } else if (t.def.attack === 'maw') {
       rows.push(['Opens in', this.liveFigure('mawNext', t), 1, 'mawNext']);
       rows.push(['Then every', (s.mawCd || 18).toFixed(1) + 's']);
@@ -4400,7 +4412,7 @@ const UI = {
       if (s.veilVuln) rows.push(['In arrears', '+' + Math.round(s.veilVuln * 100)
                                              + '% damage while it still owes']);
       if (s.veilTithe) rows.push(['Collections', '◈' + s.veilTithe + ' per ' + VEIL_TITHE_PER
-                                               + ' — ' + this.liveFigure('tithe', t), 1, 'tithe']);
+                                               + ' · ' + this.liveFigure('tithe', t), 1, 'tithe']);
     } else {
       rows.push(['DPS', formatNum(t.estimateDps()), 1]);
       if (s.damage) rows.push([['cone', 'beam'].includes(t.def.attack) ? 'Damage/s' : 'Damage', formatNum(t.effDamage), t.aura.dmg > 0 || t.focusDmgAmt > 0]);
@@ -4414,7 +4426,7 @@ const UI = {
     if (t.def.attack === 'antiphon') {
       rows.push(['Answers banked', this.liveFigure('answers', t), 1, 'answers']);
       rows.push(['Per body lost', (s.antiphonPerLoss || 1)
-                                + ' — your PAID dead, on rival ground only', 1]);
+                                + ', your PAID dead, on rival ground only', 1]);
       rows.push(['Each answer', SixRead.volley(t) + ' shots']);
     }
     if (t.def.attack === 'gestalt') {
@@ -4431,7 +4443,7 @@ const UI = {
     /* ORISON's range is 99 on purpose -- it names one creature out of the
        whole wave and never shoots. Printing "Range 99.00" beside a tower with
        no gun reads as a bug in the number rather than as the rule it is. */
-    if (t.def.attack === 'orison') rows.push(['Reach', 'the whole board — it names, it does not shoot']);
+    if (t.def.attack === 'orison') rows.push(['Reach', 'the whole board: it names, it does not shoot']);
     else rows.push(['Range', t.effRange.toFixed(2), t.aura.range > 0 || t.focusRangeAmt > 0]);
     /* Live, not base: ROLLING CARRIAGE and the DRUMFIRE branch both move it,
        and a shrinking dead zone is the whole point of taking them. */
@@ -4525,7 +4537,7 @@ const UI = {
         upHtml = `<button class="btn upgrade-btn asc-btn ${Game.sides[0].gold >= c ? '' : 'poor'}" data-upgrade="1" data-cost="${c}">
             <span class="ub-title">ASCEND → +${t.asc + 1}</span><span class="ub-cost">◈${formatNum(c)}</span></button>
           <p class="branch-note">Compounding +${Math.round((t.traits.ascDamage - 1) * 100)}% damage, +7% rate, +3.5% range.
-          The one after this costs <b>×${ascStep.toFixed(1)}</b> again — the step itself steepens.
+          The one after this costs <b>×${ascStep.toFixed(1)}</b> again: the step itself steepens.
           ${surging ? `<b class="surge-note">This one triggers a SURGE.</b>` : `SURGE every ${every}.`}</p>`;
       }
     }
@@ -4614,7 +4626,7 @@ const UI = {
     const attunes = TOWER_ORDER.filter(id => TOWER_TYPES[id].element === n.el)
       .map(id => TOWER_TYPES[id].name);
     return `<div class="nodep" style="--nc:${el.color}">
-      <div class="section-label">${n.kind === 'build' ? 'BUILD' : 'LANE'} NODE — ${gx},${gy}</div>
+      <div class="section-label">${n.kind === 'build' ? 'BUILD' : 'LANE'} NODE · ${gx},${gy}</div>
       <div class="np-art">${el.icon}</div>
       <div class="np-el">${el.name}</div>
       ${n.kind === 'build' ? `<p class="hint">Charged ground. Whatever you stand here is changed by it.</p>
@@ -4642,9 +4654,9 @@ const UI = {
     const left = Math.max(0, Game.clearLimit(0) - Game.sides[0].cleared.size);
     const afford = Game.sides[0].gold >= cost;
     return `<div class="rubble">
-      <div class="section-label">TERRAIN — ${gx},${gy}</div>
+      <div class="section-label">TERRAIN, ${gx},${gy}</div>
       <div class="rb-art">▦</div>
-      <p class="hint">Collapsed rubble. Ground you cannot build on — unless you pay to have it
+      <p class="hint">Collapsed rubble. Ground you cannot build on: unless you pay to have it
         hauled away. Clearing is permanent for this battle only, and never touches the lane.</p>
       <button class="btn btn-primary" id="btn-demolish" ${left && afford ? '' : 'disabled'}>
         ${left ? 'DEMOLISH · ◈' + formatNum(cost) : 'NO CLEARANCES LEFT'}</button>
@@ -4659,7 +4671,7 @@ const UI = {
   /** ENRAGE — spend gold to make the next wave worth more. */
   enragePanel(rage) {
     if (Game.waveRunning) {
-      return rage ? `<div class="enrage live">✦ FIELD RESONATING ×${rage} — kills pay +${
+      return rage ? `<div class="enrage live">✦ FIELD RESONATING ×${rage}, kills pay +${
         Math.round(ENRAGE_BOUNTY * rage * 100)}%</div>` : '';
     }
     const maxed = rage >= ENRAGE_MAX;
@@ -4670,7 +4682,7 @@ const UI = {
               id="btn-enrage" ${maxed || !afford ? 'disabled' : ''}
               data-tt="RESONANT FIELD|Charge an ionic field over the next wave: enemies arrive ${
                 Math.round(ENRAGE_HP * 100)}% tougher and every kill pays ${
-                Math.round(ENRAGE_BOUNTY * 100)}% more. YOUR wave only — a rival must charge its own field, and can. Stacks up to ${ENRAGE_MAX}, and the charge never carries past this wave.">
+                Math.round(ENRAGE_BOUNTY * 100)}% more. YOUR wave only: a rival must charge its own field, and can. Stacks up to ${ENRAGE_MAX}, and the charge never carries past this wave.">
         <span class="er-ic">✦</span>
         <span class="er-body"><b>${maxed ? 'FIELD SATURATED' : 'RESONANT FIELD'}</b>
           <em>${maxed ? `×${rage} — +${Math.round(ENRAGE_BOUNTY * rage * 100)}% bounty`
@@ -4759,13 +4771,13 @@ const UI = {
         <div class="att-cell in"><b>${inbound}</b><span>INBOUND</span></div>
       </div>
       ${Game.seed !== null && Game.seed !== undefined ? `<div class="section-label" data-tt="BATTLE SEED|Same seed + same choices replays this exact match. Set it in OPTIONS.">SEED ${Game.seed}</div>` : ''}
-      <div class="section-label">NEXT — WAVE ${next}${p.boss ? '  ⚠ BOSS' : isMini ? '  ◆ MINIBOSS' : ''}${rage ? `  ✦ RESONATING ×${rage}` : ''}</div>
+      <div class="section-label">NEXT. WAVE ${next}${p.boss ? '  ⚠ BOSS' : isMini ? '  ◆ MINIBOSS' : ''}${rage ? `  ✦ RESONATING ×${rage}` : ''}</div>
       <div class="wave-name ${p.boss ? 'boss' : isMini ? 'mini' : ''} ${rage ? 'enraged' : ''}">${p.name}</div>
       <div class="roster">${list}</div>
       ${this.enragePanel(Game.waveRunning ? spent : rage)}
       <div class="hint-block">
         <div class="section-label">ATTRITION</div>
-        <p class="hint">Waves spawn in the <b>neutral zone</b> and hit every base identically. What your kills become is your commander's rite — a body sent can never be sent again.</p>
+        <p class="hint">Waves spawn in the <b>neutral zone</b> and hit every base identically. What your kills become is your commander's rite: a body sent can never be sent again.</p>
         <p class="hint">Each wave permanently raises one enemy stat (shown top-centre). Escalations land every <b>10</b> waves, minibosses every <b>${MINIBOSS_EVERY}</b>.</p>
       </div>
     </div>`;
@@ -4821,7 +4833,7 @@ const UI = {
        function the spawn reads, never re-derived. */
     const earlyPen = Math.round((1 - spawnHpPenaltyMul(Math.max(1, Game.wave))) * 100);
     const earlyTxt = earlyPen > 0
-      ? ', and a summoned body is ' + earlyPen + '% lighter again this early — that fades to nothing by wave '
+      ? ', and a summoned body is ' + earlyPen + '% lighter again this early: that fades to nothing by wave '
         + SPAWN_HP_PENALTY_END
       : '';
     const rows = Game.musterTiers(0).map(tier => {
@@ -4874,7 +4886,7 @@ const UI = {
       </button>`;
     }).join('');
 
-    bar.innerHTML = `${this.engineStripHtml(S, doc)}<div class="muster-head" data-tt="ECON|Every commander earns the BASE wave reward. Summons stack a flat percent of it on top, every wave, for the rest of the battle — so aggression and economy stop being opposite choices.${
+    bar.innerHTML = `${this.engineStripHtml(S, doc)}<div class="muster-head" data-tt="ECON|Every commander earns the BASE wave reward. Summons stack a flat percent of it on top, every wave, for the rest of the battle: so aggression and economy stop being opposite choices.${
         uncapped ? ' Under LETTERS OF MARQUE that percent has NO ceiling; what prices it instead is a summon cost that never stops climbing.' : ''} Pick your roster on the loadout screen; conquer worlds to save more denizens for it.">
         <span>◈/wave</span><b>+◈${formatNum(baseIncome)}</b>
         <span class="mu-sep">◈%<i class="mu-up">▲</i></span><b class="${capped ? 'capped' : ''}${uncapped ? ' uncapped' : ''}">+${Math.round((uncapped ? (S.musterIncome || 0) : pct) * 100)}%</b>
@@ -5227,7 +5239,7 @@ const UI = {
     this.el.choiceBody.innerHTML = `
       <div class="choice-head">
         <h2>COMMAND UPGRADE</h2>
-        <p>Wave ${Game.wave} survived. ${c.name} offers ${options.length} — take one. It applies to your whole board, permanently.</p>
+        <p>Wave ${Game.wave} survived. ${c.name} offers ${options.length}, take one. It applies to your whole board, permanently.</p>
       </div>
       <div class="choice-grid n${options.length}">
         ${options.map((m, i) => {
@@ -5270,7 +5282,7 @@ const UI = {
     this._abilSig = list.map(a => a.def.id).join('|');
     bar.innerHTML = list.map((a, i) => `
       <button class="abil ${a.def.kind}${a.def.aim ? ' aimed' : ''}" data-abil="${i}"
-              data-tt="${a.def.name} — ${i === 0 ? 'Q' : 'E'}|${a.def.desc}">
+              data-tt="${a.def.name} · ${i === 0 ? 'Q' : 'E'}|${a.def.desc}">
         <span class="ab-sweep"></span>
         <span class="ab-icon">${artImg('abil_' + a.def.id, 'ab-art', '') || a.def.icon}</span>
         <span class="ab-body"><b>${a.def.name}</b><em>${i === 0 ? 'Q' : 'E'}${a.def.aim ? ' · AIM' : ''}</em></span>
@@ -5331,24 +5343,24 @@ const UI = {
         return n
           ? `LATTICE ${n}/${Math.max(ORIGIN_LATTICE_MAX, t.latticeFillCap || 0)} · +${Math.round(ORIGIN_LATTICE_DAMAGE * n * 100)}% damage · +${
               Math.round(ORIGIN_LATTICE_RATE * n * 100)}% rate`
-          : 'LATTICE 0 — place another machine within ' + ORIGIN_LATTICE_TILES + ' tiles';
+          : 'LATTICE 0: place another machine within ' + ORIGIN_LATTICE_TILES + ' tiles';
       }
       case 'human':
         return t.node
-          ? `ADAPTIVE MOUNT — attuned to a ${ELEMENTS[t.node.el].name} node · +${
+          ? `ADAPTIVE MOUNT: attuned to a ${ELEMENTS[t.node.el].name} node · +${
               Math.round((NODE_ATTUNE_DAMAGE - 1) * 100)}% damage`
-          : 'PROVEN — no clause, no proc, the card is the number';
+          : 'PROVEN: no clause, no proc, the card is the number';
       case 'light':
-        return `SUPPRESSION — hits strip ${Math.round(ORIGIN_LIGHT_STRIP * 100)}% resistance for ${
+        return `SUPPRESSION: hits strip ${Math.round(ORIGIN_LIGHT_STRIP * 100)}% resistance for ${
           ORIGIN_LIGHT_SUPPRESS}s · cannot be jammed`;
       case 'xeno':
-        return `PUNISH — up to +${Math.round(ORIGIN_XENO_PUNISH * 100)}% against a nearly-dead target`;
+        return `PUNISH: up to +${Math.round(ORIGIN_XENO_PUNISH * 100)}% against a nearly-dead target`;
       case 'pirate': {
         /* CARRONADE overrides the rider's constants; the card must print the
            gun's own figures or the next UI/engine desync ships right here. */
         const bank = t.stats.heatBank || ORIGIN_PIRATE_HEAT_MAX;
         const mult = Math.min(OVERLOAD_MULT_MAX, t.stats.overloadMult || ORIGIN_PIRATE_MULT);
-        return `OVERLOAD ${t.heat || 0}/${bank} — ${
+        return `OVERLOAD ${t.heat || 0}/${bank} · ${
           Math.round(ORIGIN_PIRATE_PROC * 100)}% for ×${mult.toFixed(2)}, then a jam`;
       }
       default: return o.rule;
@@ -5998,7 +6010,7 @@ const UI = {
       ? this.worldById(Meta.galaxy(), Meta.campaign().chosen.world) : null;
     const sit = battleSituation(w, me.faction);
     $('#bi-body').innerHTML = `
-      <p class="bi-where">${sit.place} — CONTESTED</p>
+      <p class="bi-where">${sit.place}, CONTESTED</p>
       <div class="bi-heads ${Game.triMode ? 'tri' : ''}">
         <div class="bi-side you"><span>${commanderPortrait(me.commander, Game.triMode ? 66 : 84)}</span>
           <b style="color:${me.commander.color}">${me.commander.name}</b></div>
@@ -6138,7 +6150,7 @@ const UI = {
           `<span class="ei-el" style="--el:${ELEMENTS[el2].color}">${ELEMENTS[el2].icon} ${ELEMENTS[el2].name} −${Math.round(v * 100)}%</span>`).join('')
       : '<span class="ei-none">none</span>';
     $('#ei-body').innerHTML = `
-      <p class="ei-eyebrow">NEW CONTACT — DOSSIER · ${
+      <p class="ei-eyebrow">NEW CONTACT. DOSSIER · ${
         def.faction && FACTIONS[def.faction] ? FACTIONS[def.faction].name : MACHINE_HOST.name}</p>
       <h2 class="ei-name" style="color:${def.color}">${def.name.toUpperCase()}</h2>
       <div class="ei-stage-wrap ${art('foe_' + def.id) ? 'has-art' : ''}">
@@ -6154,7 +6166,7 @@ const UI = {
         <div><span>LIVES COST</span><b>${def.lives || 1}</b></div>
       </div>
       <div class="ei-elems"><div><span>WEAK TO</span>${weak}</div><div><span>DAMPS REACTIONS</span>${resist}</div></div>
-      <p class="ei-desc">A weakness adds that much damage to every hit of the element. A resistance takes that much off elemental <b>reactions</b> only — the hit itself lands in full.</p>
+      <p class="ei-desc">A weakness adds that much damage to every hit of the element. A resistance takes that much off elemental <b>reactions</b> only: the hit itself lands in full.</p>
       <button id="ei-go" class="btn btn-primary">ENGAGE</button>`;
     ov.classList.remove('hidden');
 
@@ -6268,7 +6280,7 @@ const UI = {
     }
     const owed = Game.escalationOwed.length;
     $('#ec-body').innerHTML = `
-      <p class="ec-eyebrow">WAVE ${Game.wave} — THE ENEMY ADAPTS</p>
+      <p class="ec-eyebrow">WAVE ${Game.wave}, THE ENEMY ADAPTS</p>
       <h2 class="ec-title">CHOOSE YOUR ESCALATION</h2>
       <p class="ec-sub">One of these lands now. The two you refuse are remembered and come back first.
         Taking a <b class="ec-hard">severe</b> escalation widens your next command draft.</p>
@@ -6282,7 +6294,7 @@ const UI = {
           </button>`).join('')}
       </div>
       ${owed ? `<p class="ec-owed">${owed} refused escalation${owed > 1 ? 's' : ''} still owed.</p>` : ''}
-      <button class="btn btn-sm ec-hold" id="btn-ec-hold">⏸ HOLD — BUILD FIRST</button>`;
+      <button class="btn btn-sm ec-hold" id="btn-ec-hold">⏸ HOLD. BUILD FIRST</button>`;
     ov.classList.remove('hidden');
     this._removeEscHoldChip();
     $$('[data-esc]', ov).forEach(b => b.addEventListener('click', () => {
@@ -6302,7 +6314,7 @@ const UI = {
       const chip = document.createElement('button');
       chip.id = 'esc-hold-chip';
       chip.className = 'btn esc-hold-chip';
-      chip.innerHTML = '⚠ THE ENEMY WAITS — CHOOSE ESCALATION';
+      chip.innerHTML = '⚠ THE ENEMY WAITS. CHOOSE ESCALATION';
       chip.addEventListener('click', () => {
         /* No `|| offer` fallback: a chip whose offer the engine has already
            cleared must be inert, not a replay of a battle that is over. */
@@ -6347,7 +6359,7 @@ const UI = {
   showEscalation(m) {
     const el = document.createElement('div');
     el.className = 'toast';
-    el.innerHTML = `<b>${m.icon} ENEMY ESCALATION</b><span>${m.name} — ${m.desc}</span>`;
+    el.innerHTML = `<b>${m.icon} ENEMY ESCALATION</b><span>${m.name} · ${m.desc}</span>`;
     $('#toasts').appendChild(el);
     setTimeout(() => el.classList.add('out'), 5200);
     setTimeout(() => el.remove(), 6000);
@@ -6715,7 +6727,7 @@ const UI = {
         <div class="ce-head"><b>${t.name}</b><span>◈${t.cost} · growth ×${appliedGrowth(t).toFixed(2)}</span></div>
         <p>${t.desc}</p>
         <div class="ce-branches">
-          <div><b>TALENTS</b> — ${t.talents.map(x => x.name).join(' / ')}</div>
+          <div><b>TALENTS</b>, ${t.talents.map(x => x.name).join(' / ')}</div>
           <div><b>${t.branches[0].name}</b> / <b>${t.branches[1].name}</b> at tier 4</div>
         </div></div>`;
     }).join('');
@@ -6753,7 +6765,7 @@ const UI = {
         <b>${f.icon} ${f.name}${secret ? ' <em class="fx-secret">SECRET</em>' : ''}</b>
         <em class="fx-creed">${f.creed}</em>
         <span>${f.blurb}</span>
-        <span class="fx-bonus"><b>${f.bonusName}</b> — ${f.bonusDesc}</span>
+        <span class="fx-bonus"><b>${f.bonusName}</b>, ${f.bonusDesc}</span>
         ${secret ? `<span class="fx-bonus"><b>THE LATTICE</b> — ${SUMMON_DOCTRINES.robot.desc}
           Their commanders COMPILE: each opens weaker than the commander it was copied from and
           rewrites itself as the battle teaches it. Their soldiers are for sale to every banner
@@ -6809,7 +6821,7 @@ const UI = {
       return `<div class="codex-entry" style="--tc:${c.color}">
         <b>${c.icon} ${c.name}</b>
         <span class="cx-title">${c.title}${f ? ' · ' + f.short : ' · Unaligned'}</span>
-        <span><b>${c.trait.name}</b> — ${c.trait.desc}</span>
+        <span><b>${c.trait.name}</b>, ${c.trait.desc}</span>
         <span class="cx-abil">${c.abilities.map(a => ABILITIES[a].icon + ' ' + ABILITIES[a].name).join(' · ')}</span>
       </div>`;
     }).join('');
@@ -6827,14 +6839,14 @@ const UI = {
              const n = rivalFactionsOf(Meta.faction() || 'human').length;
              return n === 4 ? ' — all four of them, since the machines hold none' : '';
            })()}.</p>
-        <p><b>Stars.</b> Winning takes a world. Winning <em>cleanly</em> — with 90% of your
-           lives intact — earns three stars and CONQUERS it for your faction. Two stars needs
+        <p><b>Stars.</b> Winning takes a world. Winning <em>cleanly</em> with 90% of your
+           lives intact, earns three stars and CONQUERS it for your faction. Two stars needs
            55%. One star is any other victory.</p>
         <p><b>Openings.</b> Worlds unlock outward from the first in each system. A commander's
            seat opens once you hold most of their system, and taking a seat unlocks the next
            system. Rival commanders take worlds of their own while you fight.</p>
         <p><b>Defeat.</b> Losing a battle costs you the stars you did not earn and hands
-           the rivals a free move &mdash; but the galaxy and every star already on it stay
+           the rivals a free move: but the galaxy and every star already on it stay
            yours. Only <em>abandoning</em> a campaign from the battle's \u2715 button forfeits
            it.</p>
         <p><b>The first galaxy is the gentle one.</b> Its opening system meets one new creature
@@ -6857,17 +6869,17 @@ const UI = {
            <b>E</b>. The second is locked until you have spent every point on that commander's
            technology chart, or unlock it outright in the Soul Shop.</p>
         <p><b>Aimed powers.</b> ${aimedPoint.length + aimedLane.length} of them do not put a number on
-           the whole board &mdash; they deliver a <em>construct</em> at a tile you choose, so spending one
+           the whole board: they deliver a <em>construct</em> at a tile you choose, so spending one
            costs a placement decision as well as a cooldown. Press <b>Q</b> or <b>E</b> (or click the
            button) to arm the cursor, then click the ground. ${nameList(aimedPoint)} may go on any tile
            you hold that is not rubble and has no tower on it; ${nameList(aimedLane)} must be aimed at a
            lane, and snap to the nearest lane you defend within <b>${AIM_SNAP_TILES}</b> tiles. An
-           illegal tile simply does not fire &mdash; it never burns the cooldown. Each construct stands
+           illegal tile simply does not fire: it never burns the cooldown. Each construct stands
            for its ability's duration only, and cannot be stacked or refreshed while it is up: a wall you
            could park forever would erase the consequence of a leak rather than charge for it.</p>
       </div><div class="codex-grid">${abilRows}</div></section>
       <section><h3>Elements</h3><div class="codex-note">
-        <p>A marking element leaves a mark on what it hits — drawn as a ringed glyph over the
+        <p>A marking element leaves a mark on what it hits: drawn as a ringed glyph over the
            unit. A hit from a <em>different</em> marking element consumes that mark and triggers
            a reaction. Marks last four seconds, so a reaction needs two different elements
            covering the <b>same stretch of lane</b>. That is what makes placement an elemental
@@ -6876,18 +6888,18 @@ const UI = {
       <section><h3>Reactions</h3><div class="codex-grid">${comboRows.join('')}</div></section>
       <section><h3>Commanders</h3><div class="codex-grid">${cmdRows}</div></section>
       <section><h3>Attrition</h3><div class="codex-note">
-        <p>Neutral waves spawn in the centre corridor and march on <b>both</b> bases at once — same composition, same instant.</p>
+        <p>Neutral waves spawn in the centre corridor and march on <b>both</b> bases at once: same composition, same instant.</p>
         <p>What a kill becomes is decided by your commander's <b>rite</b>, not by a single
            universal law. <b>${SUMMON_DOCTRINES.robot.name}</b> returns the body exactly as it
            fell; <b>${SUMMON_DOCTRINES.human.name}</b> drafts a different soldier from your own
            roster; <b>${SUMMON_DOCTRINES.xeno.name}</b> leaves it to incubate where it died; and
            under <b>${SUMMON_DOCTRINES.light.name}</b> and <b>${SUMMON_DOCTRINES.pirate.name}</b> a
-           kill yields nothing at all — they march on a clock and on gold instead. Whatever a rite
+           kill yields nothing at all: they march on a clock and on gold instead. Whatever a rite
            sends arrives at <b>${Math.round(MUSTER_DAMP * 100)}%</b> health and can never be sent
            again, so kills never cascade.</p>
       </div></section>
       <section><h3>Escalation</h3><div class="codex-note">
-        <p>Every wave permanently raises one random enemy statistic — health, speed or armour. The running totals sit at the top of the battlefield.</p>
+        <p>Every wave permanently raises one random enemy statistic: health, speed or armour. The running totals sit at the top of the battlefield.</p>
         <p>Every <b>${MINIBOSS_EVERY}</b> waves brings a <b>miniboss</b>. Enemy health also compounds: roughly ×${Math.round(waveHpMultiplier(10))} by wave 10, ×${Math.round(waveHpMultiplier(20))} by wave 20 and ×${formatNum(Math.round(waveHpMultiplier(30)))} by wave 30.</p>
         <p><b>The bid.</b> Every <b>10</b> waves the enemy adapts, and the battle <em>halts</em> while you
            underwrite it. Three escalations are offered and you take exactly one. The two you refuse are
@@ -6896,7 +6908,7 @@ const UI = {
            not already learned, whatever remains simply lands.</p>
         <p><b>The price.</b> An escalation is dealt to <em>every</em> commander on the field at once, so
            choosing which one arrives is worth something and is charged for. Underwrite a
-           <b>severe</b> escalation — the ones marked ⚠ on the card — and your next command draft is one
+           <b>severe</b> escalation the ones marked ⚠ on the card, and your next command draft is one
            option wider. Duck it, and each of your rivals gets that extra option instead.</p>
       </div></section>
       <section><h3>Resonant field</h3><div class="codex-note">
@@ -6907,15 +6919,15 @@ const UI = {
         <p>Charges are spent by the wave they were bought for and never carry into another. And a
            charge rides the buyer's own wave alone: the heavier attackers and the richer bounty arrive
            on <em>your</em> half of the field, while a commander who did not pay meets the wave it would
-           have met anyway. Composition, count, lane and timing stay identical for everyone &mdash; that
-           invariant is the whole point of attrition &mdash; so a charge is a bet on your own defence,
+           have met anyway. Composition, count, lane and timing stay identical for everyone: that
+           invariant is the whole point of attrition: so a charge is a bet on your own defence,
            never a weapon aimed across the board.</p>
       </div></section>
       <section><h3>Economy</h3><div class="codex-note">
         <p>Each tower's price rises with <b>every copy you already own</b>, at its own rate. A Bolt at ×${appliedGrowth(TOWER_TYPES.bolt).toFixed(2)} is the gentlest curve in the game; a Vault at ×${appliedGrowth(TOWER_TYPES.vault).toFixed(2)} is effectively unique. That is what makes a board a composition rather than a stack. Commanders who trade in price growth soften these figures, and the build tooltip quotes your own.</p>
         <p>Ascension has no flat multiplier to quote: a step costs the tower's paid specialisation
            <b>×${ASCENSION.expBase}</b>, raised to a power that itself compounds by
-           <b>×${ASCENSION.expGolden}</b> every step — so the second ascension is dear and the fifth is
+           <b>×${ASCENSION.expGolden}</b> every step: so the second ascension is dear and the fifth is
            absurd next to simply placing another tower. Each step gives ×${ASCENSION.damage} damage,
            ×${ASCENSION.rate} rate and ×${ASCENSION.range} range: a deliberate wall that only a focused
            economy can climb.</p>
@@ -6929,20 +6941,19 @@ const UI = {
       <section><h3>Power &amp; summons</h3><div class="codex-note">
         <p>Two figures govern everything you put on a rival's lane. <b>POWER</b> is how heavy a body
            arrives. <b>ECON</b> is the permanent share of every wave reward your summons have bought you.
-           A paid summon raises both at once — it is the only purchase in the game that is an attack and
+           A paid summon raises both at once: it is the only purchase in the game that is an attack and
            an income in the same press.</p>
         <p>You carry up to <b>${MUSTER_LOADOUT_SIZE}</b> saved denizens into a battle, chosen on the
            deployment loadout screen; each becomes one row of the summon bar, and its pack size, price and
            income are all derived from that denizen's own health, so a swarm of frail mobs and a pair of
            heavies put comparable mass in the lane. A denizen is <b>saved</b> by conquering the world it
-           defends outright — three stars, first time — and it joins a vault every profile shares.</p>
+           defends outright three stars, first time, and it joins a vault every profile shares.</p>
         <p>A purchase costs a share of the <em>next</em> wave's reward and climbs with every buy; for most
            commanders it flattens after <b>${MUSTER_COST_STEPS}</b>, and the ECON it adds is capped at
            <b>+${Math.round(MUSTER_INCOME_CAP_PCT * 100)}%</b> of a wave reward. You may buy at most
-           <b>${MUSTER_PER_WAVE}</b> per wave, under every flag — an army is built across a match, not
+           <b>${MUSTER_PER_WAVE}</b> per wave, under every flag: an army is built across a match, not
            bought in one build phase. Every buy also hardens what you send, permanently.</p>
-        <p><b>THE FIVE RITES.</b> How a commander summons is decided by the commander, not the banner —
-           a commander of another power brings their own rite to your flag, while your roster supplies the
+        <p><b>THE FIVE RITES.</b> How a commander summons is decided by the commander, not the banner,            a commander of another power brings their own rite to your flag, while your roster supplies the
            soldiers. One law binds all five: a rite may change the <em>shape</em> a kill returns in, never
            its <em>mass</em>.</p>
         <p><b>${SUMMON_DOCTRINES.human.name}</b>: ${SUMMON_DOCTRINES.human.desc}<br>
@@ -6954,8 +6965,8 @@ const UI = {
            ${XENO_INC_CAP} at once.<br>
            <b>${SUMMON_DOCTRINES.pirate.name}</b>: ${SUMMON_DOCTRINES.pirate.desc} What prices it is a
            summon cost that never stops climbing.<br>
-           <b>${SUMMON_DOCTRINES.robot.name}</b> — ${SUMMON_DOCTRINES.robot.desc}</p>
-        <p>On a board where nothing rises — the Maelstrom — every rite's free half is switched off and
+           <b>${SUMMON_DOCTRINES.robot.name}</b>, ${SUMMON_DOCTRINES.robot.desc}</p>
+        <p>On a board where nothing rises (the Maelstrom) every rite's free half is switched off and
            all five buy their bodies instead.</p>
         <p><em>Older field manuals described every kill rising again. That law now belongs to the
            Lattice alone.</em></p>
@@ -6963,7 +6974,7 @@ const UI = {
            leak, and can never be summoned a second time. On the Confluence one purchase marches on
            <b>both</b> rivals, exactly as a kill does there.</p>
         <p><b>A summoned body is not a wave body.</b> On top of that damping, anything you
-           <em>summon</em> — a bought detachment, a tower's minions, a carrier's brood — arrives
+           <em>summon</em> a bought detachment, a tower's minions, a carrier's brood, arrives
            lighter for the first ${SPAWN_HP_PENALTY_END} waves, because the wave curve is flat that
            early and a bought body would otherwise be worth very nearly a scripted one against a
            defence that is still two towers. It is
@@ -6971,10 +6982,10 @@ const UI = {
            <b>${Math.round((1 - spawnHpPenaltyMul(SPAWN_HP_PENALTY_MID_WAVE)) * 100)}%</b> on wave
            ${SPAWN_HP_PENALTY_MID_WAVE}, and nothing at all from wave
            <b>${SPAWN_HP_PENALTY_END}</b> on. Early aggression is a tempo play; it is not a kill.
-           Reanimates and charms are untouched — those convert a body the wave already paid for.</p>
+           Reanimates and charms are untouched: those convert a body the wave already paid for.</p>
       </div></section>
       <section><h3>The ground</h3><div class="codex-note">
-        <p><b>Rubble.</b> On some maps half the board is scenery — and scenery is purchasable. Any rubble
+        <p><b>Rubble.</b> On some maps half the board is scenery: and scenery is purchasable. Any rubble
            tile on your own half that the lane does not run through can be demolished into buildable
            ground. The first clearance is the cheapest; each one after it costs <b>×${CLEAR_GROWTH}</b>
            the last, and you may clear <b>${CLEAR_MAX}</b> in a battle. Clearances last the battle only and
@@ -6985,11 +6996,11 @@ const UI = {
         <p><b>Terrain nodes.</b> A handful of tiles on some maps carry an elemental charge, mirrored onto
            both halves so neither commander gets the better board. Stand a tower of the node's <em>own</em>
            element on it and its damage rises <b>${Math.round((NODE_ATTUNE_DAMAGE - 1) * 100)}%</b>. Stand
-           one that marks nothing on it and the tower borrows the node's element — which is how a map
+           one that marks nothing on it and the tower borrows the node's element: which is how a map
            joins the reaction table. Stand a marking tower of some <em>other</em> element on it and it
            keeps its own element, but holds its mark <b>${NODE_HOLD_MARK}s</b> instead of
            ${MARK_SECONDS}s: patience rather than raw damage. A lane node works on the enemy instead of the
-           tower — anything walking over it that is not flying and not already marked picks that element
+           tower: anything walking over it that is not flying and not already marked picks that element
            up for <b>${NODE_LANE_MARK}s</b>, long enough to carry into a killzone and too short to stand as
            half a reaction on its own. A node is a property of the tile, so a tower moved onto or off one
            re-reads it immediately.</p>
@@ -6998,8 +7009,7 @@ const UI = {
         <p>A <b>${rp.name}</b> throws a physical wall across the nearest lane within its reach. Ground
            attackers stop at it and batter it down; when it falls the tower raises another after its
            rebuild time.</p>
-        <p>A wall is <b>throughput, not a gate</b>. It holds a specific number of attackers at once —
-           ${rpCaps}, +2 with DEEP RANKS, and whatever its branch sets after that — and everything past
+        <p>A wall is <b>throughput, not a gate</b>. It holds a specific number of attackers at once,            ${rpCaps}, +2 with DEEP RANKS, and whatever its branch sets after that: and everything past
            that number squeezes by while the held ones are fighting. Contact is resolved
            furthest-along-first, so the leaders are held and the stragglers slip through. Fliers ignore
            walls entirely, and bosses and minibosses are never held: they walk on through and tear the
@@ -7010,7 +7020,7 @@ const UI = {
            down anywhere you could have built it, keeping every level, branch, roll and ascension. The fee
            is <b>${Math.round(RELOCATE_FEE_FRAC * 100)}%</b> of what is currently invested in that tower,
            so moving a finished ascended tower is genuinely expensive, and the tower is <b>offline for
-           ${RELOCATE_DOWNTIME}s</b> once it lands — long enough to hurt mid-wave, close to free between
+           ${RELOCATE_DOWNTIME}s</b> once it lands: long enough to hurt mid-wave, close to free between
            them. Nothing is refunded and nothing is reset, so a move can never be used to launder the
            per-copy price curve.</p>
       </div></section>
@@ -7057,7 +7067,7 @@ const UI = {
         this.loadSettings();
         this.toast('Save imported');
       } catch (e) {
-        this.toast('Import failed — ' + e.message);
+        this.toast('Import failed, ' + e.message);
       }
     };
     reader.readAsText(file);
