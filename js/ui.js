@@ -1997,14 +1997,17 @@ const UI = {
         const wy = w.y * GX_RENDER_SQUASH;
         const wr2 = w.seat ? 2.7 : 2.0;
         /* A RENEGADE world flies your own colours and is not yours, so it
-           needs a mark of its own or the map reads as ground already taken. */
-        /* Through the allegiance call like every other piece of this node's
-           presentation, so the paint, the class list and the accessible name
-           stay ONE decision -- and so a conquered renegade world stops wearing
-           the mark, exactly as a conquered contested world does. */
-        const ral = worldAllegiance(gx, sys, w, prog);
+           needs a mark of its own or the map reads as ground already taken.
+           THE FLAG, not the allegiance call: this is the MULTIVERSE map and
+           there is no campaign progress here, so nothing is claimable and the
+           mark never expires. A Session 24 edit called
+           worldAllegiance(gx, sys, w, prog) on this line, and `prog` does not
+           exist in this renderer: renderMultiverse threw before drawing one
+           world and the whole multiplayer screen opened EMPTY. The campaign
+           trail is the renderer that owns the allegiance call, and it always
+           had it. */
         const cls = ['gx-world', 'open', w.seat ? 'seat' : '',
-                     ral.renegade ? 'renegade' : '',
+                     w.renegade ? 'renegade' : '',
                      planetArtFor(w) ? 'has-planet' : ''].join(' ');
         svg.push(`<g class="${cls}" data-mv="${w.id}" style="--fc:${of.color}" tabindex="0"
                    role="button" aria-label="${w.name}, ${of.short}">`);
