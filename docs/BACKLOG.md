@@ -379,3 +379,91 @@ If you touch economy, AI or towers: the pins are SEEDED now — use
 unseeded numbers cannot gate anything. If you touch `js/net.js`, `js/game.js`
 or `js/ui.js`, run `MPT.all()` too, and bump `NET_PROTOCOL` if the command set
 or fingerprint changes.
+
+---
+
+## Session 25 — THE OWNER'S BUG REPORT
+
+Six items. Three were bugs, three were "check this was really implemented".
+
+### The freeze, and the pause that would not lift
+
+They are the same defect seen twice. `Game.loop` booked the next frame on
+its **last line**, with no `try`. `draw()` carries no handler of its own —
+verified, zero in its first 120 lines — so any throw in `step()` or `draw()`
+skipped the reschedule and the loop stopped for good. The board froze, the HUD
+kept taking clicks, and the pause button toggled a flag nothing was left to
+read. The reschedule now happens in a `finally`; the error is reported once per
+distinct message and parked on `Game.loopErrors`, never swallowed.
+
+Three concrete ways in were found and closed:
+
+1. **A permanently poisoned camera.** `clamp` returns NaN unchanged — NaN
+   compares false against everything — which is right for the simulation and
+   fatal at a boundary. The drag handler divided by
+   `getBoundingClientRect().width`, which is `0` while the canvas is hidden or
+   mid-layout, and `0 * (width / 0)` is NaN. One such frame put NaN in `cam.x`
+   and **nothing could wash it out**: `ctx.setTransform` silently ignores a
+   non-finite matrix, so the board stopped moving while the sim carried on. A
+   `fin` guard now sits at the camera boundary — deliberately *not* a change to
+   `clamp`, which the pins were measured through.
+2. **A hard `ReferenceError` one authored field away from firing every frame.**
+   `Tower.updateCone`'s puddle block reads `target`, declared `const` inside
+   the `else` branch above it. Any tower with both `sweepRate` and `puddle`
+   throws. No shipped stat block pairs them, which is the only reason it has
+   never been seen.
+3. **The HUD is called from inside the simulation.** `Game.step` ends with
+   `UI.syncLive()`, unguarded. A throw there skipped `this.acc -= STEP`, so two
+   clients whose HUDs threw on different frames disagreed about the
+   accumulator — a determinism fix as much as a robustness one.
+
+### The Federation of Light — two causes, not one
+
+The rite was correct all along. What was wrong sat either side of it:
+
+- **Nothing to put in order.** Every profile opened with `['crawler']`, one
+  Vigil machine. Two rites read the detachment as a **list** rather than a bag
+  — the Procession marches it in order, the Human draft rolls from it — and on
+  a list of one there is no order to see. A banner now brings its own lightest
+  soldier, derived from the roster: trooper, votary, chitling, cutter, stitch.
+- **The clock kept office hours.** `tickProcession` was gated on
+  `!this.waveRunning`, and `procTimer -= dt` sits *after* the gate — so between
+  waves it did not pause, it did not **tick**. Most of the nine-second cadence
+  was spent not counting. Measured: 25 bodies to wave 11 before, **63 after**.
+
+All five rites were then verified behaviourally, not read: Human drafts at
+random from the detachment; the Federation marches in order and compounds;
+the Brood leaves live incubators; the Lattice clones the **exact enemy killed**
+(crawler/blink/sprinter — not its own detachment); and the Pirates take **zero**
+free bodies from 78 kills, with power and econ genuinely uncapped.
+
+### The five skews
+
+Humanity and the Parallel already read correctly and were left alone. The other
+three each carried a single number that said nothing about how they play. They
+needed a new hook: `FACTIONS[x].apply` runs *before* any commander is seated and
+`Meta.applyTo` then does `side.traits = freshTraits()`, so anything written to
+traits was thrown away before the first wave — which is why every existing
+`apply()` writes mods. `applyLate` runs once every seat is filled and folded.
+
+### The board is the screen
+
+Immersive mode already did what was asked and was an opt-in toggle nobody
+found. It is the default now, and the right column is a visible layer over the
+board — not a drawer parked off the edge — fading only while you are placing.
+
+### What did not reproduce
+
+"The maps keep changing in the galaxy just from loading in/out." A galaxy is
+rebuilt from its seed on every load and generation proved pure across reloads
+and across a real saved campaign. Check **25.1** now asserts it — four powers ×
+four seeds, regenerated twice each, identical every time — so if it does drift,
+the sweep says so rather than a player noticing.
+
+### The simulation moved, and it is not being reported as neutral
+
+The fresh pin goes 23 waves / 28781 steps to 24 / 29415, and its outcome flips
+to a near-run loss with the rival on 2 lives. That is the skews and the fuller
+detachment doing what they were asked to do.
+
+Gates: **sweep 56 pass / 0 fail**, **MPT 37 pass / 0 fail**, NET_PROTOCOL 5.
