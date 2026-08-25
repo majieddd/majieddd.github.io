@@ -3193,6 +3193,60 @@ const UI = {
    * it, so opening one cannot move its neighbours: the grid measures slots,
    * and a slot never changes size.
    */
+  /**
+   * ONE collapsible group, shared by the tower origin arsenals and the unit
+   * allegiance groups (owner, Session 33): identical shape, one wrapper.
+   *
+   * `display: contents` on `.lo-group` is load-bearing, not decoration: the
+   * grid these groups sit in (`.loadout-grid`, style.css:362) places
+   * `.lo-family` and `.lo-slot` DIRECTLY as its own grid items so the header
+   * can span every column and the cards can flow across them. A plain wrapper
+   * div would become a single grid cell itself and break both; `contents`
+   * removes the wrapper from layout while keeping it as the DOM node collapse
+   * actually toggles.
+   *
+   * Collapse state lives on `this._loCollapsed`, keyed `kind:groupId`, because
+   * the grid's `innerHTML` is rebuilt from scratch on every render (a
+   * purchase, a pick, re-opening the screen) -- state baked into a class that
+   * gets thrown away with the markup would reset itself on the very next
+   * render a collapse was meant to survive.
+   */
+  pickerGroupHTML(kind, groupId, color, headHtml, cardsHtml) {
+    this._loCollapsed = this._loCollapsed || new Set();
+    const key = kind + ':' + groupId;
+    const collapsed = this._loCollapsed.has(key);
+    return `<div class="lo-group${collapsed ? ' collapsed' : ''}" data-group="${key}">
+        <button type="button" class="lo-family" data-collapse="${key}" style="--og:${color}"
+                aria-expanded="${collapsed ? 'false' : 'true'}">
+          ${headHtml}
+          <span class="lo-fam-chev" aria-hidden="true">&#9662;</span>
+        </button>
+        ${cardsHtml}
+      </div>`;
+  },
+
+  /**
+   * Wires the header buttons `pickerGroupHTML` just wrote. Toggles the one
+   * `.lo-group` the click belongs to and remembers the choice for the next
+   * render; nothing else in the grid is touched, so an open group two rows
+   * down does not jump when this one closes.
+   */
+  bindGroupCollapse(grid) {
+    if (!grid) return;
+    $$('.lo-family[data-collapse]', grid).forEach(btn => {
+      if (btn._collapseBound) return;
+      btn._collapseBound = true;
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.collapse;
+        const now = this._loCollapsed.has(key);
+        if (now) this._loCollapsed.delete(key); else this._loCollapsed.add(key);
+        const group = btn.closest('.lo-group');
+        if (group) group.classList.toggle('collapsed', !now);
+        btn.setAttribute('aria-expanded', now ? 'true' : 'false');
+      });
+    });
+  },
+
   loadoutCardHTML(id, sel) {
     const t = TOWER_TYPES[id];
     const el = ELEMENTS[t.element];
@@ -3793,18 +3847,19 @@ const UI = {
         <span class="lo-d-name"><b>${def.name}</b><span class="lo-role">${host.short || host.name}</span></span>
         ${tier ? `<span class="lo-d-cost">${tier.icon} ×${tier.count}</span>` : ''}
       </div>
-      ${/* The painted troop plate, on the screen where troops are CHOSEN.
-            Twenty of these were re-rendered specifically because the army art
-            did not match the commander portraits (ROADMAP 19.25) and then
-            appeared on exactly one surface: the once-ever NEW CONTACT dossier,
-            which only fires for bodies marching AT you -- so a player who
-            fielded a TROOPER every match could go a whole campaign without
-            seeing its painting. Same key namespace as the dossier (`foe_`,
-            units share the enemy registry) and the same artImg contract as
-            the tower panel above: '' for a key the pack has not got, so the
-            five machine soldiers show their procedural sprite and nothing
-            else until their pixels exist. */ ''}
-      ${artImg('foe_' + id, 'lo-d-art', def.name)}
+      ${/* THE PAINTED PLATE IS OFF, for units, for now (owner, Session 33).
+            Coverage had drifted to the opposite of the intent this comment
+            used to describe: measured, 54 of 54 enemy types now carry a
+            portrait against 11 of 60 towers, so towers read as consistently
+            icon-only while units read as consistently portrait-heavy -- the
+            reverse of "simple yet recognisable even with so many of them,"
+            which is the tower look the owner wants units to share. Suppressed
+            at the call site, not deleted from the pack: artImg already
+            returns '' for a key it has not got (the contract 46 tower slots
+            rely on right now), so this is the same no-art path, just chosen
+            rather than incomplete, and it comes back by restoring one line
+            if the pack ever earns a different treatment. */ ''}
+      ${''}
       <div class="lo-chips">
         <span class="lo-d-trait" style="--tc:${def.color}">${trait.label}</span>
         ${at >= 0 ? `<span class="lo-d-in">IN DETACHMENT · ${at + 1}</span>` : ''}
@@ -3959,11 +4014,11 @@ const UI = {
     grid.style.setProperty('--lo-rest-h', LO_CARD_REST_H + 'px');
     grid.innerHTML = ORIGIN_ORDER.filter(oid => byOrigin[oid]).map(oid => {
       const o = TOWER_ORIGINS[oid], n = byOrigin[oid].length;
-      return `<div class="lo-family" style="--og:${o.color}">
-          <span class="lo-fam-mark">${o.icon}</span><b>${o.name}</b>
+      const head = `<span class="lo-fam-mark">${o.icon}</span><b>${o.name}</b>
           <span class="lo-fam-rule">${o.rule}</span>
-          <span class="lo-fam-n">${n} ${n === 1 ? 'tower' : 'towers'}</span>
-        </div>` + byOrigin[oid].map(id => this.loadoutCardHTML(id, sel)).join('');
+          <span class="lo-fam-n">${n} ${n === 1 ? 'tower' : 'towers'}</span>`;
+      const cards = byOrigin[oid].map(id => this.loadoutCardHTML(id, sel)).join('');
+      return this.pickerGroupHTML('tower', oid, o.color, head, cards);
     }).join('') + (lockedCount
       ? `<div class="lo-locked-note">
            <b>${lockedCount} more ${lockedCount === 1 ? 'tower' : 'towers'} in the arsenal</b>
@@ -3984,6 +4039,7 @@ const UI = {
     if (owned.indexOf(f.tower) < 0) f.tower = sel[0] || owned[0] || null;
 
     this.bindPickerCards(grid, 'tower');
+    this.bindGroupCollapse(grid);
 
     const target = this.loadoutTarget();
     const count = $('#loadout-count');
@@ -4162,12 +4218,12 @@ const UI = {
     grid.innerHTML = order.filter(k => groups[k]).map(k => {
       const h = this.unitHost(groups[k][0]);
       const n = groups[k].length;
-      return `<div class="lo-family" style="--og:${h.color}">
-          <span class="lo-fam-mark">${h.icon}</span><b>${h.name}</b>
+      const head = `<span class="lo-fam-mark">${h.icon}</span><b>${h.name}</b>
           <span class="lo-fam-rule">${k === MACHINE_HOST.id ? 'NEUTRAL MACHINES' : 'SOLDIERS OF THIS POWER'}</span>
-          <span class="lo-fam-n">${n} ${n === 1 ? 'unit' : 'units'}</span>
-        </div>` + groups[k].map(id =>
+          <span class="lo-fam-n">${n} ${n === 1 ? 'unit' : 'units'}</span>`;
+      const cards = groups[k].map(id =>
           this.unitCardHTML(id, picked, unlocked.indexOf(id) >= 0)).join('');
+      return this.pickerGroupHTML('unit', k, h.color, head, cards);
     }).join('') + (gated.length
       ? `<div class="lo-locked-note">
            <b>${gated.length} ${gated.length === 1 ? 'unit belongs' : 'units belong'} to other powers</b>
@@ -4185,6 +4241,7 @@ const UI = {
     if (all.indexOf(f.unit) < 0) f.unit = picked[0] || unlocked[0] || all[0] || null;
 
     this.bindPickerCards(grid, 'unit');
+    this.bindGroupCollapse(grid);
 
     const count = $('#unit-count');
     if (count) {
@@ -5095,7 +5152,7 @@ const UI = {
           Math.round(doc.powerPerBuy * 100)}%${uncapped ? ' (no ceiling, by the MARQUE)' : ''}. Summoned bodies arrive at ${
           Math.round(MUSTER_DAMP * 100)}% and never rise again${earlyTxt}. ${ROLE_COPY[unitRole(base)]} ${
           uncapped ? 'Your ECON has no ceiling.' : 'ECON is flat additive, capped at +' + Math.round(capPct * 100) + '%.'}">
-        <span class="mu-ic">${tier.icon}</span>
+        <span class="mu-ic">${this.unitIconHTML(tier.type, 22)}</span>
         <span class="mu-rolemark" title="${unitRole(base)}">${ROLE_GLYPHS[unitRole(base)]}</span>
         <span class="mu-body"><b class="mu-n">${sent}×</b>
           <em class="mu-figs"><span class="mu-cost">◈${formatNum(cost)}</span>
@@ -5112,6 +5169,14 @@ const UI = {
         <em>${doc.noPurchase && !Game.noReanim ? 'NO TRADE'
               : uncapped ? 'NO CAP' : capped ? 'AT CAP' : left + ' left'}</em>
       </div>${doc.noPurchase && !Game.noReanim ? this.latticePlateHtml(S) : rows}`;
+    /* The muster row now paints the SUMMONED unit's own icon (owner, Session
+       33), not tier.icon's text glyph, matching towers' shop cards -- which
+       have painted their own icon here since the panel existed. Same
+       painter, same idempotent _painted guard, called every sync rather than
+       gated behind the mkey memo above so a canvas from a DIFFERENT
+       innerHTML build (a wave changed, a tier's cost moved) is never left
+       stale mid-DOM the way skipping this call would risk. */
+    this.paintUnitIcons(bar);
     this.bindChipTips(bar);
     /* The POWER chip opens the ledger the owner asked for -- every attribute
        that feeds this number, quoted at the value the spawn will read. Bound
@@ -6371,8 +6436,12 @@ const UI = {
       <p class="ei-eyebrow">NEW CONTACT. DOSSIER · ${
         def.faction && FACTIONS[def.faction] ? FACTIONS[def.faction].name : MACHINE_HOST.name}</p>
       <h2 class="ei-name" style="color:${def.color}">${def.name.toUpperCase()}</h2>
-      <div class="ei-stage-wrap ${art('foe_' + def.id) ? 'has-art' : ''}">
-        ${artImg('foe_' + def.id, 'ei-art', def.name)}
+      <!-- Portrait suppressed for units (owner, Session 33): see the matching
+           note beside the loadout dossier's lo-d-art call. has-art forced
+           false so the sprite gets the full-width layout the no-art path
+           already uses, rather than reserving a side-by-side slot for an
+           image that will never render. -->
+      <div class="ei-stage-wrap">
         <canvas class="ei-stage" width="240" height="120"></canvas>
       </div>
       <p class="ei-desc">${def.desc || ''}</p>

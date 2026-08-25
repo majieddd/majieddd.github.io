@@ -283,17 +283,23 @@
         <span class="bb-main"><b>⌂ BASE LEVEL <i id="bb-lvl">1</i></b><em id="bb-next">→ 2</em></span>
         <span class="bb-cost" id="bb-cost">◈ , </span>
       </button>
-      <div class="panel panel-grow"><div id="inspector"></div></div>
     </aside>
-    <!-- THE DOCK (owner, Session 31): the two PICKERS live along the bottom
-         edge, centre aligned: summon units on the left, towers on the right.
-         Same ids as before, so every renderer and binder is untouched; only
-         the ground under them moved. The rail above keeps the verbs that act
-         on the battle (rush, abilities, base) and the inspector. -->
+    <!-- THE DOCK (owner, Session 31; inspector centred into it, Session 33):
+         three panes along the bottom edge, centre aligned as a group: summon
+         units left, the description centred, towers right. #inspector kept
+         its id and moved whole, so renderInspector's cached this.el.inspector
+         reference and every id lookup inside it needed no change at all --
+         only where the element sits in the static markup moved. The rail
+         above now keeps only the verbs that act on the battle (rush,
+         abilities, base); the description is what the owner asked to centre
+         between the two pickers, not the buttons beside it. -->
     <div id="dock">
       <div class="dock-pane" id="dock-muster">
         <h2 class="section-label">DETACHMENT</h2>
         <div id="muster-bar" class="muster-bar"></div>
+      </div>
+      <div class="dock-pane" id="dock-inspector">
+        <div id="inspector"></div>
       </div>
       <div class="dock-pane" id="dock-shop">
         <h2 class="section-label">LOADOUT</h2>

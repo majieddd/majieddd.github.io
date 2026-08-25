@@ -1992,18 +1992,45 @@ body:not(.arena-field) .arena-ladder { display: none; }
    style.css (fixed .lo-slot, positioned .lo-card); what follows is the look of
    the two states and the motion between them. */
 
+/* GROUPS (owner, Session 33). `contents` takes the wrapper OUT of layout: the
+   grid it sits in (.loadout-grid, style.css:362) places .lo-family and
+   .lo-slot as its own direct items so the header can span every column and
+   the cards can flow across them, and a normal wrapper div would become one
+   grid cell itself and break both. The wrapper still exists in the DOM as
+   what collapse toggles a class on. */
+.lo-group { display: contents; }
+
 /* FAMILIES. Cards are ordered and coloured by TOWER_ORIGINS so the grid reads
-   as five arsenals rather than one undifferentiated list. */
+   as five arsenals rather than one undifferentiated list. Now a <button>, not
+   a <div>: it collapses its group on click. The reset undoes button chrome;
+   nothing else below changes the look a plain header already had. */
 .lo-family {
-  grid-column: 1 / -1; display: flex; align-items: baseline; gap: 9px;
+  grid-column: 1 / -1; display: flex; align-items: baseline; gap: 9px; width: 100%;
   margin: 8px 0 0; padding: 3px 2px 5px;
-  border-bottom: 1px solid color-mix(in srgb, var(--og) 38%, transparent);
+  border: none; border-bottom: 1px solid color-mix(in srgb, var(--og) 38%, transparent);
+  background: none; font: inherit; text-align: left; cursor: pointer;
+  border-radius: 0;
 }
-.lo-family:first-child { margin-top: 0; }
+.lo-family:hover { border-bottom-color: color-mix(in srgb, var(--og) 70%, transparent); }
+.lo-family:focus-visible { outline: 2px solid var(--og); outline-offset: -2px; }
+/* Was `.lo-family:first-child`, which matched every group's own header once
+   each sat inside its own .lo-group wrapper -- one nesting level deeper than
+   before -- and erased the gap between EVERY pair of groups, not just the
+   one before the very first. Selecting through the wrapper restores the
+   original rule: no top margin only on the first group in the grid. */
+.lo-group:first-child .lo-family { margin-top: 0; }
 .lo-family b { font-family: var(--display); font-size: 11.5px; letter-spacing: .2em; color: var(--og); }
 .lo-fam-mark { font-size: 13px; color: var(--og); line-height: 1; }
 .lo-fam-rule { font-size: 9.5px; letter-spacing: .16em; color: var(--text-mute); }
 .lo-fam-n { margin-left: auto; font-size: 10px; letter-spacing: .1em; color: var(--text-mute); }
+.lo-fam-chev { font-size: 10px; color: var(--text-mute); transition: transform .15s var(--e-tap, ease); }
+.lo-group.collapsed .lo-fam-chev { transform: rotate(-90deg); }
+
+/* THE COLLAPSE ITSELF. Equipped stays, everything else in the group hides:
+   the owner's spec exactly. :has() reads whether the card WITHIN a slot
+   carries .on, so this needs no JS beyond the class toggle bindGroupCollapse
+   already does. */
+.lo-group.collapsed .lo-slot:not(:has(.lo-card.on)) { display: none; }
 
 /* The resting origin mark: colour and glyph, no sentence. */
 .lo-og { display: inline-flex; align-items: center; gap: 4px; font-size: 9.5px;
@@ -2907,10 +2934,16 @@ body:not(.arena-field) .arena-ladder { display: none; }
                 color: var(--text-dim); }
 
 /* ═════════ 31.1  THE DOCK ════════════════════════════════════════════════
-   The two pickers along the bottom edge, centre aligned: units left, towers
-   right. Each pane is the same floating card the rest of the chrome wears.
-   Panes scroll INTERNALLY past 42vh, so a long shop can never push the dock
-   off screen or under the board edge. */
+   THREE panes now (owner, Session 33): units left, the description centred,
+   towers right. Same floating card chrome, same internal-scroll rule (a pane
+   scrolls past 42vh rather than pushing the dock off screen), plus the
+   change the owner actually asked for: units and towers were a SINGLE
+   COLUMN of four full-width rows, which is exactly why the dock ran tall
+   enough to need that 42vh ceiling in the first place. LOADOUT_SIZE and
+   MUSTER_LOADOUT_SIZE are both hard-capped at 4 (config.js:2468, game.js:3824,
+   "matched to LOADOUT_SIZE"), so 2 columns is not an arbitrary grid choice --
+   it is the exact shape of what a battle ever holds, four slots, no more,
+   ever. Two columns of two is the height of ONE row plus one, not four. */
 #dock {
   position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
   z-index: 20; display: flex; align-items: flex-end; gap: 12px;
@@ -2919,13 +2952,45 @@ body:not(.arena-field) .arena-ladder { display: none; }
 }
 #dock .dock-pane {
   pointer-events: auto;
-  width: 268px; max-height: 42vh; overflow-y: auto;
+  max-height: 42vh; overflow-y: auto;
   background: rgba(8, 13, 21, .82);
   backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
   padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px;
   box-shadow: 0 12px 36px rgba(0, 0, 0, .5);
 }
+/* Widened from the old single-column 268px: two cards side by side need more
+   than one card's width to read as cards rather than a squeeze. Measured
+   against the actual card content (icon, name, role/figures) rather than
+   guessed -- 152px per column is what a .tower-card's own padding and its
+   30px icon plus two lines of text ask for at this font size. */
+#dock-muster, #dock-shop { width: 328px; }
+/* The description holds the most varied content of the three (wave state,
+   attrition lore, a full tower's stat block) and no per-card grid to size
+   against, so it keeps the narrower width the sidebar version already
+   proved legible at, rather than a number invented for symmetry. Height is
+   trimmed below the shared 42vh: measured at 1600x900 next to the now much
+   shorter 2x2 grids either side of it, the full cap read as one dominant
+   pane between two small ones rather than three panes of a set. Internal
+   scroll still opens the rest, same as it did in the old sidebar. */
+/* #dock #dock-inspector, not the plain id: the shared rule above is
+   `#dock .dock-pane` (id + class, specificity 1-1-0), which outranks a bare
+   `#dock-inspector` (1-0-0) regardless of source order. Measured: the first
+   version of this rule changed nothing at all, still 378px (42vh) after
+   "trimming" to 34vh, because it never actually won the cascade. */
+#dock #dock-inspector { width: 300px; max-height: 34vh; }
 #dock .section-label { margin-bottom: 6px; }
+/* THE 2x2 GRID ITSELF. repeat(2, 1fr): exactly two columns, and with the
+   engine's own 4-item cap the two rows fall out for free, no third row a
+   taller board could ever produce. */
+.muster-bar, #shop-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+/* .muster-bar carries THREE possible header/summary rows above its actual
+   tier cards (engine-strip, muster-head, and lattice-plate as the doctrine
+   that replaces the cards outright), none of which are cards themselves.
+   Measured after the first pass at this grid: without this, muster-head
+   landed in a single half-width cell and wrapped its own text across four
+   lines rather than reading as the one-line strip it always was. #shop-list
+   has no equivalent row -- every child there already is a .tower-card. */
+.engine-strip, .muster-head, .lattice-plate { grid-column: 1 / -1; }
 /* Non-immersive: the stage is a flex row, so the dock needs its own ground. */
 #stage { position: relative; }
 /* The dock yields while a tower is being placed, exactly as the rail does:
