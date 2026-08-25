@@ -35,19 +35,79 @@ const ESC = '\\' + 'u2014';
 const FIX = process.argv.includes('--fix');
 const args = process.argv.slice(2).filter(a => !a.startsWith('--'));
 
+/* VENDORED, and therefore exempt. These trees are third-party text carried
+   verbatim so it can be cited and diffed against upstream. Rewriting a
+   thousand dashes through someone else's code samples is precisely the class
+   of whole-file normalisation that has corrupted this project twice. The
+   exemption is listed here so it is a stated decision rather than a silent
+   hole: everything NOT in this list is gated. */
+const VENDORED = ['skills/huashu-design'];
+
+function isVendored(p) {
+  const n = p.split(path.sep).join('/');
+  return VENDORED.some(v => n.indexOf(v) >= 0);
+}
+
+/* Walk a directory for the file kinds that carry prose or code. Markdown was
+   absent from this list until Session 31, which is why 190 em dashes sat in
+   the suite's own skill and agent files while this gate reported clean: it had
+   never been pointed at a single .md file. A gate that cannot see the majority
+   of what ships is not a gate. */
+const EXTS = ['.js', '.css', '.md', '.html', '.json'];
+function walk(dir, out) {
+  let entries;
+  try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (e) { return out; }
+  for (const e of entries) {
+    const f = path.join(dir, e.name);
+    if (e.isDirectory()) {
+      if (e.name === 'node_modules' || e.name === '.git') continue;
+      walk(f, out);
+      continue;
+    }
+    if (!EXTS.some(x => e.name.endsWith(x))) continue;
+    if (e.name === 'emdash.js' || e.name === 'artpack.js') continue;
+    if (isVendored(f)) continue;
+    out.push(f);
+  }
+  return out;
+}
+
 function defaultTargets() {
   const out = [];
   const add = (dir, filt) => {
     if (!fs.existsSync(dir)) return;
     for (const f of fs.readdirSync(dir)) if (filt(f)) out.push(path.posix.join(dir, f));
   };
+  /* the game repo's shape, kept so existing invocations behave identically */
   add('js', f => f.endsWith('.js') && f !== 'artpack.js');
   add('css', f => f.endsWith('.css'));
   add('tools', f => f.endsWith('.js') && f !== 'emdash.js');
   if (fs.existsSync('index.html')) out.push('index.html');
+  /* ...and, when run somewhere that is NOT the game repo, everything else that
+     ships. Without this, running the gate from the suite scanned tools/*.js and
+     reported "0 files" as though it had passed. */
+  /* ...and then EVERYTHING ELSE that ships, always. This used to be guarded by
+     `if (!out.length || !fs.existsSync('js'))`, which meant the guard was false
+     in the one repo it most needed to be true in: TowerDefense HAS a js/
+     directory, so the legacy branch won, walk() never ran, and the gate
+     reported clean while ~2,000 dashes sat in that repo's markdown. A gate
+     whose coverage depends on which directory it happens to be standing in is
+     not a gate. walk() skips anything already collected, so the legacy list
+     above is now just an ordering preference, not a coverage decision. */
+  const seen = new Set(out.map(f => path.resolve(f)));
+  const rest = [];
+  walk('.', rest);
+  for (const f of rest) if (!seen.has(path.resolve(f))) out.push(f);
   return out;
 }
-const targets = args.length ? args : defaultTargets();
+
+/* A directory argument means "walk it", not "read it as a file". */
+const expanded = [];
+for (const a of args) {
+  try { if (fs.statSync(a).isDirectory()) { walk(a, expanded); continue; } } catch (e) {}
+  expanded.push(a);
+}
+const targets = expanded.length ? expanded : defaultTargets();
 
 function countIn(s) {
   let n = 0;

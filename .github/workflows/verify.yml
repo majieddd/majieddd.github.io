@@ -24,6 +24,21 @@ jobs:
           done
           exit $fail
 
+      # css/polish.css once shipped three literal NUL bytes: a CSS escape for the
+      # middot (backslash, zero, b, seven) whose BACKSLASH became a NUL, so the hint
+      # rendered "pan <U+FFFD>b7 scroll to zoom" to players. It survived a whole
+      # session because no gate looked at bytes, and grep hid it by classifying
+      # the file as binary. This runs before the build so a corrupt source can
+      # never be inlined into the artifact.
+      - name: No bad bytes in anything that ships
+        run: node tools/bytegate.js .
+
+      # The style rule is absolute, and the gate used to scan only js/css/tools,
+      # missing build.js at the repo root and every markdown file in the tree.
+      - name: No em dashes in code
+        run: |
+          node tools/emdash.js js css tools build.js index.html
+
       - name: The bundle builds
         run: node build.js
 

@@ -14,7 +14,7 @@ const js   = ['artpack', 'config', 'factions', 'towers2', 'abilities', 'roster',
 
 /* The replacement text is passed as a FUNCTION on purpose. A plain string
    would let `$$`, `$&`, `` $` `` and `$'` inside the source be interpreted as
-   replacement patterns — which silently rewrote `const $$ =` to `const $ =`
+   replacement patterns, which silently rewrote `const $$ =` to `const $ =`
    and produced a duplicate-declaration SyntaxError. */
 const out = html
   .replace(/<link rel="stylesheet" href="css\/style\.css">\s*<link rel="stylesheet" href="css\/polish\.css">/, () =>
@@ -23,7 +23,7 @@ const out = html
            `<script>\n${js}\n</script>`);
 
 if (out.includes('<script src=') || out.includes('stylesheet')) {
-  console.error('Bundle still references external files — aborting.');
+  console.error('Bundle still references external files, aborting.');
   process.exit(1);
 }
 
@@ -47,7 +47,7 @@ const inner = out
 const withCharset = '<meta charset="utf-8">' + inner;
 
 if (/<\/?(html|head|body)\b/i.test(inner) || /<!DOCTYPE/i.test(inner)) {
-  console.error('Artifact variant still contains document-level tags — aborting.');
+  console.error('Artifact variant still contains document-level tags, aborting.');
   process.exit(1);
 }
 fs.writeFileSync(path.join(here, 'aegis-artifact.html'), withCharset);

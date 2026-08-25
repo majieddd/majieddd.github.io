@@ -801,6 +801,27 @@ const UI = {
       });
       el.addEventListener('mousemove', ev => this.moveTooltip(ev));
       el.addEventListener('mouseleave', () => this.hideTooltip());
+
+      /* A KEYBOARD REACHES THESE TOO. Every chip in the game carried mouse and
+         touch paths and nothing else, so a tooltip was the one class of content
+         a keyboard user could not read at all. It stopped being cosmetic when
+         the map's measurements moved OUT of the flow and into a data-tt: that
+         made hover the only route to a fact that used to be printed on screen.
+
+         The element needs to be focusable before focus can fire, and only ones
+         that are not already in the tab order get a tabindex, so real controls
+         keep the ordering they were authored with. moveTooltip already handles
+         a coordinate-less event (a FocusEvent has none) by falling back to the
+         element's own box, which is why passing `ev` straight through works. */
+      if (!el.hasAttribute('tabindex') &&
+          !/^(a|button|input|select|textarea)$/i.test(el.tagName))
+        el.setAttribute('tabindex', '0');
+      el.addEventListener('focus', ev => {
+        const parts = (el.dataset.tt || '').split('|');
+        this.showTooltip(ev, `<div class="tt-head">${parts[0]}</div><p class="tt-desc">${parts[1] || ''}</p>`);
+      });
+      el.addEventListener('blur', () => this.hideTooltip());
+
       /* Coarse pointers have no hover: first tap shows the briefing, a second
          tap (or tapping elsewhere) dismisses it. */
       el.addEventListener('click', ev => {
@@ -3039,8 +3060,15 @@ const UI = {
     const pad = MAP_PV_PAD;
     const svg = '<svg class="pv-svg" viewBox="' + q(-pad) + ' ' + q(-pad) + ' ' +
       q(cols + pad * 2) + ' ' + q(rows + pad * 2) + '" preserveAspectRatio="xMidYMid meet" ' +
+      /* The buildable count is in scope as `own` and used to reach a sighted
+         player through the caption under the picture. That caption is now a
+         hover tooltip, so this label is the only route left to it and had to
+         carry it. Lanes are stated per side to match the caption's wording
+         rather than inventing a second way to count the same thing. */
       'role="img" aria-label="' + m.name + ' battlefield: ' + cols + ' by ' + rows +
-      ' tiles, ' + seats + ' seats, ' + lanes.length + ' lanes">' + g.join('') + '</svg>';
+      ' tiles, ' + seats + ' seats, ' + f.lanes[0].length +
+      (f.lanes[0].length === 1 ? ' lane' : ' lanes') + ' a side, ' +
+      own + ' buildable tiles">' + g.join('') + '</svg>';
 
     return { svg: svg, field: f, cols: cols, rows: rows, seats: seats,
              lanes: lanes.length, perSide: f.lanes[0].length, ground: own,
