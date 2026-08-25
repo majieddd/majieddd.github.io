@@ -24,6 +24,17 @@ const CONTESTED_PER_SYSTEM = 2;
 /* Every three-way board, in MAPS order. Derived rather than listed, so a new
    tri map joins the rotation simply by existing. */
 const TRI_MAP_IDS = MAPS.filter(m => m.tri).map(m => m.id);
+/* The four kind-keyed boons, cycled one per system so a single galaxy pays a
+   different one each time and the last system pays the apex. Deliberately its
+   own table rather than a read of WORLD_KINDS: the ORDER is the guarantee,
+   and a weighted kind roll cannot make one. */
+const RENEGADE_BOON_KINDS = ['standard', 'fortress', 'forge', 'nest'];
+/* The one-of-each promise only holds while there is a system for each kind
+   plus one for the apex. Stated here so moving SYSTEMS_PER_GALAXY cannot
+   silently degrade it. */
+if (RENEGADE_BOON_KINDS.length + 1 !== SYSTEMS_PER_GALAXY)
+  console.warn('RENEGADE: ' + SYSTEMS_PER_GALAXY + ' systems cannot pay all ' +
+               (RENEGADE_BOON_KINDS.length + 1) + ' own-power boons in one galaxy.');
 
 /** Small deterministic PRNG so a seed always yields the same galaxy.
 
@@ -236,8 +247,8 @@ function generateGalaxy(seed, playerFaction) {
        construction (rivalFactionsOf), every world owner is drawn from it or
        from `raider`, and boonFor filters `b.f === owner` — so playing human,
        the five human boons were dead data in every galaxy ever generated.
-       Five of the twenty-five, unreachable by construction rather than by
-       design.
+       Five of the TWENTY (four powers, five each), unreachable by
+       construction rather than by design.
 
        A splinter of your own power holds this one and will not stand down.
        Taking it back is how you carry your own power's advantage forward, and
@@ -251,21 +262,45 @@ function generateGalaxy(seed, playerFaction) {
        exactly as the contested block above derives its two, because
        galaxy.js's standing rule is that the draw sequence must never move or
        every saved galaxy's maps, arenas and boons shift underneath its owner.
-       The kind is left alone for the same reason it matters — a world's kind
-       drives its garrison — so which of the four kind-keyed boons a renegade
-       pays varies with the galaxy, and the APEX falls on the last system,
-       where a run that goes the distance is the thing being paid for. */
+       Measured over 4 powers x 40 seeds: every non-renegade field is
+       byte-identical. */
     {
+      /* THE PARALLEL HOLDS NO WORLDS AND OWNS NO BOONS. BOONS has twenty
+         entries across the four powers that fight over the galaxy and none
+         for the machines, so a renegade world on a Parallel profile would pay
+         a fallback boon belonging to somebody else — and worldBossOf would
+         seat a MACHINE commander behind it, spoiling the secret faction to a
+         player who has only just unlocked it. No splinter for a power that
+         holds nothing. */
+      const hasOwnBoons = typeof BOONS !== 'undefined' &&
+                          BOONS.some(b => b.f === playerFaction);
       /* Never the seat, never the two opening worlds, and never a world the
          contested block already took: those slots are 2+(si%2) and 4+(si%2),
          so 3+(si%2) always threads between them and 6 is the seat. */
       const pick = 3 + (si % 2);
-      const w = worlds[pick];
+      const w = hasOwnBoons ? worlds[pick] : null;
       if (w && !w.seat && !w.contested) {
         w.owner = playerFaction;
         w.renegade = true;
-        w.boon = boonFor(playerFaction, w.kind,
-                         si === SYSTEMS_PER_GALAXY - 1, 0).id;
+        /* THE BOON KEY IS NOT THE WORLD'S KIND, and that distinction is the
+           whole of O1 being delivered rather than merely attempted.
+
+           Reading the world's own rolled kind looked right and is not: the
+           kinds are weighted (standard 58, fortress 16, forge 12, nest 14),
+           so four independent draws land all four kind-keyed boons in only
+           about 4% of galaxies — 2.3 of 4 on average. Five own boons would
+           have been "reachable" in the sense that a long enough sequence of
+           runs eventually shows them, which is not what was asked for.
+
+           Cycling the key by system index pays a DIFFERENT one of the four in
+           every galaxy, and the last system pays the APEX — so all five are
+           reachable in every single run. The world's own `kind` is left
+           untouched: it is the world's identity, it drives the briefing card
+           and the garrison rules, and a fortress that calls itself a forge to
+           move a boon would be a lie on the card to save a line here. */
+        const bk = RENEGADE_BOON_KINDS[si % RENEGADE_BOON_KINDS.length];
+        const apex = si === SYSTEMS_PER_GALAXY - 1;
+        w.boon = boonFor(playerFaction, apex ? w.kind : bk, apex, 0).id;
       }
     }
 
@@ -576,6 +611,7 @@ const GX_STATE_LABEL = {
   contested: 'contested',
   seat:      'commander seat',
   locked:    'sealed',
+  renegade:  'your own splinter',
   held:      'held'
 };
 
@@ -603,6 +639,12 @@ function worldAllegiance(galaxy, system, world, progress) {
               : stars > 0 ? 'foothold'
               : world.seat ? 'seat'
               : world.contested ? 'contested'
+              /* A RENEGADE world flies your own colour and is NOT yours, so
+                 'held' -- the word for ground a rival holds -- was the one
+                 label that could not be right. It sits below seat and
+                 contested because those describe the FIGHT and this describes
+                 the holder. */
+              : world.renegade ? 'renegade'
               : 'held';
   return {
     stars, claimed, open, state,
@@ -614,7 +656,11 @@ function worldAllegiance(galaxy, system, world, progress) {
     /* Contested is a fight between two OTHER powers. Once the world is yours
        there is no fight left to advertise, and leaving the split ring up made
        a conquered world read as still up for grabs. */
-    contested: !!world.contested && !claimed
+    contested: !!world.contested && !claimed,
+    /* Same rule as `contested` directly above, and for the same reason: once
+       the world is yours the splinter is gone, and a conquered world must not
+       keep wearing the mark of a fight that is over. */
+    renegade: !!world.renegade && !claimed
   };
 }
 

@@ -2353,8 +2353,7 @@ body:not(.arena-field) .arena-ladder { display: none; }
    YOUR tint, so without a mark of its own it reads as already conquered —
    which is the one thing it must never read as. A dashed ring says
    "contested from within" without inventing a sixth palette. */
-.gx-world.renegade circle,
-.gx-world.renegade .gx-disc {
+.gx-world.renegade .gx-ring {
   stroke-dasharray: 2 1.6;
   stroke-width: 0.55;
   opacity: 0.95;

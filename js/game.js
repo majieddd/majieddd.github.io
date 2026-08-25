@@ -487,6 +487,18 @@ const Game = {
       this.hpEase = flatten ? (TIER0_HP_EASE[si] || 0) : 0;
       this.rosterIntroEvery = flatten ? (TIER0_INTRO_EVERY[si] || ROSTER_INTRO_EVERY) : ROSTER_INTRO_EVERY;
       this.minibossDelayWaves = flatten ? (TIER0_MINIBOSS_DELAY[si] || 0) : 0;
+      /* THE RIVAL'S TACTIC TIER (owner call O3), resolved from OPTIONS on the
+         same safety property as the ramp above: a battle that passes no system
+         index is not a campaign battle, and gets AI_TIER_BASELINE -- which IS
+         the rival every skirmish, Maelstrom, duel and balance pin has always
+         faced. Only a campaign node moves this, so nothing outside the
+         campaign changes and the pins stay comparable to their own history. */
+      this.aiTier = (si === null || this._skirmish) ? AI_TIER_BASELINE
+        : (AI_TIER_STEPS[Math.min(AI_TIER_STEPS.length - 1,
+                                  (this.galaxyTier || 0) * SYSTEMS_PER_GALAXY + si)]);
+      /* Bounded so a hand-built save or a future galaxy shape can never hand
+         the brain a tier the ladder has no rung for. */
+      if (!(this.aiTier >= 0)) this.aiTier = AI_TIER_BASELINE;
     }
     if (this.isSeatBattle) rivalTech = 18;
     Meta.applyToAI(this.sides[1], rival.id, rivalTech);

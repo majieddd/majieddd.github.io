@@ -532,6 +532,14 @@ const Meta = {
     for (const sys of gx.systems)
       for (const w of sys.worlds) {
         const f = owners[w.id];
+        /* NEVER over a RENEGADE world. Its owner IS the player's own power by
+           construction, and a banked take from a save written before renegade
+           worlds existed would stamp a rival on top while `renegade` stayed
+           true -- a world flying a rival's colours that still pays your own
+           power's boon and fields your own troops. The splinter is not
+           somebody a rival can conquer; it is the reason the world is on the
+           map. */
+        if (w.renegade) continue;
         if (f && FACTIONS[f] && f !== w.owner) { w.owner = f; n++; }
       }
     return n;

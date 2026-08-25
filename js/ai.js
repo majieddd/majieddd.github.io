@@ -26,9 +26,33 @@ const AI = {
   think: 0, ready: false, patience: 0,
   lastProfile: null,
 
+  /** THE TACTIC LADDER (owner call O3). One reader, so no decision site can
+      invent its own idea of how far along the campaign the player is.
+      Defaults to the baseline rather than to zero: a brain running against a
+      Game that has no tier -- a harness, an older save path -- must behave
+      like today's rival, never like the opening-galaxy one. */
+  tier() {
+    const t = (typeof Game !== 'undefined') ? Game.aiTier : undefined;
+    return (typeof t === 'number' && t >= 0) ? t
+         : (typeof AI_TIER_BASELINE === 'number' ? AI_TIER_BASELINE : 2);
+  },
+  can(tactic) {
+    switch (tactic) {
+      case 'clear':    case 'enrage':   return this.tier() >= 1;
+      case 'relocate':                  return this.tier() >= 2;
+      case 'retarget':                  return this.tier() >= 3;
+      case 'sell':                      return this.tier() >= 4;
+      /* build, upgrade, baselevel and muster are the floor: a rival that
+         cannot do these is not a rival. */
+      default:                          return true;
+    }
+  },
+
   init(side, diff) {
     this.side = side;
     this.diff = diff;
+    this.retargetT = 0;
+    this.sold = 0;
     this.think = 1.2;
     this.patience = 0;
     this.ready = false;
@@ -791,7 +815,8 @@ const AI = {
           if (uplift >= AI_CLEAR_MIN_UPLIFT) {
             const value = refValue * uplift * AI_CLEAR_OPTION_VALUE;
             const cscore = value / cost;
-            if (cscore > 0) consider({ kind: 'clear', gx: cand.gx, gy: cand.gy, cost, score: cscore });
+            if (cscore > 0 && this.can('clear'))
+              consider({ kind: 'clear', gx: cand.gx, gy: cand.gy, cost, score: cscore });
           }
         }
       }
@@ -820,7 +845,8 @@ const AI = {
           const eff = this.effectiveness(t.def, t.stats, t.estimateDps(), prof);
           const value = eff * (there / Math.max(1, here) - 1) * AI_RELOCATE_DOWNTIME;
           const rscore = value / cost;
-          if (rscore > 0) consider({ kind: 'relocate', tower: t, spot: dest, cost, score: rscore });
+          if (rscore > 0 && this.can('relocate'))
+            consider({ kind: 'relocate', tower: t, spot: dest, cost, score: rscore });
         }
       }
     }
@@ -853,7 +879,7 @@ const AI = {
         }
         const value = payout * ENRAGE_BOUNTY * AI_ENRAGE_INCOME_WEIGHT * this.diff.aiEcon;
         const escore = value / cost;
-        if (escore > 0) consider({ kind: 'enrage', cost, score: escore });
+        if (escore > 0 && this.can('enrage')) consider({ kind: 'enrage', cost, score: escore });
       }
     }
 
@@ -1046,6 +1072,12 @@ const AI = {
     /* Abilities run on their own clock: they answer a wave, not a purchase. */
     this.commandAbilities(dt, game);
 
+    /* RE-AIMING runs on its own slow clock too, and BEFORE the think gate:
+       it spends no gold, so it has no business waiting on a deliberation the
+       rival may be too poor to act on. Inert below tier 3, so every battle
+       outside the campaign behaves exactly as it did. */
+    if (this.can('retarget') && this.lastProfile) this.retargetPass(dt, this.lastProfile);
+
     this.think -= dt;
     if (this.think > 0) return;
     /* Weaker opponents deliberate longer, so they fall behind on tempo. */
@@ -1058,6 +1090,23 @@ const AI = {
     /* Keep a war chest during a fight; spend freely during the prep window. */
     const reserveFrac = game.waveRunning ? 0.18 : 0.0;
     const spendable = S.gold * (1 - reserveFrac);
+
+    /* CUTTING A DEAD TOWER (tier 4). Considered before the buy, because the
+       sale is what funds the replacement -- and only when the rival has
+       nothing it would rather do with the gold it already holds, so a healthy
+       board is never disturbed. */
+    if (this.can('sell')) {
+      const dud = this.sellCandidate(prof);
+      if (dud) {
+        game.sell(dud);
+        this.sold = (this.sold || 0) + 1;
+        /* The tile is free ground again the moment the tower leaves it, and a
+           stale spot list is how the rival ends up refusing to build on
+           ground it just cleared itself. */
+        this.buildSpots();
+        return;
+      }
+    }
 
     const { best, dream } = this.bestAction(prof);
     if (!best || best.cost > spendable) return;
@@ -1166,13 +1215,132 @@ const AI = {
 
   /** Sensible per-archetype targeting, the way a good player would set it. */
   setTargeting(t) {
-    switch (t.type) {
-      case 'railgun': case 'prism': t.targetMode = 'strong'; break;
-      case 'toxin':   t.targetMode = 'strong'; break;
-      case 'tether':  t.targetMode = 'first';  break;
-      case 'arc': case 'pyre': t.targetMode = 'close'; break;
-      default: t.targetMode = 'first';
+    /* One table, read from two places. It used to live only here, so the
+       re-aiming pass would have had to keep a second copy of it. */
+    t.targetMode = this.baseAimFor(t);
+  },
+
+  /**
+   * RE-AIMING (tier 3). setTargeting above runs ONCE, at the moment a tower is
+   * built, off a hard-coded switch on the tower's type -- so the rival picked
+   * its aim before it had ever seen the wave it would face, and then never
+   * looked again for the rest of the battle. A board that is right for a
+   * swarm is wrong for a single armoured boss, and the rival held the swarm
+   * answer either way.
+   *
+   * This re-points guns against the LIVE threat profile. It costs nothing and
+   * changes no gold, so it is not an `action` competing in the scorer -- it
+   * runs on its own slow clock beside the deliberation.
+   *
+   * Support towers, ORISON and anything the player cannot re-aim by hand are
+   * skipped: ui.js hides the targeting control for exactly those, and a rival
+   * doing what the player is forbidden to do is not difficulty, it is an
+   * asymmetry.
+   */
+  retargetPass(dt, prof) {
+    if (!this.can('retarget')) return 0;
+    this.retargetT = (this.retargetT || 0) - dt;
+    if (this.retargetT > 0) return 0;
+    this.retargetT = AI_RETARGET_EVERY;
+    let moved = 0;
+    for (const t of this.side.towers) {
+      if (t.isSupport || !t.def || t.def.attack === 'orison' || t.def.attack === 'depot' ||
+          t.def.attack === 'vigil') continue;
+      const want = this.aimFor(t, prof);
+      if (want && t.targetMode !== want) { t.targetMode = want; moved++; }
     }
+    return moved;
+  },
+
+  /** What this tower SHOULD be pointed at, given what is actually coming.
+      The type switch in setTargeting is kept as the floor -- it encodes real
+      knowledge about each gun -- and the profile only overrides it where the
+      wave makes a clearly better answer available. */
+  aimFor(t, prof) {
+    /* CONSERVATIVE ON PURPOSE, and it took a measurement to learn why.
+       ────────────────────────────────────────────────────────────────
+       The first version of this reasoned freely from the threat profile:
+       swarm -> 'close' or 'weak', armour -> 'strong', splash -> 'first', and
+       so on. Run head to head against the baseline rival on the same seed in
+       the same session, it made the rival WORSE -- on seed 1001 a baseline
+       rival won with 17 lives standing and the re-aiming rival lost outright,
+       at tier 3, with selling not yet unlocked. So it was the aiming.
+
+       Two reasons, both of which were written down in config.js before I
+       started. TARGET_MODES calls FIRST "the default, and usually correct",
+       and it is: the enemy nearest your base is the one about to cost you a
+       life. And WEAK "maximises kills and reanimation output" -- an OFFENSIVE
+       property. Spending a defensive board on whatever is already dying is
+       how a board that was holding stops holding.
+
+       So the profile now only speaks where it has something the build-time
+       switch cannot know, and 'weak' is never chosen at all. Everything else
+       keeps the aim the tower was built with. */
+    const s = t.stats || {};
+    /* A BOSS is the one case a fixed switch genuinely cannot answer, because
+       it is a property of the wave rather than of the tower. A slow, heavy gun
+       is worth spending on the biggest thing on the field; everything else is
+       still better off holding the line. */
+    if (prof.boss) {
+      const heavy = (s.damage || 0) >= 90 && (s.rate || 1) <= 0.75;
+      if (heavy && !(t.effSplash > 0.9)) return 'strong';
+    }
+    return this.baseAimFor(t);
+  },
+
+  /** The build-time switch, factored out so re-aiming can fall back to it
+      rather than keeping a second copy that would drift. */
+  baseAimFor(t) {
+    switch (t.type) {
+      case 'railgun': case 'prism': return 'strong';
+      case 'toxin':   return 'strong';
+      case 'tether':  return 'first';
+      case 'arc': case 'pyre': return 'close';
+      default: return 'first';
+    }
+  },
+
+  /**
+   * SELLING (tier 4). The rival could never cut a tower, so an opening it
+   * regretted was permanent -- relocation moves a good tower to better ground,
+   * but nothing answered a tower that was simply the wrong tower.
+   *
+   * Deliberately hard to trigger. It must be late enough that the board has
+   * settled, the tower must be earning a small fraction of what its neighbours
+   * earn, it must not be worth upgrading instead, and there is a hard cap per
+   * battle -- a rival that sells freely thrashes, and thrashing reads as a bug
+   * rather than as judgement.
+   */
+  sellCandidate(prof) {
+    if (!this.can('sell')) return null;
+    if (Game.wave < AI_SELL_MIN_WAVE) return null;
+    if ((this.sold || 0) >= AI_SELL_MAX) return null;
+    const S = this.side;
+    if (S.towers.length < 4) return null;   /* never cut into a thin board */
+    let sum = 0, n = 0;
+    const val = [];
+    for (const t of S.towers) {
+      if (t.isSupport) continue;            /* support earns off the ledger */
+      const e = this.effectiveness(t.def, t.stats, t.estimateDps(), prof) *
+                this.covMul(this.coverage(t.x, t.y, t.effRange));
+      val.push({ t: t, e: e }); sum += e; n++;
+    }
+    if (n < 3) return null;
+    const mean = sum / n;
+    if (!(mean > 0)) return null;
+    let worst = null;
+    for (const v of val) if (!worst || v.e < worst.e) worst = v;
+    if (!worst || worst.e >= mean * AI_SELL_SHARE) return null;
+    /* If the same gold would fix it by upgrading, that is the better move and
+       the scorer will already have found it -- do not cut what is about to
+       come good. */
+    const next = worst.t.nextUpgrade();
+    if (next) {
+      const before = worst.t.isSupport ? 0
+        : this.effectiveness(worst.t.def, worst.t.stats, worst.t.estimateDps(), prof);
+      if (this.projectedUpgrade(worst.t, next, prof) > before * 1.6) return null;
+    }
+    return worst.t;
   },
 
   /* ----------------------------------------------------------- upgrades */

@@ -1992,8 +1992,13 @@ const UI = {
         const wr2 = w.seat ? 2.7 : 2.0;
         /* A RENEGADE world flies your own colours and is not yours, so it
            needs a mark of its own or the map reads as ground already taken. */
+        /* Through the allegiance call like every other piece of this node's
+           presentation, so the paint, the class list and the accessible name
+           stay ONE decision -- and so a conquered renegade world stops wearing
+           the mark, exactly as a conquered contested world does. */
+        const ral = worldAllegiance(gx, sys, w, prog);
         const cls = ['gx-world', 'open', w.seat ? 'seat' : '',
-                     w.renegade ? 'renegade' : '',
+                     ral.renegade ? 'renegade' : '',
                      planetArtFor(w) ? 'has-planet' : ''].join(' ');
         svg.push(`<g class="${cls}" data-mv="${w.id}" style="--fc:${of.color}" tabindex="0"
                    role="button" aria-label="${w.name}, ${of.short}">`);
@@ -2623,7 +2628,12 @@ const UI = {
     const holder = mine ? gx.playerFaction : w.owner;
     const plate = artImg('world_' + w.map + '_' + holder, 'br-art', w.name)
                || artImg('world_' + w.map, 'br-art', w.name);
-    return `<div class="brief ${inline ? 'inline' : ''} ${plate ? 'has-art' : ''}">
+    /* --fc on the ROOT, not only on the plate. `.br-renegade` reads it and is
+       a SIBLING of `.br-plate`, so every one of its three var(--fc) uses was
+       resolving to the grey fallback -- the panel rendered the same colour for
+       all four powers, which is the one thing a faction tint exists not to
+       do. Harmless to the plate, which keeps its own. */
+    return `<div class="brief ${inline ? 'inline' : ''} ${plate ? 'has-art' : ''}" style="--fc:${of.color}">
       ${plate ? `<div class="br-plate" style="--fc:${of.color}">${plate}</div>` : ''}
       <div class="br-head"><b>${w.name}</b>
         <span class="tag" style="color:${of.color}">${

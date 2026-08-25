@@ -917,6 +917,116 @@
        : 'every tower scores a positive upgrade; no utility upgrade outranks BOLT at ' + bolt.toFixed(2));
   });
 
+  /* ---- 24.1 the renegade world pays every own-power boon --------------- */
+  T('24.1 all five of your OWN power boons are reachable in one galaxy', function () {
+    if (typeof generateGalaxy !== 'function' || typeof BOONS === 'undefined') {
+      skip('24.1 all five of your OWN power boons are reachable in one galaxy', 'no galaxy generator');
+      return;
+    }
+    const bad = [];
+    ['human', 'light', 'xeno', 'pirate'].forEach(function (fac) {
+      const want = BOONS.filter(function (b) { return b.f === fac; }).length;
+      for (let seed = 1; seed <= 6; seed++) {
+        const g = generateGalaxy(seed, fac);
+        const got = {};
+        let ren = 0;
+        g.systems.forEach(function (sys) {
+          sys.worlds.forEach(function (w) {
+            if (!w.renegade) return;
+            ren++;
+            if (w.owner !== fac) bad.push(fac + ' seed' + seed + ': renegade owned by ' + w.owner);
+            got[w.boon] = 1;
+          });
+        });
+        const n = Object.keys(got).length;
+        if (n !== want) bad.push(fac + ' seed' + seed + ': ' + n + '/' + want + ' own boons');
+        if (ren !== SYSTEMS_PER_GALAXY) bad.push(fac + ' seed' + seed + ': ' + ren + ' renegade worlds');
+      }
+    });
+    ok('24.1 all five of your OWN power boons are reachable in one galaxy',
+       bad.length === 0,
+       bad.length ? bad.slice(0, 3).join('; ')
+       : 'four powers x six seeds: every galaxy pays all five, one renegade world per system');
+  });
+
+  /* ---- 24.2 the Parallel gets no splinter ------------------------------ */
+  T('24.2 THE PARALLEL has no renegade world and no own-power boon', function () {
+    if (typeof generateGalaxy !== 'function') { skip('24.2 THE PARALLEL has no renegade world and no own-power boon', 'no generator'); return; }
+    let ren = 0;
+    for (let seed = 1; seed <= 6; seed++) {
+      const g = generateGalaxy(seed, 'robot');
+      g.systems.forEach(function (sys) { sys.worlds.forEach(function (w) { if (w.renegade) ren++; }); });
+    }
+    const machineBoons = BOONS.filter(function (b) { return b.f === 'robot'; }).length;
+    ok('24.2 THE PARALLEL has no renegade world and no own-power boon',
+       ren === 0 && machineBoons === 0,
+       ren + ' renegade worlds over six machine galaxies, ' + machineBoons + ' machine boons — ' +
+       'a splinter would pay another power advantage and seat a machine commander behind it');
+  });
+
+  /* ---- 24.3 the standing order reaches every way of starting a battle -- */
+  T('24.3 EQUIP is obeyed by all three battle paths', function () {
+    if (typeof UI === 'undefined' || typeof UI.battleCommander !== 'function') {
+      ok('24.3 EQUIP is obeyed by all three battle paths', false, 'UI.battleCommander is missing');
+      return;
+    }
+    /* A PURE read: Meta is stubbed and restored, nothing is written to the
+       profile and no battle is started. A sweep that equips a commander to
+       test equipping would edit the player save to do it. */
+    const realEq = Meta.equipped, realUn = Meta.isCommanderUnlocked, realFac = Meta.faction;
+    let withEquip, withoutEquip;
+    try {
+      Meta.isCommanderUnlocked = function () { return true; };
+      Meta.faction = function () { return 'human'; };
+      Meta.equipped = function () { return 'sevra'; };
+      withEquip = UI.battleCommander();
+      Meta.equipped = function () { return null; };
+      withoutEquip = UI.battleCommander();
+    } finally {
+      Meta.equipped = realEq; Meta.isCommanderUnlocked = realUn; Meta.faction = realFac;
+    }
+    /* And the three launchers must all READ it rather than substituting. */
+    const src = String(UI.deploy || '') + String(UI.bindMpFooter || '') + String(UI.startMaelstrom || '');
+    const uiAll = Object.keys(UI).map(function (k) {
+      return typeof UI[k] === 'function' ? String(UI[k]) : '';
+    }).join('');
+    const calls = (uiAll.match(/battleCommander\(\)/g) || []).length;
+    ok('24.3 EQUIP is obeyed by all three battle paths',
+       withEquip === 'sevra' && withoutEquip !== 'sevra' && calls >= 3,
+       'equipped -> ' + withEquip + ', unequipped -> ' + withoutEquip +
+       ', battleCommander() read at ' + calls + ' launch sites');
+  });
+
+  /* ---- 24.4 the rival's tactic ladder ---------------------------------- */
+  T('24.4 the tactic ladder leaves every non-campaign battle at the baseline', function () {
+    if (typeof AI_TIER_BASELINE === 'undefined') {
+      ok('24.4 the tactic ladder leaves every non-campaign battle at the baseline', false, 'ladder constants missing');
+      return;
+    }
+    const seen = {};
+    Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+    seen.plain = Game.aiTier;
+    Game.start({ map: 'spine', difficulty: 'contested', skirmish: true, loadout: PIN.slice() });
+    seen.skirmish = Game.aiTier;
+    Game.start({ maelstrom: 8, difficulty: 'contested', skirmish: true, loadout: PIN.slice() });
+    seen.maelstrom = Game.aiTier;
+    Game.start({ map: 'spine', difficulty: 'contested', systemIndex: 0, loadout: PIN.slice() });
+    seen.campaignOpen = Game.aiTier;
+    /* And the rungs must actually gate: a brain at the baseline must refuse
+       both new tactics, or the ladder is decoration. */
+    const b = Object.create(AI); b.side = Game.sides[1]; b.diff = Game.difficulty;
+    Game.aiTier = AI_TIER_BASELINE;
+    const baseCan = b.can('retarget') || b.can('sell');
+    Game.aiTier = 4;
+    const topCan = b.can('retarget') && b.can('sell') && b.can('relocate');
+    ok('24.4 the tactic ladder leaves every non-campaign battle at the baseline',
+       seen.plain === AI_TIER_BASELINE && seen.skirmish === AI_TIER_BASELINE &&
+       seen.maelstrom === AI_TIER_BASELINE && seen.campaignOpen < AI_TIER_BASELINE &&
+       !baseCan && topCan,
+       'plain/skirmish/maelstrom all ' + AI_TIER_BASELINE + ', campaign opens at ' +
+       seen.campaignOpen + '; baseline refuses re-aim and sell, tier 4 allows both');
+  });
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;

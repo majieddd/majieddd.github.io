@@ -3719,6 +3719,47 @@ const AI_CLEAR_MAX_UPLIFT = 2.0;   /* caps the no-ground-left case, which would
    what stops it shuffling: a move must be a real improvement, not a wobble.
    MAX_MOVES is the oscillation stop -- without it two towers can trade the
    same good tile back and forth for the rest of the match. */
+/* ══════════════ THE RIVAL'S TACTIC LADDER (owner call O3) ══════════════
+   "As you get through the campaign, the AI should progressively use more
+   advanced tactics."
+
+   Five tiers. T2 is EXACTLY what the rival could do before this existed, and
+   it is what every battle OUTSIDE the campaign still gets -- a skirmish, the
+   Maelstrom, a duel and the balance pins all resolve to AI_TIER_BASELINE, so
+   none of them moves and the pins stay comparable to their own history. Only
+   a campaign node threads a system index in, and only the campaign therefore
+   sees a rival that starts below today's strength and climbs past it.
+
+     T0  build, upgrade, base level, muster            — the opening galaxy
+     T1  + clear terrain, + enrage
+     T2  + relocate                                    — TODAY, and the floor
+                                                         everywhere but the
+                                                         campaign
+     T3  + RE-AIM: it re-points its guns as the threat changes
+     T4  + SELL: it cuts a tower that has stopped earning its tile
+
+   The early tiers are a REDUCTION, which is the point: the owner asked for a
+   gentler opening, and a rival that has not yet learnt to shuffle its board is
+   a gentler rival than one that has. */
+const AI_TIER_BASELINE = 2;
+/* Campaign progress, in systems cleared: galaxyTier * SYSTEMS_PER_GALAXY + si.
+   The first galaxy spans T0 -> T2, so a first-time player meets today's rival
+   only at its END; the second galaxy earns re-aiming and the third selling. */
+const AI_TIER_STEPS = [0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 4];
+/* How often the rival re-points its guns, in seconds of battle time. Slow on
+   purpose: a rival that re-aims every tick reads as twitchy rather than as
+   thoughtful, and re-aiming is free, so nothing else bounds it. */
+const AI_RETARGET_EVERY = 6.5;
+/* A tower must be earning less than this fraction of the board's average
+   effectiveness before the rival will cut it, and it must have been standing
+   for at least this many waves. Both deliberately unforgiving: selling a
+   tower that would have come good is a worse rival, not a better one. */
+const AI_SELL_SHARE = 0.22;
+const AI_SELL_MIN_WAVE = 8;
+/* Per battle, across the whole board. A rival that can sell without limit can
+   thrash -- sell, rebuild, sell -- and thrashing looks like a bug. */
+const AI_SELL_MAX = 3;
+
 const AI_RELOCATE_MIN_WAVE = 10;
 const AI_RELOCATE_MIN_GAIN = 1.35; /* RAW coverage ratio a move has to beat --
    raw for the same reason the clearance is: covMul saturates and would report
