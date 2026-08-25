@@ -731,7 +731,11 @@ class Enemy {
          Oath is simply the second thing that removes a unit without killing
          it. */
       if (vigilSpend(this)) { this.dead = true; this.charmed = true; }
-      else this.becomeCarrier();
+      /* `leaked` IS the ordinary ending -- the reap downstream charges
+         loseLives, the BRUTAL surcharge, enemyDamp and Shield Wall from it,
+         exactly as it did before carriers existed. See LEAK_STEALS_BACK. */
+      else if (LEAK_STEALS_BACK) this.becomeCarrier();
+      else this.leaked = true;
     }
   }
 

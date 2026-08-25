@@ -34,6 +34,34 @@ const RADIAL_OPEN_PX = 12;
    the radial's 12 so a drag meant as a pan never opens the ring on the way,
    and far enough that a click with a shaky hand is still a click. */
 const PAN_OPEN_PX = 5;
+/* How far the board may be scaled up when it COVERS the window rather than
+   fitting inside it. The fitted path stops at 1.9 because that is where the
+   hand-drawn sprites begin to soften; a cover has to be allowed a little more
+   or a very wide window would letterbox anyway, which is the whole thing it
+   exists to prevent. Past this the camera pulls back and the surplus is
+   centred instead. */
+const BOARD_COVER_MAX = 2.6;
+
+/* THE THEFT, and whether it happens at all (owner call, Session 26).
+   ────────────────────────────────────────────────────────────────────
+   Shipped in Session 21 as "the recoverable stolen objective": a leak did not
+   spend the life, it turned the unit around and made it CARRY the life back
+   toward the spawn edge, and only walking off that edge made the loss real.
+   Kill the carrier and you keep the life.
+
+   The owner has now reported both halves of it as defects, without knowing
+   they were one thing: "my towers are randomly attacking mobs that come out
+   of my base" -- that is the carrier, leaving with your lives, and the towers
+   are right to shoot it -- and "the system that adds the flag next to your
+   lives should be taken out, its confusing". The flag is `(3 flag)` beside the
+   lives counter: lives currently in flight, not yet deducted.
+
+   So the mechanic is OFF and a leak spends the life the moment it lands,
+   which is the rule every tower defence has taught the player already. The
+   code is left standing behind this constant rather than deleted, because
+   the owner CHOSE this mechanic once and may want it back; flip it to true
+   and the carriers return exactly as they were. */
+const LEAK_STEALS_BACK = false;
 /* How far the battle camera may push in. The board is fitted whole at 1, so
    this is entirely opt-in; past about 2.6 the hand-drawn sprites soften for
    the same reason viewScale stops at 1.9. */
@@ -2067,7 +2095,11 @@ const TOWER_ORDER = ['bolt', 'cryo', 'mortar', 'arc', 'pyre', 'railgun', 'toxin'
                      'tether', 'prism', 'sapper', 'singularity', 'vault', 'flak', 'siphon', 'dronebay',
                      'canister', 'reclaimer', 'quartermaster'];
 
-const LOADOUT_SIZE = 5;
+/* FOUR TOWERS AND FOUR UNITS TO A BATTLE (owner call, Session 26). Was five
+   towers and three units; the owner asked for a matched pair of fours, which
+   also makes the two columns read as siblings instead of as two different
+   rules. The shop's number keys run 1-4 with it. */
+const LOADOUT_SIZE = 4;
 
 /* --------------------------------------------------------------------------
    UNLOCK LAW — what souls buy, what the story issues, and what one purchase
@@ -3417,7 +3449,7 @@ const XENO_INC_CAP = 10;
    derivation is pinned so the OLD hand-tuned SKIRMISH row falls out of it
    (4 crawlers at 0.55x reward for +5%), which is what keeps the measured
    balance pins (fresh median 7, maxed 26-27) without a re-tune. */
-const MUSTER_LOADOUT_SIZE = 3;          /* picks a detachment may carry        */
+const MUSTER_LOADOUT_SIZE = 4;          /* picks a detachment may carry -- matched to LOADOUT_SIZE */
 /* ══════════ THE FIVE SKEWS (owner brief, Session 25) ══════════════════
    "Make sure each faction is skewed and balanced in their own way. Humans are
    all-arounders and even. Federation of Light are mainly defensive. Pirates

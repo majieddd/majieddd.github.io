@@ -328,8 +328,14 @@ const Game = {
     const boxPad = box ? getComputedStyle(box) : null;
     const padW = boxPad ? (parseFloat(boxPad.paddingLeft) || 0) + (parseFloat(boxPad.paddingRight) || 0) : 0;
     const padH = boxPad ? (parseFloat(boxPad.paddingTop) || 0) + (parseFloat(boxPad.paddingBottom) || 0) : 0;
-    let availW = box ? box.clientWidth - padW - 8 : 0;
-    let availH = box ? box.clientHeight - padH - 10 : 0;
+    /* The 8 and the 10 are the FITTED layout's breathing room -- the gap that
+       keeps a framed board off the stage's edges. A background has no edges to
+       keep off, so immersive spends none of it and the canvas reaches the
+       window on all four sides. */
+    const gapW = document.body.classList.contains('immersive') ? 0 : 8;
+    const gapH = document.body.classList.contains('immersive') ? 0 : 10;
+    let availW = box ? box.clientWidth - padW - gapW : 0;
+    let availH = box ? box.clientHeight - padH - gapH : 0;
     const unlaidOut = availW < 240 || availH < 200;
     if (unlaidOut) {
       /* The sidebar is two columns wide on a big screen and one on a small
@@ -351,12 +357,34 @@ const Game = {
         });
       }
     }
-    /* Fill the space that is actually available. The board is the game, so it
-       gets to grow; 1.9x is where the hand-drawn sprites start to soften. */
-    this.viewScale = Math.min(1.9, availW / this.width, availH / this.height);
+    /* THE BOARD IS THE BACKGROUND, and that is a COVER, not a fit.
+       ────────────────────────────────────────────────────────────────
+       Fitting sizes the canvas ELEMENT to the board's own aspect and centres
+       it, so on any window whose shape differs from the board's there is dead
+       page either side of it -- a bordered box floating in a dark room, which
+       is what the owner has now reported three times. The galaxy never does
+       this: its scale COVERS the window, and its chrome floats on top.
 
-    const cssW = Math.round(this.width * this.viewScale);
-    const cssH = Math.round(this.height * this.viewScale);
+       So in immersive the canvas spans the whole stage and the board is scaled
+       to cover it. `fitScale` is kept because it is what "the whole board is
+       visible" means, and camZoom's floor is derived from it -- scrolling out
+       returns to exactly the old fitted view, so nothing is lost, it is just
+       no longer the only option.
+
+       Outside immersive nothing changes: viewScale IS fitScale there and the
+       canvas is sized to the board exactly as it always was. */
+    this.fitScale = Math.min(1.9, availW / this.width, availH / this.height);
+    const immersive = document.body.classList.contains('immersive');
+    this.viewScale = immersive
+      ? Math.min(BOARD_COVER_MAX, Math.max(availW / this.width, availH / this.height))
+      : this.fitScale;
+
+    const cssW = Math.round(immersive ? availW : this.width * this.viewScale);
+    const cssH = Math.round(immersive ? availH : this.height * this.viewScale);
+    /* The canvas's CSS size in its own right: with a cover fit it is no longer
+       derivable from width * viewScale, and the camera and every pointer
+       conversion need the real span. */
+    this.viewW = cssW; this.viewH = cssH;
     this.canvas.width = Math.round(cssW * dpr);
     this.canvas.height = Math.round(cssH * dpr);
     this.canvas.style.width = cssW + 'px';
@@ -2698,13 +2726,29 @@ const Game = {
       if (!path) continue;
       let copies = 1;
       if (S.mods.doubleReanim > 0 && Math.random() < S.mods.doubleReanim) copies = 2;
+      /* IT HATCHES WHERE IT INCUBATED. `startDist` is distance ALONG the send
+         path, and this used to pass rand(0,10) -- the path's very beginning --
+         so every hatchling walked out of the base while the pod's burst, its
+         floater and its glyph all played at the kill site. The owner saw
+         exactly that: the clutch appears where the body fell and the creature
+         appears at home.
+         Projecting the pod onto the path with nearestDist is the fix: the
+         hatchling enters the lane at the point closest to its own clutch. A
+         FLYING unit keeps the old behaviour on purpose -- it does not walk the
+         lane, so the path point it would inherit is meaningless and launching
+         from the base is the honest reading (and the owner said as much). */
+      const proj = base.flying ? null : path.nearestDist(pod.x, pod.y);
+      /* `total`, not `length` -- Path has no `length`, and reading it would give
+         undefined, clamp the ceiling to NaN and put every hatchling straight
+         back at the base, which is the exact bug this replaces. */
+      const enterAt = proj ? clamp(proj.dist, 0, Math.max(0, path.total - TILE)) : rand(0, 10);
       for (let i = 0; i < copies; i++) {
         this.pendingSpawns.push(new Enemy(base, path, {
           hpMul: (pod.powerHp / base.hp) * (1 - (this.sides[vic].traits.reanimResist || 0)),
           bountyMul: 1, speedMul: S.traits.reanimSpeed,
           armorFlat: pod.armorFlat,
           hostileTo: vic, owner: pod.side, reanimated: true,
-          startDist: rand(0, 10), offset: rand(-8, 8)
+          startDist: enterAt, offset: rand(-8, 8)
         }));
         S.stats.sent++;
         if (S.traits.reanimGold) this.awardGold(pod.side, S.traits.reanimGold);
@@ -4483,8 +4527,13 @@ const Game = {
        board coordinate reaches Game.hover and every build/aim gate that reads
        it, so it is refused here rather than propagated. */
     if (!(r.width > 0) || !(r.height > 0)) return { x: c.x, y: c.y };
-    return { x: c.x + (evt.clientX - r.left) * (this.width / r.width) / z,
-             y: c.y + (evt.clientY - r.top) * (this.height / r.height) / z };
+    /* 1 / (viewScale * z) IS the inverse of the draw transform's scale, and it
+       is what `this.width / r.width / z` silently meant back when the rect was
+       always the board times viewScale. Under a cover fit it is not, so the
+       conversion is written as what it actually is. */
+    const inv = 1 / (this.viewScale * z);
+    return { x: c.x + (evt.clientX - r.left) * inv,
+             y: c.y + (evt.clientY - r.top) * inv };
   },
 
   pointerToGrid(evt) {
@@ -4817,19 +4866,35 @@ const Game = {
    * simulation uses everywhere and which must keep behaving exactly as the
    * balance pins measured it.
    */
-  camZoom() { return clamp(fin((this.cam && this.cam.z), 1), 1, BATTLE_ZOOM_MAX); },
+  /** How far out the camera may pull: exactly far enough to show the whole
+      board, and no further. Outside immersive viewScale IS fitScale, so this
+      is 1 and the clamp is the one that always shipped. */
+  camMinZoom() {
+    if (!(this.fitScale > 0) || !(this.viewScale > 0)) return 1;
+    return Math.min(1, this.fitScale / this.viewScale);
+  },
+  camZoom() { return clamp(fin((this.cam && this.cam.z), 1), this.camMinZoom(), BATTLE_ZOOM_MAX); },
   /** The camera's top-left in world pixels, clamped so the view can never
       leave the board. At zoom 1 the view IS the board, so this is the
       origin and the transform above collapses to the fitted one. */
   camClamped() {
     const z = this.camZoom();
-    const vw = this.width / z, vh = this.height / z;
+    /* THE VISIBLE SPAN IN WORLD UNITS, from the canvas's real CSS size rather
+       than from the board's -- under a cover fit the two are different, and
+       assuming they were equal is what would put the board's top-left in the
+       window's top-left instead of its middle. */
+    const vw = fin(this.viewW, this.width * this.viewScale) / (this.viewScale * z);
+    const vh = fin(this.viewH, this.height * this.viewScale) / (this.viewScale * z);
     /* `this.cam` guarded like camZoom already guards it: draw() reads this
        every frame, and an undefined camera threw a TypeError straight out of
        the frame. */
     const cx = fin(this.cam && this.cam.x, 0), cy = fin(this.cam && this.cam.y, 0);
-    return { x: clamp(cx, 0, Math.max(0, this.width - vw)),
-             y: clamp(cy, 0, Math.max(0, this.height - vh)) };
+    /* When the view shows MORE than the board -- which is the whole point of
+       being able to zoom out to the fitted view -- there is nothing to pan
+       along that axis, and the board is CENTRED in the surplus rather than
+       shoved against the top-left corner. */
+    return { x: vw >= this.width ? (this.width - vw) / 2 : clamp(cx, 0, this.width - vw),
+             y: vh >= this.height ? (this.height - vh) / 2 : clamp(cy, 0, this.height - vh) };
   },
   /** Zoom about a fixed world point, so the tile under the cursor stays put. */
   zoomAt(worldX, worldY, factor) {
@@ -4853,7 +4918,9 @@ const Game = {
     const c = this.camClamped();
     this.cam.x = c.x; this.cam.y = c.y;
   },
-  resetCam() { if (this.cam) { this.cam.x = 0; this.cam.y = 0; this.cam.z = 1; } },
+  /* HOME is the whole board, which under a cover fit is the zoomed-OUT view
+     rather than zoom 1. camClamped centres it from there. */
+  resetCam() { if (this.cam) { this.cam.x = 0; this.cam.y = 0; this.cam.z = this.camMinZoom(); } },
 
   /* One answer for every board-input gate. 'playing' is the normal case; the
      second clause is D3: an escalation halt the player chose to HOLD is spent
@@ -4943,8 +5010,8 @@ const Game = {
       if (!(r.width > 0) || !(r.height > 0)) { panning.x = e.clientX; panning.y = e.clientY; return; }
       const z = this.camZoom();
       const c0 = this.camClamped();
-      this.panBy(-(e.clientX - panning.x) * (this.width / r.width) / z,
-                 -(e.clientY - panning.y) * (this.height / r.height) / z);
+      const inv = 1 / (this.viewScale * z);
+      this.panBy(-(e.clientX - panning.x) * inv, -(e.clientY - panning.y) * inv);
       const c1 = this.camClamped();
       /* What the camera ACTUALLY did, not what the hand asked for: at zoom 1
          the clamp holds the view still, and a drag that moved nothing must

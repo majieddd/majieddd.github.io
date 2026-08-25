@@ -1153,37 +1153,56 @@
        : Object.keys(got).map(function (f) { return f + '=' + got[f]; }).join(' '));
   });
 
-  /* ---- 25.5 the immersive battle chrome never buries the board --------- */
-  T('25.5 the board, the HUD and the rail share the window without overlap', function () {
+  /* ---- 25.5 the board IS the background, and the chrome floats on it --- */
+  T('25.5 the board fills the window and the chrome floats above it', function () {
     if (!document.body.classList.contains('immersive')) {
-      /* The default IS immersive; a profile that turned it off is testing a
-         layout this check does not describe. */
-      skip('25.5 the board, the HUD and the rail share the window without overlap', 'immersive is off');
+      skip('25.5 the board fills the window and the chrome floats above it', 'immersive is off');
       return;
     }
+    /* THIS CHECK USED TO ASSERT THE OPPOSITE, and it was right to until the
+       owner named the goal: "it should be like the background so all the ui
+       elements are on top of it instead of all the current empty space." The
+       old contract -- board must not overlap the rail -- is what LEFT the
+       empty space, because a board that must dodge the chrome cannot fill the
+       window. The contract now is the galaxy's: the canvas is the backdrop,
+       and the chrome is a layer over it. */
     Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
-    UI.show('screen-game'); UI.buildShop(); UI.buildAbilityBar(); Game.resize();
-    const side = document.getElementById('sidebar');
-    const hud = document.getElementById('hud');
-    const cv = Game.canvas;
-    const b = function (el) { return el.getBoundingClientRect(); };
-    const cb = b(cv), sb = b(side), hb = b(hud);
-    /* The three claims the broken layout violated, asserted as geometry:
-       the board ends where the rail begins, starts below the HUD, and the
-       HUD ends where the rail begins -- so the rival's panel is visible. */
-    const boardClearOfRail = cb.right <= sb.left + 2;
-    const boardClearOfHud = cb.top >= hb.bottom - 2;
-    const hudClearOfRail = hb.right <= sb.left + 2;
-    /* And nothing in the rail is clipped mid-word, which is what a wrong
-       width looks like from the player's chair. */
+    UI.show('screen-game'); UI.buildShop(); UI.buildAbilityBar();
+    /* The screen's entry animation translates it for 0.22s; a measurement
+       taken inside that window reads the slide, not the layout. */
+    const sg = document.getElementById('screen-game');
+    const anim = sg.style.animation;
+    sg.style.animation = 'none';
+    Game.resize(); Game.resize();
+    const cv = Game.canvas, side = document.getElementById('sidebar'), hud = document.getElementById('hud');
+    const cb = cv.getBoundingClientRect(), sb = side.getBoundingClientRect(), hb = hud.getBoundingClientRect();
+    const W = window.innerWidth, H = window.innerHeight;
+    /* 1. THE BOARD IS THE BACKGROUND: the canvas covers the window. */
+    const fills = cb.left <= 1 && cb.top <= 1 && cb.width >= W - 1 && cb.height >= H - 1;
+    /* 2. THE CHROME IS ON TOP: both cards sit inside the window, over the
+          canvas, and above it in the stacking order. */
+    const railZ = parseInt(getComputedStyle(side).zIndex, 10) || 0;
+    const hudZ = parseInt(getComputedStyle(hud).zIndex, 10) || 0;
+    const onTop = railZ > 0 && hudZ > 0 &&
+                  sb.right <= W + 1 && sb.bottom <= H + 1 && sb.left >= 0 &&
+                  hb.top >= 0 && hb.left >= 0;
+    /* 3. NOTHING IS CLIPPED, which is what a wrong rail width looks like. */
     let clipped = 0;
     side.querySelectorAll('button, .panel, h2, .muster-bar > *, #shop-list > *, #inspector > *')
       .forEach(function (el) { if (el.scrollWidth > el.clientWidth + 2) clipped++; });
-    ok('25.5 the board, the HUD and the rail share the window without overlap',
-       boardClearOfRail && boardClearOfHud && hudClearOfRail && clipped === 0,
-       'board ' + Math.round(cb.right) + ' vs rail ' + Math.round(sb.left) +
-       ', board top ' + Math.round(cb.top) + ' vs hud bottom ' + Math.round(hb.bottom) +
-       ', hud right ' + Math.round(hb.right) + ', clipped rail elements: ' + clipped);
+    /* 4. AND THE WHOLE BOARD IS STILL REACHABLE: home pulls back far enough
+          to show all of it, so covering the window costs no information. */
+    Game.resetCam();
+    const z = Game.camZoom();
+    const spanW = Game.viewW / (Game.viewScale * z), spanH = Game.viewH / (Game.viewScale * z);
+    const wholeBoard = spanW >= Game.width - 1 && spanH >= Game.height - 1;
+    sg.style.animation = anim;
+    ok('25.5 the board fills the window and the chrome floats above it',
+       fills && onTop && clipped === 0 && wholeBoard,
+       'canvas ' + Math.round(cb.width) + 'x' + Math.round(cb.height) + ' in ' + W + 'x' + H +
+       ', rail z' + railZ + ' hud z' + hudZ + ', clipped ' + clipped +
+       ', home zoom ' + z.toFixed(2) + ' shows ' + Math.round(spanW) + 'x' + Math.round(spanH) +
+       ' of ' + Game.width + 'x' + Game.height);
   });
 
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;

@@ -301,6 +301,12 @@ body.rm-user .bi-line { opacity: 1; }
    floats over the galaxy. The sidebar stays reachable -- it slides back on
    hover or focus -- because it is controls, not decoration, and a shop you
    cannot open is not immersion. */
+/* PINNED TO THE VIEWPORT, not placed in the document. The battle screen is a
+   block in body flow, and the whitespace between its hidden siblings makes a
+   line box -- so the screen started 6px down and the "full-bleed" board was
+   short by exactly that on two edges. A background cannot be off by six
+   pixels; fixed positioning makes the question moot. */
+body.immersive #screen-game { position: fixed; inset: 0; height: 100%; width: 100%; }
 body.immersive #stage { position: absolute; inset: 0; padding: 0; gap: 0; }
 /* THE BOARD FITS THE SPACE THE CHROME LEAVES, not the window the chrome then
    covers. The wrap is still the full window -- the canvas centres inside its
@@ -310,9 +316,18 @@ body.immersive #stage { position: absolute; inset: 0; padding: 0; gap: 0; }
    narrow screen and a 580px two-column grid past 1240px (style.css), and a
    constant here would be wrong on exactly one of them. The fallbacks only
    cover the first frame before resize has run. */
-body.immersive #canvas-wrap {
-  position: absolute; inset: 0;
-  padding: var(--hud-h, 96px) var(--rail-w, 312px) 12px 12px;
+/* NO PADDING. The board is the BACKGROUND now -- it covers the window and the
+   chrome floats on top of it, which is what "like the galaxy map" means and
+   what carving a hole for the rail actively prevented: the carve-out is
+   exactly what left dead page around a letterboxed board. --rail-w survives
+   because the HUD still ends where the rail begins; the CANVAS no longer
+   cares. */
+body.immersive #canvas-wrap { position: absolute; inset: 0; padding: 0; }
+/* A background has no frame. The border, the radius and the drop shadow are
+   what made the board read as a window sitting in a dark room. */
+body.immersive #game {
+  border: 0; border-radius: 0; box-shadow: none;
+  max-width: none; max-height: none;
 }
 /* THE HUD IS CARDS, NOT A SMEAR. The gradient strip read as furniture bolted
    over the board; the galaxy's chrome never does that -- its legend, its
@@ -2437,3 +2452,19 @@ body:not(.arena-field) .arena-ladder { display: none; }
 }
 .br-renegade b { color: var(--fc, #e2e8f0); letter-spacing: 0.02em; font-size: 0.78rem; }
 .br-renegade span { font-size: 0.74rem; line-height: 1.45; opacity: 0.86; }
+
+
+/* ── THE EQUIP CONTROLS on the loadout screen ──────────────────────────
+   The commander screen has always had a button that names the act; the
+   tower and unit columns only had "click the card", which is discoverable
+   only once somebody tells you. Same visual weight as the commander's so
+   the three screens read as one system. */
+.lo-equip { width: 100%; margin: 8px 0 2px; justify-content: center;
+  font-family: var(--display); font-size: 11px; letter-spacing: .12em; }
+.lo-equip.out { background: transparent; border-color: var(--line-2);
+  color: var(--text-dim); }
+.lo-equip.out:hover { color: #fca5a5; border-color: rgba(248,113,113,.55); }
+.lo-equip-full { margin: 8px 0 2px; padding: 7px 9px; border-radius: 8px;
+  border: 1px dashed var(--line-2); background: rgba(255,255,255,.03);
+  color: var(--text-mute); font-size: 10.5px; letter-spacing: .06em;
+  text-align: center; }

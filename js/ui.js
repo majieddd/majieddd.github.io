@@ -3259,6 +3259,32 @@ const UI = {
 
   /** One commit path for both columns, so "denied" means the same thing in
       both and neither can start toggling by a different rule. */
+  /** THE EQUIP CONTROL for a tower, mirroring the commander's. Three states,
+      because a picker with a cap has three: in the loadout (remove it), room
+      for it (equip it), and full (say so rather than fail silently on click,
+      which is what the bare card did). */
+  loadoutButtonHTML(id, at) {
+    const cap = this.loadoutTarget();
+    if (at >= 0)
+      return `<button class="btn lo-equip out" data-lo-equip="${id}">✕ REMOVE FROM LOADOUT</button>`;
+    if (this.sel.loadout.length >= cap)
+      return `<div class="lo-equip-full" role="status">LOADOUT FULL — ${cap} of ${cap}. Remove one to take this.</div>`;
+    return `<button class="btn btn-primary lo-equip" data-lo-equip="${id}">⚑ EQUIP — SLOT ${this.sel.loadout.length + 1} OF ${cap}</button>`;
+  },
+
+  /** The same control for a unit. The detachment is stored in the profile
+      rather than in this.sel, so its cap and its count come from Meta. */
+  unitEquipButtonHTML(id) {
+    const picked = this.unitPicked();
+    const cap = this.unitCap();
+    const at = picked.indexOf(id);
+    if (at >= 0)
+      return `<button class="btn lo-equip out" data-unit-equip="${id}">✕ REMOVE FROM DETACHMENT</button>`;
+    if (picked.length >= cap)
+      return `<div class="lo-equip-full" role="status">DETACHMENT FULL — ${cap} of ${cap}. Remove one to take this.</div>`;
+    return `<button class="btn btn-primary lo-equip" data-unit-equip="${id}">⚑ EQUIP — SLOT ${picked.length + 1} OF ${cap}</button>`;
+  },
+
   commitPick(kind, id, byKeyboard) {
     if (kind === 'unit') {
       if (!this.unitToggle(id)) { Sound.play('denied'); return; }
@@ -3379,6 +3405,15 @@ const UI = {
   bindDetailChrome(panel) {
     const x = panel.querySelector('.lo-drawer-x');
     if (x) x.addEventListener('click', () => { Sound.play('click'); this.closeLoadoutDrawer(); });
+    /* THE EQUIP BUTTONS, bound here because every detail panel already ends
+       by calling this -- one hook rather than two that can drift. Both route
+       through commitPick, which is the SAME path the card click takes, so the
+       cap, the denied sound and the re-render cannot behave differently
+       depending on which control the player used. */
+    const te = panel.querySelector('[data-lo-equip]');
+    if (te) te.addEventListener('click', () => this.commitPick('tower', te.dataset.loEquip));
+    const ue = panel.querySelector('[data-unit-equip]');
+    if (ue) ue.addEventListener('click', () => this.commitPick('unit', ue.dataset.unitEquip));
     this.bindChipTips(panel);
   },
 
@@ -3421,6 +3456,12 @@ const UI = {
       <div class="lo-stats">${this.towerStatRows(id).map(r =>
         `<i><span>${r[0]}</span><b>${r[1]}</b></i>`).join('')}</div>
       <p class="lo-d-rule" style="--og:${o.color}"><b>${o.icon} ${o.rule}</b>${o.desc}</p>
+      ${/* AN EXPLICIT EQUIP, the same shape the commander screen uses. The
+            card itself still toggles -- that is the fast path once you know
+            it -- but "click the card" was the ONLY way to field a tower, and
+            nothing on screen said so. A button that names the act removes
+            the guess. */ ''}
+      ${this.loadoutButtonHTML(id, at)}
       <div class="lo-d-sep"><span>TALENTS</span></div>
       <div id="tower-talents"></div>`;
     this.paintTowerIcons(panel);
@@ -3510,6 +3551,9 @@ const UI = {
           : 'Not yet rescued. ' + (homes
               ? 'Conquer (★★★) a world fought on <b>' + homes + '</b> to bring it home.'
               : 'No world in this galaxy garrisons it.')}</p>`}
+      ${/* Only a unit you actually OWN can be equipped; an unrescued one is a
+            Soul Shop purchase and the paragraph above already says so. */ ''}
+      ${owned ? this.unitEquipButtonHTML(id) : ''}
       ${this.unitTalents(id).length
         ? '<div class="lo-d-sep"><span>TALENTS</span></div><div id="unit-talents"></div>'
         : ''}`;
@@ -3814,8 +3858,15 @@ const UI = {
     const byHp = (a, b) => (this.unitDef(a).hp - this.unitDef(b).hp);
     unlocked.sort(byHp); rescuable.sort(byHp);
 
+    /* ONLY WHAT YOU CAN ACTUALLY FIELD, which is the rule the TOWER column has
+       always used: `TOWER_ORDER.filter(Meta.isTowerUnlocked)`. This column was
+       listing `unlocked.concat(rescuable)` -- every soldier you might one day
+       rescue, mixed in with the ones you own -- so the grid advertised a
+       detachment you could not take. Rescuable and gated units belong in the
+       Soul Shop, exactly as locked towers do; `rescuable` and `gated` are
+       still computed above because the shop note counts them. */
     const groups = {};
-    for (const id of unlocked.concat(rescuable)) {
+    for (const id of unlocked) {
       const k = this.unitHost(id).id;
       (groups[k] = groups[k] || []).push(id);
     }
@@ -4933,7 +4984,11 @@ const UI = {
       else if (en.hostileTo === ai.index) aiFlight += c;
     }
     e.myGold.textContent = formatNum(me.gold);
-    e.myLives.textContent = me.lives + (meFlight ? ' (' + meFlight + '⚑)' : '');
+    /* NO FLAG. Lives in flight only existed while a carrier held them, and
+       carriers are off (LEAK_STEALS_BACK) -- so this would always print
+       nothing anyway. Removed outright because the owner asked for it gone,
+       not merely quiet. */
+    e.myLives.textContent = me.lives;
     e.myTowers.textContent = me.towers.length;
     e.myBar.style.width = (me.lives / me.maxLives * 100) + '%';
     e.aiGold.textContent = formatNum(ai.gold);
@@ -4944,7 +4999,7 @@ const UI = {
        in css/polish.css was scoped `.cmdr.third.down`, which this panel can
        never match -- it is widened to `.cmdr.down` by the same patch.
        BATCH-C/nside */
-    e.aiLives.textContent = ai.defeated ? '☠' : ai.lives + (aiFlight ? ' (' + aiFlight + '⚑)' : '');
+    e.aiLives.textContent = ai.defeated ? '☠' : ai.lives;
     if (e.aiPanel) e.aiPanel.classList.toggle('down', !!ai.defeated);
     /* A third commander needs its own readout, not a squashed join -- and the
        moment the field is not a three-way the panel comes down, or it survives
