@@ -2071,7 +2071,14 @@ const UI = {
           <span class="tag" style="color:${FACTIONS[w.owner].color}">${
             w.renegade ? FACTIONS[w.owner].short + ' RENEGADE' : FACTIONS[w.owner].short}</span></div>
         <div class="br-trait">${sys.name} · ${WORLD_KINDS[w.kind].icon} ${WORLD_KINDS[w.kind].label}</div>
-        ${mp ? `<div class="br-map"><b>${mp.name}</b>, ${mp.trait}</div>` : ''}
+        /* THE GROUND, read before the scenario asks of it -- the same order
+           worldBriefing uses for a campaign planet: name line first, then the
+           battlefield minimap. It is built from this world's own map object by
+           the single player's renderer (mapPreviewBlock), so the paths shown
+           here are the identical lanes Game.start will build -- a duel table
+           can never open on a board whose shape was not drawn here. */
+        ${mp ? `<div class="br-map"><b>${mp.name}</b>, ${mp.trait}</div>
+          ${this.mapPreviewBlock(mp, { size: 'tip' })}` : ''}
         ${mp && mp.blurb ? `<p class="br-blurb">${mp.blurb}</p>` : ''}
         <div class="br-rows">${w.contested ? `<div class="br-row"><span class="br-ic">⚔</span>
           <span>A three-way board. Every kill reanimates toward BOTH rivals.</span></div>` : ''}
@@ -2691,7 +2698,12 @@ const UI = {
     const plate = artImg('world_' + w.map + '_' + holder, 'br-art', w.name)
                || artImg('world_' + w.map, 'br-art', w.name);
     const c = Meta.campaign();
-    const sc = typeof worldScenarioOf === 'function' ? worldScenarioOf(w) : SCENARIOS[0];
+    /* Ground already yours asks ownedWorldScenarioOf FIRST (owner, Session 33):
+       it returns null for the ordinary case, so this is a no-op for every
+       world that is neither renegade nor already conquered. */
+    const sc = typeof worldScenarioOf === 'function'
+      ? ((typeof ownedWorldScenarioOf === 'function' && ownedWorldScenarioOf(w, prog)) || worldScenarioOf(w))
+      : SCENARIOS[0];
 
     /* ---- the commander's four towers, drafted from the SAME seed the battle
        will use, so the row is a promise and not a guess. Never on a contested

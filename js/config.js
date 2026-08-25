@@ -2443,6 +2443,89 @@ const SCENARIOS = [
   }
 ];
 
+/**
+ * SCENARIOS FOR GROUND THAT IS ALREADY YOURS (owner, Session 33).
+ *
+ * Kept OUT of SCENARIOS itself deliberately: that array is what
+ * worldScenarioOf cycles through for the ordinary index-derived variant pick
+ * (galaxy.js, "one world in SCENARIO_VARIANT_EVERY"), and these three do not
+ * belong in that rotation. RENEGADE_HUNT applies to exactly the worlds
+ * galaxy.js already marks w.renegade at generation, and the two REVISIT
+ * scenarios apply only once a world is already three-starred: mixing either
+ * into the general pool would occasionally hand a normal, never-conquered
+ * world a scenario whose entire premise is that you already hold it.
+ *
+ * Resolved by ownedWorldScenarioOf (galaxy.js), which every caller of
+ * worldScenarioOf now consults FIRST, so the world-briefing preview, the
+ * battle Game.start actually runs, and the star rating ratingFor scores it
+ * against are the same three calls into the same one function -- never three
+ * separate opinions about which battle this was.
+ */
+const RENEGADE_HUNT = {
+  id: 'renegade_hunt', name: 'RENEGADE HUNT', kind: 'duel', icon: '⚑',
+  brief: 'A commander of your own power broke the Accord. Take the world back.',
+  stars: ['Win the battle',
+          'Win holding 55% of your lives',
+          'Win holding 90% of your lives'],
+  flavor: 'The banner behind that line is yours. The hand holding it is not.',
+  /* worldBossOf(sys, w) draws from commandersOf(w.owner), and renegade worlds
+     set w.owner to the player's own faction at generation (galaxy.js:299).
+     The boss on this board is mechanically a commander of your own power,
+     already, with no change needed here: this scenario states in words what
+     worldBossOf already made true. Same three-star ladder as ASSAULT, since
+     it is still a duel with a portrait and a drafted arsenal on the far side. */
+  test: function (r) {
+    if (!r.won) return 0;
+    if (r.kept >= 0.90) return 3;
+    if (r.kept >= 0.55) return 2;
+    return 1;
+  }
+};
+
+/* The REVISIT pool: two today, sized to grow. worldScenarioOf-style index
+   cycling picks between them, so a galaxy with many owned worlds to revisit
+   sees both rather than always the first. */
+const OWNED_REVISIT_SCENARIOS = [
+  {
+    id: 'swarm_defense', name: 'SWARM DEFENSE', kind: 'survive', icon: '🛡',
+    noCommander: true, spawn: 'enemyside', waves: [12, 16, 20],
+    brief: 'Hold what is already yours. There is no commander to beat here.',
+    stars: ['Survive 12 waves', 'Survive 16 waves', 'Survive 20 waves'],
+    flavor: 'This ground answers to you. Something out there has not heard.',
+    test: function (r) {
+      const w = r.wave;
+      if (w >= 20) return 3;
+      if (w >= 16) return 2;
+      if (w >= 12) return 1;
+      return 0;
+    }
+  },
+  {
+    /* THE ONE MECHANICAL DIFFERENCE a `reinforce` scenario carries: game.js's
+       onWaveSpawned reads this.scenario.reinforce and, on the stated cadence,
+       pays gold through the same awardGold every other wave-income source in
+       that loop already uses. No second AI-controlled side exists in this
+       engine to make a literal ally battle beside you, and building one was
+       out of scope for this pass: this is the honest, working substitute --
+       your OWN power's other forces make their weight felt as matériel,
+       stated as such in the brief below, not simulated as a second commander
+       that is not really there. */
+    id: 'coop_reinforcement', name: 'REINFORCEMENT LINE', kind: 'survive', icon: '🤝',
+    noCommander: true, spawn: 'enemyside', waves: [12, 16, 20],
+    reinforce: { every: 3, gold: 40 },
+    brief: 'Hold what is already yours. Every third wave, your own power sends gold, not guns.',
+    stars: ['Survive 12 waves', 'Survive 16 waves', 'Survive 20 waves'],
+    flavor: 'Nobody else is standing on this line. Somebody else is still paying for it.',
+    test: function (r) {
+      const w = r.wave;
+      if (w >= 20) return 3;
+      if (w >= 16) return 2;
+      if (w >= 12) return 1;
+      return 0;
+    }
+  }
+];
+
 /* What each star PAYS. Fixed, and the same on every scenario, so the preview
    can state it without consulting the board. */
 const STAR_REWARDS = [

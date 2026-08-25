@@ -405,7 +405,16 @@ const Game = {
       const gx0 = Meta.galaxy && Meta.galaxy();
       if (gx0) for (const sy of gx0.systems) {
         const w0 = sy.worlds.find(x => x.id === opts.world);
-        if (w0) { this.scenario = worldScenarioOf(w0); break; }
+        if (w0) {
+          /* Ground already yours (owner, Session 33): ownedWorldScenarioOf
+             returns null for the ordinary world, same fallback pattern as
+             every other reader of it. */
+          const c0 = typeof Meta.campaign === 'function' && Meta.campaign();
+          const prog0 = (c0 && c0.stars) || {};
+          this.scenario = (typeof ownedWorldScenarioOf === 'function' && ownedWorldScenarioOf(w0, prog0))
+            || worldScenarioOf(w0);
+          break;
+        }
       }
     }
     /* A SURVIVE BOARD HAS NO RIVAL SEAT. The owner's Session 30 note: a card
@@ -1201,6 +1210,19 @@ const Game = {
          gold spent on aggression comes back every wave for the rest of the
          battle. `musterPayout` applies the ceiling, so no sequence of buys
          can turn this into the runaway the mechanic is prone to. */
+      /* REINFORCEMENT LINE (owner, Session 33). No second AI-controlled side
+         exists to stand beside you as a real ally, so this scenario's
+         "co-op" is honestly stated as matériel, not a body on the board: a
+         flat gold grant on the stated cadence, through the same awardGold
+         every other wave-income source in this loop already uses. Reads a
+         scenario field nothing else sets, so every existing scenario is
+         unaffected -- this can only fire on the one scenario that opts in. */
+      const rf = this.scenario && this.scenario.reinforce;
+      if (rf && S.index === 0 && this.wave > 0 && this.wave % rf.every === 0) {
+        const paidRf = this.awardGold(S.index, rf.gold);
+        this.addFloater(this.width * 0.25, 110,
+                         '+' + paidRf + ' REINFORCEMENT', false, '#38e8ff', 17);
+      }
       const mus = musterPayout(S.musterIncome, this.wave, this.musterCapPct(S.index));
       if (mus > 0) {
         const paidMus = this.awardGold(S.index, mus);
@@ -2247,9 +2269,13 @@ const Game = {
         if (w) { this.worldRecord = w; break; }
       }
     }
+    /* c0.stars is progress as of BEFORE this battle: fetched above, before
+       recordWorld below can move it. ratingFor needs exactly that snapshot to
+       know whether the board that just finished was already yours going in,
+       not whether it is now -- which this same call is what decides. */
     this.lastStars = node
       ? Meta.recordWorld(node.world, ratingFor(won, this.sides[0].lives, this.sides[0].maxLives,
-                                               this.wave, this.worldRecord))
+                                               this.wave, this.worldRecord, c0 && c0.stars))
       : null;
     this.campaignResult = c0
       ? (won ? Meta.campaignAdvance(this)

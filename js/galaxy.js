@@ -568,6 +568,42 @@ function worldScenarioOf(w) {
 }
 
 /**
+ * Which scenario a world that is ALREADY YOURS runs (owner, Session 33).
+ *
+ * Returns null for the overwhelming majority of calls -- any world that is
+ * neither renegade nor already conquered -- so every existing caller of
+ * worldScenarioOf keeps calling it exactly as before, through the one-line
+ * `ownedWorldScenarioOf(w, progress) || worldScenarioOf(w)` pattern used at
+ * every call site this was added to (js/ui.js worldBriefing, js/game.js
+ * Game.start and endMatch's ratingFor call). One resolver, three readers:
+ * the preview card, the battle that runs, and the stars it is scored
+ * against cannot disagree about which scenario a world is running, which is
+ * the exact failure class this project's own gxRoutes comment warns about
+ * ("a fourth definition ... is how a line comes to promise a world the
+ * rules refuse").
+ *
+ * Index-derived, same as worldScenarioOf: WHICH revisit variant a conquered
+ * world gets is w.si*WORLDS_PER_SYSTEM+w.wi modulo the pool size, never a
+ * fresh draw, so this cannot move the galaxy PRNG stream and a saved
+ * campaign's revisit assignments do not shuffle on reload.
+ */
+function ownedWorldScenarioOf(w, progress) {
+  if (!w || w.seat) return null;
+  /* Renegade is a property of the WORLD, stamped at generation
+     (galaxy.js:299), true from the first approach -- never a revisit. */
+  if (w.renegade) return (typeof RENEGADE_HUNT !== 'undefined') ? RENEGADE_HUNT : null;
+  /* A genuine revisit: three-starred, which is the same rule mine and
+     isConquered already use everywhere else in this file. */
+  if (isConquered(progress, w.id)) {
+    const pool = (typeof OWNED_REVISIT_SCENARIOS !== 'undefined') ? OWNED_REVISIT_SCENARIOS : [];
+    if (!pool.length) return null;
+    const i = w.si * WORLDS_PER_SYSTEM + w.wi;
+    return pool[i % pool.length];
+  }
+  return null;
+}
+
+/**
  * Does this world pay a SOLDIER, or only progress and a boon?
  *
  * One world in UNIT_REWARD_EVERY does. Index-derived from exactly the same
@@ -754,14 +790,22 @@ function allegianceLabel(al) {
  * Star rating for a finished battle. Three stars is a clean take: you won, and
  * you did it without giving up much ground.
  */
-function ratingFor(won, livesLeft, maxLives, wave, world) {
+function ratingFor(won, livesLeft, maxLives, wave, world, progress) {
   const r = { won: !!won, kept: livesLeft / Math.max(1, maxLives), wave: wave || 0 };
   /* THE SCENARIO DECIDES, not this function. Passing `world` is optional so
      every existing caller keeps the duel ladder it already had; a caller that
      knows the world gets that world's conditions instead. One test function
-     per scenario means a new win condition is data, never a branch here. */
+     per scenario means a new win condition is data, never a branch here.
+     ownedWorldScenarioOf first (owner, Session 33), same fallback pattern as
+     Game.start and worldBriefing: the battle that ran and the stars it is
+     scored against must be the SAME resolved scenario, or a revisit could be
+     played as SWARM DEFENSE and scored as the standing duel. `progress` is
+     optional too, and a caller that omits it simply never matches the
+     ownedWorldScenarioOf branch, falling through to worldScenarioOf exactly
+     as before this was added. */
   const sc = (world && typeof worldScenarioOf === 'function')
-    ? worldScenarioOf(world) : (typeof SCENARIOS !== 'undefined' ? SCENARIOS[0] : null);
+    ? ((typeof ownedWorldScenarioOf === 'function' && ownedWorldScenarioOf(world, progress)) || worldScenarioOf(world))
+    : (typeof SCENARIOS !== 'undefined' ? SCENARIOS[0] : null);
   if (sc && typeof sc.test === 'function') return sc.test(r);
   if (!r.won) return 0;
   if (r.kept >= 0.9) return 3;
