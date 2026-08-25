@@ -1364,3 +1364,41 @@ got shorter, not longer. The earlier claim of a 25 → 31 regression was a
 cross-session comparison and was wrong; see BALANCE-BASELINE's *"the delta that
 was not there"*. The pin harness is only comparable within one session, and
 that is now written down in three places.
+
+---
+
+# SESSION 23 — THE CLOSING ROUND
+
+No new features. This session closed every item the Session-22 audit left
+open, and pinned each one so it cannot come back quietly. Full table in
+[`BACKLOG.md`](BACKLOG.md) § Session 23; the six new checks are 23.1–23.6.
+
+**The shop stopped advertising guns that do not exist.** Twenty-two of the
+sixty towers do no damage at all — BEACON, VAULT, CUSTODIAN, ORISON, RAMPART
+and the rest of the support and economy arsenal — and the preview stage fired
+a projectile out of every one of them into a dummy that flashed white as it
+died. Fifteen more hit instantly and were drawn lobbing a shell with travel
+time. The stage now derives its mode from `base.damage` and `base.projSpeed`,
+which is data the engine already reads, so a tower added tomorrow is
+classified without anyone editing this.
+
+**The rival can now upgrade a tower that does no damage.** It valued RAMPART,
+SABOTEUR, SIREN, SHEPHERD and WARD correctly when it BUILT them and then
+scored their upgrades on a weapon they do not carry, so `gain` was 0, `if
+(score > 0)` dropped them, and it never spent another coin on one for the
+whole match. Proved by counting `game.upgrade` calls with both scorers run
+back to back in ONE session: zero before, non-zero after.
+
+**The Parallel has a face.** The faction, its five commanders and its five
+units shipped in Session 22 with no art. Eleven images rendered, every one
+looked at before packing.
+
+**Two of the round's findings were my own measurement errors**, recorded
+because both looked exactly like defects in the code: a build-ghost probe
+centred on the wrong point, and a contact sheet read off by one cell that
+sent a whole round after the wrong image. The lesson both times was the same
+one this project keeps teaching — check the instrument before believing what
+it says about the game.
+
+Gates: **owner sweep 46 pass / 0 fail / 3 info**, **MPT 37 pass / 0 fail**,
+NET_PROTOCOL 5.

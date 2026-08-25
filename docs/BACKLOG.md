@@ -267,6 +267,39 @@ built the same way everything else here did.
 
 ---
 
+## Session 23 — the closing round
+
+Everything the Session-22 audit left open, closed. Each item is pinned by a
+new check so it cannot quietly come back.
+
+| # | What was wrong | Where | Pin |
+|---|---|---|---|
+| P3 | 22 of 60 towers do no damage, and the shop stage fired a projectile out of every one of them into a dummy that flashed white as it died; 15 more hit instantly and were drawn lobbing a shell | `js/ui.js` `runTowerPreview` | sweep 23.4 |
+| P4 | The OPTIONS battle seed was read at the campaign launch only, so practice and the Maelstrom silently ignored a setting that never said it was campaign-only | `js/ui.js` `battleSeed` | sweep 23.3 |
+| P5 | GUNSKIFF's card marched it down the lane while the badge above it said FLIES THE MAZE | `js/ui.js` `runUnitPreview` | measured 128 lit px above the lane vs 35 below |
+| P7 | BOMBARD's dead zone was enforced by `acquire()` and invisible everywhere else: no stat row, and a solid range disc claiming ground it cannot reach | `js/ui.js`, `js/game.js` | sweep 23.5 |
+| P8 | `lastInterest` and `lastMuster` were written every wave and read by nobody | `js/ui.js` | live in the bank row and the POWER ledger |
+| P12 | The append-only rule for the five index-coupled tables lived only in a comment | `js/net.js` `lockstepAudit` | sweep 23.1, and 23.2 bends a table to prove 23.1 can fail |
+| G6 | Five towers the rival builds and could never upgrade: the scorer valued every upgrade by added damage, and these do none | `js/ai.js` `utilityUpgradeGain` | sweep 23.6 |
+| G9/G12 | The Parallel shipped with no art: 5 commanders, 5 units, 1 crest | `artgen/`, `js/artpack.js` | sweep 22.13 ledger reads 0 unpainted |
+| P13 | Docs described a smaller game than the one that ships, and several records contradicted each other | `README`, `CONTRIBUTING`, `docs/` | measured against the live registries |
+
+**Two of these were my own measurement errors before they were fixes**, and
+both are worth remembering because both looked like defects in the code:
+
+- The first dead-zone probe centred a 2x2 build ghost mid-TILE instead of
+  mid-RECTANGLE and read a displaced hole as a broken one.
+- A contact sheet of new art was read off by one cell, so a round was spent
+  "fixing" `foe_splicer`, which was already correct, while `foe_gantry` — the
+  actual failure — went untouched. Label your sheets.
+
+Gates after: **owner sweep 46 pass / 0 fail / 3 info**, **MPT 37 pass / 0
+fail**, NET_PROTOCOL 5. The three INFOs are the documented skips: the boss
+flavour line "THE HARBINGER ENRAGES" (an owner call), a check needing a
+campaign profile, and a check needing a fronted tab.
+
+---
+
 ## F. What is actually left
 
 Sessions 19–21 closed every technical item above. What remains is either an
