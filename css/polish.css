@@ -311,21 +311,29 @@ body.immersive #hud {
 body.immersive #hud > * { pointer-events: auto; }
 /* The rail: parked off the right edge, showing a hand-width of itself, and
    sliding home the moment it is wanted. */
+/* THE RIGHT COLUMN IS A LAYER OVER THE BOARD, not a wall beside it and not a
+   drawer hidden off the edge. It used to park itself at
+   `translateX(calc(100% - 18px))` and slide back on hover -- which made the
+   shop something you had to go looking for, and made every purchase a
+   hover-and-wait. The galaxy's own chrome does not hide: the briefing panel
+   floats over the map, visible, and the map runs underneath it. This is that,
+   for the battle. */
 body.immersive #sidebar {
   position: absolute; top: 0; right: 0; bottom: 0; z-index: 21;
-  background: linear-gradient(270deg, rgba(4,8,14,.94), rgba(4,8,14,.82));
+  width: 292px;
+  background: linear-gradient(270deg, rgba(4,8,14,.93) 78%, rgba(4,8,14,.72));
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
   padding: 8px 10px; border-left: 1px solid var(--line);
-  transform: translateX(calc(100% - 18px));
-  transition: transform .18s var(--e-tap);
   overflow-y: auto;
+  transition: opacity .18s var(--e-tap);
 }
-body.immersive #sidebar:hover,
-body.immersive #sidebar:focus-within { transform: translateX(0); }
-/* The grab handle, so the parked rail reads as a thing you can pull. */
-body.immersive #sidebar::before {
-  content: '‹'; position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
-  font-size: 15px; color: var(--text-mute); pointer-events: none;
-}
+/* It yields while you are actually placing something. A tower going down on
+   the ground beneath the rail is the one moment the rail is in the way, and
+   `body.aiming` is already set for exactly that. */
+body.immersive.placing #sidebar { opacity: 0.32; }
+body.immersive.placing #sidebar:hover,
+body.immersive.placing #sidebar:focus-within { opacity: 1; }
 body.rm-user.immersive #sidebar { transition: none; }
 #btn-immersive.on { color: var(--cyan); border-color: var(--cyan); }
 

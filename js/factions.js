@@ -50,6 +50,15 @@ const FACTIONS = {
     apply: (side) => {
       side.startLevelBonus = (side.startLevelBonus || 0) + 1;
       side.maxLives += 5; side.lives += 5;
+    },
+    /* THE FEDERATION HOLDS. Their skew is DEFENCE, and defence on this board
+       is measured in lives rather than in damage: a leak costs them less than
+       it costs anyone else. Written in applyLate because `traits` is reset by
+       Meta.applyTo -- see the note on FACTION_LATE below -- and leakReduction
+       is read off traits directly by Game.leakCostOf. */
+    applyLate: (side) => {
+      side.traits.leakReduction = (side.traits.leakReduction || 0) + LIGHT_LEAK_SHIELD;
+      side.traits.lifeRegen = (side.traits.lifeRegen || 0) + LIGHT_LIFE_REGEN;
     }
   },
 
@@ -67,7 +76,16 @@ const FACTIONS = {
       'are still eating.',
     bonusName: 'DEVOURING',
     bonusDesc: 'Reanimated units you send are 25% stronger.',
-    apply: (side) => { side.mods.reanim = (side.mods.reanim || 1) * 1.25; }
+    apply: (side) => { side.mods.reanim = (side.mods.reanim || 1) * 1.25; },
+    /* THE BROOD IS HARD ON PURPOSE. The owner's brief: unique, and really
+       difficult -- it should demand comboing and planning rather than reward
+       a steady bank. So the bank is worse and the brood is heavier: a Xeno
+       commander who plays the corpse engine well out-scales everyone, and one
+       who tries to play it like Humanity is simply poorer. */
+    applyLate: (side) => {
+      side.mods.gold = (side.mods.gold || 1) * XENO_LEAN_PURSE;
+      side.traits.musterHpMul = (side.traits.musterHpMul || 1) * XENO_BROOD_VIGOUR;
+    }
   },
 
   pirate: {
@@ -84,7 +102,14 @@ const FACTIONS = {
       'dark answer to them. Pirate worlds exist. Pirate commanders hold them.',
     bonusName: 'PLUNDER',
     bonusDesc: 'Begin every battle with enough extra gold for one more tower.',
-    apply: (side) => { side.gold += sqGold(340); }
+    apply: (side) => { side.gold += sqGold(340); },
+    /* SCRAPPY, AND OFFENSIVE WITH IT. They hit harder than anyone and reach
+       less far than anyone -- salvage guns, bolted together, fired late. The
+       purse above is the opening raid; this is how it fights once it lands. */
+    applyLate: (side) => {
+      side.mods.damage += PIRATE_PUNCH;
+      side.mods.range -= PIRATE_SHORT_REACH;
+    }
   },
 
   /* THE FIFTH BANNER, and the only one nobody is offered.

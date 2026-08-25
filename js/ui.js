@@ -5078,7 +5078,16 @@ const UI = {
     if (Game.arenaSeats > 3) this.syncArenaLadder(); else this.dropArenaLadder();
   },
 
-  syncShop() { $$('[data-tower]').forEach(b => b.classList.toggle('active', Game.selectedType === b.dataset.tower)); },
+  syncShop() {
+    $$('[data-tower]').forEach(b => b.classList.toggle('active', Game.selectedType === b.dataset.tower));
+    /* PLACING is a body state, because the thing that has to react to it --
+       the overlaid rail in immersive mode -- is not inside the shop. The rail
+       is a layer over the board now, so the one moment it is genuinely in the
+       way is while a tower or an ability is being aimed at the ground beneath
+       it; it fades then, and comes back the moment you reach for it. */
+    document.body.classList.toggle('placing',
+      !!Game.selectedType || Game.aimingAbility !== null);
+  },
   syncSpeed() {
     this.el.speedBtns.forEach(b => b.classList.toggle('active', Number(b.dataset.speed) === Game.speed));
     this.el.btnPause.textContent = Game.paused ? '▶' : '❚❚';

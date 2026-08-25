@@ -658,6 +658,18 @@ const Game = {
        CADRE is unaligned and has no faction, so it falls through to the sworn
        banner. `doctrineOverrides` is the story hook -- today the only door to
        THE LATTICE, because no seat is robotic yet. */
+    /* THE LATE SKEW. FACTIONS[x].apply runs before any commander is seated,
+       and Meta.applyTo/applyToAI then do `side.traits = freshTraits()` -- so
+       anything a faction wrote to TRAITS was thrown away before the first
+       wave. Every existing apply() writes mods or plain fields for exactly
+       that reason. `applyLate` is the other half: it runs HERE, once every
+       seat has its commander and its traits are folded, so a power can shape
+       the half of the game that lives on traits. Optional, so the two powers
+       whose identity was already right carry no hook at all. */
+    for (const S2 of this.sides) {
+      const f2 = FACTIONS[S2.faction];
+      if (f2 && typeof f2.applyLate === 'function') f2.applyLate(S2);
+    }
     for (const S2 of this.sides) {
       const over = opts.doctrineOverrides && opts.doctrineOverrides[S2.index];
       const want = over || (S2.commander && S2.commander.faction) || S2.faction || 'human';
@@ -2679,7 +2691,15 @@ const Game = {
     for (const S of this.sides) {
       if (!this.doctrineOf(S.index).scheduler) continue;
       if (!S.alive || S.defeated) continue;
-      if (!this.waveRunning || this.wave < FOL_START_WAVE) continue;
+      /* THE PROCESSION DOES NOT KEEP OFFICE HOURS. This used to read
+         `!this.waveRunning || ...`, and the `S.procTimer -= dt` below sits
+         AFTER the gate -- so the clock did not merely pause between waves, it
+         did not TICK. The prep window is the longest quiet stretch in a
+         battle, so most of the nine-second cadence was spent not counting, and
+         the march arrived roughly once per wave instead of "constantly", which
+         is what the owner reported. The wave gate stays: the rite still opens
+         on FOL_START_WAVE. */
+      if (this.wave < FOL_START_WAVE) continue;
       S.procTimer -= dt;
       if (S.procTimer > 0) continue;
       const list = S.musterLoadout || [];
@@ -3742,7 +3762,17 @@ const Game = {
     if (this.hurtFlash > 0) this.hurtFlash = Math.max(0, this.hurtFlash - dt * 2.2);
 
     this.uiTick = (this.uiTick || 0) + dt;
-    if (this.uiTick > 0.12) { this.uiTick = 0; UI.syncLive(); }
+    /* THE HUD IS CALLED FROM INSIDE THE SIMULATION, and it is the one thing in
+       here that touches the DOM. A throw anywhere under UI.syncLive used to
+       leave step() by this line -- which skipped `this.acc -= STEP` in the
+       batch above, aborted the rest of the frame, and never reached draw().
+       Two clients whose HUDs threw on different frames then disagreed about
+       the accumulator, so this guard is a determinism fix as much as a
+       robustness one. Reported once per distinct message, never swallowed. */
+    if (this.uiTick > 0.12) {
+      this.uiTick = 0;
+      try { UI.syncLive(); } catch (e) { this.recordLoopError(e); }
+    }
   },
 
   updateParticles(dt) {
@@ -4412,6 +4442,11 @@ const Game = {
        always was. */
     const z = this.camZoom();
     const c = this.camClamped();
+    /* THE SAME ZERO-SIZED RECT the drag handler guards against: a hidden or
+       mid-layout canvas measures 0, and `width / 0` is Infinity. A non-finite
+       board coordinate reaches Game.hover and every build/aim gate that reads
+       it, so it is refused here rather than propagated. */
+    if (!(r.width > 0) || !(r.height > 0)) return { x: c.x, y: c.y };
     return { x: c.x + (evt.clientX - r.left) * (this.width / r.width) / z,
              y: c.y + (evt.clientY - r.top) * (this.height / r.height) / z };
   },
@@ -5013,7 +5048,19 @@ Game.step = function (dt) {
 
 /* Settings and per-map records live alongside commander progression. */
 const Storage = {
-  loadSettings() { return Object.assign({ sfx: 0.7, music: 0.4, sfxOn: true, musicOn: true, reducedMotion: false, damageNumbers: true, immersive: false }, Meta.getSettings()); },
+  loadSettings() { return Object.assign({ sfx: 0.7, music: 0.4, sfxOn: true, musicOn: true, reducedMotion: false, damageNumbers: true,
+                                  /* THE BOARD IS THE SCREEN, by default. The
+                                     owner asked for the battle map to fill the
+                                     browser "just like the galaxy map, with the
+                                     right column overlayed on top of it". This
+                                     shipped as an opt-in toggle nobody found;
+                                     it is the default now, and the toggle
+                                     turns it OFF for anyone who preferred the
+                                     windowed board. An existing save that
+                                     never touched the setting has no key, so
+                                     Object.assign gives it the new default --
+                                     which is the intent, not a migration. */
+                                  immersive: true }, Meta.getSettings()); },
   saveSettings(s) { Meta.setSettings(s); },
   recordRun(game, won) {
     const d = Meta.load();

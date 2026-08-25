@@ -3414,6 +3414,36 @@ const XENO_INC_CAP = 10;
    (4 crawlers at 0.55x reward for +5%), which is what keeps the measured
    balance pins (fresh median 7, maxed 26-27) without a re-tune. */
 const MUSTER_LOADOUT_SIZE = 3;          /* picks a detachment may carry        */
+/* ══════════ THE FIVE SKEWS (owner brief, Session 25) ══════════════════
+   "Make sure each faction is skewed and balanced in their own way. Humans are
+   all-arounders and even. Federation of Light are mainly defensive. Pirates
+   are mainly offensive, but scrappy/unconventional. Xeno are ... unique and
+   really difficult ... The Robots should be similar to Humans ... however,
+   they start off weaker but have unique combos ... highly viable in late
+   game."
+
+   HUMANITY and THE PARALLEL already read that way and are untouched: humanity
+   takes a flat +10% across damage, rate and range plus ten lives, which is the
+   definition of an all-rounder, and the machines open BELOW everyone
+   (ROBOT_BOOT_FLOOR) and buy it back wave by wave. The other three were all
+   carrying a single number that said nothing about how they play. These are
+   the numbers that say it.
+
+   Deliberately small. A skew is meant to change which line of play is
+   comfortable, not to decide the match before it starts. */
+/* THE FEDERATION: a leak costs them a life less than it costs anyone, and the
+   line knits itself back together slowly. Defence measured where this board
+   actually measures it. */
+const LIGHT_LEAK_SHIELD = 1;
+const LIGHT_LIFE_REGEN = 0.15;
+/* THE BROOD: a leaner purse, a heavier brood. Play the corpse engine or be
+   poor -- which is the whole of "difficult, and rewards comboing". */
+const XENO_LEAN_PURSE = 0.92;
+const XENO_BROOD_VIGOUR = 1.14;
+/* THE PIRATES: hits hardest, reaches least. Salvage guns, fired late. */
+const PIRATE_PUNCH = 0.14;
+const PIRATE_SHORT_REACH = 0.07;
+
 const MUSTER_BASE_UNLOCK = ['crawler']; /* everyone can send these on day one  */
 /**
  * YOUR OWN POWER'S FIRST SOLDIER, granted with the banner.

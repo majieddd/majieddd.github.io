@@ -878,7 +878,12 @@ class Enemy {
       ctx.stroke();
     }
     if (this.shield > 0) {
-      const f = this.shield / this.maxShield;
+      /* maxShield can be 0 on a body wearing a BORROWED ward -- the shield is
+         real and the capacity it was measured against is not -- and
+         `shield / 0` is Infinity, which becomes `rgba(96,165,250,Infinity)`.
+         Canvas discards an invalid colour string silently, so the halo simply
+         vanished rather than erroring. Same idiom as the guard 23 lines below. */
+      const f = this.maxShield > 0 ? clamp(this.shield / this.maxShield, 0, 1) : 1;
       ctx.strokeStyle = `rgba(96,165,250,${0.35 + f * 0.5})`;
       ctx.fillStyle = `rgba(96,165,250,${0.08 + f * 0.12})`;
       ctx.lineWidth = 2;
@@ -2359,6 +2364,16 @@ class Tower {
       this.firing = false;
       return;
     }
+    /* HOISTED, because the puddle block far below reads it. It used to be
+       declared `const` inside the else branch, so on any tower carrying BOTH
+       `sweepRate` and `puddle` the read at the bottom of this function was a
+       hard `ReferenceError: target is not defined` -- thrown out of
+       Tower.update, out of Game.step, and (before the loop was made
+       unkillable) out of the frame that would have booked the next one. No
+       shipped stat block pairs the two today, which is the only reason this
+       has not been seen; it is one authored `puddle:` away from being seen
+       every frame. */
+    let target = null;
     if (s.sweepRate) {
       /* PHAROS. The lamp does not aim -- it TURNS, on its own clock. No
          acquisition at all: nothing on the board changes where the light is
@@ -2376,7 +2391,7 @@ class Tower {
         }
       }
     } else {
-      const target = this.acquire(game.enemies);
+      target = this.acquire(game.enemies);
       this.firing = !!target;
       if (!target) { this.heatT = Math.max(0, (this.heatT || 0) - dt); return; }
       this.angle = angleLerp(this.angle, Math.atan2(target.y - this.y, target.x - this.x), Math.min(1, dt * 14));
@@ -2431,7 +2446,9 @@ class Tower {
       }
     }
 
-    if (s.puddle) {
+    /* `target` is null for a SWEEPING lamp, which aims at nothing by design --
+       so the puddle needs somewhere to fall that does not depend on a target. */
+    if (s.puddle && target) {
       this.puddleTimer -= dt;
       if (this.puddleTimer <= 0) {
         this.puddleTimer = 0.75;
