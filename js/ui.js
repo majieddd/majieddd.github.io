@@ -2761,18 +2761,22 @@ const UI = {
         '<span class="br-sr" data-tt="' + rewardTip(n) + '">' + rewardFor(n) + '</span>' +
       '</div>').join('') + '</div>';
 
-    return '<div class="brief ' + (inline ? 'inline' : '') + ' ' + (plate ? 'has-art' : '') +
-           '" style="--fc:' + of.color + '">' +
+    /* THE STANDING COMMAND. One portrait, the soldiers at its left hand, the
+       towers at its right. It used to ride ON the plate, where a 62px portrait
+       covered the artwork it was supposed to introduce, and then sat above the
+       plate as the card's first block.
 
-      /* 1. THE STANDING COMMAND, above the banner and standing on its own.
-            It used to ride ON the plate, where a 62px portrait covered the
-            artwork it was supposed to introduce. Now it is a skinny bar of its
-            own: one portrait, the soldiers at its left hand, the towers at its
-            right, and the plate below left clean to be looked at.
+       IT NOW READS AFTER THE BOARD (owner, Session 32). Who you are fighting
+       is a fact about the battle, and the battle is the ground: the plate, the
+       name and the lane diagram establish WHERE before the card says WHO is
+       standing on it. Moving it also lets the plate be the first child, so its
+       -14px bleed reaches the card's real top edge instead of butting into a
+       bar.
 
-            A SURVIVE SCENARIO HAS NO COMMANDER. Printing one beside the words
-            "there is no commander to beat" was a contradiction the card stated
-            about itself. */
+       A SURVIVE SCENARIO HAS NO COMMANDER. Printing one beside the words
+       "there is no commander to beat" was a contradiction the card stated
+       about itself. */
+    const cmdBar =
       (sc.noCommander
         ? /* NO COMMANDER MEANS NO GARRISON EITHER. The rails hold the four
              soldiers and the four towers the HOLDER fields; with nobody
@@ -2793,7 +2797,10 @@ const UI = {
               commanderPortrait(boss, 42) +
               '<b style="color:' + boss.color + '">' + boss.name + '</b></span>' +
             '<span class="br-side right" data-tt="ARSENAL|The four towers this commander drafts here.">' + towerIcons + '</span>' +
-          '</div>') +
+          '</div>');
+
+    return '<div class="brief ' + (inline ? 'inline' : '') + ' ' + (plate ? 'has-art' : '') +
+           '" style="--fc:' + of.color + '">' +
 
       '<div class="br-plate' + (plate ? '' : ' bare') + '" style="--fc:' + of.color + '">' +
         (plate || '') +
@@ -2818,7 +2825,11 @@ const UI = {
 
       /* 3. THE BOARD, directly under the name line, so the shape of the ground
             is read before what the scenario asks of it (owner, Session 29). */
-      (m ? this.mapPreviewBlock(m, { size: inline ? 'brief' : 'tip' }) : '') +
+      (m ? this.mapPreviewBlock(m, { size: inline ? 'brief' : 'tip',
+                                     hoverCap: !!inline }) : '') +
+
+      /* 3b. WHO stands on it, now that the ground has been read. */
+      cmdBar +
 
       /* 4. THE SCENARIO, stars inside it. */
       '<div class="br-scen">' +
@@ -3058,8 +3069,29 @@ const UI = {
                  p.seats + ' seats',
                  p.perSide + (p.perSide === 1 ? ' lane' : ' lanes') + ' a side',
                  p.ground + ' buildable'];
+    const capText = cap.join(' \u00b7 ');
+
+    /* THE MEASUREMENTS MOVE TO HOVER (owner, Session 32). A permanent line of
+       four numbers under the picture is reference material, not something read
+       on every pass, and it was spending 14px of vertical space plus a gap to
+       say so on every single render.
+
+       ONLY WHERE HOVER IS ACTUALLY WIRED, THOUGH. `bindChipTips` is called on
+       panes such as #theatre-detail; it is NOT called on the innerHTML that
+       `showTooltip` writes, so a data-tt sitting inside a tooltip is dead
+       markup and the caption would simply vanish. Every `size: 'tip'` call site
+       is already inside a tooltip, so the caller states which world it is in
+       via `hoverCap`, and the default remains the old inline caption: an
+       existing call site cannot lose its caption by saying nothing.
+
+       bindChipTips splits the attribute on a pipe, so the body must not carry
+       one. The caption separates with a middot and never can. */
+    const hover = !!o.hoverCap;
     return '<div class="br-pv' + (o.size === 'tip' ? ' tip' : '') + (p.tall ? ' tall' : '') +
-           '">' + p.svg + '</div><div class="pv-cap">' + cap.join(' \u00b7 ') + '</div>';
+           (hover ? ' has-cap' : '') + '"' +
+           (hover ? ' data-tt="THE GROUND|' + capText + '"' : '') +
+           '>' + p.svg + '</div>' +
+           (hover ? '' : '<div class="pv-cap">' + capText + '</div>');
   },
 
   /* ══════════════════════════════════════════════ SCREEN 3. LOADOUT ═══ */

@@ -373,7 +373,7 @@ body.immersive #hud > .hud-centre { align-self: flex-start; }
    "drag or arrows to pan" in the bottom-left corner in the same faint voice;
    a battle board that pans and zooms identically should say so identically. */
 body.immersive #stage::after {
-  content: 'drag or arrows to pan  b7 scroll to zoom  b7 0 recentres  b7 space pauses';
+  content: 'drag or arrows to pan · scroll to zoom · 0 recentres · space pauses';
   position: absolute; left: 14px; bottom: 8px; z-index: 5;
   font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase;
   color: var(--text-mute); opacity: .7; pointer-events: none;
@@ -2771,17 +2771,38 @@ body:not(.arena-field) .arena-ladder { display: none; }
    lives" to wrap over four lines beside a 42px star cell, which is what made
    the stars unreadable. Narrow stacks the reward under the condition; the
    container query restores three columns only where they fit. */
-.br-stars { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
-.br-srow { display: grid; grid-template-columns: auto 1fr; gap: 2px 7px;
+/* STARS IN THE SAME SPOT EVERY TIME (owner, Session 32). Two separate things
+   were moving the star column, and fixing either alone leaves it crooked.
+
+   FIRST, the rows were CENTRED, not stretched: an older `.br-stars` rule sets
+   `align-items: center` and the column-direction rule below it never reset
+   that, so each row shrank to its own content and was then centred on a
+   different left edge. SECOND, `grid-template-columns: auto 1fr` sized the
+   star cell to its own glyph count, so one star measured 10px, two 20px and
+   three 30px. Measured before the fix, the three glyphs began at x=1365,
+   1346.5 and 1341.5.
+
+   A fixed 32px cell (three stars measure 30px at this size) plus stretched
+   rows puts every star on one left edge, while the box itself keeps its width
+   and stays centred in the card: aligned internally, not shoved to the side. */
+.br-stars { margin-top: 8px; display: flex; flex-direction: column;
+            align-items: stretch; gap: 4px; }
+/* EVERY row reserves the border, earned or not. `.got` used to ADD a 1px
+   border, which pushed its own content across by exactly 1px and left the star
+   column measurably crooked (spread 1px, not 0) the moment a world had a star
+   on it. A transparent border here costs nothing and makes the earned state a
+   pure colour change instead of a layout change. */
+.br-srow { display: grid; grid-template-columns: 32px 1fr; gap: 2px 7px;
            align-items: baseline; padding: 5px 7px; border-radius: 7px;
+           border: 1px solid transparent;
            background: rgba(0,0,0,.22); font-size: 11.5px; }
 .br-srow.got { background: color-mix(in oklab, var(--gold) 12%, transparent);
-               border: 1px solid color-mix(in oklab, var(--gold) 34%, transparent); }
+               border-color: color-mix(in oklab, var(--gold) 34%, transparent); }
 .br-srow.none { opacity: .55; }
 /* Stars sized to be legible: the old 10px with -1px tracking crushed three
    glyphs into an illegible smudge. */
 .br-sn { grid-column: 1; grid-row: 1 / span 2; align-self: center;
-         font-size: 12px; letter-spacing: 0; line-height: 1.1;
+         text-align: left; font-size: 12px; letter-spacing: 0; line-height: 1.1;
          color: var(--text-mute); white-space: nowrap; }
 .br-srow.got .br-sn { color: var(--gold); }
 .br-sc { grid-column: 2; grid-row: 1; color: var(--text); }
@@ -2791,7 +2812,9 @@ body:not(.arena-field) .arena-ladder { display: none; }
 .br-srow.got .br-sr { color: var(--green); }
 
 @container brief (min-width: 400px) {
-  .br-srow { grid-template-columns: auto 1fr auto; align-items: center; }
+  /* the wide layout keeps the same fixed star cell, or the alignment the
+     narrow layout just gained would come apart above 400px */
+  .br-srow { grid-template-columns: 32px 1fr auto; align-items: center; }
   .br-sn { grid-row: 1; }
   .br-sc { grid-row: 1; }
   .br-sr { grid-column: 3; grid-row: 1; text-align: right; font-size: 11.5px; }
