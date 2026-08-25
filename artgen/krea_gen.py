@@ -1,5 +1,5 @@
 """
-Cosmic Conquest — art generation on Krea 2 Turbo.
+Cosmic Conquest: art generation on Krea 2 Turbo.
 
 Krea 2 Turbo is a 12.9B-parameter single-stream DiT distilled for 8-step
 sampling with guidance disabled. In bf16 the transformer alone is ~26GB, which
@@ -200,7 +200,7 @@ def write_pack(jobs, source_note):
         pack[key] = 'data:image/webp;base64,' + base64.b64encode(blob).decode()
 
     total = sum(len(v) for v in pack.values())
-    body = (f'/* Generated illustrative art — {source_note}.\n'
+    body = (f'/* Generated illustrative art, {source_note}.\n'
             f'   Regenerate with artgen/krea_gen.py. Keys: cmd_<id>, fac_<id>, world_<id>,\n'
             f'   foe_<id>, abil_<id>, title, nebula. */\n'
             'const ARTPACK = ' + json.dumps(pack) + ';\n')
