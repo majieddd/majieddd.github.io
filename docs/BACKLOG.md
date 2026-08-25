@@ -300,11 +300,75 @@ campaign profile, and a check needing a fronted tab.
 
 ---
 
+## Session 24 — THE OWNER'S FOUR CALLS, ANSWERED
+
+The four decisions held over from Session 23. The owner ruled on all four;
+what follows is what each turned out to mean once the code was read.
+
+| # | The call | What shipped |
+|---|---|---|
+| O1 | *"Yes they should be, to give replayability to other faction runs."* | **THE RENEGADE WORLD.** One per system: a splinter of your own power that will not stand down. It is the only ground that pays your own power's boons, and deliberately the only place your own soldiers march against you. |
+| O2 | *"Your commander will facilitate the way your units are made. For now it should be that you can mix units between commanders."* | The rite already followed the commander and vaulted units already mixed — both verified before touching anything. What did NOT hold: **EQUIP was obeyed on one battle path out of three.** |
+| O3 | *"As you get through the campaign, the AI should progressively use more advanced tactics."* | **A five-rung tactic ladder.** T2 is today's rival and the floor outside the campaign; the campaign opens below it and climbs past it to re-aiming and selling. |
+| O4 | *"unsure what this means, but use your best judgement."* | The literal question cannot arise — a duel is never fought over a contested world. The **garrison skirmish that replaces the refused duel** was fielding generic rivals instead of the two powers actually fighting over it. |
+
+### What the adversarial pass caught that I did not
+
+O1 shipped once before it was right. The renegade world read the world's own
+**kind** for its boon key, and kinds are weighted — so four draws landed all
+four kind-keyed boons in about **4%** of galaxies, 2.3 of 4 on average.
+"Reachable" would have quietly meant "eventually, across many runs" rather
+than "in this run". Cycling the key by system index, apex on the last, makes
+it **min 5, max 5, avg 5.00 in every galaxy** for all four powers.
+
+Four more, all real: THE PARALLEL was being given renegade worlds despite
+owning none of the twenty boons (its splinter would have seated a machine
+commander and spoiled the secret faction); `applyRivalHoldings` could stamp a
+rival over a renegade world while the flag stayed true; `worldAllegiance` had
+no renegade state, so the map said "held" for ground you do not hold and a
+conquered renegade world kept the mark; and `.br-renegade` read `--fc` from a
+sibling, rendering grey for all four powers.
+
+### Two harnesses of mine that lied
+
+1. **Re-aiming made the rival worse and I only knew because I measured it.**
+   The first version reasoned freely from the threat profile. config.js had
+   already written down why that fails: FIRST is *"the default, and usually
+   correct"*, and WEAK *"maximises kills and reanimation output"* — an
+   offensive property on a defensive board.
+2. **My head-to-head rig was not reproducible.** The player-side brain ran
+   outside the seeded window, so the same config twice in one page gave wave
+   22/15 lives then wave 20/1. Every number built on it was noise. Rebuilt on
+   `PINS`' own capture/restore rig and verified `reproducible: true` first.
+
+### The evidence
+
+Old and new bundles built, served at parallel paths, measured back to back in
+**one session** — identical step for step:
+
+| pin | before | after |
+|---|---|---|
+| `selfTest(0,1234)` | 23 waves / 28781 steps | 23 / 28781 |
+| `fresh(3,1000)` | 8/11697 · 10/14330 · 10/14252 | identical |
+| `maxed` map 0 tier 0 | 28 waves / 34312 steps, win, lives [35,0] | identical |
+
+And the galaxy PRNG stream is frozen: **7,000 worlds across 5 powers × 40
+seeds, zero non-renegade fields moved.**
+
+Gates: **sweep 52 pass / 0 fail** (24.1–24.4 added), **MPT 37 pass / 0 fail**,
+NET_PROTOCOL still 5 — nothing changed a message shape, a fingerprint term or
+an index-coupled table, so no bump is owed.
+
+---
+
 ## F. What is actually left
 
 Sessions 19–21 closed every technical item above. What remains is either an
-**owner pick** (sections C, E and G), or **hardware this environment lacks**
-(pinch-zoom on a real touchscreen). WebRTC manual signalling is no longer on
+**owner pick** (section E's twelve held mechanics), or **hardware this
+environment lacks** (pinch-zoom on a real touchscreen). The four standing
+owner DECISIONS — O1 boons of your own power, O2 the equipped commander in
+skirmishes, O3 the rival's tactics, O4 the contested-world garrison — were
+ruled on and shipped in Session 24 above. WebRTC manual signalling is no longer on
 this list: it shipped in Session 21 round two and was proved across two
 browsing contexts, sealed turns and all. There is no engineering backlog.
 

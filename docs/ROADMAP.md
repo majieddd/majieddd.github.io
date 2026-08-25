@@ -1402,3 +1402,60 @@ it says about the game.
 
 Gates: **owner sweep 46 pass / 0 fail / 3 info**, **MPT 37 pass / 0 fail**,
 NET_PROTOCOL 5.
+
+---
+
+# SESSION 24 — THE OWNER'S FOUR CALLS
+
+Four decisions were held over for the owner at the end of Session 23. All four
+came back; three of them turned out to mean something different from the
+question once the code was read. Full table in [`BACKLOG.md`](BACKLOG.md)
+§ Session 24; new checks are 24.1–24.4.
+
+**O1 — THE RENEGADE WORLD.** Your own power's five boons were unreachable by
+construction: `generateGalaxy` draws every owner from `rivalFactionsOf(you)`,
+which excludes you, and `boonFor` filters on the owner. Five of the twenty
+were dead data in every galaxy ever generated. One world per system now flies
+your own colours and refuses your command — the only ground that pays your own
+power's advantage, and the one deliberate exception to the rule that your own
+soldiers never march against you.
+
+It shipped wrong once. Reading the world's own weighted **kind** for the boon
+key meant all four kind-keyed boons appeared in about 4% of galaxies. Cycling
+the key by system index, apex last, makes all five reachable in **every**
+galaxy — measured, not argued.
+
+**O2 — EQUIP MEANT EQUIP ON ONE PATH IN THREE.** The rite already followed the
+commander and vaulted units already mixed across commanders; both were checked
+before anything was touched. What did not hold was the standing order itself:
+the garrison skirmish and the Maelstrom threw away `Meta.equipped()` and
+fielded your banner's free commander — which, because the rite is resolved
+from `commander.faction`, silently handed you a different summoning rite too.
+
+**O3 — THE RIVAL LEARNS.** A five-rung tactic ladder keyed to campaign
+progress. Today's rival is rung 2, and rung 2 is what every battle outside the
+campaign still gets, so the pins do not move. The campaign opens *below* it —
+the owner asked for a gentler start — and climbs past it to re-aiming and
+selling.
+
+Re-aiming was wrong the first time, and the game had already written down why:
+`TARGET_MODES` calls FIRST *"the default, and usually correct"*, and WEAK
+*"maximises kills and reanimation output"* — an offensive property. Measured
+head to head, my clever version made the rival worse.
+
+**O4 — THE QUESTION COULD NOT ARISE.** Contested worlds always take a tri map
+and `duelRefusal` closes every table over two seats, so no duel is ever fought
+over one. But the garrison skirmish that *replaces* that refused duel is then
+the only way most players meet a contested world outside the campaign — and it
+was seating a generic pair of rivals instead of the two powers actually
+fighting over it.
+
+**Two of my own harnesses lied this session**, and both are recorded in the
+backlog: a head-to-head rig that was not reproducible, and a heuristic that
+measured worse than the code it replaced. The gates say what shipped is sound;
+they said nothing about the instruments, and the instruments had to be checked
+separately.
+
+Gates: **sweep 52 pass / 0 fail**, **MPT 37 pass / 0 fail**, NET_PROTOCOL 5.
+Pins identical step for step against the pre-session build, measured back to
+back in one session.
