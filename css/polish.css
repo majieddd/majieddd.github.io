@@ -1267,14 +1267,31 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
 
 /* ═════════════════ ENRAGE + BANKED CAPITAL ══════════════════════════════ */
 .enrage-wrap { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
-.enrage-btn { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 10px;
-  border-radius: 11px; cursor: pointer; text-align: left;
-  border: 1px solid rgba(239, 68, 68, .34);
-  background: linear-gradient(180deg, rgba(239, 68, 68, .14), rgba(239, 68, 68, .05));
+/* THE PANEL ACTION ROW. Measured in the Session 30 audit: .enrage-btn and
+   .muster-btn shared 7 of 11 declarations and differed only in accent hue and
+   a single pixel of radius. That is one primitive with two accents, not two
+   controls, so the shape lives here once and each caller supplies --ac.
+
+   NOT merged with .mode-btn and .speed-btn, and that is also measured: those
+   two overlap by only 30 percent (different size, radius, weight and colour
+   role). Forcing genuinely different controls into one primitive is the
+   opposite failure from duplicating one. */
+.panel-action { display: flex; align-items: center; gap: 9px; width: 100%;
+  padding: 7px 10px; border-radius: 10px; cursor: pointer; text-align: left;
+  border: 1px solid rgb(from var(--ac) r g b / .30);
+  background: linear-gradient(180deg, rgb(from var(--ac) r g b / .13),
+                                      rgb(from var(--ac) r g b / .045));
   transition: transform .12s var(--e-tap), border-color .14s var(--e-tap),
               box-shadow .16s var(--e-tap), filter .14s var(--e-tap); }
-.enrage-btn:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(239, 68, 68, .7);
-  box-shadow: 0 0 18px rgba(239, 68, 68, .22); }
+@media (hover: hover) and (pointer: fine) {
+  .panel-action:hover:not(:disabled) { transform: translateY(-1px);
+    border-color: rgb(from var(--ac) r g b / .68);
+    box-shadow: 0 0 17px rgb(from var(--ac) r g b / .21); }
+}
+@media (prefers-reduced-motion: reduce) { .panel-action { transition: none; } }
+
+.enrage-btn { --ac: #ef4444; }
+.muster-btn { --ac: #f97316; }
 .enrage-btn:active:not(:disabled) { transform: translateY(1px) scale(.99); }
 .enrage-btn:disabled { cursor: default; filter: grayscale(.55); opacity: .55; }
 .enrage-btn.maxed { border-color: rgba(239, 68, 68, .8); opacity: 1; filter: none; }
@@ -1375,14 +1392,7 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
 .muster-head b { font-size: 11.5px; color: #fb923c; font-variant-numeric: tabular-nums; }
 .muster-head b.capped { color: var(--text-mute); }
 .muster-head em { font-style: normal; font-size: 9.5px; color: var(--text-mute); margin-left: auto; }
-.muster-btn { display: flex; align-items: center; gap: 9px; width: 100%; padding: 6px 9px;
-  border-radius: 10px; cursor: pointer; text-align: left;
-  border: 1px solid rgba(249, 115, 22, .28);
-  background: linear-gradient(180deg, rgba(249, 115, 22, .12), rgba(249, 115, 22, .04));
-  transition: transform .12s var(--e-tap), border-color .14s var(--e-tap),
-              box-shadow .16s var(--e-tap), filter .14s var(--e-tap); }
-.muster-btn:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(249, 115, 22, .66);
-  box-shadow: 0 0 16px rgba(249, 115, 22, .2); }
+
 .muster-btn:active:not(:disabled) { transform: translateY(1px) scale(.99); }
 .muster-btn:disabled, .muster-btn.poor { cursor: default; filter: grayscale(.5); opacity: .5; }
 .mu-ic { font-family: var(--display); font-size: 13px; color: #fdba74; letter-spacing: -.04em;
@@ -2789,3 +2799,7 @@ body:not(.arena-field) .arena-ladder { display: none; }
               font-size: 10px; letter-spacing: .18em; color: var(--gold);
               background: color-mix(in oklab, var(--gold) 9%, transparent);
               border: 1px solid color-mix(in oklab, var(--gold) 30%, transparent); }
+
+/* The wild bar carries no rails, so it centres on its single marker rather
+   than holding two empty 1fr columns open beside it. */
+.br-cmdbar.wild { grid-template-columns: 1fr; justify-items: center; }

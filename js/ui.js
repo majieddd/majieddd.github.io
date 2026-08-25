@@ -2704,6 +2704,7 @@ const UI = {
        faction soldiers, so the faction field is what separates them. ---- */
     let unitIcons = '';
     try {
+      if (sc.noCommander) throw 0;   /* nobody fields these; skip the work */
       const own = Object.keys(ENEMY_TYPES)
         .filter(id => ENEMY_TYPES[id].faction === w.owner)
         .slice(0, 4);
@@ -2776,11 +2777,17 @@ const UI = {
             "there is no commander to beat" was a contradiction the card stated
             about itself. */
       (sc.noCommander
-        ? '<div class="br-cmdbar wild" data-tt="' + sc.name + '|' + sc.brief + '">' +
-            '<span class="br-side left">' + unitIcons + '</span>' +
+        ? /* NO COMMANDER MEANS NO GARRISON EITHER. The rails hold the four
+             soldiers and the four towers the HOLDER fields; with nobody
+             commanding the seat there is no holder standing there to field
+             them, so printing the faction's roster beside the words "NO
+             COMMANDER" claimed a garrison the board does not have. The bar
+             collapses to the single fact it is stating. What you will actually
+             meet is the mob row inside the scenario box, which comes off the
+             MAP rather than off a faction. */
+          '<div class="br-cmdbar wild" data-tt="' + sc.name + '|' + sc.brief + '">' +
             '<span class="br-face"><i class="br-wild">' + sc.icon + '</i>' +
               '<b>NO COMMANDER</b></span>' +
-            '<span class="br-side right"></span>' +
           '</div>'
         : '<div class="br-cmdbar">' +
             '<span class="br-side left" data-tt="SOLDIERS|The four bodies ' + of.short + ' fields on this world.">' + unitIcons + '</span>' +
@@ -4800,7 +4807,7 @@ const UI = {
     const cost = Game.enrageCost(0);
     const afford = Game.sides[0].gold >= cost;
     return `<div class="enrage-wrap">
-      <button class="enrage-btn ${maxed ? 'maxed' : ''} ${afford || maxed ? '' : 'poor'}"
+      <button class="panel-action enrage-btn ${maxed ? 'maxed' : ''} ${afford || maxed ? '' : 'poor'}"
               id="btn-enrage" ${maxed || !afford ? 'disabled' : ''}
               data-tt="RESONANT FIELD|Charge an ionic field over the next wave: enemies arrive ${
                 Math.round(ENRAGE_HP * 100)}% tougher and every kill pays ${
@@ -4991,7 +4998,7 @@ const UI = {
          the tooltip, where there is room for them; the face is what a glance
          mid-wave has to read. The em dash is banned from all copy, so the
          tooltip is punctuated without it. */
-      return `<button class="muster-btn ${ok ? '' : 'poor'}" data-muster="${tier.id}"${ok ? '' : ' disabled'}
+      return `<button class="panel-action muster-btn ${ok ? '' : 'poor'}" data-muster="${tier.id}"${ok ? '' : ' disabled'}
         aria-label="Summon ${tier.name}: ${sent} ${base.name} for ${cost} gold, ${powDelivered} power, econ plus ${addPct} percent"
         data-tt="SUMMON ${tier.name}|◈${formatNum(cost)} marches ${sent} × ${base.name} at ${hpTxt} health each, ${
           formatNum(powDelivered)} POWER into the lane${vics.length > 1 ? ', split across ' + vics.length + ' rivals' : ''}. Adds ${
