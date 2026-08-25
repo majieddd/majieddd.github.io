@@ -292,8 +292,31 @@ const Game = {
        an implausible measurement falls back to the viewport and schedules a
        re-fit once layout settles. */
     const box = this.canvas.parentElement;
-    let availW = box ? box.clientWidth - 8 : 0;
-    let availH = box ? box.clientHeight - 10 : 0;
+    /* THE CHROME'S MEASUREMENTS, published for the CSS that carves the board's
+       space out of the window. In immersive mode #canvas-wrap pads itself by
+       --rail-w and --hud-h so the fitted board lands in the ground the rail
+       and the HUD actually leave -- and those two are measured HERE, from the
+       live elements, because the rail is 292px on a narrow screen and a 580px
+       two-column grid past 1240px. Guarded against zero: a hidden screen
+       measures nothing, and writing 0 would fit the next frame to a lie. */
+    if (document.body.classList.contains('immersive')) {
+      const sb = document.getElementById('sidebar');
+      const hud = document.getElementById('hud');
+      if (sb && sb.offsetWidth > 0)
+        document.body.style.setProperty('--rail-w', (sb.offsetWidth + 8) + 'px');
+      if (hud && hud.offsetHeight > 0)
+        document.body.style.setProperty('--hud-h', (hud.offsetHeight + 8) + 'px');
+    }
+    /* clientWidth INCLUDES padding, so the immersive carve-out above would be
+       invisible to a bare clientWidth read -- the fit would still use the full
+       window and the board would keep running under the rail. Subtracting the
+       computed padding makes this read the CONTENT box, which in the normal
+       layout (no padding) is byte-identical to what it always read. */
+    const boxPad = box ? getComputedStyle(box) : null;
+    const padW = boxPad ? (parseFloat(boxPad.paddingLeft) || 0) + (parseFloat(boxPad.paddingRight) || 0) : 0;
+    const padH = boxPad ? (parseFloat(boxPad.paddingTop) || 0) + (parseFloat(boxPad.paddingBottom) || 0) : 0;
+    let availW = box ? box.clientWidth - padW - 8 : 0;
+    let availH = box ? box.clientHeight - padH - 10 : 0;
     const unlaidOut = availW < 240 || availH < 200;
     if (unlaidOut) {
       /* The sidebar is two columns wide on a big screen and one on a small
@@ -4862,14 +4885,43 @@ const Game = {
     }, { passive: false });
     let panning = null;
     cv.addEventListener('pointerdown', e => {
-      if (e.button !== 1) return;                 /* middle only */
-      e.preventDefault();
-      panning = { id: e.pointerId, x: e.clientX, y: e.clientY };
-      cv.setPointerCapture(e.pointerId);
-      cv.style.cursor = 'grabbing';
+      /* THE MIDDLE BUTTON PANS UNCONDITIONALLY, as it always has. The LEFT
+         button now pans too, the way the galaxy map does -- but only from a
+         press nothing else on this canvas claims: an armed ability, a tower
+         being placed or moved, all mean the next gesture already. And on
+         BUILDABLE ground at rest the drag-out radial owns the press (it is
+         the quick-build gesture), so a left pan starts there only once the
+         camera is actually zoomed -- which is also the only time there is
+         anywhere to pan TO. A left press is a MAYBE-pan: it does nothing
+         until it travels PAN_OPEN_PX, so a click is still a click. */
+      const zoomed = this.camZoom() > 1.001;
+      let ok = false;
+      if (e.button === 1) ok = true;
+      else if (e.button === 0 && this.boardInteractive() &&
+               this.aimingAbility === null && !this.movingTower && !this.selectedType) {
+        const p = this.pointerToGrid(e);
+        ok = zoomed || !this.canBuild(0, p.gx, p.gy);
+      }
+      if (!ok) return;
+      if (e.button === 1) e.preventDefault();
+      panning = { id: e.pointerId, x: e.clientX, y: e.clientY,
+                  primary: e.button === 0, opened: e.button === 1, applied: 0 };
+      /* Capture can legitimately refuse -- a pointer already released by the
+         time this runs -- and a throw here would strand the maybe-pan armed. */
+      try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+      if (panning.opened) cv.style.cursor = 'grabbing';
     });
     cv.addEventListener('pointermove', e => {
       if (!panning || e.pointerId !== panning.id) return;
+      /* The maybe-pan opens on travel, exactly the radial's own rule: the
+         threshold is in CSS pixels because the player's hand does not scale
+         with the fitted canvas. Until it opens, nothing moves and a release
+         is still a clean click. */
+      if (!panning.opened) {
+        if (Math.hypot(e.clientX - panning.x, e.clientY - panning.y) < PAN_OPEN_PX) return;
+        panning.opened = true;
+        cv.style.cursor = 'grabbing';
+      }
       const r = this.canvas.getBoundingClientRect();
       /* A HIDDEN OR MID-LAYOUT CANVAS MEASURES ZERO, and dividing by it is
          where the camera used to be poisoned for the rest of the match. There
@@ -4877,12 +4929,23 @@ const Game = {
          the drag is simply ignored until it does. */
       if (!(r.width > 0) || !(r.height > 0)) { panning.x = e.clientX; panning.y = e.clientY; return; }
       const z = this.camZoom();
+      const c0 = this.camClamped();
       this.panBy(-(e.clientX - panning.x) * (this.width / r.width) / z,
                  -(e.clientY - panning.y) * (this.height / r.height) / z);
+      const c1 = this.camClamped();
+      /* What the camera ACTUALLY did, not what the hand asked for: at zoom 1
+         the clamp holds the view still, and a drag that moved nothing must
+         not eat the click that follows it. */
+      panning.applied += Math.abs(c1.x - c0.x) + Math.abs(c1.y - c0.y);
       panning.x = e.clientX; panning.y = e.clientY;
     });
     const endPan = e => {
       if (!panning || (e && e.pointerId !== panning.id)) return;
+      /* A left pan that moved the camera has already been answered, and its
+         release also fires a click on the canvas. Suppressed through the same
+         capture-phase flag the radial uses -- one mechanism, one meaning:
+         "this press was a gesture, not a click". */
+      if (panning.primary && panning.applied > 0.5) this._radialAte = true;
       panning = null; cv.style.cursor = '';
     };
     cv.addEventListener('pointerup', endPan);
@@ -4957,6 +5020,11 @@ const Game = {
       if (this.aimingAbility !== null || this.movingTower || this.selectedType) return;
       const S = this.sides[0];
       if (!S || !S.loadout || !S.loadout.length) return;
+      /* While the camera is ZOOMED the left drag belongs to the pan -- that is
+         the only time there is anywhere to go, and two gestures cannot share
+         one press. At rest the ring keeps it, exactly as before; click-to-
+         build works at any zoom either way. */
+      if (this.camZoom() > 1.001) return;
       const p = this.pointerToGrid(e);
       if (!this.canBuild(0, p.gx, p.gy)) return;
       const b = this.pointerToBoard(e);

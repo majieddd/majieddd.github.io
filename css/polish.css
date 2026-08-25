@@ -302,9 +302,22 @@ body.rm-user .bi-line { opacity: 1; }
    hover or focus -- because it is controls, not decoration, and a shop you
    cannot open is not immersion. */
 body.immersive #stage { position: absolute; inset: 0; padding: 0; gap: 0; }
-body.immersive #canvas-wrap { position: absolute; inset: 0; }
+/* THE BOARD FITS THE SPACE THE CHROME LEAVES, not the window the chrome then
+   covers. The wrap is still the full window -- the canvas centres inside its
+   CONTENT box, and the padding carves the rail and the HUD out of that box.
+   Both figures are LIVE, written by Game.resize from the elements' own
+   measured sizes (--rail-w, --hud-h on body), because the rail is 292px on a
+   narrow screen and a 580px two-column grid past 1240px (style.css), and a
+   constant here would be wrong on exactly one of them. The fallbacks only
+   cover the first frame before resize has run. */
+body.immersive #canvas-wrap {
+  position: absolute; inset: 0;
+  padding: var(--hud-h, 96px) var(--rail-w, 312px) 12px 12px;
+}
+/* The HUD ends where the rail begins, or the rival's own panel is buried
+   under the shop. */
 body.immersive #hud {
-  position: absolute; top: 0; left: 0; right: 0; z-index: 20;
+  position: absolute; top: 0; left: 0; right: var(--rail-w, 312px); z-index: 20;
   background: linear-gradient(180deg, rgba(4,8,14,.92), rgba(4,8,14,.55) 70%, rgba(4,8,14,0));
   pointer-events: none;
 }
@@ -318,9 +331,16 @@ body.immersive #hud > * { pointer-events: auto; }
    hover-and-wait. The galaxy's own chrome does not hide: the briefing panel
    floats over the map, visible, and the map runs underneath it. This is that,
    for the battle. */
+/* NO width HERE, and that is the fix for the crushed rail: style.css owns the
+   sidebar's width and it is RESPONSIVE -- 292px one-column below 1240px, a
+   580px two-column grid above it. The first immersive pass pinned 292px onto
+   the absolute rail, so on any wide screen the two-column grid was squeezed
+   into half its designed width and every label clipped mid-word.
+   content-box, so the 10px side padding rides OUTSIDE the width style.css
+   promised the columns rather than being taken out of them. */
 body.immersive #sidebar {
   position: absolute; top: 0; right: 0; bottom: 0; z-index: 21;
-  width: 292px;
+  box-sizing: content-box;
   background: linear-gradient(270deg, rgba(4,8,14,.93) 78%, rgba(4,8,14,.72));
   backdrop-filter: blur(7px);
   -webkit-backdrop-filter: blur(7px);

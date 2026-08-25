@@ -1153,6 +1153,39 @@
        : Object.keys(got).map(function (f) { return f + '=' + got[f]; }).join(' '));
   });
 
+  /* ---- 25.5 the immersive battle chrome never buries the board --------- */
+  T('25.5 the board, the HUD and the rail share the window without overlap', function () {
+    if (!document.body.classList.contains('immersive')) {
+      /* The default IS immersive; a profile that turned it off is testing a
+         layout this check does not describe. */
+      skip('25.5 the board, the HUD and the rail share the window without overlap', 'immersive is off');
+      return;
+    }
+    Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+    UI.show('screen-game'); UI.buildShop(); UI.buildAbilityBar(); Game.resize();
+    const side = document.getElementById('sidebar');
+    const hud = document.getElementById('hud');
+    const cv = Game.canvas;
+    const b = function (el) { return el.getBoundingClientRect(); };
+    const cb = b(cv), sb = b(side), hb = b(hud);
+    /* The three claims the broken layout violated, asserted as geometry:
+       the board ends where the rail begins, starts below the HUD, and the
+       HUD ends where the rail begins -- so the rival's panel is visible. */
+    const boardClearOfRail = cb.right <= sb.left + 2;
+    const boardClearOfHud = cb.top >= hb.bottom - 2;
+    const hudClearOfRail = hb.right <= sb.left + 2;
+    /* And nothing in the rail is clipped mid-word, which is what a wrong
+       width looks like from the player's chair. */
+    let clipped = 0;
+    side.querySelectorAll('button, .panel, h2, .muster-bar > *, #shop-list > *, #inspector > *')
+      .forEach(function (el) { if (el.scrollWidth > el.clientWidth + 2) clipped++; });
+    ok('25.5 the board, the HUD and the rail share the window without overlap',
+       boardClearOfRail && boardClearOfHud && hudClearOfRail && clipped === 0,
+       'board ' + Math.round(cb.right) + ' vs rail ' + Math.round(sb.left) +
+       ', board top ' + Math.round(cb.top) + ' vs hud bottom ' + Math.round(hb.bottom) +
+       ', hud right ' + Math.round(hb.right) + ', clipped rail elements: ' + clipped);
+  });
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;

@@ -30,6 +30,10 @@ const STAGE_CHROME_PX = 30;      /* #stage padding + the gap beside the sidebar 
    a ring is a heavier interruption than a missed world click, so it asks for
    more travel before it commits. */
 const RADIAL_OPEN_PX = 12;
+/* A left press becomes a PAN once it travels this far, in CSS pixels -- under
+   the radial's 12 so a drag meant as a pan never opens the ring on the way,
+   and far enough that a click with a shaky hand is still a click. */
+const PAN_OPEN_PX = 5;
 /* How far the battle camera may push in. The board is fitted whole at 1, so
    this is entirely opt-in; past about 2.6 the hand-drawn sprites soften for
    the same reason viewScale stops at 1.9. */
