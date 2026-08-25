@@ -1891,12 +1891,9 @@ const UI = {
 
     const chosenW = c.chosen && this.worldById(gx, c.chosen.world);
     $('#theatre-detail').innerHTML = (chosenW
-      ? /* ONE PORTRAIT PER CARD (owner, Session 30). This badge carried a
-             second portrait of the same commander the briefing already shows
-             in its command bar, so the panel opened with the same face twice
-             and the plate below both of them. A thin marker says the same
-             thing and costs no vertical space. */
-        '<div class="course-set">◈ COURSE SET</div>' +
+      ? /* NO BADGE AT ALL (owner, Session 31). COURSE SET restated what the
+             highlighted world on the map already says, and the briefing card
+             says everything else. Dead chrome, removed. */
         this.worldBriefing(gx, gx.systems[chosenW.si], chosenW, prog, true)
       : '<p class="hint">Select a world on the map to plot your course.</p>');
     /* The SOULS explainer that used to sit under this card is gone (owner,
@@ -2816,7 +2813,7 @@ const UI = {
         (arena ? '<span class="br-kind" data-tt="ARENA: ' + arena.name + '|' + arena.desc + '">' +
           (arena.icon || '\u2b21') + ' ' + arena.name + '</span>' : '') +
         (open ? '' : '<span class="br-kind sealed" data-tt="SEALED|Take an adjacent world first.">\u2298 sealed</span>') +
-        '<span class="br-sys">' + sys.name + (w.seat ? ' \u00b7 COMMANDER SEAT' : '') + '</span>' +
+        '<span class="br-sys">' + sys.name + '</span>' +
       '</div>' +
 
       /* 3. THE BOARD, directly under the name line, so the shape of the ground
@@ -2832,6 +2829,13 @@ const UI = {
         (mobIcons ? '<div class="br-mobs" data-tt="THE BOARD|What this world fields against you.">' + mobIcons + '</div>' : '') +
         starBox +
       '</div>' +
+
+      /* THE SEAT, below the board and the scenario (owner, Session 31): it is
+            a consequence of winning here, so it reads after what the battle IS,
+            not squeezed into the name line as an afterthought. */
+      (w.seat ? '<div class="br-seat" data-tt="COMMANDER SEAT|Take every seat and the ' +
+        'galaxy is yours. A seat opens once you hold most of its system.">' +
+        '⚔ COMMANDER SEAT<span>take this world and the system falls</span></div>' : '') +
 
       /* Real, non-duplicated notices. */
       ((w.renegade && !mine) ? '<div class="br-renegade">' +

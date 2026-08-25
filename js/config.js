@@ -1807,9 +1807,9 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'volley', name: 'VOLLEY', cost: 230, mods: { damage: 30, rate: 2.0, multishot: 3, spread: 0.20, killReload: 0.13 },
-        surge: { multishot: 1 }, note: 'A three-bolt fan. Each bolt is small, so few of them finish anything and the breech stays hungry.' },
+        surge: { multishot: 1 }, note: 'Fans three 30-damage bolts at 2.0/s; kills refund 13% of the reload. Little bolts, hungry breech.' },
       { id: 'piercer', name: 'PIERCER', cost: 230, mods: { damage: 88, rate: 1.4, pierce: 0.5, pierceCount: 4, shred: 3, projSpeed: 22, killReload: 0.50 },
-        surge: { pierceCount: 2, shred: 2 }, note: 'A lance through four enemies, stripping armour as it goes: and a lance that kills is very nearly free.' }
+        surge: { pierceCount: 2, shred: 2 }, note: 'Drives 88 through four bodies, ignoring 50% armour, stripping 3; a kill refunds half the reload.' }
     ]
   },
 
@@ -1832,9 +1832,9 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'glacier', name: 'GLACIER', cost: 275, mods: { damage: 26, slow: 0.68, slowDur: 2.8, splash: 1.6, freezeChance: 0.22, freezeDur: 0.9 },
-        surge: { freezeChance: 0.05 }, note: 'Maximum control: a crushing slow plus a real freeze chance.' },
+        surge: { freezeChance: 0.05 }, note: 'Slows 68% for 2.8s in a 1.6-tile splash; 22% chance of a 0.9s freeze. Maximum control.' },
       { id: 'shatter', name: 'SHATTER', cost: 275, mods: { damage: 62, slow: 0.5, slowDur: 2.2, splash: 1.4, brittle: 2.0 },
-        surge: { brittle: 0.3 }, note: 'DOUBLE damage to anything already slowed.' }
+        surge: { brittle: 0.3 }, note: 'Hits for 62, doubled against anything slowed or frozen; its own 1.4 splash slows 50% for 2.2s.' }
     ]
   },
 
@@ -1857,9 +1857,9 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'siege', name: 'SIEGE', cost: 360, mods: { damage: 175, splash: 2.3, rate: 0.5, range: 5.0, stun: 0.45, spotting: 2.2 },
-        surge: { splash: 0.18, stun: 0.08, spotting: 0.15 }, note: 'One enormous shell with a concussive stun, dropped wherever the line is looking.' },
+        surge: { splash: 0.18, stun: 0.08, spotting: 0.15 }, note: 'One 175-damage shell, 2.3 splash, stuns 0.45s; reaches 2.2 tiles further on a spotter call.' },
       { id: 'cluster', name: 'CLUSTER', cost: 360, mods: { damage: 72, splash: 1.3, rate: 0.7, submunitions: 4, scatter: 1.5, spotting: 1.5 },
-        surge: { submunitions: 1 }, note: 'Airbursts into scattered bomblets.' }
+        surge: { submunitions: 1 }, note: 'Airbursts into four 72-damage bomblets, 1.3 splash each, scattered over 1.5 tiles. Rain, not a shell.' }
     ]
   },
 
@@ -1882,9 +1882,9 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'storm', name: 'STORM', cost: 415, mods: { damage: 62, runTiles: 6.0, runFalloff: 0.87, rate: 1.05 },
-        surge: { runTiles: 1.2 }, note: 'The whole column, end to end, at almost no loss.' },
+        surge: { runTiles: 1.2 }, note: 'The current runs 6 tiles each way down the lane, 62 damage keeping 87% per tile.' },
       { id: 'overload', name: 'OVERLOAD', cost: 415, mods: { damage: 155, runTiles: 2.0, runFalloff: 0.68, rate: 0.8, shred: 6 },
-        surge: { damage: 22 }, note: 'A short, brutal earth directly under whoever is leading.' }
+        surge: { damage: 22 }, note: '155 damage running 2 tiles at 68% per tile, stripping 6 armour from everything struck.' }
     ]
   },
 
@@ -1907,9 +1907,9 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'inferno', name: 'INFERNO', cost: 320, mods: { damage: 105, burn: 48, burnDur: 3.0, range: 3.1, cone: 0.75, overheat: 6.5, blowDmg: 460 },
-        surge: { cone: 0.05, blowDmg: 90 }, note: 'A vast cone, a punishing burn, and a tank you can hold open far longer before it goes.' },
+        surge: { cone: 0.05, blowDmg: 90 }, note: 'The cone deals 105/s plus a 48/s burn for 3s; after 6.5s the tank blows for 460.' },
       { id: 'napalm', name: 'NAPALM', cost: 320, mods: { damage: 68, burn: 32, burnDur: 2.6, range: 2.9, cone: 0.7, puddle: true, puddleDmg: 34, puddleDur: 4.5, puddleRadius: 1.15, overheat: 3.0, blowDmg: 230 },
-        surge: { puddleDmg: 18, puddleRadius: 0.08 }, note: 'Coats the lane in burning fuel, and goes up early and often.' }
+        surge: { puddleDmg: 18, puddleRadius: 0.08 }, note: 'Coats the lane in puddles burning 34/s for 4.5s, over a 32/s burn on everything lit.' }
     ]
   },
 
@@ -1932,7 +1932,7 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'annihilator', name: 'ANNIHILATOR', cost: 560, mods: { damage: 560, rate: 0.42, pierce: 0.85, pierceCount: 99, range: 10 },
-        surge: { pierce: 0.03 }, note: 'Fires through the entire lane.' },
+        surge: { pierce: 0.03 }, note: 'Hits everything on a 10-tile line for 560, ignoring 85% armour, at 0.42/s.' },
       { id: 'marksman', name: 'MARKSMAN', cost: 560, mods: { damage: 320, rate: 0.95, pierce: 0.7, crit: 0.3, critMult: 3.0 },
         surge: { crit: 0.05, critMult: 0.25 }, note: 'Double rate with a 30% chance to crit for triple.' }
     ]
@@ -1959,7 +1959,7 @@ const TOWER_TYPES = {
     branches: [
       { id: 'plague', name: 'PLAGUE', cost: 350, mods: { damage: 22, poisonDps: 11.0, poisonPct: 0.015, maxStacks: 5, contagion: 2.4 },
         surge: { contagion: 0.35 },
-        note: 'A poisoned enemy that dies infects ONE nearby target: a single jump, never a chain.' },
+        note: 'Venom ticks 11 plus 1.5% current health per stack, five deep; death jumps it 2.4 tiles, once.' },
       { id: 'corrosion', name: 'CORROSION', cost: 350, mods: { damage: 20, poisonDps: 9.0, poisonPct: 0.011, maxStacks: 4, shredPerStack: 3, corrodeSlow: 0.18 },
         surge: { shredPerStack: 1 }, note: 'Each stack strips 3 armour and slows.' }
     ]
@@ -1980,13 +1980,13 @@ const TOWER_TYPES = {
       { id:'t_tempo', row:1, col:0, name:'TEMPO CORE',  desc:'+50% to the fire rate it lends.', mods:{ focusRateMul:1.50 } },
       { id:'t_latt',  row:1, col:1, name:'LATTICE',     desc:'The lit tower also gains +14% range.', mods:{ focusRange:0.14 } },
       { id:'t_overtune', row:2, col:0, name:'OVERTUNE', desc:'+35% lent damage and +20% lent rate.', mods:{ focusDmgMul:1.35, focusRateMul:1.20 } },
-      { id:'t_wideband', row:2, col:1, name:'WIDEBAND', desc:'Lights a second tower as well, at reduced strength.', mods:{ focusCount:1 } }
+      { id:'t_wideband', row:2, col:1, name:'WIDEBAND', desc:'Lights a second tower at 60% strength.', mods:{ focusCount:1 } }
     ],
     branches: [
       { id: 'overclock', name: 'OVERCLOCK', cost: 520, mods: { focusDmg: 0.54, focusRate: 0.90, focusEvery: 2.4, range: 3.5 },
-        surge: { focusRate: 0.11 }, note: 'A short, restless beam: the fire rate goes wherever it lands.' },
+        surge: { focusRate: 0.11 }, note: 'Lights the best gun in range for +54% damage and +90% rate, moving every 2.4s.' },
       { id: 'amplifier', name: 'AMPLIFIER', cost: 520, mods: { focusDmg: 1.80, focusRate: 0.28, focusRange: 0.24, focusEvery: 4.5, range: 3.5 },
-        surge: { focusDmg: 0.22 }, note: 'One tower, held in the light a long time, and unrecognisable while it is.' }
+        surge: { focusDmg: 0.22 }, note: 'Grants one tower +180% damage, +28% rate and +24% range, held for 4.5s at a time.' }
     ]
   },
 
@@ -2009,9 +2009,9 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'windlass', name: 'WINDLASS', cost: 330, mods: { damage: 60, pull: 4.2, rate: 0.5, range: 4.2, pullAll: 1.6 },
-        surge: { pull: 0.6, pullAll: 0.15 }, note: 'Drags the target and everything near it.' },
+        surge: { pull: 0.6, pullAll: 0.15 }, note: 'Hauls the target 4.2 tiles back, everything within 2 tiles dragged 1.6, at 60 damage a hook.' },
       { id: 'barbs', name: 'BARBS', cost: 330, mods: { damage: 105, pull: 1.4, rate: 0.85, bleed: 26, bleedDur: 3.5, shred: 5 },
-        surge: { bleed: 10, shred: 2 }, note: 'Trades pull for an armour-tearing bleed.' }
+        surge: { bleed: 10, shred: 2 }, note: 'Hooks for 105, dragging 1.4 tiles, leaving a 26/s bleed for 3.5s and stripping 5 armour.' }
     ]
   },
 
@@ -2028,7 +2028,7 @@ const TOWER_TYPES = {
       { id:'t_spool', row:0, col:0, name:'FAST SPOOL',  desc:'Ramps 60% faster.',              mods:{ rampMul:1.60 } },
       { id:'t_gain',  row:0, col:1, name:'BASE GAIN',   desc:'+45% base beam damage.',         mods:{ damageMul:1.45 } },
       { id:'t_ceil',  row:1, col:0, name:'HIGH CEILING',desc:'+2.0 to the ramp ceiling.',      mods:{ rampMax:2.0 } },
-      { id:'t_persist',row:1,col:1, name:'PERSISTENCE', desc:'Focus decays instead of resetting.', mods:{ persist:true } },
+      { id:'t_persist',row:1,col:1, name:'PERSISTENCE', desc:'Lost focus decays over 1 extra focus period instead of vanishing.', mods:{ persist:true } },
       { id:'t_lens', row:2, col:0, name:'LENS ARRAY', desc:'+30% damage and +25% range.', mods:{ damageMul:1.30, rangeMul:1.25 } },
       { id:'t_prismsplit', row:2, col:1, name:'SPLIT BEAM', desc:'Fires a second beam at 55% power.', mods:{ split:2, splitFalloff:0.55 } }
     ],
@@ -2036,7 +2036,7 @@ const TOWER_TYPES = {
       { id: 'solar', name: 'SOLAR LANCE', cost: 430, mods: { damage: 88, ramp: 1.0, rampMax: 8.0, range: 4.8 },
         surge: { rampMax: 1.2 }, note: 'An x8 ceiling. The definitive boss answer.' },
       { id: 'refractor', name: 'REFRACTOR', cost: 430, mods: { damage: 62, ramp: 0.8, rampMax: 4.5, split: 3, splitFalloff: 0.62 },
-        surge: { split: 1 }, note: 'Three simultaneous beams, each ramping independently.' }
+        surge: { split: 1 }, note: 'Splits into three beams, extras at 62%, ramping +80% per second to ×4.5 on held focus.' }
     ]
   },
 
@@ -2059,9 +2059,9 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'minefield', name: 'MINEFIELD', cost: 380, mods: { damage: 125, maxMines: 18, mineDelay: 1.5, splash: 1.35 },
-        surge: { maxMines: 3 }, note: 'Carpets the lane in many small blasts.' },
+        surge: { maxMines: 3 }, note: 'Seeds a mine every 1.5s, banking 18, each blasting 125 in a 1.35 splash. The road bites.' },
       { id: 'demolition', name: 'DEMOLITION', cost: 380, mods: { damage: 460, maxMines: 4, mineDelay: 4.2, splash: 2.5, stun: 0.7 },
-        surge: { damage: 110, splash: 0.12 }, note: 'Four enormous charges that stun everything.' }
+        surge: { damage: 110, splash: 0.12 }, note: 'Banks four 460-damage charges, one per 4.2s, each stunning 0.7s across a 2.5 splash.' }
     ]
   },
 
@@ -2084,9 +2084,9 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'horizon', name: 'EVENT HORIZON', cost: 450, mods: { damage: 40, gravity: 4.5, rate: 0.55, range: 4.0, hold: 0.55 },
-        surge: { gravity: 0.55, hold: 0.06 }, note: 'Pulls harder and pins everything caught.' },
+        surge: { gravity: 0.55, hold: 0.06 }, note: 'Each pulse drags the lane inward at 4.5 gravity, pins everything 0.55s and deals 40. Nothing leaves.' },
       { id: 'implosion', name: 'IMPLOSION', cost: 450, mods: { damage: 235, gravity: 2.6, rate: 0.5, range: 3.8, splash: 2.0 },
-        surge: { damage: 60 }, note: 'The pull lands as heavy area damage on the knot it just formed.' }
+        surge: { damage: 60 }, note: 'Compresses the wave at 2.6 gravity, then 235 damage lands on the knot in a 2.0 splash.' }
     ]
   },
 
@@ -2103,15 +2103,15 @@ const TOWER_TYPES = {
       { id:'t_comp',  row:0, col:0, name:'COMPOUND',    desc:'+50% timed income.',      mods:{ incomeMul:1.50 } },
       { id:'t_levy',  row:0, col:1, name:'LEVY',        desc:'+120% kill skim.',        mods:{ killCutMul:2.20 } },
       { id:'t_ledger',row:1, col:0, name:'WIDE LEDGER', desc:'+45% skim radius.',       mods:{ rangeMul:1.45 } },
-      { id:'t_bonds', row:1, col:1, name:'WAR BONDS',   desc:'Lump sum each wave.',     mods:{ waveBonus:90 } },
+      { id:'t_bonds', row:1, col:1, name:'WAR BONDS',   desc:'Pays a flat 90 gold every wave.',     mods:{ waveBonus:90 } },
       { id:'t_interest', row:2, col:0, name:'COMPOUND INTEREST', desc:'+70% timed income.', mods:{ incomeMul:1.70 } },
       { id:'t_tribute', row:2, col:1, name:'TRIBUTE', desc:'+150% kill skim and +25% radius.', mods:{ killCutMul:2.50, rangeMul:1.25 } }
     ],
     branches: [
       { id: 'treasury', name: 'TREASURY', cost: 470, mods: { income: 48, killCut: 4, range: 4.0 },
-        surge: { income: 12 }, note: 'Pure flat income, independent of the fight.' },
+        surge: { income: 12 }, note: 'Pays 6 gold every 5 seconds, plus 1 per kill in range. Independent of the fight.' },
       { id: 'tithe', name: 'TITHE', cost: 470, mods: { income: 15, killCut: 17, range: 4.6 },
-        surge: { killCut: 4 }, note: 'Scales off slaughter. Place it over your killzone.' }
+        surge: { killCut: 4 }, note: 'Skims 2 gold from every kill within 4.6 tiles, plus 2 every 5 seconds. Paid in corpses.' }
     ]
   },
 
@@ -2134,9 +2134,9 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'skyshred', name: 'SKYSHRED', cost: 345, mods: { damage: 240, splash: 2.1, rate: 1.15, downFor: 1.3 },
-        surge: { splash: 0.15, downFor: 0.08 }, note: 'One burst clears an entire flight, and grounds whatever lives through it.' },
+        surge: { splash: 0.15, downFor: 0.08 }, note: 'Bursts for 240 across a 2.1 splash, grounding survivors 1.3s where the ground guns wait.' },
       { id: 'seeker', name: 'SEEKER SWARM', cost: 345, mods: { damage: 82, rate: 3.2, splash: 0.9, homing: true, slow: 0.4, slowDur: 1.4, downFor: 0.5 },
-        surge: { rate: 0.4 }, note: 'A stream of homing seekers. Nothing it is shooting at ever regains altitude.' }
+        surge: { rate: 0.4 }, note: 'Homing seekers at 3.2/s for 82 each, slowing flyers 40% and grounding them 0.5s per hit.' }
     ]
   },
 
@@ -2159,9 +2159,9 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'transfusion', name: 'TRANSFUSION', cost: 500, mods: { damage: 92, drainPer: 340, drainCd: 7 },
-        surge: { drainPer: -30 }, note: 'Maximum recovery. In a long run this is survival.' },
+        surge: { drainPer: -30 }, note: 'Restores one life per 340 damage banked, at most every 7s. In a long run, survival.' },
       { id: 'parasite', name: 'PARASITE', cost: 500, mods: { damage: 215, drainPer: 620, drainCd: 10, drainGold: 22 },
-        surge: { damage: 55, drainGold: 7 }, note: 'A real weapon that still heals, and pays gold.' }
+        surge: { damage: 55, drainGold: 7 }, note: 'Hits for 215; banks 620 damage into one life plus 3 gold, every 10s at most.' }
     ]
   },
 
@@ -2184,9 +2184,9 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'swarm', name: 'SWARM PROTOCOL', cost: 520, mods: { drones: 4, droneDamage: 34, droneRate: 1.7, range: 5.6 },
-        surge: { drones: 1 }, note: 'A four-strong flight that saturates your whole half.' },
+        surge: { drones: 1 }, note: 'Four hunting drones at 34 damage, 1.7/s each, patrolling a 5.6-tile radius. Coverage that moves.' },
       { id: 'interceptor', name: 'INTERCEPTOR', cost: 520, mods: { drones: 2, droneDamage: 165, droneRate: 1.1, droneSpeed: 6.5, airBonus: 2.0 },
-        surge: { droneDamage: 45 }, note: 'Three heavy gunships that double up on air.' }
+        surge: { droneDamage: 45 }, note: 'Two heavy gunships hitting 165 at 1.1/s, doubled to 330 against anything flying.' }
     ]
   },
 
@@ -2248,9 +2248,9 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'unmaker', name: 'UNMAKER', cost: 400, mods: { damage: 205, rate: 0.85, vuln: 0.34, vulnDur: 3.5, pierce: 0.5 },
-        surge: { vuln: 0.05 }, note: 'Every target it touches becomes everyone else\'s problem to finish.' },
+        surge: { vuln: 0.05 }, note: 'Hits for 205 through 50% of armour; targets take 34% more damage for 3.5s.' },
       { id: 'repeater', name: 'REPEATER', cost: 400, mods: { damage: 84, rate: 2.1, vuln: 0.14, vulnDur: 2.2, splash: 0.8 },
-        surge: { rate: 0.22 }, note: 'A stream of small unmakings rather than one large one.' }
+        surge: { rate: 0.22 }, note: 'Hits for 84 at 2.1/s with 0.8-tile splash; adds 14% vulnerability for 2.2s.' }
     ]
   },
 
@@ -2273,9 +2273,9 @@ const TOWER_TYPES = {
     ],
     branches: [
       { id: 'commissary', name: 'COMMISSARY', cost: 440, mods: { waveBonus: 540, requisition: 0.12, range: 3.8 },
-        surge: { waveBonus: 125 }, note: 'One payment per wave, and it is a large one.' },
+        surge: { waveBonus: 125 }, note: 'Pays 68 gold when each wave ends; upgrades in range cost 12% less.' },
       { id: 'convoy', name: 'CONVOY', cost: 440, mods: { waveBonus: 250, requisition: 0.32, range: 4.2 },
-        surge: { requisition: 0.02 }, note: 'Nothing inside the column is ever bought at list price.' }
+        surge: { requisition: 0.02 }, note: 'Upgrades bought in range cost 32% less; pays 31 gold per wave.' }
     ]
   }
 };

@@ -340,11 +340,18 @@ body.immersive #game {
    edge now, cards still floating, and the top of the window belongs to the
    board. `align-items: flex-end` so the three cards sit on the same baseline
    whatever their heights. */
+/* AT THE TOP, per the owner (Session 31), and CENTRED. The strip still ends
+   where the rail begins, because the rail also lives at the top right and a
+   card centred across the full window would run underneath it: measured at
+   1600px, a centred 850px strip spans 375 to 1225 while the rail starts near
+   988. Centring inside the space the rail leaves keeps the intent and cannot
+   collide. Flex, not the 1fr grid: a grid spreads its three cards to the
+   edges, and spread is the opposite of centre aligned. */
 body.immersive #hud {
-  position: absolute; top: auto; bottom: 10px; left: 12px; right: var(--rail-w, 312px); z-index: 20;
-  background: none;
+  position: absolute; top: 10px; bottom: auto; left: 12px; right: var(--rail-w, 312px); z-index: 20;
+  background: none; border-bottom: none;
   pointer-events: none;
-  align-items: flex-end;
+  display: flex; justify-content: center; align-items: flex-start; gap: 12px;
 }
 body.immersive #hud > * { pointer-events: auto; }
 body.immersive #hud > .hud-side,
@@ -360,14 +367,14 @@ body.immersive #hud > .hud-centre {
 /* The centre card hugs its content instead of stretching the row's full
    height -- a wave badge floating mid-air must not drag a card frame down
    with it. */
-body.immersive #hud > .hud-centre { align-self: flex-end; }
+body.immersive #hud > .hud-centre { align-self: flex-start; }
 
 /* THE GALAXY'S OWN HINT LINE, for the board's camera. The galaxy prints
    "drag or arrows to pan" in the bottom-left corner in the same faint voice;
    a battle board that pans and zooms identically should say so identically. */
 body.immersive #stage::after {
   content: 'drag or arrows to pan  b7 scroll to zoom  b7 0 recentres  b7 space pauses';
-  position: absolute; left: 14px; top: 10px; z-index: 5;
+  position: absolute; left: 14px; bottom: 8px; z-index: 5;
   font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase;
   color: var(--text-mute); opacity: .7; pointer-events: none;
 }
@@ -2803,3 +2810,42 @@ body:not(.arena-field) .arena-ladder { display: none; }
 /* The wild bar carries no rails, so it centres on its single marker rather
    than holding two empty 1fr columns open beside it. */
 .br-cmdbar.wild { grid-template-columns: 1fr; justify-items: center; }
+
+/* The seat row: one consequence, stated once, under the scenario. */
+.br-seat { display: flex; align-items: baseline; gap: 8px; margin: 8px 0 2px;
+           padding: 6px 10px; border-radius: 8px; cursor: help;
+           font-size: 11px; font-weight: 800; letter-spacing: .14em; color: var(--gold);
+           background: color-mix(in oklab, var(--gold) 8%, transparent);
+           border: 1px solid color-mix(in oklab, var(--gold) 30%, transparent); }
+.br-seat span { font-weight: 400; letter-spacing: .02em; font-size: 11px;
+                color: var(--text-dim); }
+
+/* ═════════ 31.1  THE DOCK ════════════════════════════════════════════════
+   The two pickers along the bottom edge, centre aligned: units left, towers
+   right. Each pane is the same floating card the rest of the chrome wears.
+   Panes scroll INTERNALLY past 42vh, so a long shop can never push the dock
+   off screen or under the board edge. */
+#dock {
+  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
+  z-index: 20; display: flex; align-items: flex-end; gap: 12px;
+  max-width: calc(100% - 24px);
+  pointer-events: none;
+}
+#dock .dock-pane {
+  pointer-events: auto;
+  width: 268px; max-height: 42vh; overflow-y: auto;
+  background: rgba(8, 13, 21, .82);
+  backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+  padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, .5);
+}
+#dock .section-label { margin-bottom: 6px; }
+/* Non-immersive: the stage is a flex row, so the dock needs its own ground. */
+#stage { position: relative; }
+/* The dock yields while a tower is being placed, exactly as the rail does:
+   bottom centre is ground, and a card over the ground is in the way at the
+   one moment placement needs to see it. */
+body.immersive.placing #dock { opacity: 0.32; transition: opacity .18s var(--e-tap); }
+body.immersive.placing #dock:hover,
+body.immersive.placing #dock:focus-within { opacity: 1; }
+body.rm-user.immersive #dock { transition: none; }

@@ -2162,9 +2162,27 @@ class Tower {
     const s = this.stats;
     const target = this.acquire(game.enemies);
     this.firing = !!target;
-    if (!target) { this.focusTarget = null; this.focusTime = 0; return; }
-
-    if (target !== this.focusTarget) { this.focusTarget = target; this.focusTime = 0; }
+    /* PERSISTENCE (t_persist). This talent shipped as a mods key NOTHING read:
+       a player could buy it and get literally nothing, which the Session 31
+       copy pass caught while stating exactly what every talent does. The first
+       fix landed on the wrong tower (the Beacon's aura also calls its state
+       "focus"), which the probe caught because the stamp never appeared. THIS
+       is the mechanism the talent always named: the prism's ramp. With
+       persist, a broken or switched focus DECAYS at twice the build rate
+       instead of resetting to zero, so retargeting costs half the climb
+       rather than all of it. */
+    const rampDecay = s.persist ? (s.ramp || 0.6) * 2 : 0;
+    if (!target) {
+      this.focusTarget = null;
+      if (rampDecay) this.focusTime = Math.max(0, (this.focusTime || 0) - dt * rampDecay / (s.ramp || 0.6));
+      else this.focusTime = 0;
+      return;
+    }
+    if (target !== this.focusTarget) {
+      this.focusTarget = target;
+      if (!rampDecay) this.focusTime = 0;
+      /* with persist the climb continues from where the decay left it */
+    }
     this.focusTime += dt;
     this.angle = angleLerp(this.angle, Math.atan2(target.y - this.y, target.x - this.x), Math.min(1, dt * 10));
 

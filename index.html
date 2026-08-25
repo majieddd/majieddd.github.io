@@ -278,18 +278,28 @@
     <div id="canvas-wrap"><canvas id="game" width="1064" height="570" aria-label="Battlefield"></canvas></div>
     <aside id="sidebar">
       <button id="btn-rush" class="btn btn-wave"><span>RUSH WAVE 1</span><em>▶</em></button>
-      <div id="muster-bar" class="muster-bar"></div>
       <div id="ability-bar" class="ability-bar"></div>
       <button id="btn-baselvl" class="btn base-btn" data-tt="UPGRADE BASE|+2 max lives, reanimates +5%, and every tower you place arrives at the new base level: specialisation included past level 3, ascensions past level 4.">
         <span class="bb-main"><b>⌂ BASE LEVEL <i id="bb-lvl">1</i></b><em id="bb-next">→ 2</em></span>
         <span class="bb-cost" id="bb-cost">◈ , </span>
       </button>
-      <div class="panel panel-shop">
+      <div class="panel panel-grow"><div id="inspector"></div></div>
+    </aside>
+    <!-- THE DOCK (owner, Session 31): the two PICKERS live along the bottom
+         edge, centre aligned: summon units on the left, towers on the right.
+         Same ids as before, so every renderer and binder is untouched; only
+         the ground under them moved. The rail above keeps the verbs that act
+         on the battle (rush, abilities, base) and the inspector. -->
+    <div id="dock">
+      <div class="dock-pane" id="dock-muster">
+        <h2 class="section-label">DETACHMENT</h2>
+        <div id="muster-bar" class="muster-bar"></div>
+      </div>
+      <div class="dock-pane" id="dock-shop">
         <h2 class="section-label">LOADOUT</h2>
         <div id="shop-list"></div>
       </div>
-      <div class="panel panel-grow"><div id="inspector"></div></div>
-    </aside>
+    </div>
   </div>
 </div>
 

@@ -84,9 +84,9 @@ const TOWER_TYPES_2 = {
       { id:'fy_burst', row:2, col:1, name:'CORE BREACH', desc:'Dying minions explode for 3x their DPS.', mods:{ minionBlast:3 } } ],
     branches:[
       { id:'legion',    name:'LEGION',    cost:420, mods:{ minions:7, minionHp:113, minionDps:26, forgeTime:3.2, scrapline:1.0 },
-        surge:{ minions:1 }, note:'A constant stream of expendable automata saturating the lane.' },
+        surge:{ minions:1 }, note:'Forges minions every 3.2s, up to 7 at 113 health, 26 dps; kills reclaim 1s of forge.' },
       { id:'champions', name:'CHAMPIONS', cost:420, mods:{ minions:2, minionHp:567, minionDps:85, minionSlow:0.75, forgeTime:7, scrapline:3.2 },
-        surge:{ minionHp:147, minionDps:22 }, note:'Two colossal wardens that all but stop what they catch, on a belt fed by everything they finish.' } ]
+        surge:{ minionHp:147, minionDps:22 }, note:'Two 567-health minions dealing 85 dps and slowing 75%; each kill reclaims 3.2s of forge.' } ]
   },
 
   saboteur: {
@@ -101,13 +101,13 @@ const TOWER_TYPES_2 = {
       { id:'sb_long', row:0, col:1, name:'DEEP COVER',  desc:'Disables last 30% longer.',     mods:{ sabotageDurMul:1.30 } },
       { id:'sb_two',  row:1, col:0, name:'CELL NETWORK',desc:'+1 tower struck per operation.',mods:{ sabotageTargets:1 } },
       { id:'sb_rich', row:1, col:1, name:'EMBEZZLE',    desc:'Each strike steals 12 gold.',   mods:{ sabotageGold:12 } },
-      { id:'sb_prio', row:2, col:0, name:'HIGH VALUE',  desc:'Prefers the rival\'s strongest tower.', mods:{ sabotagePriority:true } },
+      { id:'sb_prio', row:2, col:0, name:'HIGH VALUE',  desc:'Jams the rival tower with the most gold invested.', mods:{ sabotagePriority:true } },
       { id:'sb_chain',row:2, col:1, name:'CASCADE',     desc:'Struck towers also lose 25% rate for 6s after.', mods:{ sabotageLinger:0.25 } } ],
     branches:[
       { id:'blackout', name:'BLACKOUT', cost:480, mods:{ sabotageEvery:6.5, sabotageDur:5.0, sabotageTargets:2 },
-        surge:{ sabotageTargets:1 }, note:'Rolling blackouts across the rival board.' },
+        surge:{ sabotageTargets:1 }, note:'Disables 2 rival towers for 5s, every 6.5s. Rolling darkness.' },
       { id:'ransom',   name:'RANSOM',   cost:480, mods:{ sabotageEvery:8, sabotageDur:3.8, sabotageGold:40 },
-        surge:{ sabotageGold:15 }, note:'Every disabled tower pays you its maintenance budget.' } ]
+        surge:{ sabotageGold:15 }, note:'Disables a rival tower for 3.8s every 8s, stealing 5 gold per strike.' } ]
   },
 
   rampart: {
@@ -130,9 +130,9 @@ const TOWER_TYPES_2 = {
       { id:'rp_alarm', row:2, col:1, name:'ALARM NET', desc:'Enemies at the wall take +20% damage from all towers.', mods:{ wallVuln:0.20 } } ],
     branches:[
       { id:'citadel', name:'CITADEL', cost:380, mods:{ wallHp:1900, wallRebuild:7, wallThorns:35, wallBlocks:4 },
-        surge:{ wallHp:450, wallThorns:10, wallBlocks:1 }, note:'One monumental wall that bites back, and holds a crowd.' },
+        surge:{ wallHp:450, wallThorns:10, wallBlocks:1 }, note:'One 1900-health wall holding 4 attackers; spikes deal 35/s; rebuilds in 7s. It bites back.' },
       { id:'phalanx', name:'PHALANX', cost:380, mods:{ wallHp:650, wallRebuild:5, walls:2, wallBlocks:2 },
-        surge:{ wallHp:175 }, note:'Two staggered barricades: twice the wall, twice the capacity.' } ]
+        surge:{ wallHp:175 }, note:'Two 650-health walls, each holding 2 attackers; rebuilds in 5s. Depth over mass.' } ]
   },
 
   executioner: {
@@ -151,9 +151,9 @@ const TOWER_TYPES_2 = {
       { id:'ex_dread', row:2, col:1, name:'DREAD',       desc:'Executions slow nearby enemies 30% for 2s.', mods:{ execFear:0.30 } } ],
     branches:[
       { id:'guillotine', name:'GUILLOTINE', cost:440, mods:{ damage:52, rate:0.9, execThreshold:0.24 },
-        surge:{ execThreshold:0.02 }, note:'Executes at nearly a quarter health. The cull embodied.' },
+        surge:{ execThreshold:0.02 }, note:'Executes non-bosses below 24% health; 52 damage at 0.9/s. The cull embodied.' },
       { id:'reaper',     name:'REAPER',     cost:440, mods:{ damage:44, rate:1.1, execThreshold:0.16, execBounty:1.2, execGold:8 },
-        surge:{ execGold:5 }, note:'Every head pays. An economy built on endings.' } ]
+        surge:{ execGold:5 }, note:'Executes non-bosses below 16% health; each execution pays +120% bounty plus 1 gold.' } ]
   },
 
   chrono: {
@@ -172,9 +172,9 @@ const TOWER_TYPES_2 = {
       { id:'ch_echo', row:2, col:1, name:'DOUBLE EXPOSURE', desc:'20% chance to rewind twice.', mods:{ rewindTwice:0.20 } } ],
     branches:[
       { id:'well',    name:'TEMPORAL WELL', cost:420, mods:{ damage:26, rewindSec:4.6, range:3.8, rewindHold:0.5 },
-        surge:{ rewindSec:0.5 }, note:'A deeper past to fall into, and a pause on arrival.' },
+        surge:{ rewindSec:0.5 }, note:'Rewinds enemies 4.6s down the lane, holding them 0.5s on arrival; 26 damage.' },
       { id:'paradox', name:'PARADOX',       cost:420, mods:{ damage:34, rewindSec:3.2, rewindVuln:0.35, rate:0.24 },
-        surge:{ rewindVuln:0.06 }, note:'Enemies dragged against time take grievously amplified damage.' } ]
+        surge:{ rewindVuln:0.06 }, note:'Rewinds enemies 3.2s of travel; rewound targets take 35% more damage for 3s.' } ]
   },
 
   echo: {
@@ -189,13 +189,13 @@ const TOWER_TYPES_2 = {
       { id:'ec_fast', row:0, col:1, name:'QUICK EAR', desc:'+30% echo rate.',             mods:{ rateMul:1.30 } },
       { id:'ec_far',  row:1, col:0, name:'LONG EAR',  desc:'Listens 40% further.',        mods:{ echoRangeMul:1.40 } },
       { id:'ec_reach',row:1, col:1, name:'PROJECTION',desc:'+30% strike range.',          mods:{ rangeMul:1.30 } },
-      { id:'ec_two',  row:2, col:0, name:'STEREO',    desc:'Echoes two towers at once.',  mods:{ echoCount:1 } },
+      { id:'ec_two',  row:2, col:0, name:'STEREO',    desc:'Echoes the 2 strongest towers in earshot each strike.',  mods:{ echoCount:1 } },
       { id:'ec_pure', row:2, col:1, name:'CLARITY',   desc:'Echoes ignore 30% of armour.',mods:{ pierce:0.30 } } ],
     branches:[
       { id:'chorus',    name:'CHORUS',    cost:430, mods:{ echoFrac:0.75, echoCount:2, rate:1.0, echoRange:2.8 },
-        surge:{ echoCount:1 }, note:'Repeats the whole neighbourhood.' },
+        surge:{ echoCount:1 }, note:'Repeats 3 neighbouring towers\' hits at 75% power, every second, within 2.8 tiles.' },
       { id:'resonance', name:'RESONANCE', cost:430, mods:{ echoFrac:1.35, rate:0.8 },
-        surge:{ echoFrac:0.15 }, note:'A single echo LOUDER than the original.' } ]
+        surge:{ echoFrac:0.15 }, note:'Repeats the strongest neighbour\'s hit at 135% power, 0.8 times a second. Louder than the original.' } ]
   },
 
   quake: {
@@ -214,9 +214,9 @@ const TOWER_TYPES_2 = {
       { id:'qk_after', row:2, col:1, name:'AFTERSHOCK', desc:'A second slam at 40% power follows.', mods:{ aftershock:0.4 } } ],
     branches:[
       { id:'epicenter', name:'EPICENTER', cost:500, mods:{ damage:44, rate:0.2, epicenter:2.5, range:3.5 },
-        surge:{ damage:10 }, note:'Triple damage within its own radius: stand your ground there.' },
+        surge:{ damage:10 }, note:'Slams all ground enemies for 44 every 5s; ×2.5 damage within 3.5 tiles.' },
       { id:'cataclysm', name:'CATACLYSM', cost:500, mods:{ damage:34, rate:0.22, aftershock:0.6, stagger:0.5 },
-        surge:{ aftershock:0.1 }, note:'Slam after slam after slam.' } ]
+        surge:{ aftershock:0.1 }, note:'Field-wide slam for 34, staggering 0.5s; an aftershock at 60% power follows.' } ]
   },
 
   siren: {
@@ -235,9 +235,9 @@ const TOWER_TYPES_2 = {
       { id:'si_gold', row:2, col:1, name:'SPOILS',     desc:'Each convert pays 25 gold.',  mods:{ charmGold:25 } } ],
     branches:[
       { id:'choir',    name:'CHOIR',    cost:560, mods:{ charmEvery:8.5, charmMaxHp:1400 },
-        surge:{ charmEveryMul:0.94 }, note:'A recruiting drive. Converts flow constantly.' },
+        surge:{ charmEveryMul:0.94 }, note:'Converts an enemy of up to 1400 health every 8.5s. A constant recruiting drive.' },
       { id:'dominion', name:'DOMINION', cost:560, mods:{ charmEvery:14, charmMaxHp:3200, charmHpBonus:0.6 },
-        surge:{ charmMaxHpMul:1.25 }, note:'Takes even the giants, and hardens them.' } ]
+        surge:{ charmMaxHpMul:1.25 }, note:'Charms enemies of up to 3200 health every 14s; they arrive with +60% health.' } ]
   },
 
   alchemist: {
@@ -256,9 +256,9 @@ const TOWER_TYPES_2 = {
       { id:'al_burst', row:2, col:1, name:'UNSTABLE MIX',desc:'Shots splash 0.8 tiles.',   mods:{ splash:0.8 } } ],
     branches:[
       { id:'midas',      name:'MIDAS',       cost:460, mods:{ damage:26, transmute:2.0, transGold:4 },
-        surge:{ transGold:2 }, note:'Death pays twice: in power and in gold.' },
+        surge:{ transGold:2 }, note:'Each death in range adds 2 permanent damage and pays 1 gold.' },
       { id:'philosopher',name:'PHILOSOPHER', cost:460, mods:{ damage:22, transmute:4.5, rate:1.1 },
-        surge:{ transmute:1.2 }, note:'The great work: growth without limit.' } ]
+        surge:{ transmute:1.2 }, note:'Each death in range adds 4.5 permanent damage. Growth without limit.' } ]
   },
 
   glaive: {
@@ -274,12 +274,12 @@ const TOWER_TYPES_2 = {
       { id:'gl_far',   row:1, col:0, name:'LONG FLIGHT',desc:'Travels 4 tiles further.', mods:{ glaiveTiles:4 } },
       { id:'gl_heavy', row:1, col:1, name:'WEIGHTED',   desc:'Hits shred 3 armour.',     mods:{ shred:3 } },
       { id:'gl_speed', row:2, col:0, name:'SLIPSTREAM', desc:'+40% blade speed.',        mods:{ glaiveSpeedMul:1.40 } },
-      { id:'gl_twin',  row:2, col:1, name:'SECOND BLADE',desc:'Throws a second glaive.', mods:{ glaives:1 } } ],
+      { id:'gl_twin',  row:2, col:1, name:'SECOND BLADE',desc:'Keeps 2 glaives in flight at once.', mods:{ glaives:1 } } ],
     branches:[
       { id:'twinblade', name:'TWINBLADE', cost:360, mods:{ damage:34, glaives:2, rate:0.6 },
-        surge:{ glaives:1 }, note:'A storm of returning steel.' },
+        surge:{ glaives:1 }, note:'Three glaives aloft at once, each hitting for 34 outbound and returning.' },
       { id:'scythe',    name:'SCYTHE',    cost:360, mods:{ damage:68, glaiveTiles:14, glaiveWidth:1.1 },
-        surge:{ damage:16 }, note:'One vast blade that harvests the whole lane.' } ]
+        surge:{ damage:16 }, note:'One glaive flying 14 tiles in a 1.1-tile swath, hitting for 68 each pass.' } ]
   },
 
   cyclone: {
@@ -298,9 +298,9 @@ const TOWER_TYPES_2 = {
       { id:'cy_charge',row:2,col:1, name:'STATIC CHARGE',desc:'Lifted enemies take +20% damage.', mods:{ liftVuln:0.20 } } ],
     branches:[
       { id:'maelstrom', name:'MAELSTROM', cost:390, mods:{ damage:34, range:3.6, liftDur:1.4, dropDmg:60 },
-        surge:{ liftDur:0.1 }, note:'A standing storm that owns its stretch of lane.' },
+        surge:{ liftDur:0.1 }, note:'Lifts non-bosses 1.4s for 34 damage, then 60 more on the drop. A standing storm.' },
       { id:'downburst', name:'DOWNBURST', cost:390, mods:{ damage:28, dropDmg:150, liftDur:0.8, rate:0.34 },
-        surge:{ dropDmg:35 }, note:'What goes up comes down like a meteor.' } ]
+        surge:{ dropDmg:35 }, note:'Lifts enemies 0.8s for 28, then 150 on the drop. What rises falls hard.' } ]
   },
 
   capacitor: {
@@ -319,9 +319,9 @@ const TOWER_TYPES_2 = {
       { id:'cp_stun', row:2, col:1, name:'EMP',         desc:'Full-bank novas stun 0.5s.',mods:{ novaStun:0.5 } } ],
     branches:[
       { id:'supercell', name:'SUPERCELL', cost:390, mods:{ chargeRate:55, chargeMax:2080, range:3.8 },
-        surge:{ chargeMaxMul:1.2 }, note:'A weather system in a box.' },
+        surge:{ chargeMaxMul:1.2 }, note:'Banks 55 charge a second, up to 2080, then releases it all as a nova.' },
       { id:'flashbank', name:'FLASHBANK', cost:390, mods:{ chargeRate:95, chargeMax:800, novaKeep:0.35 },
-        surge:{ chargeRateMul:1.15 }, note:'Charges almost as fast as it spends.' } ]
+        surge:{ chargeRateMul:1.15 }, note:'Charges 95 a second toward an 800 cap; keeps 35% after each nova.' } ]
   },
 
   shepherd: {
@@ -340,9 +340,9 @@ const TOWER_TYPES_2 = {
       { id:'sh_all',   row:2, col:1, name:'GREAT BLESSING', desc:'+35% health and +10% speed blessing.', mods:{ flockHp:0.35, flockSpeed:0.10 } } ],
     branches:[
       { id:'warbound', name:'WARBOUND', cost:440, mods:{ flockHp:1.6, flockSpeed:0.5, range:4.0 },
-        surge:{ flockHp:0.3 }, note:'The flock becomes a battering ram.' },
+        surge:{ flockHp:0.3 }, note:'Blesses passing reanimates once each: +160% health, +50% speed. A battering ram consecrated.' },
       { id:'soulbound',name:'SOULBOUND',cost:440, mods:{ flockHp:0.9, flockSpeed:0.3, flockLives:2, flockGold:6 },
-        surge:{ flockLives:1 }, note:'Every blessed soul that arrives costs the rival dearly.' } ]
+        surge:{ flockLives:1 }, note:'Blessed reanimates gain 90% health, 30% speed, pay 1 gold; arrivals cost the rival 2 lives extra.' } ]
   },
 
   ward: {
@@ -361,9 +361,9 @@ const TOWER_TYPES_2 = {
       { id:'wd_purge', row:2, col:1, name:'PURGE',       desc:'Enemy auras are 50% weaker inside the field.', mods:{ wardPurge:0.5 } } ],
     branches:[
       { id:'sanctum', name:'SANCTUM', cost:370, mods:{ range:3.8, wardDmg:0.28, wardRate:0.12 },
-        surge:{ wardDmg:0.05 }, note:'Protection that also empowers.' },
+        surge:{ wardDmg:0.05 }, note:'Warded towers cannot be jammed and gain 28% damage and 12% rate across 3.8 tiles.' },
       { id:'expanse', name:'EXPANSE', cost:370, mods:{ range:5.0, wardDmg:0.12, wardRange:0.12 },
-        surge:{ rangeMul:1.06 }, note:'One field to cover the whole board.' } ]
+        surge:{ rangeMul:1.06 }, note:'A 5 tile field: towers inside cannot be jammed and gain 12% damage and 12% range.' } ]
   },
 
   reckoning: {
@@ -382,9 +382,9 @@ const TOWER_TYPES_2 = {
       { id:'rk_share',row:2, col:1, name:'PUBLIC RECORD',desc:'Strikes splash 0.9 tiles.',mods:{ splash:0.9 } } ],
     branches:[
       { id:'verdict', name:'VERDICT', cost:480, mods:{ damage:24, reckonFrac:0.55, rate:0.6 },
-        surge:{ reckonFrac:0.05 }, note:'More than half of everything, returned with interest.' },
+        surge:{ reckonFrac:0.05 }, note:'Each hit adds 55% of the target\'s recent damage to its 24. Interest, collected.' },
       { id:'tribunal',name:'TRIBUNAL',cost:480, mods:{ damage:20, reckonFrac:0.40, reckonElite:1.0, rate:0.65 },
-        surge:{ reckonElite:0.15 }, note:'The boss-killer. Giants pay for every wound.' } ]
+        surge:{ reckonElite:0.15 }, note:'Adds 40% of recent damage per hit, 80% against bosses and elites. Giants pay double.' } ]
   },
 
   arbalest: {
@@ -403,9 +403,9 @@ const TOWER_TYPES_2 = {
       { id:'ab_crit',  row:2, col:1, name:'DEADEYE',     desc:'Fully-wound shots always crit x2.', mods:{ windCrit:2 } } ],
     branches:[
       { id:'longshot', name:'LONGSHOT', cost:360, mods:{ damage:66, windMax:16, range:7.0 },
-        surge:{ windMax:2 }, note:'Patience measured in city blocks.' },
+        surge:{ windMax:2 }, note:'A full 16 wind multiplies its 66 damage seventeenfold, reaching 7 tiles. Patience in city blocks.' },
       { id:'snapshot', name:'SNAPSHOT', cost:360, mods:{ damage:52, windRate:0.9, windMax:8, rate:0.7 },
-        surge:{ windRateMul:1.1 }, note:'Winds so fast that every shot lands heavy.' } ]
+        surge:{ windRateMul:1.1 }, note:'Winds 0.9 per second to a cap of 8, each point adding another 52 damage.' } ]
   },
 
   /* Four towers that exist so the thinner origins can field a loadout built
@@ -432,9 +432,9 @@ const TOWER_TYPES_2 = {
       { id:'cu_last',  row:2, col:1, name:'ETERNAL',            desc:'Wardens return 45% sooner.', mods:{ vigilEveryMul:0.55 } } ],
     branches:[
       { id:'vigil',   name:'GARRISON', cost:430, mods:{ vigilHold:8, vigilEvery:9.5, range:4.2 },
-        surge:{ vigilHold:1 }, note:'A deep bench. Nothing gets through while anyone is left to stand in front of it.' },
+        surge:{ vigilHold:1 }, note:'Holds 8 wardens across 4.2 tiles, each absorbing one breach; one returns every 9.5 seconds.' },
       { id:'cordon',  name:'CORDON',  cost:430, mods:{ vigilHold:3, vigilEvery:3.2, range:4.8 },
-        surge:{ vigilEveryMul:0.94 }, note:'A thin watch that is never left unrelieved for long.' } ]
+        surge:{ vigilEveryMul:0.94 }, note:'Three wardens across 4.8 tiles, each absorbing one breach, relieved every 3.2 seconds. The watch holds.' } ]
   },
 
   concord: {
@@ -457,9 +457,9 @@ const TOWER_TYPES_2 = {
       { id:'co_fast', row:2, col:1, name:'QUICK MEASURE',desc:'+35% fire rate.',                mods:{ rateMul:1.35 } } ],
     branches:[
       { id:'unison',  name:'UNISON',  cost:420, mods:{ damage:44, chains:10, falloff:0.90, chainRange:2.9, vuln:0.22 },
-        surge:{ chains:2 }, note:'The whole crowd, opened at once.' },
+        surge:{ chains:2 }, note:'Chains 44 damage through 10 targets, keeping 90% per jump, opening each for 22% extra damage.' },
       { id:'requiem', name:'REQUIEM', cost:420, mods:{ damage:96, chains:4, falloff:0.72, vuln:0.46, vulnDur:4.0 },
-        surge:{ vuln:0.06 }, note:'Fewer targets, and what it opens it opens wide.' } ]
+        surge:{ vuln:0.06 }, note:'Chains 96 damage through 4 targets at 72%, each taking 46% more damage for 4 seconds.' } ]
   },
 
   ichor: {
@@ -478,9 +478,9 @@ const TOWER_TYPES_2 = {
       { id:'ic_deep',  row:2, col:1, name:'DEEP GULLET', desc:'+50% digestion and +15% reach.', mods:{ statusMul:1.50, rangeMul:1.15 } } ],
     branches:[
       { id:'devour',  name:'DEVOUR',  cost:390, mods:{ damage:92, digest:0.055, digestDur:4.2, range:2.8, cone:0.70 },
-        surge:{ digest:0.006 }, note:'It keeps eating whether or not the spray is still on it, and the worse the wound the faster it goes.' },
+        surge:{ digest:0.006 }, note:'Digests 2.75% of max health per second at half health, quickening as wounds deepen, for 4.2 seconds.' },
       { id:'spatter', name:'SPATTER', cost:390, mods:{ damage:56, digest:0.034, digestDur:2.8, range:2.6, cone:0.66, puddle:true, puddleDmg:30, puddleDur:5.0, puddleRadius:1.1 },
-        surge:{ puddleDmg:16 }, note:'What runs off the target stays on the ground and keeps working.' } ]
+        surge:{ puddleDmg:16 }, note:'Digests 1.7% max health per second at half health; lays 5 second puddles dealing 30 per second.' } ]
   },
 
   pylon: {
@@ -499,9 +499,9 @@ const TOWER_TYPES_2 = {
       { id:'py_reach',row:2, col:1, name:'REACH RELAY', desc:'+10% range to everything in the field.', mods:{ auraRange:0.10 } } ],
     branches:[
       { id:'backbone', name:'BACKBONE', cost:410, mods:{ range:4.4, auraDmg:0.16, auraRate:0.10, latticeBonus:2 },
-        surge:{ rangeMul:1.06 }, note:'One span that carries the whole board.' },
+        surge:{ rangeMul:1.06 }, note:'Towers across 4.4 tiles gain 16% damage and 10% rate; robotic ones gain 2 lattice links.' },
       { id:'substation', name:'SUBSTATION', cost:410, mods:{ range:3.0, auraDmg:0.34, auraRate:0.26, latticeBonus:3 },
-        surge:{ auraDmg:0.05 }, note:'A short reach and a very dense one.' } ]
+        surge:{ auraDmg:0.05 }, note:'Towers within 3 tiles gain 34% damage and 26% rate, robotic ones 3 lattice links.' } ]
   },
 
   /* ── SESSION 19 ─────────────────────────────────────────────────────────
@@ -537,9 +537,9 @@ const TOWER_TYPES_2 = {
       { id:'pg_share', row:2, col:1, name:'DEAD MAN\'S SHARE', desc:'A conscript that falls takes 2.4x its damage with it.', mods:{ pressBlast:2.4 } } ],
     branches:[
       { id:'gang',  name:'THE GANG', cost:360, mods:{ damage:46, pressCd:2.2, pressDur:10, pressHp:0.48, pressDps:20, pressMax:7 },
-        surge:{ pressMax:1 }, note:'A rolling crew. Every body that falls is another that stands up.' },
+        surge:{ pressMax:1 }, note:'Presses kills into conscripts every 2.2 seconds: 48% corpse health, 20 dps, 10 second terms, 7 held.' },
       { id:'bosun', name:'BOSUN',    cost:360, mods:{ damage:54, pressCd:6.5, pressDur:22, pressHp:1.90, pressDps:44, pressMax:2 },
-        surge:{ pressDps:6 }, note:'Two long-service hands, kept and armed, and they do not fall over.' } ]
+        surge:{ pressDps:6 }, note:'Keeps 2 conscripts at 190% corpse health and 44 dps, serving 22 seconds each. Built to last.' } ]
   },
 
   privateer: {
@@ -555,13 +555,13 @@ const TOWER_TYPES_2 = {
       { id:'pr_guns',   row:0, col:1, name:'CHASE GUNS',        desc:'+45% damage.',                mods:{ damageMul:1.45 } },
       { id:'pr_nest',   row:1, col:0, name:'CROW\'S NEST',      desc:'+30% range.',                 mods:{ rangeMul:1.30 } },
       { id:'pr_rig',    row:1, col:1, name:'RUNNING RIGGING',   desc:'+30% fire rate.',             mods:{ rateMul:1.30 } },
-      { id:'pr_purse',  row:2, col:0, name:'PICK THE PURSE',    desc:'Robs the richest rival ANYWHERE on the board, not only the seat you are aimed at.', mods:{ privateerPick:true } },
-      { id:'pr_scuttle',row:2, col:1, name:'SCUTTLE',           desc:'What it cannot carry it burns: the victim loses half again on top.', mods:{ privateerScuttle:0.5 } } ],
+      { id:'pr_purse',  row:2, col:0, name:'PICK THE PURSE',    desc:'Robs the richest rival seat anywhere on the board.', mods:{ privateerPick:true } },
+      { id:'pr_scuttle',row:2, col:1, name:'SCUTTLE',           desc:'The victim loses an extra 50% of the take, burned.', mods:{ privateerScuttle:0.5 } } ],
     branches:[
       { id:'raider',    name:'RAIDER',    cost:420, mods:{ damage:66, rate:1.5, privateerSteal:0.021 },
-        surge:{ privateerSteal:0.002 }, note:'Volume. A hundred small robberies nobody bothers to report.' },
+        surge:{ privateerSteal:0.002 }, note:'Each kill steals 2.1% of the rival\'s purse, firing 66 damage at 1.5 rate. Volume.' },
       { id:'admiralty', name:'ADMIRALTY', cost:420, mods:{ damage:124, rate:0.55, privateerSteal:0.058, privateerScuttle:0.6 },
-        surge:{ privateerSteal:0.006 }, note:'Fewer prizes, and each one taken down to the hull.' } ]
+        surge:{ privateerSteal:0.006 }, note:'Kills steal 5.8% of the rival\'s gold and burn another 60% of the take. To the hull.' } ]
   },
 
   bloodprice: {
@@ -585,9 +585,9 @@ const TOWER_TYPES_2 = {
       { id:'bp_debt',   row:2, col:1, name:'BLOOD DEBT',  desc:'Every 12 kills returns one life.',      mods:{ bloodTally:12 } } ],
     branches:[
       { id:'tithe',        name:'EXACTION',     cost:460, mods:{ damage:296, rate:1.0, splash:1.55 },
-        surge:{ damageMul:1.06 }, note:'A larger bill was paid, so it is a larger gun.' },
+        surge:{ damageMul:1.06 }, note:'Hits for 296 in a 1.55 tile blast, once a second. The bill bought a bigger gun.' },
       { id:'exsanguinate', name:'EXSANGUINATE', cost:460, mods:{ damage:158, rate:1.9, bloodRate:0.05, burn:30, burnDur:5 },
-        surge:{ burn:6 }, note:'It keeps taking long after the shell has landed.' } ]
+        surge:{ burn:6 }, note:'158 damage at 1.9 rate, burning 30 per second for 5; each life paid adds 5% rate.' } ]
   },
 
   replicator: {
@@ -599,17 +599,17 @@ const TOWER_TYPES_2 = {
     levels:[ { cost:180, name:'FABRICATOR', mods:{ damage:19, replicateEvery:3, replicateReach:4 } },
              { cost:330, name:'ASSEMBLER',  mods:{ damage:33, replicateEvery:3, replicateReach:5, replicateLevel:1 } } ],
     talents:[
-      { id:'rp_cycle', row:0, col:0, name:'SHORT CYCLE',      desc:'One wave sooner between builds.',                 mods:{ replicateEvery:-1 } },
+      { id:'rp_cycle', row:0, col:0, name:'SHORT CYCLE',      desc:'Cuts the build cycle by 1 wave.',                 mods:{ replicateEvery:-1 } },
       { id:'rp_arm',   row:0, col:1, name:'OUTREACH',         desc:'+2 tiles of placement reach.',                    mods:{ replicateReach:2 } },
       { id:'rp_gun',   row:1, col:0, name:'SIDEARM',          desc:'+40% damage.',                                    mods:{ damageMul:1.40 } },
-      { id:'rp_seed',  row:1, col:1, name:'SEED STOCK',       desc:'What it builds arrives one mark higher.',         mods:{ replicateLevel:1 } },
-      { id:'rp_auth',  row:2, col:0, name:'DESIGN AUTHORITY', desc:'Builds the best thing it can account for rather than any.', mods:{ replicatePick:true } },
-      { id:'rp_twin',  row:2, col:1, name:'TWIN LINE',        desc:'Builds two at a time.',                           mods:{ replicateCount:1 } } ],
+      { id:'rp_seed',  row:1, col:1, name:'SEED STOCK',       desc:'Replicated towers arrive 1 level higher.',         mods:{ replicateLevel:1 } },
+      { id:'rp_auth',  row:2, col:0, name:'DESIGN AUTHORITY', desc:'Builds the costliest tower its budget allows, never a random one.', mods:{ replicatePick:true } },
+      { id:'rp_twin',  row:2, col:1, name:'TWIN LINE',        desc:'Builds 2 towers per cycle.',                           mods:{ replicateCount:1 } } ],
     branches:[
       { id:'swarm',     name:'SWARM',     cost:470, mods:{ damage:28, replicateEvery:2, replicateReach:6, replicateCount:1 },
-        surge:{ replicateReach:1 }, note:'Constant and cheap. It will fill your board whether or not you wanted it filled.' },
+        surge:{ replicateReach:1 }, note:'Builds one random loadout tower free every 2 waves, within 6 tiles. The board fills itself.' },
       { id:'archetype', name:'ARCHETYPE', cost:470, mods:{ damage:74, replicateEvery:6, replicateReach:5, replicateLevel:2, replicatePick:true },
-        surge:{ replicateLevel:1 }, note:'Rarely, and never something second-rate.' } ]
+        surge:{ replicateLevel:1 }, note:'Every 6 waves builds the priciest tower it can afford, 2 marks higher, within 5 tiles.' } ]
   },
 
   nullfield: {
@@ -627,14 +627,14 @@ const TOWER_TYPES_2 = {
       { id:'nf_wide',  row:0, col:0, name:'WIDER NULL',  desc:'+30% field radius.',                              mods:{ nullRadiusMul:1.30 } },
       { id:'nf_deco',  row:0, col:1, name:'DECOHERENCE', desc:'Everything inside takes +18% damage.',            mods:{ nullVuln:0.18 } },
       { id:'nf_visc',  row:1, col:0, name:'VISCOUS',     desc:'Everything inside is slowed 25%.',                mods:{ nullSlow:0.25 } },
-      { id:'nf_eras',  row:1, col:1, name:'ANNULMENT',   desc:'Suppressed regeneration is dealt as damage instead.', mods:{ nullBackfire:1.0 } },
+      { id:'nf_eras',  row:1, col:1, name:'ANNULMENT',   desc:'Deals 100% of suppressed regeneration back as pure damage.', mods:{ nullBackfire:1.0 } },
       { id:'nf_lock',  row:2, col:0, name:'HARD LOCK',   desc:'A unit that leaves stays suppressed 2s longer.',  mods:{ nullLinger:2 } },
       { id:'nf_array', row:2, col:1, name:'FIELD ARRAY', desc:'+20% radius and a further +10% damage taken.',    mods:{ nullRadiusMul:1.20, nullVuln:0.10 } } ],
     branches:[
       { id:'quiet',   name:'QUIET',   cost:440, mods:{ nullRadius:6.6, nullLinger:1.5 },
-        surge:{ nullRadiusMul:1.05 }, note:'A very large volume in which nothing clever happens.' },
+        surge:{ nullRadiusMul:1.05 }, note:'Suppresses enemy abilities and regeneration across 6.6 tiles, lingering 1.5 seconds after exit. Nothing clever happens.' },
       { id:'erasure', name:'ERASURE', cost:440, mods:{ nullRadius:4.0, nullVuln:0.42, nullSlow:0.40, nullBackfire:2.0 },
-        surge:{ nullVuln:0.04 }, note:'A small volume, and inside it everything is worse than it was.' } ]
+        surge:{ nullVuln:0.04 }, note:'Suppresses across 4 tiles; inside, 42% more damage taken, 40% slow, regeneration dealt back doubled.' } ]
   }
 };
 
@@ -667,9 +667,9 @@ Object.assign(TOWER_TYPES_2, {
       { id:'se_gold',  row:2, col:1, name:'GRAVE GOODS',        desc:'Each ward raised returns 40 gold.',     mods:{ sepulchreGold:40 } } ],
     branches:[
       { id:'martyrium',  name:'MARTYRIUM',  cost:470, mods:{ sepulchreFrac:0.92, sepulchreDur:30, sepulchreWards:2, range:4.0 },
-        surge:{ sepulchreFrac:0.02 }, note:'One ward that fights very nearly as hard as the tower it replaced.' },
+        surge:{ sepulchreFrac:0.02 }, note:'Keeps lost towers firing as wards at 92% strength for 30 seconds, 2 standing at once.' },
       { id:'necropolis', name:'NECROPOLIS', cost:470, mods:{ sepulchreFrac:0.42, sepulchreDur:40, sepulchreWards:6, range:4.6 },
-        surge:{ sepulchreWards:1 }, note:'A deep vault. Everything you gave up this wave is still standing on it.' } ]
+        surge:{ sepulchreWards:1 }, note:'Holds 6 wards at once, each firing at 42% of its lost tower for 40 seconds.' } ]
   },
 
   orison: {
@@ -691,9 +691,9 @@ Object.assign(TOWER_TYPES_2, {
       { id:'or_mark', row:2, col:1, name:'SANCTIFIED', desc:'The offering itself takes 25% less damage, so it lasts.', mods:{ offeringGuard:0.25 } } ],
     branches:[
       { id:'litany',   name:'LITANY',   cost:445, mods:{ offeringDmg:0.46, offeringRate:0.16, offeringLives:2 },
-        surge:{ offeringDmg:0.04 }, note:'The whole line lifted for as long as the offering stands.' },
+        surge:{ offeringDmg:0.04 }, note:'Every tower gains 46% damage and 16% rate while the offering stands; its fall restores 2 lives.' },
       { id:'oblation', name:'OBLATION', cost:445, mods:{ offeringDmg:0.18, offeringRate:0.04, offeringLives:5, offeringGold:200, offeringGuard:0.35 },
-        surge:{ offeringLives:0.25 }, note:'A small blessing, and a very large debt settled at the end of it.' } ]
+        surge:{ offeringLives:0.25 }, note:'The offering, 35% harder to kill, repays 5 lives and 25 gold; towers gain 18% damage.' } ]
   },
 
   antiphon: {
@@ -719,9 +719,9 @@ Object.assign(TOWER_TYPES_2, {
       { id:'an_toll',   row:2, col:1, name:'TOLLING',    desc:'Answers splash 1.0 tiles.',       mods:{ splash:1.0 } } ],
     branches:[
       { id:'dirge',    name:'DIRGE',    cost:420, mods:{ damage:190, antiphonVolley:6, antiphonBank:5, rate:1.3 },
-        surge:{ antiphonVolley:1 }, note:'Fewer answers, and every one of them is a barrage.' },
+        surge:{ antiphonVolley:1 }, note:'Spends 6-shot volleys of 190 damage at 1.3/s, 5 answers held. Every reply a barrage.' },
       { id:'threnody', name:'THRENODY', cost:420, mods:{ damage:98, antiphonPerLoss:3, antiphonBank:16, antiphonVolley:3 },
-        surge:{ antiphonPerLoss:0.3 }, note:'Every body you spend is answered three times over.' } ]
+        surge:{ antiphonPerLoss:0.3 }, note:'Banks 3 answers per body lost, holds 16, each a 3-shot volley at 98 damage.' } ]
   },
 
   gestalt: {
@@ -738,14 +738,14 @@ Object.assign(TOWER_TYPES_2, {
       { id:'ge_glut', row:0, col:0, name:'GLUTTONY',     desc:'+60% growth from every body.',   mods:{ gestaltPerKillMul:1.60 } },
       { id:'ge_hold', row:0, col:1, name:'SLOW TO FORGET',desc:'6s longer before it forgets.',   mods:{ gestaltDecay:6 } },
       { id:'ge_max',  row:1, col:0, name:'DEEP GUT',     desc:'+14 to what it can hold.',       mods:{ gestaltMax:14 } },
-      { id:'ge_wide', row:1, col:1, name:'SPREADING',    desc:'The gullet widens twice as fast.', mods:{ gestaltRange:0.012 } },
+      { id:'ge_wide', row:1, col:1, name:'SPREADING',    desc:'Each body adds 0.024 tiles of range, double the base.', mods:{ gestaltRange:0.012 } },
       { id:'ge_fast', row:2, col:0, name:'QUICK FEED',   desc:'+35% fire rate.',                mods:{ rateMul:1.35 } },
       { id:'ge_bore', row:2, col:1, name:'BORING TEETH', desc:'Ignores 35% of armour.',         mods:{ pierce:0.35 } } ],
     branches:[
       { id:'hive',   name:'HIVE',   cost:400, mods:{ damage:34, gestaltPerKill:6.2, gestaltMax:60, gestaltDecay:9 },
-        surge:{ gestaltPerKill:0.4 }, note:'Everything it eats it keeps, and it can hold a great deal of it.' },
+        surge:{ gestaltPerKill:0.4 }, note:'Each body eaten adds 6.2 damage, up to 60 held; 9s without a kill forgets everything.' },
       { id:'sprawl', name:'SPRAWL', cost:400, mods:{ damage:46, gestaltPerKill:2.4, gestaltMax:40, gestaltDecay:16, gestaltRange:0.030, range:3.4 },
-        surge:{ gestaltDecay:1 }, note:'A slower forgetting, and a gullet that never stops opening.' } ]
+        surge:{ gestaltDecay:1 }, note:'Each body adds 2.4 damage and 0.030 tiles of reach, 40 held, 16s before forgetting.' } ]
   },
 
   maw: {
@@ -770,9 +770,9 @@ Object.assign(TOWER_TYPES_2, {
       { id:'mw_boss',  row:2, col:1, name:'TITAN\'S PORTION', desc:'It can swallow a boss.',  mods:{ mawBoss:true } } ],
     branches:[
       { id:'devourer',   name:'DEVOURER',   cost:500, mods:{ mawCd:9, mawDigest:4, mawYield:1.6, mawBoss:true, range:3.8 },
-        surge:{ mawYield:0.15 }, note:'It opens often, and nothing walking is too large for it.' },
+        surge:{ mawYield:0.15 }, note:'Swallows every 9s, a boss included, paying ×1.6 bounty over a 4s digest.' },
       { id:'rumination', name:'RUMINATION', cost:500, mods:{ mawCd:22, mawDigest:11, mawYield:5.0, range:4.2 },
-        surge:{ mawYield:0.4 }, note:'One meal, taken slowly, that pays for the rest of the line.' } ]
+        surge:{ mawYield:0.4 }, note:'Swallows every 22s, paying ×5 bounty over an 11s digest. One slow meal.' } ]
   },
 
   veil: {
@@ -792,9 +792,9 @@ Object.assign(TOWER_TYPES_2, {
       { id:'vl_gold', row:2, col:1, name:'COLLECTIONS',    desc:'Every 250 points collected pays 25 gold.', mods:{ veilTithe:25 } } ],
     branches:[
       { id:'ledger', name:'THE LEDGER', cost:380, mods:{ veilHealTax:3.2, veilVuln:0.22, range:3.8 },
-        surge:{ veilHealTax:0.15 }, note:'Nothing given is ever forgiven, and it is called in with interest.' },
+        surge:{ veilHealTax:0.15 }, note:'Bills 3.2 damage per point ever healed; debtors take 22% more. Nothing is forgiven.' },
       { id:'famine', name:'FAMINE',     cost:380, mods:{ veilHealTax:1.5, veilSlow:0.38, range:5.0 },
-        surge:{ rangeMul:1.05 }, note:'A field wide enough to cover the whole approach, and everything in it drags.' } ]
+        surge:{ rangeMul:1.05 }, note:'A 5-tile field: everything inside slowed 38%, billed 1.5 damage per point ever healed.' } ]
   }
 });
 
@@ -825,15 +825,15 @@ Object.assign(TOWER_TYPES_2, {
     talents:[
       { id:'bd_hoist',   row:0, col:0, name:'SHELL HOIST',      desc:'+40% fire rate.',                          mods:{ rateMul:1.40 } },
       { id:'bd_charge',  row:0, col:1, name:'DOUBLE CHARGE',    desc:'+45% damage, −10% fire rate.',             mods:{ damageMul:1.45, rateMul:0.90 } },
-      { id:'bd_carriage',row:1, col:0, name:'ROLLING CARRIAGE', desc:'The dead zone shrinks by a full tile.',    mods:{ minRange:-1.0 } },
+      { id:'bd_carriage',row:1, col:0, name:'ROLLING CARRIAGE', desc:'Shrinks the dead zone by 1 full tile.',    mods:{ minRange:-1.0 } },
       { id:'bd_through', row:1, col:1, name:'THROUGHSHOT',      desc:'A further 25% of surplus damage rolls onward.', mods:{ overkill:0.25 } },
       { id:'bd_pit',     row:2, col:0, name:'GUN PIT',          desc:'+35% splash radius.',                      mods:{ splashMul:1.35 } },
       { id:'bd_mag',     row:2, col:1, name:'FULL MAGAZINE',    desc:'+30% damage and +15% fire rate.',          mods:{ damageMul:1.30, rateMul:1.15 } } ],
     branches:[
       { id:'culverin', name:'CULVERIN', cost:620, mods:{ damage:900, rate:0.30, splash:1.7, range:12.0, minRange:3.5, projSpeed:10, overkill:1.0 },
-        surge:{ damage:110 }, note:'A longer barrel still: half the board in reach, and a kill is never where the shell stops.' },
+        surge:{ damage:110 }, note:'900 damage at 12 range, 100% of overkill rolling onward. Blind inside 3.5 tiles.' },
       { id:'drumfire', name:'DRUMFIRE', cost:620, mods:{ damage:340, rate:0.85, splash:2.4, minRange:2.0, overkill:0.7 },
-        surge:{ rate:0.06 }, note:'The crew stops aiming shells and starts keeping time. A shorter throw is part of the drill.' } ]
+        surge:{ rate:0.06 }, note:'340-damage shells at 0.85/s across a 2.4 splash. The dead zone shrinks to 2 tiles.' } ]
   },
 
   coldfront: {
@@ -857,9 +857,9 @@ Object.assign(TOWER_TYPES_2, {
       { id:'cf_chill', row:2, col:1, name:'WINDCHILL',   desc:'+25% radius, and exposure builds 15% faster.',  mods:{ rangeMul:1.25, exposureMul:1.15 } } ],
     branches:[
       { id:'whiteout',     name:'WHITEOUT',     cost:560, mods:{ exposure:0.22, exposureCap:0.80, exposureFreeze:1.2, exposureShed:0.25, range:4.6 },
-        surge:{ exposureFreeze:0.12 }, note:'At the ceiling the crawl becomes a stop: a body fully exposed freezes solid, once, before it remembers how to move.' },
+        surge:{ exposureFreeze:0.12 }, note:'Slow deepens 22% per second to 80%; at the cap a 1.2s freeze, once per body.' },
       { id:'shatterfront', name:'SHATTERFRONT', cost:560, mods:{ exposure:0.18, exposureCap:0.65, exposureVuln:0.35, exposureShed:0.30, range:5.0 },
-        surge:{ exposureVuln:0.05 }, note:'The front stops being a delay and becomes a multiplier: everything deep inside is easier for every gun you own to kill.' } ]
+        surge:{ exposureVuln:0.05 }, note:'Slow builds 18% per second to 65%; bodies at the cap take 35% more damage.' } ]
   },
 
   quadmount: {
@@ -882,9 +882,9 @@ Object.assign(TOWER_TYPES_2, {
       { id:'qm_fifth', row:2, col:1, name:'FIFTH GUN',  desc:'+1 barrel.',          mods:{ turrets:1 } } ],
     branches:[
       { id:'enfilade',  name:'ENFILADE',  cost:640, mods:{ damage:165, rate:1.15, turretFocus:true, convergeBonus:0.30 },
-        surge:{ convergeBonus:0.04 }, note:'Every solution laid on the strongest hull in range. What it looks at, it finishes.' },
+        surge:{ convergeBonus:0.04 }, note:'Four barrels, 165 damage each, all on the strongest hull; +30% per barrel already on.' },
       { id:'fusillade', name:'FUSILLADE', cost:640, mods:{ damage:130, rate:1.2, turrets:6, slow:0.30, slowDur:1.6 },
-        surge:{ turrets:1 }, note:'Six barrels, six lanes of cold. Nothing in the arc moves at speed.' } ]
+        surge:{ turrets:1 }, note:'Six barrels at 130 damage, every shell slowing 30% for 1.6s. Cold in six lanes.' } ]
   },
 
   reactor: {
@@ -907,9 +907,9 @@ Object.assign(TOWER_TYPES_2, {
       { id:'rc_main', row:2, col:1, name:'MAINS FEED',     desc:'+10% damage to everything in the field.',  mods:{ auraDmg:0.10 } } ],
     branches:[
       { id:'supercritical', name:'SUPERCRITICAL', cost:700, mods:{ latticeFill:8, range:3.2 },
-        surge:{ latticeFill:1 }, note:'A core run far past its plate rating, and a short field. Stand close to it.' },
+        surge:{ latticeFill:1 }, note:'Machines in its 3.2-tile field run at lattice 8: +40% damage, +28% rate. A close orbit.' },
       { id:'intertie',      name:'INTERTIE',      cost:700, mods:{ latticeFill:6, range:5.2, auraRate:0.10, auraRange:0.10 },
-        surge:{ rangeMul:1.05 }, note:'One plant, and the whole board is on its grid.' } ]
+        surge:{ rangeMul:1.05 }, note:'A 5.2-tile field supplies lattice 6 plus 10% rate and 10% range to everything inside.' } ]
   },
 
   carronade: {
@@ -936,9 +936,9 @@ Object.assign(TOWER_TYPES_2, {
       { id:'cn_locker', row:2, col:1, name:'SHOT LOCKERS',    desc:'The magazine banks 2 more overloads before it cooks off.', mods:{ heatBank:2 } } ],
     branches:[
       { id:'hellburner', name:'HELLBURNER', cost:620, mods:{ damage:340, rate:0.36, overloadMult:6.0, overloadSplash:2.2, heatBank:2, jamFor:5.0 },
-        surge:{ overloadMult:0.4 }, note:'Two overloads to a magazine, and each one is a catastrophe.' },
+        surge:{ overloadMult:0.4 }, note:'Overloads detonate at ×6 across 2.2 tiles; two to a magazine, then a 5s jam.' },
       { id:'siegetrain', name:'SIEGE TRAIN', cost:620, mods:{ damage:420, rate:0.44, splash:2.6, overloadMult:3.0, heatBank:6, jamFor:2.0 },
-        surge:{ damage:90 }, note:'A disciplined battery: deeper magazine, shorter jam, and the shells do the talking.' } ]
+        surge:{ damage:90 }, note:'420-damage shells across a 2.6 splash; six ×3 overloads banked before a 2s jam.' } ]
   },
 
   stokehold: {
@@ -963,9 +963,9 @@ Object.assign(TOWER_TYPES_2, {
       { id:'sk_scald',   row:2, col:1, name:'SCALDING STEAM',   desc:'+50% furnace floor burn.',            mods:{ stokeBurnMul:1.50 } } ],
     branches:[
       { id:'overpressure', name:'OVERPRESSURE', cost:580, mods:{ stokeBurn:40, stokePerHeat:26, stokeMax:34, stokeBleed:0.25, range:3.5 },
-        surge:{ stokeMax:3 }, note:'A boiler that can hold a whole battery\'s worth of sin, and radiates every point of it.' },
+        surge:{ stokeMax:3 }, note:'Burns 40/s plus 26/s per banked point, 34 held, bleeding 0.25 points per second.' },
       { id:'fireship', name:'FIRESHIP', cost:580, mods:{ stokeBurn:30, stokePerHeat:16, stokeMax:16, stokeVent:22, range:3.3 },
-        surge:{ stokeVent:6 }, note:'At full pressure the boiler blows itself across the lane, and starts again cold.' } ]
+        surge:{ stokeVent:6 }, note:'A full 16-point bank vents 22 damage per point across the field, then restarts cold.' } ]
   },
 
   suture: {
@@ -989,9 +989,9 @@ Object.assign(TOWER_TYPES_2, {
       { id:'su_hold',  row:2, col:1, name:'TIGHT WEAVE',   desc:'Grafts hold 4s longer.',              mods:{ graftDur:4 } } ],
     branches:[
       { id:'oneflesh', name:'ONE FLESH',  cost:620, mods:{ damage:66, graftCount:14, graftFrac:0.30, graftDur:10, range:4.0 },
-        surge:{ graftCount:1 }, note:'The whole wave, one body: a wound anywhere is a wound everywhere.' },
+        surge:{ graftCount:1 }, note:'Grafts 14 bodies for 10s; 30% of every wound repeats across all of them.' },
       { id:'bloodknot', name:'BLOOD KNOT', cost:620, mods:{ damage:88, graftCount:3, graftFrac:0.95, graftDur:8, graftVuln:0.20 },
-        surge:{ graftFrac:0.05 }, note:'Three bodies bound so tight that hurting one is hurting all of them, whole.' } ]
+        surge:{ graftFrac:0.05 }, note:'Binds 3 bodies for 8s: wounds repeat at 95%, and the grafted take 20% more.' } ]
   },
 
   impaler: {
@@ -1014,9 +1014,9 @@ Object.assign(TOWER_TYPES_2, {
       { id:'im_burn',  row:2, col:1, name:'RENDING HEAT',   desc:'Hits burn for 24/s over 3s.',           mods:{ burn:24, burnDur:3 } } ],
     branches:[
       { id:'abattoir',   name:'ABATTOIR',   cost:660, mods:{ damage:120, rate:0.55, impaleScale:3.2, impaleFloor:0.30 },
-        surge:{ rate:0.03 }, note:'It stops waiting for the worst wound and works every hurt on the board in turn.' },
+        surge:{ rate:0.03 }, note:'120-damage spines at 0.55/s, up to ×4.2 at a full wound; nothing under 30% hurt.' },
       { id:'extinction', name:'EXTINCTION', cost:660, mods:{ damage:340, rate:0.14, impaleScale:6.0, impaleFloor:0.40, splash:1.4 },
-        surge:{ damage:60 }, note:'One spine, held until the wound is worth it: and then the wound is the whole creature.' } ]
+        surge:{ damage:60 }, note:'A 340-damage spine at 0.14/s with 1.4 splash, up to ×7; nothing under 40% hurt.' } ]
   },
 
   monstrance: {
@@ -1042,9 +1042,9 @@ Object.assign(TOWER_TYPES_2, {
       { id:'ms_twin', row:2, col:1, name:'SECOND WITNESS',  desc:'Holds a second body open at 55% strength.',             mods:{ split:2, splitFalloff:0.55 } } ],
     branches:[
       { id:'revelation', name:'REVELATION', cost:620, mods:{ damage:170, revealFrac:0.92, revealLinger:3.0, range:6.0 },
-        surge:{ revealLinger:0.3 }, note:'What it looks at has, for every practical purpose, no protections at all.' },
+        surge:{ revealLinger:0.3 }, note:'Holds 92% of the target\'s protections open for every tower, lingering 3s after the beam.' },
       { id:'theophany',  name:'THEOPHANY',  cost:620, mods:{ damage:120, revealFrac:0.62, split:3, splitFalloff:0.65 },
-        surge:{ splitFalloff:0.03 }, note:'Three bodies held open at once. The whole front rank, presented.' } ]
+        surge:{ splitFalloff:0.03 }, note:'Splits across 3 bodies, extra beams at 65% strength, holding 62% of protections open.' } ]
   },
 
   pharos: {
@@ -1067,9 +1067,9 @@ Object.assign(TOWER_TYPES_2, {
       { id:'ph_hvy',   row:2, col:1, name:'HEAVY LIGHT',    desc:'Anything in the beam is slowed 30%.',  mods:{ slow:0.30, slowDur:1.2 } } ],
     branches:[
       { id:'solstice', name:'SOLSTICE', cost:580, mods:{ damage:98, burn:40, sweepBeams:2, range:6.8 },
-        surge:{ damage:10 }, note:'Two lights back to back. Half the dark it used to leave.' },
+        surge:{ damage:10 }, note:'Two beams back to back: 98/s each plus a 40/s burn at 6.8 range. Half the dark.' },
       { id:'noontide', name:'NOONTIDE', cost:580, mods:{ damage:64, burn:52, burnDur:4.0, cone:1.5, sweepRate:0.7, range:7.2 },
-        surge:{ coneMul:1.03 }, note:'Less a beam than a season: a broad slow noon that is always somewhere.' } ]
+        surge:{ coneMul:1.03 }, note:'A cone 1.5 wide turning at 0.7: 64/s plus a 52/s burn for 4s. Always noon somewhere.' } ]
   },
 });
 
@@ -1163,7 +1163,7 @@ const BOONS = [
                  t.lastStandDmg = (t.lastStandDmg||0) + 0.40; } },
   { id:'h_salvage', f:'human', k:'forge', name:'SALVAGE RIGHTS', icon:'♻',
     desc:'Selling returns 35% more, and ascension costs 20% less.',
-    lore:'Nothing is scrap. Some of it is just not yours yet.',
+    lore:'Nothing is scrap. Some is not yours yet.',
     apply:t => { t.sellRate = (t.sellRate||0) + 0.35;
                  t.ascCostMul = (t.ascCostMul||1) * 0.80; } },
   { id:'h_hardpoints', f:'human', k:'nest', name:'HARD POINTS', icon:'✚',
@@ -1200,7 +1200,7 @@ const BOONS = [
                  t.status = (t.status||0) + 0.25; } },
   { id:'l_eternal', f:'light', k:'apex', name:'ETERNAL SERVICE', icon:'♁',
     desc:'Your dead return 40% stronger and march a quarter faster.',
-    lore:'Their signatures carried no end date. The Accord read that as consent.',
+    lore:'Signatures without end dates. The Accord read consent.',
     apply:t => { t.reanimMul = (t.reanimMul||0) + 0.40;
                  t.reanimSpeedMul = (t.reanimSpeedMul||1) * 1.25; } },
 
@@ -1225,7 +1225,7 @@ const BOONS = [
                  t.reanimGold = (t.reanimGold||0) + 3; } },
   { id:'x_brood', f:'xeno', k:'nest', name:'BROODSWELL', icon:'✺',
     desc:'Everything you summon arrives 50% heavier.',
-    lore:'The nest does not send soldiers. It sends more of itself.',
+    lore:'The nest sends nothing but more of itself.',
     apply:t => t.musterHpMul = (t.musterHpMul||1) * 1.50 },
   { id:'x_consume', f:'xeno', k:'apex', name:'TOTAL CONSUMPTION', icon:'☣',
     desc:'The largest creatures take 35% more damage and pay 50% more.',

@@ -194,7 +194,7 @@ const FACTION_ENEMY_TYPES = {
                  color:'#fde68a', shape:'chevron', shield:44, shieldRegen:20, shieldDelay:3.0,
                  elemWeak:{ void:0.35 },
                  desc:'A 44 point ward that regrows 20 a second, three seconds after it last took a hit. Void does 35% more to the body underneath.',
-                 lore:'It signed the Accord it was given one briefing and three hours to read. The ward arrived with the signature.' },
+                 lore:'Three hours to read. The ward arrived signed.' },
   censer:      { id:'censer', faction:'light', name:'Censer', hp:150, speed:0.95, armor:3, bounty:29, lives:2, radius:11,
                  color:'#fcd34d', shape:'cross', healRate:24, healRadius:2.5,
                  elemWeak:{ venom:0.4 },
@@ -570,7 +570,7 @@ const DOCTRINE_ORDER = ['human', 'light', 'xeno', 'pirate', 'robot'];
 -------------------------------------------------------------------------- */
 const UNIT_DOCTRINE_TALENTS = {
   human: [
-    { id:'u_h0a', row:0, col:0, name:'SCAVENGE',     desc:'Takes half again as much off every wreck.', mods:{ salvageMul:1.5 } },
+    { id:'u_h0a', row:0, col:0, name:'SCAVENGE',     desc:'Salvages 50% more armour off every wreck.', mods:{ salvageMul:1.5 } },
     { id:'u_h0b', row:0, col:1, name:'QUARTERMASTER',desc:'A summon costs 15% less.',                  mods:{ costMul:0.85 } },
     { id:'u_h1a', row:1, col:0, name:'PLATE SHOP',   desc:'+3 armour before a wreck is even found.',   mods:{ armorAdd:3 } },
     { id:'u_h1b', row:1, col:1, name:'ATTRITION',    desc:'+25% bodies per summon.',                   mods:{ countMul:1.25 } }

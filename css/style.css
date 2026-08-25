@@ -413,7 +413,10 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 
 #screen-game { display: flex; flex-direction: column; height: 100vh; }
 
-#hud { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; padding: 9px 14px;
+/* Centre aligned in BOTH modes (owner, Session 31): auto columns justified to
+   the centre, not 1fr rails that pin the two side cards to the edges. */
+#hud { display: grid; grid-template-columns: auto auto auto; justify-content: center;
+       gap: 14px; padding: 9px 14px;
        align-items: center; background: var(--panel); border-bottom: 1px solid var(--line); flex-shrink: 0; }
 .hud-side { display: flex; align-items: center; gap: 10px; }
 .hud-side.rival { justify-content: flex-end; }
@@ -490,23 +493,12 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
    order. The muster/ability shrink budget and the inspector's 120px floor
    (polish.css) hold in both layouts. */
 #sidebar { width: 292px; flex-shrink: 0; display: flex; flex-direction: column; gap: 9px; min-height: 0; }
-@media (min-width: 1240px) {
-  #sidebar { width: 580px; display: grid;
-             grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-             grid-template-rows: auto auto auto auto minmax(0, 1fr);
-             grid-template-areas:
-               "wave   abil"
-               "shop   base"
-               "shop   insp"
-               "muster insp"
-               ".      insp"; }
-  #btn-rush              { grid-area: wave; }
-  #sidebar > .panel-shop { grid-area: shop; align-self: start; }
-  #muster-bar            { grid-area: muster; }
-  #ability-bar           { grid-area: abil; }
-  #btn-baselvl           { grid-area: base; }
-  #sidebar > .panel-grow { grid-area: insp; }
-}
+/* THE TWO-COLUMN 580px GRID IS GONE (Session 31), because its reason is gone:
+   it existed to seat the shop beside the inspector, and the shop and the
+   muster bar now live in the bottom dock. With only rush, abilities, base and
+   the inspector left, the 292px single column is right at every width, and
+   the board gets the 288px back. --rail-w is measured live off the element,
+   so everything downstream follows automatically. */
 
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; }
 .panel-shop { flex-shrink: 0; }
