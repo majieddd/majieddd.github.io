@@ -139,13 +139,18 @@ canon entry at all (`spiral`, `twin-channel`, `chokepoint`, `island-scatter`,
 families postdate lore release 0.5.0. That is authored in D3 rather than
 renamed.
 
-## D. Still open
+## D. Closed
 
 ### D1. Field Manual codex, rewritten from canon
-`[ ]` `LORE_CODEX` in `js/factions.js` is the OLD six-entry codex and now sits
-beside a canon that contradicts parts of it. It should be regenerated from
-`docs/lore/docs/canon/` rather than maintained by hand. The rename in A2 was
-done anticipating exactly this.
+`[x]` **MEASURED:** ten entries, up from six, every one `{id, title, body}` so
+the renderer contract is untouched, 68 to 85 words each. Renders 10 of 10 with
+none empty and zero console errors. Teaches the Sol Gate premise, the Source
+Lattice, the pentad, the five conquest verbs one per banner, Echo Reversal,
+stars as claim stability, SOULS, garrisons and conquest. The Vigil entry does
+the job the old codex could not: it states outright that the Vigil is not a
+sixth power, that it reads extinct law and "does not read flags", and lands
+the mechanical consequence ("It comes down the same corridor at both
+commanders, in the same numbers. Nothing out there is fighting for you.").
 
 ### D2. Commander portraits from the visual briefs
 `[x]` **Closed as NOT NEEDED, plus one real finding the audit corrected.**
@@ -187,20 +192,44 @@ matching them is the expensive option and matching them cheaply would itself
 be a partial upgrade.
 
 ### D3. World and battlefield dossiers
-`[ ]` `LORE.maps` covers 22 of the game's 28 boards; `LORE.worldGeneration`
-carries deterministic rules for generating world prose from system index,
-owner, kind and scenario. The six unmatched boards are the procedural families
-from `js/mapgen.js`, which postdate the lore release.
+`[x]` **MEASURED:** `js/worldlore.js`. Every board gets a WAS/NOW pair, which
+is the whole idea: these are repurposed jurisdiction installations, not
+landforms. On a live 5-system galaxy, **35 of 35 worlds resolve a dossier**,
+and the module's own `selfCheck()` reports 28 of 28 map ids resolved with no
+missing entries, no incomplete ones, and no name drift.
+**The coverage gap is closed, not worked around.** The canon shipped 22 of the
+28 boards; the seven procedural families (`spiral`, `twin-channel`,
+`chokepoint`, `island-scatter`, `open-field`, `convergence`, `fortress-ring`)
+postdate lore 0.5.0 and had no entry, so canon was AUTHORED for them in the
+canon's own voice and shape. `spiral` is now Vortex Reach, an "inward transit
+winding" built so no inbound convoy reached the centre without passing the
+same inspection ring three times.
 
 ### D4. Dialogue driven by relationships
-`[ ]` `LORE.relationships` holds 19 seeds and `js/dialogue.js` already has a
-rivalry-pair system. Wiring the canon's seeds into it would make pre-battle
-exchanges reflect the actual political history rather than authored pairs.
+`[x]` **MEASURED:** all **19 of 19** canonical relationship seeds resolve
+through `canonRelationship`, and `canonExchange` returns a written exchange in
+each speaker's own voice. Selection is deterministic (identical across repeated
+calls) and draws no random number, which matters because `js/net.js` replaces
+`Math.random` with the seeded lockstep PRNG during a match. **Purely
+additive:** a pairing with no canonical seed returns `null` and falls through
+to the existing opener and reply pools exactly as before.
 
 ### D5. Archive War missions as scenarios
-`[ ]` 37 authored missions with premise, objective, commander, battlefield and
-world kind, intended as scenario seeds. They are the natural content for
-making individual worlds feel authored rather than generated.
+`[x]` **MEASURED:** `js/missions.js`. All 37 load, assignment to generated
+worlds is deterministic with **no repeats inside a galaxy** (30 of 35 worlds
+carry one, zero duplicates), and `selfCheck()` passes 17 assertions including
+`assign.deterministic`, `assign.noRepeats`, `copy.noEmDash` and
+`caution.always`.
+**The editorial guardrail is enforced in the interface, not just documented.**
+The canon forbids presenting historical UAP, contactee or religious material
+as verified alien history, and names an explicit rule that no real population
+may be rewritten as a secret nonhuman bloodline. Every surfaced mission
+therefore renders its evidence grade and caution line as a NON-OPTIONAL part
+of the block, and premises are reframed to separate record from
+interpretation: AW-01 now reads "The file is a genuine record of a report. The
+coordinate reading laid over it is invented for this war, not a finding about
+the file." A mission is a contested record, never a verdict. Verified: zero of
+the 30 rendered missions was missing its caution line.
 
 ---
 
