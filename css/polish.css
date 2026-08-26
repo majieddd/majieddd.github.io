@@ -3371,3 +3371,17 @@ body.rm-user.immersive #battle-controls { transition: none; }
   .rws-body { flex-direction: column; }
   .rws-reveal { grid-template-columns: 1fr; gap: 4px; }
 }
+
+/* THE CAMPAIGN PREMISE on a faction card. It sits between the mechanical
+   bonus and the first-commander line, because the order of the card is now
+   what the banner DOES, what its campaign is FOR, and who you start with.
+   The mission is italic and dim so the card still leads with its mechanic:
+   a player picking a banner for the +12% is not made to read prose first. */
+.fac-premise { display: block; margin-top: 8px; padding-top: 8px;
+               border-top: 1px solid var(--line); }
+.fac-premise b { display: block; font-family: var(--display); font-size: 9.5px;
+                 letter-spacing: .17em;
+                 color: color-mix(in srgb, var(--fc) var(--ink-mix), var(--text));
+                 margin-bottom: 4px; }
+.fac-premise em { display: block; font-style: italic; font-size: 11px;
+                  line-height: 1.5; color: var(--text-dim); }

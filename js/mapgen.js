@@ -74,21 +74,23 @@
     return pts;
   }
 
-  /** Serpentine: enters from the right edge, zigzags leftward in horizontal
-      legs, exits at the left. */
+  /** Serpentine (HALF-WIDTH): enters from the mirror axis, zigzags leftward
+      in horizontal legs, exits at x=-1. Only traverses the LEFT half so that
+      buildField's mirror produces a non-overlapping rival lane on the right. */
   function serpentineWaypoints(cols, rows, rnd) {
     const margin = irange(rnd, 2, 3);
     const legH = Math.max(2, Math.floor((rows - 2 * margin) / irange(rnd, 3, 4)));
-    const wps = [[cols - 1, margin + irange(rnd, 0, 1)]];
+    // Start near the mirror axis (left side of it for even cols).
+    const startX = Math.floor(cols / 2) - irange(rnd, 0, 1);
+    const wps = [[startX, margin + irange(rnd, 0, 1)]];
     let y = wps[0][1];
-    let x = cols - 2;
+    let x = startX;
     while (x >= margin + 3) {
       const segLen = Math.min(x - margin + 1, irange(rnd, 4, 8));
       const nx = Math.max(margin, x - segLen);
       wps.push([nx, y]);
       x = nx;
       if (x <= margin) break;
-      // turn: alternate down/up, clamped to the board
       const ny = clamp(y + (wps.length % 2 === 0 ? legH : -legH), margin, rows - 1 - margin);
       wps.push([nx, ny]);
       y = ny;
@@ -97,15 +99,17 @@
     return wps;
   }
 
-  /** Spiral: enters from the right edge and winds inward through shrinking
-      rectangular rings until it reaches the left. */
+  /** Spiral (HALF-WIDTH): enters from the mirror axis and winds inward through
+      shrinking rectangular rings until it reaches x=-1. */
   function spiralWaypoints(cols, rows, rnd) {
     const m = irange(rnd, 2, 3);
-    let x0 = cols - 1, y0 = m + irange(rnd, 0, 1), x1 = m, y1 = rows - 1 - m;
+    // Bounding box: left half of the board only.
+    let x0 = Math.floor(cols / 2) - irange(rnd, 0, 1), y0 = m + irange(rnd, 0, 1);
+    const x1 = m, y1 = rows - 1 - m;
     const wps = [[x0, y0]];
     for (let ring = 0; ring < irange(rnd, 2, 3); ring++) {
       if (x1 + 1 >= x0 || y1 <= y0) break;
-      wps.push([x0, y1]);   // down the right side
+      wps.push([x0, y1]);   // down the right side of the box
       wps.push([x1, y1]);   // across the bottom
       wps.push([x1, y0]);   // up the left side
       const nx0 = x0 - irange(rnd, 2, 3);
@@ -118,93 +122,102 @@
     return wps;
   }
 
-  /** Two parallel channels with a silt bank between them. */
+  /** Two parallel channels (HALF-WIDTH) with a silt bank between them. */
   function twinChannelWaypoints(cols, rows, rnd) {
     const gap = irange(rnd, 2, 3);
     const midY = Math.floor(rows / 2);
     let yTop = clamp(midY - gap - irange(rnd, 0, 1), 1, rows - 4);
     let yBot = clamp(midY + gap + irange(rnd, 0, 1), yTop + 3, rows - 2);
-    const bendX = Math.floor(cols / 3) + irange(rnd, -1, 1);
-    const topWps = [[cols - 1, yTop], [bendX, yTop],
+    const startX = Math.floor(cols / 2) - irange(rnd, 0, 1);
+    const bendX = Math.max(2, Math.floor(startX * 0.4)) + irange(rnd, -1, 1);
+    const topWps = [[startX, yTop], [bendX, yTop],
                     [bendX, clamp(yTop + irange(rnd, 1, 2), 1, rows - 2)],
                     [-1, clamp(yTop + irange(rnd, 0, 2), 1, rows - 2)]];
-    const bendX2 = Math.floor(2 * cols / 3) + irange(rnd, -1, 1);
-    const botWps = [[cols - 1, yBot], [bendX2, yBot],
+    const bendX2 = Math.max(3, Math.floor(startX * 0.6)) + irange(rnd, -1, 1);
+    const botWps = [[startX, yBot], [bendX2, yBot],
                     [bendX2, clamp(yBot - irange(rnd, 1, 2), 1, rows - 2)],
                     [-1, clamp(yBot - irange(rnd, 0, 2), 1, rows - 2)]];
     return { top: topWps, bot: botWps, bankY: midY };
   }
 
-  /** Chokepoint: a corridor that juts into alcoves; each alcove covers only
-      its own leg. */
+  /** Chokepoint (HALF-WIDTH): a corridor that juts into alcoves; each alcove
+      covers only its own leg. All geometry in the left half. */
   function chokepointWaypoints(cols, rows, rnd) {
     const nAlcoves = irange(rnd, 2, 3);
     const midY = Math.floor(rows / 2);
-    const segW = Math.max(4, Math.floor((cols - 6) / (nAlcoves + 1)));
-    const wps = [[cols - 1, midY]];
+    const startX = Math.floor(cols / 2) - irange(rnd, 0, 1);
+    // Available width for the corridor: from startX down to x=2.
+    const availW = startX - 3;
+    const segW = Math.max(4, Math.floor(availW / (nAlcoves + 1)));
+    const wps = [[startX, midY]];
+    let cx = startX;
     for (let i = 0; i < nAlcoves; i++) {
-      const xEdge = cols - 4 - i * segW;
-      if (xEdge <= 2) break;
+      if (cx - segW <= 2) break;
       const yOff = irange(rnd, 1, Math.max(1, Math.floor(rows / 4)));
       const dirUp = rnd() < 0.5 ? -1 : 1;
       const ny = clamp(midY + dirUp * yOff, 1, rows - 2);
-      wps.push([xEdge + segW - 2, midY]);
-      wps.push([xEdge + segW - 2, ny]);
-      wps.push([xEdge, ny]);
+      wps.push([cx - segW + 2, midY]);
+      wps.push([cx - segW + 2, ny]);
+      cx = cx - segW;
+      wps.push([cx, ny]);
     }
     wps.push([-1, midY]);
     return wps;
   }
 
-  /** Island scatter: one long lane with wide gaps between its legs so the
-      rubble fields below carve out disconnected buildable pockets. */
+  /** Island scatter (HALF-WIDTH): one long lane with wide gaps between its legs
+      so the rubble fields below carve out disconnected buildable pockets. */
   function islandScatterWaypoints(cols, rows, rnd) {
     const y0 = irange(rnd, 2, Math.max(3, Math.floor(rows / 4)));
-    const wps = [[cols - 1, y0]];
-    let x = cols - 3;
+    const startX = Math.floor(cols / 2) - irange(rnd, 0, 1);
+    const wps = [[startX, y0]];
+    let x = startX;
     for (let i = 0; i < irange(rnd, 3, 5); i++) {
       if (x <= 2) break;
-      wps.push([x + 2, y0]);
+      const nx = Math.max(1, x - irange(rnd, 4, 6));
+      wps.push([nx, y0]);
       const ny = clamp(y0 + irange(rnd, 3, Math.max(4, Math.floor(rows / 3))), 1, rows - 2);
-      wps.push([x + 2, ny]);
-      x = Math.max(1, x - irange(rnd, 5, 7));
-      wps.push([x, ny]);
+      wps.push([nx, ny]);
+      x = nx;
     }
     wps.push([-1, Math.floor(rows / 2)]);
     return wps;
   }
 
-  /** Open field: very wide board, two long near-straight lanes. */
+  /** Open field (HALF-WIDTH): very wide board, two long near-straight lanes. */
   function openFieldWaypoints(cols, rows, rnd) {
     let yA = irange(rnd, 3, Math.max(4, Math.floor(rows / 3)));
     let yB = clamp(rows - 1 - yA + irange(rnd, -1, 1), yA + 3, rows - 2);
-    const topWps = [[cols - 1, yA],
-                    [Math.floor(cols * 0.6) + irange(rnd, -2, 2), yA],
-                    [Math.floor(cols * 0.4) + irange(rnd, -2, 2), clamp(yA + irange(rnd, 1, 2), 1, rows - 2)],
+    const startX = Math.floor(cols / 2) - irange(rnd, 0, 1);
+    const topWps = [[startX, yA],
+                    [Math.max(2, Math.floor(startX * 0.5)) + irange(rnd, -2, 2), yA],
+                    [Math.max(1, Math.floor(startX * 0.3)) + irange(rnd, -2, 2), clamp(yA + irange(rnd, 1, 2), 1, rows - 2)],
                     [-1, clamp(yA + irange(rnd, 0, 2), 1, rows - 2)]];
-    const botWps = [[cols - 1, yB],
-                    [Math.floor(cols * 0.5) + irange(rnd, -2, 2), yB],
-                    [Math.floor(cols * 0.3) + irange(rnd, -2, 2), clamp(yB - irange(rnd, 1, 2), 1, rows - 2)],
+    const botWps = [[startX, yB],
+                    [Math.max(3, Math.floor(startX * 0.6)) + irange(rnd, -2, 2), yB],
+                    [Math.max(2, Math.floor(startX * 0.4)) + irange(rnd, -2, 2), clamp(yB - irange(rnd, 1, 2), 1, rows - 2)],
                     [-1, clamp(yB - irange(rnd, 0, 2), 1, rows - 2)]];
     return { top: topWps, bot: botWps };
   }
 
-  /** Convergence: several short lanes enter from the right edge at different
-      heights and all converge on a single base, siege pressure. */
+  /** Convergence (HALF-WIDTH): several short lanes enter from the mirror axis
+      at different heights and all converge on a single base at x=-1. */
   function convergenceWaypoints(cols, rows, rnd) {
     const nLanes = irange(rnd, 2, 3);
     const baseY = Math.floor(rows / 2);
+    const startX = Math.floor(cols / 2) - irange(rnd, 0, 1);
     const lanes = [];
     for (let i = 0; i < nLanes; i++) {
       const enterY = clamp(Math.floor((i + 0.5) * rows / nLanes) + irange(rnd, -1, 1), 1, rows - 2);
-      const wps = [[cols - 1, enterY]];
-      let x = cols - 3;
+      const wps = [[startX, enterY]];
+      let x = startX;
       for (let seg = 0; seg < irange(rnd, 2, 3); seg++) {
         if (x <= 3) break;
-        wps.push([x + 2, enterY]);
+        const nx = Math.max(1, x - irange(rnd, 3, 5));
+        wps.push([nx, enterY]);
         const ny = clamp(baseY + irange(rnd, -Math.floor(rows / 4), Math.floor(rows / 4)), 1, rows - 2);
-        wps.push([x + 2, ny]);
-        x -= irange(rnd, 3, 5);
+        wps.push([nx, ny]);
+        x = nx;
       }
       wps.push([1, baseY]);
       wps.push([-1, baseY]);
@@ -213,8 +226,8 @@
     return { lanes: lanes };
   }
 
-  /** Fortress ring: a serpentine road past a broken ring of walls around the
-      centre; the gaps are where the kill zones sit. */
+  /** Fortress ring (HALF-WIDTH): a serpentine road past a broken ring of walls
+      around the centre; the gaps are where the kill zones sit. */
   function fortressRingWaypoints(cols, rows, rnd) {
     const wps = serpentineWaypoints(cols, rows, rnd);
     return { lanes: [wps] };

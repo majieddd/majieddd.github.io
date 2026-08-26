@@ -1099,6 +1099,22 @@ const UI = {
      reads as somebody telling you something rather than as narration. The
      REVEAL is separated from the LINE on purpose: the line is voice, the
      reveal is what the player now knows and can act on. */
+  /* WHAT YOU ARE SIGNING UP FOR. The faction card already said what the
+     banner does mechanically; this says what its campaign is FOR. The
+     CAMPAIGN name and MISSION are the pitch. The crisis is NOT shown here on
+     purpose: discovering it is the campaign, and printing it on the
+     recruitment poster would spend the whole arc in one line. It is what the
+     six beats uncover. */
+  factionPremise(id) {
+    if (typeof Story === 'undefined') return '';
+    const p = Story.campaign(id);
+    if (!p) return '';
+    return `<span class="fac-premise">
+        <b>${p.campaign}</b>
+        <em>${p.mission}</em>
+      </span>`;
+  },
+
   storyBeatHtml() {
     if (typeof Story === 'undefined') return '';
     const c = Meta.campaign();
@@ -1343,6 +1359,7 @@ const UI = {
         <span class="fac-creed">${f.creed}</span>
         <span class="fac-blurb">${f.tagline}</span>
         <span class="fac-bonus"><b>${f.bonusName}</b>${f.bonusDesc}</span>
+        ${this.factionPremise(id)}
         <span class="fac-cmd">First commander &middot; <b>${cmd.name}</b>, ${cmd.title}</span>
       </button>`;
     }).join('');

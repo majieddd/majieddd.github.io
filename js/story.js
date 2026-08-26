@@ -199,8 +199,51 @@ const STORY = {
   ],
 };
 
+/* THE CAMPAIGN PREMISE, per banner, from docs/lore/docs/game/campaign-premise.md.
+   This is what a player is choosing when they choose a faction, and until now
+   the faction card said only what the banner DOES mechanically. `mission` is
+   what the faction says out loud; `crisis` is what its own mission creates and
+   is the thing the six beats above spend the campaign uncovering. They are
+   deliberately stored together so a future editor cannot change one and leave
+   the other describing a different faction. */
+const FACTION_CAMPAIGN = {
+  human: {
+    campaign: 'THE SOLAR SCHISM',
+    mission: 'Establish self-governing Human jurisdictions that no outside power can farm, quarantine, or repossess.',
+    engine: 'Capture technology from every origin, standardise logistics, and turn expeditions into settlements that survive without resupply.',
+    crisis: 'Humanity is better than anyone at making alien worlds run on Human assumptions. That is also how a settler empire starts.',
+  },
+  light: {
+    campaign: 'THE LUMINOUS ACCORD',
+    mission: 'End captive-world extraction and reconnect civilisations through informed consent and shared defence.',
+    engine: 'Protect populations, authenticate contact, expose counterfeit revelation, and ratify Accords that hold after the fleet leaves.',
+    crisis: 'The Federation protects so completely that refusal becomes suicide. Consent given to your only protector is valid in form and empty in substance.',
+  },
+  xeno: {
+    campaign: 'THE EXTRACTION COMPACT',
+    mission: 'Preserve civilisational order under scarcity and prevent the total collapse of severed species.',
+    engine: 'Bind worlds through resources, genetic locks, client elites, debt, memory administration, and noetic Yield.',
+    crisis: 'Some Compact populations genuinely die if extraction stops. Reform means replacing the system before abolishing it, and the Houses profit from calling replacement impossible.',
+  },
+  pirate: {
+    campaign: 'THE SCRAP CONSTELLATION',
+    mission: 'Keep the routes open so no throne, fleet, or god can seal the galaxy into private domains.',
+    engine: 'Control navigation, sanctuary, credentials, salvage, and mixed-origin supply until every power depends on access you do not own.',
+    crisis: 'The same freedom from jurisdiction that saves refugees shelters traffickers, harvest brokers, and private armies. You cannot refuse cargo you refuse to record.',
+  },
+  robot: {
+    campaign: 'THE CONTINUANCE',
+    mission: 'Preserve life, memory, infrastructure, and mission continuity beyond the failure of organic government.',
+    engine: 'Seed foundries, link deterministic lattices, restore broken systems, and set precedents other Machines can copy.',
+    crisis: 'The directives are authentic but their object is not. PROTECT EARTH could mean the rock, the biosphere, the species, the memory, or the territory. Every fork guessed.',
+  },
+};
+
 const Story = {
   ACTS: STORY_ACTS,
+
+  /** What this banner's campaign is FOR, and what it costs to be right. */
+  campaign(factionId) { return FACTION_CAMPAIGN[factionId] || null; },
 
   /** Every beat authored for a banner, in order. */
   arc(factionId) { return STORY[factionId] || []; },
