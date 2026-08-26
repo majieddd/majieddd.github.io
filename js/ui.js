@@ -302,8 +302,12 @@ const UI = {
       this._cmdTouched = false;
       this.sel.loadout = []; this.sel.commander = null;   /* a new war, a clean slate */
       Sound.play('branch');
-      /* Commander choice comes AFTER allegiance, never before. */
-      this.show('screen-command'); this.buildCommanderScreen();
+      /* THE OATH (batch 2): five slides of why this banner is out here,
+         before the first screen of the war. Skippable, and the routing
+         beneath is identical with or without it. */
+      const proceed = () => { this.show('screen-command'); this.buildCommanderScreen(); };
+      if (typeof Cutscenes !== 'undefined' && Cutscenes.has('intro', f)) Cutscenes.play('intro', f, 0, proceed);
+      else proceed();
     });
     $('#btn-back-command').addEventListener('click', () => { Sound.play('click'); this.show('screen-command'); this.renderCommanders(); });
     $('#btn-to-loadout').addEventListener('click', () => { Sound.play('click'); this.show('screen-loadout'); this.renderLoadout(); });
@@ -403,8 +407,20 @@ const UI = {
          multiplayer route promises never to touch. Game._skirmish is still
          true while the end overlay is up. BATCH-C/nside */
       if (Game._skirmish) { this.show('screen-multiverse'); this.renderMultiverse(); return; }
-      /* Win or lose, the road leads back to the galaxy. */
-      this.show('screen-theatre'); this.renderTheatre();
+      /* THE TURNING (batch 2): when THIS battle closed a solar system, the
+         act's interstitial plays on the way back to the map. Act index is
+         systems-taken minus one, the same index the beat card used, so the
+         two can never tell different chapters. Win or lose otherwise, the
+         road leads straight back to the galaxy. */
+      const stC = Game.lastStars;
+      const goGalaxy = () => { this.show('screen-theatre'); this.renderTheatre(); };
+      if (stC && stC.systemTaken && typeof Cutscenes !== 'undefined') {
+        const ccam = Meta.campaign();
+        const act = Math.max(0, ((ccam && ccam.systemsTaken || []).length) - 1);
+        const facC = (ccam && ccam.faction) || Meta.faction() || 'human';
+        if (Cutscenes.has('sys', facC, act)) { Cutscenes.play('sys', facC, act, goGalaxy); return; }
+      }
+      goGalaxy();
     });
   },
 
@@ -2257,7 +2273,7 @@ const UI = {
 
   renderMultiverse() {
     const fac = Meta.faction() || 'human';
-    if (!this._mvGx) this._mvGx = generateGalaxy(777001, fac);
+    if (!this._mvGx) this._mvGx = generateGalaxy(777001, fac, undefined, 2);
     const gx = this._mvGx;
     /* PARITY WITH THE GALAXY. This map was drawing bare dots on a flat
        gradient: no nebula, no painted planets, no owner rings, no seat marks,

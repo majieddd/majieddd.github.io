@@ -12,6 +12,21 @@
    ========================================================================== */
 
 const SYSTEMS_PER_GALAXY = 5;
+
+/* THEMES: one identity per system slot. `families` is the set of procedural
+   families that world favours (the galaxy pool filters on it); `label` and
+   `blurb` are what the UI shows so a player can feel which kind of ground they
+   are walking into. Derived from si, never drawn, see the map draw above. */
+const GX_THEMES = [
+  { name: 'The Approach', label: 'OPEN GROUND', blurb: 'Wide roads and little cover; your towers must hold at range.',
+    families: ['open-field', 'braid', 'spiral'] },
+  { name: 'The Narrows Reach', label: 'FENCED ROADS', blurb: 'Corridors, bars and posts, the ground funnels everything past your walls.',
+    families: ['gauntlet', 'twin-gate', 'chokepoint', 'horseshoe'] },
+  { name: 'The Broken Step', label: 'SPLIT GROUND', blurb: 'Stairs, switchbacks and twin arenas; nothing here is one straight fight.',
+    families: ['staircase', 'switchback', 'twin-temple', 'island-scatter'] },
+  { name: 'The Deep Maze', label: 'WALLED GROUND', blurb: 'Mazes, rings and bastions, sightlines are the whole war.',
+    families: ['labyrinth', 'fortress-ring', 'convergence', 'twin-channel'] }
+];
 /* Worlds in a system: one commander seat, CONTESTED_PER_SYSTEM three-way
    battles, and ordinary worlds for the rest. */
 const WORLDS_PER_SYSTEM = 7;
@@ -176,6 +191,18 @@ const GX_MARK_UP = 6.8, GX_MARK_DOWN = 5.5;
 const GX_Y_MIN = (GX_WORLD.y + GX_MARK_UP) / GX_RENDER_SQUASH;
 const GX_Y_MAX = (GX_WORLD.y + GX_WORLD.h - GX_MARK_DOWN) / GX_RENDER_SQUASH;
 
+/* KIND WEIGHTS ARE VERSIONED AND PINNED (owner, batch 2). The owner asked
+   for more Vigil-garrisoned neutral worlds, and the kind roll consumes one
+   rnd() per world, so changing weights changes OUTCOMES while leaving the
+   stream position untouched. Outcomes are still state: a galaxy regenerates
+   from its seed on every load, so an in-flight campaign under new weights
+   would wake up with different worlds. campaignStart pins kindsW on the
+   campaign the day it begins; old campaigns carry no pin and get v1
+   forever. Same law as the mapPool pin two fields over. */
+const KIND_WEIGHTS = {
+  1: { standard: 58, fortress: 16, forge: 12, nest: 14 },
+  2: { standard: 46, fortress: 16, forge: 12, nest: 26 }
+};
 const WORLD_KINDS = {
   standard: { id: 'standard', label: 'World',      icon: '●', weight: 58 },
   fortress: { id: 'fortress', label: 'Fortress',   icon: '⛨', weight: 16,
@@ -200,7 +227,8 @@ const WORLD_KINDS = {
  * Build a whole galaxy from a seed. Systems are laid out around a spiral so the
  * map reads as a galaxy rather than a grid; worlds orbit their system centre.
  */
-function generateGalaxy(seed, playerFaction, mapPool) {
+function generateGalaxy(seed, playerFaction, mapPool, kindsW) {
+  const KW = KIND_WEIGHTS[kindsW] || KIND_WEIGHTS[1];
   const rnd = galaxyRng(seed);
   const rivals = rivalFactionsOf(playerFaction);
   /* WHO SQUATS the ordinary worlds. Naming the pirates outright put a fifth
@@ -256,9 +284,9 @@ function generateGalaxy(seed, playerFaction, mapPool) {
       /* The last world of a system is the holding commander’s own seat. */
       const isSeat = wi === WORLDS_PER_SYSTEM - 1;
       const kinds = Object.values(WORLD_KINDS);
-      let roll = rnd() * kinds.reduce((a, k) => a + k.weight, 0);
+      let roll = rnd() * kinds.reduce((a, k) => a + KW[k.id], 0);
       let kind = kinds[0];
-      for (const k of kinds) { roll -= k.weight; if (roll <= 0) { kind = k; break; } }
+      for (const k of kinds) { roll -= KW[k.id]; if (roll <= 0) { kind = k; break; } }
 
       /* Hoisted so the boon draw can read the same two values the world
          is built from. The owner roll is unchanged and still the first
@@ -294,7 +322,15 @@ function generateGalaxy(seed, playerFaction, mapPool) {
            draw moves. Clamped, so a newer save on an older build falls back
            to everything rather than throwing. One rnd() call, same position,
            as ever. */
-        map: (() => { const pool = MAPS.filter(m => !m.tri && (!m.minTier || m.minTier <= si));
+        /* THEMED POOL: each system favours a family set (GX_THEMES below), so
+           the campaign's boards read as places, not random rolls. The filter
+           is DERIVED from si, it draws nothing from rnd(), and for pinned old
+           saves (mapPool <= 11, all authored maps) the themed pool always falls
+           back to the full eligible set, so their boards stay byte-identical. */
+        map: (() => { const elig = MAPS.filter(m => !m.tri && (!m.minTier || m.minTier <= si));
+                      const th = GX_THEMES[si % GX_THEMES.length];
+                      let pool = (mapPool > 11) ? elig.filter(m => th.families.indexOf(m.family) >= 0) : [];
+                      if (!pool.length) pool = elig;      // theme empty at this tier: any eligible map
                       const n2 = (mapPool >= 1 && mapPool <= pool.length) ? mapPool : pool.length;
                       return pool[Math.floor(rnd() * n2)].id; })(),
         arena: rnd() < 0.55 ? ARENA_MODS[Math.floor(rnd() * ARENA_MODS.length)].id : null,
