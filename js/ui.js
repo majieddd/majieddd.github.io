@@ -1256,7 +1256,7 @@ const UI = {
         <div class="rws-text">
           <b class="rws-title">${b.title}</b>
           <p class="rws-line">${b.line}</p>
-          <p class="rws-who">${sp ? sp.name : b.speaker}${L && L.title ? ', ' + L.title : ''}</p>
+          <p class="rws-who">${sp ? sp.name : b.speaker}${(L && L.title) || (sp && sp.title) ? ', ' + ((L && L.title) || sp.title) : ''}</p>
         </div>
       </div>
       <div class="rws-reveal"><b>${isFinale ? 'WHAT IT AUTHORISES' : 'WHAT THIS MEANS'}</b><span>${b.reveal}</span></div>
