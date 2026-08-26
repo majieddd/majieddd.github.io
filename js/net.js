@@ -73,7 +73,10 @@ const NET_CHANNEL = 'cosmic-conquest-duel/1';
    hashes, so builds on either side of the feature simulate different worlds
    and must refuse each other with a sentence instead of desyncing at the
    first engagement. */
-const NET_PROTOCOL = 6;
+/* 7: the roster grew (ASHTAR, ISA). A duel between a build that has them
+   and one that does not desyncs the moment either is fielded, so the
+   version fence moves. */
+const NET_PROTOCOL = 7;
 /* A turn is six ticks. 100ms at 1x. Smaller windows stall constantly the
    moment one browser deprioritises anything; larger ones are felt as lag. */
 const NET_TURN_TICKS = 6;

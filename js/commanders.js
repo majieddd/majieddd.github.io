@@ -242,6 +242,19 @@ const Meta = {
        means "never chosen" -- deploy falls back to the session pick. */
     if (typeof p.equippedCommander !== 'string') p.equippedCommander = null;
     if (typeof p.galaxyTier !== 'number') p.galaxyTier = 0;
+    /* LIFETIME SYSTEMS TAKEN (owner, campaign batch 2): the commander soul
+       ladder prices each successive commander behind one more conquered
+       solar system. Additive key.
+
+       RAW FIELDS ONLY in this default, nothing that can re-enter load():
+       the first version called storyPending(), which walks shelves, which
+       resolves the shelf key, which calls load(), which runs this migration
+       again, and the stack died in a perfect circle. A conquered galaxy is
+       five systems by construction, so a veteran profile seeds at
+       galaxyTier*5 plus whatever the live campaign has taken. */
+    if (typeof p.sysTaken !== 'number')
+      p.sysTaken = (p.galaxyTier || 0) * 5 +
+        ((p.campaign && p.campaign.systemsTaken && p.campaign.systemsTaken.length) || 0);
     if (!p.prestige || typeof p.prestige !== 'object') p.prestige = {};
     if (!Array.isArray(p.seenEnemies)) p.seenEnemies = [];
     if (typeof p.souls !== 'number') p.souls = 0;
@@ -603,6 +616,7 @@ const Meta = {
         c.systemsTaken = c.systemsTaken || [];
         if (!c.systemsTaken.includes(sys.id)) {
           c.systemsTaken.push(sys.id);
+          p.sysTaken = (p.sysTaken || 0) + 1;
           souls += this.SYSTEM_BOUNTY;
           systemTaken = sys.name;
           /* The machine line is the reward for a WHOLE system, so it hangs
@@ -617,7 +631,18 @@ const Meta = {
       if (stars >= 3 && prev < 3 && sys) {
         const world = sys.worlds.find(w2 => w2.id === worldId);
         const wMap = world && MAPS.find(m => m.id === world.map);
-        if (wMap && wMap.denizens) saved = this.saveDenizens(wMap.denizens);
+        /* ONE UNIT PER PLANET, TOTAL (owner, batch 2). The map-denizen
+           track used to vault the board's whole roster in one conquest,
+           which is why the muster shelf filled up overnight. The rule now:
+           the Session-29 cadence gate (worldGrantsUnit, index-derived, the
+           same gate the briefing card already promises with) decides whether
+           this world pays ANY unit, and a paying world pays exactly one:
+           the rescue pick below when it resolves, otherwise the first new
+           creature of the board. A non-paying world vaults nothing at all,
+           so the shelf grows the way the owner asked: little by little,
+           differently each world. */
+        const paysAtAll = typeof worldGrantsUnit === 'function' ? worldGrantsUnit(world) : true;
+        saved = [];
         /* THE SECOND RESCUE TRACK (roadmap 19.10 / 19.11). The machines above
            are the MAP'S; these are the WORLD'S, and which power's soldiers
            stand on a world is precisely what the galaxy map's ownership colour
@@ -639,9 +664,15 @@ const Meta = {
            truthfully before the battle. The map's own denizens above are NOT
            gated: those are the board's creatures and saving them is what
            conquering the board means. */
-        const paysUnit = typeof worldGrantsUnit === 'function' ? worldGrantsUnit(world) : true;
-        const rescue = paysUnit ? worldRescueOffer(world, wMap, c.faction || p.faction) : null;
+        const rescue = paysAtAll ? worldRescueOffer(world, wMap, c.faction || p.faction) : null;
         refusedOffer = rescue ? (this.refusedDenizens([rescue.offer])[0] || null) : null;
+        /* ONE unit, best candidate first, and only vault at the moment of
+           choice. The first cut of this rule vaulted a board creature BEFORE
+           deciding, then vaulted the rescue too, and a playtest counted a
+           world paying two. The chain now: the holder's soldier if your
+           banner may take it, else your own garrison's, else the first NEW
+           creature of the board, else the world pays nothing. Vaulting
+           happens once, inside saveDenizens with a cap of one. */
         /* ONE soldier per conquest (owner, Session 26). Granting both the
            offer and the garrison meant a clean take could hand over two units
            at once, and the briefing card could not honestly name what a
@@ -649,9 +680,14 @@ const Meta = {
            the holder's soldier when your banner may take it, otherwise your
            own garrison's. */
         if (rescue) {
-          const pickId = this.unitRescueLock(rescue.offer) ? rescue.garrison : rescue.offer;
-          saved = saved.concat(this.saveDenizens([pickId]));
+          const first = this.unitRescueLock(rescue.offer) ? rescue.garrison : rescue.offer;
+          const second = first === rescue.offer ? rescue.garrison : rescue.offer;
+          saved = this.saveDenizens([first], 1);
+          if (!saved.length && !this.unitRescueLock(second))
+            saved = this.saveDenizens([second], 1);
         }
+        if (paysAtAll && !saved.length && wMap && wMap.denizens)
+          saved = this.saveDenizens(wMap.denizens, 1);
       }
     }
     if (souls) p.souls += souls;
@@ -677,7 +713,11 @@ const Meta = {
       opts.push({
         map: m.id,
         arena: c.depth === 0 ? null : ARENA_MODS[Math.floor(rng() * ARENA_MODS.length)].id,
-        rival: COMMANDERS[Math.floor(rng() * COMMANDERS.length)].id,
+        /* noSeat commanders (Ashtar, Isa) are excluded BY CONSTRUCTION:
+           options regenerate from seed+depth on load, so a pool that grew
+           would reroll every in-flight campaign's forks. Filtered pool
+           length equals the pre-append roster, fingerprint-verified. */
+        rival: COMMANDERS.filter(x => !x.noSeat)[Math.floor(rng() * COMMANDERS.filter(x => !x.noSeat).length)].id,
         boon: BOONS[Math.floor(rng() * BOONS.length)].id,
         difficulty: diff.id,
         escStart: Math.floor(c.depth / 3)
@@ -942,7 +982,8 @@ const Meta = {
       unlock made under a previous banner is kept for good, which is also why
       the shared vault is never filtered on read. */
   canUnlockTower(id) {
-    return !this.isTowerUnlocked(id) && !this.towerOriginLock(id) && !this.towerStoryLock(id);
+    return !this.isTowerUnlocked(id) && !this.towerOriginLock(id) &&
+           !this.towerStoryLock(id) && !this.towerGalaxyLock(id);
   },
 
   /* ---- the machine line: earned through the story, never sold ---- */
@@ -1037,10 +1078,12 @@ const Meta = {
     return (ids || []).filter(id => musterSendable(id) && !this.isMusterUnlocked(id) &&
                                     this.unitRescueLock(id));
   },
-  saveDenizens(ids) {
+  saveDenizens(ids, max) {
     const v = this.vault();
     const fresh = [];
+    const cap = (typeof max === 'number') ? max : Infinity;
     for (const id of (ids || [])) {
+      if (fresh.length >= cap) break;
       if (!musterSendable(id) || v.musterUnlocked.includes(id)) continue;
       if (this.unitRescueLock(id)) continue;
       v.musterUnlocked.push(id);
@@ -1216,10 +1259,63 @@ const Meta = {
   },
 
   isCommanderUnlocked(id) { return this.cmdShelf().includes(id); },
+
+  /* ═══════════════ THE COMMANDER SOUL LADDER (owner, batch 2) ═══════════
+     Souls alone stopped being the whole price: each successive commander of
+     your banner unlocks for PURCHASE only after one more solar system has
+     been conquered on this profile, lifetime. The ladder is roster order
+     within the faction, which is why Ashtar, appended last, is what a
+     Federation campaign climbs toward. Free commanders and CADRE sit outside
+     it; ISA has his own gate below. */
+  commanderLadder(factionId) {
+    return COMMANDER_ROSTER.filter(c =>
+      c.faction === factionId && !c.free && !c.always && !c.secretHuman);
+  },
+  /** Why the ladder refuses this commander right now, or null. */
+  commanderSystemsLock(id) {
+    const c = COMMANDER_ROSTER.find(x => x.id === id);
+    if (!c || c.free || c.always || c.secretHuman) return null;
+    if (this.isCommanderUnlocked(id)) return null;
+    const ladder = this.commanderLadder(c.faction);
+    const need = ladder.findIndex(x => x.id === id) + 1;
+    const have = this.load().sysTaken || 0;
+    return have >= need ? null : { need: need, have: have };
+  },
+  /** ISA unlocks by finishing the game under the human banner. HIDDEN, not
+      locked-with-a-label, until then: a secret that advertises itself is a
+      menu item. */
+  commanderSecretLock(id) {
+    const c = COMMANDER_ROSTER.find(x => x.id === id);
+    if (!c || !c.secretHuman) return null;
+    if (this.isCommanderUnlocked(id)) return null;
+    const p = this.load();
+    const done = (p.galaxyTier || 0) >= 1 && p.faction === 'human';
+    return done ? null : { hidden: true };
+  },
+
+  /* ═══════════════ THE HEAVY GATE (owner, batch 2) ══════════════════════
+     The 2x2 towers are campaign trophies: within each origin, the FIRST
+     heavy is purchasable after conquering your first galaxy and the SECOND
+     after your third. Grandfathered by construction: the lock never speaks
+     about a tower already on the shelf. */
+  towerGalaxyLock(id) {
+    const t = TOWER_TYPES[id];
+    if (!t || !Array.isArray(t.foot) || t.foot[0] !== 2) return null;
+    if (this.isTowerUnlocked(id)) return null;
+    const mates = TOWER_ORDER.filter(x => {
+      const d = TOWER_TYPES[x];
+      return d && Array.isArray(d.foot) && d.foot[0] === 2 && originOf(x).id === originOf(id).id;
+    });
+    const need = mates.indexOf(id) === 0 ? 1 : 3;
+    const have = this.load().galaxyTier || 0;
+    return have >= need ? null : { need: need, have: have };
+  },
   commanderCost(id) { return this.soulPrice('commander', id); },
   unlockCommander(id) {
     const shelf = this.cmdShelf();
     if (shelf.includes(id)) return false;
+    /* The ladder and the secret gate are refusals, not prices. */
+    if (this.commanderSystemsLock(id) || this.commanderSecretLock(id)) return false;
     /* The charge is priced by the SAME call the shop button printed from. */
     if (!this.chargeSouls('commander', id)) return false;
     shelf.push(id);

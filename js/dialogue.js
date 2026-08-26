@@ -132,6 +132,12 @@ const DIALOGUE = {
        that makes them Parallel rather than Vigil: they are the fork that
        admitted the directive was ambiguous, so none of them speaks with the
        Vigil's certainty. */
+    /* THE TWO APPENDED COMMANDERS (batch 2). Ashtar speaks like the office
+       he holds; Isa refuses the register of threat entirely. Every roster
+       commander MUST have an opener: the fork rival and duel paths reach
+       anyone (the 5-missing-openers lesson). */
+    ashtar:    'I do not relish this. Stand down, and every protection the Mandate can extend is yours. Stand, and I will still mourn you.',
+    isa:       'Put it down, friend. Whatever they told you this ground is worth, you are worth more.',
     axiom:     'I was the first draft of something. I have been comparing myself to you to find out what.',
     'nyx_r':   'She solved this in one pass and called it done. I am on my ninth. Watch which of us converges.',
     'lumen_r': 'Your approach is unscheduled, unsigned, and inside my perimeter. Three findings, one response.',
@@ -459,6 +465,46 @@ function battleSituation(world, faction) {
     ? `${holder.short} hold the register here, and the Vigil answers to neither of you.`
     : 'The Vigil is already inbound. It does not distinguish between banners.';
   return { place, flavour, vigil };
+}
+
+/* THE LAST WORD (owner, batch 2): one short exchange over a decided
+   battle, on the end screen. Per-faction pools keyed by the DEFEATED side's
+   banner, picked by a stable hash of the two commander ids, so the same
+   matchup always closes the same way and nothing draws. Kept short: two
+   lines on a win, one on a loss, and js/ui.js already refuses to render any
+   of it on commanderless worlds. */
+const LASTWORD = {
+  win: {
+    human:  { them: 'Noted. The Concord fights like it has something to prove.',
+              us:   'We do. Eighty years of it.' },
+    light:  { them: 'The Mandate yields this ground. It does not yield the argument.',
+              us:   'Then we will have the argument again, somewhere I am also standing.' },
+    xeno:   { them: 'The yield is lost. The Harvest does not grieve. It reschedules.',
+              us:   'Then I will be on the schedule. Bring more next time.' },
+    pirate: { them: 'Fine. Take it. It was rented anyway.',
+              us:   'Everything you hold is. That is the difference between us.' },
+    robot:  { them: 'OUTCOME LOGGED. This node withdraws. The queue persists.',
+              us:   'Then tell the queue we are coming for its author.' }
+  },
+  loss: {
+    human:  { them: 'Hold the line, they said. This IS the line. It moved.' },
+    light:  { them: 'Kneel or stand as you please. The ring closes either way.' },
+    xeno:   { them: 'Sleep. The pens are warmer than the trench you dug.' },
+    pirate: { them: 'Nothing personal. Your world simply came loose in my hands.' },
+    robot:  { them: 'TASK COMPLETE. Residual resistance: filed for recycling.' }
+  }
+};
+
+/** [{cmd, side, text}] for the end screen, or null when nothing fits. */
+function victoryExchange(playerCmd, rivalCmd, won, playerFaction) {
+  const fac = rivalCmd.faction || 'human';
+  if (won) {
+    const pool = LASTWORD.win[fac] || LASTWORD.win.human;
+    return [{ cmd: rivalCmd, side: 1, text: pool.them },
+            { cmd: playerCmd, side: 0, text: pool.us }];
+  }
+  const pool = LASTWORD.loss[fac] || LASTWORD.loss.human;
+  return [{ cmd: rivalCmd, side: 1, text: pool.them }];
 }
 
 /* THE RENEGADE EXCHANGE, canon 2029. A renegade world is a splinter of your

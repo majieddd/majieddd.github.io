@@ -848,17 +848,26 @@ const UI = {
     body.innerHTML = `
       <div class="soul-bank">◉ <b>${Meta.souls()}</b> souls banked</div>
       <h3 class="section-label">COMMANDERS: recruit permanently</h3>
+      <p class="hint">Each commander answers the Concord only once it has proven itself:
+        every successive recruit asks one more conquered solar system of this profile
+        (${Meta.load().sysTaken || 0} taken so far).</p>
       <div class="soul-grid cmds">${COMMANDER_ROSTER.filter(c => !Meta.isCommanderUnlocked(c.id) &&
-          (!Meta.faction() || c.always || c.faction === Meta.faction())).map(c => {
+          (!Meta.faction() || c.always || c.faction === Meta.faction()) &&
+          !Meta.commanderSecretLock(c.id)).map(c => {
         const f = FACTIONS[c.faction];
         const cost = Meta.commanderCost(c.id);
-        return `<button class="soul-item cmd" data-unlock-cmd="${c.id}" style="--cc:${c.color}"
-                ${Meta.souls() < cost ? 'disabled' : ''}
+        /* The ladder is a refusal, not a price: a locked commander is shown
+           and told why, exactly like an origin-locked tower. */
+        const lad = Meta.commanderSystemsLock(c.id);
+        return `<button class="soul-item cmd${lad ? ' origin-locked' : ''}" data-unlock-cmd="${c.id}" style="--cc:${c.color}"
+                ${lad ? 'aria-disabled="true"' : (Meta.souls() < cost ? 'disabled' : '')}
                 data-tt="${c.name}, ${c.title}|${c.blurb}">
           <span class="si-ic">${c.icon}</span>
           <span class="si-name">${c.name}</span>
           <span class="si-el" style="--el:${f.color}">${f.icon} ${f.short}</span>
-          <span class="si-cost">◉ ${cost}</span>
+          ${lad
+            ? `<span class="si-lock">⛨ CONQUER ${lad.need} SYSTEM${lad.need === 1 ? '' : 'S'} (${lad.have}/${lad.need})</span>`
+            : `<span class="si-cost">◉ ${cost}</span>`}
         </button>`;
       }).join('') || '<p class="hint">Every commander is recruited.</p>'}</div>
 
@@ -891,10 +900,13 @@ const UI = {
            look smaller than it is and gave the faction choice no visible
            consequence -- the whole reason the gate exists. */
         const lock = Meta.towerOriginLock(id);
+        /* The 2x2 heavies are campaign trophies: first after your first
+           conquered galaxy, second after your third (owner, batch 2). */
+        const gal = !lock && Meta.towerGalaxyLock(id);
         const poor = Meta.souls() < Meta.towerUnlockCost();
-        return `<button class="soul-item unlock${lock ? ' origin-locked' : ''}" data-unlock="${id}"
+        return `<button class="soul-item unlock${(lock || gal) ? ' origin-locked' : ''}" data-unlock="${id}"
                 style="--cc:${lock ? og.color : t.color}"
-                ${(lock || poor) ? 'aria-disabled="true"' : ''}
+                ${(lock || gal || poor) ? 'aria-disabled="true"' : ''}
                 data-preview="${id}">
           <span class="si-fig">${this.towerIconHTML(id, 40)}</span>
           <span class="si-name">${t.name}</span>
@@ -902,7 +914,9 @@ const UI = {
           <span class="si-og" style="--og:${og.color}">${og.icon} ${og.name}</span>
           ${lock
             ? `<span class="si-lock">⊘ SWORN TO ${lock.name} ONLY</span>`
-            : `<span class="si-cost">◉ ${Meta.towerUnlockCost()}</span>`}
+            : gal
+              ? `<span class="si-lock">⛨ CONQUER GALAXY ${gal.need} (${gal.have}/${gal.need})</span>`
+              : `<span class="si-cost">◉ ${Meta.towerUnlockCost()}</span>`}
         </button>`;
       }).join('') || '<p class="hint">Every tower on sale is unlocked.</p>'}</div>
 
@@ -1144,6 +1158,25 @@ const UI = {
           (ms.caution ? ' ' + ms.caution : '') + '</p>'
         : '') +
       '</div>';
+  },
+
+  /* THE LAST WORD. A short exchange over the result, only where one makes
+     sense: a commander-led world yields a line, a commanderless swarm world
+     (Game.soloSurvive) does not, because there is nobody standing there to
+     say anything. Words live in js/dialogue.js beside the openers. */
+  victoryExchangeHtml(won, me, ai) {
+    if (Game.soloSurvive) return '';
+    if (!ai || !ai.commander || !me || !me.commander) return '';
+    if (ai.commander.id === me.commander.id) return '';
+    let lines = null;
+    try { lines = victoryExchange(me.commander, ai.commander, won, me.faction); }
+    catch (e) { return ''; }
+    if (!lines || !lines.length) return '';
+    return `<div class="rw-lastword">${lines.map(l =>
+      `<p class="rlw ${l.side ? 'them' : 'us'}">
+         <span class="rlw-por">${commanderPortrait(l.cmd, 30)}</span>
+         <b style="color:${l.cmd.color}">${l.cmd.name}</b>
+         <em>${l.text}</em></p>`).join('')}</div>`;
   },
 
   /* WHAT YOU ARE SIGNING UP FOR. The faction card already said what the
@@ -7223,6 +7256,7 @@ const UI = {
     this.el.endBody.innerHTML = `
       <div class="rw" style="--fc:${fac.color};--cc:${me.commander.color}">
 
+        ${typeof victoryExchange === 'function' ? this.victoryExchangeHtml(won, me, ai) : ''}
         <div class="rw-verdict ${won ? 'win' : 'lose'}">
           <span class="rw-flag">${fac.icon}</span>
           <b>${won ? 'WORLD TAKEN' : 'DRIVEN OFF'}</b>

@@ -3447,3 +3447,13 @@ body.rm-user.immersive #battle-controls { transition: none; }
 /* The closing beat is the campaign's last word, so it gets the accent ground
    rather than the quiet one, and a touch more room to land in. */
 .rw-story.finale { padding: 16px 18px; }
+
+/* THE LAST WORD (batch 2): a two-line exchange over a decided battle, at the
+   top of the end screen. Quiet by design: the verdict below it is the loud
+   element, this is the epilogue sentence. */
+.rw-lastword { grid-column: 1 / -1; margin: 0 0 4px; }
+.rlw { display: flex; align-items: center; gap: 8px; margin: 0 0 5px; }
+.rlw-por { flex-shrink: 0; line-height: 0; border-radius: 6px; overflow: hidden; }
+.rlw b { font-family: var(--display); font-size: 10px; letter-spacing: .12em; flex-shrink: 0; }
+.rlw em { font-style: italic; font-size: 12px; color: var(--text-dim); line-height: 1.45; }
+.rlw.us em { color: var(--text); }

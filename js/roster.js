@@ -51,15 +51,17 @@ const COMMANDER_ROSTER = [
   },
 
   /* ═══════════════════════════════════════════════════════ HUMANITY ═══ */
-  /* CANON 2029 (docs/CANON-2029.md): human commanders carry FAMILIAR names,
-     rank and surname, the way a world-coalition officer corps reads in 2029.
-     Owner instruction, display names only: every id below is a stable id and
-     is the join for art plates, lore, dialogue and saves, so ids NEVER move.
-     Titles are the callsigns the story addresses people by, so they stay. */
+  /* CANON 2029 (docs/CANON-2029.md), naming round two, owner spec: the five
+     field commanders of the Concord each carry a name from a different part
+     of Earth, because the coalition was every nation or it was nothing.
+     WASHINGTON for the Americas, OKAFOR for Africa, O'RYAN for Europe,
+     TANAKA for Asia, REYES for Latin America. Display names only: every id
+     below is a stable id and is the join for art plates, lore, dialogue and
+     saves, so ids NEVER move. Titles are the callsigns the story uses. */
   {
-    id: 'vanta', faction: 'human', name: 'DIR. VANCE', title: 'The Archivist',
+    id: 'vanta', faction: 'human', name: 'DIR. REYES', title: 'The Archivist',
     color: '#7dd3fc', icon: '◈', free: true,
-    blurb: 'Fights the long game. Vance turns the draft itself into a weapon: more choices, more often, and a board that grows stronger with every doctrine filed away.',
+    blurb: 'Fights the long game. Reyes turns the draft itself into a weapon: more choices, more often, and a board that grows stronger with every doctrine filed away.',
     abilities: ['overclock', 'dampen'],
     trait: { name: 'PERPETUAL STUDY',
       desc: 'Command upgrades are drafted every 4 waves instead of 5, and you are offered 4 options instead of 3.',
@@ -77,9 +79,9 @@ const COMMANDER_ROSTER = [
     ])
   },
   {
-    id: 'korrin', faction: 'human', name: 'GEN. KARIM', title: 'The Quartermaster',
+    id: 'korrin', faction: 'human', name: 'GEN. OKAFOR', title: 'The Quartermaster',
     color: '#38e8ff', icon: '◭',
-    blurb: 'Wins on logistics. Karim makes width affordable when everyone else is priced into a handful of towers.',
+    blurb: 'Wins on logistics. Okafor makes width affordable when everyone else is priced into a handful of towers.',
     abilities: ['focusfire', 'bulwark'],
     trait: { name: 'BULK CONTRACTS',
       desc: 'Per-copy tower price growth is 30% gentler, and you start with 25% more gold.',
@@ -97,9 +99,9 @@ const COMMANDER_ROSTER = [
     ])
   },
   {
-    id: 'nyx', faction: 'human', name: 'DR. NYSTROM', title: 'The Overclocker',
+    id: 'nyx', faction: 'human', name: 'DR. TANAKA', title: 'The Overclocker',
     color: '#67e8f9', icon: '⟐',
-    blurb: 'Pushes single structures past their rated limits. Nystrom would rather field five monsters than twenty soldiers.',
+    blurb: 'Pushes single structures past their rated limits. Tanaka would rather field five monsters than twenty soldiers.',
     abilities: ['overclock', 'smokescreen'],
     trait: { name: 'REDLINE',
       desc: 'Ascension costs 25% less, and SURGE triggers on EVERY ascension instead of every second one.',
@@ -137,9 +139,9 @@ const COMMANDER_ROSTER = [
     ])
   },
   {
-    id: 'vess', faction: 'human', name: 'MAR. VASQUEZ', title: 'The Marshal',
+    id: 'vess', faction: 'human', name: 'MAR. WASHINGTON', title: 'The Marshal',
     color: '#0ea5e9', icon: '⛨',
-    blurb: 'Holds ground nobody else would. Vasquez measures a battle in how little was given up.',
+    blurb: 'Holds ground nobody else would. Washington measures a battle in how little was given up.',
     abilities: ['overclock', 'bulwark'],
     trait: { name: 'NO GROUND GIVEN',
       desc: '+8 maximum lives, and leaks cost one fewer life (minimum one).',
@@ -158,6 +160,41 @@ const COMMANDER_ROSTER = [
   },
 
   /* ═════════════════════════════════════════ FEDERATION OF LIGHT ═══ */
+  /* THE SECRET HUMAN. Unlocked by finishing the game under the human banner
+     (first galaxy conquered, galaxyTier >= 1): see Meta.commanderSecretLock.
+     Hidden from every list until then, because a secret that advertises
+     itself is a menu item.
+
+     The character walks carefully, per the canon guardrails: the disclosure
+     files include the ISSA FRAGMENTS, the old contested texts about a
+     teacher with powers who travelled east and sat with the monasteries,
+     and the game presents them as exactly that, a contested record his
+     followers argue about, never a verdict about anyone's faith. His kit is
+     the pacifist reading of the engine: lives, recovery, and echoes too
+     gentle to march.
+
+     noSeat: never drawn as a system boss or a fork rival, so appending him
+     cannot change any draw an in-flight save regenerates. */
+  {
+    id: 'isa', faction: 'human', name: 'ISA', title: 'The Wanderer',
+    color: '#f1f5f9', icon: '\u2736', noSeat: true, secretHuman: true,
+    blurb: 'Wins by refusing the exchange. Isa keeps his people standing, quiets what the node raises, and outlasts everything sent to make him kneel.',
+    abilities: ['steadyaim', 'dampen'],
+    trait: { name: 'THE QUIET WORD',
+      desc: '+3 maximum lives, life recovery is 25% better, and reanimated attackers are 15% weaker.',
+      apply: (t, s) => { if (s) { s.maxLives += 3; s.lives += 3; } t.lifeGainMul += 0.25; t.reanimResist = 0.15; } },
+    tech: chart('ii', [
+      [['STILL WATER','\u25CB','+8% tower range.', t=>t.rng+=0.08],
+       ['THE CROWD LISTENS','\u25C9','+8% tower rate.', t=>t.rate+=0.08],
+       ['SERMON','\u2605','+8% damage, +6% range.', t=>{t.dmg+=0.08;t.rng+=0.06;}]],
+      [['FORTY DAYS','\u2295','Life recovery 20% better again.', t=>t.lifeGainMul+=0.20],
+       ['THE FAST','\u2296','Upgrades cost 10% less.', t=>t.upgradeMul*=0.90],
+       ['LOAVES','\u2299','+18% kill gold.', t=>t.goldMul+=0.18]],
+      [['TURN AWAY','\u26E8','Reanimates 10% weaker again.', t=>t.reanimResist+=0.10],
+       ['THE OTHER CHEEK','\u26D2','+4 maximum lives.', (t,s)=>{ if(s){s.maxLives+=4;s.lives+=4;} }],
+       ['RESURRECTION','\u221E','+6 more lives, and survive one lethal leak per battle.', (t,s)=>{ if(s){s.maxLives+=6;s.lives+=6;} t.immortal=true; }]]
+    ])
+  },
   {
     id: 'seraph', faction: 'light', name: 'SERAPH', title: 'The Radiant', free: true,
     color: '#fbbf24', icon: '☀',
@@ -260,6 +297,39 @@ const COMMANDER_ROSTER = [
   },
 
   /* ═══════════════════════════════════════════════════════ THE XENO ═══ */
+  /* SUPREME COMMANDER, FIRST SPEAKER, and deliberately the LAST commander
+     on the Federation shelf: the soul ladder (Meta.commanderSystemsLock)
+     prices each successive commander behind one more conquered solar
+     system, so Ashtar is what a Federation campaign is climbing toward. He
+     also closes the light campaign's story in person (js/story.js).
+
+     noSeat: Ashtar is never a random system boss and never a fork-node
+     rival. That is canon (the Supreme Commander does not skirmish), and it
+     is also what keeps this append save-safe: boss and fork draws take
+     `rnd() * pool.length`, galaxies regenerate from their seed on every
+     load, and a pool that grew would silently reroll every boss in every
+     in-flight campaign. commandersOf filters noSeat, so the pools are
+     byte-identical to the day before he existed. */
+  {
+    id: 'ashtar', faction: 'light', name: 'ASHTAR', title: 'Supreme Commander',
+    color: '#fde68a', icon: '\u2726', noSeat: true,
+    blurb: 'The Mandate, embodied and finally flexible. Ashtar lifts the whole line at once and forgives the mistakes that would end anyone else.',
+    abilities: ['sanctify', 'bulwark'],
+    trait: { name: 'FIRST SPEAKER',
+      desc: 'Every tower gains +7% damage and +7% range, support auras are 20% wider, and +3 maximum lives.',
+      apply: (t, s) => { t.dmg += 0.07; t.rng += 0.07; t.auraRangeMul = (t.auraRangeMul || 1) * 1.20; if (s) { s.maxLives += 3; s.lives += 3; } } },
+    tech: chart('aa', [
+      [['THE ADDRESS','\u2600','+7% damage.', t=>t.dmg+=0.07],
+       ['THE DECREE','\u2609','+9% more damage.', t=>t.dmg+=0.09],
+       ['THE MANDATE','\u2605','+11% more, and auras 15% wider again.', t=>{t.dmg+=0.11;t.auraRangeMul*=1.15;}]],
+      [['HIGH ORBIT','\u25CE','+9% range.', t=>t.rng+=0.09],
+       ['THE WATCH','\u2299','+10% more range.', t=>t.rng+=0.10],
+       ['OVERSIGHT','\u2727','+10% more range and +8% rate.', t=>{t.rng+=0.10;t.rate+=0.08;}]],
+      [['THE RING','\u2720','+4 maximum lives.', (t,s)=>{ if(s){s.maxLives+=4;s.lives+=4;} }],
+       ['SANCTUARY','\u26E8','+6 more lives and 25% better recovery.', (t,s)=>{ if(s){s.maxLives+=6;s.lives+=6;} t.lifeGainMul+=0.25; }],
+       ['WHAT ORDER IS FOR','\u221E','+8 more lives, and survive one lethal leak per battle.', (t,s)=>{ if(s){s.maxLives+=8;s.lives+=8;} t.immortal=true; }]]
+    ])
+  },
   {
     id: 'sevra', faction: 'xeno', name: 'SEVRA', title: 'The Necrotist', free: true,
     color: '#a78bfa', icon: '☠',
@@ -626,7 +696,12 @@ const COMMANDER_ROSTER = [
 ];
 
 /** Commanders belonging to a faction. CADRE is unaligned and belongs to nobody. */
-function commandersOf(factionId) { return COMMANDER_ROSTER.filter(c => c.faction === factionId); }
+/* Excludes noSeat commanders (Ashtar, Isa) BY CONSTRUCTION: this is the
+   pool every boss draw and seat assignment samples with rnd()*pool.length,
+   galaxies regenerate from their seed on every load, and a pool that grew
+   would reroll every boss in every in-flight campaign. Filtering here keeps
+   the pools byte-identical to before the append (fingerprint-verified). */
+function commandersOf(factionId) { return COMMANDER_ROSTER.filter(c => c.faction === factionId && !c.noSeat); }
 /** Commanders always available regardless of faction. */
 function alwaysUnlocked() { return COMMANDER_ROSTER.filter(c => c.always).map(c => c.id); }
 /** The one free commander for a faction. */
