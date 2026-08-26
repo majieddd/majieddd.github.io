@@ -37,7 +37,14 @@ venv/
 .idea/
 *.swp
 
-# The canon pack (v0.2.0) is its own repository with its own publishing
-# workflow. It is the SOURCE for the game copy, not part of the game site;
-# publishing it is a separate decision the owner makes deliberately.
-lore/
+# The canon pack is its own repository with its own publishing workflow, and a
+# working copy at the repo root stays ignored: it is the SOURCE, not the game.
+#
+# OWNER DECISION, 2026-08-26: the canon is now vendored INTO the game at
+# docs/lore/ (release 0.5.0), deliberately, so it travels with the game and a
+# future session can read it without the zip. That is the "separate decision"
+# the previous version of this comment was waiting on, so docs/lore/ is
+# un-ignored below. A root-level lore/ checkout is still ignored.
+/lore/
+!docs/lore/
+!docs/lore/**

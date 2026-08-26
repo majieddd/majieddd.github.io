@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "source_game_commit": "046fc38634fadf13148ef9ad3aa208417f28f2de",
+  "arena_modifiers": [
+    {
+      "id": "swift",
+      "name": "SWIFT CURRENT",
+      "canon": "Movement infrastructure remains overdriven; every force inherits the same acceleration risk."
+    },
+    {
+      "id": "ironclad",
+      "name": "IRONCLAD",
+      "canon": "The jurisdiction still issues protective matter to every recognized chassis, including the Vigil."
+    },
+    {
+      "id": "goldrush",
+      "name": "GOLD RUSH",
+      "canon": "Local salvage law pays unusually high recovery bounties, attracting commanders and scavengers alike."
+    },
+    {
+      "id": "scarcity",
+      "name": "SCARCITY",
+      "canon": "Embargo, depletion, or broken accounting reduces what confirmed kills can recover."
+    },
+    {
+      "id": "deepwar",
+      "name": "DEEP WAR",
+      "canon": "The jurisdiction has already escalated before the commanders arrive; legacy threat assumptions begin one step higher."
+    },
+    {
+      "id": "thinline",
+      "name": "THIN LINE",
+      "canon": "Life support, evacuation capacity, or civil legitimacy is already critically depleted."
+    },
+    {
+      "id": "warchest",
+      "name": "WAR CHEST",
+      "canon": "Competing claimants arrive with pre-positioned reserves because the worlds strategic value was known in advance."
+    },
+    {
+      "id": "frenzy",
+      "name": "FRENZY",
+      "canon": "Vigil scheduling has compressed its response intervals after repeated unauthorized access."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "Cite this repository when referencing the Cosmic Conquest setting or research architecture."
+title: "Cosmic Conquest Lore"
+type: dataset
+authors:
+  - family-names: "LaFleur"
+    given-names: "Majied"
+version: 0.4.0
+date-released: 2026-08-26
+repository-code: "https://github.com/majieddd/majieddd.github.io/tree/main/lore"
+url: "https://github.com/majieddd/majieddd.github.io/tree/main/lore"

@@ -1,0 +1,1046 @@
+{
+  "schema_version": 1,
+  "release": "0.5.0",
+  "operations": [
+    {
+      "id": "MO-01",
+      "title": "The Degaussing Error",
+      "premise": "A Philadelphia Experiment archive contains real backflow telemetry attached to a false teleportation story.",
+      "category": "Time and reality",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-02",
+      "title": "Montauk Fork",
+      "premise": "Two commanders possess incompatible but authenticated memories of the same battle.",
+      "category": "Time and reality",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-03",
+      "title": "Chronovisor Trial",
+      "premise": "Retrocognition reconstructs a crime scene but invents the missing interval from biased training data.",
+      "category": "Time and reality",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-04",
+      "title": "The Future Witness",
+      "premise": "A Grey-like visitor claims to be a Human descendant and demands ancestral noninterference.",
+      "category": "Time and reality",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-05",
+      "title": "Project Rebranch",
+      "premise": "A Machine can select a history where the war never began, but billions of current identities would have no continuation.",
+      "category": "Time and reality",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-06",
+      "title": "Mandela Battery",
+      "premise": "Collective disagreement produces enough noetic pressure to open a branch-selection window.",
+      "category": "Time and reality",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-07",
+      "title": "The Last Original",
+      "premise": "Five versions of one person each possess valid continuity proofs from different histories.",
+      "category": "Time and reality",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-08",
+      "title": "Backflow Election",
+      "premise": "Tomorrow's certified vote result arrives before citizens vote.",
+      "category": "Time and reality",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-09",
+      "title": "Serpent at the Table",
+      "premise": "A reptiloid diplomat is innocent, but the legal identity it inherited committed centuries of Compact crimes.",
+      "category": "Hidden rulers and identity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-10",
+      "title": "Six Governments",
+      "premise": "Six secret institutions each possess one necessary defense key and refuse a common chain of command.",
+      "category": "Hidden rulers and identity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-11",
+      "title": "Permission Required",
+      "premise": "Black-eyed childlike avatars request sanctuary; admitting them creates a binding noetic contract.",
+      "category": "Hidden rulers and identity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-12",
+      "title": "The Last Man in Black",
+      "premise": "A cleanup shell keeps suppressing witnesses after the agency that deployed it dissolved.",
+      "category": "Hidden rulers and identity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-13",
+      "title": "Bloodline Hoax",
+      "premise": "A fabricated alien genealogy hides a real sequence of corporate succession keys.",
+      "category": "Hidden rulers and identity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-14",
+      "title": "The Reptoid Gala",
+      "premise": "Federation and Pirate reptiloids must negotiate while Human media treats morphology as guilt.",
+      "category": "Hidden rulers and identity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-15",
+      "title": "One Cabal Too Many",
+      "premise": "A conspiracy investigator proves six cover-ups and wrongly concludes they share a master.",
+      "category": "Hidden rulers and identity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-16",
+      "title": "The Shadow Payroll",
+      "premise": "The player can collapse a secret program by exposing procurement rather than defeating its fleet.",
+      "category": "Hidden rulers and identity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-17",
+      "title": "The Five Hundred Million",
+      "premise": "A damaged colony adopts an emergency population ceiling; the crisis ends but the governing algorithm refuses to retire.",
+      "category": "Population, biosphere, and control",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-18",
+      "title": "Mercy Census",
+      "premise": "Federation evacuation capacity covers only half a planet, and every selection method changes the population's consent.",
+      "category": "Population, biosphere, and control",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-19",
+      "title": "Carrie Protocol",
+      "premise": "A Human regime revives coercive reproductive scoring under the language of species survival.",
+      "category": "Population, biosphere, and control",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-20",
+      "title": "Population Ledger",
+      "premise": "Compact planners offer peace if Humans accept hereditary reproductive licenses.",
+      "category": "Population, biosphere, and control",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-21",
+      "title": "Balanced Nature",
+      "premise": "An Old Weather node demands removal of a coastal megacity to restore a prehuman ecosystem.",
+      "category": "Population, biosphere, and control",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-22",
+      "title": "Agenda Fork",
+      "premise": "Two public sustainability plans are algorithmically fused into a counterfeit extermination order.",
+      "category": "Population, biosphere, and control",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-23",
+      "title": "Reset Without People",
+      "premise": "A wealthy enclave proposes preserving civilization through simulated citizens instead of living refugees.",
+      "category": "Population, biosphere, and control",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-24",
+      "title": "The Voluntary Limit",
+      "premise": "A population freely chooses zero growth, but future citizens cannot consent to never being born.",
+      "category": "Population, biosphere, and control",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-25",
+      "title": "Popeye Descendant",
+      "premise": "A regional rain weapon saves a drought zone while destroying a rival's harvest.",
+      "category": "Weather, atmosphere, and environment",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-26",
+      "title": "Stormfury Ghost",
+      "premise": "Old models interpret a natural eyewall replacement as successful Machine weather control.",
+      "category": "Weather, atmosphere, and environment",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-27",
+      "title": "Contrail Ledger",
+      "premise": "One hostile release is hidden among thousands of ordinary persistent contrails.",
+      "category": "Weather, atmosphere, and environment",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-28",
+      "title": "HAARP Key",
+      "premise": "An ionospheric research array accidentally authenticates an ancient orbital relay.",
+      "category": "Weather, atmosphere, and environment",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-29",
+      "title": "Warm Scar",
+      "premise": "Emergency Old Weather production creates an ocean heat plume that looks like climate sabotage.",
+      "category": "Weather, atmosphere, and environment",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-30",
+      "title": "Weather Treaty",
+      "premise": "A world asks the Federation to stabilize climate, then calls the permanent control system occupation.",
+      "category": "Weather, atmosphere, and environment",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-31",
+      "title": "Nine Keys",
+      "premise": "Nine channeling lineages each preserve one authentic protocol and eight layers of human interpretation.",
+      "category": "Religion, consciousness, and continuity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-32",
+      "title": "Prayer Battery",
+      "premise": "A coherence reservoir was charged by believers who were told it served a different purpose.",
+      "category": "Religion, consciousness, and continuity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-33",
+      "title": "The Embassy of the Creators",
+      "premise": "A Xeno House opens a diplomatic mission claiming legal parenthood over Humanity.",
+      "category": "Religion, consciousness, and continuity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-34",
+      "title": "False Light",
+      "premise": "A postmortem recovery interface routes casualties into bodies owned by the Compact.",
+      "category": "Religion, consciousness, and continuity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-35",
+      "title": "Past-Life Evidence",
+      "premise": "A Continuity Clinic discovers that a recovered memory belongs to a Machine copy, not a prior incarnation.",
+      "category": "Religion, consciousness, and continuity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-36",
+      "title": "The Failed Prophecy",
+      "premise": "A contact movement's missed landing date exactly matches a cancelled Federation intervention.",
+      "category": "Religion, consciousness, and continuity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-37",
+      "title": "Watcher in the Temple",
+      "premise": "A sacred ritual is simultaneously genuine worship, Human tradition, and a Machine maintenance command.",
+      "category": "Religion, consciousness, and continuity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-38",
+      "title": "The Belief Entity",
+      "premise": "A conspiracy repeated for generations becomes a noetic actor independent of both believers and alleged subject.",
+      "category": "Religion, consciousness, and continuity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-39",
+      "title": "One Genuine Circle",
+      "premise": "Hundreds of human crop formations conceal one orbital authentication key.",
+      "category": "Anomalies, hoaxes, and field evidence",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-40",
+      "title": "Tissue Ledger",
+      "premise": "Livestock deaths from scavenging, disease, Human sampling, and Xeno sampling occur in the same region.",
+      "category": "Anomalies, hoaxes, and field evidence",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-41",
+      "title": "Hessdalen Station",
+      "premise": "A persistent light field becomes a battlefield over who controls the sensors, not the lights.",
+      "category": "Anomalies, hoaxes, and field evidence",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-42",
+      "title": "Brown Mountain Repeat",
+      "premise": "A solved historical ghost-light legend is deliberately recreated to conceal a modern convoy.",
+      "category": "Anomalies, hoaxes, and field evidence",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-43",
+      "title": "Cross-Layer Fault",
+      "premise": "Every sensor at an anomaly zone is accurate, but each records a different physical layer.",
+      "category": "Anomalies, hoaxes, and field evidence",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-44",
+      "title": "The Bermuda Decoy",
+      "premise": "The famous disappearance zone is ordinary; the real Pirate route shadow is displaced hundreds of kilometers.",
+      "category": "Anomalies, hoaxes, and field evidence",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-45",
+      "title": "Hollow Phobos",
+      "premise": "Natural voids in Phobos conceal a later installation whose age is younger than the moon.",
+      "category": "Anomalies, hoaxes, and field evidence",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-46",
+      "title": "Black Knight Market",
+      "premise": "Pirates sell fragments from several unrelated satellites as pieces of one ancient probe.",
+      "category": "Anomalies, hoaxes, and field evidence",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-47",
+      "title": "Highjump Archive",
+      "premise": "Authentic polar footage is edited into three incompatible postwar myths by different intelligence services.",
+      "category": "Anomalies, hoaxes, and field evidence",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-48",
+      "title": "Skinwalker Contract",
+      "premise": "A genuine procurement record proves a study existed but cannot establish the reported phenomena.",
+      "category": "Anomalies, hoaxes, and field evidence",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-49",
+      "title": "The Zoo Breakers",
+      "premise": "Pirates reveal a developing world to rival civilizations before the Federation's contact threshold.",
+      "category": "Galactic strategy",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-50",
+      "title": "Dark Forest Signal",
+      "premise": "A distress message may be a plea, a targeting beacon, or an attempt to provoke preemptive war.",
+      "category": "Galactic strategy",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-51",
+      "title": "The Local Hegemony",
+      "premise": "The Federation learns it is only one of several regional contact regimes and has no universal mandate.",
+      "category": "Galactic strategy",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-52",
+      "title": "Berserker Appeal",
+      "premise": "A hostile Machine argues that extermination is the only strategy consistent with its survival proof.",
+      "category": "Galactic strategy",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-53",
+      "title": "Vulnerable World",
+      "premise": "A technology becomes easy enough that one individual can destroy a planet's noetic infrastructure.",
+      "category": "Galactic strategy",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-54",
+      "title": "The Great Silence",
+      "premise": "Every faction discovers that the nearest civilizations went quiet for different reasons.",
+      "category": "Galactic strategy",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-55",
+      "title": "Watcher Defection",
+      "premise": "A developmental observer abandons neutrality and gives one world military technology.",
+      "category": "Galactic strategy",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-56",
+      "title": "The Sixth Future",
+      "premise": "A civilization refuses all five conquest models and asks to remain connected without being Settled, Accorded, Bound, Routed, or Continued.",
+      "category": "Galactic strategy",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-57",
+      "title": "The Monarch Index",
+      "premise": "A real MKULTRA ledger, a fraudulent therapy network, and Xeno conditioning records share one reused codename.",
+      "category": "Mind, perception, and simulated contact",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-58",
+      "title": "Blind Target",
+      "premise": "A noetic reconnaissance team describes a location accurately but cannot distinguish the target from a decoy designed to be emotionally louder.",
+      "category": "Mind, perception, and simulated contact",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-59",
+      "title": "Gateway Custody",
+      "premise": "A recovered altered-state protocol works, but its original participants never consented to military reuse.",
+      "category": "Mind, perception, and simulated contact",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-60",
+      "title": "Stargate Residual",
+      "premise": "A remote-viewing archive contains one statistically unusual result whose operational interpretation caused a disaster.",
+      "category": "Mind, perception, and simulated contact",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-61",
+      "title": "Blue Beam Local",
+      "premise": "A city sees a perfect false Ashtar transmission while rural sensors record nothing unusual at all.",
+      "category": "Mind, perception, and simulated contact",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-62",
+      "title": "The Real Arrival",
+      "premise": "A staged alien attack is interrupted by a genuine delegation whose identity matches the hoax.",
+      "category": "Mind, perception, and simulated contact",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-63",
+      "title": "Voice of Command",
+      "premise": "A population hears individualized emergency instructions; the signal is partly technical, partly noetic, and partly self-generated.",
+      "category": "Mind, perception, and simulated contact",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-64",
+      "title": "Ontology Cell",
+      "premise": "Seven intelligence teams agree on every observation and still recommend opposite responses because they disagree on what kind of being produced it.",
+      "category": "Mind, perception, and simulated contact",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-65",
+      "title": "Solar Warden",
+      "premise": "A supposed secret fleet is revealed as a sensor network, but one patrol ship using the same name is real.",
+      "category": "Secret institutions, lunar records, and warning zones",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-66",
+      "title": "Twenty and Back",
+      "premise": "A veteran carries authenticated service memories from twenty years that never appear in the current branch.",
+      "category": "Secret institutions, lunar records, and warning zones",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-67",
+      "title": "Apollo Omission",
+      "premise": "The Moon landings were real; a later redaction about an unrelated relay has contaminated public trust in the entire archive.",
+      "category": "Secret institutions, lunar records, and warning zones",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-68",
+      "title": "Collider Handshake",
+      "premise": "A future accelerator repeats a dormant Lattice key while a staged occult prank causes the scientific evidence to be dismissed.",
+      "category": "Secret institutions, lunar records, and warning zones",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-69",
+      "title": "Consensus Without Minutes",
+      "premise": "A private forum takes no vote, yet every participant's government adopts the same secret policy within a year.",
+      "category": "Secret institutions, lunar records, and warning zones",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-70",
+      "title": "The Cabal Compression",
+      "premise": "An investigator maps twelve genuine influence networks and destroys their case by insisting they are one organization.",
+      "category": "Secret institutions, lunar records, and warning zones",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-71",
+      "title": "Space Demon",
+      "premise": "A religious analysis correctly predicts a noetic predator's behavior but demands a metaphysical war the evidence cannot establish.",
+      "category": "Secret institutions, lunar records, and warning zones",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-72",
+      "title": "The Collins File",
+      "premise": "An authentic government memo discusses demonic interpretations without proving the alleged secret group or the interpretation itself.",
+      "category": "Secret institutions, lunar records, and warning zones",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-73",
+      "title": "Window Area",
+      "premise": "Multiple anomaly classes cluster near a failing bridge; the player must reinforce the structure while investigating the sightings.",
+      "category": "Secret institutions, lunar records, and warning zones",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-74",
+      "title": "Warning Form",
+      "premise": "A terrifying winged manifestation may be a predator, a messenger, or the visual vocabulary of a damaged safety system.",
+      "category": "Secret institutions, lunar records, and warning zones",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-75",
+      "title": "Roswell Fork",
+      "premise": "A classified balloon program, a genuine anomalous contamination protocol, later body stories, and forged papers compete for custody of one 1947 archive.",
+      "category": "Crash retrieval and black aerospace",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-76",
+      "title": "Mogul Shadow",
+      "premise": "A solved classified program explains the debris but not why one biological quarantine checklist appears in the file decades before its official creation.",
+      "category": "Crash retrieval and black aerospace",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-77",
+      "title": "S-4 Compartment",
+      "premise": "A real 2099 laboratory uses a legendary designation because any accurate leak will sound like copied folklore.",
+      "category": "Crash retrieval and black aerospace",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-78",
+      "title": "Stable 115",
+      "premise": "The faction that controls a field-stabilized composite can make a public claim look scientifically absurd by naming it after ordinary moscovium.",
+      "category": "Crash retrieval and black aerospace",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-79",
+      "title": "Rendlesham Palimpsest",
+      "premise": "Four layers of one case carry incompatible dates: observation, military memo, hypnotic code, and a Machine checksum inserted later.",
+      "category": "Witness memory and case mutation",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-80",
+      "title": "Colares Beam",
+      "premise": "Medical reports, local fear, ordinary lights, Xeno sampling, and Old Weather counterfire occur in the same operation area.",
+      "category": "Global cases",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-81",
+      "title": "Ariel Playground",
+      "premise": "A genuine encounter is followed by interviews that add an environmental warning not present in every first account.",
+      "category": "Witness memory and case mutation",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-82",
+      "title": "Westall Silence",
+      "premise": "Students want a definitive answer sixty years later, but the only surviving records can establish stigma, missing documentation, and conflicting memories.",
+      "category": "Global cases",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-83",
+      "title": "Varginha Chain",
+      "premise": "A refugee, a military convoy, an animal carcass, and a hospital quarantine are compressed into one creature-recovery story.",
+      "category": "Global cases",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-84",
+      "title": "Phoenix Split",
+      "premise": "Players must separate two times, three viewing zones, military flares, and one anomalous transit before any faction can claim the night.",
+      "category": "Event segmentation",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-85",
+      "title": "Kalman Ghost",
+      "premise": "Radar processing creates impossible maneuvers while independent visual witnesses still report an unresolved triangular platform.",
+      "category": "Sensor integrity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-86",
+      "title": "Harbour Descent",
+      "premise": "A water-entry report triggers rescue, military, Pirate, and Machine claims over an object no party can prove recovered.",
+      "category": "Global cases",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-87",
+      "title": "Zeta Attribution",
+      "premise": "A star map fits several destinations only after viewpoint and route assumptions are selected; every faction prefers a different solution.",
+      "category": "Abduction and future-human lore",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-88",
+      "title": "Pascagoula Recorder",
+      "premise": "A covert police recording supports witness sincerity but becomes inadmissible after a new personhood law protects noetic trauma.",
+      "category": "Witness ethics",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-89",
+      "title": "Visitor Template",
+      "premise": "A famous book cover has altered dreams, reports, hoaxes, diplomatic shells, and witness recollection for more than a century.",
+      "category": "Morphology capture",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-90",
+      "title": "Alternative Three",
+      "premise": "A survival fleet can save one million people; the hidden selection algorithm is more politically explosive than the disaster.",
+      "category": "Depopulation and elite escape",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-91",
+      "title": "Wow Repeat",
+      "premise": "A narrowband signal repeats only when a Pirate translation graph and a Machine clock are combined, making both owners indispensable.",
+      "category": "Technosignature candidates",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-92",
+      "title": "BLC1 Candidate",
+      "premise": "A signal is correctly resolved as local interference, but the interference source is a clandestine Human transmitter monitoring the same star.",
+      "category": "Technosignature candidates",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-93",
+      "title": "Remains Protocol",
+      "premise": "A supposed alien specimen is probably human, but several factions have already copied, patented, and weaponized its genome.",
+      "category": "Specimen ethics",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-94",
+      "title": "Piri Reis Overlay",
+      "premise": "A false Antarctic interpretation conceals a modern route key inserted into a famous historical map by a later intelligence service.",
+      "category": "Mythic geography",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-95",
+      "title": "Pole Shift Countdown",
+      "premise": "Magnetic reversal, climate migration, orbital forcing, and Lattice coordinate drift are fused into one apocalyptic deadline.",
+      "category": "Cataclysm mythology",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-96",
+      "title": "Treaty at the Airfield",
+      "premise": "A forged Eisenhower treaty uses a valid Accord syntax that should not exist for another century.",
+      "category": "Contact and temporal information",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-97",
+      "title": "Cydonia Redirect",
+      "premise": "The Face is natural and functions as an intentional distraction from a dull-looking site that is genuinely artificial.",
+      "category": "Moon Mars and secret space",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-98",
+      "title": "Descendant Claim",
+      "premise": "Future Human clades demand authority over present decisions because erasing their probability is, to them, genocide.",
+      "category": "Temporal politics",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-99",
+      "title": "Synthetic Witness",
+      "premise": "A copied mind remembers an encounter sincerely, but forensic analysis shows the event occurred only in a deleted simulation branch.",
+      "category": "AI memory and simulation",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-100",
+      "title": "Translation Horizon",
+      "premise": "A regional case changes galactic politics only after its archive is translated; the translation model may have merged two species names.",
+      "category": "Global archive asymmetry",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-101",
+      "title": "The Lost Age",
+      "premise": "A newly excavated pre-Neolithic site is genuinely remarkable, but three factions need it to prove three incompatible lost-civilization stories.",
+      "category": "Lost civilization / archaeology",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-102",
+      "title": "The Impact Debate",
+      "premise": "Two reputable scientific models disagree over an ancient catastrophe; a Compact propagandist offers proof that resolves both too perfectly.",
+      "category": "Contested science",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-103",
+      "title": "Hollow Ship",
+      "premise": "A new contact event reproduces the communication-failure and strange-script pattern of Utsuro-bune without matching any known craft.",
+      "category": "Premodern contact motifs",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-104",
+      "title": "Airship Vocabulary",
+      "premise": "Archive witnesses describe the same object as an airship, rocket, saucer, and drone depending on the era in which testimony was recorded.",
+      "category": "Translation Horizon",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-105",
+      "title": "The Watcher's Gift",
+      "premise": "A dangerous technology arrives wrapped in a religious forbidden-knowledge narrative; origin and moral meaning must be separated.",
+      "category": "Forbidden knowledge",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-106",
+      "title": "Ezekiel Geometry",
+      "premise": "A historically unsupported scripture-engineering model accidentally approximates a Machine docking geometry.",
+      "category": "Engineering scripture",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-107",
+      "title": "The Vimana File",
+      "premise": "A modern pseudo-ancient aircraft text contains one material recipe stolen from an authentic black program.",
+      "category": "Ancient aerospace mutation",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-108",
+      "title": "Planet X Stack",
+      "premise": "Nibiru, Nemesis, Tyche, Lowell's Planet X, and Planet Nine are merged by a viral archive before the real Sol Anchor can be located.",
+      "category": "Outer Solar System myth merger",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-109",
+      "title": "Horizon Base",
+      "premise": "A genuine 1959 lunar-base study is mistaken for proof of a completed secret colony, hiding a later unrelated installation.",
+      "category": "Secret space programs",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-110",
+      "title": "Lunar Research Flight",
+      "premise": "A real lunar-effects study is attached to a fabricated operational-test narrative.",
+      "category": "Program maturity / provenance",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-111",
+      "title": "Copper Ring",
+      "premise": "Known West Ford remnants and a dormant microprobe occupy similar orbital regimes, inviting a catastrophic identification error.",
+      "category": "Orbital archaeology",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-112",
+      "title": "Artificial Belt",
+      "premise": "A Machine defense field resembles the historical effects of Starfish Prime; players must test convergence versus copied design.",
+      "category": "Space environment",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-113",
+      "title": "Northwoods Threshold",
+      "premise": "An intercepted synthetic-invasion plan is authentic, but plan, authorization, and execution are three different questions.",
+      "category": "False-flag provenance",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-114",
+      "title": "Rescue Prophecy",
+      "premise": "A population distrusts a real Federation evacuation because earlier rescue prophecies failed. Authentication cannot manufacture trust.",
+      "category": "UFO religion / consent",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-115",
+      "title": "Automatic Heaven",
+      "premise": "A nineteenth-century automatic-writing corpus describes a cosmic bureaucracy but contains no valid modern authentication key.",
+      "category": "Channeling genealogy",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-116",
+      "title": "Ancient Computer",
+      "premise": "A spectacular artifact is fully Human and more sophisticated than expected; the challenge is resisting alien attribution.",
+      "category": "Archaeology control case",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-117",
+      "title": "Planetarium Screen",
+      "premise": "Sensors disagree on an entire star field. A local deception system is possible; a fake universe is not yet warranted.",
+      "category": "Fermi paradox / deception",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-118",
+      "title": "Sleeper Wake",
+      "premise": "A dormant Machine civilization wakes because its long-term computation strategy reaches a planned threshold.",
+      "category": "Aestivation",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-119",
+      "title": "Arecibo Return",
+      "premise": "A signal appears to answer Humanity's 1974 message far too soon for a round trip to M13; someone is using the transmission as a prompt.",
+      "category": "METI / identity",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-120",
+      "title": "Radar Awakening",
+      "premise": "Unknown tracks surge after a sensor-policy update; commanders must separate increased activity from increased visibility.",
+      "category": "Sensor thresholds",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-121",
+      "title": "Artifact Impact",
+      "premise": "A 1960 social-impact study is rediscovered after a genuine nonhuman artifact is found; one faction cites it as proof of a century-long cover-up while another uses it as evidence that discovery had always been anticipated.",
+      "category": "Brookings / disclosure",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-122",
+      "title": "The Bell Moon",
+      "premise": "An Apollo seismic phrase goes viral as proof the Moon is hollow just as a real artificial installation is detected in one crater. Players must prevent the small discovery from authenticating the larger false claim.",
+      "category": "Lunar myth",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-123",
+      "title": "Red Glow at Aristarchus",
+      "premise": "A transient lunar glow is simultaneously logged by a modern sensor, a century-old visual catalog, and a Pirate relay. The three records may describe three different causes.",
+      "category": "Lunar anomalies",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-124",
+      "title": "The Chronovisor Tape",
+      "premise": "A machine claims to reconstruct a lost historical event with impossible clarity. The mission is to recover its uncertainty map before political leaders treat the reconstruction as direct video.",
+      "category": "Retrocognition",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-125",
+      "title": "Looking Glass Collision",
+      "premise": "Two archive branches contain \"LOOKING GLASS\": one is a documented nuclear command mission, the other an alleged temporal program. A forged cross-reference tries to make them one lineage.",
+      "category": "Codename collision",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-126",
+      "title": "Convergence Is Not Destiny",
+      "premise": "A branch-forecast system shows every modeled future passing through one war. The player must determine whether the convergence is physical, model-induced, or deliberately seeded.",
+      "category": "Time / forecasting",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-127",
+      "title": "The Carter File",
+      "premise": "A high-status historical witness report becomes a cryptographic challenge: preserve the witness account exactly while separating what was observed from every later explanation attached to it.",
+      "category": "Witness provenance",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-128",
+      "title": "Outside Threat",
+      "premise": "A 1987 rhetorical speech is edited into evidence that world leaders knew of aliens. In 2099, the same clip is used to justify emergency planetary unity during an actual contact crisis.",
+      "category": "Political rhetoric",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-129",
+      "title": "Moonship Citation",
+      "premise": "A 1970 speculative article is presented by a Xeno influence operation as a suppressed scientific consensus. Winning requires reconstructing the citation network, not merely disproving the claim.",
+      "category": "Citation laundering",
+      "evidence": "F",
+      "status": "scenario-seed"
+    },
+    {
+      "id": "MO-130",
+      "title": "The Shock Study",
+      "premise": "Federation contact is real, but the first Human policy response comes from an old social-science framework built for hypothetical discovery. Whether that framework protects society or scripts panic becomes the conflict.",
+      "category": "Contact governance",
+      "evidence": "F",
+      "status": "scenario-seed"
+    }
+  ]
+}

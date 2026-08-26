@@ -1,0 +1,51 @@
+{
+  "schema_version": 2,
+  "source_repo_reviewed": "majieddd/majieddd.github.io@046fc38634fadf13148ef9ad3aa208417f28f2de",
+  "reviewed_on": "2026-08-25",
+  "mappings": {
+    "human": {
+      "canon_id": "humans",
+      "display": "HUMANITY",
+      "origin": "HUMAN"
+    },
+    "light": {
+      "canon_id": "federation",
+      "display": "FEDERATION OF LIGHT",
+      "origin": "FEDERATION"
+    },
+    "xeno": {
+      "canon_id": "xenos",
+      "display": "THE XENO",
+      "origin": "XENO"
+    },
+    "pirate": {
+      "canon_id": "pirates",
+      "display": "THE PIRATES",
+      "origin": "PIRATE"
+    },
+    "robot": {
+      "canon_id": "machines",
+      "display": "THE PARALLEL",
+      "origin": "ROBOTIC"
+    }
+  },
+  "neutral_pve": {
+    "name": "THE VIGIL",
+    "canon_parent": "machines",
+    "relationship": "legacy Old Weather enforcement; not the playable Parallel"
+  },
+  "mechanics": {
+    "reanimation": "Echo Reversal Protocol",
+    "souls": "Source-Oriented Unified Lattice Signatures",
+    "stars": "system stabilization rating",
+    "tower_origin": "engineering doctrine rather than mandatory political loyalty"
+  },
+  "campaign_structure": {
+    "systems": 5,
+    "worlds_per_system": 7,
+    "contested_worlds_per_system": 2,
+    "commander_seat_per_system": 1,
+    "interpretation": "Source-Lattice pentad with seven registered jurisdictions per system"
+  },
+  "content_registry": "data/game-content-registry.json"
+}

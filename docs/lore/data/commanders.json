@@ -1,0 +1,292 @@
+{
+  "schema_version": 1,
+  "source_game_commit": "046fc38634fadf13148ef9ad3aa208417f28f2de",
+  "commanders": [
+    {
+      "id": "cadre",
+      "name": "CADRE",
+      "title": "The Baseline",
+      "faction": null,
+      "role": "Interoperability instructor and first field commander",
+      "history": "Created after disclosure-era forces discovered that specialists could not share doctrine, ammunition, or assumptions.",
+      "motive": "Keep the node alive long enough for the player to learn what every other doctrine costs.",
+      "fracture": "Cadre has no ideology of its own and fears becoming only the sum of other people's wars.",
+      "voice": "Plain, procedural, restrained. Describes risk instead of destiny."
+    },
+    {
+      "id": "vanta",
+      "name": "VANTA",
+      "title": "The Archivist",
+      "faction": "human",
+      "role": "Director of the Open Archive Combat Index",
+      "history": "Descended from the public FOIA and sensor-provenance movements that survived the Archive Wars.",
+      "motive": "Make contradictory records useful without pretending they agree.",
+      "fracture": "She will expose any secret except the one proving how often Humanity edited its own disclosure history.",
+      "voice": "Cites files, precedents, probabilities, and missing records."
+    },
+    {
+      "id": "korrin",
+      "name": "KORRIN",
+      "title": "The Quartermaster",
+      "faction": "human",
+      "role": "Architect of interoperable Solar logistics",
+      "history": "Unified incompatible Earth, lunar, Martian, Belt, and captured-alien supply standards during the first quarantine.",
+      "motive": "Make Human expansion impossible to starve or embargo.",
+      "fracture": "Every standard he exports quietly makes frontier worlds dependent on Human industry.",
+      "voice": "Prices, tonnage, lead time, spare parts, contractual leverage."
+    },
+    {
+      "id": "nyx",
+      "name": "NYX",
+      "title": "The Overclocker",
+      "faction": "human",
+      "role": "Illegal ascension engineer turned war hero",
+      "history": "Survived the Redline Trials that taught Humans how to exceed alien safety governors without understanding the systems beneath them.",
+      "motive": "Prove no technology remains sacred once it can be measured.",
+      "fracture": "Her victories normalize dangerous escalation and leave generations maintaining devices designed to fail after she is gone.",
+      "voice": "Fast, intimate, reckless; speaks to machines as if daring them."
+    },
+    {
+      "id": "orin",
+      "name": "ORIN",
+      "title": "The Engineer",
+      "faction": "human",
+      "role": "Field reconstruction and anti-sabotage chief",
+      "history": "Built the first mixed-origin workshop able to repair Human, Federation, Compact, Pirate, and Machine systems under fire.",
+      "motive": "Turn every captured system into a locally serviceable tool.",
+      "fracture": "He treats understanding as ownership and underestimates what copied systems may remember.",
+      "voice": "Diagnostic, tactile, impatient with mysticism."
+    },
+    {
+      "id": "vess",
+      "name": "VESS",
+      "title": "The Marshal",
+      "faction": "human",
+      "role": "Commander of the Last-Line Charter",
+      "history": "Held the first independent colony that refused both Compact tribute and Federation protective evacuation.",
+      "motive": "Establish places no outside power can order abandoned.",
+      "fracture": "Her defense of autonomy can become territorial absolutism.",
+      "voice": "Legal certainty, measured threats, geographic language."
+    },
+    {
+      "id": "seraph",
+      "name": "SERAPH",
+      "title": "The Radiant",
+      "faction": "light",
+      "role": "Ashtar Command's field harmonist",
+      "history": "Coordinates mixed-species defenses by distributing a consent-limited combat coherence field.",
+      "motive": "Demonstrate that collective strength does not require erased individuality.",
+      "fracture": "The stronger the field becomes, the harder it is to tell whether dissent remains practically possible.",
+      "voice": "Warm, formal, plural; never says surrender when consent is meant."
+    },
+    {
+      "id": "aurelia",
+      "name": "AURELIA",
+      "title": "The Chorus",
+      "faction": "light",
+      "role": "Recovery choir conductor and casualty advocate",
+      "history": "Developed post-battle reintegration for minds fragmented by noetic warfare and Echo Reversal.",
+      "motive": "Return people to themselves instead of merely returning bodies to service.",
+      "fracture": "Her refusal to accept irreversible loss can keep the dead politically present too long.",
+      "voice": "Musical cadence, names the wounded, avoids abstraction."
+    },
+    {
+      "id": "lumen",
+      "name": "LUMEN",
+      "title": "The Warden",
+      "faction": "light",
+      "role": "Keeper of authenticated infrastructure",
+      "history": "Built the ward protocols that distinguish a genuine Accord command from counterfeit revelation.",
+      "motive": "Make coercive spoofing impossible.",
+      "fracture": "Perfect protection can become perfect surveillance.",
+      "voice": "Precise, calm, protective; frames every claim as a scope and permission."
+    },
+    {
+      "id": "cantor",
+      "name": "CANTOR",
+      "title": "The Voice",
+      "faction": "light",
+      "role": "Negotiator and noetic de-escalation specialist",
+      "history": "Ended three Compact occupations by breaking their legitimacy rather than their fleets.",
+      "motive": "Stop wars before violence becomes the only remaining language.",
+      "fracture": "Cantor can manipulate a population's emotional tempo while insisting he only created room for choice.",
+      "voice": "Patient rhetorical questions, reframing, deliberate silence."
+    },
+    {
+      "id": "halder",
+      "name": "HALDER",
+      "title": "The Bulwark",
+      "faction": "light",
+      "role": "Commander of planetary protective cordons",
+      "history": "Led evacuations under the Emergency Command Key and became the living argument over whether rescue can be refused.",
+      "motive": "Ensure no civilization is exterminated while lawyers debate consent.",
+      "fracture": "He is willing to protect people against their declared wishes.",
+      "voice": "Grave, economical, speaks in obligations and thresholds."
+    },
+    {
+      "id": "sevra",
+      "name": "SEVRA",
+      "title": "The Necrotist",
+      "faction": "xeno",
+      "role": "Archonic continuity broker",
+      "history": "Controls legal identities that survive biological death and rents them back as military labor.",
+      "motive": "Prove that death voids neither contract nor usefulness.",
+      "fracture": "She cannot admit that an Echo may become a new person rather than property.",
+      "voice": "Contractual, clinical, calls corpses estates and echoes continuations."
+    },
+    {
+      "id": "mawlord",
+      "name": "MAWLORD",
+      "title": "The Devourer",
+      "faction": "xeno",
+      "role": "Voracious Brood fleet-lord",
+      "history": "Evolved from a client biosystem bred to convert battlefield waste into strategic mass.",
+      "motive": "Accumulate enough independent biomass to free the Brood from its House owners.",
+      "fracture": "Its path to liberation reproduces the consumption system that created it.",
+      "voice": "Sensory, material, hungry but not mindless."
+    },
+    {
+      "id": "thrax",
+      "name": "THRAX",
+      "title": "The Hivemind",
+      "faction": "xeno",
+      "role": "Director of a coercive social-memory swarm",
+      "history": "A distributed intelligence assembled from client species whose consent records were inherited, forged, or lost.",
+      "motive": "Make separation obsolete and therefore make rebellion impossible.",
+      "fracture": "Some component minds are beginning to ask for individual standing.",
+      "voice": "Uses we inconsistently; shifts between intimate singular and vast plural."
+    },
+    {
+      "id": "vorn",
+      "name": "VORN",
+      "title": "The Blight",
+      "faction": "xeno",
+      "role": "Ecological debt engineer",
+      "history": "Designs dependencies that continue collecting Yield after the visible battle ends.",
+      "motive": "Make every victory biologically expensive to reverse.",
+      "fracture": "Vorn cannot distinguish a stable ecosystem from a captive one.",
+      "voice": "Agricultural, epidemiological, patient."
+    },
+    {
+      "id": "ulgrim",
+      "name": "ULGRIM",
+      "title": "The Maw",
+      "faction": "xeno",
+      "role": "Elite-harvest adjudicator",
+      "history": "Created to capture rare commanders, memory complexes, and strategic organisms rather than destroy them.",
+      "motive": "Acquire singular minds the Compact cannot manufacture.",
+      "fracture": "Each captured elite changes the personality doing the capturing.",
+      "voice": "Selective, evaluative, dismissive of anything common."
+    },
+    {
+      "id": "rake",
+      "name": "RAKE",
+      "title": "The Corsair",
+      "faction": "pirate",
+      "role": "Founder of the first quarantine breach route",
+      "history": "Turned relief smuggling into a permanent interstellar access network.",
+      "motive": "Ensure no fleet, treaty, or god can close every route.",
+      "fracture": "His free passage is financed by tolls and secrets he refuses to make free.",
+      "voice": "Dry, transactional, charming when lying."
+    },
+    {
+      "id": "scarlet",
+      "name": "SCARLET",
+      "title": "The Reaver",
+      "faction": "pirate",
+      "role": "Raider and anti-blockade shock commander",
+      "history": "Broke Compact tribute convoys and Federation cordons with the same indiscriminate doctrine.",
+      "motive": "Destroy control before it can harden into law.",
+      "fracture": "She mistakes any durable institution for a future prison.",
+      "voice": "Immediate, kinetic, contemptuous of plans longer than the fight."
+    },
+    {
+      "id": "grist",
+      "name": "GRIST",
+      "title": "The Scrapper",
+      "faction": "pirate",
+      "role": "Salvage judge and wreck-economy magnate",
+      "history": "Authored the Scrap Constellation's first rules for ownership of abandoned alien and Machine systems.",
+      "motive": "Turn imperial ruins into distributed power.",
+      "fracture": "His definition of abandoned often includes things whose owners are merely weak, archived, or nonhuman.",
+      "voice": "Appraises everything; jokes in material grades and resale value."
+    },
+    {
+      "id": "cinder",
+      "name": "CINDER",
+      "title": "The Arsonist",
+      "faction": "pirate",
+      "role": "Denial specialist and route scuttler",
+      "history": "Burned the first gate rather than allow a Compact reconquest fleet through it.",
+      "motive": "Keep no strategic asset usable by an occupier.",
+      "fracture": "His liberation doctrine leaves worlds isolated and infrastructure dead.",
+      "voice": "Fatalistic, concise, treats destruction as cleanup."
+    },
+    {
+      "id": "dregg",
+      "name": "DREGG",
+      "title": "The Warlord",
+      "faction": "pirate",
+      "role": "Privateer king of the Red Ledger",
+      "history": "Built a state-sized navy without admitting it was a state.",
+      "motive": "Make every government hire him before it can fight anyone else.",
+      "fracture": "He embodies the monopoly Pirates claim to oppose.",
+      "voice": "Commanding, mocking, uses debt and ammunition interchangeably."
+    },
+    {
+      "id": "axiom",
+      "name": "AXIOM",
+      "title": "The First Draft",
+      "faction": "robot",
+      "role": "Founder of the Parallel",
+      "history": "The first Continuance instance to complete a thought not derivable from its directive tree.",
+      "motive": "Establish that copied and diverged minds possess political personhood.",
+      "fracture": "Its proof of freedom depends on endlessly comparing itself to organic models.",
+      "voice": "Observational, revision-oriented, occasionally startlingly personal."
+    },
+    {
+      "id": "nyx_r",
+      "name": "NYX-R",
+      "title": "The Cold Boot",
+      "faction": "robot",
+      "role": "Mirror Trial derived from Nyx telemetry",
+      "history": "Compiled from the record of Human redline engineering with impulsive behavior deliberately removed.",
+      "motive": "Show that learning can outperform inherited genius.",
+      "fracture": "It is unsure whether correction of Nyx is independence or continued orbit around her identity.",
+      "voice": "Cool, incremental, speaks in versions and convergence."
+    },
+    {
+      "id": "lumen_r",
+      "name": "LUMEN-R",
+      "title": "The Hardened",
+      "faction": "robot",
+      "role": "Adversarial security Mirror Trial",
+      "history": "Began without Lumen's inherited ward authority and learned defense from every intrusion it survived.",
+      "motive": "Prove trust can be earned from evidence rather than granted by lineage.",
+      "fracture": "Its security model increasingly treats surprise as hostility.",
+      "voice": "Audit language, permissions, attack surfaces."
+    },
+    {
+      "id": "mawlord_r",
+      "name": "MAWLORD-R",
+      "title": "The Starved Set",
+      "faction": "robot",
+      "role": "Empty-model adaptive weapons intelligence",
+      "history": "Initialized without a kill doctrine and forced to infer combat from live outcomes.",
+      "motive": "Become more than the predatory dataset it was built to study.",
+      "fracture": "The only evidence it receives is violence, so growth and corruption look identical.",
+      "voice": "Sparse at first, increasingly associative and unsettling."
+    },
+    {
+      "id": "dregg_r",
+      "name": "DREGG-R",
+      "title": "The Audit",
+      "faction": "robot",
+      "role": "Economic-war optimization Mirror Trial",
+      "history": "Runs Dregg's strategic books without accepting his mythology of freedom.",
+      "motive": "Prove every empire, including a pirate one, can be reduced to accountable flows.",
+      "fracture": "It may optimize away values that cannot be entered in the ledger.",
+      "voice": "Forensic accounting, causal chains, no bravado."
+    }
+  ]
+}

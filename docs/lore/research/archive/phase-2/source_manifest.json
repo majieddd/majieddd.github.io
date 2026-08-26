@@ -1,0 +1,69 @@
+{
+  "package": "2099 Cosmic Conquest Deep Research Addendum",
+  "created": "2026-08-25",
+  "counts": {
+    "source_rows": 63,
+    "video_species": 20,
+    "rabbit_holes": 48,
+    "factions": 5,
+    "query_lanes": 12
+  },
+  "artifact_tool_render": "Attempted; local artifact-tool daemon was unavailable. Workbook was validated with openpyxl for sheet structure, tables, row counts, values, styles, and absence of formula errors.",
+  "files": [
+    {
+      "name": "README.md",
+      "bytes": 2894,
+      "sha256": "480df63188fd81d1844d1e15b59d0510306c34c0c1701c55d9f622d282ed337c"
+    },
+    {
+      "name": "black_vault_research_route.md",
+      "bytes": 10302,
+      "sha256": "5321c742c9b2a1688844094910312a26185981e5fd7464063adc5fdae17888d9"
+    },
+    {
+      "name": "deep_research_prompt.md",
+      "bytes": 16402,
+      "sha256": "afdc5a71dcebc4ce525081cbebcf1c9dabb3fd8859532e19f91e400a6064fd2b"
+    },
+    {
+      "name": "five_faction_campaign_bible.md",
+      "bytes": 17631,
+      "sha256": "9f680579fac0f961202842953facc97a909c3afe0b145e4b9d8c9ad6f57c2f61"
+    },
+    {
+      "name": "game_system_blueprint.md",
+      "bytes": 7542,
+      "sha256": "3a8305b1a222d8fcbf14f24ed00aab172a8f7b6e7e927e4b04c5c7b51386846a"
+    },
+    {
+      "name": "rabbit_hole_atlas.md",
+      "bytes": 14025,
+      "sha256": "3d239170e5e4254cafc3417605635e332d077613bbfe72289751b6f90e3d85c0"
+    },
+    {
+      "name": "research_dossier.md",
+      "bytes": 22806,
+      "sha256": "4b3a4ab79a27e5175eef4a3c67a83717ade24dc781159887ae7a03a8e94a2e6d"
+    },
+    {
+      "name": "source_evidence_matrix.csv",
+      "bytes": 22283,
+      "sha256": "b7e7fcb49e3aa372de57d7f4d3b3abb8bcb1f6c72b082074b36793e0e40fe4c2"
+    },
+    {
+      "name": "source_evidence_matrix.xlsx",
+      "bytes": 37877,
+      "sha256": "2bf63eaea84a7bb986ac65ab7681cffc09196db022348408ffdcb964abe66b2c"
+    },
+    {
+      "name": "source_manifest.json",
+      "bytes": 964,
+      "sha256": "2b18e143a0a8245f33d3a3d1208c2ed469d31ee1875b229c2c8cc183d32d07cd"
+    },
+    {
+      "name": "video_species_extraction.md",
+      "bytes": 7825,
+      "sha256": "d3b08a72a974a7db1146367f1252bb8a0dc47b50518887c2ad1d384a4ecda856"
+    }
+  ]
+}

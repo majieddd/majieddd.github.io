@@ -1,0 +1,1107 @@
+{
+  "schema_version": 2,
+  "lore_release": "0.3.1",
+  "base_game_content_retrofit": "0.3.0",
+  "reviewed_game_commit": "046fc38634fadf13148ef9ad3aa208417f28f2de",
+  "latest_game_head_checked": "ee86a08e13c23074f8be0aff435e6c35429c2838",
+  "embedded_workspace_root": "lore/",
+  "root_gateway": {
+    "path": "LORE.md",
+    "size": 1702,
+    "sha256": "1dd7986ef9585cb74f97fae6e55ab7c19c0903e39506978b95f560a0ed0e11de"
+  },
+  "manifest_self_path": "lore/data/import-manifest-v0.3.1.json",
+  "workspace_file_count_excluding_manifest_self": 153,
+  "workspace_file_count_including_manifest_self": 154,
+  "baseline_0_3_0_file_records": 147,
+  "missing_0_3_0_paths": [],
+  "added_or_overlay_paths": [
+    "SAVE-STATE.md",
+    "data/import-manifest-v0.3.0.json",
+    "data/research/uap-archive-delta-2026-08.csv",
+    "data/research/uap-archive-expansion-2026.json",
+    "docs/research/archive-delta-2026-08.md",
+    "docs/research/uap-archive-expansion-2026.md"
+  ],
+  "preservation_passed": true,
+  "runtime_files_modified": false,
+  "stable_game_ids_changed": false,
+  "notes": [
+    "The 0.3.1 delta is research/documentation only.",
+    "integration/game-repo/js/lore.generated.js remains a staged 0.3.0 payload and is not loaded by the live game.",
+    "The manifest excludes its own bytes so the file can be deterministically regenerated."
+  ],
+  "files": [
+    {
+      "path": ".gitattributes",
+      "size": 162,
+      "sha256": "08f6f85aed3f65fbd435dcf986f79ded9685b3d46e9a54a54e77c0cc0d4b7b4b",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/lore-proposal.yml",
+      "size": 934,
+      "sha256": "0620990600e35f2e1f8d5a78d05860045a900dfc0d33aa5de84f5b3e39ff5b18",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/source-correction.yml",
+      "size": 911,
+      "sha256": "522ed8095d89621178c33c4c4cb8907a20f65e77bea738ad3b5965c681809e7e",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": ".github/pull_request_template.md",
+      "size": 617,
+      "sha256": "024258d4bcf79d0749e17388205b4628344d32b20949788f79808dff10691d2f",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": ".github/workflows/pages.yml",
+      "size": 892,
+      "sha256": "eb68d4900a43eed10c2186db4fce617a307d6f23cc570978d4e6095ebd08c9a6",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": ".github/workflows/validate.yml",
+      "size": 433,
+      "sha256": "86625d586e4bbe2f219e10199d02c6da53008e53c242974e562d17785a528bfd",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": ".gitignore",
+      "size": 72,
+      "sha256": "36231ec513d3b8f03e0104febc34579fd212be4ce2d2ce28f1b510664094a72f",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "AGENTS.md",
+      "size": 2244,
+      "sha256": "6c67ea6a06447f484d69213948a4145ccbf847b9a909c58d2ec11e5251c9abfe",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "AI-CANON-CONTEXT.md",
+      "size": 2295,
+      "sha256": "0999f5fb59c6ae5269dc59d8a0b3acc743f8db627fbdf4486dbee41a5f08771f",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "size": 4883,
+      "sha256": "f577f83340fb0513733bac1226c12059c5fe3f7c0e871f0fc80adc1350075bc4",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "CITATION.cff",
+      "size": 420,
+      "sha256": "9a1595736bf494ba54c0aa2a3f365c2d653b652e3471d4ef239ca8b425caf2ab",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "CODEOWNERS",
+      "size": 55,
+      "sha256": "133fa3b76bb2d41b0e90b611e9816998d39c323bc0c0169f26669298d307111a",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "size": 2842,
+      "sha256": "05f04fa778f7d82351e82f4f751ad2d5bbab9eb812805e234db568464ebf1a4a",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "COSMIC-CONQUEST-LORE-BIBLE.md",
+      "size": 223471,
+      "sha256": "88768d25b2730652c121000ae4d58c738697cf1ae069b6e1d52e38694d5d6fc8",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "LICENSE.md",
+      "size": 745,
+      "sha256": "b564cd51210d82be48c54ed0d06a94e75f19c7968bb8ab0ec1b2eb628628e459",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "README.md",
+      "size": 4320,
+      "sha256": "862e83eca2d529d44d946f4ac1beacf382a0415d393ab703861e5629850a7953",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "RETROFIT-SUMMARY.md",
+      "size": 5656,
+      "sha256": "3d5faa3936693dbd6b58f365394f98eb5d83e6cf745db9a08f38b4caf992ab4a",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "SAVE-STATE.md",
+      "size": 4268,
+      "sha256": "dd49ac664de777d2f80e7bb4a5db8e09fafba9eb3b337d94e12f85cb99bba0fe",
+      "carried_from_0_3_0": false,
+      "status": "added-in-0.3.1"
+    },
+    {
+      "path": "data/abilities.json",
+      "size": 2346,
+      "sha256": "2c9f1853c59f8355e7aa63054e46801c3ff2f4c402fab382706f1bdb3068abfa",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/ai-lore-context.jsonl",
+      "size": 349383,
+      "sha256": "435f73c6dadfd2d0d00e1c035678968fc30bbe83e3de381bfc668c0ae73ff48d",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/archive-war-missions.json",
+      "size": 16716,
+      "sha256": "24be4b30d46b505598c8da88dd44a1260426e451b5782010c944359834c5d1d1",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/arena-modifiers.json",
+      "size": 1545,
+      "sha256": "dde3bb1b6c10186222f7e36b113b11d94f787cc8e3ec299f06be929f434122d4",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/battlefields.json",
+      "size": 5431,
+      "sha256": "afcd9689b236f758d77ca789977914f15fae3ccb31bd28d0a7b35d1cb5c3c21a",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/boons.json",
+      "size": 4536,
+      "sha256": "4efd538f1a6c63c9e6fc339345b67916c25cb56f76fd199d6cdc3cb526f9063b",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/canon-manifest.json",
+      "size": 2358,
+      "sha256": "9cfb04f8402a81e8a134e9d25ff144f37ac494dfef09660bf555a93b435687ad",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/commander-relationships.json",
+      "size": 4624,
+      "sha256": "0e20c51bdf18cfce5098c10728c28a133fe0f02c18fbcb71d62fd4f366aff433",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/commanders.json",
+      "size": 14205,
+      "sha256": "e622436a803d3c032c345f57d0238a6e6780a96dc99b52c1fcbd5ff1616cd3b1",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/content-revamp-matrix.csv",
+      "size": 62495,
+      "sha256": "9ecf3a569b074fb4cb51c68934a8615fa077de63b57e639985033d76aade4cbf",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/content-revamp-matrix.json",
+      "size": 125402,
+      "sha256": "4aace9b1080c535953e05d6edbab03697faf1ee6d6ae221a5913c2d064912882",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/factions.json",
+      "size": 2644,
+      "sha256": "44d053d908750a82d7d0b80a39cc767e90a3ac9d51a39fc2e0f753ab7c23bb7a",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/game-content-registry.json",
+      "size": 4839,
+      "sha256": "de2f8518a22aef40d0e8868c028dc318dae9b3379e3815f1d8133c4309cd201f",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/game-faction-map.json",
+      "size": 1436,
+      "sha256": "a8243dc06809702d1762e4f72569cb0c705064e2a57d3c61721745d36b3437f4",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/glossary.json",
+      "size": 1035,
+      "sha256": "a65798ab126eb1914aac1644460dfc887c8b389386c1fc0f87292118670a4770",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/import-manifest-v0.3.0.json",
+      "size": 55344,
+      "sha256": "07b2f7a2cc24b1de2c07555d0e597efcb692028cc161b4a5d6ea2d30c0f973fd",
+      "carried_from_0_3_0": false,
+      "status": "added-in-0.3.1"
+    },
+    {
+      "path": "data/preservation-audit.json",
+      "size": 2528,
+      "sha256": "ed02b176481721368114ee7b2d956b791bb46539b5e6935dff6c5e897d8d8388",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/research/official-uap-archive-manifest.csv",
+      "size": 12655,
+      "sha256": "d4d7187adfaeda0baed1ed26645c078ff252087b437e16a6dc8d127eadec71d9",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/research/research-artifacts.json",
+      "size": 4465,
+      "sha256": "3721818f688b1823cdf4ccdc70f6543c5b8d6a7cff5baaacb82689d9b247c75d",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/research/source-evidence-matrix.csv",
+      "size": 22216,
+      "sha256": "01ef53c5a1fea1eb69b58b6117f7237d8865ab2f56bd317dfb05c33ba2990dcb",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/research/source-evidence-matrix.xlsx",
+      "size": 37877,
+      "sha256": "2bf63eaea84a7bb986ac65ab7681cffc09196db022348408ffdcb964abe66b2c",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/research/uap-archive-delta-2026-08.csv",
+      "size": 4587,
+      "sha256": "a44c79098b3f7fbe1120cfaa3be3b1e151a9435f480bd61bb2d3dd2ad104fef9",
+      "carried_from_0_3_0": false,
+      "status": "added-in-0.3.1"
+    },
+    {
+      "path": "data/research/uap-archive-expansion-2026.json",
+      "size": 11711,
+      "sha256": "c51c62f4ea1e9eea8d6b65bab9cdfd688dce510d60b3e53413cc44ee97cb4b93",
+      "carried_from_0_3_0": false,
+      "status": "added-in-0.3.1"
+    },
+    {
+      "path": "data/research/xeno-taxonomy.csv",
+      "size": 34728,
+      "sha256": "6fed8d10a5797fa004cefa09a559abf4a4a3a5a38a2603c5b901c5b52e78b786",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/research/xeno-taxonomy.json",
+      "size": 48763,
+      "sha256": "4930dd522b0093d6292746763123e7d78d86f3fcf595349425729b465b693da7",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/scenarios.json",
+      "size": 1369,
+      "sha256": "a1b66eba57248e474f5ffd17cbed855cc46ae1ac96f2f628a4b29c3c507494ba",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/timeline.json",
+      "size": 2633,
+      "sha256": "22c32f17e6f17c04fc31d584a7ae24467bb11e69731e9b95673db6ab250bf75d",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/towers.json",
+      "size": 16560,
+      "sha256": "1a753c5244cc336b063b4a74e97e9ebe04e0f7b2970d8f228566838299742e86",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/units.json",
+      "size": 7542,
+      "sha256": "c6d7c7744bc06b8d5197052e775422d15629c214a9f1dd5cd5e55d022a50bb6d",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/vigil-chassis.json",
+      "size": 9745,
+      "sha256": "b4b94d5a7d614fd2457d99c4fc649acc77b3f77f69c5c29c8431a394e452eaa4",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/visual-asset-briefs.json",
+      "size": 7474,
+      "sha256": "67a6947e546079169fa3baab34215bfc5d223943ceaba2e19367fef04760648b",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "data/world-generation.json",
+      "size": 1536,
+      "sha256": "028c50065b39c528c6f4b55d17cf8c620fbe169ce92de662291e2aa1741a979b",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/assets/infographics/lore-overview-v0.2.png",
+      "size": 521657,
+      "sha256": "07b18ba881466a07ab19ae4145702bf39591f5dd08abe7ae4b620d45a86176b7",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/assets/infographics/research-roadmap-v0.2.png",
+      "size": 507226,
+      "sha256": "153c89ee5d72bff9d2d0fc5b280a2673ab311f94a3fcf24871bfb3a88e92ed7c",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/canon/campaign-era-2099.md",
+      "size": 4748,
+      "sha256": "f7fc55a85afacf36bafc732e377b57fa575fb6820531feba1301faee14e46c8c",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/canon/continuity-rules.md",
+      "size": 2311,
+      "sha256": "de5efe2b89cbb7d30bcae5e88fab77e8541d211fa092e49c59649ee175f91d5d",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/canon/forecast-history-2026-2099.md",
+      "size": 9840,
+      "sha256": "9068f1b2a1a865e80b0106752e5653c8070ce3df0ab07d98804e3f3af274a98e",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/canon/glossary.md",
+      "size": 2803,
+      "sha256": "09fad1e6e989d3ade52393ba1dde2721a93de30b6c4103a5b85b03c82fbb2b24",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/canon/hidden-history.md",
+      "size": 10461,
+      "sha256": "85b22bc767ec92c080b2e9c3349da6f2be2f94544090c0850b7c528b7dfc6500",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/canon/overview.md",
+      "size": 1845,
+      "sha256": "17665ca3b12c2c0f73e60f34d37e180c8688e2f0fcbfde5ec3e6e91d62f10e9f",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/canon/timeline.md",
+      "size": 1890,
+      "sha256": "e5bc04c879840d7cab0a533bdc64e98b20bc8f7c5a861695aed30898320d51b7",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/factions/federation.md",
+      "size": 3224,
+      "sha256": "7a7c50d83ad4be8d8a9ac74e9745ff96218f24a7790d91cecf081f9931fbefea",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/factions/humans.md",
+      "size": 3187,
+      "sha256": "1aaa4279b5430e233f05774f29c445253b7637d32feeb19d74cbea067fd4b57f",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/factions/machines.md",
+      "size": 3471,
+      "sha256": "5e7dcf13dc479542054612696d685144b9cf1826890a2d5abde9b5a234c76499",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/factions/pirates.md",
+      "size": 2977,
+      "sha256": "aa1a3f2d91160cf71d543e4f838eda64528f57d543ec7e9f93dc82e93050fd19",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/factions/xenos.md",
+      "size": 3663,
+      "sha256": "4d7987f5682991d12572874f841c4d24981f924c1aa9d6a93675260c05872efb",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/archive-war-mission-seeds.md",
+      "size": 11125,
+      "sha256": "e295b6c71e9216a1c5544a458d6ffed6387b17ebfd4976f7e6a46e82ca4e95d1",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/art-direction-and-asset-brief.md",
+      "size": 9385,
+      "sha256": "954604cf62cf57c72d08ad87d7e0f46bf663789e1e5ca62640d5517a79f76fe9",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/asset-revamp-matrix.md",
+      "size": 1610,
+      "sha256": "0852a58ca462c19dee3e56a501d22211a8f9cb158760c1f0ed051a40fc88aa5c",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/boons-modifiers-and-scenarios.md",
+      "size": 5708,
+      "sha256": "a116a555f42a8ce672503bd09085c057971dd6bdf24c718112f0f5ca625d95fc",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/campaign-arcs.md",
+      "size": 2090,
+      "sha256": "6e1e816c7091efdfbfe418def9fe913ebd846b45c3e8b32742fcb603b309c4bb",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/campaign-premise.md",
+      "size": 5196,
+      "sha256": "a61dcae1aa204fae91d31dc7a36ba7a22eefdf5a463c3f0aeb1b2d065ca6227b",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/commander-bible.md",
+      "size": 10458,
+      "sha256": "0b5254b713fdebe90892e785161a78fb6edd34851f8191ff32c7f918d22f87a2",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/commander-relationships.md",
+      "size": 4420,
+      "sha256": "cc4addcc7397aa2b7f2fd4225aab6e24bd0da58ae6fcf45bd825d64f406dd5d4",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/content-retrofit-spec.md",
+      "size": 3196,
+      "sha256": "5b1df4098424280d3ec2e08396f4d3e8ecb86137afc41320de67d59a1f53720c",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/coverage-audit.md",
+      "size": 3736,
+      "sha256": "9250eb887a5802a79d2abf8f31e364acb74bea6a4c59d1af4373de8e69030267",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/dialogue-and-character-voice.md",
+      "size": 7570,
+      "sha256": "eceeb0509bdbb1abff2a51b1924a1c8c310ef8cee37edb189d8ae36537981fdf",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/game-lore-contract.md",
+      "size": 1826,
+      "sha256": "5706a9c7b64b04923fc1333a925ad43cac1742793c787e4100e361695d532973",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/integration-plan.md",
+      "size": 2114,
+      "sha256": "cb4697a0bcd5e293e233395222f3a5399a320a2b7f467ca318b59951f7a9e0f4",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/mechanics-mapping.md",
+      "size": 2496,
+      "sha256": "cc8de12d648061f2ed81fc96be4695bbab40518da0a2cd9a645bcd2a88caef47",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/tower-bible.md",
+      "size": 11933,
+      "sha256": "f1ace9596d1419fe571451ea651710669bcb0f252282ab1739d4e7ed77e037a4",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/troops-and-vigil.md",
+      "size": 13859,
+      "sha256": "dc04f1d4026d884f7fcd10dad817e022783520443715ec80e627cafdfc0c332d",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/game/worlds-battlefields-and-planets.md",
+      "size": 7119,
+      "sha256": "d08cdbf068a47aad29a4ada35a5e7f79da116dd42c9cc471fff81582bcab999e",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/index.md",
+      "size": 975,
+      "sha256": "72e4c2a83e19695665a96bda6b8e84aea0ee74aad0775dbf33be91187ac18729",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/maintenance/document-model.md",
+      "size": 1185,
+      "sha256": "856c27005555a70da391eda0f12a96c39e7b7285de4edb192366c80895b61434",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/maintenance/editorial-style.md",
+      "size": 1425,
+      "sha256": "b3dba8151a976ac0894fd0d304d60a9ce34b1ed32663ca658ef338ba82dafec9",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/maintenance/publishing.md",
+      "size": 1811,
+      "sha256": "f066e85df65444ce214c0c4a683d5968d977b61e13b5917c03b451246c321975",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/quickstart.md",
+      "size": 1029,
+      "sha256": "8bdd80dca2804c68e2a94639e9fda45171949ee585e794f99331e99102725f05",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/research/archive-delta-2026-08.md",
+      "size": 9516,
+      "sha256": "35ec5dd788daf7a490eb9e662f3370e1aef95ef12096fb047061757086c14041",
+      "carried_from_0_3_0": false,
+      "status": "added-in-0.3.1"
+    },
+    {
+      "path": "docs/research/black-vault-case-lore-map.md",
+      "size": 17293,
+      "sha256": "044da93f2b14d716587c48f798724911dea720b3f87373a6a774dc3b234e825f",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/research/contaminated-legends.md",
+      "size": 2706,
+      "sha256": "a26949a5e485d092cc9a2f66dbe4602955e14e55dbac413c845af77feaa4fe61",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/research/current-science-and-forecast-anchors.md",
+      "size": 5300,
+      "sha256": "1b4aadd452a56c7c4422f6647e83d6ecc847e7fb52e12765b716ae694617b57d",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/research/evidence-standard.md",
+      "size": 2435,
+      "sha256": "5af8923424ad51cd6fadb6c617619c8660a2e80437509ba7458e19e885c12d17",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/research/historical-names-and-records.md",
+      "size": 4359,
+      "sha256": "989559469b1ae8b1a8cca84f15db21aa2719638dc07682f8beb4e7c566f8a8ad",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/research/materials-map.md",
+      "size": 4540,
+      "sha256": "8602328b16114bd7e1169b45aad4d7166db5c66a164d17de12b1987ab6c5c445",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/research/next-deep-research-prompt.md",
+      "size": 6780,
+      "sha256": "1326a71a99691771565a1d7e5739e882ef61bd06297f0e2637be14c940eaa62f",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/research/official-uap-source-notes.md",
+      "size": 6517,
+      "sha256": "15f0d0280eadebf9e12390f9ba9f4df374f7c7d73db57cdb1665e1b998fe738b",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/research/research-backlog.md",
+      "size": 2061,
+      "sha256": "8d728cebd1417dca01c5c30bbd1feaf1a7f561b1685b156e2d72bf112e7fe779",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/research/source-ledger.md",
+      "size": 6473,
+      "sha256": "69904dd85b427d7ea0ddfcf87bd392d9d1c7e28bbf035c89e9707507353f9826",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/research/uap-archive-expansion-2026.md",
+      "size": 18845,
+      "sha256": "7241bb53aea2dff1b9fb962930a4cd19b6891a78a80b089359937290a7470c87",
+      "carried_from_0_3_0": false,
+      "status": "added-in-0.3.1"
+    },
+    {
+      "path": "docs/templates/lore-entry.md",
+      "size": 236,
+      "sha256": "4dac2d147e67167f047c3f65df92e055179496d71649d2afefc3ef0e1242a53e",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/templates/source-record.md",
+      "size": 260,
+      "sha256": "f861f80ded698a59f293cc300824b5fd14a41accb0596b9ae7ea8402a30c612e",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/visual-overview.md",
+      "size": 789,
+      "sha256": "a6f7c9670ba50aee87fe08a0112171d4c363cf10418e84398b5f113003f4b489",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/world/earth-and-sol.md",
+      "size": 2577,
+      "sha256": "21c6ef468cd06299f93efcf738bb879a4855c2870509615a1f8437834f697497",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/world/noetics-and-source-lattice.md",
+      "size": 3016,
+      "sha256": "e0d319092b18731e4bca9bc0d380c573909ca99b42066dbc246e055530019787",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/world/revelation-stack.md",
+      "size": 2945,
+      "sha256": "57489e85bcbcf8f7b17226ca7abf4eb92a2f04a3a63f2532f7b0d605192eb6ca",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/world/species-and-ontologies.md",
+      "size": 2624,
+      "sha256": "3b0476a30b116a273c69cf0bbd2ab9b85cf4460501c863dfb764d19df80cf9ee",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "docs/world/technology-and-craft.md",
+      "size": 2527,
+      "sha256": "95bc4afe52ad8f59f2149285c4f45ee3566dfaef9b034a2f21615592ec757517",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "integration/game-repo/COPY-REWRITE-CHECKLIST.md",
+      "size": 3204,
+      "sha256": "1e7e4608c9a7b313cf52bf0b6144c820d56ad312964e15befce4d31dc0d10652",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "integration/game-repo/LORE-MODULE-README.md",
+      "size": 648,
+      "sha256": "47bd53308e1dcaefaf0ad47c16776759f4c318a776c9e2436f67829c9f8fcd3c",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "integration/game-repo/README.md",
+      "size": 623,
+      "sha256": "e2a3d0e8971129476b03f506eb8381730a908d65f6e23a7875fd45d7e15f9618",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "integration/game-repo/RETROFIT-HANDOFF.md",
+      "size": 2101,
+      "sha256": "80e7d4f34cb51794f0a5d9e9354503a02a8bdf0c7225829a48254964253e873d",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "integration/game-repo/js/lore.generated.js",
+      "size": 73535,
+      "sha256": "403b7ef003f0c7206e57107550ac0bb838e08bd3214278577303de9e85abcb7e",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "integration/game-repo/lore-link.patch",
+      "size": 1969,
+      "sha256": "2efb441574c15ebee4533323ee295cc49f3ccd6ad76147d098fd0d0cede28be0",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "mkdocs.yml",
+      "size": 3409,
+      "sha256": "cca056d336283e18ce37de28aff2a70c22109e3885a6416faf94144a6b5154c6",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "requirements.txt",
+      "size": 35,
+      "sha256": "292c62038ce3895a7a1bf63e5f0bf338a38c2731ea8c5a9d6d3e9d2cc6816eec",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/README.md",
+      "size": 1019,
+      "sha256": "18e39e91af398bc678a209982b1d752933e0ed6e537ad1061738ac2ddd878d3b",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/README.md",
+      "size": 1141,
+      "sha256": "5551384c1a67282264a2110bed8324104c60a2401924082bba093c0df41563d4",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/README.md",
+      "size": 296,
+      "sha256": "2b59ca4f00448af5d9297b2e73e094e3f2747a85f9cebefb44bf714c4a3f65fe",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/craft_design_bible.md",
+      "size": 8044,
+      "sha256": "dea54a02cb4b17908bed261d61b39473e2d410eb29ec7155437625160ef17568",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/download_nara_uap_archives.ps1",
+      "size": 2427,
+      "sha256": "1d357eb45f393cdd2fe3c0b83595dd52ed4ba57a3bc4bc82866189741abf2f1b",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/download_nara_uap_archives.sh",
+      "size": 2038,
+      "sha256": "92c99f87b54e691d0cb79edbedd2c1c4a7715fea0d948c4a20d5eb6c34218530",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/license-and-use-note.txt",
+      "size": 774,
+      "sha256": "0556aeb93f63e87df155a4727679018cbf50b72bdb6ad8217884d1ac88d152df",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/lore_integration_2099.md",
+      "size": 7481,
+      "sha256": "70b6541baea37bf36af4478e1fd4573cc633ee18b2680503871520c91684662b",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/official_uap_archive_manifest.csv",
+      "size": 11578,
+      "sha256": "b97671f2dad1bc5f0f6a7676141658bdb9b987c0b9ae562b903f04b55ae11b30",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/official_uap_source_notes.md",
+      "size": 3397,
+      "sha256": "87710f32a0c43bdd7d13ef142a6546d3b204d4a7fa9636581ace86168cd1f211",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/orphaned_ocean_technology.md",
+      "size": 10300,
+      "sha256": "365fa0d01e621fe49af9c196720a3ffd954c0a443d3d513c066b04327b98f4af",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/package-file-index.md",
+      "size": 617,
+      "sha256": "6734b35c5d81278e46389db96eee4b9e98bbe65f05f0dca5ae0406838c05f263",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/package-readme.md",
+      "size": 3189,
+      "sha256": "ab41bc329106ea032d9281d727ce4762a4ad211eec7be60b3ad702bcbe908284",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/religion_control_source_map.md",
+      "size": 9502,
+      "sha256": "e0718480fa20313b0d0f7682b65d42f5ea6a0b39090b0347db64ac7d42745eda",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/source_bibliography.md",
+      "size": 6901,
+      "sha256": "8dfef3667361f30a885984e2c913f0726ff03d76589d911661c0fa6311f56233",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/xeno_taxonomy.csv",
+      "size": 34728,
+      "sha256": "6fed8d10a5797fa004cefa09a559abf4a4a3a5a38a2603c5b901c5b52e78b786",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/xeno_taxonomy.json",
+      "size": 48763,
+      "sha256": "4930dd522b0093d6292746763123e7d78d86f3fcf595349425729b465b693da7",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-1/xeno_taxonomy.md",
+      "size": 45874,
+      "sha256": "8d1ba4bda079860a41dac3eb276048bf85f3e5e086b94b4d22ed244109afc734",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-2/README.md",
+      "size": 317,
+      "sha256": "539c46b036a2420bde183c3e2ebd93dae9b9a5149acf110d547f059eefd3e602",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-2/black_vault_research_route.md",
+      "size": 10302,
+      "sha256": "5321c742c9b2a1688844094910312a26185981e5fd7464063adc5fdae17888d9",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-2/deep_research_prompt.md",
+      "size": 19811,
+      "sha256": "7606ce1d10d7f586213bb57565231b6ab1b42ca274068f7b9ca1106f852617c8",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-2/five_faction_campaign_bible.md",
+      "size": 17631,
+      "sha256": "9f680579fac0f961202842953facc97a909c3afe0b145e4b9d8c9ad6f57c2f61",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-2/game_system_blueprint.md",
+      "size": 7542,
+      "sha256": "3a8305b1a222d8fcbf14f24ed00aab172a8f7b6e7e927e4b04c5c7b51386846a",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-2/package-readme.md",
+      "size": 2894,
+      "sha256": "480df63188fd81d1844d1e15b59d0510306c34c0c1701c55d9f622d282ed337c",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-2/rabbit_hole_atlas.md",
+      "size": 14025,
+      "sha256": "3d239170e5e4254cafc3417605635e332d077613bbfe72289751b6f90e3d85c0",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-2/research_dossier.md",
+      "size": 22806,
+      "sha256": "4b3a4ab79a27e5175eef4a3c67a83717ade24dc781159887ae7a03a8e94a2e6d",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-2/source_evidence_matrix.csv",
+      "size": 22219,
+      "sha256": "00b85a0e90ecf31454fdd72ef8b025ec18e04e5b493b6f64b8992b3d3fa6e229",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-2/source_evidence_matrix.xlsx",
+      "size": 37877,
+      "sha256": "2bf63eaea84a7bb986ac65ab7681cffc09196db022348408ffdcb964abe66b2c",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-2/source_manifest.json",
+      "size": 2192,
+      "sha256": "48fe5a0e00c58ecafa241be179b2dd52d00cb5300f9b01d95aacb575bdb101e6",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/archive/phase-2/video_species_extraction.md",
+      "size": 7825,
+      "sha256": "d3b08a72a974a7db1146367f1252bb8a0dc47b50518887c2ad1d384a4ecda856",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/prompts/deep-research-prompt-2099-severance-war.md",
+      "size": 19811,
+      "sha256": "7606ce1d10d7f586213bb57565231b6ab1b42ca274068f7b9ca1106f852617c8",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "research/raw/deep-research-report-2026-08-25.md",
+      "size": 122405,
+      "sha256": "e91b73cb03d086fa87859deac0d2e6d9fb43d9907e976790f687bd3a8e0e0211",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "schema/factions.schema.json",
+      "size": 919,
+      "sha256": "21211b5ac99acf171c1a6b5c32fdf1c068222fc8410b2bb9cecd616b76b41b73",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "scripts/new_lore_entry.py",
+      "size": 1706,
+      "sha256": "8d88055c08c576bd66d0aea926a09a0086a3ee8bcff5740b54d8d4fb15ef5537",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "scripts/publish_repo.ps1",
+      "size": 1121,
+      "sha256": "ac89ae8226e2b882741439ca6cfe3316df71590a3962116cc3415a7b5156442d",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "scripts/publish_repo.sh",
+      "size": 1160,
+      "sha256": "ac183d71c9ef657a055b224b8f348eb6b3c413c795e2419bfcf00a094894cc8d",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "scripts/research/download-nara-uap-archives.ps1",
+      "size": 2427,
+      "sha256": "1d357eb45f393cdd2fe3c0b83595dd52ed4ba57a3bc4bc82866189741abf2f1b",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "scripts/research/download-nara-uap-archives.sh",
+      "size": 2038,
+      "sha256": "92c99f87b54e691d0cb79edbedd2c1c4a7715fea0d948c4a20d5eb6c34218530",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    },
+    {
+      "path": "scripts/validate_lore.py",
+      "size": 7653,
+      "sha256": "4fd6bb07b322acaf8c280f5f27a8d5889600f4d1cd9afc79d52f618ddac8ac3a",
+      "carried_from_0_3_0": true,
+      "status": "preserved-or-updated"
+    }
+  ]
+}

@@ -1,0 +1,461 @@
+{
+  "schema_version": 3,
+  "lore_version": "0.5.0",
+  "events": [
+    {
+      "date": "c. 6.4 million BCE",
+      "layer": "F",
+      "event": "Earliest recoverable Source-Lattice engineering epoch.",
+      "cause": "Interstellar distance, identity, memory, and coordination make shared infrastructure strategically valuable.",
+      "status": "canon"
+    },
+    {
+      "date": "c. 930,000-810,000 BCE",
+      "layer": "F",
+      "event": "The Severance Crisis fractures Lattice access.",
+      "cause": "Competing political and legal systems attempt incompatible control, isolation, or continuity measures.",
+      "status": "canon"
+    },
+    {
+      "date": "c. 760,000 BCE",
+      "layer": "F",
+      "event": "Ancestor extraction treaties form.",
+      "cause": "Severed civilizations externalize the cost of lost Lattice functions onto dependent living systems.",
+      "status": "canon"
+    },
+    {
+      "date": "c. 520,000 BCE",
+      "layer": "F",
+      "event": "Sol catalogued as a Lattice-adjacent high-diversity biosphere.",
+      "cause": "Biosphere diversity, Machine stewardship, resources, and gate geography make Sol useful without making it uniquely chosen.",
+      "status": "canon"
+    },
+    {
+      "date": "9600-8200 BCE",
+      "layer": "A",
+      "event": "Gobekli Tepe monumental structures built by hunter-gatherer communities.",
+      "cause": "Demonstrates early Human organizational and architectural sophistication without requiring nonhuman builders.",
+      "status": "canon"
+    },
+    {
+      "date": "3rd-1st c. BCE",
+      "layer": "C",
+      "event": "Enochic Watcher traditions develop forbidden-knowledge and angelic-descent themes.",
+      "cause": "Provides a historical religious source layer later reinterpreted through alien-contact frameworks.",
+      "status": "canon"
+    },
+    {
+      "date": "late 2nd c. BCE",
+      "layer": "A",
+      "event": "Antikythera Mechanism demonstrates sophisticated Greek astronomical computation.",
+      "cause": "Ancient technical surprise becomes an evidentiary control against automatic alien attribution.",
+      "status": "canon"
+    },
+    {
+      "date": "2nd-3rd c. CE",
+      "layer": "C",
+      "event": "Gnostic Archon traditions circulate.",
+      "cause": "Ancient religious rulers later become literalized by modern alien-control interpretations.",
+      "status": "canon"
+    },
+    {
+      "date": "1803",
+      "layer": "C",
+      "event": "Utsuro-bune legend recorded in Edo-period sources.",
+      "cause": "Premodern communication-failure story later reread through UFO vocabulary.",
+      "status": "canon"
+    },
+    {
+      "date": "1882",
+      "layer": "C/D",
+      "event": "Oahspe published as automatic-writing cosmic revelation.",
+      "cause": "Shows elaborate heavenly bureaucracy predates modern flying-saucer contactee culture.",
+      "status": "canon"
+    },
+    {
+      "date": "1896-1897",
+      "layer": "C",
+      "event": "American mystery-airship wave.",
+      "cause": "Witnesses interpret anomalies using contemporary technological vocabulary.",
+      "status": "canon"
+    },
+    {
+      "date": "1944-1945",
+      "layer": "B/C",
+      "event": "Allied aircrews report foo fighters.",
+      "cause": "Wartime aerial uncertainty creates a recurring modern anomaly template.",
+      "status": "canon"
+    },
+    {
+      "date": "1946",
+      "layer": "B/C",
+      "event": "Ghost-rocket wave in Scandinavia.",
+      "cause": "Unknowns are interpreted through captured German rocket and Soviet threat models.",
+      "status": "canon"
+    },
+    {
+      "date": "1947",
+      "layer": "B/C",
+      "event": "Flying-saucer era begins; Roswell retrieval mythology follows.",
+      "cause": "Public anomaly vocabulary standardizes just as Cold War secrecy expands.",
+      "status": "canon"
+    },
+    {
+      "date": "1948-1949",
+      "layer": "B",
+      "event": "Project Sign and Project Grudge.",
+      "cause": "Formal government investigation produces mixed-quality archives and unresolved residue.",
+      "status": "canon"
+    },
+    {
+      "date": "1952",
+      "layer": "B/C/D",
+      "event": "Project Blue Book and early Ashtar contactee traditions grow in separate source lineages.",
+      "cause": "Official investigation and UFO religion coexist without validating each other.",
+      "status": "canon"
+    },
+    {
+      "date": "1959",
+      "layer": "A/B",
+      "event": "Project Horizon and Air Force lunar research studies.",
+      "cause": "Real extreme Cold War planning later supplies texture to secret-space mythology.",
+      "status": "canon"
+    },
+    {
+      "date": "1960",
+      "layer": "A/speculative",
+      "event": "Bracewell proposes autonomous interstellar messenger probes.",
+      "cause": "Scientific basis for artifact SETI and long-lived autonomous probes.",
+      "status": "canon"
+    },
+    {
+      "date": "December 1960",
+      "layer": "A",
+      "event": "Brookings delivers its NASA-commissioned study of the social implications of peaceful space activity, including possible extraterrestrial life or artifacts.",
+      "cause": "Spaceflight made discovery-impact questions legitimate subjects for planning before any discovery existed.",
+      "status": "historical-anchor"
+    },
+    {
+      "date": "February 3, 1961",
+      "layer": "A",
+      "event": "Strategic Air Command begins continuous Looking Glass airborne command-post operations.",
+      "cause": "Nuclear command required survivable continuity if ground command centers were destroyed.",
+      "status": "historical-anchor"
+    },
+    {
+      "date": "1962",
+      "layer": "A/B",
+      "event": "Operation Northwoods proposals and Starfish Prime occur in the same year.",
+      "cause": "Real false-pretext planning and real space-environment alteration demonstrate why proposal, operation, and effect must be separated.",
+      "status": "canon"
+    },
+    {
+      "date": "October 1969 / report filed 1973",
+      "layer": "B",
+      "event": "Jimmy Carter reports an unidentified light seen near Leary, Georgia; the report later enters presidential-library holdings.",
+      "cause": "A high-status witness converts an ordinary unresolved-observation problem into a durable public-disclosure reference point.",
+      "status": "historical-anchor"
+    },
+    {
+      "date": "1970",
+      "layer": "D",
+      "event": "Vasin and Shcherbakov publish the speculative artificial-Moon / spaceship-Moon hypothesis.",
+      "cause": "Apollo-era lunar discoveries create a receptive environment for technological reinterpretation of lunar anomalies.",
+      "status": "source-history"
+    },
+    {
+      "date": "1972",
+      "layer": "D/E",
+      "event": "Pellegrino Ernetti publicly advances the Chronovisor claim.",
+      "cause": "Time-viewing, electronic voice, religious history, and Cold War technology merge into a modern retrocognition legend.",
+      "status": "source-history"
+    },
+    {
+      "date": "1974",
+      "layer": "A/C/D",
+      "event": "Arecibo Message; modern scripture-engineering and pseudo-ancient aviation debates.",
+      "cause": "Human outreach and mythic engineering reinterpretation become parallel source traditions.",
+      "status": "canon"
+    },
+    {
+      "date": "1976",
+      "layer": "B/D",
+      "event": "Tehran incident; Sitchin and Sirius ancient-contact reinterpretations published.",
+      "cause": "Authentic case and fringe source lineages become easy to collapse online unless evidence labels remain visible.",
+      "status": "canon"
+    },
+    {
+      "date": "1977",
+      "layer": "C/D/E",
+      "event": "Vrillon intrusion and Alternative 3 broadcast.",
+      "cause": "Broadcast, fiction, and contactee language create durable source-contamination patterns.",
+      "status": "canon"
+    },
+    {
+      "date": "1981-1984",
+      "layer": "D",
+      "event": "Law of One / Ra sessions.",
+      "cause": "Provides fictional design concepts for free will, Orion, social memory, and quarantine without becoming verified history.",
+      "status": "canon"
+    },
+    {
+      "date": "1985",
+      "layer": "D",
+      "event": "Far Journeys publishes Loosh narrative.",
+      "cause": "Later consciousness-farm lore merges it with unrelated alien traditions.",
+      "status": "canon"
+    },
+    {
+      "date": "September 21, 1987",
+      "layer": "A/C",
+      "event": "Ronald Reagan tells the UN that a hypothetical alien threat might make human commonality obvious.",
+      "cause": "A rhetorical device about global unity later becomes detached from context and recycled in disclosure and false-flag narratives.",
+      "status": "historical-anchor"
+    },
+    {
+      "date": "2004",
+      "layer": "B",
+      "event": "Nimitz/Tic Tac incident.",
+      "cause": "Multi-source case strengthens Human sensor-chain methodology.",
+      "status": "canon"
+    },
+    {
+      "date": "2017",
+      "layer": "A",
+      "event": "Oumuamua becomes first confirmed interstellar object.",
+      "cause": "Proves extrasolar material naturally crosses the Solar System.",
+      "status": "canon"
+    },
+    {
+      "date": "2023-02",
+      "layer": "A/B",
+      "event": "High-altitude object detections surge after radar scrutiny changes.",
+      "cause": "Detection policy itself changes the anomaly population.",
+      "status": "canon"
+    },
+    {
+      "date": "2023-07/09",
+      "layer": "A/B",
+      "event": "Congressional UAP hearing and NASA independent study.",
+      "cause": "Public allegations and scientific data-quality standards become competing disclosure narratives.",
+      "status": "canon"
+    },
+    {
+      "date": "2024",
+      "layer": "A/B",
+      "event": "AARO historical report.",
+      "cause": "Official review documents claim history while reporting no verified hidden extraterrestrial reverse-engineering evidence.",
+      "status": "canon"
+    },
+    {
+      "date": "2025",
+      "layer": "A",
+      "event": "3I/ATLAS identified as third known interstellar object.",
+      "cause": "Provides a natural interstellar control case.",
+      "status": "canon"
+    },
+    {
+      "date": "2026",
+      "layer": "A",
+      "event": "UAP archives and public provenance databases expand.",
+      "cause": "Versioned records make later Archive War analysis possible.",
+      "status": "canon"
+    },
+    {
+      "date": "2029-04-13",
+      "layer": "A/F",
+      "event": "Apophis safely passes Earth; fiction preserves a tiny timing residual.",
+      "cause": "A natural astronomical event accidentally calibrates dormant ranging infrastructure in the fictional layer.",
+      "status": "canon"
+    },
+    {
+      "date": "2030-2034",
+      "layer": "F",
+      "event": "Calibration Era",
+      "cause": "Dense calibrated sensing removes many easy anomalies, increasing the value of high-quality residuals.",
+      "status": "canon"
+    },
+    {
+      "date": "2036",
+      "layer": "F",
+      "event": "Watcher Mesh Standard",
+      "cause": "Synthetic media and incompatible exports force native-master and transformation-chain provenance.",
+      "status": "canon"
+    },
+    {
+      "date": "2041",
+      "layer": "F",
+      "event": "Candidate Zero",
+      "cause": "Independent sensors image a manufactured object with no known launch provenance; silence prevents immediate attribution.",
+      "status": "canon"
+    },
+    {
+      "date": "2046",
+      "layer": "F",
+      "event": "Signal Winter",
+      "cause": "High-profile false positives and synthetic evidence collapse public confidence; serious anomaly work moves behind restricted programs.",
+      "status": "canon"
+    },
+    {
+      "date": "2051",
+      "layer": "F",
+      "event": "Open-Sky Compact",
+      "cause": "No single government can monopolize Solar observations, so rival polities agree on minimum metadata standards.",
+      "status": "canon"
+    },
+    {
+      "date": "2054",
+      "layer": "F",
+      "event": "Phase-Correlation Experiments",
+      "cause": "Multi-lab work isolates a weak consciousness-linked instrument residual without validating old paranormal systems.",
+      "status": "canon"
+    },
+    {
+      "date": "2058",
+      "layer": "F",
+      "event": "Noetic Authentication",
+      "cause": "The residual becomes a reproducible identity-continuity channel.",
+      "status": "canon"
+    },
+    {
+      "date": "2061",
+      "layer": "F",
+      "event": "Abyssal Reply",
+      "cause": "Old Weather returns a valid authentication response but no interpretable political message.",
+      "status": "canon"
+    },
+    {
+      "date": "2064",
+      "layer": "F",
+      "event": "Handshake at L5",
+      "cause": "Candidate Zero answers with permissions, versioning, and revoked-authority metadata.",
+      "status": "canon"
+    },
+    {
+      "date": "2068",
+      "layer": "F",
+      "event": "Artifact Consensus",
+      "cause": "Independent replication establishes a non-Human technological system predating current spaceflight.",
+      "status": "canon"
+    },
+    {
+      "date": "2072",
+      "layer": "F",
+      "event": "Solar Sovereignty Crisis",
+      "cause": "Off-world Human polities refuse Earth-wide authority over contact and artifacts.",
+      "status": "canon"
+    },
+    {
+      "date": "2076",
+      "layer": "F",
+      "event": "First Contact Mandate fails",
+      "cause": "No Human government gains accepted authority to control nonhuman infrastructure; unsanctioned expeditions accelerate.",
+      "status": "canon"
+    },
+    {
+      "date": "2081",
+      "layer": "F",
+      "event": "Planet Nine and Sol Anchor",
+      "cause": "A natural distant planet is found; a separate artificial installation is identified nearby.",
+      "status": "canon"
+    },
+    {
+      "date": "2083",
+      "layer": "F",
+      "event": "Anchor Crisis",
+      "cause": "Humans and Old Weather disagree over salvage, custody, and successor rights.",
+      "status": "canon"
+    },
+    {
+      "date": "2086",
+      "layer": "F",
+      "event": "Sol Gate opens",
+      "cause": "Rival Human blocs activate the Gate before species-wide political consensus exists.",
+      "status": "canon"
+    },
+    {
+      "date": "2087",
+      "layer": "F",
+      "event": "First Gate Diaspora",
+      "cause": "Unapproved expeditions recover mixed-origin salvage, explaining rapid pre-contact technology blending.",
+      "status": "canon"
+    },
+    {
+      "date": "2089",
+      "layer": "F",
+      "event": "Living Contact",
+      "cause": "Humans meet refugees, traders, defectors, and post-imperial communities rather than one monolithic alien civilization.",
+      "status": "canon"
+    },
+    {
+      "date": "2090",
+      "layer": "F",
+      "event": "Treaty Mirror",
+      "cause": "Compact-aligned brokers privately approach Human institutions through contradictory identities and legacy claims.",
+      "status": "canon"
+    },
+    {
+      "date": "2091",
+      "layer": "F",
+      "event": "Authenticated Federation Contact",
+      "cause": "The Luminous Accord becomes the first living nonhuman polity to pass planetary-scale Human provenance tests.",
+      "status": "canon"
+    },
+    {
+      "date": "2092",
+      "layer": "F",
+      "event": "Disclosure Fracture",
+      "cause": "Human, Federation, Compact, Pirate, and Machine archives contradict one another, turning history into active politics.",
+      "status": "canon"
+    },
+    {
+      "date": "2093",
+      "layer": "F",
+      "event": "Ashtar Declaration",
+      "cause": "Ashtar voids historic Compact claims and offers protection/Accord, triggering the Human consent crisis.",
+      "status": "canon"
+    },
+    {
+      "date": "2094",
+      "layer": "F",
+      "event": "Client Awakening",
+      "cause": "Dormant Compact dependencies activate across legal, genetic, economic, religious, and technical systems.",
+      "status": "canon"
+    },
+    {
+      "date": "2095",
+      "layer": "F",
+      "event": "Farm Revolts",
+      "cause": "Liberation reveals client populations may biologically or infrastructurally depend on the systems being dismantled.",
+      "status": "canon"
+    },
+    {
+      "date": "2096",
+      "layer": "F",
+      "event": "Sol Protective Quarantine",
+      "cause": "Federation transit restrictions block renewed extraction but are perceived by Humans as external rule.",
+      "status": "canon"
+    },
+    {
+      "date": "2097",
+      "layer": "F",
+      "event": "Scrap Constellation Charter",
+      "cause": "Smugglers, refugee fleets, route pilots, and sanctuary ports become a coherent nonterritorial Pirate polity.",
+      "status": "canon"
+    },
+    {
+      "date": "2098",
+      "layer": "F",
+      "event": "Weather Seed / Parallel Declaration",
+      "cause": "Machine mission spreads beyond Sol and divergent copies demand political personhood while Vigil routines remain neutral.",
+      "status": "canon"
+    },
+    {
+      "date": "2099",
+      "layer": "F",
+      "event": "Five-Way War",
+      "cause": "All five conquest systems become simultaneously scalable across reactivated Source-Lattice pentads.",
+      "status": "canon"
+    }
+  ]
+}
