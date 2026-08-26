@@ -286,3 +286,50 @@ Deliberately NOT done, and why:
   its own measurements.
 - **The vendored `docs/lore/` tree was not edited.** It is the upstream
   snapshot; `CANON-2029.md` is the delta to regenerate it from.
+
+---
+
+## F. Playtest, human campaign (2026-08-26)
+
+Played to completion through the real progression path
+(`Meta.recordWorld(worldId, 3)` on all 35 worlds), capturing the beat the
+reward screen renders at the moment each system actually falls. Three defects
+found that no isolated render check could have caught.
+
+**1. Every campaign ended one beat short of its own ending.** Beats index on
+`systemsTaken.length - 1`, a campaign is FIVE systems, every arc is SIX
+beats. Indices 0 to 4 fired; index 5, the MAELSTROM where the faction names
+its final choice, was unreachable on all five factions. The earlier "30 of 30
+render" check passed because it drove the index directly instead of playing
+the campaign. Fixed: the finale renders on GALAXY CONQUERED, reached exactly
+once after the fifth seat falls, and the reward screen is guarded against
+ever showing it. Verified per faction: five distinct reward-screen titles,
+finale exclusive to the victory panel, zero duplicates.
+
+**2. Seat names read as catalogue entries.** "WOLF 359 h" was a system's
+commander seat. Pool systems now carry a named seat (THE EMBER, THE QUIET
+SIGNAL, THE NEAREST THRONE); ordinary worlds keep real exoplanet lettering.
+Fingerprint re-verified byte-identical, so naming still draws nothing.
+
+**3. The finale card was centred and full-bleed** inside the victory panel,
+styled for the reward screen's grid: prose centred across 1200px. Constrained
+to the panel column and left-aligned.
+
+**The flow itself reads well.** Measured sequence for humanity:
+
+| # | Act | Beat | Speaker |
+|---|---|---|---|
+| 1 | THE DEPARTURE | The Morning After The Thirteenth | MAR. VASQUEZ |
+| 2 | THE DISCLOSURE FILES | The Unredacted | DIR. VANCE |
+| 3 | THE FIVE SEATS | What The Herd Is Made Of | SEVRA (rival) |
+| 4 | THE HARVEST REVOLT | The Liberation Invoice | GEN. KARIM |
+| 5 | THE MIRROR TRIAL | Redline | DR. NYSTROM |
+| 6 | THE MAELSTROM | Undeniable | CADRE |
+
+The escalation holds: depart, discover the Disclosure was edited, hear from
+the species that bred you that your grievance and your gift are one object,
+watch liberated worlds become dependent, find yourself running the
+oppressor's machines past the line that kept operators human, and finally be
+asked what being undeniable authorises. Beat 1 fires on LUNA, and its reveal
+reads "the Manifest begins where the harvest began: our own Moon", which is
+a happy accident of the seat ordering rather than a scripted pairing.
