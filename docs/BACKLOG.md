@@ -258,6 +258,17 @@ truth from the engine itself, `TOWER_TYPES[id].foot[0] === 2`: `bombard`,
 the one genuinely still open: all ten have `hasArt: false` in `js/artpack.js`.
 The other two clauses are stale and now corrected:
 
+> **AMENDED the same day, because "the ten heavies" understates it.** A full
+> coverage count over `js/artpack.js` says **49 of 60 towers have no plate**,
+> and the heavies are simply a subset of those 49. The eleven that DO have one
+> are `sepulchre`, `orison`, `antiphon`, `gestalt`, `maw`, `veil`, `pressgang`,
+> `privateer`, `bloodprice`, `replicator`, `nullfield`. Nothing is broken by
+> this: towers draw procedurally on canvas (owner-sweep 22.10 passes) and
+> `artImg` returns empty for a missing key. The defect is consistency, not
+> function, and it is the partial class upgrade `BRAND.md` rule 3 forbids.
+> Commanders (26/26), factions (5/5) and units (54/54) are all complete. See
+> `OWNER-NOTES-LORE.md` D2 for the three ways out and what each costs.
+
 - **The rival AI draft lists already learnt them.** `js/ai.js:129` names it
   outright: "THE HEAVIES BELONG IN THESE LISTS. They are already draftable."
   All ten are present across `DAMAGE` and `AIR`.

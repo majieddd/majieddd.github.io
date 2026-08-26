@@ -106,6 +106,39 @@ portrait, their line in voice, attribution, and the reveal boxed below.
 
 ---
 
+## The rename question, settled with numbers
+
+The owner asked for names to fit the lore, and also said not to rewrite what
+does not need it. Those are only compatible if we know which display names
+actually disagree, so every name-bearing registry was diffed against the canon.
+
+| Registry | Identical | Drifted |
+|---|---|---|
+| towers | **60** | 0 |
+| faction units | **25** | 0 |
+| Vigil chassis | **29** | 0 |
+| commanders, names AND titles | **26** | 0 |
+| abilities | **12** | 0 |
+| boons | **20** | 0 |
+| arena modifiers | **8** | 0 |
+| maps | 19 | **2** |
+| scenarios | 2 | **2** |
+
+**Four names differ out of more than two hundred, and nothing is being
+renamed.** Three of the four are a definite article: the game says
+`THE CONFLUENCE`, `THE CAROUSEL`, `THE SWARM` where the canon's catalogue says
+`CONFLUENCE`, `CAROUSEL`, `SWARM`. The fourth is `THE LONG VIGIL` against the
+canon's `VIGIL / ENDLESS`, which is a data label with a slash in it and not
+display prose at all. In every case the game's string is the better player
+facing name, and adopting the canon's would make the interface worse. The
+canon is the authority on what things ARE, not on how a label reads.
+
+The real gap the audit found is not naming, it is COVERAGE: seven maps have no
+canon entry at all (`spiral`, `twin-channel`, `chokepoint`, `island-scatter`,
+`open-field`, `convergence`, `fortress-ring`), because the procedural map
+families postdate lore release 0.5.0. That is authored in D3 rather than
+renamed.
+
 ## D. Still open
 
 ### D1. Field Manual codex, rewritten from canon
@@ -115,10 +148,43 @@ beside a canon that contradicts parts of it. It should be regenerated from
 done anticipating exactly this.
 
 ### D2. Commander portraits from the visual briefs
-`[ ]` `LORE.visualBriefs` carries per-commander art direction and the canon's
-morphology/politics separation rule (species does not determine faction). This
-is a GPU job, not a wiring job: the ten 2x2 heavy towers already have no art
-plates (see `BACKLOG.md`), so the art queue should be planned as one batch.
+`[x]` **Closed as NOT NEEDED, plus one real finding the audit corrected.**
+
+Art coverage, measured against `js/artpack.js` rather than assumed:
+
+| Class | Plates | State |
+|---|---|---|
+| commanders | **26 / 26** | complete |
+| factions | **5 / 5** | complete |
+| units | **54 / 54** | complete |
+| towers | **11 / 60** | inconsistent |
+
+Commander portraits are complete AND owner-approved: the owner's ruling in an
+earlier session was "the commanders we have looked fine, it was the Troops
+that looked off", and the troops were restyled then. Re-rendering 26 approved
+portraits against the visual briefs would be rewriting something that does not
+need it, which is the opposite of the instruction. `LORE.visualBriefs` stays
+available for any FUTURE commander added to the roster, which is the case it
+actually earns its keep in.
+
+**The correction:** an earlier note in `BACKLOG.md` said "the ten heavies have
+no `twr_` art plates". The real number is **49 of 60 towers have no plate**,
+and the ten heavies are simply a subset. Towers render procedurally on canvas
+(owner-sweep 22.10, "every tower draws itself in the shop preview", passes),
+and `artImg` returns empty for a missing key, so nothing is broken. What IS
+wrong is that 11 towers carry a painted plate on the loadout detail card and
+49 do not, which is precisely the partial class upgrade `BRAND.md` rule 3
+forbids.
+
+**Owner decision, not a task to run unasked.** Three options: render the
+missing 49 so the class is uniform, drop the 11 so it is uniform the other
+way, or accept the split deliberately and record it in `BRAND.md` as an
+exception the way `cmd_cadre` already is. Cost matters to the choice: this
+machine measures SDXL-Turbo at about 4.5s an image (49 renders is minutes)
+and Krea 2 at about 138 minutes an image (49 renders is over a hundred
+hours). The 11 existing plates were rendered on the slower pipeline, so
+matching them is the expensive option and matching them cheaply would itself
+be a partial upgrade.
 
 ### D3. World and battlefield dossiers
 `[ ]` `LORE.maps` covers 22 of the game's 28 boards; `LORE.worldGeneration`
