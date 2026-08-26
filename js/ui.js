@@ -2071,21 +2071,109 @@ const UI = {
          battlefield minimap. It is built from this world's own map object by
          the single player's renderer (mapPreviewBlock), so the paths shown
          here are the identical lanes Game.start will build -- a duel table
-         can never open on a board whose shape was not drawn here. */
-      const brief = ev => this.showTooltip(ev, `<div class="brief">
+         can never open on a board whose shape was not drawn here.
+
+         MULTIPLAYER BRIEFING CARD. Mirrors worldBriefing's reading order and
+         structure, minus the campaign-only machinery: no star win-condition
+         box (the relay keeps no star ledger), no tower-drafting row (no
+         campaign seed to draft from), no seat-claim logic (nothing is
+         claimable here). What survives is everything a player needs before
+         opening a duel table: who holds the ground, what the board looks
+         like, what it fields, and what the scenario asks. */
+      const of = FACTIONS[w.owner];
+      const kind = WORLD_KINDS[w.kind];
+      const boss = COMMANDER_ROSTER.find(c => c.id === worldBossOf(sys, w));
+      const sc = worldScenarioOf(w);
+      /* Art plate: the same artwork single-player's briefing card shows. */
+      const plate = artImg('world_' + w.map + '_' + w.owner, 'br-art', w.name)
+                 || artImg('world_' + w.map, 'br-art', w.name);
+      /* The holder's four soldiers: the bodies of the power standing on this
+         world. ENEMY_TYPES carries both neutral and faction units; the
+         faction field separates them. */
+      let unitIcons = '';
+      try {
+        if (sc.noCommander) throw 0;   /* nobody fields these; skip the work */
+        const own = Object.keys(ENEMY_TYPES)
+          .filter(id => ENEMY_TYPES[id].faction === w.owner)
+          .slice(0, 4);
+        unitIcons = own.map(id => {
+          const u = ENEMY_TYPES[id];
+          return '<i class="br-ci un" style="--tc:' + u.color + '" data-tt="' +
+                 u.name + '|' + (u.desc || '').replace(/"/g, '&quot;').slice(0, 150) + '">' +
+                 this.unitIconHTML(id, 20) + '</i>';
+        }).join('');
+      } catch (e) { unitIcons = ''; }
+      /* The creatures this board fields: the map's signature pair plus its
+         roster, as an icon preview. */
+      let mobIcons = '';
+      if (mp) {
+        const mobs = (mp.denizens || []).concat((mp.roster || []).filter(id => (mp.denizens || []).indexOf(id) < 0)).slice(0, 8);
+        mobIcons = mobs.map(id => {
+          const u = ENEMY_TYPES[id];
+          if (!u) return '';
+          return '<i class="br-mob" style="--tc:' + u.color + '" data-tt="' + u.name + '|' +
+                 (u.desc || '').replace(/"/g, '&quot;').slice(0, 150) + '">' +
+                 this.unitIconHTML(id, 22) + '</i>';
+        }).join('');
+      }
+      /* The standing command: portrait and soldiers. No tower row -- a duel
+         table re-seats both rivals from the contest pair at the drop, so a
+         single drafted loadout would belong to neither (same rule worldBriefing
+         applies to contested worlds). */
+      const cmdBar = sc.noCommander
+        ? '<div class="br-cmdbar wild">' +
+            '<span class="br-face"><i class="br-wild">' + sc.icon + '</i>' +
+              '<b>NO COMMANDER</b></span>' +
+          '</div>'
+        : '<div class="br-cmdbar">' +
+            (unitIcons ? '<span class="br-side left" data-tt="SOLDIERS|The four bodies ' + of.short + ' fields on this world.">' + unitIcons + '</span>' : '') +
+            '<span class="br-face" data-tt="' + boss.name + ', ' + boss.title + '|' +
+              (w.owner === sys.holder ? 'Commands this system.' : 'Holds this world.') + '">' +
+              commanderPortrait(boss, 42) +
+              '<b style="color:' + boss.color + '">' + boss.name + '</b></span>' +
+            (w.contested
+              ? '<span class="br-side right note" data-tt="TWO RIVALS|Arsenals are decided at the drop, not shown in advance.">TWO RIVALS</span>'
+              : '') +
+          '</div>';
+      /* Pre-compute the contested notice so the template stays flat -- nested
+         backticks inside a ${} expression are where this file has bitten before. */
+      const contestedHTML = w.contested
+        ? '<div class="br-contested"><b>\\u2694 CONTESTED. THREE-WAY WAR.</b><span>' +
+          w.contestedBy.map(f => '<i style="color:' + FACTIONS[f].color + '">' +
+            FACTIONS[f].icon + ' ' + FACTIONS[f].short + '</i>').join(' vs ') +
+          ' vs <i style="color:' + of.color + '">the holder</i>. Every kill reanimates toward BOTH rivals.</span></div>'
+        : '';
+      const brief = ev => this.showTooltip(ev, `<div class="brief ${plate ? 'has-art' : ''}" style="--fc:${of.color}">
+        <div class="br-plate${plate ? '' : ' bare'}" style="--fc:${of.color}">${plate || ''}</div>
         <div class="br-head"><b>${w.name}</b>
-          <span class="tag" style="color:${FACTIONS[w.owner].color}">${
-            w.renegade ? FACTIONS[w.owner].short + ' RENEGADE' : FACTIONS[w.owner].short}</span></div>
-        <div class="br-trait">${sys.name} · ${WORLD_KINDS[w.kind].icon} ${WORLD_KINDS[w.kind].label}</div>
-        ${mp ? `<div class="br-map"><b>${mp.name}</b>, ${mp.trait}</div>
-          ${this.mapPreviewBlock(mp, { size: 'tip' })}` : ''}
-        ${mp && mp.blurb ? `<p class="br-blurb">${mp.blurb}</p>` : ''}
-        <div class="br-rows">${w.contested ? `<div class="br-row"><span class="br-ic">⚔</span>
-          <span>A three-way board. Every kill reanimates toward BOTH rivals.</span></div>` : ''}
+          <span class="tag" style="color:${of.color}">${
+            w.renegade ? of.short + ' RENEGADE' : of.short}</span></div>
+        <div class="br-mapname">
+          ${mp && mp.adj ? `<span class="br-adj" data-tt="${(mp.adj || '').toUpperCase()}|${(mp.sigNote || mp.trait || '').replace(/"/g, '&quot;')}">${mp.adj}</span> ` : ''}
+          <span class="br-kind" data-tt="${kind.label.toUpperCase()}|${(kind.note || 'A standard world. No modifier.')}">${kind.icon} ${kind.label}</span>
+          <span class="br-sys">${sys.name}</span>
+        </div>
+        ${mp ? this.mapPreviewBlock(mp, { size: 'tip' }) : ''}
+        ${cmdBar}
+        ${w.seat ? `<div class="br-seat" data-tt="COMMANDER SEAT|The system's boss fight. A duel table here seats the commander.">⚔ COMMANDER SEAT<span>the system's boss stands on this world</span></div>` : ''}
+        ${w.renegade ? `<div class="br-renegade"><b>A SPLINTER OF ITS OWN POWER HOLDS THIS WORLD.</b><span>The only ground that pays <b>${of.short}</b>. Its own soldiers hold its line.</span></div>` : ''}
+        ${contestedHTML}
+        <div class="br-scen">
+          <div class="br-scen-top">
+            <span class="br-scen-name">${sc.icon} ${sc.name}</span>
+            <span class="br-scen-brief">${sc.brief}</span>
+          </div>
+          ${mobIcons ? `<div class="br-mobs" data-tt="THE BOARD|What this world fields against you."><span class="br-mobs-label">FIELDS</span>${mobIcons}</div>` : ''}
+        </div>
+        <p class="br-flavor flavor">${(mp && mp.blurb) || sc.flavor || ''}</p>
+        <div class="br-rows">
+          ${w.contested ? `<div class="br-row"><span class="br-ic">⚔</span>
+            <span>A three-way board. Every kill reanimates toward BOTH rivals.</span></div>` : ''}
           <div class="br-row"><span class="br-ic">⚔</span>
-          <span>${Net.duelRefusal(w)
-            ? 'No duel table opens here, this board seats more commanders than a duel does. Click for the garrison.'
-            : 'Click to open a duel table here, or to join one already open.'}</span></div></div></div>`);
+            <span>${Net.duelRefusal(w)
+              ? 'No duel table opens here, this board seats more commanders than a duel does. Click for the garrison.'
+              : 'Click to open a duel table here, or to join one already open.'}</span></div>
+        </div></div>`);
       g.addEventListener('mouseenter', brief);
       g.addEventListener('focus', brief);
       g.addEventListener('focus', () => GalaxyFX.bring(g));
