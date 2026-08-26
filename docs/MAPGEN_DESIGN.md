@@ -15,7 +15,7 @@ MapGen.proceduralGeometry(family, seedStr) → { lanes, blocks, walls, nodes, co
 Pure function. Deterministic: same `(family, seedStr)` always produces identical geometry.
 PRNG is mulberry32 seeded by an FNV-1a hash of the seed string (the world id).
 
-**Geometry convention (critical — authored maps set it):** lanes are HALF-WIDTH. The first
+**Geometry convention (critical, authored maps set it):** lanes are HALF-WIDTH. The first
 waypoint sits near the mirror axis (`x ≈ cols/2 - 1`), the last one tile off-grid at `x = -1`.
 `buildField()` mirrors them for the rival side; enemies march AWAY from each other. All terrain
 (blocks/walls/nodes) is authored in the LEFT half only and mirrored by buildField. Column counts
@@ -23,7 +23,7 @@ are even so the mirror axis falls BETWEEN columns, never on a lane tile. A wall 
 is a soft-lock (enemies standing there are unkillable), so `generateWalls` clears both the
 authored AND the mirrored lane tiles; blocks may overlap lanes (authored maps do).
 
-### Map families (archetypes) — shipped gates in config.js MAPS
+### Map families (archetypes), shipped gates in config.js MAPS
 | Family | Feel | minTier | Solo? |
 |--------|------|---------|-------|
 | `spiral` (Vortex Reach) | Long winding inward spiral, crossed by its own exit | 1+ | no |
@@ -49,7 +49,7 @@ authored AND the mirrored lane tiles; blocks may overlap lanes (authored maps do
   (commanders.js), and all 11 authored maps lack `minTier`, so their draws are byte-identical.
 
 ### Solo-survival layouts
-All families produce standard two-sided mirrored geometry — no separate engine path. The
+All families produce standard two-sided mirrored geometry, no separate engine path. The
 solo-flavoured families (`convergence`, `fortress-ring`) carry `noReanim: true` (like OSSUARY):
 the engine already ignores seat 1 on those boards, so the player experiences a one-sided
 siege/last-stand rather than a duel. This was chosen over a bespoke one-sided generator to keep
@@ -65,7 +65,7 @@ the mirror invariants (and both test suites) intact.
 1. **config.js MAPS**: entries `{id:'spiral', name:'Vortex Reach', procedural:true, family:'spiral', minTier:1}` appended after the authored maps (indices 11+).
 2. **config.js buildField(map, seedStr)**: if `map.procedural && typeof MapGen !== 'undefined'`, calls `MapGen.proceduralGeometry(map.family, seedStr || map.id)` and merges into a clone; builds `FIELD.walls`.
 3. **game.js Game.start()**: `FIELD = buildField(this.map, opts.worldId || (opts.world && opts.world.id) || 'default')`.
-4. **entities.js Projectile.update()**: non-lobbed projectiles die when their path crosses a wall tile (segment check prevents tunneling at high speed). Lobbed shells return early — they arc over cover.
+4. **entities.js Projectile.update()**: non-lobbed projectiles die when their path crosses a wall tile (segment check prevents tunneling at high speed). Lobbed shells return early, they arc over cover.
 5. **entities.js tower acquire()**: `wallBlocksShot()` DDA raycast in tile space; towers without the spotting stat cannot see targets behind walls. Spotted/lobbed towers can.
 6. **ui.js mapPreviewBlock / previewModel / buildPreview**: optional seed threaded through so tooltips show the SAME geometry as the live board (call sites with a world object pass `w.id`).
 7. **index.html**: `<script src="js/mapgen.js"></script>` between artpack.js and config.js.
