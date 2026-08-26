@@ -605,7 +605,7 @@ const Net = {
     baseLevelCost: [0], baseLevelCostAt: [0], towerCost: [0], towerLifeCost: [0],
     canAffordBuild: [0], bidCost: [0], previewGold: [0],
     musterTiers: [0], musterCost: [0], musterGain: [0], canMuster: [0], musterHpMul: [0, 1],
-    clearCostAt: [0], clearCostNow: [0], clearLimit: [0], enrageCost: [0]
+    clearCostAt: [0], clearCostNow: [0], clearLimit: [0]
   },
   SEAT_RET: { rivalOf: 'i', musterVictims: 'a', maelstromVictim: 'i' },
 
@@ -732,8 +732,6 @@ const Net = {
         c => O.cmd_muster.call(Game, c.seat, c.tier));
     cmd('buyBaseLevel', side => ({ k: 'l', side: N.seatIn(side) }),
         c => O.cmd_buyBaseLevel.call(Game, c.seat));
-    cmd('buyEnrage', side => ({ k: 'e', side: N.seatIn(side === undefined ? 0 : side) }),
-        c => O.cmd_buyEnrage.call(Game, c.seat));
     cmd('clearTerrain', (side, gx, gy) => ({ k: 'c', side: N.seatIn(side), gx, gy }),
         c => O.cmd_clearTerrain.call(Game, c.seat, c.gx, c.gy));
     /* Towers are addressed by the tile they stand on. A tile is unique on the
@@ -970,7 +968,7 @@ const Net = {
   },
 
   execute(c, fromSeat) {
-    const K = { b: 'build', m: 'muster', l: 'buyBaseLevel', e: 'buyEnrage',
+    const K = { b: 'build', m: 'muster', l: 'buyBaseLevel',
                 c: 'clearTerrain', u: 'upgrade', s: 'sell', r: 'relocate', a: 'ability',
                 t: 'setTargetMode' };
     /* A packet names its own seat; a command inside it may not claim another. */
@@ -1112,7 +1110,7 @@ const Net = {
       mix(sp ? (sp.wavesLeft | 0) + 1 : 0);
     }
     for (const S of this._realSides) {
-      mix(S.gold); mix(S.lives); mix(S.enrage || 0); mix(q(S.musterIncome));
+      mix(S.gold); mix(S.lives); mix(q(S.musterIncome));
       mix(S.towers.length); mix(S.cleared.size); mix(S.taken.length);
       /* Same rule as the escalations above: the draft SPLICES cards out of
          PLAYER_MODS at random, so which cards a commander holds is a decision

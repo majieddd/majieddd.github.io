@@ -38,7 +38,7 @@ const AI = {
   },
   can(tactic) {
     switch (tactic) {
-      case 'clear':    case 'enrage':   return this.tier() >= 1;
+      case 'clear':                     return this.tier() >= 1;
       case 'relocate':                  return this.tier() >= 2;
       case 'retarget':                  return this.tier() >= 3;
       case 'sell':                      return this.tier() >= 4;
@@ -895,38 +895,6 @@ const AI = {
       }
     }
 
-    /* --- RESONANT FIELD: the rival bids on its OWN wave ---
-       Rival parity. The charge is per side now, so this is a bet a commander
-       places on its own board: the wave that pays ENRAGE_BOUNTY more also
-       arrives ENRAGE_HP tougher, and only for the buyer. Priced per gold of
-       bounty it expects to collect, on the same weight the muster income half
-       carries, and taken only with measured headroom -- otherwise it buys a
-       payout it then leaks straight through. */
-    if (!Game.waveRunning && Game.wave >= AI_ENRAGE_MIN_WAVE
-        && (S.enrage || 0) < ENRAGE_MAX
-        && S.lives >= S.maxLives * AI_ENRAGE_SAFE_LIVES
-        && typeof Game.enrageCost === 'function') {
-      const cost = Game.enrageCost(S.index);
-      if (cost <= gold * 1.8 && this.boardPower(prof) * AI_ENRAGE_WINDOW
-                                 >= prof.hp * AI_ENRAGE_HEADROOM) {
-        const next = Game.wave + 1;
-        const p = Game.waveProfile(next);
-        /* The bounty a wave pays, read through the SAME rounding the Enemy
-           constructor applies, so the rival prices gold at the figure it will
-           actually be paid rather than at the authored table value. */
-        let payout = 0;
-        for (const type in p.roster) {
-          const e = ENEMY_TYPES[type];
-          if (!e) continue;
-          payout += Math.max(1, Math.round((e.bounty || 1) * waveBountyMultiplier(next) / GOLD_SQUISH))
-                    * p.roster[type];
-        }
-        const value = payout * ENRAGE_BOUNTY * AI_ENRAGE_INCOME_WEIGHT * this.diff.aiEcon;
-        const escore = value / cost;
-        if (escore > 0 && this.can('enrage')) consider({ kind: 'enrage', cost, score: escore });
-      }
-    }
-
     return { best, dream };
   },
 
@@ -1195,8 +1163,6 @@ const AI = {
         action.tower.aiMoves = (action.tower.aiMoves || 0) + 1;
         this.buildSpots();
       }
-    } else if (action.kind === 'enrage') {
-      game.buyEnrage(S.index);
     } else {
       game.upgrade(action.tower, action.branchIndex);
     }

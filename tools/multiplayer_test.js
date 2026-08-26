@@ -88,7 +88,6 @@ const MPT = (function () {
       case 'build':  return { k: 'b', side: a.seat, type: a.type, gx: a.gx, gy: a.gy };
       case 'muster': return { k: 'm', side: a.seat, tier: a.tier };
       case 'base':   return { k: 'l', side: a.seat };
-      case 'rage':   return { k: 'e', side: a.seat };
       case 'up':     return { k: 'u', gx: a.gx, gy: a.gy, branch: -1 };
       case 'sell':   return { k: 's', gx: a.gx, gy: a.gy };
       case 'abil':   return { k: 'a', i: a.i, gx: a.gx === undefined ? -1 : a.gx,
@@ -108,7 +107,6 @@ const MPT = (function () {
       case 'build':  Game.build(0, a.type, a.gx, a.gy); break;
       case 'muster': Game.muster(0, a.tier); break;
       case 'base':   Game.buyBaseLevel(0); break;
-      case 'rage':   Game.buyEnrage(); break;
       case 'up':     { const t = Game.towerAt(a.gx, a.gy); if (t) Game.upgrade(t); break; }
       case 'sell':   { const t = Game.towerAt(a.gx, a.gy); if (t) Game.sell(t); break; }
       /* The global useAbility is the one entry point both the aimed and the
@@ -200,7 +198,7 @@ const MPT = (function () {
       mods: Game.enemyMods.map(m => m.id).join(','),
       drift: [Game.drift.hp, Game.drift.speed, Game.drift.armor],
       sides: S.map(x => ({
-        gold: x.gold, lives: x.lives, enrage: x.enrage || 0, base: x.baseLevel || 1,
+        gold: x.gold, lives: x.lives, base: x.baseLevel || 1,
         income: x.musterIncome, taken: x.taken.map(m => m.id).join(','),
         stats: [x.stats.kills, x.stats.sent, x.stats.leaked, x.stats.built, x.stats.mustered],
         towers: x.towers.map(t => [t.gx, t.gy, t.type, t.level, t.asc || 0, t.invested,
@@ -300,8 +298,6 @@ const MPT = (function () {
     push(32, 1, 'up', { gx: t1[0][0], gy: t1[0][1] });
     push(40, 0, 'base', {});
     push(42, 1, 'base', {});
-    push(48, 0, 'rage', {});
-    push(50, 1, 'rage', {});
     /* Musters are ATTEMPTED on a cadence rather than placed where they are
        certain to succeed. A refusal is as good a test as a purchase: it has to
        be refused on both clients for the same reason, or the boards part. */

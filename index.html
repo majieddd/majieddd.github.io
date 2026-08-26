@@ -229,7 +229,7 @@
     <div class="hud-side">
       <button id="btn-quit" class="icon-btn" title="Abandon match" aria-label="Abandon match">✕</button>
       <div class="cmdr">
-        <span class="cmdr-tag">YOU</span>
+        <span class="cmdr-tag" id="my-cmdr-tag">YOU</span>
         <div class="cmdr-stats">
           <span class="s-lives">♥<b id="my-lives">20</b></span>
           <span class="s-gold">◈<b id="my-gold">0</b></span>
@@ -263,20 +263,26 @@
         </div>
         <span class="bar"><i id="ai-bar"></i></span>
       </div>
-      <div class="ctl-group">
-        <button id="btn-pause" class="icon-btn" aria-label="Pause">❚❚</button>
-        <button class="speed-btn active" data-speed="1" aria-label="Speed 1x">1×</button>
-        <button class="speed-btn" data-speed="2" aria-label="Speed 2x">2×</button>
-        <button class="speed-btn" data-speed="3" aria-label="Speed 3x">3×</button>
-        <button id="btn-immersive" class="icon-btn" title="Immersive board: the map fills the window (F)" aria-label="Toggle immersive board">⛶</button>
-        <button class="icon-btn" data-open="battlecard" title="Battle card: controls, reactions, the rules that matter" aria-label="Battle card">?</button>
-        <button class="icon-btn" data-open="settings" title="Audio" aria-label="Audio and settings">♪</button>
-      </div>
     </div>
   </header>
 
   <div id="stage">
     <div id="canvas-wrap"><canvas id="game" width="1064" height="570" aria-label="Battlefield"></canvas></div>
+    <!-- Its own floating bar, bottom right (Session 35): was bundled into
+         #hud-rivals, which made the RIVAL side of the top bar wider than YOU
+         and read as lopsided even though the outer #hud was measured dead
+         centre. Pulling it out lets both commander cards match, and gives
+         these verbs the same "floats over the board" treatment #dock and
+         #hud already have in both display modes. -->
+    <div id="battle-controls" class="ctl-group">
+      <button id="btn-pause" class="icon-btn" aria-label="Pause">❚❚</button>
+      <button class="speed-btn active" data-speed="1" aria-label="Speed 1x">1×</button>
+      <button class="speed-btn" data-speed="2" aria-label="Speed 2x">2×</button>
+      <button class="speed-btn" data-speed="3" aria-label="Speed 3x">3×</button>
+      <button id="btn-immersive" class="icon-btn" title="Immersive board: the map fills the window (F)" aria-label="Toggle immersive board">⛶</button>
+      <button class="icon-btn" data-open="battlecard" title="Battle card: controls, reactions, the rules that matter" aria-label="Battle card">?</button>
+      <button class="icon-btn" data-open="settings" title="Audio" aria-label="Audio and settings">♪</button>
+    </div>
     <!-- THE DOCK (owner, Session 31; inspector centred into it, Session 33;
          sidebar dissolved into it, Session 34): three panes along the bottom
          edge, centre aligned as a group: summon units left, the description
@@ -298,6 +304,7 @@
           <span class="bb-main"><b>⌂ BASE LEVEL <i id="bb-lvl">1</i></b><em id="bb-next">→ 2</em></span>
           <span class="bb-cost" id="bb-cost">◈ , </span>
         </button>
+        <div id="econ-bar"></div>
         <div id="inspector"></div>
       </div>
       <div class="dock-pane" id="dock-shop">

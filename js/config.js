@@ -1506,7 +1506,7 @@ function appliedGrowth(def, mul) {
    time-to-kill from gas alone is 1 / PCT_CAP = 20 seconds.
 
    ELITE_MUL cuts it against bosses and minibosses, whose entire design is a
-   long health bar. 20 / 0.30 = 67 seconds against an AI_ENRAGE_WINDOW of 26,
+   long health bar. 20 / 0.30 = 67 seconds against a 26-second wave window,
    so a canister cannot gas an elite down inside the wave that brought it; it
    softens the elite for the rest of the board, which is the role the tower is
    supposed to have.
@@ -3207,11 +3207,11 @@ const GLOBAL_DAMAGE_TUNE = 0.85 / NUM_SQUISH;
 
    What must NOT pass through it: souls (a separate currency); every
    percentage and multiplier (incomeMul, killCutMul, goldMul, relocFee,
-   INTEREST_RATE, the MUSTER tier fractions, ENRAGE_BOUNTY); and everything
-   DERIVED from a squished figure (the interest cap, enrageCost, musterCost
-   and musterPayout, baseLevelStepCost, ascendCost, sellValue, the relocation
-   fee). Those scale on their own; dividing them again halves the economy
-   twice, which is the double-apply failure this block is built to prevent.
+   INTEREST_RATE, the MUSTER tier fractions); and everything DERIVED from a
+   squished figure (the interest cap, musterCost and musterPayout,
+   baseLevelStepCost, ascendCost, sellValue, the relocation fee). Those scale
+   on their own; dividing them again halves the economy twice, which is the
+   double-apply failure this block is built to prevent.
 
    Results are whole and at least 1, so a trickle authored below half a gold
    (killCut 2, transGold 2, reanimGold 2) floors UP to 1 rather than
@@ -3493,8 +3493,8 @@ function waveBountyMultiplier(w) { return 3.2 * Math.pow(1.17, w - 1); }
 function waveReward(w) {
   const base = 70 + (w - 1) * 14;
   const boss = WAVES[(w - 1) % WAVES.length].boss ? 260 * Math.pow(1.14, w - 1) : 0;
-  /* GOLD_SQUISH applied here and nowhere downstream: interest cap, enrage
-     cost, muster cost and payout all read this function and scale with it. */
+  /* GOLD_SQUISH applied here and nowhere downstream: interest cap, muster
+     cost and payout all read this function and scale with it. */
   return Math.max(1, Math.round((base * 1.7 * Math.pow(1.14, w - 1) + boss) / GOLD_SQUISH));
 }
 /** Build windows are SHORT. The measured complaint was that 65% of a match was
@@ -3517,11 +3517,6 @@ function interestOn(gold, wave, mul) {
                              waveReward(wave) * INTEREST_CAP_FRAC));
 }
 
-/* ── ENRAGE ───────────────────────────────────────────────────────────────
-   The player may make the next wave harder for a larger payout, which turns
-   difficulty itself into something you can invest in. Stacks are per-wave and
-   never carry over, and they are capped, so there is no repeatable maximum
-   the optimiser can grind. */
 /* Share of a tower's CURRENT invested gold that picking it up and setting it
    down again costs (owner-set at one third, ROADMAP Session 14 decisions). It
    is a named const because the figure is now quoted in THREE places -- the MOVE
@@ -3600,10 +3595,6 @@ const LOADOUT_OWN_ORIGIN = 2;
 const AI_NODE_BIAS = 1.15;         /* the rival's appetite for any build node */
 const AI_NODE_BIAS_MATCH = 1.40;   /* ...and for one its tower can actually use, so
    rivals contest the same tiles the player wants (ROADMAP rival parity). */
-
-const ENRAGE_MAX = 3;
-const ENRAGE_HP = 0.28;        /* +28% health per stack   */
-const ENRAGE_BOUNTY = 0.45;    /* +45% kill gold per stack */
 
 /* ── AIMED COMMANDER ABILITIES ────────────────────────────────────────────
    Four abilities stopped applying a number to the whole board and started
@@ -4314,7 +4305,7 @@ const AI_CLEAR_MAX_UPLIFT = 2.0;   /* caps the no-ground-left case, which would
    sees a rival that starts below today's strength and climbs past it.
 
      T0  build, upgrade, base level, muster, the opening galaxy
-     T1  + clear terrain, + enrage
+     T1  + clear terrain
      T2  + relocate. TODAY, and the floor
                                                          everywhere but the
                                                          campaign
@@ -4349,22 +4340,6 @@ const AI_RELOCATE_MIN_GAIN = 1.35; /* RAW coverage ratio a move has to beat --
    every prospective move as an exact wash */
 const AI_RELOCATE_MAX_MOVES = 1;   /* per tower, per battle */
 const AI_RELOCATE_DOWNTIME = 0.72; /* discount for RELOCATE_DOWNTIME offline */
-
-/* RESONANT FIELD. A bid on your OWN board: the wave that pays more also
-   arrives ENRAGE_HP tougher, and (since this patch) it is the buyer's wave
-   alone. The rival only takes the bet when its throughput already clears the
-   scripted wave with room to spare, measured as health it can remove over
-   one nominal wave window against the health the wave brings. Without the
-   headroom gate it buys a payout it then leaks straight through. */
-const AI_ENRAGE_MIN_WAVE = 12;
-const AI_ENRAGE_SAFE_LIVES = 0.9;  /* fraction of max lives required */
-const AI_ENRAGE_WINDOW = 26;       /* seconds of firing a wave is worth */
-const AI_ENRAGE_HEADROOM = 1.9;    /* throughput-over-threat the bet requires */
-/* One-shot gold and recurring gold are still gold: a resonance bid is priced
-   per gold collected on exactly the weight the muster income half carries
-   (MUSTER_AI_INCOME_WEIGHT, restored through GOLD_SQUISH the same way), so
-   the two economy levers compete honestly. */
-const AI_ENRAGE_INCOME_WEIGHT = MUSTER_AI_INCOME_WEIGHT * GOLD_SQUISH;
 
 /* LAND CARDS in the draft. They buy BOARD, not a percentage, so their worth
    is entirely a function of how starved this commander is for somewhere to

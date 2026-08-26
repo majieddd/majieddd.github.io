@@ -1279,12 +1279,12 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
   .br-plate .br-art { filter: none; }
 }
 
-/* ═════════════════ ENRAGE + BANKED CAPITAL ══════════════════════════════ */
-.enrage-wrap { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
-/* THE PANEL ACTION ROW. Measured in the Session 30 audit: .enrage-btn and
-   .muster-btn shared 7 of 11 declarations and differed only in accent hue and
-   a single pixel of radius. That is one primitive with two accents, not two
-   controls, so the shape lives here once and each caller supplies --ac.
+/* THE PANEL ACTION ROW, the shared shape behind every accent-coloured summon
+   button. Originally justified against .enrage-btn too (Session 30 audit:
+   they shared 7 of 11 declarations); that sibling is gone (Session 35,
+   RESONANT FIELD removed outright), but the primitive is still the right
+   call for .muster-btn alone -- one shape, one accent variable per caller,
+   rather than a control duplicated for a colour.
 
    NOT merged with .mode-btn and .speed-btn, and that is also measured: those
    two overlap by only 30 percent (different size, radius, weight and colour
@@ -1304,7 +1304,6 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
 }
 @media (prefers-reduced-motion: reduce) { .panel-action { transition: none; } }
 
-.enrage-btn { --ac: #ef4444; }
 /* Matched to .tower-card's padding (Session 34), not .panel-action's roomier
    default: side by side in the dock, a summon button noticeably taller than
    a tower card read as uneven even though nothing was actually wrong -- the
@@ -1312,25 +1311,6 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
    short-viewport-only override (max-height: 780px); it is the everyday
    value now. */
 .muster-btn { --ac: #f97316; padding: 5px 8px; }
-.enrage-btn:active:not(:disabled) { transform: translateY(1px) scale(.99); }
-.enrage-btn:disabled { cursor: default; filter: grayscale(.55); opacity: .55; }
-.enrage-btn.maxed { border-color: rgba(239, 68, 68, .8); opacity: 1; filter: none; }
-.er-ic { font-size: 17px; color: #fca5a5; text-shadow: 0 0 10px rgba(239, 68, 68, .7); }
-.er-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
-.er-body b { font-family: var(--display); font-size: 10.5px; letter-spacing: .13em; color: #fecaca; }
-.er-body em { font-style: normal; font-size: 10.5px; color: var(--text-dim);
-  font-variant-numeric: tabular-nums; }
-.er-stacks { font-family: var(--display); font-size: 13px; color: #ef4444;
-  text-shadow: 0 0 12px rgba(239, 68, 68, .8); }
-.enrage.live { margin-top: 10px; padding: 7px 10px; border-radius: 10px; text-align: center;
-  font-family: var(--display); font-size: 10px; letter-spacing: .14em; color: #fecaca;
-  border: 1px solid rgba(239, 68, 68, .4); background: rgba(239, 68, 68, .1); }
-.wave-name.enraged { color: #fca5a5; text-shadow: 0 0 16px rgba(239, 68, 68, .5); }
-.bank-row { display: flex; align-items: baseline; gap: 7px; padding: 6px 10px; border-radius: 10px;
-  border: 1px solid rgba(251, 191, 36, .22); background: rgba(251, 191, 36, .06); }
-.bank-row span { font-family: var(--display); font-size: 9.5px; letter-spacing: .13em; color: #fde68a; }
-.bank-row b { font-size: 12px; color: var(--gold); font-variant-numeric: tabular-nums; }
-.bank-row em { font-style: normal; font-size: 10px; color: var(--text-mute); margin-left: auto; }
 
 /* ═════════════════ ESCALATION BID + RELOCATION ══════════════════════════ */
 .modal.escal { max-width: 720px; }
@@ -1403,10 +1383,21 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
 
 /* ═════════════════ MUSTER ═══════════════════════════════════════════════ */
 /* Orange, deliberately between the gold of the economy readouts and the red
-   of enrage: the control is both of those things at once. */
+   of a summon rite: the control is both of those things at once. */
 .muster-bar { display: flex; flex-direction: column; gap: 5px; }
 .muster-bar:empty { display: none; }
-.muster-head { display: flex; align-items: baseline; gap: 7px; padding: 5px 9px; border-radius: 9px;
+/* gap tightened 7px -> 4px (Session 35): this bar moved from the 328px
+   muster pane to the 300px #dock-inspector, under BASE LEVEL, and picked up
+   a fifth segment (the folded-in banked-interest figure) in the same move --
+   measured 290px of content against 276px available, a real 14px overflow
+   at the previous gap. */
+/* flex-wrap (Session 35): a late-game bar with five-figure gold and a capped
+   income percent can genuinely need more than 276px on one line -- measured
+   313px at wave 40 with an artificially maxed economy. Wrapping to a second
+   line beats the alternative of a stat spilling past the card's own rounded
+   border, and only fires when the numbers are actually that wide. */
+.muster-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; padding: 5px 7px;
+  border-radius: 9px;
   border: 1px solid rgba(249, 115, 22, .24); background: rgba(249, 115, 22, .07); }
 .muster-head span { font-family: var(--display); font-size: 9.5px; letter-spacing: .16em; color: #fdba74; }
 .muster-head b { font-size: 11.5px; color: #fb923c; font-variant-numeric: tabular-nums; }
@@ -1578,7 +1569,7 @@ body.tri-field #hud { gap: 8px; padding: 8px 10px; }
 
 /* ═════════════════ MUSTER DETACHMENT (loadout strip + battle header) ════ */
 /* The battle header now carries two readouts; the second label needs air. */
-.muster-head .mu-sep { margin-left: 6px; }
+.muster-head .mu-sep { margin-left: 3px; }
 /* RETIRED by the four-column loadout: the detachment is now the UNITS picker
    and is built from .lo-card like the towers beside it. Kept until 19.13
    settles what a unit panel owns, then deleted with its renderer. */
@@ -1791,7 +1782,7 @@ body.tri-field #hud { gap: 8px; padding: 8px 10px; }
 .si-og { font-size: 9.5px; padding: 1px 6px; }
 /* The battle shop rides a shrink budget, so the origin is a pip INSIDE the
    name line rather than a badge under it -- no new row, no new height. */
-.tc-og { font-style: normal; font-size: 10px; color: var(--og); margin-left: 6px; vertical-align: 1px; }
+.tc-og { font-style: normal; font-size: 10px; color: var(--og); margin-left: 4px; vertical-align: 1px; }
 .tt-origin {
   margin: 5px 0 0;
   padding: 5px 7px;
@@ -2995,3 +2986,35 @@ body.immersive.placing #dock { opacity: 0.32; transition: opacity .18s var(--e-t
 body.immersive.placing #dock:hover,
 body.immersive.placing #dock:focus-within { opacity: 1; }
 body.rm-user.immersive #dock { transition: none; }
+
+/* ═════════ 31.2  BATTLE CONTROLS, OWN BAR ═══════════════════════════════
+   Pause/speed/immersive/battlecard/settings, pulled out of #hud-rivals
+   (Session 35): bundled into the RIVAL card, it made that side of the top
+   bar wider than YOU's even though #hud itself measured dead centre --
+   asymmetric CONTENT inside a centred box still reads as lopsided. Floats
+   bottom right in both display modes, same recipe as .dock-pane, so it
+   needs no separate immersive-mode rule the way the old sidebar rail did. */
+#battle-controls {
+  position: absolute; right: 12px; bottom: 10px; z-index: 20;
+  background: rgba(8, 13, 21, .82);
+  backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+  padding: 6px 8px; border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, .5);
+}
+/* Yields while placing, same as the dock beside it. */
+body.immersive.placing #battle-controls { opacity: 0.32; transition: opacity .18s var(--e-tap); }
+body.immersive.placing #battle-controls:hover,
+body.immersive.placing #battle-controls:focus-within { opacity: 1; }
+body.rm-user.immersive #battle-controls { transition: none; }
+/* #dock is centred and roughly 980px wide (328 + 300 + 328 + 2x12 gap); it
+   only clears a right-anchored 266px #battle-controls without overlapping
+   below approximately 1536px wide (measured: at 1366px -- this codebase's
+   own reference laptop size -- #dock-shop's right edge sat 85px past
+   #battle-controls' left edge, with #dock-shop on top by DOM order, so the
+   pause/1x/2x buttons were genuinely covered, not just crowded). Below the
+   threshold the bar anchors from the top instead: #hud has no fixed height
+   to collide with in either display mode, so there is no equivalent seam to
+   find there. */
+@media (max-width: 1550px) {
+  #battle-controls { top: 10px; bottom: auto; }
+}

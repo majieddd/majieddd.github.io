@@ -509,7 +509,13 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
           width: 19px; height: 19px; display: grid; place-items: center; flex-shrink: 0; }
 .tc-swatch { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; background: var(--tc); box-shadow: 0 0 9px var(--tc); }
 .tc-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.tc-name { font-size: 14px; font-weight: 700; letter-spacing: .08em; }
+/* overflow/ellipsis, same as .tc-role below: HUNGERING VEIL and PRESS GANG
+   are real tower names at 14 chars, and the 2-column dock card (Session 33)
+   only ever had ~35px left for this column after the key, the icon and the
+   cost -- without this, a long name simply painted over .tc-cost instead of
+   shrinking, since neither a flex item nor an inline span clips by default. */
+.tc-name { display: block; font-size: 14px; font-weight: 700; letter-spacing: .08em;
+           white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tc-role { font-size: 10.5px; color: var(--text-mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tc-cost { font-size: 13.5px; color: var(--gold); font-weight: 700; flex-shrink: 0; }
 
@@ -582,18 +588,15 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 .wave-name { font-size: 17px; font-weight: 800; letter-spacing: .08em; color: var(--cyan); }
 .wave-name.boss { color: var(--red); text-shadow: 0 0 16px rgba(239,68,68,.6); }
 .wave-name.mini { color: var(--gold); text-shadow: 0 0 14px rgba(251,191,36,.5); }
-.roster { display: flex; flex-direction: column; gap: 4px; }
-.roster-row { display: grid; grid-template-columns: 10px 1fr auto auto;
-  grid-template-areas: "dot name count hp" "dot traits traits traits"; gap: 2px 8px; align-items: center;
-  background: rgba(255,255,255,.035); border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; }
-.roster-row .dot { grid-area: dot; width: 8px; height: 8px; border-radius: 50%; }
-.rr-name { grid-area: name; font-size: 12.5px; font-weight: 700; }
-.rr-count { grid-area: count; font-size: 12px; color: var(--text-dim); }
-.rr-hp { grid-area: hp; font-size: 11px; color: var(--text-mute); }
-.rr-traits { grid-area: traits; font-size: 10px; letter-spacing: .08em; color: var(--gold); }
-.rr-traits:empty { display: none; }
-.hint-block { border-top: 1px solid var(--line); padding-top: 10px; }
-.hint-block .hint { margin-bottom: 5px; }
+/* ICON + COUNT CHIPS (Session 35), not one full-width row per mob type: name,
+   traits and per-body HP all moved into the tooltip (same pattern as the
+   muster and shop cards), so several types now share one line instead of
+   each claiming a row to itself. flex-wrap is the whole point -- a short
+   wave reads as one line, a long one wraps instead of growing the pane. */
+.roster { display: flex; flex-wrap: wrap; gap: 5px; }
+.mob-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px;
+  background: rgba(255,255,255,.035); border: 1px solid var(--line); border-radius: 8px; }
+.mob-chip b { font-size: 11px; font-weight: 700; color: var(--text-dim); }
 
 /* ------------------------------------------------------------ tooltip -- */
 #tooltip { position: fixed; z-index: 200; width: 320px; pointer-events: none;

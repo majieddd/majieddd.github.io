@@ -94,12 +94,6 @@ class Side {
     this.compileLevel = 0;
     /* Fractional life regeneration, banked between waves. */
     this.lifeRegenBank = 0;
-    /* RESONANT FIELD, per side. It used to be one game-global counter that
-       only the player could pay into, so the rival's identical wave also
-       arrived with the bounty bonus -- it collected a payout the player
-       bought and could never be charged for one itself. The charge now rides
-       only the spawn entries marching on the side that paid for it. */
-    this.enrage = 0; this.enrageSpent = 0;
     /* Rubble THIS commander has demolished. The allowance (CLEAR_MAX plus
        SURVEY TEAM) and the compounding price are per side; one shared Set
        meant a rival's land card ate the player's allowance and raised the
@@ -905,14 +899,13 @@ const Game = {
      tier. That is the FOURTH time this bug class has shipped, so there is now
      exactly one place to omit a term from. Drift is deliberately NOT folded
      in: the spawn applies it per unit, and callers that need it say so. */
-  waveHpMul(n, rage) {
+  waveHpMul(n) {
     return waveHpMultiplier(n) * this.difficulty.hp * UNIT_HP_SCALE
            * (1 + (this.tierHpStep || 0.30) * (this.galaxyTier || 0))
            /* The first galaxy's relief tent. 1.0 for every battle that did
               not ask for it, and 1.0 again from wave 15 on, so the terminus
               past wave 20 is bit-identical to what it always was. */
-           * tier0ReliefMul(n, this.hpEase || 0)
-           * (1 + ENRAGE_HP * (rage || 0));
+           * tier0ReliefMul(n, this.hpEase || 0);
   },
 
   /* THE miniboss rule -- one escorts every fifth wave, one body per lane per
@@ -1046,19 +1039,12 @@ const Game = {
     this.lastDrift = d;
 
     const def = this.waveDef(this.wave);
-    /* Resonance was bought against THIS wave, and it is the BUYER'S wave
-       alone. One pair of multipliers per side: composition, count, lane and
-       instant stay identical for everyone (that invariant is the whole point
-       of attrition), and only the charge a commander paid for rides the wave
-       marching on its own base. Spend and reset per side so a charge can
-       never silently carry into the next wave either. */
-    const hpMuls = [], bountyMuls = [], rageMuls = [];
-    /* The charge's own share of the wave, taken as a RATIO of waveHpMul
-       against itself rather than rebuilt out of ENRAGE_HP: that function is
-       the single definition of a wave's health and restating any term of it
-       is how the preview and the engine came to disagree six times. Carried
-       on each unit so reanimate can take it back off the corpse. */
-    const plainHp = this.waveHpMul(this.wave, 0);
+    /* One health/bounty multiplier per side, filled in the loop below. Both
+       happen to read the same for every side today -- RESONANT FIELD was the
+       one thing here that varied by seat, and it is gone (Session 35) -- but
+       the per-side shape stays because the spawn-queue push below is keyed
+       on side already and a scalar here would just be re-indexed there. */
+    const hpMuls = [], bountyMuls = [];
     for (const S of this.sides) {
       /* BOOTSTRAP and THE COMPILE, both on the wave boundary because waves
          are the only clock two clients are guaranteed to agree on.
@@ -1082,12 +1068,8 @@ const Game = {
          the wave that starts now is the one it was cut for. */
       const sp = this.spliceState[S.index];
       if (sp) { sp.wavesLeft--; if (sp.wavesLeft < 0) this.closeSplice(S.index); }
-      const rage = S.enrage || 0;
-      S.enrageSpent = rage;
-      S.enrage = 0;
-      hpMuls[S.index] = this.waveHpMul(this.wave, rage);
-      rageMuls[S.index] = hpMuls[S.index] / plainHp;
-      bountyMuls[S.index] = waveBountyMultiplier(this.wave) * (1 + ENRAGE_BOUNTY * rage);
+      hpMuls[S.index] = this.waveHpMul(this.wave);
+      bountyMuls[S.index] = waveBountyMultiplier(this.wave);
     }
 
     /* Identical composition to BOTH sides at the same instants. On multi-lane
@@ -1113,7 +1095,6 @@ const Game = {
              the parity the whole attrition loop rests on. */
           this.spawnQueue.push({ t, type: grp.type, side, lane,
                                  hpMul: hpMuls[side] * (grp.hpScale || 1),
-                                 rageMul: rageMuls[side],
                                  bountyMul: bountyMuls[side] * (grp.bountyScale || 1) });
         }
       }
@@ -1134,8 +1115,7 @@ const Game = {
         if (this.soloSurvive && side !== 0) continue;
         for (let lane = 0; lane < this.lanes[side].length && !this.sides[side].defeated; lane++)
           this.spawnQueue.push({ t: this.clock + 3, type: mb, side, lane,
-                                 hpMul: hpMuls[side], rageMul: rageMuls[side],
-                                 bountyMul: bountyMuls[side] });
+                                 hpMul: hpMuls[side], bountyMul: bountyMuls[side] });
       }
       this.minibossName = ENEMY_TYPES[mb].name;
     } else this.minibossName = null;
@@ -1244,36 +1224,6 @@ const Game = {
     }
     if (this.wave % this.sides[0].traits.draftEvery === 0) this.offerChoiceWhenClear();
     UI.syncAll();
-  },
-
-  /** Buy a harder next wave for a bigger payout. Costs gold now, pays on kills. */
-  /* Side-generic, like buyBaseLevel and muster before it: the price
-     compounds against the BUYER's own stack, so two commanders bidding on the
-     same wave each pay their own ladder. */
-  enrageCost(side) {
-    const S = this.sides[side || 0];
-    return Math.round(waveReward(this.wave + 1) * 0.30 * Math.pow(1.7, S.enrage || 0));
-  },
-  buyEnrage(side) {
-    const si = side || 0;
-    const S = this.sides[si];
-    if (!S || !S.alive) return false;
-    if (this.waveRunning || (S.enrage || 0) >= ENRAGE_MAX) return false;
-    const c = this.enrageCost(si);
-    if (S.gold < c) return false;
-    S.gold -= c;
-    S.enrage = (S.enrage || 0) + 1;
-    this.addFloater(this.width * (si === 0 ? 0.25 : 0.75), 88,
-                    'RESONANCE ×' + S.enrage, false, '#a78bfa', 18);
-    /* The sound is the PLAYER's feedback for the PLAYER's purchase; a rival
-       charging its own field announces itself on the board, not in the ear. */
-    if (si === 0) Sound.play('escalation');
-    /* Gated exactly as build(), upgrade() and muster already are: syncAll
-       re-renders the shop and the inspector, and a RIVAL charging its own
-       field changes nothing on the player's side of the panel except the
-       rival's readout, which syncLive draws. */
-    if (si === this.viewSide) UI.syncAll(); else UI.syncLive();
-    return true;
   },
 
   addEnemyMod() {

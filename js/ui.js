@@ -86,6 +86,14 @@ const UI = {
     const e = this.el;
     e.screens    = $$('.screen');
     e.myLives = $('#my-lives'); e.myGold = $('#my-gold'); e.myBar = $('#my-bar'); e.myTowers = $('#my-towers');
+    /* The doctrine strip used to be its own standing row in the dock; the
+       owner asked for it gone as a row and kept "as info on the commander"
+       (Session 35), so it is a tooltip on YOU's own tag instead. Bound once,
+       here -- the tag is static markup, never rebuilt -- and syncLive keeps
+       its dataset.tt current every tick the same way the figures beside it
+       are kept current. */
+    e.myCmdrTag = $('#my-cmdr-tag');
+    if (e.myCmdrTag) this.bindChipTips(e.myCmdrTag.parentElement);
     e.aiLives = $('#ai-lives'); e.aiGold = $('#ai-gold'); e.aiBar = $('#ai-bar'); e.aiTowers = $('#ai-towers');
     /* The panel itself, so a fallen rival can be marked. It is the only HUD
        panel with no id of its own until now; syncTriRival's third panel is
@@ -2726,7 +2734,10 @@ const UI = {
       el = document.createElement('div');
       el.id = 'arena-ladder';
       el.className = 'arena-ladder';
-      host.insertBefore(el, $('.ctl-group', host));
+      /* Plain append, not insertBefore('.ctl-group', ...): the controls left
+         this container entirely in Session 35, so #hud-rivals now holds only
+         commander cards and the ladder belongs at the end of them. */
+      host.appendChild(el);
     }
     /* Keyed on the standing/fallen pattern alone. Lives change every frame and
        rebuilding twenty pips at 8Hz for a number this strip does not show is
@@ -4597,13 +4608,11 @@ const UI = {
 
   inspectorKey() {
     const t = Game.selected;
-    /* Resonance and the clearance ledger are per side now, so the signature
-       has to watch the PLAYER's, not the union -- a rival demolishing a tile
-       must not repaint the player's panel with the player's own figures. */
+    /* The clearance ledger is per side, so the signature has to watch the
+       PLAYER's, not the union -- a rival demolishing a tile must not repaint
+       the player's panel with the player's own figures. */
     if (!t) return ['wave', Game.wave, Game.enemies.filter(e => e.reanimated).length,
-                    Game.sides[0].enrage || 0, Game.sides[0].enrageSpent || 0,
                     Game.waveRunning ? 1 : 0,
-                    Game.sides[0].gold >= Game.enrageCost(0) ? 1 : 0,
                     (Game.selectedRubble || []).join('.'), Game.sides[0].cleared.size,
                     (Game.selectedNode || []).join('.'),
                     Game.sides[0].gold >= Game.clearCostNow(0) ? 1 : 0].join(':');
@@ -4666,10 +4675,6 @@ const UI = {
       const r = Game.selectedRubble;
       if (r && Game.clearTerrain(0, r[0], r[1])) Game.selectedRubble = null;
       this.renderInspector(true);
-    });
-    const er = $('#btn-enrage');
-    if (er) er.addEventListener('click', () => {
-      if (!Game.buyEnrage()) Sound.play('denied');
     });
     this.bindChipTips(this.el.inspector);
   },
@@ -5042,68 +5047,21 @@ const UI = {
     </div>`;
   },
 
-  /** ENRAGE, spend gold to make the next wave worth more. */
-  enragePanel(rage) {
-    if (Game.waveRunning) {
-      return rage ? `<div class="enrage live">✦ FIELD RESONATING ×${rage}, kills pay +${
-        Math.round(ENRAGE_BOUNTY * rage * 100)}%</div>` : '';
-    }
-    const maxed = rage >= ENRAGE_MAX;
-    const cost = Game.enrageCost(0);
-    const afford = Game.sides[0].gold >= cost;
-    return `<div class="enrage-wrap">
-      <button class="panel-action enrage-btn ${maxed ? 'maxed' : ''} ${afford || maxed ? '' : 'poor'}"
-              id="btn-enrage" ${maxed || !afford ? 'disabled' : ''}
-              data-tt="RESONANT FIELD|Charge an ionic field over the next wave: enemies arrive ${
-                Math.round(ENRAGE_HP * 100)}% tougher and every kill pays ${
-                Math.round(ENRAGE_BOUNTY * 100)}% more. YOUR wave only: a rival must charge its own field, and can. Stacks up to ${ENRAGE_MAX}, and the charge never carries past this wave.">
-        <span class="er-ic">✦</span>
-        <span class="er-body"><b>${maxed ? 'FIELD SATURATED' : 'RESONANT FIELD'}</b>
-          <em>${maxed ? `×${rage}, +${Math.round(ENRAGE_BOUNTY * rage * 100)}% bounty`
-                      : `◈${formatNum(cost)} → +${Math.round(ENRAGE_HP * 100)}% HP, +${
-                          Math.round(ENRAGE_BOUNTY * 100)}% gold`}</em></span>
-        ${rage ? `<span class="er-stacks">×${rage}</span>` : ''}
-      </button>
-      <div class="bank-row" data-tt="BANKED CAPITAL|Gold you still hold when a wave finishes spawning earns ${
-        Math.round(INTEREST_RATE * 100)}% interest, capped per wave. Not spending is a play.">
-        <span>◈ BANKED</span><b data-live="bank">${this.liveFigure('bank')}</b><em data-live="bankpaid">${this.liveFigure('bankpaid')}</em>
-      </div>
-    </div>`;
-  },
-
   wavePanel() {
     const next = Game.wave + 1;
     const p = Game.waveProfile(next);
     /* UNIT_HP_SCALE belongs here too -- omitting it made the roster preview
        understate every unit's health by 2.6x after the count/strength retune. */
-    /* TWO DIFFERENT CHARGES, AND THEY MUST NOT SHARE A NAME.
-       `enrage` is what is riding the wave this panel is titled after -- the
-       NEXT one. It is always 0 while a wave is running (startWave zeroes it
-       and buyEnrage refuses mid-wave), which is exactly right: the roster HP
-       preview and the "NEXT, WAVE n" label must describe an uncharged wave,
-       because that is what will spawn.
-       `enrageSpent` is what the CURRENT wave is carrying, and it belongs to
-       the live banner alone -- the confirmation of what the player had just
-       paid for, which never once rendered because this line read the counter
-       startWave had already zeroed. Feeding enrageSpent to the preview would
-       fix the banner by printing next wave's roster ENRAGE_HP too high and
-       labelling an uncharged wave as resonating: the same UI-number trap,
-       moved one field over. Two names, two readers. */
-    const rage = Game.sides[0].enrage || 0;
-    const spent = (Game.waveRunning && Game.sides[0].enrageSpent) || 0;
-    /* Per-type health is READ OUT of the profile instead of re-derived from
-       Game.waveHpMul. The profile already carries that multiplier, the
-       escalations, this wave's per-group hpScale AND the per-wave stat drift
-       (game.js folds drift in so the rival's threat model sees it). The ONLY
-       term left to apply here is the resonance the player just bought, which
-       is theirs alone and so cannot live in a shared profile -- hence the
-       name. Multiplying drift in a second time overstated every printed unit
-       by (1 + drift.hp), i.e. 30-90% by wave 20; anyone re-adding a drift
-       term here reintroduces exactly that. BATCH-A/numbers */
-    const rageMul = (1 + ENRAGE_HP * rage);
     /* Read the profile's own answer rather than restating the rule: the
        header and the roster below it now agree by construction. */
     const isMini = !!p.miniboss;
+    /* ICON + COUNT, not the full name (owner, Session 35): "save space and
+       have multiple units on the same line" is what a name column at 12.5px
+       actively worked against, one full-width row per type. Everything the
+       row used to print in the open -- name, traits, per-body HP -- moved
+       into the tooltip, same pattern the muster and shop cards already use;
+       the icon is the same procedural painter towers and muster use, so a
+       type reads as the same creature everywhere it appears. */
     const list = Object.entries(p.roster).map(([type, count]) => {
       const e = ENEMY_TYPES[type];
       const traits = [];
@@ -5118,16 +5076,14 @@ const UI = {
       if (e.shield) traits.push('SHIELDED');
       if (e.healRate) traits.push('HEALER');
       if (e.splitInto) traits.push('SPLITS');
-      const hp = (p.rosterHp[type] || 0) / Math.max(1, count) * rageMul;
+      const hp = (p.rosterHp[type] || 0) / Math.max(1, count);
       /* Somebody's soldiers read differently from the Vigil, so the preview
          names whose they are before it lists what they do. */
       if (e.faction && FACTIONS[e.faction]) traits.unshift(FACTIONS[e.faction].short.toUpperCase());
-      return `<div class="roster-row" title="${e.desc}">
-        <span class="dot" style="background:${e.color}"></span>
-        <span class="rr-name">${e.name}</span>
-        <span class="rr-traits">${traits.join(' · ')}</span>
-        <span class="rr-count">×${count}</span>
-        <span class="rr-hp">${formatNum(Math.round(hp))}</span></div>`;
+      return `<span class="mob-chip" data-tt="${e.name} ×${count}|${
+        traits.length ? traits.join(' · ') + '. ' : ''}${formatNum(Math.round(hp))} HP each.">
+        ${this.unitIconHTML(type, 18)}<b>×${count}</b>
+      </span>`;
     }).join('');
 
     /* THE SENT/INBOUND ROW AND THE ATTRITION PARAGRAPHS ARE GONE (owner,
@@ -5139,13 +5095,15 @@ const UI = {
        always also derivable from the board itself, and the attrition rule
        is restated, briefly, in the battle card (data-open="battlecard").
        This function no longer computes outbound/inbound at all: they had no
-       other reader. */
+       other reader. RESONANT FIELD is gone too (Session 35, owner: "I
+       haven't been using it and it feels too extra") -- see game.js for the
+       mechanic removal; this panel simply no longer has a rage/enrage term
+       anywhere in it. */
     return `<div class="wave-info">
       ${Game.seed !== null && Game.seed !== undefined ? `<div class="section-label" data-tt="BATTLE SEED|Same seed + same choices replays this exact match. Set it in OPTIONS.">SEED ${Game.seed}</div>` : ''}
-      <div class="section-label">NEXT. WAVE ${next}${p.boss ? '  ⚠ BOSS' : isMini ? '  ◆ MINIBOSS' : ''}${rage ? `  ✦ RESONATING ×${rage}` : ''}</div>
-      <div class="wave-name ${p.boss ? 'boss' : isMini ? 'mini' : ''} ${rage ? 'enraged' : ''}">${p.name}</div>
+      <div class="section-label">NEXT. WAVE ${next}${p.boss ? '  ⚠ BOSS' : isMini ? '  ◆ MINIBOSS' : ''}</div>
+      <div class="wave-name ${p.boss ? 'boss' : isMini ? 'mini' : ''}">${p.name}</div>
       <div class="roster">${list}</div>
-      ${this.enragePanel(Game.waveRunning ? spent : rage)}
     </div>`;
   },
 
@@ -5163,7 +5121,10 @@ const UI = {
     const bar = $('#muster-bar');
     if (!bar) return;
     if (Game.state !== 'playing' || !Game.sides.length) {
-      if (bar.dataset.mkey !== '') { bar.innerHTML = ''; bar.dataset.mkey = ''; }
+      if (bar.dataset.mkey !== '') {
+        bar.innerHTML = ''; bar.dataset.mkey = '';
+        const econ = $('#econ-bar'); if (econ) econ.innerHTML = '';
+      }
       return;
     }
     const S = Game.sides[0];
@@ -5253,14 +5214,12 @@ const UI = {
       </button>`;
     }).join('');
 
-    bar.innerHTML = `${this.engineStripHtml(S, doc)}<div class="muster-head" data-tt="ECON|Every commander earns the BASE wave reward. Summons stack a flat percent of it on top, every wave, for the rest of the battle: so aggression and economy stop being opposite choices.${
-        uncapped ? ' Under LETTERS OF MARQUE that percent has NO ceiling; what prices it instead is a summon cost that never stops climbing.' : ''} Pick your roster on the loadout screen; conquer worlds to save more denizens for it.">
-        <span>◈/wave</span><b>+◈${formatNum(baseIncome)}</b>
-        <span class="mu-sep">◈%<i class="mu-up">▲</i></span><b class="${capped ? 'capped' : ''}${uncapped ? ' uncapped' : ''}">+${Math.round((uncapped ? (S.musterIncome || 0) : pct) * 100)}%</b>
-        <span class="mu-sep mu-powchip" tabindex="0" data-power="1">💪</span><b>×${Game.powerOf(0).toFixed(2)}</b>
-        <em>${doc.noPurchase && !Game.noReanim ? 'NO TRADE'
-              : uncapped ? 'NO CAP' : capped ? 'AT CAP' : left + ' left'}</em>
-      </div>${doc.noPurchase && !Game.noReanim ? this.latticePlateHtml(S) : rows}`;
+    /* Just the cards now (Session 35): the doctrine strip moved to a
+       tooltip on the commander tag and the econ readout moved to its own
+       bar under BASE LEVEL -- see doctrineInfo() and syncEconBar(). This
+       panel used to carry all three, which is the height the owner asked
+       to get back. */
+    bar.innerHTML = doc.noPurchase && !Game.noReanim ? this.latticePlateHtml(S) : rows;
     /* The muster row now paints the SUMMONED unit's own icon (owner, Session
        33), not tier.icon's text glyph, matching towers' shop cards -- which
        have painted their own icon here since the panel existed. Same
@@ -5270,9 +5229,34 @@ const UI = {
        stale mid-DOM the way skipping this call would risk. */
     this.paintUnitIcons(bar);
     this.bindChipTips(bar);
+    this.syncEconBar(S, doc, baseIncome, capPct, uncapped, pct, capped, left);
+  },
+
+  /** THE ECON BAR: base wave income, the muster stack's own percent, the
+      power multiplier, and (Session 35) the forecast banked-gold interest
+      folded in as one more compact figure rather than the standing
+      "BANKED +N interest next wave" row it replaces. Lives under BASE LEVEL
+      in the middle dock pane now, not beside the muster cards -- the owner
+      asked for both moves in the same note. Split out of syncMuster() so it
+      can render into a different element without a second full data pass. */
+  syncEconBar(S, doc, baseIncome, capPct, uncapped, pct, capped, left) {
+    const bar = $('#econ-bar');
+    if (!bar) return;
+    const interest = formatNum(Game.previewGold(0,
+      interestOn(S.gold, Game.wave + 1, S.mods.interest)));
+    bar.innerHTML = `<div class="muster-head" data-tt="ECON|Every commander earns the BASE wave reward. Summons stack a flat percent of it on top, every wave, for the rest of the battle: so aggression and economy stop being opposite choices.${
+        uncapped ? ' Under LETTERS OF MARQUE that percent has NO ceiling; what prices it instead is a summon cost that never stops climbing.' : ''} Pick your roster on the loadout screen; conquer worlds to save more denizens for it.">
+        <span>◈/wave</span><b>+◈${formatNum(baseIncome)}</b>
+        <span class="mu-sep">◈%<i class="mu-up">▲</i></span><b class="${capped ? 'capped' : ''}${uncapped ? ' uncapped' : ''}">+${Math.round((uncapped ? (S.musterIncome || 0) : pct) * 100)}%</b>
+        <span class="mu-sep mu-powchip" tabindex="0" data-power="1">💪</span><b>×${Game.powerOf(0).toFixed(2)}</b>
+        <span class="mu-sep" data-tt="BANKED CAPITAL|Gold you still hold when a wave finishes spawning earns interest, capped per wave. Not spending is a play too.">◈+</span><b>${interest}</b>
+        <em>${doc.noPurchase && !Game.noReanim ? 'NO TRADE'
+              : uncapped ? 'NO CAP' : capped ? 'AT CAP' : left + ' left'}</em>
+      </div>`;
     /* The POWER chip opens the ledger the owner asked for -- every attribute
        that feeds this number, quoted at the value the spawn will read. Bound
        directly rather than through data-tt because the body is built HTML. */
+    this.bindChipTips(bar);
     const chip = bar.querySelector('[data-power]');
     if (chip) {
       const show = ev => this.showTooltip(ev, this.powerLedgerHtml(0));
@@ -5299,9 +5283,10 @@ const UI = {
     return d.id + Math.round((S.musterIncome || 0) * 100);
   },
 
-  /** The rite, named and live, above its own controls. */
-  engineStripHtml(S, doc) {
-    const f = FACTIONS[S.faction] || { color: '#94a3b8' };
+  /** The rite, named and live -- info on the commander itself (Session 35:
+      used to be its own standing row in the dock; the owner asked for the
+      row gone and the info kept, as a tooltip on YOU's tag instead). */
+  doctrineInfo(S, doc) {
     const vics = Game.musterVictims(S.index).length;
     /* `sent - mustered` IS the free-body count: Game.muster is the only writer
        of stats.mustered and it books one per unit, so the difference is every
@@ -5328,9 +5313,7 @@ const UI = {
     else if (doc.onKill === 'clone') state = 'EVERY KILL RETURNS AS ITSELF · ' + free + ' REBUILT';
     else if (doc.noPurchase) state = 'THE LATTICE DOES NOT BUY';
     else state = 'NOTHING RISES FREE · NO CEILING';
-    return `<div class="engine-strip" style="--fc:${f.color}" data-tt="${doc.name}|${doc.desc}">
-      <b>${doc.name}</b><em>${state}</em>${vics > 1 ? `<span class="eng-lanes">×${vics} LANES</span>` : ''}
-    </div>`;
+    return doc.name + '|' + state + (vics > 1 ? ' · ×' + vics + ' LANES. ' : '. ') + doc.desc;
   },
 
   /** THE LATTICE has no controls to draw, and says so rather than showing an
@@ -5393,6 +5376,10 @@ const UI = {
     this.syncAbilities();
     this.syncAfford();
     this.syncMuster();
+    /* Doctrine info as a tooltip on YOU's own tag (Session 35), not a
+       standing dock row -- see doctrineInfo(). Kept current every tick the
+       same way the figures beside it are. */
+    if (e.myCmdrTag) e.myCmdrTag.dataset.tt = this.doctrineInfo(Game.sides[0], Game.doctrineOf(0));
     if (Game.selected) this.renderInspector();
     /* base-level button state */
     const bb = $('#btn-baselvl');
@@ -5550,10 +5537,11 @@ const UI = {
       el = document.createElement('div');
       el.id = 'rival3';
       el.className = 'cmdr right third';
-      /* Before the pause/speed group, or the third commander sits stranded
-         past the controls instead of beside the rival it is fighting. */
+      /* Plain append (Session 35: the controls moved to their own bottom
+         right bar, out of #hud-rivals entirely) -- the third commander now
+         simply joins the other cards at the end of the container. */
       const host = $('#hud-rivals');
-      host.insertBefore(el, $('.ctl-group', host));
+      host.appendChild(el);
     }
     const f = FACTIONS[S.faction] || FACTIONS.pirate;
     el.style.setProperty('--cc', f.color);
@@ -7304,18 +7292,6 @@ const UI = {
            choosing which one arrives is worth something and is charged for. Underwrite a
            <b>severe</b> escalation the ones marked ⚠ on the card, and your next command draft is one
            option wider. Duck it, and each of your rivals gets that extra option instead.</p>
-      </div></section>
-      <section><h3>Resonant field</h3><div class="codex-note">
-        <p>During a build phase you may charge the field: pay gold now and the <em>next</em> wave arrives
-           with <b>+${Math.round(ENRAGE_HP * 100)}%</b> health, while every kill in it pays
-           <b>+${Math.round(ENRAGE_BOUNTY * 100)}%</b> gold. Up to <b>${ENRAGE_MAX}</b> charges, each one
-           costing well over the last. It is the one purchase that buys difficulty on purpose.</p>
-        <p>Charges are spent by the wave they were bought for and never carry into another. And a
-           charge rides the buyer's own wave alone: the heavier attackers and the richer bounty arrive
-           on <em>your</em> half of the field, while a commander who did not pay meets the wave it would
-           have met anyway. Composition, count, lane and timing stay identical for everyone: that
-           invariant is the whole point of attrition: so a charge is a bet on your own defence,
-           never a weapon aimed across the board.</p>
       </div></section>
       <section><h3>Economy</h3><div class="codex-note">
         <p>Each tower's price rises with <b>every copy you already own</b>, at its own rate. A Bolt at ×${appliedGrowth(TOWER_TYPES.bolt).toFixed(2)} is the gentlest curve in the game; a Vault at ×${appliedGrowth(TOWER_TYPES.vault).toFixed(2)} is effectively unique. That is what makes a board a composition rather than a stack. Commanders who trade in price growth soften these figures, and the build tooltip quotes your own.</p>

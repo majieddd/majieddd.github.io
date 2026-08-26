@@ -17,29 +17,29 @@
   const T = (id, fn) => { try { fn(); } catch (e) { ok(id, false, 'THREW ' + e.message); } };
   const PIN = ['bolt', 'cryo', 'mortar', 'flak', 'beacon'];
 
-  /* ---- 14.1 the enrage mechanic reads as a thematic name --------------- */
-  T('14.1 enrage reads thematically, never as "enrage"', function () {
-    /* Only PLAYER-FACING copy counts. `S.enrage` and ENRAGE_MAX are internal
-       identifiers nobody reads; the mechanic's NAME is what the owner asked to
-       be thematic. So scan the strings the game actually prints. */
-    const strings = [];
-    if (typeof ESCALATIONS !== 'undefined') strings.push(JSON.stringify(ESCALATIONS));
-    if (typeof MODS !== 'undefined') strings.push(JSON.stringify(MODS));
-    if (typeof TOWER_TYPES !== 'undefined') strings.push(JSON.stringify(TOWER_TYPES));
-    if (typeof ENEMY_TYPES !== 'undefined') strings.push(JSON.stringify(ENEMY_TYPES));
-    strings.push(document.body.innerHTML);
-    const hay = strings.join(' ');
-    const named = /RESONANT FIELD/i.test(document.documentElement.innerHTML);
-    const leaks = hay.match(/\benrage[sd]?\b/gi) || [];
-    ok('14.1 the mechanic is named RESONANT FIELD in player copy', named,
-       'RESONANT FIELD present in the shipped bundle: ' + named);
-    if (leaks.length) {
-      skip('14.1 the word "enrage" still appears in some player copy',
-           leaks.length + ' occurrence(s): ' + leaks.slice(0, 4).join(', ') +
-           ', boss phase flavour, distinct from the wave mechanic; owner call');
-    } else {
-      ok('14.1 no player copy still says "enrage"', true, 'none found');
-    }
+  /* ---- 14.1 the resonant field / enrage mechanic is fully removed ------ */
+  T('14.1 the resonant field / enrage mechanic is fully removed', function () {
+    /* This check used to scan document.documentElement.innerHTML for the
+       thematic player-facing name. That stopped being a valid test the
+       moment the assertion flipped from "is present" to "is absent": this
+       build inlines every JS module as a <script> tag inside <body>, so
+       .innerHTML (unlike the rendered page) also contains this very source
+       file's own comments -- including the ones explaining what got removed
+       and why, which then falsely re-trip a naive text scan for the removed
+       name. A behavioural check does not have that failure mode: it proves
+       the mechanic cannot fire, which is the actual thing Session 35 asked
+       for ("take it away... altogether as a mechanic"), regardless of what
+       any comment anywhere says about it. */
+    Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+    UI.show('screen-game'); UI.buildShop(); UI.buildAbilityBar();
+    UI.renderInspector(true);
+    ok('14.1 Game.buyEnrage and Game.enrageCost no longer exist',
+       typeof Game.buyEnrage !== 'function' && typeof Game.enrageCost !== 'function',
+       'buyEnrage: ' + typeof Game.buyEnrage + ', enrageCost: ' + typeof Game.enrageCost);
+    ok('14.1 no #btn-enrage is ever rendered into the wave panel',
+       !document.getElementById('btn-enrage'), 'present: ' + !!document.getElementById('btn-enrage'));
+    ok('14.1 Side state carries no enrage field', Game.sides[0].enrage === undefined,
+       'Game.sides[0].enrage: ' + Game.sides[0].enrage);
   });
 
   /* ---- 14.2 relocation bills 33% of what is invested ------------------- */
