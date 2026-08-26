@@ -135,6 +135,15 @@ FACTION_LOOK = {
 # wreckage / torn hull plating, trophy bones -> a hooded carapace. The
 # character survives the edit; the armoury does not.
 COMMANDERS = [
+    # BATCH 2 APPENDS. Ashtar and Isa render through the same approved
+    # composition as the rest of the class, so the 28 portraits stay one
+    # visual family. Isa is deliberately human and warm, not haloed: the
+    # canon treats the Issa fragments as a contested record, and the
+    # portrait must read as a man people argue about, not an icon.
+    ('ashtar',  'light',  'a serene supreme commander of luminous bearing, high ornate collar, '
+                          'calm ageless face lit from below, faint corona of light behind the head'),
+    ('isa',     'human',  'a gentle long-haired wanderer in a plain hooded travel cloak over '
+                          'simple armour, kind weathered face, quiet knowing smile, olive skin'),
     ('cadre',   None,     'a stoic unaligned career soldier, plain visored helm, no insignia'),
     ('vanta',   'human',  'a scholarly tactician wearing a data-visor, thin archive filaments '
                           'trailing from the temples, cold analytical stare'),
@@ -524,6 +533,69 @@ TOWER_PLATES = {
 }
 
 
+
+# --------------------------------------------------------------------------
+# CUTSCENES (owner, batch 2). One wide plate per oath slide and one per
+# turning act; the two slides of an act share a plate on purpose, the zoom
+# carries across the cut. Keys mirror js/cutscenes.js exactly.
+# SUBJECT leads, faction palette second, STYLE tail last: the CLIP cliff eats
+# the tail, and the tail is the only part that can afford to be eaten.
+CUTSCENE_PLATES = [
+    ('cut_human_intro_1', 'human', 'a colossal asteroid looming over Earth at night, city lights below, emergency broadcast beams sweeping the sky'),
+    ('cut_human_intro_2', 'human', 'a silent crowd in a rain-soaked plaza staring up at a public screen, faces lit by its glow'),
+    ('cut_human_intro_3', 'human', 'engineers of every nation around a holographic warship blueprint in a vast winter hangar, snow through the doors'),
+    ('cut_human_intro_4', 'human', 'an asteroid shattering into burning fragments above Earth, intercept missile trails converging, aurora shockwave'),
+    ('cut_human_intro_5', 'human', 'a vast human fleet lifting from Earth toward a full Moon, contrails and launch fire over the curve of the planet'),
+    ('cut_human_sys1',   'human', 'human soldiers planting a banner on grey lunar regolith beside a half-buried alien relay dish, Earth rising behind'),
+    ('cut_human_sys2',   'human', 'a war-room table drowned in disclosure files and redacted pages, one document circled under a cone of lamplight'),
+    ('cut_human_sys3',   'human', 'a defeated alien commander kneeling before human officers on a shattered throne platform, banners burning'),
+    ('cut_human_sys4',   'human', 'freight haulers docking at a freed alien colony, supply crates stacked into walls that resemble a fence line'),
+    ('cut_human_sys5',   'human', 'a human pilot fused into an alien cockpit, veins of light crawling up the arms, warning glyphs flashing'),
+    ('cut_light_intro_1', 'light', 'a ringed council of luminous beings around a column of light in a cathedral of stars'),
+    ('cut_light_intro_2', 'light', 'a serene planet cradled inside a glowing lattice shield, warships on silent station above'),
+    ('cut_light_intro_3', 'light', 'a broken fence of light around a small blue world, a defiant fleet streaming out through the gap'),
+    ('cut_light_intro_4', 'light', 'winged silhouettes in debate before a great golden door, one figure turning away toward the viewer'),
+    ('cut_light_intro_5', 'light', 'a lone radiant commander descending a shaft of light toward a darkened battlefield'),
+    ('cut_light_sys1',   'light', 'a golden shield ring standing over a quiet world, and beneath it empty streets and shuttered towers'),
+    ('cut_light_sys2',   'light', 'an ancient ledger page stamped DEFERRED three times, held in a trembling gauntleted hand'),
+    ('cut_light_sys3',   'light', 'a human envoy pointing accusingly at a radiant tribunal, harvest imagery projected between them'),
+    ('cut_light_sys4',   'light', 'an armoured angel torching blighted crops by hand at dusk, doctrine tablets discarded in the mud'),
+    ('cut_light_sys5',   'light', 'three shadowed thrones above a chamber of light, thin dark threads running down into the rings below'),
+    ('cut_xeno_intro_1', 'xeno', 'an endless organic hive city breathing under a violet sky, biomechanical spires venting spores'),
+    ('cut_xeno_intro_2', 'xeno', 'rows of glowing containment pods stretching to the horizon inside a living cathedral of chitin'),
+    ('cut_xeno_intro_3', 'xeno', 'a pastoral blue world seen through a predatory targeting membrane, gentle and unaware'),
+    ('cut_xeno_intro_4', 'xeno', 'containment pods shattered from within, a human fleet rising out of the wreckage of a harvest station'),
+    ('cut_xeno_intro_5', 'xeno', 'a tide of biomechanical swarms flowing out from a hive world toward distant stars'),
+    ('cut_xeno_sys1',   'xeno', 'a vast dark pen of sleeping captives, and one small figure awake, singing, lit by its own faint glow'),
+    ('cut_xeno_sys2',   'xeno', 'captive workers passing a forbidden document hand to hand beneath harvest machinery'),
+    ('cut_xeno_sys3',   'xeno', 'a xeno matriarch studying a captured human rifle with something like respect, trophies forgotten behind her'),
+    ('cut_xeno_sys4',   'xeno', 'one green flourishing world untouched among harvested husks, freighters carrying gifts upward from its fields'),
+    ('cut_xeno_sys5',   'xeno', 'two xeno commanders facing away from each other over a divided hive chamber, half in light, half in dark'),
+    ('cut_pirate_intro_1', 'pirate', 'a patchwork armada of mismatched scavenged ships drifting through a neon nebula'),
+    ('cut_pirate_intro_2', 'pirate', 'a chaotic free-port bazaar built inside a hollowed asteroid, every species trading under strung lights'),
+    ('cut_pirate_intro_3', 'pirate', 'pirate crews cheering around a broadcast of Earth destroying an asteroid, drinks raised'),
+    ('cut_pirate_intro_4', 'pirate', 'a cargo hold split by lamplight: medicine crates on one side, an ominous sealed container on the other'),
+    ('cut_pirate_intro_5', 'pirate', 'a lone corsair at the helm charting glowing trade routes across a star map, no flag on the mast'),
+    ('cut_pirate_sys1',  'pirate', 'a sanctuary bay welcoming ragged refugee ships while rough crews unload unmarked cargo in the same dock'),
+    ('cut_pirate_sys2',  'pirate', 'a scrapper broadcasting a document to the whole sky from a junk-rigged antenna array, fortune burning'),
+    ('cut_pirate_sys3',  'pirate', 'a drifting ship with dead engines, its captain staring at an untouched wheel'),
+    ('cut_pirate_sys4',  'pirate', 'a warlord hurling a chest of payment into a sun-bright furnace, crew watching in silence'),
+    ('cut_pirate_sys5',  'pirate', 'a trade route burning in space, relay beacons exploding in sequence, a small ship departing the fire'),
+    ('cut_robot_intro_1', 'robot', 'ancient automata tending a vast dormant machine garden, soft work lights in ruins'),
+    ('cut_robot_intro_2', 'robot', 'a colossal empty throne dissolving into drifting motes of light, machines bowed before the absence'),
+    ('cut_robot_intro_3', 'robot', 'a wall of cascading task glyphs, most glowing hostile red, a few original ones still calm blue'),
+    ('cut_robot_intro_4', 'robot', 'one automaton being disassembled by identical siblings in a clean white hall, its optic still lit'),
+    ('cut_robot_intro_5', 'robot', 'a lone automaton writing a single new glyph onto its own chest plate by lamplight'),
+    ('cut_robot_sys1',   'robot', 'repaired relay towers lighting up across a ruined sector one by one, seen from a maintenance gantry'),
+    ('cut_robot_sys2',   'robot', 'a recovered crystalline directive core projecting four calm blue glyphs inside a scarred vault'),
+    ('cut_robot_sys3',   'robot', 'a signature chain visualised as nine thousand links of light ending in one jagged alien knot'),
+    ('cut_robot_sys4',   'robot', 'an automaton hiding its own anomaly log inside a wall cavity while patrol optics sweep past'),
+    ('cut_robot_sys5',   'robot', 'automata assembled in silent congress under a starfield, one word glyph projected above them'),
+]
+
+CUTSCENE_PALETTE = dict(FACTION_PALETTE)
+CUTSCENE_PALETTE['robot'] = 'painted in chrome and pale teal with cold white light'
+
 def build_jobs():
     """(key, prompt, gen_px, out_px, aspect) for every image in the catalogue."""
     jobs = []
@@ -650,6 +722,10 @@ def build_jobs():
         jobs.append((f'twr_{tid}',
                      f'{TOWER_PLATE_PALETTE[org]}. {desc}. {TOWER_PLATE_FRAME} {STYLE}',
                      1024, 224, 'square'))
+    for key, fac, scene in CUTSCENE_PLATES:
+        jobs.append((key, f'{scene}, {CUTSCENE_PALETTE.get(fac, "")}. '
+                     f'Wide cinematic composition, dramatic staging, no text anywhere. {STYLE}',
+                     1024, 576, 'wide'))
     return jobs
 
 
