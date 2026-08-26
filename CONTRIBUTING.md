@@ -202,10 +202,37 @@ These are not style preferences. Each one shipped a real bug.
 
 ## 5. Verify before you open the PR
 
-Two harnesses live in `tools/`. Neither is a test runner and neither is wired to
-CI: each is **pasted whole into the browser console** (or handed to a
-`javascript_tool` call) of a page already open on a served, cache-busted build.
+### The one command
+
+Most of the time you want this and nothing else:
+
+```bash
+python -m http.server 8601 --bind 127.0.0.1     # from the repo root
+node tools/gate.js http://127.0.0.1:8601
+```
+
+That runs every node-side gate (parse, em dash, bytes, `build.js`'s module
+list, the build itself) and then owner-sweep and MPT in real browsers, each on
+its own fresh page so the ordering rule below is satisfied by construction
+rather than by memory. It prints about eight lines, exits non-zero on any
+failure, and takes roughly 25 seconds. Add `--quick` to skip MPT, or
+`--static` for the node-side gates only.
+
+It reports counts plus failing rows, never passing detail. A green owner-sweep
+result object is 11,325 characters of which four numbers matter, and reading
+the full dump six times in a session is how a verification pass gets
+expensive for no added confidence.
+
+### The harnesses on their own
+
+When you need one harness in isolation, or the full detail of a specific
+check, they live in `tools/`. Neither is a test runner: each is **loaded into
+the browser console** of a page already open on a served, cache-busted build.
 Nothing to install, nothing to import.
+
+Prefer `fetch` over pasting. `(0, eval)(await (await fetch('/tools/owner-sweep.js')).text())`
+runs the tracked file and costs a URL; pasting the same 69KB costs about
+20,000 tokens and runs a copy you cannot diff against the repo.
 
 ```js
 // 0. serve the repo (§1), open aegis-protocol.html?v=1, and FRONT the tab.

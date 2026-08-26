@@ -33,7 +33,13 @@ const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
 
-const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+/* The Windows install path is the default because that is where this runs
+   every day, but it is the ONE line that makes this file unrunnable anywhere
+   else, and `references/verification.md` section 9 has called for these gates
+   to run in CI since Session 28. An env var costs nothing here and is what a
+   ubuntu-latest job would set (CHROME_PATH=$(which google-chrome)). */
+const CHROME = process.env.CHROME_PATH ||
+  'C:/Program Files/Google/Chrome/Application/chrome.exe';
 /* A RANDOM port, not a fixed one (owner audit, Session 32). PORT = 9333 was
    hardcoded, so two agents running this at once fought over the same debugger
    port -- one silently attaches to the OTHER's browser rather than its own, a
