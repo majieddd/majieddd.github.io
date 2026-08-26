@@ -81,7 +81,7 @@
     const margin = irange(rnd, 2, 3);
     const legH = Math.max(2, Math.floor((rows - 2 * margin) / irange(rnd, 3, 4)));
     // Start near the mirror axis (left side of it for even cols).
-    const startX = Math.floor(cols / 2) - irange(rnd, 0, 1);
+    const startX = Math.floor(cols / 2) - 1 - irange(rnd, 0, 1);
     const wps = [[startX, margin + irange(rnd, 0, 1)]];
     let y = wps[0][1];
     let x = startX;
@@ -104,8 +104,8 @@
   function spiralWaypoints(cols, rows, rnd) {
     const m = irange(rnd, 2, 3);
     // Bounding box: left half of the board only.
-    let x0 = Math.floor(cols / 2) - irange(rnd, 0, 1), y0 = m + irange(rnd, 0, 1);
-    const x1 = m, y1 = rows - 1 - m;
+    let x0 = Math.floor(cols / 2) - 1 - irange(rnd, 0, 1), y0 = m + irange(rnd, 0, 1);
+    const x1 = m; let y1 = rows - 1 - m;
     const wps = [[x0, y0]];
     for (let ring = 0; ring < irange(rnd, 2, 3); ring++) {
       if (x1 + 1 >= x0 || y1 <= y0) break;
@@ -128,24 +128,26 @@
     const midY = Math.floor(rows / 2);
     let yTop = clamp(midY - gap - irange(rnd, 0, 1), 1, rows - 4);
     let yBot = clamp(midY + gap + irange(rnd, 0, 1), yTop + 3, rows - 2);
-    const startX = Math.floor(cols / 2) - irange(rnd, 0, 1);
-    const bendX = Math.max(2, Math.floor(startX * 0.4)) + irange(rnd, -1, 1);
-    const topWps = [[startX, yTop], [bendX, yTop],
-                    [bendX, clamp(yTop + irange(rnd, 1, 2), 1, rows - 2)],
-                    [-1, clamp(yTop + irange(rnd, 0, 2), 1, rows - 2)]];
-    const bendX2 = Math.max(3, Math.floor(startX * 0.6)) + irange(rnd, -1, 1);
-    const botWps = [[startX, yBot], [bendX2, yBot],
-                    [bendX2, clamp(yBot - irange(rnd, 1, 2), 1, rows - 2)],
-                    [-1, clamp(yBot - irange(rnd, 0, 2), 1, rows - 2)]];
+    const startX = Math.floor(cols / 2) - 1 - irange(rnd, 0, 1);
+    // Each channel: corridor leftward, one bend, exit at x=-1 on the bent row.
+    // Every consecutive pair differs in exactly ONE coordinate (orthoLane
+    // silently drops diagonal segments, so this is load-bearing).
+    const nyTop = clamp(yTop + irange(rnd, 1, 2), 1, rows - 2);
+    const topWps = [[startX, yTop], [Math.max(2, Math.floor(startX * 0.4)), yTop],
+                    [Math.max(2, Math.floor(startX * 0.4)), nyTop], [-1, nyTop]];
+    const nyBot = clamp(yBot - irange(rnd, 1, 2), 1, rows - 2);
+    const botWps = [[startX, yBot], [Math.max(3, Math.floor(startX * 0.6)), yBot],
+                    [Math.max(3, Math.floor(startX * 0.6)), nyBot], [-1, nyBot]];
     return { top: topWps, bot: botWps, bankY: midY };
   }
 
   /** Chokepoint (HALF-WIDTH): a corridor that juts into alcoves; each alcove
-      covers only its own leg. All geometry in the left half. */
+      covers only its own leg. All geometry in the left half. The lane always
+      returns to the corridor row after every jut so segments stay orthogonal. */
   function chokepointWaypoints(cols, rows, rnd) {
     const nAlcoves = irange(rnd, 2, 3);
     const midY = Math.floor(rows / 2);
-    const startX = Math.floor(cols / 2) - irange(rnd, 0, 1);
+    const startX = Math.floor(cols / 2) - 1 - irange(rnd, 0, 1);
     // Available width for the corridor: from startX down to x=2.
     const availW = startX - 3;
     const segW = Math.max(4, Math.floor(availW / (nAlcoves + 1)));
@@ -156,12 +158,13 @@
       const yOff = irange(rnd, 1, Math.max(1, Math.floor(rows / 4)));
       const dirUp = rnd() < 0.5 ? -1 : 1;
       const ny = clamp(midY + dirUp * yOff, 1, rows - 2);
-      wps.push([cx - segW + 2, midY]);
-      wps.push([cx - segW + 2, ny]);
+      wps.push([cx - segW + 2, midY]);   // corridor leg (horizontal)
+      wps.push([cx - segW + 2, ny]);     // jut (vertical)
       cx = cx - segW;
-      wps.push([cx, ny]);
+      wps.push([cx, ny]);                // alcove leg (horizontal)
+      wps.push([cx, midY]);              // back to corridor (vertical)
     }
-    wps.push([-1, midY]);
+    wps.push([-1, midY]);                // final run along the corridor row
     return wps;
   }
 
@@ -169,18 +172,22 @@
       so the rubble fields below carve out disconnected buildable pockets. */
   function islandScatterWaypoints(cols, rows, rnd) {
     const y0 = irange(rnd, 2, Math.max(3, Math.floor(rows / 4)));
-    const startX = Math.floor(cols / 2) - irange(rnd, 0, 1);
+    const baseY = Math.floor(rows / 2);
+    const startX = Math.floor(cols / 2) - 1 - irange(rnd, 0, 1);
     const wps = [[startX, y0]];
-    let x = startX;
+    let x = startX, y = y0;
     for (let i = 0; i < irange(rnd, 3, 5); i++) {
-      if (x <= 2) break;
       const nx = Math.max(1, x - irange(rnd, 4, 6));
-      wps.push([nx, y0]);
-      const ny = clamp(y0 + irange(rnd, 3, Math.max(4, Math.floor(rows / 3))), 1, rows - 2);
-      wps.push([nx, ny]);
+      if (nx >= x) break;
+      wps.push([nx, y]);                 // horizontal at current row
       x = nx;
+      if (x <= 2) break;
+      const ny = clamp(y + (rnd() < 0.5 ? -1 : 1) * irange(rnd, 3, Math.max(4, Math.floor(rows / 3))), 1, rows - 2);
+      wps.push([nx, ny]);                // vertical leg
+      y = ny;
     }
-    wps.push([-1, Math.floor(rows / 2)]);
+    if (y !== baseY) wps.push([x, baseY]);   // return to the exit row
+    wps.push([-1, baseY]);                    // final run off-grid
     return wps;
   }
 
@@ -188,15 +195,14 @@
   function openFieldWaypoints(cols, rows, rnd) {
     let yA = irange(rnd, 3, Math.max(4, Math.floor(rows / 3)));
     let yB = clamp(rows - 1 - yA + irange(rnd, -1, 1), yA + 3, rows - 2);
-    const startX = Math.floor(cols / 2) - irange(rnd, 0, 1);
-    const topWps = [[startX, yA],
-                    [Math.max(2, Math.floor(startX * 0.5)) + irange(rnd, -2, 2), yA],
-                    [Math.max(1, Math.floor(startX * 0.3)) + irange(rnd, -2, 2), clamp(yA + irange(rnd, 1, 2), 1, rows - 2)],
-                    [-1, clamp(yA + irange(rnd, 0, 2), 1, rows - 2)]];
-    const botWps = [[startX, yB],
-                    [Math.max(3, Math.floor(startX * 0.6)) + irange(rnd, -2, 2), yB],
-                    [Math.max(2, Math.floor(startX * 0.4)) + irange(rnd, -2, 2), clamp(yB - irange(rnd, 1, 2), 1, rows - 2)],
-                    [-1, clamp(yB - irange(rnd, 0, 2), 1, rows - 2)]];
+    const startX = Math.floor(cols / 2) - 1 - irange(rnd, 0, 1);
+    // Two gentle bends per lane; every segment axis-aligned.
+    const bA1 = Math.max(2, Math.floor(startX * 0.6)), bA2 = Math.max(1, Math.floor(startX * 0.3));
+    const nyA = clamp(yA + irange(rnd, 1, 2), 1, rows - 2);
+    const topWps = [[startX, yA], [bA1, yA], [bA1, nyA], [bA2, nyA], [-1, nyA]];
+    const bB1 = Math.max(3, Math.floor(startX * 0.7)), bB2 = Math.max(2, Math.floor(startX * 0.4));
+    const nyB = clamp(yB - irange(rnd, 1, 2), 1, rows - 2);
+    const botWps = [[startX, yB], [bB1, yB], [bB1, nyB], [bB2, nyB], [-1, nyB]];
     return { top: topWps, bot: botWps };
   }
 
@@ -205,22 +211,23 @@
   function convergenceWaypoints(cols, rows, rnd) {
     const nLanes = irange(rnd, 2, 3);
     const baseY = Math.floor(rows / 2);
-    const startX = Math.floor(cols / 2) - irange(rnd, 0, 1);
+    const startX = Math.floor(cols / 2) - 1 - irange(rnd, 0, 1);
     const lanes = [];
     for (let i = 0; i < nLanes; i++) {
       const enterY = clamp(Math.floor((i + 0.5) * rows / nLanes) + irange(rnd, -1, 1), 1, rows - 2);
       const wps = [[startX, enterY]];
-      let x = startX;
+      let x = startX, y = enterY;
       for (let seg = 0; seg < irange(rnd, 2, 3); seg++) {
-        if (x <= 3) break;
         const nx = Math.max(1, x - irange(rnd, 3, 5));
-        wps.push([nx, enterY]);
-        const ny = clamp(baseY + irange(rnd, -Math.floor(rows / 4), Math.floor(rows / 4)), 1, rows - 2);
-        wps.push([nx, ny]);
+        if (nx >= x) break;
+        wps.push([nx, y]);               // horizontal at current row
         x = nx;
+        const ny = clamp(baseY + irange(rnd, -Math.floor(rows / 4), Math.floor(rows / 4)), 1, rows - 2);
+        if (ny !== y) { wps.push([x, ny]); y = ny; }   // vertical wiggle
       }
-      wps.push([1, baseY]);
-      wps.push([-1, baseY]);
+      if (y !== baseY) wps.push([x, baseY]);   // settle onto the shared row
+      wps.push([1, baseY]);                    // final approach
+      wps.push([-1, baseY]);                   // off-grid base
       lanes.push(wps);
     }
     return { lanes: lanes };
@@ -241,13 +248,18 @@
     return s;
   }
 
-  /** N random rubble rectangles that touch no lane tile and no other block. */
+  /** N random rubble rectangles that touch no lane tile and no other block.
+      Authored in the LEFT half only: buildField mirrors every rectangle, so a
+      full-width draw would place mirror copies on top of the rival's lanes. */
   function generateBlocks(cols, rows, rnd, laneSet, count) {
     const blocks = [];
+    const halfW = Math.floor((cols - 1) / 2);   // rightmost authored column
     for (let i = 0; i < count; i++) {
       const w = irange(rnd, 1, 3), h = irange(rnd, 1, 2);
-      const x = irange(rnd, 1, Math.max(2, cols - 2));
-      const y = irange(rnd, 1, Math.max(2, rows - 2));
+      const maxX = halfW - w;                   // keep the whole rect left of the axis
+      if (maxX < 1) continue;
+      const x = irange(rnd, 1, maxX);
+      const y = irange(rnd, 1, Math.max(2, rows - 1 - h));   // y+h must stay on-grid
       let overlaps = false;
       for (let ty = y; ty <= y + h && !overlaps; ty++)
         for (let tx = x; tx <= x + w && !overlaps; tx++)
@@ -262,22 +274,36 @@
   }
 
   /** Shot-blocking wall segments. Never on lane tiles or inside rubble.
-      Orientation is chosen per segment: horizontal (long in x) or vertical. */
+      Authored in the LEFT half only (mirrored by buildField). A wall under a
+      LANE tile is a soft-lock: enemies standing there take no direct shot, so
+      both the authored lanes AND their mirrors are kept clear. Orientation is
+      chosen per segment: horizontal (long in x) or vertical. */
   function generateWalls(cols, rows, rnd, laneSet, blockSet, count) {
     const walls = [];
+    // Mirrored positions of every authored lane tile (the rival's road).
+    const mirrored = new Set();
+    for (const k of laneSet) {
+      const c = k.indexOf(',');
+      mirrored.add((cols - 1 - Number(k.slice(0, c))) + ',' + k.slice(c + 1));
+    }
+    const onLane = (x, y) => laneSet.has(x + ',' + y) || mirrored.has(x + ',' + y);
+    const halfW = Math.floor((cols - 1) / 2);
     for (let i = 0; i < count; i++) {
       const horiz = rnd() < 0.5;
       const len = irange(rnd, 2, 4), thick = irange(rnd, 1, 2);
-      const wx = irange(rnd, 2, Math.max(3, cols - 3));
+      const wxMax = halfW - (horiz ? len : thick);   // stay left of the axis
+      if (wxMax < 2) continue;
+      const wx = irange(rnd, 2, wxMax);
       const wy = irange(rnd, 1, Math.max(2, rows - 2));
       const x0 = wx, y0 = wy;
-      const x1 = horiz ? Math.min(cols - 2, wx + len) : Math.min(cols - 2, wx + thick);
+      const x1 = horiz ? Math.min(halfW, wx + len) : Math.min(halfW, wx + thick);
       const y1 = horiz ? Math.min(rows - 2, wy + thick) : Math.min(rows - 2, wy + len);
       let bad = false;
       for (let ty = y0; ty <= y1 && !bad; ty++)
         for (let tx = x0; tx <= x1 && !bad; tx++) {
           const k = tx + ',' + ty;
-          if (laneSet.has(k) || blockSet.has(k)) bad = true;
+          // The tile itself AND its mirror must clear every lane.
+          if (onLane(tx, ty) || onLane(cols - 1 - tx, ty) || blockSet.has(k)) bad = true;
         }
       if (!bad) walls.push([x0, y0, x1, y1]);
     }
@@ -285,18 +311,30 @@
   }
 
   const ELEMENTS = ['fire', 'frost', 'storm', 'void', 'venom'];
-  /** Element nodes on open ground: build nodes mostly, a few lane nodes. */
+  /** Element nodes on open ground: build nodes mostly, a few lane nodes.
+      Authored in the LEFT half only (mirrored by buildField); the mirror axis
+      column itself is excluded so no node ever mirrors onto its own tile.
+      A `lane`-kind node sits ON a lane tile (that is what primes it), a
+      `build` node on open ground beside the road. */
   function generateNodes(cols, rows, rnd, laneSet, blockSet) {
     const nodes = [];
     for (let i = 0; i < irange(rnd, 2, 4); i++) {
+      const kind = rnd() < 0.3 ? 'lane' : 'build';
       let nx, ny, tries = 0;
-      do {
-        nx = irange(rnd, 1, cols - 2);
-        ny = irange(rnd, 1, rows - 2);
-        tries++;
-      } while ((laneSet.has(nx + ',' + ny) || blockSet.has(nx + ',' + ny)) && tries < 40);
-      if (laneSet.has(nx + ',' + ny) || blockSet.has(nx + ',' + ny)) continue;
-      nodes.push([nx, ny, pick(rnd, ELEMENTS), rnd() < 0.3 ? 'lane' : 'build']);
+      if (kind === 'lane') {
+        // Pick a random authored lane tile in the left half.
+        const tiles = [...laneSet].filter(k => Number(k.slice(0, k.indexOf(','))) >= 0);
+        if (!tiles.length) continue;
+        [nx, ny] = pick(rnd, tiles).split(',').map(Number);
+      } else {
+        do {
+          nx = irange(rnd, 1, Math.floor((cols - 2) / 2));
+          ny = irange(rnd, 1, rows - 2);
+          tries++;
+        } while ((laneSet.has(nx + ',' + ny) || blockSet.has(nx + ',' + ny)) && tries < 40);
+        if (laneSet.has(nx + ',' + ny) || blockSet.has(nx + ',' + ny)) continue;
+      }
+      nodes.push([nx, ny, pick(rnd, ELEMENTS), kind]);
     }
     return nodes;
   }
@@ -318,7 +356,9 @@
 
     switch (family) {
       case 'spiral': {
-        const cols = irange(rnd, 26, 30), rows = irange(rnd, 14, 17);
+        // Even cols: the mirror axis sits BETWEEN two columns, so a lane
+        // starting at cols/2 never mirrors onto its own tile.
+        const cols = irange(rnd, 13, 15) * 2, rows = irange(rnd, 14, 17);
         const lane = orthoLane(spiralWaypoints(cols, rows, rnd));
         const ls = tileSet([lane]);
         geo = { lanes: [lane], cols, rows };
@@ -328,16 +368,18 @@
         break;
       }
       case 'twin-channel': {
-        const cols = irange(rnd, 26, 30), rows = irange(rnd, 15, 18);
+        const cols = irange(rnd, 13, 15) * 2, rows = irange(rnd, 15, 18);
         const tc = twinChannelWaypoints(cols, rows, rnd);
         const laneTop = orthoLane(tc.top), laneBot = orthoLane(tc.bot);
         const ls = tileSet([laneTop, laneBot]);
         geo = { lanes: [laneTop, laneBot], cols, rows };
-        // The silt bank splits the two channels.
-        const bx0 = Math.floor(cols * 0.25), bx1 = Math.floor(cols * 0.7);
+        // The silt bank splits the two channels. Authored in the LEFT half only
+        // (buildField mirrors it). Blocks may cross a lane by design — rubble
+        // the road runs through is an authored-map convention.
+        const bx0 = Math.max(1, Math.floor(cols * 0.2)), bx1 = Math.floor((cols - 1) / 2);
         geo.blocks = [[bx0, tc.bankY - 1, bx1, tc.bankY + 1]];
         for (let i = 0; i < irange(rnd, 2, 4); i++) {
-          const bx = irange(rnd, 1, cols - 3), by = irange(rnd, 1, rows - 2);
+          const bx = irange(rnd, 1, Math.max(2, Math.floor((cols - 4) / 2))), by = irange(rnd, 1, rows - 2);
           if (!ls.has(bx + ',' + by)) geo.blocks.push([bx, by, bx + irange(rnd, 0, 1), by]);
         }
         const bs = blockTileSet(geo.blocks);
@@ -346,7 +388,7 @@
         break;
       }
       case 'chokepoint': {
-        const cols = irange(rnd, 24, 28), rows = irange(rnd, 13, 15);
+        const cols = irange(rnd, 12, 14) * 2, rows = irange(rnd, 13, 15);
         const lane = orthoLane(chokepointWaypoints(cols, rows, rnd));
         const ls = tileSet([lane]);
         geo = { lanes: [lane], cols, rows };
@@ -357,7 +399,7 @@
         break;
       }
       case 'island-scatter': {
-        const cols = irange(rnd, 28, 32), rows = irange(rnd, 15, 17);
+        const cols = irange(rnd, 14, 16) * 2, rows = irange(rnd, 15, 17);
         const lane = orthoLane(islandScatterWaypoints(cols, rows, rnd));
         const ls = tileSet([lane]);
         geo = { lanes: [lane], cols, rows };
@@ -369,7 +411,7 @@
         break;
       }
       case 'open-field': {
-        const cols = irange(rnd, 34, 40), rows = irange(rnd, 18, 22);
+        const cols = irange(rnd, 17, 20) * 2, rows = irange(rnd, 18, 22);
         const of = openFieldWaypoints(cols, rows, rnd);
         const laneTop = orthoLane(of.top), laneBot = orthoLane(of.bot);
         const ls = tileSet([laneTop, laneBot]);
@@ -382,7 +424,7 @@
         break;
       }
       case 'convergence': {
-        const cols = irange(rnd, 24, 28), rows = irange(rnd, 13, 15);
+        const cols = irange(rnd, 12, 14) * 2, rows = irange(rnd, 13, 15);
         const cv = convergenceWaypoints(cols, rows, rnd);
         const lanes = cv.lanes.map(wps => orthoLane(wps));
         const ls = tileSet(lanes);
@@ -394,23 +436,32 @@
         break;
       }
       case 'fortress-ring': {
-        const cols = irange(rnd, 26, 30), rows = irange(rnd, 15, 17);
+        const cols = irange(rnd, 13, 15) * 2, rows = irange(rnd, 15, 17);
         const fr = fortressRingWaypoints(cols, rows, rnd);
         const lanes = fr.lanes.map(wps => orthoLane(wps));
         const ls = tileSet(lanes);
         geo = { lanes: lanes, cols, rows };
-        // A broken ring of walls around the centre: four arcs with gaps.
-        const cx = Math.floor(cols / 2), cy = Math.floor(rows / 2);
+        // A broken ring of walls around the LEFT half's centre: four arcs with
+        // gaps. Authored left of the mirror axis and kept clear of BOTH the
+        // authored lanes and their mirrors (a wall under a lane is a soft-lock).
+        const halfW = Math.floor((cols - 1) / 2);
+        const cx = Math.max(5, Math.min(halfW - 4, Math.floor(cols * 0.3))), cy = Math.floor(rows / 2);
         const R = irange(rnd, 3, 4), gap = irange(rnd, 1, 2);
+        const mirroredLs = new Set();
+        for (const k of ls) {
+          const c = k.indexOf(',');
+          mirroredLs.add((cols - 1 - Number(k.slice(0, c))) + ',' + k.slice(c + 1));
+        }
         geo.walls = [
           [cx - R, cy - R, cx + R - gap, cy - R],           // top arc
           [cx + R, cy - R + gap, cx + R, cy + R],           // right arc
           [cx - R + gap, cy + R, cx + R, cy + R],           // bottom arc
           [cx - R, cy - R, cx - R, cy + R - gap]            // left arc
         ].filter(([x0, y0, x1, y1]) => {
+          if (x0 < 1 || x1 > halfW) return false;          // stay in the authored half
           for (let ty = y0; ty <= y1; ty++)
             for (let tx = x0; tx <= x1; tx++)
-              if (ls.has(tx + ',' + ty)) return false;
+              if (ls.has(tx + ',' + ty) || mirroredLs.has(tx + ',' + ty)) return false;
           return true;
         });
         geo.blocks = generateBlocks(cols, rows, rnd, ls, 2);

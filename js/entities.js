@@ -3011,7 +3011,7 @@ function wallBlocksShot(x1, y1, x2, y2) {
   const W = FIELD.walls;
   if (!W || W.size === 0) return false;
   /* Convert to tile coords. DDA: step through tiles the ray crosses. */
-  const tx0 = (x1 / TILE) | 0, ty0 = (y1 / TILE) | 0;
+  let tx0 = (x1 / TILE) | 0, ty0 = (y1 / TILE) | 0;
   const tx1 = (x2 / TILE) | 0, ty1 = (y2 / TILE) | 0;
   const dx = Math.abs(tx1 - tx0), dy = Math.abs(ty1 - ty0);
   const sx = tx0 < tx1 ? 1 : -1, sy = ty0 < ty1 ? 1 : -1;
