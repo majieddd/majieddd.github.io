@@ -63,7 +63,10 @@ function isVendored(p) {
    the suite's own skill and agent files while this gate reported clean: it had
    never been pointed at a single .md file. A gate that cannot see the majority
    of what ships is not a gate. */
-const EXTS = ['.js', '.css', '.md', '.html', '.json'];
+/* .py joined the list when two dashes were found living in artgen/ since
+   Session 15: the pipeline scripts carry prompts and owner rules, and a gate
+   that cannot see them is the same hole the missing-.md case was. */
+const EXTS = ['.js', '.css', '.md', '.html', '.json', '.py'];
 function walk(dir, out) {
   let entries;
   try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (e) { return out; }

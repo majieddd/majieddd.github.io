@@ -1,14 +1,14 @@
 """
-SUPERSEDED (Session 20.4) — DO NOT RUN. This is the Session 14 generator. It
+SUPERSEDED (Session 20.4). DO NOT RUN. This is the Session 14 generator. It
 still carries its own private copy of STYLE / FACTION_LOOK / COMMANDERS, all of
 it the pre-Session-15 fantasy direction the owner rejected, and it writes to
 `../TowerDefense/js/artpack.js`, a sibling path that stopped existing when the
 pipeline moved inside the repository. The live catalogue is `krea_jobs.py`;
-the runners are `sdxl_all.py` and `krea_gen.py`. Kept only as history — a
+the runners are `sdxl_all.py` and `krea_gen.py`. Kept only as history, a
 second copy of the art direction in the same folder is how the Session 19
 troop prefix was edited in a file nothing read.
 
-Cosmic Conquest — illustrative art generation.
+Cosmic Conquest, illustrative art generation.
 
 Runs SDXL-Turbo locally on the RTX 4080 and emits a single JS file of WebP
 data URIs that the game embeds. Kept deliberately small: portraits at 256px
@@ -123,7 +123,7 @@ def main():
               f'{time.time()-t0:.0f}s', flush=True)
 
     total = sum(len(v) for v in pack.values())
-    body = ('/* Generated illustrative art — SDXL-Turbo, local RTX 4080.\n'
+    body = ('/* Generated illustrative art. SDXL-Turbo, local RTX 4080.\n'
             '   Regenerate with artgen/generate.py. Keys: cmd_<id>, fac_<id>, title, nebula. */\n'
             'const ARTPACK = ' + json.dumps(pack) + ';\n')
     with open(OUT, 'w', encoding='utf-8') as f:

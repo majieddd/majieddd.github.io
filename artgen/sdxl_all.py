@@ -1,5 +1,5 @@
 """
-Cosmic Conquest — the full catalogue on SDXL-Turbo, new art direction.
+Cosmic Conquest, the full catalogue on SDXL-Turbo, new art direction.
 
 Krea 2 Turbo produces the better image but costs ~83 minutes each on this
 card (12.9B NF4); the whole 70-image catalogue would take four days. SDXL-
@@ -7,7 +7,7 @@ Turbo renders the same catalogue in well under an hour, so it paints the
 complete interim pack and Krea upgrades keys underneath it as they finish:
 krea_gen.py --pack prefers cache_krea/<key>.webp and falls back to cache/.
 
-Renders into cache/, OVERWRITING the old fantasy-style images — the owner
+Renders into cache/, OVERWRITING the old fantasy-style images, the owner
 rejected that look, so keeping them would just leak it back into the pack.
 """
 import os, sys, time
@@ -167,7 +167,7 @@ def main():
         print(f'[{i+1}/{len(todo)}] {key:18s} {time.time()-t1:5.1f}s '
               f'(total {time.time()-t0:5.0f}s)', flush=True)
 
-    print('DONE — now run: python krea_gen.py --pack', flush=True)
+    print('DONE, now run: python krea_gen.py --pack', flush=True)
 
 
 if __name__ == '__main__':

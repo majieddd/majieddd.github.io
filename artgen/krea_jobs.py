@@ -1,5 +1,5 @@
 """
-Cosmic Conquest — the art catalogue.
+Cosmic Conquest: the art catalogue.
 
 One place that names every generated image and the prompt behind it, kept
 separate from the runner so the two models (Krea 2 and the SDXL fallback) can
@@ -13,7 +13,7 @@ Sizes are (generate_px, output_px, aspect). Aspect 'wide' generates 16:9.
 # Tyranny -- bold flat brushwork, hard graphic shapes, strong silhouettes --
 # but the SETTING is cyberpunk sci-fi vaporwave: neon magenta/cyan/violet,
 # chrome, holograms. Explicitly NOT medieval fantasy.
-# LOCKED by the owner (Session 15) — see TowerDefense/BRAND.md before editing.
+# LOCKED by the owner (Session 15), see TowerDefense/BRAND.md before editing.
 STYLE = ('stylised painted game cutscene illustration, bold flat expressive brushwork, '
          'hard-edged graphic shapes, strong silhouette, gothic engraved linework, ornamental '
          'filigree, screen-print texture, limited palette, '
