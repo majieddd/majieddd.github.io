@@ -622,8 +622,19 @@
         }
       }
 
+      /* A SELF-CHECK THAT CANNOT FAIL HAS PROVED NOTHING. Measured: loaded
+         without js/config.js, so with no MAPS table at all, this returned
+         ok:true checked:28 mapsLoaded:false. Every comparison above that
+         needs the live table sits inside `if (live)`, so with MAPS absent
+         the drift arrays are trivially empty and `ok` went green against
+         nothing. The manifest is this file's own copy of the board list, so
+         checking the manifest against itself is not evidence.
+
+         `ok` now REQUIRES the live table to have been present. A caller that
+         genuinely wants the offline answer reads the fields, which still
+         report exactly what was and was not checked. */
       return {
-        ok: missing.length === 0 && incomplete.length === 0 &&
+        ok: !!live && missing.length === 0 && incomplete.length === 0 &&
             authoredNameDrift.length === 0 && manifestDrift.length === 0,
         loreLoaded: !!L,
         mapsLoaded: !!live,

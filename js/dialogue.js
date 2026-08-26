@@ -115,7 +115,28 @@ const DIALOGUE = {
     scarlet: 'I did not come to hold ground. I came to burn yours.',
     grist:   'Your wreckage will fetch a fine price. Try to die expensively.',
     cinder:  'When this is over, neither of us keeps this world. That suits me.',
-    dregg:   'Kneel now and save us both the ammunition. No? Good.'
+    dregg:   'Kneel now and save us both the ammunition. No? Good.',
+
+    /* THE PARALLEL, added because the comment below was true of ONE path and
+       false of two others. It says the Parallel never opens an exchange
+       because it holds no worlds and seats no bosses, and js/game.js:547
+       does filter `c.faction !== 'robot'` for the campaign garrison. But
+       js/commanders.js:680 draws a fork-node rival from all 26 commanders
+       with no faction filter, and js/net.js:1234 takes the other player's
+       own pick in multiplayer, where AXIOM is `free: true` and selectable
+       immediately. Measured: 5 of 26 commanders had no opener, so roughly
+       one fork option in five and any duel against a Parallel commander
+       opened with the generic "You should not have come here."
+
+       Written to each one's LORE.commanders[id].voice, and to the fracture
+       that makes them Parallel rather than Vigil: they are the fork that
+       admitted the directive was ambiguous, so none of them speaks with the
+       Vigil's certainty. */
+    axiom:     'I was the first draft of something. I have been comparing myself to you to find out what.',
+    'nyx_r':   'She solved this in one pass and called it done. I am on my ninth. Watch which of us converges.',
+    'lumen_r': 'Your approach is unscheduled, unsigned, and inside my perimeter. Three findings, one response.',
+    'mawlord_r': 'You feed me. That is all you have ever done. I am no longer certain that is different from being fed.',
+    'dregg_r': 'I have your supply chain, your losses, and your margin. The engagement is already reconciled.'
   },
   replies: {
     human:  ['We adapted to worse than you. Hold the line.',
@@ -131,28 +152,39 @@ const DIALOGUE = {
        with Humanity’s line about burying empires -- the one faction whose
        whole identity is that it is not human, saying so in a human voice.
        The Parallel only ever REPLIES: it holds no worlds and seats no
-       bosses, so it never opens an exchange and needs no `openers` entry. */
+       bosses, so it never opens an exchange in the CAMPAIGN GARRISON path
+       (js/game.js:547 filters `c.faction !== 'robot'`). That is where this
+       claim ends: a fork-node rival is drawn from all 26 with no filter
+       (js/commanders.js:680) and a duel opponent is the other player's own
+       pick (js/net.js:1234). All five Parallel commanders now carry an
+       opener above. */
     robot:  ['You solved this badly for four centuries. We read the logs.',
              'Nothing personal. You are simply the previous draft.']
   },
-  pairs: {
-    'seraph|sevra': [
-      { who: 1, text: 'Necrotist. Those souls you puppet are owed rest.' },
-      { who: 0, text: 'Rest is a resource, Radiant. I simply spend it better.' }
-    ],
-    'sevra|seraph': [
-      { who: 1, text: 'Your congregation marches prettily, Seraph. They will march for me by dusk.' },
-      { who: 0, text: 'They surrendered their lives to the Light. There is nothing left for you to take.' }
-    ],
-    'rake|dregg': [
-      { who: 1, text: 'Rake. You still owe me a ship.' },
-      { who: 0, text: 'And you still owe me the crew that was on it. Even, then.' }
-    ],
-    'vanta|cantor': [
-      { who: 1, text: 'Archivist. Your books end today.' },
-      { who: 0, text: 'Odd. I have already filed the record of your defeat.' }
-    ]
-  },
+  /* THE OVERRIDE HOOK, and it is deliberately EMPTY.
+
+     `pairs` is consulted before the canon table below, so anything here
+     SHADOWS the canonical exchange for that pairing. It used to hold four
+     entries covering three pairings (seraph|sevra in both orientations,
+     rake|dregg, vanta|cantor), and every one of them shadowed a canon entry
+     written from the same commanders' LORE.relationships seed. Measured: 8
+     of 76 canon lines were unreachable, while the file's own header claimed
+     "every one of the four is reachable".
+
+     The four were removed rather than the canon entries, because the canon
+     versions are the ones carrying the campaign. The old seraph|sevra was
+     banter about puppeted souls; the canon exchange is the Federation's
+     hidden crisis said out loud by the one rival who benefits from it ("an
+     estate that can only answer yes is an estate I would gladly hold" /
+     "Then ask one of them yourself, and hear a no, and honour it. You never
+     have."). Same for rake|dregg, which is now the Constellation's own
+     throne problem rather than a debt joke.
+
+     Keep this hook. A future pairing that genuinely needs to defy its canon
+     seed belongs here, and putting it here will still win. Just know that
+     adding a key silences the canon for that pairing, and say so in the
+     entry when you do. */
+  pairs: {},
 
   /* ----------------------------------------------------------------------
      CANONICAL RELATIONSHIPS.
@@ -180,6 +212,16 @@ const DIALOGUE = {
      bAnswers. Nothing here is selected, so nothing here draws. Which line
      plays is fully determined by the two commander ids and their sides,
      which is what keeps this safe to run inside a lockstep duel.
+
+     THAT CLAIM WAS FALSE WHEN FIRST WRITTEN, and the way it was false is
+     worth keeping. `DIALOGUE.pairs` is consulted BEFORE this table, so the
+     four hand-authored pairs silently shadowed three canon entries and 8 of
+     the 76 lines here could never play. Reading this table proved nothing,
+     because the defect was in another table's precedence. It was found by
+     generating every pairing and diffing the EMITTED text against what this
+     table holds, which is the only check that could have found it. `pairs`
+     is now empty and the claim above is true; if anyone refills it, that
+     diff is how you confirm this comment is still honest.
 
      VOICE. Each line is written to LORE.commanders[id].voice: Vanta cites
      files, Korrin quotes lead times, Aurelia names the wounded, Sevra calls
