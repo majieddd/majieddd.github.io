@@ -6,15 +6,13 @@
 
 const TILE = 38;
 
-/* ── BATTLE SIDEBAR GEOMETRY ──────────────────────────────────────────────
+/* ── STAGE GEOMETRY ───────────────────────────────────────────────────────
    Game.resize() fits the canvas to #canvas-wrap's LIVE clientWidth, so the
-   board follows the sidebar automatically. These two numbers exist only for
-   the first-frame fallback, when the stage has not been laid out yet and
-   the wrap reports a near-zero box. Over-estimating the sidebar there merely
-   under-fits one frame before the queued re-fit measures the real box;
-   under-estimating it would lock the canvas too wide for the wrap. */
-const SIDEBAR_WIDE_PX = 580;     /* the two-column sidebar (css #sidebar, >=1240px) */
-const STAGE_CHROME_PX = 30;      /* #stage padding + the gap beside the sidebar  */
+   board follows the stage automatically. This number exists only for the
+   first-frame fallback, when the stage has not been laid out yet and the
+   wrap reports a near-zero box; the queued re-fit measures the real box
+   one frame later regardless. */
+const STAGE_CHROME_PX = 20;      /* #stage's own left+right padding (style.css) */
 
 /* ── DRAG-OUT RADIAL PLACEMENT ────────────────────────────────────────────
    Press a buildable tile and drag: a ring of your loadout blooms on that tile

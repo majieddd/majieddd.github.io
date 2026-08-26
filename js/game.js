@@ -292,37 +292,10 @@ const Game = {
        an implausible measurement falls back to the viewport and schedules a
        re-fit once layout settles. */
     const box = this.canvas.parentElement;
-    /* THE CHROME'S MEASUREMENTS, published for the CSS that carves the board's
-       space out of the window. In immersive mode #canvas-wrap pads itself by
-       --rail-w and --hud-h so the fitted board lands in the ground the rail
-       and the HUD actually leave -- and those two are measured HERE, from the
-       live elements, because the rail is 292px on a narrow screen and a 580px
-       two-column grid past 1240px. Guarded against zero: a hidden screen
-       measures nothing, and writing 0 would fit the next frame to a lie. */
-    if (document.body.classList.contains('immersive')) {
-      /* RECT-BASED, not offsetWidth: the rail and the HUD are floating CARDS
-         now, inset from the window edges, and the carve-out has to cover the
-         card AND its inset -- "everything right of the card's left edge" and
-         "everything above the card row's bottom", each plus a small gap. The
-         rail is measured first because the HUD's own right edge is defined by
-         --rail-w, so its rect is only correct once the rail's is written. */
-      const sb = document.getElementById('sidebar');
-      if (sb) {
-        const sr = sb.getBoundingClientRect();
-        if (sr.width > 0)
-          document.body.style.setProperty('--rail-w',
-            Math.max(0, Math.round(window.innerWidth - sr.left + 8)) + 'px');
-      }
-      /* --hud-h is gone: nothing consumes it since the board became the
-         background, and with the HUD anchored to the BOTTOM edge its
-         rect.bottom is the window height, which would have written a
-         nonsense figure had anything still read it. */
-    }
-    /* clientWidth INCLUDES padding, so the immersive carve-out above would be
-       invisible to a bare clientWidth read -- the fit would still use the full
-       window and the board would keep running under the rail. Subtracting the
-       computed padding makes this read the CONTENT box, which in the normal
-       layout (no padding) is byte-identical to what it always read. */
+    /* clientWidth INCLUDES padding, so a padded wrap would read wider than its
+       actual content box. Neither layout pads #canvas-wrap today, so this
+       reads 0 in both, but it costs nothing to keep reading the real box
+       rather than assume the padding stays zero forever. */
     const boxPad = box ? getComputedStyle(box) : null;
     const padW = boxPad ? (parseFloat(boxPad.paddingLeft) || 0) + (parseFloat(boxPad.paddingRight) || 0) : 0;
     const padH = boxPad ? (parseFloat(boxPad.paddingTop) || 0) + (parseFloat(boxPad.paddingBottom) || 0) : 0;
@@ -336,12 +309,10 @@ const Game = {
     let availH = box ? box.clientHeight - padH - gapH : 0;
     const unlaidOut = availW < 240 || availH < 200;
     if (unlaidOut) {
-      /* The sidebar is two columns wide on a big screen and one on a small
-         one, so the guess reads the sidebar's own width when it has one and
-         assumes the wide layout otherwise (see SIDEBAR_WIDE_PX). */
-      const sbEl = document.getElementById('sidebar');
-      const sbW = (sbEl && sbEl.offsetWidth) || SIDEBAR_WIDE_PX;
-      availW = Math.max(320, window.innerWidth - sbW - STAGE_CHROME_PX);
+      /* No side rail to subtract for any more (Session 34): the board is the
+         only flex item left in #stage, so the guess is just the window minus
+         the stage's own chrome. */
+      availW = Math.max(320, window.innerWidth - STAGE_CHROME_PX);
       availH = Math.max(240, window.innerHeight - 210);
       if (!this._refitQueued) {
         this._refitQueued = true;

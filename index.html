@@ -248,6 +248,7 @@
         <div id="mod-strip" class="chip-row"></div>
         <div id="esc-strip" class="chip-row"></div>
       </div>
+      <button id="btn-rush" class="btn btn-wave"><span>RUSH WAVE 1</span><em>▶</em></button>
     </div>
 
     <div class="hud-side rival" id="hud-rivals">
@@ -276,29 +277,27 @@
 
   <div id="stage">
     <div id="canvas-wrap"><canvas id="game" width="1064" height="570" aria-label="Battlefield"></canvas></div>
-    <aside id="sidebar">
-      <button id="btn-rush" class="btn btn-wave"><span>RUSH WAVE 1</span><em>▶</em></button>
-      <div id="ability-bar" class="ability-bar"></div>
-      <button id="btn-baselvl" class="btn base-btn" data-tt="UPGRADE BASE|+2 max lives, reanimates +5%, and every tower you place arrives at the new base level: specialisation included past level 3, ascensions past level 4.">
-        <span class="bb-main"><b>⌂ BASE LEVEL <i id="bb-lvl">1</i></b><em id="bb-next">→ 2</em></span>
-        <span class="bb-cost" id="bb-cost">◈ , </span>
-      </button>
-    </aside>
-    <!-- THE DOCK (owner, Session 31; inspector centred into it, Session 33):
-         three panes along the bottom edge, centre aligned as a group: summon
-         units left, the description centred, towers right. #inspector kept
-         its id and moved whole, so renderInspector's cached this.el.inspector
-         reference and every id lookup inside it needed no change at all --
-         only where the element sits in the static markup moved. The rail
-         above now keeps only the verbs that act on the battle (rush,
-         abilities, base); the description is what the owner asked to centre
-         between the two pickers, not the buttons beside it. -->
+    <!-- THE DOCK (owner, Session 31; inspector centred into it, Session 33;
+         sidebar dissolved into it, Session 34): three panes along the bottom
+         edge, centre aligned as a group: summon units left, the description
+         centred, towers right. #inspector kept its id and moved whole, so
+         renderInspector's cached this.el.inspector reference and every id
+         lookup inside it needed no change at all -- only where the element
+         sits in the static markup moved. The rail beside the board is GONE
+         (owner: "nothing on the sides"): rush joined the top hud-centre
+         cluster, and abilities + base level now sit at the TOP of this
+         centre pane, above the description they used to stand beside. -->
     <div id="dock">
       <div class="dock-pane" id="dock-muster">
         <h2 class="section-label">DETACHMENT</h2>
         <div id="muster-bar" class="muster-bar"></div>
       </div>
       <div class="dock-pane" id="dock-inspector">
+        <div id="ability-bar" class="ability-bar"></div>
+        <button id="btn-baselvl" class="btn base-btn" data-tt="UPGRADE BASE|+2 max lives, reanimates +5%, and every tower you place arrives at the new base level: specialisation included past level 3, ascensions past level 4.">
+          <span class="bb-main"><b>⌂ BASE LEVEL <i id="bb-lvl">1</i></b><em id="bb-next">→ 2</em></span>
+          <span class="bb-cost" id="bb-cost">◈ , </span>
+        </button>
         <div id="inspector"></div>
       </div>
       <div class="dock-pane" id="dock-shop">

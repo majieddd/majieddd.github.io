@@ -1276,22 +1276,27 @@
     const anim = sg.style.animation;
     sg.style.animation = 'none';
     Game.resize(); Game.resize();
-    const cv = Game.canvas, side = document.getElementById('sidebar'), hud = document.getElementById('hud');
-    const cb = cv.getBoundingClientRect(), sb = side.getBoundingClientRect(), hb = hud.getBoundingClientRect();
+    /* THE RAIL IS GONE (Session 34: "nothing on the sides"). Rush joined the
+       top hud-centre cluster and abilities/base level moved into the bottom
+       dock, so the two floating chrome layers this checks are #hud (top) and
+       #dock (bottom) -- there is no third card to measure any more. */
+    const cv = Game.canvas, dock = document.getElementById('dock'), hud = document.getElementById('hud');
+    const cb = cv.getBoundingClientRect(), db = dock.getBoundingClientRect(), hb = hud.getBoundingClientRect();
     const W = window.innerWidth, H = window.innerHeight;
     /* 1. THE BOARD IS THE BACKGROUND: the canvas covers the window. */
     const fills = cb.left <= 1 && cb.top <= 1 && cb.width >= W - 1 && cb.height >= H - 1;
     /* 2. THE CHROME IS ON TOP: both cards sit inside the window, over the
           canvas, and above it in the stacking order. */
-    const railZ = parseInt(getComputedStyle(side).zIndex, 10) || 0;
+    const dockZ = parseInt(getComputedStyle(dock).zIndex, 10) || 0;
     const hudZ = parseInt(getComputedStyle(hud).zIndex, 10) || 0;
-    const onTop = railZ > 0 && hudZ > 0 &&
-                  sb.right <= W + 1 && sb.bottom <= H + 1 && sb.left >= 0 &&
+    const onTop = dockZ > 0 && hudZ > 0 &&
+                  db.right <= W + 1 && db.bottom <= H + 1 && db.left >= 0 &&
                   hb.top >= 0 && hb.left >= 0;
-    /* 3. NOTHING IS CLIPPED, which is what a wrong rail width looks like. */
+    /* 3. NOTHING IS CLIPPED, which is what a wrong pane width looks like. */
     let clipped = 0;
-    side.querySelectorAll('button, .panel, h2, .muster-bar > *, #shop-list > *, #inspector > *')
+    dock.querySelectorAll('button, .panel, h2, .muster-bar > *, #shop-list > *, #inspector > *, #ability-bar > *')
       .forEach(function (el) { if (el.scrollWidth > el.clientWidth + 2) clipped++; });
+    hud.querySelectorAll('button').forEach(function (el) { if (el.scrollWidth > el.clientWidth + 2) clipped++; });
     /* 4. AND THE WHOLE BOARD IS STILL REACHABLE: home pulls back far enough
           to show all of it, so covering the window costs no information. */
     Game.resetCam();
@@ -1302,7 +1307,7 @@
     ok('25.5 the board fills the window and the chrome floats above it',
        fills && onTop && clipped === 0 && wholeBoard,
        'canvas ' + Math.round(cb.width) + 'x' + Math.round(cb.height) + ' in ' + W + 'x' + H +
-       ', rail z' + railZ + ' hud z' + hudZ + ', clipped ' + clipped +
+       ', dock z' + dockZ + ' hud z' + hudZ + ', clipped ' + clipped +
        ', home zoom ' + z.toFixed(2) + ' shows ' + Math.round(spanW) + 'x' + Math.round(spanH) +
        ' of ' + Game.width + 'x' + Game.height);
   });

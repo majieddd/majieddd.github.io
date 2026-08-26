@@ -469,7 +469,8 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
              color: var(--text-dim); cursor: pointer; transition: background-color, border-color, color, box-shadow, transform, opacity, filter .13s var(--e-tap); }
 .speed-btn.active { color: #eafcff; border-color: var(--cyan); background: rgba(56,232,255,.18); }
 
-/* ---- stage: the sidebar is a strict flex column so it can never overflow -- */
+/* ---- stage: canvas-wrap is the only flex item since the rail was removed
+   (Session 34), so it simply takes the whole row -- "nothing on the sides". */
 
 #stage { flex: 1; min-height: 0; display: flex; gap: 10px; padding: 8px 10px; align-items: stretch; }
 #canvas-wrap { flex: 1; min-width: 0; display: grid; place-items: center; }
@@ -480,35 +481,19 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
         border: 1px solid var(--line-2); border-radius: var(--r);
         box-shadow: 0 22px 70px rgba(0,0,0,.7); background: #05080e; }
 
-/* The battle sidebar. One 292px column on small screens; from 1240px wide it
-   becomes TWO columns so the inspector no longer lives below the fold (owner
-   note, Session 15). The areas map IS the layout: LEFT = wave button, shop,
-   muster; RIGHT = abilities, base level, and the inspector taking the rest
-   of its column. Both columns stack top-down; spare space collects at the
-   bottom of the left column, and the inspector spans to the sidebar's floor.
-   The battlefield needs no change: Game.resize() fits the canvas to
-   #canvas-wrap's live clientWidth, so it follows whatever the sidebar leaves.
-   Below 1240px two columns would starve the board, so the single column the
-   sidebar shipped with (polish.css density pass: 292px) comes back, in DOM
-   order. The muster/ability shrink budget and the inspector's 120px floor
-   (polish.css) hold in both layouts. */
-#sidebar { width: 292px; flex-shrink: 0; display: flex; flex-direction: column; gap: 9px; min-height: 0; }
-/* THE TWO-COLUMN 580px GRID IS GONE (Session 31), because its reason is gone:
-   it existed to seat the shop beside the inspector, and the shop and the
-   muster bar now live in the bottom dock. With only rush, abilities, base and
-   the inspector left, the 292px single column is right at every width, and
-   the board gets the 288px back. --rail-w is measured live off the element,
-   so everything downstream follows automatically. */
-
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; }
-.panel-shop { flex-shrink: 0; }
-.panel-grow { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; }
 
 .btn-wave { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-shrink: 0;
             background: linear-gradient(180deg, rgba(74,222,128,.22), rgba(74,222,128,.07));
             border-color: rgba(74,222,128,.6); font-weight: 700; padding: 13px 18px; }
 .btn-wave:hover:not(:disabled) { background: rgba(74,222,128,.3); border-color: var(--green); }
 .btn-wave em { font-style: normal; color: var(--gold); font-size: 12.5px; }
+/* Rush lives in .hud-centre now (Session 34: the side rail is gone), whose
+   flex column centres children to their own content width -- without an
+   explicit width it would hug its own text instead of reading as part of
+   the centred stack above it. Matched to .prep's 290px so the wave bar and
+   the rush button share one edge. */
+.hud-centre .btn-wave { width: 290px; }
 
 /* ---- shop: five entries, so they can be full-width and legible ---- */
 #shop-list { display: flex; flex-direction: column; gap: 5px; }

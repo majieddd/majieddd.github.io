@@ -308,20 +308,11 @@ body.rm-user .bi-line { opacity: 1; }
    pixels; fixed positioning makes the question moot. */
 body.immersive #screen-game { position: fixed; inset: 0; height: 100%; width: 100%; }
 body.immersive #stage { position: absolute; inset: 0; padding: 0; gap: 0; }
-/* THE BOARD FITS THE SPACE THE CHROME LEAVES, not the window the chrome then
-   covers. The wrap is still the full window -- the canvas centres inside its
-   CONTENT box, and the padding carves the rail and the HUD out of that box.
-   Both figures are LIVE, written by Game.resize from the elements' own
-   measured sizes (--rail-w, --hud-h on body), because the rail is 292px on a
-   narrow screen and a 580px two-column grid past 1240px (style.css), and a
-   constant here would be wrong on exactly one of them. The fallbacks only
-   cover the first frame before resize has run. */
-/* NO PADDING. The board is the BACKGROUND now -- it covers the window and the
-   chrome floats on top of it, which is what "like the galaxy map" means and
-   what carving a hole for the rail actively prevented: the carve-out is
-   exactly what left dead page around a letterboxed board. --rail-w survives
-   because the HUD still ends where the rail begins; the CANVAS no longer
-   cares. */
+/* NO PADDING. The board is the BACKGROUND -- it covers the window and the
+   chrome floats on top of it, which is what "like the galaxy map" means. The
+   rail this used to carve a hole for is gone (Session 34); the canvas never
+   needed to know about the HUD either, since that always floated over the
+   top rather than reserving space. */
 body.immersive #canvas-wrap { position: absolute; inset: 0; padding: 0; }
 /* A background has no frame. The border, the radius and the drop shadow are
    what made the board read as a window sitting in a dark room. */
@@ -340,15 +331,13 @@ body.immersive #game {
    edge now, cards still floating, and the top of the window belongs to the
    board. `align-items: flex-end` so the three cards sit on the same baseline
    whatever their heights. */
-/* AT THE TOP, per the owner (Session 31), and CENTRED. The strip still ends
-   where the rail begins, because the rail also lives at the top right and a
-   card centred across the full window would run underneath it: measured at
-   1600px, a centred 850px strip spans 375 to 1225 while the rail starts near
-   988. Centring inside the space the rail leaves keeps the intent and cannot
-   collide. Flex, not the 1fr grid: a grid spreads its three cards to the
-   edges, and spread is the opposite of centre aligned. */
+/* AT THE TOP, per the owner (Session 31), and CENTRED. The side rail is gone
+   (Session 34: "nothing on the sides"), so the strip now spans the full
+   window inset only by its own 12px margins and centres across all of it.
+   Flex, not the 1fr grid: a grid spreads its three cards to the edges, and
+   spread is the opposite of centre aligned. */
 body.immersive #hud {
-  position: absolute; top: 10px; bottom: auto; left: 12px; right: var(--rail-w, 312px); z-index: 20;
+  position: absolute; top: 10px; bottom: auto; left: 12px; right: 12px; z-index: 20;
   background: none; border-bottom: none;
   pointer-events: none;
   display: flex; justify-content: center; align-items: flex-start; gap: 12px;
@@ -378,48 +367,10 @@ body.immersive #stage::after {
   font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase;
   color: var(--text-mute); opacity: .7; pointer-events: none;
 }
-/* The rail: parked off the right edge, showing a hand-width of itself, and
-   sliding home the moment it is wanted. */
-/* THE RIGHT COLUMN IS A LAYER OVER THE BOARD, not a wall beside it and not a
-   drawer hidden off the edge. It used to park itself at
-   `translateX(calc(100% - 18px))` and slide back on hover -- which made the
-   shop something you had to go looking for, and made every purchase a
-   hover-and-wait. The galaxy's own chrome does not hide: the briefing panel
-   floats over the map, visible, and the map runs underneath it. This is that,
-   for the battle. */
-/* NO width HERE, and that is the fix for the crushed rail: style.css owns the
-   sidebar's width and it is RESPONSIVE -- 292px one-column below 1240px, a
-   580px two-column grid above it. The first immersive pass pinned 292px onto
-   the absolute rail, so on any wide screen the two-column grid was squeezed
-   into half its designed width and every label clipped mid-word.
-   content-box, so the 10px side padding rides OUTSIDE the width style.css
-   promised the columns rather than being taken out of them. */
-body.immersive #sidebar {
-  position: absolute; top: 10px; right: 12px; bottom: auto; z-index: 21;
-  /* The whole budget, spelled out: 10px top inset + 12px bottom gap + 18px of
-     its own padding + 2px of border = 42px the card occupies AROUND its
-     content-box height, and max-height on a content-box element bounds the
-     CONTENT alone -- budgeting only the insets left the card 16px past the
-     window bottom on a short viewport. A couple of pixels spare, measured. */
-  max-height: calc(100% - 44px);
-  box-sizing: content-box;
-  background: rgba(8, 13, 21, .82);
-  backdrop-filter: blur(7px);
-  -webkit-backdrop-filter: blur(7px);
-  padding: 9px 10px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, .5);
-  overflow-y: auto;
-  transition: opacity .18s var(--e-tap);
-}
-/* It yields while you are actually placing something. A tower going down on
-   the ground beneath the rail is the one moment the rail is in the way, and
-   `body.aiming` is already set for exactly that. */
-body.immersive.placing #sidebar { opacity: 0.32; }
-body.immersive.placing #sidebar:hover,
-body.immersive.placing #sidebar:focus-within { opacity: 1; }
-body.rm-user.immersive #sidebar { transition: none; }
+/* The side rail itself is gone (Session 34): rush joined .hud-centre and
+   abilities/base level moved into #dock-inspector, both of which already
+   have their own immersive treatment above and in the dock section below, so
+   removing this card needed no replacement rule. */
 #btn-immersive.on { color: var(--cyan); border-color: var(--cyan); }
 
 /* ═════════════ THE GALAXY, FULL BLEED ═══════════════════════════════════ */
@@ -454,6 +405,29 @@ body.rm-user.immersive #sidebar { transition: none; }
 
 #screen-theatre .setup-head { top: 10px; left: 0; right: 0; text-align: center; }
 #screen-theatre .setup-head .tagline { display: none; }
+
+/* ═══════════ MULTIPLAYER MULTIVERSE: same full-bleed treatment as the theatre.
+   The map fills the viewport; header and footer float above it with drop
+   shadows, exactly like single-player's galaxy screen. */
+#screen-multiverse { overflow: hidden; }
+#screen-multiverse .setup-wrap { max-width: none; padding: 0; gap: 0; position: relative;
+                                height: 100vh; }
+#multiverse-wrap.worldmap-wrap { flex: 1 1 auto; min-height: 0; border: 0; background: transparent;
+                                 margin: 0; }
+#screen-multiverse .setup-head,
+#screen-multiverse .setup-foot { position: absolute; z-index: 6; pointer-events: none; }
+#screen-multiverse .setup-head > *, #screen-multiverse .setup-foot > * { pointer-events: auto; }
+#screen-multiverse .setup-head { top: 10px; left: 0; right: 0; text-align: center;
+                                 background: linear-gradient(rgba(4,7,15,.82), transparent);
+                                 padding: 12px 16px 22px; }
+#screen-multiverse .setup-foot { bottom: 0; left: 0; right: 0; padding: 12px 18px;
+                                 background: linear-gradient(transparent, rgba(4,7,15,.85));
+                                 display: flex; justify-content: center; }
+/* The map's own overlays keep clear of the floating bars. */
+#multiverse-wrap.gx-viewport > .gx-keys { top: 96px; left: 14px; }
+#multiverse-wrap.gx-viewport > .gx-nav { top: 96px; right: 14px; }
+#multiverse-wrap.gx-viewport > .gx-hint { bottom: 66px; left: 14px; }
+#multiverse-wrap.gx-viewport > .wm-hint { display: none; }
 #screen-theatre #campaign-trail { top: 52px; left: 0; right: 0; display: flex; justify-content: center; }
 #screen-theatre .setup-foot { bottom: 0; left: 0; right: 0; padding: 12px 18px;
   background: linear-gradient(0deg, rgba(4,7,13,.92), rgba(4,7,13,0)); margin-top: 0; }
@@ -818,7 +792,6 @@ body.rm-user.immersive #sidebar { transition: none; }
 .ctl-group { gap: 4px; }
 .ctl-group .icon-btn, .speed-btn { padding: 2px 7px; font-size: 11px; }
 #stage { padding: 6px 10px; gap: 9px; }
-#sidebar { gap: 7px; }   /* width lives in style.css: 292px / 580px two-column */
 .panel { padding: 8px 10px; }
 .section-label { font-size: 9.5px; letter-spacing: .16em; margin-bottom: 5px; }
 .tower-card { padding: 5px 8px; gap: 8px; }
@@ -1332,7 +1305,13 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
 @media (prefers-reduced-motion: reduce) { .panel-action { transition: none; } }
 
 .enrage-btn { --ac: #ef4444; }
-.muster-btn { --ac: #f97316; }
+/* Matched to .tower-card's padding (Session 34), not .panel-action's roomier
+   default: side by side in the dock, a summon button noticeably taller than
+   a tower card read as uneven even though nothing was actually wrong -- the
+   two rows of figures still fit, just tighter. This used to be a
+   short-viewport-only override (max-height: 780px); it is the everyday
+   value now. */
+.muster-btn { --ac: #f97316; padding: 5px 8px; }
 .enrage-btn:active:not(:disabled) { transform: translateY(1px) scale(.99); }
 .enrage-btn:disabled { cursor: default; filter: grayscale(.55); opacity: .55; }
 .enrage-btn.maxed { border-color: rgba(239, 68, 68, .8); opacity: 1; filter: none; }
@@ -1566,20 +1545,18 @@ body.tri-field #hud { gap: 8px; padding: 8px 10px; }
    the panel already carries, like the other two. */
 .cmdr.third { border-right-color: var(--cc, var(--rose)) !important; }
 
-/* BATTLE SIDEBAR. The muster bar added ~162px of unshrinkable content, which
-   pushed the inspector 343px below the fold at 680px tall. The sidebar's
-   growable panel already scrolls; the fixed-height children above it now have
-   a shrink budget so the panel keeps a usable share of the column. In the
-   two-column grid the same min-height:0 + overflow:hidden is what lets the
-   muster and ability rows give ground before the inspector does. */
+/* #dock-inspector now stacks abilities, base level and the inspector itself
+   in one flex column (Session 34), inside the pane's shared 34vh cap. The
+   ability bar keeps a shrink budget rather than a fixed height, same
+   reasoning as the old sidebar had: it should give ground to the inspector
+   content below it before the pane starts scrolling, not the other way
+   round. */
 #ability-bar { flex: 0 1 auto; min-height: 0; overflow: hidden; }
 /* The muster bar keeps its header plus its first row: on a fresh profile one
    derived tier IS the whole control, and proportional shrink clipped it below
    the fold while the (scrolling) inspector kept most of the column. */
 #muster-bar { flex: 0 1 auto; min-height: 62px; overflow: hidden; }
-#sidebar > .panel-grow { min-height: 120px; }
 @media (max-height: 780px) {
-  .muster-btn { padding: 5px 8px; }
   .mu-body em { display: none; }          /* the per-tier blurb, not the price */
 }
 
@@ -2977,12 +2954,30 @@ body:not(.arena-field) .arena-ladder { display: none; }
    `#dock-inspector` (1-0-0) regardless of source order. Measured: the first
    version of this rule changed nothing at all, still 378px (42vh) after
    "trimming" to 34vh, because it never actually won the cascade. */
-#dock #dock-inspector { width: 300px; max-height: 34vh; }
+/* flex column (Session 34): abilities and the base-level button now sit
+   above #inspector inside this same pane, and the column needs its own gap
+   since nothing else here provides one -- .dock-pane is a plain block. Raised
+   from 34vh to 40vh in the same move: that cap predates the ability bar and
+   base button living here, and its own content (icon row, doctrine strip,
+   wave roster) is a near-fixed pixel height regardless of viewport, so at
+   1366x768 -- the codebase's own reference laptop size -- 34vh (261px) fell
+   28px short of the ~289px the content actually needs and forced an internal
+   scroll where none of the panes beside it have one. 40vh clears that with
+   room at 768px tall and still reads as the smaller of the three panes next
+   to the shared 42vh muster/shop cap, matching the original intent. */
+#dock #dock-inspector { width: 300px; max-height: 40vh; display: flex; flex-direction: column; gap: 8px; }
 #dock .section-label { margin-bottom: 6px; }
 /* THE 2x2 GRID ITSELF. repeat(2, 1fr): exactly two columns, and with the
    engine's own 4-item cap the two rows fall out for free, no third row a
    taller board could ever produce. */
-.muster-bar, #shop-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+/* minmax(0, 1fr), not bare 1fr: a bare 1fr track's minimum is auto, which
+   floors it at its content's min-content width, so a card whose name+role
+   text wanted more than its 152px share simply overflowed the pane's own
+   border instead of shrinking -- measured at 1366px wide, the last card
+   stuck out 30px past #dock-shop's right edge. .tc-main already carries
+   min-width:0 for exactly this squeeze; the track itself was the one link
+   in the chain still refusing to go below content size. */
+.muster-bar, #shop-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 /* .muster-bar carries THREE possible header/summary rows above its actual
    tier cards (engine-strip, muster-head, and lattice-plate as the doctrine
    that replaces the cards outright), none of which are cards themselves.

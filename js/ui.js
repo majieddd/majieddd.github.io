@@ -5042,30 +5042,22 @@ const UI = {
         <span class="rr-hp">${formatNum(Math.round(hp))}</span></div>`;
     }).join('');
 
-    const inbound = Game.enemies.filter(e => e.hostileTo === 0 && e.reanimated).length;
-    /* YOU SENT means units the PLAYER owns, wherever they are walking. Keying
-       it on `hostileTo === 1` printed half of a CONFLUENCE send (a kill there
-       marches on both rivals), counted a third commander's sends at seat 1 as
-       the player's, and fell permanently to zero in the arena the moment seat
-       1 was eliminated and the send arc moved on. BATCH-C/nside */
-    const outbound = Game.enemies.filter(e => e.owner === 0 && e.hostileTo !== 0 && e.reanimated).length;
-
+    /* THE SENT/INBOUND ROW AND THE ATTRITION PARAGRAPHS ARE GONE (owner,
+       Session 34): the description panel moved into the bottom dock, where
+       every pixel of height is shared with the skill bar and the base-level
+       button now living above this content, and the owner asked directly
+       for these two blocks specifically to buy the room back. Neither
+       number nor rule they stated is lost forever -- INBOUND/OUTBOUND was
+       always also derivable from the board itself, and the attrition rule
+       is restated, briefly, in the battle card (data-open="battlecard").
+       This function no longer computes outbound/inbound at all: they had no
+       other reader. */
     return `<div class="wave-info">
-      <div class="attrition">
-        <div class="att-cell out"><b>${outbound}</b><span>YOU SENT</span></div>
-        <div class="att-arrow">⇄</div>
-        <div class="att-cell in"><b>${inbound}</b><span>INBOUND</span></div>
-      </div>
       ${Game.seed !== null && Game.seed !== undefined ? `<div class="section-label" data-tt="BATTLE SEED|Same seed + same choices replays this exact match. Set it in OPTIONS.">SEED ${Game.seed}</div>` : ''}
       <div class="section-label">NEXT. WAVE ${next}${p.boss ? '  ⚠ BOSS' : isMini ? '  ◆ MINIBOSS' : ''}${rage ? `  ✦ RESONATING ×${rage}` : ''}</div>
       <div class="wave-name ${p.boss ? 'boss' : isMini ? 'mini' : ''} ${rage ? 'enraged' : ''}">${p.name}</div>
       <div class="roster">${list}</div>
       ${this.enragePanel(Game.waveRunning ? spent : rage)}
-      <div class="hint-block">
-        <div class="section-label">ATTRITION</div>
-        <p class="hint">Waves spawn in the <b>neutral zone</b> and hit every base identically. What your kills become is your commander's rite: a body sent can never be sent again.</p>
-        <p class="hint">Each wave permanently raises one enemy stat (shown top-centre). Escalations land every <b>10</b> waves, minibosses every <b>${MINIBOSS_EVERY}</b>.</p>
-      </div>
     </div>`;
   },
 
