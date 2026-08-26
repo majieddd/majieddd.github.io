@@ -114,8 +114,15 @@ fingerprint-verified.
   entries yet; the briefing falls back to owner/kind lines (nothing blank),
   and authored WAS/NOW records should follow once their board designs
   settle.
-- `[ ]` Cutscene art: verify each rendered plate reads at 576px against its
-  slide text, and re-roll the misses by key (`--force cut_...`).
+- `[ ]` Cutscene art: verify each plate reads against its slide text, and
+  re-roll the misses by key (`--force cut_...`). Best done AFTER the HD pass
+  rather than against the current 576px interim tier, since re-rendering on a
+  different model re-rolls the image anyway and a miss judged now may not
+  survive. Owned by the HD handover: `docs/HANDOVER-KREA-ART.md`.
+- `[ ]` HD art pass, handed to the 5090 machine: 52 keys at 1920x1080 on
+  Krea 2, per `docs/HANDOVER-KREA-ART.md`. The two-tier cache means this
+  lands per key with no branch to merge, so the current tier ships until it
+  does.
 
 ## F. Cross-checks the batch held to
 
