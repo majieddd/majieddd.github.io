@@ -2,7 +2,7 @@
 Faction crests, forced onto their faction's exact hue.
 
 BRAND.md makes crests STRICT MONOCHROME: one faction colour on void black. A
-prompt cannot guarantee that — an audit measured the generated HUMANITY crest
+prompt cannot guarantee that, an audit measured the generated HUMANITY crest
 at 144.6 degrees (spring green) against a 186.9 target, and THE XENO at 318.5
 (magenta) against 262.1. Meanwhile the derived world duotones, which are tinted
 in code, land dead on hue every time.
