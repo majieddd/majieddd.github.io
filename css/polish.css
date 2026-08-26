@@ -3419,3 +3419,9 @@ body.rm-user.immersive #battle-controls { transition: none; }
 .brm-caution { margin: 0; padding-top: 5px; font-size: 10px; line-height: 1.45;
                font-style: italic; color: var(--text-mute);
                border-top: 1px dashed color-mix(in srgb, var(--fc) 22%, transparent); }
+
+/* THE FACTION LEADER LINE (canon 2029): the one figure above a field roster,
+   today only Ashtar for the Federation. Sits between the campaign name and
+   the mission, quiet, because the card's job is still the choice. */
+.fac-leader { display: block; font-style: normal; font-size: 10px;
+              letter-spacing: .1em; color: var(--text-mute); margin-bottom: 4px; }

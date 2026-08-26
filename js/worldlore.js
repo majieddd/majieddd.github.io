@@ -265,46 +265,69 @@
   /* LORE.worldGeneration.interpretation states the rule these three restate:
      names are survey registry names, and ownership is a current controlling
      claim rather than the world's native identity. */
-  var REGISTRY_LINES = [
-    'The name is a survey registry entry. The claim on it is current, and it is not the first.',
-    'A registry name, filed from orbit by a survey that did not ask. Whoever held it before the filing did not file.',
-    'The chart records a survey name and a controlling claim. Neither of those is the same thing as who belongs here.'
-  ];
+  /* CANON 2029 BANKS. The old banks spoke 2099 registry bureaucracy
+     ("survey registry entries", "Civil Nodes"), and the owner's verdict on
+     them was that the flavor did not make sense. These speak the story:
+     who is standing on the world and what they are doing there. Every line
+     is one sentence, because the briefing card is read in the three seconds
+     before a drop, not studied. Picked by FNV hash of stable world fields,
+     zero draws, exactly as before. */
 
-  /* One pair per world kind, worded from the kind canon in
-     LORE.worldGeneration.world_kinds. The registry LABEL is used, not the
-     shorter chip the briefing card prints, because this paragraph is written
-     in the voice of the file rather than the voice of the HUD. */
+  /* What the CURRENT HOLDER is doing here, by faction. This is the line the
+     briefing leads with, because it is the story reason the fight exists. */
+  var OWNER_LINES = {
+    human: [
+      'A Manifest foothold: human crews are pouring foundations here that are meant to outlast every claim that came before them.',
+      'Humanity holds it now, and is standardising it so thoroughly that letting go is already becoming impossible.'
+    ],
+    light: [
+      'A Federation ring world: defended from orbit, helped from a distance, and still waiting, like all of them, to be allowed to rise.',
+      'The Federation holds the ring here. What the ring is protecting, and from whom, reads differently from the ground.'
+    ],
+    xeno: [
+      'A Compact harvest site: the pens are quiet, the yield still ships, and the herd here has not heard that one herd broke its fence.',
+      'The Harvest holds it the way a stomach holds a meal. Nothing about the arrangement believes it can be interrupted.'
+    ],
+    pirate: [
+      'A free port on the roads: no flag, every cargo, and a sanctuary bay that has never once asked a refugee for papers.',
+      'The Constellation runs it as a waystation. Everything moves through here, which is exactly the argument for and against it.'
+    ],
+    robot: [
+      'A Vigil work site: the automatons execute their standing tasks here, and the tasks stopped matching the recovered directives long ago.',
+      'The Vigil holds it and maintains it perfectly, for a purpose no recovered archive can produce.'
+    ]
+  };
+
+  /* What KIND of ground it is, in one mechanical-then-story sentence. */
   var KIND_LINES = {
     standard: [
-      'It is logged as a Civil Node: a populated jurisdiction whose value is simply that ordinary life on it continues.',
-      'Logged as a Civil Node. Nothing on it is strategic except that people keep living there, which is the whole of what it is worth.'
+      'An inhabited world, which is the whole of its value: ordinary life continues here, under whoever wins.',
+      'Nothing on it is strategic except the people living there, and both commanders know exactly what that is worth.'
     ],
     fortress: [
-      'It is logged as a Charter Fortress: a registry strong enough to seat a system commander and defended well enough to keep one.',
-      'Logged as a Charter Fortress. The walls are the smaller half of it. The registry inside is what makes a commander here legitimate.'
+      'A fortress world, hardened enough to seat a system commander and hold one.',
+      'The defences are the smaller half of it: whoever holds this rock legitimately runs the system around it.'
     ],
     forge: [
-      'It is logged as an Industrial Forge: matter, power and labour go in, and campaign tempo comes out.',
-      'Logged as an Industrial Forge. Whoever holds it does not gain ground so much as gain time, and time is the one thing no fleet can ship in.'
+      'A forge world: matter and labour go in, campaign tempo comes out, and whoever holds it buys time.',
+      'The industry here never stopped for any of its owners. It will not stop for the next one either.'
     ],
     nest: [
-      'It is logged as a Vigil Nest: a legacy Old Weather enforcement site whose routines still run and still do not read banners.',
-      'Logged as a Vigil Nest. The machines on it answer a mission order that predates every flag in the system, and they have never been told otherwise.'
+      'A Vigil nest: the automatons here still execute the corrupted queue, and they do not read flags.',
+      'The machines on this ground answer orders older than every banner present, and something rewrote those orders.'
     ]
   };
 
   var ORDINARY_LINES = [
-    'No seat and no standing dispute. It goes to whoever arrives able to hold it.',
-    'Nothing about it is contested on paper. That has never been the thing that decides a world.',
-    'One claim, uncontested in the record, and the record is a long way behind the ground.'
+    'No seat and no standing dispute: it goes to whoever arrives able to hold it.',
+    'One claim on the books, and the books are a long way behind the ground.'
   ];
 
   var HEADLINES = {
-    standard: 'An ordinary jurisdiction, which is exactly what makes it worth taking intact.',
-    fortress: 'A charter strong enough to hold a commander, which is why somebody always wants it.',
-    forge: 'A working forge. Whoever holds it buys time, and time is the only resource that cannot be shipped in.',
-    nest: 'An enforcement site that never stood down, on ground nobody has managed to keep.'
+    standard: 'An ordinary world, which is exactly what makes it worth taking intact.',
+    fortress: 'A fortress strong enough to hold a commander, which is why somebody always wants it.',
+    forge: 'A working forge: whoever holds it buys time, and time cannot be shipped in.',
+    nest: 'A Vigil work site that never stood down, on ground nobody has managed to keep.'
   };
 
   /* --------------------------------------------------------------------------
@@ -467,7 +490,11 @@
          invented about a world whose fields do not say it. */
       var parts = [];
 
-      parts.push(choose(REGISTRY_LINES, w.id + '|registry'));
+      /* Owner first: the story reason the fight exists leads the body,
+         where the retired registry boilerplate used to sit. */
+      var ownerLine = (w.owner && OWNER_LINES[w.owner])
+        ? choose(OWNER_LINES[w.owner], w.id + '|owner') : '';
+      if (ownerLine) parts.push(ownerLine);
 
       if (kind) parts.push(choose(KIND_LINES[kind], w.id + '|kind'));
 
@@ -498,8 +525,25 @@
           nonEmpty(L.scenarios[o.scenarioId].canon))
         parts.push('The order here: ' + L.scenarios[o.scenarioId].canon);
 
+      /* THE ONE-LINE DOSSIER, canon 2029. The briefing card shows exactly
+         this, because the owner's finding on the old two-row WAS/NOW was
+         that it read as information, not story. One sentence about who is
+         here and one about the ground, fused. The full body remains for any
+         surface that wants the long form. */
+      var line;
+      if (w.renegade) {
+        line = 'Held by a splinter of your own banner, and the splinter has stopped answering the order that raised it.';
+      } else if (w.seat) {
+        line = (ownerLine ? ownerLine + ' ' : '') + 'This is the seat: take it and the system follows.';
+      } else if (w.contested) {
+        line = 'Two powers are already fighting over this ground, and a third arriving makes the count three.';
+      } else {
+        line = ownerLine || (kind ? HEADLINES[kind] : '');
+      }
+
       return {
         headline: headline,
+        line: line,
         body: parts.join(' '),
         functionThen: site && nonEmpty(site.functionThen) ? site.functionThen : '',
         conflictNow: site && nonEmpty(site.conflictNow) ? site.conflictNow : '',

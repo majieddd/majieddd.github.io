@@ -51,13 +51,81 @@ function galaxyRng(seed) {
   return () => (x = (x * 1664525 + 1013904223) >>> 0) / 4294967296;
 }
 
-const WORLD_NAMES = [
-  'Kerath', 'Vell', 'Ashkar', 'Ordos', 'Myrren', 'Tessaly', 'Cauldron', 'Hollow',
-  'Ninefold', 'Brack', 'Solace', 'Ixion', 'Tarsis', 'Umber', 'Perrin', 'Vaunt',
-  'Cinderfall', 'Quill', 'Sabre', 'Threnody', 'Gallow', 'Wexen', 'Orrery', 'Lume'
+/* ══════════════════════════════ NAMING, CANON 2029 ══════════════════════
+   Real stars and real theoretical hypotheticals (docs/CANON-2029.md, owner
+   instruction). Every campaign opens in its banner's HOME system, so each
+   faction starts somewhere different: humanity in THE EARTH SYSTEM with our
+   actual solar system as its worlds, the Federation in the Pleiades of the
+   contactee mythos, the Xeno at Zeta Reticuli off the Hill star map, the
+   Pirates at Barnard's Star, the Vigil at Tabby's Star, the one the
+   megastructure hypothesis was written about. Later systems draw from real
+   neighbours, and Sol itself appears in NON-human campaigns with Earth as
+   its seat.
+
+   STREAM SAFETY, which is the whole design. The old tables were consumed by
+   pure index arithmetic and never by rnd(), so naming draws NOTHING today
+   and must draw nothing tomorrow. These helpers take (faction, seed, si, wi)
+   and use integer arithmetic only: same call count, zero draws, and the
+   structural fingerprint (everything except names) is asserted byte
+   identical across 60 generations in the change that landed this.
+
+   The last world of every system (wi 6) is the SEAT, so each home list is
+   ordered with its seat last: Luna, because the far side of the Moon is
+   where the occupiers always were; Alcyone, the mythos anchor of the
+   Pleiades; Serpo, the Zeta Reticuli planet of the Project Serpo story;
+   Harbour Nine, the sanctuary the pirate arc already talks about; the Veil,
+   the swarm that dims KIC 8462852. */
+const GX_HOME_SYSTEMS = {
+  human:  { name: 'THE EARTH SYSTEM',
+            worlds: ['MERCURY', 'VENUS', 'MARS', 'CERES', 'EUROPA', 'TITAN', 'LUNA'] },
+  light:  { name: 'THE PLEIADES',
+            worlds: ['MAIA', 'ELECTRA', 'TAYGETA', 'MEROPE', 'CELAENO', 'STEROPE', 'ALCYONE'] },
+  xeno:   { name: 'ZETA RETICULI',
+            worlds: ['ZETA-1 b', 'ZETA-1 c', 'ZETA-1 d', 'ZETA-2 b', 'ZETA-2 c', 'ZETA-2 d', 'SERPO'] },
+  pirate: { name: "BARNARD'S STAR",
+            worlds: ['BARNARD b', 'BARNARD c', 'BARNARD d', 'BARNARD e', 'BARNARD f', 'BARNARD g', 'HARBOUR NINE'] },
+  robot:  { name: "TABBY'S STAR",
+            worlds: ['KIC-8462 b', 'KIC-8462 c', 'KIC-8462 d', 'KIC-8462 e', 'KIC-8462 f', 'KIC-8462 g', 'THE VEIL'] },
+};
+
+/* The travelling pool: real nearby systems, worlds in real exoplanet letter
+   style (planets letter from b). TRAPPIST-1 b through h are all real, seven
+   of them, which is exactly a system's world count. SOL appears here so the
+   other powers' campaigns can arrive at us: its seat is EARTH. */
+const GX_STAR_POOL = [
+  { name: 'SOL',              worlds: ['MERCURY', 'VENUS', 'MARS', 'CERES', 'EUROPA', 'TITAN', 'EARTH'] },
+  { name: 'PROXIMA CENTAURI', tag: 'PROXIMA' },
+  { name: 'TAU CETI',         tag: 'TAU CETI' },
+  { name: 'TRAPPIST-1',       tag: 'TRAPPIST-1' },
+  { name: 'SIRIUS',           tag: 'SIRIUS' },
+  { name: 'EPSILON ERIDANI',  tag: 'ERIDANI' },
+  { name: 'GLIESE 581',       tag: 'GLIESE 581' },
+  { name: 'WOLF 359',         tag: 'WOLF 359' },
+  { name: 'ROSS 128',         tag: 'ROSS 128' },
+  { name: 'ALPHA CENTAURI',   tag: 'CENTAURI' },
+  { name: '61 CYGNI',         tag: 'CYGNI' },
+  { name: "KAPTEYN'S STAR",   tag: 'KAPTEYN' },
 ];
-const SYSTEM_NAMES = ['CORVUS', 'ARDENT', 'TALLOW REACH', 'THE SPINDLE', 'BLACKGLASS',
-                      'HELIX', 'MOURNE', 'VAST'];
+
+/* Pure integer helpers. No rnd() call may ever appear in either. */
+function gxPoolEntry(faction, seed, si) {
+  /* Humanity's home IS Sol, so its travelling pool must not offer a second
+     one. The filter is deterministic and faction-keyed, not drawn. */
+  const pool = faction === 'human'
+    ? GX_STAR_POOL.filter(p => p.name !== 'SOL') : GX_STAR_POOL;
+  const off = ((seed >>> 3) + (seed >>> 11)) % pool.length;
+  return pool[(off + (si - 1)) % pool.length];
+}
+function gxSystemName(faction, seed, si) {
+  if (si === 0) return (GX_HOME_SYSTEMS[faction] || GX_HOME_SYSTEMS.human).name;
+  return gxPoolEntry(faction, seed, si).name;
+}
+function gxWorldName(faction, seed, si, wi) {
+  if (si === 0) return (GX_HOME_SYSTEMS[faction] || GX_HOME_SYSTEMS.human).worlds[wi % 7];
+  const entry = gxPoolEntry(faction, seed, si);
+  if (entry.worlds) return entry.worlds[wi % 7];
+  return entry.tag + ' ' + 'bcdefgh'.charAt(wi % 7);
+}
 
 /* The renderer squashes every world’s y by this before drawing, so generation
    divides by it to keep orbits visually circular. Keep the two in step. */
@@ -192,8 +260,10 @@ function generateGalaxy(seed, playerFaction, mapPool) {
 
       worlds.push({
         id: 's' + si + 'w' + wi,
-        name: WORLD_NAMES[(si * WORLDS_PER_SYSTEM + wi) % WORLD_NAMES.length] +
-              ' ' + 'IVXLC'.charAt(wi % 5) + (wi > 4 ? 'I' : ''),
+        /* Canon 2029: real names, index-derived exactly as before, zero
+           draws. The numeral suffix went with the invented names: MARS is
+           not MARS X, and TRAPPIST-1e is already a real designation. */
+        name: gxWorldName(playerFaction, seed, si, wi),
         x: Math.min(GX_X_MAX, Math.max(GX_X_MIN, cx + Math.cos(wa) * wr)),
         /* Divided by the render squash so the orbit is round ON SCREEN. The
            clamp is a guard now, not a shaper: with GX_SYSTEM_SLOTS nothing
@@ -323,7 +393,7 @@ function generateGalaxy(seed, playerFaction, mapPool) {
 
     systems.push({
       id: 'sys' + si, index: si,
-      name: SYSTEM_NAMES[si % SYSTEM_NAMES.length],
+      name: gxSystemName(playerFaction, seed, si),
       x: cx, y: cy, holder, boss: boss.id, worlds
     });
   }
@@ -883,7 +953,8 @@ function advanceRivals(galaxy, progress, rnd) {
        mutates the LIVE galaxy, and the live galaxy is regenerated from the
        campaign seed on every load -- so unless the caller can write the take
        back onto the campaign, every world the rivals ever took is handed
-       straight back. World NAMES repeat across a galaxy (WORLD_NAMES cycles);
+       straight back. World NAMES can repeat across galaxies (the canon-2029
+       star pool is finite, and Sol's worlds appear in more than one campaign);
        the id does not. */
     moves.push({ system: sys.name, world: t.name, worldId: t.id,
                  faction: sys.holder });

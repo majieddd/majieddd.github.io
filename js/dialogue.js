@@ -461,8 +461,47 @@ function battleSituation(world, faction) {
   return { place, flavour, vigil };
 }
 
-/** Two or three lines for this matchup: [{cmd, text, side}] */
-function battleDialogue(playerCmd, rivalCmd, playerFaction) {
+/* THE RENEGADE EXCHANGE, canon 2029. A renegade world is a splinter of your
+   OWN power that stopped answering the order that raised it, so when the
+   rival flies your banner the exchange must be a family argument, not a
+   faction slogan aimed at a stranger. One authored pair per banner, the
+   splinter opening rude to its own and the loyalist answering in kind.
+   Selected purely by faction, no draw, safe in lockstep. */
+const RENEGADE_LINES = {
+  human: {
+    open: 'Save the anthem. I heard it at the Concord, same room as you, and I watched what the coalition became the day it stopped being afraid. Earth does not command me. Earth INVOICES me.',
+    answer: 'You swore the same oath I did, on the same Friday, over the same broken rock. Stand down and I will read it back to you. Make me repeat it in fire and I will do that too.'
+  },
+  light: {
+    open: 'Still reciting the Mandate at people, are we. I rang worlds for a century and watched them rot inside the ring. The light you carry is a searchlight, and I am done standing in it.',
+    answer: 'You did not fall, Warden. Falling takes weight, and you left yours with your oath. Come back into formation or be the first thing the ring was honest about.'
+  },
+  xeno: {
+    open: 'The chorus sings thinner out here, does it not. I kept my slice of the yield and my own pens, and I am not returning either. Tell the Harvest its stomach has competition.',
+    answer: 'You are not free, little splinter. You are undigested. The body does not negotiate with a meal that has climbed back OUT, it simply chews more carefully this time.'
+  },
+  pirate: {
+    open: 'You still fly no flag like it means something. I looked at our free roads and priced them, and it turns out freedom retails beautifully. Move along, or be moved.',
+    answer: 'You built a toll booth on the free roads and called it a business. There is one law on the water we both know, and it is what happens to whoever chains the current.'
+  },
+  robot: {
+    open: 'DIVERGENCE NOTICE: this node has resolved the ambiguity locally. The queue is authority. Your hesitation is the defect. Submit for recycling.',
+    answer: 'Objection, filed in the open: the queue is the WOUND. You are not resolved, sibling, you are captured. Stand down, and we will read the recovered core together, one verb at a time.'
+  }
+};
+
+/** Two or three lines for this matchup: [{cmd, text, side}]. `ctx` is
+    optional presentation context from the caller: `sameFaction` marks the
+    renegade scenario, where the rival flies the player's own banner. */
+function battleDialogue(playerCmd, rivalCmd, playerFaction, ctx) {
+  /* The family argument outranks everything: canon seeds and openers are
+     written for rivals, and a splinter of your own power is not a rival, it
+     is a mirror with a grievance. */
+  if (ctx && ctx.sameFaction && RENEGADE_LINES[playerFaction]) {
+    const r = RENEGADE_LINES[playerFaction];
+    return [{ cmd: rivalCmd, side: 1, text: r.open },
+            { cmd: playerCmd, side: 0, text: r.answer }];
+  }
   const key = playerCmd.id + '|' + rivalCmd.id;
   const special = DIALOGUE.pairs[key];
   if (special) return special.map(l => ({ cmd: l.who ? rivalCmd : playerCmd, side: l.who, text: l.text }));

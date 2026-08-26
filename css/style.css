@@ -316,14 +316,11 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
    the eye can scan rather than three paragraphs. */
 .cd-dossier { border-left: 2px dashed color-mix(in srgb, var(--cc) 55%, transparent);
               padding: 2px 0 2px 13px; margin: 0 0 18px; }
-.cd-dossier .section-label { margin-bottom: 7px; }
+/* The HISTORY/MOTIVE/FRACTURE rows this block once carried are gone with
+   their markup (canon 2029: the beats tell the story, the card does not),
+   so only the single role line keeps a rule. */
 .cdo-role { font-size: 12.5px; font-style: italic; color: color-mix(in srgb, var(--cc) 40%, var(--text));
-            margin: 0 0 9px; line-height: 1.5; }
-.cdo-row { display: grid; grid-template-columns: 74px 1fr; gap: 10px;
-           align-items: baseline; margin-bottom: 6px; }
-.cdo-row b { font-family: var(--display); font-size: 9.5px; letter-spacing: .14em;
-             color: var(--text-mute); }
-.cdo-row span { font-size: 12.5px; color: var(--text-dim); line-height: 1.55; }
+            margin: 0; line-height: 1.5; }
 
 .cd-techhead { display: flex; justify-content: space-between; align-items: baseline; }
 .pts { font-size: 12px; color: var(--text-mute); }

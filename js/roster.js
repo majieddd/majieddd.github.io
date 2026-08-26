@@ -51,10 +51,15 @@ const COMMANDER_ROSTER = [
   },
 
   /* ═══════════════════════════════════════════════════════ HUMANITY ═══ */
+  /* CANON 2029 (docs/CANON-2029.md): human commanders carry FAMILIAR names,
+     rank and surname, the way a world-coalition officer corps reads in 2029.
+     Owner instruction, display names only: every id below is a stable id and
+     is the join for art plates, lore, dialogue and saves, so ids NEVER move.
+     Titles are the callsigns the story addresses people by, so they stay. */
   {
-    id: 'vanta', faction: 'human', name: 'VANTA', title: 'The Archivist',
+    id: 'vanta', faction: 'human', name: 'DIR. VANCE', title: 'The Archivist',
     color: '#7dd3fc', icon: '◈', free: true,
-    blurb: 'Fights the long game. Vanta turns the draft itself into a weapon: more choices, more often, and a board that grows stronger with every doctrine filed away.',
+    blurb: 'Fights the long game. Vance turns the draft itself into a weapon: more choices, more often, and a board that grows stronger with every doctrine filed away.',
     abilities: ['overclock', 'dampen'],
     trait: { name: 'PERPETUAL STUDY',
       desc: 'Command upgrades are drafted every 4 waves instead of 5, and you are offered 4 options instead of 3.',
@@ -72,9 +77,9 @@ const COMMANDER_ROSTER = [
     ])
   },
   {
-    id: 'korrin', faction: 'human', name: 'KORRIN', title: 'The Quartermaster',
+    id: 'korrin', faction: 'human', name: 'GEN. KARIM', title: 'The Quartermaster',
     color: '#38e8ff', icon: '◭',
-    blurb: 'Wins on logistics. Korrin makes width affordable when everyone else is priced into a handful of towers.',
+    blurb: 'Wins on logistics. Karim makes width affordable when everyone else is priced into a handful of towers.',
     abilities: ['focusfire', 'bulwark'],
     trait: { name: 'BULK CONTRACTS',
       desc: 'Per-copy tower price growth is 30% gentler, and you start with 25% more gold.',
@@ -92,9 +97,9 @@ const COMMANDER_ROSTER = [
     ])
   },
   {
-    id: 'nyx', faction: 'human', name: 'NYX', title: 'The Overclocker',
+    id: 'nyx', faction: 'human', name: 'DR. NYSTROM', title: 'The Overclocker',
     color: '#67e8f9', icon: '⟐',
-    blurb: 'Pushes single structures past their rated limits. Nyx would rather field five monsters than twenty soldiers.',
+    blurb: 'Pushes single structures past their rated limits. Nystrom would rather field five monsters than twenty soldiers.',
     abilities: ['overclock', 'smokescreen'],
     trait: { name: 'REDLINE',
       desc: 'Ascension costs 25% less, and SURGE triggers on EVERY ascension instead of every second one.',
@@ -112,9 +117,9 @@ const COMMANDER_ROSTER = [
     ])
   },
   {
-    id: 'orin', faction: 'human', name: 'ORIN', title: 'The Engineer',
+    id: 'orin', faction: 'human', name: "CHF. O'RYAN", title: 'The Engineer',
     color: '#22d3ee', icon: '⚙',
-    blurb: 'Builds fast and rebuilds faster. Orin treats a lost tower as a delay, not a defeat.',
+    blurb: "Builds fast and rebuilds faster. O'Ryan treats a lost tower as a delay, not a defeat.",
     abilities: ['focusfire', 'dampen'],
     trait: { name: 'FIELD WORKSHOP',
       desc: 'Towers begin one level higher, and upgrades cost 15% less.',
@@ -132,9 +137,9 @@ const COMMANDER_ROSTER = [
     ])
   },
   {
-    id: 'vess', faction: 'human', name: 'VESS', title: 'The Marshal',
+    id: 'vess', faction: 'human', name: 'MAR. VASQUEZ', title: 'The Marshal',
     color: '#0ea5e9', icon: '⛨',
-    blurb: 'Holds ground nobody else would. Vess measures a battle in how little was given up.',
+    blurb: 'Holds ground nobody else would. Vasquez measures a battle in how little was given up.',
     abilities: ['overclock', 'bulwark'],
     trait: { name: 'NO GROUND GIVEN',
       desc: '+8 maximum lives, and leaks cost one fewer life (minimum one).',

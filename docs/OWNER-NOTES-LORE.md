@@ -248,3 +248,41 @@ releases can be diffed against it. **The exemption stops at the docs**:
 `js/lore.js` is generated from that tree, is player-visible, is still gated,
 and was clean on arrival. Verified narrow by planting a dash in `js/` and
 confirming it is still caught.
+
+---
+
+## E. Canon 2029, the owner's revision (2026-08-26)
+
+The owner moved the timeline from 2099 to the Apophis window: Disclosure on
+September 11, 2028, the Concord over the holidays, the intercept on April 13,
+2029 (the real close-approach date, a Friday), and the fleet departing the
+same day. Authoritative text: `docs/CANON-2029.md`. The vendored lore tree
+stays untouched for upstream diffing; that file is the regeneration source.
+
+Everything below is measured on the live build, gates green throughout
+(owner-sweep 61/0/2, MPT 37/0/2, zero console errors).
+
+| Change | Proof |
+|---|---|
+| All 30 story beats rewritten to the 2029 arcs, correct faction casting | 30/30 render, zero problems. An earlier draft cast ORIN and VESS as machine and Compact voices; both are human, and only a faction-aware validator caught it |
+| ASHTAR closes the Federation campaign | Final light beat spoken by ASHTAR with a procedural portrait (`Story.figure`, no roster entry, no sim table touched), and the faction card carries "ASHTAR, Supreme Commander and First Speaker" |
+| Human commanders renamed to familiar 2029 names | DIR. VANCE, GEN. KARIM, DR. NYSTROM, CHF. O'RYAN, MAR. VASQUEZ. Display names only; every id, art key and save reference unchanged |
+| Galaxy renamed to real astronomy | Campaigns open in the banner's home system: THE EARTH SYSTEM (seat LUNA), THE PLEIADES (seat ALCYONE), ZETA RETICULI (seat SERPO), BARNARD'S STAR (seat HARBOUR NINE), TABBY'S STAR (seat THE VEIL). Later systems draw Proxima, Tau Ceti, TRAPPIST-1, Sirius and kin, and SOL appears in non-human campaigns with EARTH as its seat |
+| The naming change is stream-safe | Structural fingerprint (everything except names) across 60 generations, 5 factions x 12 seeds: byte-identical before and after, combined hash ada4241e854943f0d81ffd1e both sides. Names were index-derived and draw nothing |
+| Field Manual codex rebased | 12 entries opening on September 11, 2028; the Vigil as the Ancients' corrupted automatons (recovered directives carry no offensive verb) and the Ancients as formless ("a mind with no mouth issues no commands") |
+| Renegade dialogue | Fighting your own banner now opens a family argument, one authored pair per faction, keyed purely on same-faction, no draw. Control verified: cross-faction pairings unchanged |
+| Dossier bloat removed | Commander card shows one role line (HISTORY/MOTIVE/FRACTURE rows deleted, story carries the depth); world briefing shows ONE story line about who holds the ground, replacing the WAS/NOW registry prose the owner flagged as not making sense |
+
+Deliberately NOT done, and why:
+
+- **A playable Ashtar commander.** That is a kit, a tech tree, balance, art
+  and an append-safe roster change: a content addition, not a lore pass, and
+  the retrofit rule forbids smuggling one inside the other. Flagged as its
+  own decision.
+- **Different starting POSITIONS per faction.** Each faction now starts in a
+  different named home system, which is the presentation-safe version. Making
+  progression itself differ per faction moves difficulty pacing and would
+  re-baseline the balance pins; that is a sim change for its own change with
+  its own measurements.
+- **The vendored `docs/lore/` tree was not edited.** It is the upstream
+  snapshot; `CANON-2029.md` is the delta to regenerate it from.

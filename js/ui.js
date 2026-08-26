@@ -1108,17 +1108,19 @@ const UI = {
      Both return '' when their module is missing, when the canon is absent,
      or when nothing matches, so the briefing card renders exactly as it did
      before in every one of those cases. */
+  /* ONE LINE, canon 2029. The two-row WAS/NOW table was the owner's named
+     example of flavor that read as information rather than story. The line
+     says who is standing on the world and why the fight exists, and the
+     long form stays inside WorldLore for any surface that wants it. */
   worldDossierHtml(w, sys, m) {
     if (typeof WorldLore === 'undefined' || !w) return '';
     let d = null;
     try { d = WorldLore.world ? WorldLore.world(w, sys) : null; }
     catch (e) { return ''; }
-    if (!d) { try { d = WorldLore.map && m ? WorldLore.map(m.id) : null; } catch (e) { return ''; } }
-    if (!d || (!d.functionThen && !d.conflictNow)) return '';
-    return '<div class="br-dossier">' +
-      (d.functionThen ? '<div class="brd-row"><b>WAS</b><span>' + d.functionThen + '</span></div>' : '') +
-      (d.conflictNow ? '<div class="brd-row"><b>NOW</b><span>' + d.conflictNow + '</span></div>' : '') +
-      '</div>';
+    const line = d && (d.line || d.functionThen);
+    if (!line) return '';
+    return '<div class="br-dossier"><div class="brd-row"><b>SITE</b><span>' +
+      line + '</span></div></div>';
   },
 
   /* THE RECORD FILED AGAINST THIS WORLD. The canon's own guardrails forbid
@@ -1156,6 +1158,7 @@ const UI = {
     if (!p) return '';
     return `<span class="fac-premise">
         <b>${p.campaign}</b>
+        ${p.leader ? `<i class="fac-leader">${p.leader}</i>` : ''}
         <em>${p.mission}</em>
       </span>`;
   },
@@ -1168,7 +1171,13 @@ const UI = {
     if (!taken) return '';
     const b = Story.beat(c.faction || Meta.faction() || 'human', taken - 1);
     if (!b) return '';
-    const sp = COMMANDERS.find(x => x.id === b.speaker);
+    /* Roster first, then the story figures: ASHTAR is Supreme Commander,
+       not a field commander, so the roster cannot resolve him and
+       Story.figure carries the display identity instead. commanderPortrait
+       degrades to a procedural bust for any {id, color, faction} object, so
+       a figure needs no art plate. */
+    const sp = COMMANDERS.find(x => x.id === b.speaker) ||
+               (typeof Story !== 'undefined' && Story.figure && Story.figure(b.speaker)) || null;
     const col = sp ? sp.color : 'var(--fc)';
     const L = this.lore('commanders', b.speaker);
     return `<div class="rw-story${b.weight ? ' key' : ''}" style="--cc:${col}">
@@ -1185,17 +1194,18 @@ const UI = {
     </div>`;
   },
 
+  /* ONE LINE, not a table. This block used to print HISTORY, MOTIVE and
+     FRACTURE rows from the canon, and the owner's verdict was direct: that
+     is dossier reading, not story playing, and it did not need to be there.
+     The character's depth now arrives the way the campaign delivers
+     everything else, through the story beats, where these same people speak
+     for themselves. The role line stays because a player choosing a
+     commander deserves one sentence of who this is. */
   commanderDossier(c) {
     const L = this.lore('commanders', c.id);
-    if (!L) return '';
-    const row = (label, text) => text
-      ? `<div class="cdo-row"><b>${label}</b><span>${text}</span></div>` : '';
+    if (!L || !L.role) return '';
     return `<div class="cd-dossier" style="--cc:${c.color}">
-        <h3 class="section-label">DOSSIER</h3>
-        ${L.role ? `<p class="cdo-role">${L.role}</p>` : ''}
-        ${row('HISTORY', L.history)}
-        ${row('MOTIVE', L.motive)}
-        ${row('FRACTURE', L.fracture)}
+        <p class="cdo-role">${L.role}</p>
       </div>`;
   },
 
@@ -6712,7 +6722,12 @@ const UI = {
 
   showBattleIntro(done) {
     const me = Game.sides[0], rival = Game.sides[1];
-    let lines = battleDialogue(me.commander, rival.commander, me.faction);
+    /* CONTEXT, canon 2029: fighting your own banner IS the renegade
+       scenario, so same-faction is the whole signature and needs no new
+       flag from the campaign. dialogue.js uses it to let the splinter be
+       rude to the order that raised it. */
+    const ctx = { sameFaction: !!(rival && rival.faction === me.faction) };
+    let lines = battleDialogue(me.commander, rival.commander, me.faction, ctx);
     /* On a contested world all three commanders address the table. */
     if (Game.triMode && Game.sides[2]) {
       const third = Game.sides[2];
