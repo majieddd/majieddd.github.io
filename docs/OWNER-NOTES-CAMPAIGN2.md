@@ -69,13 +69,30 @@ the galaxy afterward. Act index equals systemsTaken minus one, the same
 index the beat card uses, so the two can never tell different chapters.
 
 ### C3. Images via Krea 2, within reason
-`[~]` Catalogue appended: 50 wide cutscene plates and cmd_ashtar plus
-cmd_isa through the approved cmd_ composition (the commander art class is
-complete at 26/26; two new commanders without plates would be the
-partial-class violation BRAND.md forbids). Prompts follow the file's own
-token-cliff law: subject first, faction palette second, STYLE tail last.
-One-image timing measurement in flight; the batch runs on its number, with
-SDXL-Turbo (measured 4.5s) as the fallback if turbo is not sane.
+`[x]` **MEASURED, and the answer to "within reason" was to change pipeline.**
+52 keys rendered: 50 wide plates plus cmd_ashtar and cmd_isa, closing the
+commander class at 28/28 (a partial art class is what BRAND.md forbids
+outright). Prompts follow the file's token-cliff law: subject first, faction
+palette second, STYLE tail last, and the batch's CLIP warnings confirm it,
+only the redundant STYLE tail truncated.
+
+Krea 2 costs ~83 min per image on the 12GB card, so 52 images is three days.
+SDXL-Turbo rendered the batch in 43s of GPU time, 0.7s each. The two-tier
+pack exists for this: `--pack` prefers `cache_krea/<key>.webp` per key and
+falls back to `cache/`, so any single plate upgrades later without touching
+the other 51. Krea 2 on stronger hardware is now a handover, see
+`docs/HANDOVER-KREA-ART.md`.
+
+Verified in a browser, not by reading the pack: 52/52 decode as images, 0
+missing, 0 broken, 50 at 576x324 and 2 at 320x320, and the oath paints a
+real `<img class="cs-art">` rather than the crest fallback.
+
+Plate width stays 576 deliberately. The art is a full-bleed backdrop, so a
+1600px desktop upscales 2.80x, and the byte count predicted softness. The
+screenshot refuted it: flat painterly brushwork has no fine detail for an
+upscale to lose. Larger is not available on this card regardless, 1152x648
+pinned it at 11.9/12.3 GiB and thrashed, the same VRAM cliff krea_gen.py
+already documents. artpack 6.66MB to 9.43MB, bundle 11.48MB.
 
 ### C4. Victory dialogue, THE LAST WORD
 `[x]` **MEASURED:** two lines on a win, one on a loss, keyed by the defeated
