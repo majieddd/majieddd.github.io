@@ -214,4 +214,9 @@ if (FIX) {
   console.log(left ? 'REMAINING after fix: ' + left : 'VERIFIED: zero remaining');
   process.exit(left ? 1 : 0);
 }
-process.exit(0);
+/* DRY RUN EXITS NON-ZERO ON FINDINGS. It used to exit 0 unconditionally,
+   which made the CI step "No em dashes in code" decorative: a step that
+   checks an exit code cannot fail against a tool that never sets one. Found
+   the day a committed dash sailed through a green Verify run. Same law as
+   every gate here: a check that cannot fail has proved nothing. */
+process.exit(changed.length ? 1 : 0);

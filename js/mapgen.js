@@ -374,7 +374,7 @@
         const ls = tileSet([laneTop, laneBot]);
         geo = { lanes: [laneTop, laneBot], cols, rows };
         // The silt bank splits the two channels. Authored in the LEFT half only
-        // (buildField mirrors it). Blocks may cross a lane by design — rubble
+        // (buildField mirrors it). Blocks may cross a lane by design: rubble
         // the road runs through is an authored-map convention.
         const bx0 = Math.max(1, Math.floor(cols * 0.2)), bx1 = Math.floor((cols - 1) / 2);
         geo.blocks = [[bx0, tc.bankY - 1, bx1, tc.bankY + 1]];
