@@ -1099,6 +1099,51 @@ const UI = {
      reads as somebody telling you something rather than as narration. The
      REVEAL is separated from the LINE on purpose: the line is voice, the
      reveal is what the player now knows and can act on. */
+  /* ══════════════════════════ WORLD DOSSIER AND MISSION ═════════════════
+     A world was a set of mechanical facts with no sense of place. These two
+     give it one, from js/worldlore.js and js/missions.js, both of which
+     derive everything from fields the galaxy ALREADY generated and draw no
+     random numbers, so the campaign PRNG stream cannot move.
+
+     Both return '' when their module is missing, when the canon is absent,
+     or when nothing matches, so the briefing card renders exactly as it did
+     before in every one of those cases. */
+  worldDossierHtml(w, sys, m) {
+    if (typeof WorldLore === 'undefined' || !w) return '';
+    let d = null;
+    try { d = WorldLore.world ? WorldLore.world(w, sys) : null; }
+    catch (e) { return ''; }
+    if (!d) { try { d = WorldLore.map && m ? WorldLore.map(m.id) : null; } catch (e) { return ''; } }
+    if (!d || (!d.functionThen && !d.conflictNow)) return '';
+    return '<div class="br-dossier">' +
+      (d.functionThen ? '<div class="brd-row"><b>WAS</b><span>' + d.functionThen + '</span></div>' : '') +
+      (d.conflictNow ? '<div class="brd-row"><b>NOW</b><span>' + d.conflictNow + '</span></div>' : '') +
+      '</div>';
+  },
+
+  /* THE RECORD FILED AGAINST THIS WORLD. The canon's own guardrails forbid
+     presenting historical UAP, contactee or religious material as verified
+     alien history, so the caution line the module attaches is rendered WITH
+     the premise rather than being optional: a mission is a contested record,
+     never a verdict, and the interface has to say so where the player reads
+     it, not in a doc nobody opens. */
+  worldMissionHtml(w, sys, gx) {
+    if (typeof Missions === 'undefined' || !w) return '';
+    let ms = null;
+    try { ms = Missions.forWorld ? Missions.forWorld(w, sys, gx) : null; }
+    catch (e) { return ''; }
+    if (!ms || !ms.premise) return '';
+    return '<div class="br-mission">' +
+      '<div class="brm-top"><b>ARCHIVE WAR</b><span>' + (ms.name || ms.id) + '</span></div>' +
+      '<p class="brm-premise">' + ms.premise + '</p>' +
+      (ms.objective ? '<p class="brm-obj"><b>OBJECTIVE</b> ' + ms.objective + '</p>' : '') +
+      (ms.caution || ms.evidenceLine
+        ? '<p class="brm-caution">' + (ms.evidenceLine || '') +
+          (ms.caution ? ' ' + ms.caution : '') + '</p>'
+        : '') +
+      '</div>';
+  },
+
   /* WHAT YOU ARE SIGNING UP FOR. The faction card already said what the
      banner does mechanically; this says what its campaign is FOR. The
      CAMPAIGN name and MISSION are the pitch. The crisis is NOT shown here on
@@ -3137,6 +3182,13 @@ const UI = {
          sentence and every map's authored blurb was dead weight. m.blurb is
          the more specific fact -- it differentiates the world the scenario box
          already named three blocks above. */
+      /* 4b. WHAT THIS GROUND WAS, and whatever record is filed against it.
+         After the scenario, because the scenario is what the player must DO
+         and this is why the place is worth doing it on. Both degrade to ''
+         when their module or the canon is absent. */
+      this.worldDossierHtml(w, sys, m) +
+      this.worldMissionHtml(w, sys, gx) +
+
       '<p class="br-flavor flavor">' + ((m && m.blurb) || sc.flavor || '') + '</p>' +
     '</div>';
   },

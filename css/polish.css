@@ -3385,3 +3385,37 @@ body.rm-user.immersive #battle-controls { transition: none; }
                  margin-bottom: 4px; }
 .fac-premise em { display: block; font-style: italic; font-size: 11px;
                   line-height: 1.5; color: var(--text-dim); }
+
+/* ══════════════════════ WORLD DOSSIER AND ARCHIVE WAR ══════════════════
+   On the world briefing card, after the scenario. The dossier is a two-row
+   WAS/NOW table because that is the whole idea: every board in this game is
+   repurposed jurisdiction infrastructure, not a landform, and the pairing
+   says so faster than a paragraph. Label column is fixed so the two rows
+   align and can be scanned rather than read. */
+.br-dossier { margin: 8px 0 0; padding: 8px 0 0; border-top: 1px solid var(--line); }
+.brd-row { display: grid; grid-template-columns: 34px 1fr; gap: 9px;
+           align-items: baseline; margin-bottom: 5px; }
+.brd-row b { font-family: var(--display); font-size: 9px; letter-spacing: .16em;
+             color: var(--text-mute); }
+.brd-row span { font-size: 11px; line-height: 1.5; color: var(--text-dim); }
+
+/* The mission is a FILED RECORD, so it reads like one: its own bordered
+   block, a header that names the archive, then premise, objective, and the
+   evidence caution last. The caution is never optional. The canon forbids
+   presenting historical UAP or contactee material as verified alien history,
+   and the place that promise has to hold is the surface the player reads. */
+.br-mission { margin: 8px 0 0; padding: 8px 10px; border-radius: 8px;
+              border: 1px solid color-mix(in srgb, var(--fc) 26%, transparent);
+              background: color-mix(in srgb, var(--fc) 7%, transparent); }
+.brm-top { display: flex; justify-content: space-between; align-items: baseline;
+           gap: 8px; margin-bottom: 5px; }
+.brm-top b { font-family: var(--display); font-size: 9px; letter-spacing: .18em;
+             color: color-mix(in srgb, var(--fc) var(--ink-mix), var(--text)); }
+.brm-top span { font-size: 11px; color: var(--text); text-align: right; }
+.brm-premise { margin: 0 0 5px; font-size: 11px; line-height: 1.5; color: var(--text-dim); }
+.brm-obj { margin: 0 0 5px; font-size: 11px; line-height: 1.5; color: var(--text-dim); }
+.brm-obj b { font-family: var(--display); font-size: 9px; letter-spacing: .14em;
+             color: var(--text-mute); margin-right: 4px; }
+.brm-caution { margin: 0; padding-top: 5px; font-size: 10px; line-height: 1.45;
+               font-style: italic; color: var(--text-mute);
+               border-top: 1px dashed color-mix(in srgb, var(--fc) 22%, transparent); }

@@ -875,51 +875,98 @@ function sideRgba(side, alpha) {
    goes undefined and the game renders nothing. The bundle is one script, so
    file boundaries do not scope anything.
 
-   This array is the OLD codex and is scheduled to be rewritten from the
-   canonical module rather than maintained separately, so the collision is
-   temporary by design. The new canon is `LORE`; this is what the Field Manual
-   currently renders.
+   REWRITTEN from the canon (Session 35, task D1). The six entries this array
+   used to hold predated docs/lore/ and several of them had gone false: first
+   contact as a trade delegation, the Expansion as a land rush over empty
+   worlds, and a "pirate nest" world kind that galaxy.js renamed to Vigil Nest
+   under continuity rule 6. Sources are docs/lore/docs/canon/ (overview,
+   campaign-era-2099, hidden-history, glossary) and docs/lore/docs/game/
+   (campaign-premise, mechanics-mapping, troops-and-vigil).
+
+   THE BRIEF this array answers: the Field Manual is the one screen where a
+   new player learns what the game IS, so every entry leads with the thing the
+   player touches and puts the flavour behind it. Where canon and the engine
+   disagree, THE ENGINE WINS and the entry says what actually happens: canon
+   awards the rescued unit at two stars, ratingFor and Meta.recordWorld award
+   it at three, so the codex teaches three.
+
+   PRESENTATION ONLY. Plain {id, title, body} strings, read by ui.js
+   buildCodex and by nothing else. No accessor reads it, no save key holds it,
+   nothing here is drawn from or written to the simulation. The ids are local
+   labels, not canon join keys: grep confirms no other site references them.
 -------------------------------------------------------------------------- */
 const LORE_CODEX = [
-  { id: 'integration', title: 'The Integration',
-    body: 'It did not arrive as invasion or as rescue. First contact was a trade ' +
-          'delegation, and within a generation human cities carried alien districts, ' +
-          'human ships carried alien drives, and human soldiers carried weapons no ' +
-          'human had designed. The galaxy, it turned out, had been busy for a very ' +
-          'long time. Humanity was simply the last to be told.' },
-  { id: 'expansion', title: 'The Expansion',
-    body: 'New-age technology made the jump between worlds a matter of days. What ' +
-          'followed was not exploration but a land rush: every power that could ' +
-          'reach a world began taking worlds, and every world taken had to be held ' +
-          'against whatever arrived next.' },
+  { id: 'gate', title: 'The Sol Gate, 2099',
+    body: 'Humanity opened the Sol Gate expecting empty sky. The old political order ' +
+          'had not vanished, it had fragmented: infrastructure still running, client ' +
+          'systems still paying, inherited contracts still binding, protected zones ' +
+          'still sealed, and machines still enforcing law whose legislature is extinct. ' +
+          'Nothing out here is unclaimed. Every world on the map is a jurisdiction with ' +
+          'a record, a holder, and somebody else’s paperwork already filed on it.' },
+  { id: 'lattice', title: 'The Source Lattice',
+    body: 'Long before humanity, someone built the Lattice: transit, identity, memory ' +
+          'and noetic coherence, shared across the galaxy and owned by nobody. Then ' +
+          'came the Severance, and no two accounts of it agree. What is certain is that ' +
+          'civilisations built on Lattice access began to fail without it, and the ones ' +
+          'that refused to decline built substitutes out of captive worlds. The Lattice ' +
+          'still recognises records. It cannot decide who deserves them.' },
+  { id: 'pentad', title: 'The Pentad',
+    body: 'A campaign galaxy is not the Milky Way. It is a Source-Lattice pentad: five ' +
+          'systems whose surviving transit and jurisdiction records still answer one ' +
+          'another. Each holds seven registered world slots from the old civil schema, ' +
+          'settlement, defence, production, navigation, archive, stewardship, command, ' +
+          'and few modern worlds kept the function they were filed under. The last ' +
+          'world in a system is its charter seat. Take it and you speak for the system.' },
+  { id: 'verbs', title: 'Five Ways To Take A World',
+    body: 'Every banner conquers. None of them conquer the same way. Humanity SETTLES: ' +
+          'institutions and industry that outlive the expedition. The Federation ' +
+          'ACCORDS: consent, shared defence, shared memory. The Xeno BINDS: resources, ' +
+          'debt, client elites, engineered need. The Pirates ROUTE: access, sanctuary, ' +
+          'credentials, movement. The machines CONTINUE: replicate, repair, inherit the ' +
+          'mission. One world can carry all five at once. The banner on the map says ' +
+          'only who holds the battle record.' },
   { id: 'vigil', title: 'The Vigil',
-    body: 'Someone built machines to protect the galaxy, a very long time before ' +
-          'the Integration, and then stopped answering them. They are still ' +
-          'working. A Vigil host is semi-sentient: enough to patrol, plan and ' +
-          'repair itself, nowhere near enough to tell a Federation garrison from ' +
-          'a Xeno hive: so it defends every world it finds from everyone standing ' +
-          'on it, the inhabitants included. When it comes it comes for both ' +
-          'commanders at once, down the same corridor, in the same numbers. ' +
-          'Whoever kills it faster decides where the wreckage walks next.' },
-  { id: 'garrisons', title: 'Garrisons',
-    body: 'Most worlds are held on paper: a flag, a claim, and nobody on the ' +
-          'ground. A commander’s own seat, a fortress world, a pirate nest and ' +
-          'any world two powers are already contesting are the exceptions, ' +
-          'those have real troops standing on them, and when the Vigil arrives ' +
-          'those troops march in the same wave, at the same two commanders. ' +
-          'Nothing out there is fighting for you.' },
+    body: 'The Vigil is not a sixth power. It is the oldest enforcement routine of the ' +
+          'Old Weather, a machine ecology whose builders are gone and whose directives ' +
+          'are intact. It reads lane boundaries, threat thresholds and extinct safety ' +
+          'law, and it does not read flags. A human colony, a Federation protectorate, ' +
+          'a Compact concession and a pirate sanctuary are each unauthorised in a ' +
+          'different way. It comes down the same corridor at both commanders, in the ' +
+          'same numbers. Nothing out there is fighting for you.' },
+  { id: 'garrisons', title: 'Who Is Actually Standing There',
+    body: 'Most worlds are held on paper: a flag, a record, and nothing on the ground ' +
+          'but Vigil routines. Real faction troops march on four kinds of world. A ' +
+          'commander’s charter seat. A fortress. A contested world, where two live ' +
+          'claims overlap and a third fights both. And a Vigil nest, where raiders have ' +
+          'squatted the ruins. One world in every galaxy is worse than all of them: a ' +
+          'splinter of your own banner holds it, and your own soldiers march at you.' },
   { id: 'reanimation', title: 'Echo Reversal Protocol',
-    body: 'A destroyed hostile leaves a state record that holds for a few seconds. The ' +
-          'battlefield mesh reads it, builds an unstable echo off it, and walks that echo ' +
-          'back up the victor’s own lane to the neutral ground, where the mesh turns it ' +
-          'into the rival’s defences. Broken a second time, an echo cannot be rebuilt. ' +
-          'Every commander answers the protocol and no two answer it alike: a rite may ' +
-          'change the shape a kill returns in, never its mass, and two of the five take ' +
-          'nothing off the lane at all. Salvage crews still call it reanimation. The mesh ' +
-          'has never restarted anything. It only refuses to let a death be final the ' +
-          'first time.' },
+    body: 'A destroyed hostile leaves a combat-state record that holds for a few ' +
+          'seconds. The node reads it, builds an unstable echo off it, and walks that ' +
+          'echo back up your own lane, across the neutral ground, into your rival’s ' +
+          'defences. Broken a second time, an echo cannot be rebuilt. Every commander ' +
+          'answers the protocol and no two answer it alike: a rite may change the shape ' +
+          'a kill returns in, never its mass, and two of the five take nothing off the ' +
+          'lane at all.' },
+  { id: 'stars', title: 'Stars Are Claim Stability',
+    body: 'A star is not a score. It is how stable the victory record was. One star ' +
+          'means the node accepted that you won. Three means you took the world without ' +
+          'giving up ground, and only three transfers it: the world changes banner, its ' +
+          'boon comes with it, and the worlds that pay a soldier pay it here. Two stars ' +
+          'leaves the world exactly where it was. Go back and take it cleanly.' },
+  { id: 'souls', title: 'SOULS',
+    body: 'Source-Oriented Unified Lattice Signatures: authorisation fragments the ' +
+          'Lattice releases when a system recognises decisive control. They are not ' +
+          'people, whatever the salvage crews call them, and their standing is still ' +
+          'argued. They are also the only thing that survives a run. SOULS buy three ' +
+          'things in the Soul Shop: recruiting a commander, unlocking a commander’s ' +
+          'second ability, and adding a tower to your arsenal. Mastery is earned in ' +
+          'battle and never bought.' },
   { id: 'conquest', title: 'Conquest',
     body: 'A world is not yours because you survived on it. It is yours when you have ' +
-          'taken it cleanly: three stars, no ground given. Hold enough worlds and the ' +
-          'system is yours. Hold every system and the galaxy is.' }
+          'taken it cleanly: three stars, no ground given. Take every world in a system ' +
+          'and the system is yours. Take every charter seat and the galaxy is. The ' +
+          'Lattice records it either way. The question the campaign asks is not whether ' +
+          'you can conquer, but which meaning of the word becomes ordinary once yours ' +
+          'is the only one still standing.' }
 ];

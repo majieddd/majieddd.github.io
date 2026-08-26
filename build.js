@@ -11,7 +11,7 @@ const css  = read('css/style.css') + String.fromCharCode(10) + read('css/polish.
 /* `lore` sits early and before `dialogue`, `commanders` and `ui`, which are the
    modules that read it. It is a frozen data object with no dependencies of its
    own, generated from the lore repository (docs/lore/) and never hand-edited. */
-const js   = ['artpack', 'mapgen', 'lore', 'story', 'config', 'factions', 'towers2', 'abilities', 'roster', 'dialogue', 'commanders', 'audio', 'entities', 'entities2', 'ai', 'galaxy', 'game', 'net', 'ui', 'main']
+const js   = ['artpack', 'mapgen', 'lore', 'story', 'worldlore', 'missions', 'config', 'factions', 'towers2', 'abilities', 'roster', 'dialogue', 'commanders', 'audio', 'entities', 'entities2', 'ai', 'galaxy', 'game', 'net', 'ui', 'main']
   .map(n => `/* ── ${n}.js ─────────────────────────────────── */\n` + read(`js/${n}.js`))
   .join('\n\n');
 
