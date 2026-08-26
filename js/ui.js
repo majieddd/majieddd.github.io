@@ -1087,6 +1087,43 @@ const UI = {
     return `<div class="tt-prov"><b>PROVENANCE</b><span>${text}</span></div>`;
   },
 
+  /* ══════════════════════════════════ THE STORY BEAT ═════════════════════
+     Fires on the reward screen when a SYSTEM falls, not a world: five
+     systems, five beats, and a sixth when the last one closes the arc. The
+     index is `campaign().systemsTaken.length - 1`, which is state the save
+     ALREADY carried for the system bounty, so this adds no save key, no
+     migration and no persisted progress of its own. Nothing here draws a
+     random number or is read by the simulation.
+
+     The speaker is a real commander and the portrait is theirs, so a beat
+     reads as somebody telling you something rather than as narration. The
+     REVEAL is separated from the LINE on purpose: the line is voice, the
+     reveal is what the player now knows and can act on. */
+  storyBeatHtml() {
+    if (typeof Story === 'undefined') return '';
+    const c = Meta.campaign();
+    if (!c) return '';
+    const taken = (c.systemsTaken || []).length;
+    if (!taken) return '';
+    const b = Story.beat(c.faction || Meta.faction() || 'human', taken - 1);
+    if (!b) return '';
+    const sp = COMMANDERS.find(x => x.id === b.speaker);
+    const col = sp ? sp.color : 'var(--fc)';
+    const L = this.lore('commanders', b.speaker);
+    return `<div class="rw-story${b.weight ? ' key' : ''}" style="--cc:${col}">
+      <div class="rws-act"><b>${b.act}</b><span>${b.index + 1} of ${b.total}</span></div>
+      <div class="rws-body">
+        ${sp ? `<div class="rws-por">${commanderPortrait(sp, 46)}</div>` : ''}
+        <div class="rws-text">
+          <b class="rws-title">${b.title}</b>
+          <p class="rws-line">${b.line}</p>
+          <p class="rws-who">${sp ? sp.name : b.speaker}${L && L.title ? ', ' + L.title : ''}</p>
+        </div>
+      </div>
+      <div class="rws-reveal"><b>WHAT THIS MEANS</b><span>${b.reveal}</span></div>
+    </div>`;
+  },
+
   commanderDossier(c) {
     const L = this.lore('commanders', c.id);
     if (!L) return '';
@@ -7111,6 +7148,8 @@ const UI = {
           <div class="rw-foot"><span id="rw-souldelta">${soulsEarned ? '+0' : 'no new stars, no souls'}</span>
             ${st && st.systemTaken ? `<span class="rw-sysbounty">✦ ${st.systemTaken} TAKEN, +${Meta.SYSTEM_BOUNTY}</span>` : ''}</div>
         </div>
+
+        ${st && st.systemTaken ? this.storyBeatHtml() : ''}
 
         ${Game.lastMastery && Game.lastMastery.length ? `
           <div class="rw-mastery" id="rw-mastery">${Game.lastMastery.map(m =>

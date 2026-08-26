@@ -3323,3 +3323,51 @@ body.rm-user.immersive #battle-controls { transition: none; }
 @media (max-width: 1550px) {
   #battle-controls { top: 10px; bottom: auto; }
 }
+
+/* ══════════════════════════════════════ THE STORY BEAT ════════════════
+   Shown on the reward screen when a SYSTEM falls. It has to hold its own
+   against a screen of numbers going up without hijacking it, so: full
+   width, its own ground, the speaker's colour as the only accent, and the
+   REVEAL boxed off underneath because that is the line the player is meant
+   to carry into the next system. `.key` marks the beats that change what
+   the campaign means rather than adding detail to it, and it gets a
+   brighter rule rather than a different layout: a louder version of the
+   same thing, not a new thing to learn. */
+.rw-story {
+  grid-column: 1 / -1;
+  margin: 4px 0 2px; padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--cc) 34%, transparent);
+  border-left: 3px solid var(--cc);
+  border-radius: 0 10px 10px 0;
+  background: linear-gradient(100deg,
+    color-mix(in srgb, var(--cc) 11%, transparent), rgba(0, 0, 0, .22));
+}
+.rw-story.key { border-left-width: 5px;
+  background: linear-gradient(100deg,
+    color-mix(in srgb, var(--cc) 18%, transparent), rgba(0, 0, 0, .26)); }
+.rws-act { display: flex; justify-content: space-between; align-items: baseline;
+           margin-bottom: 9px; }
+.rws-act b { font-family: var(--display); font-size: 10px; letter-spacing: .2em;
+             color: var(--cc); }
+.rws-act span { font-size: 9.5px; letter-spacing: .12em; color: var(--text-mute);
+                font-variant-numeric: tabular-nums; }
+.rws-body { display: flex; gap: 12px; align-items: flex-start; }
+.rws-por { flex-shrink: 0; line-height: 0; border-radius: 8px; overflow: hidden;
+           border: 1px solid color-mix(in srgb, var(--cc) 45%, transparent); }
+.rws-text { min-width: 0; }
+.rws-title { display: block; font-size: 13px; letter-spacing: .06em;
+             color: var(--text); margin-bottom: 5px; }
+.rws-line { margin: 0 0 5px; font-size: 12.5px; line-height: 1.6;
+            color: var(--text-dim); font-style: italic; }
+.rws-who { margin: 0; font-family: var(--display); font-size: 9.5px;
+           letter-spacing: .13em; color: color-mix(in srgb, var(--cc) 55%, var(--text-mute)); }
+.rws-reveal { display: grid; grid-template-columns: auto 1fr; gap: 9px;
+              align-items: baseline; margin-top: 10px; padding-top: 9px;
+              border-top: 1px dashed color-mix(in srgb, var(--cc) 30%, transparent); }
+.rws-reveal b { font-family: var(--display); font-size: 9px; letter-spacing: .15em;
+                color: var(--text-mute); white-space: nowrap; }
+.rws-reveal span { font-size: 12px; line-height: 1.55; color: var(--text); }
+@media (max-width: 720px) {
+  .rws-body { flex-direction: column; }
+  .rws-reveal { grid-template-columns: 1fr; gap: 4px; }
+}
