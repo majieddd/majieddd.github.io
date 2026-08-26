@@ -50,6 +50,12 @@ body {
 @keyframes modalIn { from { opacity: 0; transform: translateY(14px) scale(0.985); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
   .screen:not(.hidden), .overlay:not(.hidden) .modal { animation: none; }
+  /* #tooltip's own ttIn keyframe (style.css) was reachable only through the
+     in-game OPTIONS switch (body.rm-user, below), not the OS preference this
+     query answers. A tooltip opens on every hover, so a player with the OS
+     setting on saw it slide on every single one anyway. Named here rather
+     than left for the switch alone to cover. */
+  #tooltip { animation: none; }
 }
 
 /* THE USER'S OWN REDUCED-MOTION SWITCH (the OPTIONS checkbox). The OS
@@ -208,7 +214,7 @@ body.rm-user .bi-line { opacity: 1; }
    preview on every card the player had not bought yet -- i.e. all of them. */
 .soul-item:disabled,
 .soul-item[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
-.si-ic { font-size: 21px; color: var(--cc); }
+.si-ic { font-size: 21px; color: color-mix(in srgb, var(--cc) var(--ink-mix-lg), var(--text)); }
 .si-name { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; }
 .si-lvl { font-size: 10.5px; color: var(--text-mute); }
 .si-cost { font-size: 12.5px; color: #c4b5fd; font-weight: 700; }
@@ -242,7 +248,14 @@ body.rm-user .bi-line { opacity: 1; }
 #profile-name { border-radius: 10px; }
 
 /* --- inspector & shop polish -------------------------------------------- */
-.tower-card { border-radius: 10px; transition: background-color, border-color, color, box-shadow, transform, opacity, filter 0.14s var(--ease); }
+/* The transition list here was malformed (a shorthand needs a duration on
+   EVERY property or it applies only to the last one, so this rule animated
+   just `filter` at 0.14s and left the other six properties jumping at 0s),
+   and it has been fully shadowed since Session 36 by the later, more specific
+   `#dock .tower-card` rule below, which is what every dock card actually
+   receives. Named properties, all sharing one duration, so any card that
+   still resolves to this rule gets the motion the list always intended. */
+.tower-card { border-radius: 10px; transition: background-color 0.14s var(--ease), border-color 0.14s var(--ease), color 0.14s var(--ease), box-shadow 0.14s var(--ease), transform 0.14s var(--ease), opacity 0.14s var(--ease), filter 0.14s var(--ease); }
 .tower-card:hover { transform: translateX(2px); }
 .tower-card.active { box-shadow: 0 0 0 1px var(--tc), 0 6px 22px -6px var(--tc); }
 .stat-grid { border-radius: 10px; }
@@ -513,7 +526,7 @@ body.immersive #stage::after {
 .tt-figure { display: flex; align-items: center; gap: 10px; margin: 8px 0 4px; }
 .tt-icon { flex-shrink: 0; }
 .si-fig { display: block; margin-bottom: 2px; }
-.si-el { font-size: 9.5px; color: var(--el); }
+.si-el { font-size: 9.5px; color: color-mix(in srgb, var(--el) var(--ink-mix), var(--text)); }
 .soul-item.unlock { gap: 2px; }
 .soul-grid.unlocks { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }
 
@@ -545,31 +558,122 @@ body.immersive #stage::after {
 .lo-locked-note p { font-size: 11.5px; color: var(--text-mute); margin: 0; }
 
 /* ================================================== COMMANDER ABILITIES == */
-.ability-bar { display: flex; flex-direction: column; gap: 6px; }
-.abil {
-  position: relative; display: flex; align-items: center; gap: 9px;
-  padding: 7px 10px; border-radius: 9px; overflow: hidden; cursor: pointer;
-  border: 1px solid var(--line-2); background: rgba(255,255,255,.02);
-  color: var(--text-dim); text-align: left; width: 100%;
-  transition: border-color .15s var(--ease), background .15s var(--ease), transform .1s var(--ease);
+/* ONE ability owns the whole row; TWO split it into two columns (owner,
+   Session 36). Driven by :has() rather than by a class the renderer sets,
+   because a flag can go stale and a structural selector cannot: the bar IS
+   two columns exactly when a second .abil exists in it. :has() is already
+   load-bearing in this sheet (.abil .ab-icon:has(.ab-art) below), so this
+   adds no new browser floor.
+   minmax(0, 1fr), not a bare 1fr: a bare track floors at its content's
+   min-content width, which is how the shop's own 2-column grid pushed cards
+   past the pane border before it was fixed (see .muster-bar, #shop-list). */
+.ability-bar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.ability-bar:has(.abil + .abil) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* THE TOWER CARD'S OWN GEOMETRY, mirrored ONCE and named after what it
+   mirrors, because the owner asked for this row to be formatted like a tower
+   card and CSS cannot read another rule's values. The keycap needs no mirror
+   at all: it uses .tc-key itself. inspector_test.js measures these against
+   the live .tower-card and .tc-name, so a retune on the shop side surfaces as
+   a failing measurement instead of two components quietly drifting apart.
+     --ab-pad-*    .tower-card padding      (css/polish.css .tower-card)
+     --ab-gap      .tower-card column gap   (css/polish.css .tower-card)
+     --ab-name-*   .tc-name type            (css/polish.css, css/style.css)
+   Radius and the chamfered top-left corner need no mirror either: .abil is
+   already in the shared card family that sets them (see the clip-path rule
+   near "one machined corner"). */
+.ability-bar {
+  --ab-pad-y: 5px;
+  --ab-pad-x: 8px;
+  --ab-gap: 8px;
+  --ab-name-size: 11.5px;
+  --ab-name-track: .08em;
 }
-.abil:hover { transform: translateY(-1px); }
+/* No `transition` here. MEASURED: the shared "interactive states" rule below
+   (.btn, .abil, .tower-card, ... at .16s) is later in this sheet at the same
+   specificity, so it has always won, and the declaration this rule used to
+   carry never applied to a single frame. One owner for the transition list,
+   which is also what makes the reduced-motion block below correct: it has
+   only the transform to drop. */
+.abil {
+  position: relative; display: flex; align-items: center; gap: var(--ab-gap);
+  padding: var(--ab-pad-y) var(--ab-pad-x); border-radius: 9px; overflow: hidden; cursor: pointer;
+  border: 1px solid var(--line-2); background: rgba(255,255,255,.02);
+  color: var(--text-dim); text-align: left; width: 100%; min-width: 0;
+}
+/* Hover motion is gated both ways: on a coarse pointer a :hover transform
+   latches and sticks with nothing to clear it, and under a reduced-motion
+   preference the lift is dropped while the border and background change
+   (which is the actual state signal) is kept. Nothing later in this sheet
+   redeclares transform on .abil:hover, so this pair is the last word. */
+@media (hover: hover) and (pointer: fine) {
+  .abil:hover { transform: translateY(-1px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .abil:hover { transform: none; }
+}
 .abil .ab-sweep {
   position: absolute; inset: 0; transform-origin: left center; transform: scaleX(0);
   background: linear-gradient(90deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
   pointer-events: none;
 }
+/* The keycap is .tc-key, styled by the shop. Only its stacking context is
+   this bar's business: the sweep paints across the whole card. */
+.abil .ab-key { z-index: 1; }
 .abil .ab-icon { font-size: 17px; width: 22px; text-align: center; flex-shrink: 0; z-index: 1; }
-.abil .ab-body { display: flex; flex-direction: column; line-height: 1.2; flex: 1; min-width: 0; z-index: 1; }
-.abil .ab-body b { font-size: 11px; letter-spacing: .09em; color: var(--text); }
+.abil .ab-body { display: flex; flex-direction: column; line-height: 1.2; flex: 1 1 auto; min-width: 0; z-index: 1; }
+/* Ellipsis, exactly as .tc-name carries it: ATTRITION FIELD and DAMPENING
+   FIELD are real 15-character ability names, and a name that paints over the
+   cooldown instead of shrinking is the defect the shop card already fixed. */
+.abil .ab-name { font-size: var(--ab-name-size); font-weight: 700;
+                 letter-spacing: var(--ab-name-track); color: var(--text);
+                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .abil .ab-body em { font-style: normal; font-size: 9.5px; letter-spacing: .16em; color: var(--text-mute); }
+/* The sub-line now carries the AIM marker and nothing else, so on a fired
+   ability it is empty and must not reserve a line. .aiming re-shows it below,
+   because that state hangs its prompt off this element's ::after. */
+.abil .ab-body em:empty { display: none; }
 .abil .ab-cd { font-family: var(--mono, ui-monospace, monospace); font-size: 12px;
                color: var(--text-mute); z-index: 1; min-width: 22px; text-align: right; }
+/* TWO COLUMNS: each card is (278 - 6) / 2 = 136px wide, and a 15-character
+   name cannot share one line with the keycap, the icon and the cooldown
+   there. No part is dropped; the body drops to its OWN line beneath them,
+   where it gets the card's full inner width instead of the ~60px left over
+   beside them. The full-row card is untouched, which is the state the owner
+   asked to keep. */
+.ability-bar:has(.abil + .abil) .abil { flex-wrap: wrap; row-gap: 2px; }
+/* ORDER, not DOM order, decides what shares line one. The cooldown follows
+   the body in the markup, so left alone it wraps to a THIRD line and the card
+   grows by a line the instant an ability is cast: a layout jump on the most
+   frequent event this component has. Sent up beside the keycap it rides the
+   19px the keycap already sets, and the card is the same height ready, live
+   or cooling. */
+.ability-bar:has(.abil + .abil) .ab-key { order: 1; }
+.ability-bar:has(.abil + .abil) .ab-icon { order: 2; }
+.ability-bar:has(.abil + .abil) .ab-cd { order: 3; margin-left: auto; }
+.ability-bar:has(.abil + .abil) .ab-body { order: 4; flex: 1 0 100%; }
+/* MEASURED, not assumed: with the body on its own line a two-column card
+   gives the name 118px, and DAMPENING FIELD wants 121. Three pixels short is
+   still an ellipsis, and a starved name is this project's signature card bug
+   (the shop card's own role line does it to MORTAR). So at two columns the
+   name WRAPS instead of clipping: every ability name is one or two words, the
+   longest single word measures well inside the column, and grid stretches the
+   pair to a matching height for free. The full-row card keeps nowrap, where
+   the name has 175px and never needs it. */
+.ability-bar:has(.abil + .abil) .ab-name { white-space: normal; }
+/* The kind colour, named once instead of hand-typed at each use. Gold is the
+   sheet's own token; the defensive blue has never had one, and declaring it
+   here beats a fifth literal copy. --cc is what the shared card family reads
+   for its top accent rail, so the rail now encodes which kind the ability is
+   rather than defaulting to the neutral line colour. */
+.abil.offense { --ab-kind: var(--gold); }
+.abil.defense { --ab-kind: #7dd3fc; }
+.abil { --cc: var(--ab-kind, var(--line-2)); }
 .abil.offense.ready { border-color: rgba(251,191,36,.55); background: rgba(251,191,36,.08); }
-.abil.offense.ready .ab-icon { color: #fbbf24; }
+.abil.offense.ready .ab-icon { color: var(--ab-kind); }
 .abil.defense.ready { border-color: rgba(125,211,252,.55); background: rgba(125,211,252,.08); }
-.abil.defense.ready .ab-icon { color: #7dd3fc; }
-.abil.live { border-color: #fff; box-shadow: 0 0 18px rgba(255,255,255,.18); }
+.abil.defense.ready .ab-icon { color: var(--ab-kind); }
+.abil.live { border-color: var(--text); box-shadow: 0 0 18px rgba(255,255,255,.18); }
 .abil:not(.ready):not(.live) { opacity: .55; cursor: default; }
 .abil-none { font-size: 11px; color: var(--text-mute); text-align: center; padding: 8px; }
 
@@ -590,12 +694,14 @@ body.immersive #stage::after {
 .fac-card.on { border-color: var(--fc); box-shadow: 0 0 0 1px var(--fc), 0 14px 40px rgba(0,0,0,.5);
                background: linear-gradient(170deg, color-mix(in srgb, var(--fc) 14%, transparent), rgba(0,0,0,.28)); }
 .fac-sigil { font-size: 30px; color: var(--fc); line-height: 1; }
-.fac-name { font-size: 14px; font-weight: 800; letter-spacing: .1em; color: var(--fc); }
+.fac-name { font-size: 14px; font-weight: 800; letter-spacing: .1em;
+            color: color-mix(in srgb, var(--fc) var(--ink-mix), var(--text)); }
 .fac-creed { font-size: 11px; font-style: italic; color: var(--fa); opacity: .85; }
 .fac-blurb { font-size: 11.5px; line-height: 1.55; color: var(--text-dim); }
 .fac-bonus { margin-top: auto; padding-top: 9px; border-top: 1px solid var(--line);
              font-size: 11.5px; color: var(--text-dim); line-height: 1.5; }
-.fac-bonus b { display: block; font-size: 10px; letter-spacing: .16em; color: var(--fc); margin-bottom: 3px; }
+.fac-bonus b { display: block; font-size: 10px; letter-spacing: .16em; margin-bottom: 3px;
+               color: color-mix(in srgb, var(--fc) var(--ink-mix), var(--text)); }
 .fac-cmd { font-size: 10.5px; color: var(--text-mute); }
 .fac-cmd b { color: var(--text-dim); }
 
@@ -796,11 +902,13 @@ body.immersive #stage::after {
 .section-label { font-size: 9.5px; letter-spacing: .16em; margin-bottom: 5px; }
 .tower-card { padding: 5px 8px; gap: 8px; }
 .tc-name { font-size: 11.5px; }
-.tc-role { font-size: 9.5px; }
 .btn-wave { padding: 7px 12px; }
+/* The `.tower-card .tc-role { display: none }` that used to live here went
+   with the element itself (Session 36, owner A2): a line hidden at one
+   viewport height and starving the name at every other one was never a fix,
+   and the role now lives only in the hover tooltip, where it always was. */
 @media (max-height: 820px) {
   .cmdr-stats b { font-size: 14px; }
-  .tower-card .tc-role { display: none; }
 }
 .cmd-fac { font-size: 9.5px; letter-spacing: .1em; color: var(--fc); }
 .cmd-more { font-size: 11px; color: var(--text-mute); padding: 10px 12px; line-height: 1.5;
@@ -1401,24 +1509,18 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
   border: 1px solid rgba(249, 115, 22, .24); background: rgba(249, 115, 22, .07); }
 .muster-head span { font-family: var(--display); font-size: 9.5px; letter-spacing: .16em; color: #fdba74; }
 .muster-head b { font-size: 11.5px; color: #fb923c; font-variant-numeric: tabular-nums; }
-.muster-head b.capped { color: var(--text-mute); }
 .muster-head em { font-style: normal; font-size: 9.5px; color: var(--text-mute); margin-left: auto; }
 
 .muster-btn:active:not(:disabled) { transform: translateY(1px) scale(.99); }
 .muster-btn:disabled, .muster-btn.poor { cursor: default; filter: grayscale(.5); opacity: .5; }
 .mu-ic { font-family: var(--display); font-size: 13px; color: #fdba74; letter-spacing: -.04em;
   text-shadow: 0 0 10px rgba(249, 115, 22, .6); }
-.mu-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
-.mu-body b { font-family: var(--display); font-size: 10px; letter-spacing: .12em; color: #fed7aa; }
-.mu-body em { font-style: normal; font-size: 10px; color: var(--text-dim);
-  font-variant-numeric: tabular-nums; }
-/* THE THREE FIGURES. Colour carries the meaning so the eye can pick out the
-   one it came for without reading all three: gold is what it costs, faction
-   colour is the power it buys, green is the income it adds. */
-.mu-figs { display: flex; gap: .55em; flex-wrap: wrap; }
+/* .mu-body, .mu-figs, .mu-pow and .mu-eco went with the face they styled
+   (Session 36, owner A3): the rolemark, the power figure and the econ figure
+   came off the unit card and into its hover briefing, where there is room to
+   name them. .mu-cost stays, and is now sized with .tc-cost by the one rule
+   in the dock block below, because a price is a price on either card. */
 .mu-cost { color: var(--gold, #fbbf24); }
-.mu-pow { color: #fb923c; }
-.mu-eco { color: #4ade80; }
 /* The rite, above its own controls. */
 .engine-strip { display: flex; align-items: baseline; gap: 7px; padding: 5px 9px; border-radius: 9px;
   border: 1px solid color-mix(in srgb, var(--fc) 34%, transparent);
@@ -1432,8 +1534,6 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
 .lattice-plate b { font-family: var(--display); font-size: 10px; letter-spacing: .14em; color: #cbd5e1; }
 .lattice-plate em { font-style: normal; font-size: 10px; color: var(--text-mute); line-height: 1.45; }
 /* The POWER chip and its ledger. */
-.mu-powchip { cursor: help; text-decoration: underline dotted rgba(253, 186, 116, .5); text-underline-offset: 2px; }
-.muster-head b.uncapped { color: #fbbf24; }
 .pl-body { display: flex; flex-direction: column; gap: 3px; margin: 6px 0 4px; }
 .pl-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: baseline; font-size: 11px; }
 .pl-row span { color: var(--text-dim); letter-spacing: .08em; }
@@ -1441,6 +1541,35 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
 .pl-row em { grid-column: 1 / -1; font-style: normal; font-size: 9.5px; color: var(--text-mute); }
 .pl-row.pl-them b { color: var(--red, #ef4444); }
 .pl-foot { display: block; font-style: normal; font-size: 9.5px; color: var(--text-mute); line-height: 1.45; }
+
+/* ═════════════════ ECON BAR: TWO FIGURES ════════════════════════════════
+   The bar printed five figures and now prints two (owner, Session 36): the
+   gold a wave pays, and what a summoned body arrives at. Each is a VALUE and
+   its UNIT, so the pair reads as two facts rather than as four tokens. The
+   root keeps .muster-head, which is what styles the plate itself; everything
+   below is scoped under #econ-bar so it cannot reach the muster pane.
+   No new motion: the panel is the game's existing #tooltip, whose 140ms
+   opacity-and-transform entrance already sits inside the tooltip band, and a
+   second animation on the same event would only double it. */
+#econ-bar .econ-head { gap: 2px 4px; cursor: help; align-items: baseline; }
+#econ-bar .ec-fig { font-size: 13.5px; font-weight: 700; color: #fb923c;
+                    font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+#econ-bar .ec-coin { font-style: normal; font-weight: 700; }
+/* The unit sits tight against its own figure and holds the next one off, so
+   two pairs read as two, not as one run of four. */
+#econ-bar .ec-unit { font-family: var(--display); font-size: 9.5px; letter-spacing: .16em;
+                     color: #fdba74; margin-right: 10px; }
+#econ-bar .ec-unit:last-child { margin-right: 0; }
+/* A power multiplier under 1 is a REDUCTION and says so. Dimmed rather than
+   reddened: it is the standing condition of every summon in the game, not a
+   fault, and red is this sheet's word for a rival's doing. */
+#econ-bar .ec-pow.down { color: var(--text-dim); }
+/* No focus rule here on purpose: the sheet already carries one global
+   :focus-visible (see "interactive states"), and this plate is in the tab
+   order, so a second copy would only be two more values to keep in step. */
+/* The power ledger, under a rule inside the same panel rather than in a
+   tooltip of its own. */
+.ec-sect { display: block; margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--line); }
 
 
 /* ═════════════════ AIMED ABILITIES ══════════════════════════════════════ */
@@ -1457,6 +1586,10 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
 .abil.offense.ready.aiming .ab-icon,
 .abil.defense.ready.aiming .ab-icon { color: #7dd3fc; }
 .abil.aiming .ab-body em::after { content: ' ▸ PICK A TILE'; color: var(--text-mute); }
+/* The empty-sub-line collapse above must not swallow this prompt: an aimed
+   ability's sub-line is never empty, but an armed one whose marker is carried
+   entirely by ::after would be, and :empty ignores generated content. */
+.abil.aiming .ab-body em { display: block; }
 
 /* ── TERRAIN NODES ────────────────────────────────────────────────────────
    Seven elements would be seven near-identical rules, so the element colour
@@ -1546,10 +1679,13 @@ body.tri-field #hud { gap: 8px; padding: 8px 10px; }
 /* The muster bar keeps its header plus its first row: on a fresh profile one
    derived tier IS the whole control, and proportional shrink clipped it below
    the fold while the (scrolling) inspector kept most of the column. */
-#muster-bar { flex: 0 1 auto; min-height: 62px; overflow: hidden; }
-@media (max-height: 780px) {
-  .mu-body em { display: none; }          /* the per-tier blurb, not the price */
-}
+/* No min-height any more (Session 36): the pane above it now states its own
+   height from the card tokens, so a floor here could only fight it. The
+   `@media (max-height: 780px) { .mu-body em { display: none } }` that stood
+   below went with .mu-body itself: hiding figures at one viewport height is
+   what a card carrying too many figures needs, and this one now carries the
+   three the owner asked for at every height. */
+#muster-bar { flex: 0 1 auto; overflow: hidden; }
 
 /* The MUSTER rows stair-stepped because the icon column had no width, so each
    row's text started wherever its glyph happened to end. */
@@ -1779,10 +1915,14 @@ body.tri-field #hud { gap: 8px; padding: 8px 10px; }
   border: 1px solid color-mix(in srgb, var(--og) 55%, transparent);
   color: var(--og); background: color-mix(in srgb, var(--og) 10%, transparent);
 }
-.si-og { font-size: 9.5px; padding: 1px 6px; }
-/* The battle shop rides a shrink budget, so the origin is a pip INSIDE the
-   name line rather than a badge under it -- no new row, no new height. */
-.tc-og { font-style: normal; font-size: 10px; color: var(--og); margin-left: 4px; vertical-align: 1px; }
+.si-og { font-size: 9.5px; padding: 1px 6px;
+         color: color-mix(in srgb, var(--og) var(--ink-mix), var(--text)); }
+/* The battle shop's origin pip (.tc-og) came off the card with the role line
+   (Session 36, owner A2: "just the number keybind, the icon, the name, and
+   the gold cost"). A pip inside the name line cost no new row, but it did
+   cost NAME WIDTH out of the 35px that column had, and the shop card still
+   states its origin the way the loadout family headings do: the colour on
+   the machined top rule (--cc). originBadge() carries it in full on hover. */
 .tt-origin {
   margin: 5px 0 0;
   padding: 5px 7px;
@@ -1811,10 +1951,10 @@ body.tri-field #hud { gap: 8px; padding: 8px 10px; }
    refusal, so it keeps its colour where an origin-locked entry loses it. */
 .soul-item.story-locked { opacity: .74; filter: none; cursor: default; }
 .soul-item.story-locked:hover { opacity: .95; }
-.soul-item.story-locked .si-lock { color: #fbbf24; }
+.soul-item.story-locked .si-lock { color: var(--gold); }
 .si-lock {
   display: block;
-  color: var(--cc);
+  color: color-mix(in srgb, var(--cc) var(--ink-mix), var(--text));
   font: 600 9px/1.4 var(--display, system-ui), system-ui, sans-serif;
   letter-spacing: .1em; text-transform: uppercase;
 }
@@ -2127,7 +2267,8 @@ body:not(.arena-field) .arena-ladder { display: none; }
 }
 /* The element mark and the pack-size mark, one glyph each, tucked into the
    price so .lo-meta keeps its two flex children. */
-.lo-el { font-style: normal; color: var(--el, var(--tc)); margin-right: 4px; }
+.lo-el { font-style: normal; margin-right: 4px;
+         color: color-mix(in srgb, var(--el, var(--tc)) var(--ink-mix), var(--text)); }
 
 /* ---- the chosen strip: what you have taken, where you took it --------- */
 .lo-chosen { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
@@ -2552,8 +2693,10 @@ body:not(.arena-field) .arena-ladder { display: none; }
 /* Symbol-only muster figures (owner, Session 26). The riser is the green up
    arrow beside the econ percent; small and bright so the eye reads gain. */
 .mu-up { font-style: normal; color: #4ade80; font-size: 9px; margin-left: 1px; }
-.mu-n { font-family: var(--display); letter-spacing: .06em; }
-.mu-pow { color: #fbbf24; }
+/* .mu-n is now set with the dock's own card rules (Session 36, owner A3):
+   it is the one figure on the unit card face and it is sized to be read at a
+   glance, so it cannot be left inheriting a label face here. .mu-pow's rule
+   went with the element. */
 
 /* ── THE BRIEFING CARD, Session 26 ─────────────────────────────────────
    The sitting commander rides the banner; arena and boon are chips that
@@ -2609,7 +2752,9 @@ body:not(.arena-field) .arena-ladder { display: none; }
   letter-spacing: .08em; text-transform: uppercase;
   border: 1px solid var(--line); background: rgba(255,255,255,.05);
   color: var(--text-dim); }
-.mu-rolemark { font-size: 10px; opacity: .8; margin-right: 2px; }
+/* .mu-rolemark went off the unit card face (Session 36, owner A3). The role
+   it marked is named in full in the card's hover briefing instead, where a
+   glyph does not have to carry a whole idea on its own. */
 
 /* ACHIEVEMENTS on the results screen. Mirrors .rw-saved so a defeat and a
    victory read as the same kind of ledger, not two different screens. */
@@ -2917,6 +3062,14 @@ body:not(.arena-field) .arena-ladder { display: none; }
   z-index: 20; display: flex; align-items: flex-end; gap: 12px;
   max-width: calc(100% - 24px);
   pointer-events: none;
+  /* CARD CHROME, one set of values read by BOTH dock card families. Every
+     one of these protects a specific failure measured on the unpatched
+     build at 1600x900, recorded in docs/OWNER-NOTES-S36.md. */
+  --dock-card-h: 50px;    /* one height for a tower card and a unit card: they were 42 and 56.5, which is why the two panes could not agree */
+  --dock-card-gap: 6px;   /* the grid gutter, and the label's gap to the first row, so the pane height is arithmetic */
+  --dock-label-h: 14px;   /* DECLARED, not inherited: a section label whose height is whatever the font gives makes the pane height a measurement rather than a contract */
+  --dock-pane-pad: 8px;   /* matches .dock-pane's own vertical padding above */
+  --dock-side-w: 328px;   /* unchanged: the two flank panes were already equal in width */
 }
 #dock .dock-pane {
   pointer-events: auto;
@@ -2931,7 +3084,34 @@ body:not(.arena-field) .arena-ladder { display: none; }
    against the actual card content (icon, name, role/figures) rather than
    guessed -- 152px per column is what a .tower-card's own padding and its
    30px icon plus two lines of text ask for at this font size. */
-#dock-muster, #dock-shop { width: 328px; }
+/* ═════════ 36.A1  THE TWO FLANK PANES, EVEN IN HEIGHT AND LENGTH ═══════
+   The owner asked for both bottom panes to match. Widths already did (328
+   each). HEIGHT did not, and neither did the line the eye actually reads:
+   measured live at 1600x900 on the unpatched build, DETACHMENT stood 157.25
+   tall and LOADOUT 128.25, tops 29px apart, and at 1366x768 the pair
+   inverted (122.25 against 128.25) so the taller pane swapped sides with the
+   viewport. `align-items: flex-end` on #dock had them hanging from a shared
+   bottom edge with two different skylines.
+
+   THEY ALIGN ON BOTH EDGES NOW, by sharing one height rather than by being
+   stretched to one. That is the choice the middle pane forces: #dock-inspector
+   is capped at 40vh and is always the tall one, so two short flanks of
+   different heights read as an accident of content, while two identical
+   flanks read as a matched pair framing the subject. Stretching all three
+   instead would have given the flanks 250px of empty ground to fill, which
+   is a worse answer to "make them even".
+
+   The height is ARITHMETIC, not a pinned measurement: LOADOUT_SIZE and
+   MUSTER_LOADOUT_SIZE are both hard-capped at 4 (js/config.js) and both
+   grids are repeat(2, minmax(0, 1fr)), so a pane is exactly its padding, its
+   border, one label, one gap, two card rows and the gutter between them.
+   Stating it also pins the doctrine case: THE LATTICE swaps the muster cards
+   for a plate, and without this that one seat would move one pane alone. */
+#dock-muster, #dock-shop {
+  width: var(--dock-side-w);
+  height: calc(2 * var(--dock-pane-pad) + 2px + var(--dock-label-h)
+               + var(--dock-card-gap) + 2 * var(--dock-card-h) + var(--dock-card-gap));
+}
 /* The description holds the most varied content of the three (wave state,
    attrition lore, a full tower's stat block) and no per-card grid to size
    against, so it keeps the narrower width the sidebar version already
@@ -2957,7 +3137,11 @@ body:not(.arena-field) .arena-ladder { display: none; }
    room at 768px tall and still reads as the smaller of the three panes next
    to the shared 42vh muster/shop cap, matching the original intent. */
 #dock #dock-inspector { width: 300px; max-height: 40vh; display: flex; flex-direction: column; gap: 8px; }
-#dock .section-label { margin-bottom: 6px; }
+/* The label is part of the height contract above, so it declares its own box
+   instead of taking whatever the face gives it (measured: 14.25px from a
+   9.5px font, which is a number nobody chose). */
+#dock .section-label { height: var(--dock-label-h); line-height: var(--dock-label-h);
+                       margin-bottom: var(--dock-card-gap); }
 /* THE 2x2 GRID ITSELF. repeat(2, 1fr): exactly two columns, and with the
    engine's own 4-item cap the two rows fall out for free, no third row a
    taller board could ever produce. */
@@ -2968,7 +3152,116 @@ body:not(.arena-field) .arena-ladder { display: none; }
    stuck out 30px past #dock-shop's right edge. .tc-main already carries
    min-width:0 for exactly this squeeze; the track itself was the one link
    in the chain still refusing to go below content size. */
-.muster-bar, #shop-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.muster-bar, #shop-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+                          gap: var(--dock-card-gap); }
+
+/* ═════════ 36.A2 + 36.A3  TWO CARD FAMILIES, ONE SHAPE ═════════════════
+   A tower card and a unit card are THE SAME DECISION MADE TWICE: spend gold
+   now to change what the next wave does. The screen had them drawn as two
+   unrelated controls, and every difference was measured on the unpatched
+   build rather than judged: 42px tall against 56.5px, a machined chamfer
+   against a plain 10px radius, Segoe UI against the button default Arial,
+   pure rgb(0,0,0) inherited text on the unit card against var(--text) on the
+   tower card, a 13.5px gold price against a 10px one. This project already
+   learned the lesson once, on the four-column loadout screen.
+
+   Everything that is not the CONTENT is set here for both at once, so a fix
+   to the shape can no longer reach one family and miss the other. */
+#dock .tower-card, #dock .muster-btn {
+  height: var(--dock-card-h);
+  padding: 5px 8px;
+  font-family: var(--mono);
+  color: var(--text);
+  /* THE MACHINED CARD, restated rather than added to the chamfer selector
+     list further up this file: three teams edit that line this round and a
+     shared line is where merges are lost. Same polygon, same radius, so the
+     two families cut the same corner. */
+  position: relative;
+  border-radius: 0 8px 8px 8px;
+  clip-path: polygon(9px 0, 100% 0, 100% 100%, 0 100%, 0 9px);
+  /* THE FOCUS RING IS DRAWN INSIDE. .dock-pane clips at overflow-y, so the
+     global :focus-visible ring at +2px offset is invisible on any card that
+     touches a pane edge. .tower-card already carried this fix on its
+     pseudo-class; the muster button never did, and a keyboard user had no
+     ring on it at all. Set on the element rather than on :focus-visible so
+     the value is measurable from a computed style. */
+  outline-offset: -2px;
+}
+/* The accent rule across the top edge, the unit card's half of the machined
+   treatment. --ac is the muster accent the .panel-action primitive already
+   defines, so no new colour enters the palette. */
+#dock .muster-btn::before {
+  content: ''; position: absolute; left: 9px; right: 0; top: 0; height: 2px;
+  background: var(--ac); opacity: .85; pointer-events: none;
+}
+/* One hover gesture for both. .tower-card lifted sideways and .panel-action
+   lifted up, which is two answers to one question. */
+#dock .tower-card:hover { transform: translateY(-1px); }
+/* And one reduce block for both. .panel-action already had an OS-level
+   reduce rule and .tower-card never did: `body.rm-user *` (the in-game
+   OPTIONS switch) caught it, the media query did not. Two cards that move
+   the same way must also stop moving the same way. */
+@media (prefers-reduced-motion: reduce) {
+  #dock .tower-card, #dock .muster-btn { transition: none; }
+  #dock .tower-card:hover { transform: none; }
+}
+
+/* THE TOWER CARD: keybind, icon, name, gold cost. Nothing else (owner, A2).
+   TWO ROWS, because one row cannot hold a tower name. Measured: .tc-name had
+   35px of a 150px card, and 59 of the 60 names ellipsised inside it, the
+   longest ("HUNGERING VEIL") needing 121px. The role line under the name is
+   what starved it, and the role was never only there: towerTooltip has
+   printed it as .tt-role since the tooltip existed. Giving the name its own
+   full-width row buys it 132px, which clears the longest name by 22px. */
+#dock .tower-card {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  grid-template-areas: 'key icon . cost'
+                       'name name name name';
+  align-items: center; align-content: center;
+  column-gap: 8px; row-gap: 2px;
+}
+#dock .tower-card .tc-key  { grid-area: key; }
+#dock .tower-card .tc-mini { grid-area: icon; }
+#dock .tower-card .tc-main { grid-area: name; min-width: 0; }
+#dock .tower-card .tc-cost { grid-area: cost; justify-self: end; }
+/* An explicit line box, so the card height is arithmetic rather than
+   whatever the face's default leading happens to be. */
+#dock .tower-card .tc-name { line-height: 14px; }
+
+/* THE UNIT CARD: icon, how many are sent, the gold cost (owner, A3). One
+   row, centred in the shared card height. The room the rolemark, the power
+   figure and the econ figure used to take is exactly what makes the count
+   legible: they are all recoverable in the card's hover briefing. */
+#dock .muster-btn {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  column-gap: 8px;
+}
+#dock .muster-btn .mu-ic   { grid-column: 1; }
+#dock .muster-btn .mu-n    { grid-column: 2; }
+#dock .muster-btn .mu-cost { grid-column: 4; justify-self: end; }
+/* THE COUNT, the one figure the owner asked to make bigger: 10px to 19px,
+   both measured. --num because a count that jitters as it changes width is a
+   count the eye has to re-find. */
+#dock .muster-btn .mu-n {
+  font-family: var(--num); font-variant-numeric: tabular-nums;
+  font-size: 19px; font-weight: 700; line-height: 1; letter-spacing: 0;
+  color: var(--text);
+}
+/* ONE PRICE TREATMENT. A price is a price on either card. */
+#dock .tc-cost, #dock .mu-cost {
+  font-family: var(--num); font-variant-numeric: tabular-nums;
+  font-size: 13.5px; font-weight: 700; color: var(--gold);
+}
+
+/* 36.A4. The unit briefing reuses the tower tooltip's own primitives
+   (.tt-head, .tt-figure, .tt-role, .tt-stats, .tt-foot) so the two hovers
+   read as one component with two subjects. The only addition is the flavour
+   line, and .flavor is the primitive this codebase already uses for it:
+   brief, italic, dimmer, visibly not mechanics (design-forge house rule 2). */
+#tooltip .tt-foot .flavor { display: block; margin-top: 7px; }
 /* .muster-bar carries THREE possible header/summary rows above its actual
    tier cards (engine-strip, muster-head, and lattice-plate as the doctrine
    that replaces the cards outright), none of which are cards themselves.

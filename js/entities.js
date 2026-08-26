@@ -1904,6 +1904,10 @@ class Tower {
       const d2 = dist2(this.x, this.y, e.x, e.y);
       if (d2 > sr2) continue;
       if (d2 < mr2) continue;
+      /* Shot-blocking terrain: a tower without spotting cannot see through
+         walls. Mortars and other indirect-fire weapons carry `spotting` and
+         arc over cover -- that's their whole reason to exist on walled boards. */
+      if (!this.stats.spotting && wallBlocksShot(this.x, this.y, e.x, e.y)) continue;
       if (d2 > r2 && !this.spottedFor(e)) continue;
       let score;
       switch (this.targetMode) {
@@ -2998,6 +3002,32 @@ class Tower {
 
 /* ------------------------------------------------------------- PROJECTILE */
 
+/**
+ * Wall line-of-sight: does a straight shot from (x1,y1) to (x2,y2) in pixel
+ * space cross any wall tile? Uses DDA raycast in tile space. Returns true if
+ * blocked. No-op (returns false) when the field has no walls.
+ */
+function wallBlocksShot(x1, y1, x2, y2) {
+  const W = FIELD.walls;
+  if (!W || W.size === 0) return false;
+  /* Convert to tile coords. DDA: step through tiles the ray crosses. */
+  const tx0 = (x1 / TILE) | 0, ty0 = (y1 / TILE) | 0;
+  const tx1 = (x2 / TILE) | 0, ty1 = (y2 / TILE) | 0;
+  const dx = Math.abs(tx1 - tx0), dy = Math.abs(ty1 - ty0);
+  const sx = tx0 < tx1 ? 1 : -1, sy = ty0 < ty1 ? 1 : -1;
+  let t = 0;
+  /* Max steps bounded by the longer axis; prevents infinite loop on degenerate rays. */
+  const maxSteps = dx + dy + 2;
+  for (let i = 0; i <= maxSteps; i++) {
+    if (W.has(tx0 + ',' + ty0)) return true;
+    t += 1;
+    if (t > dx && t > dy) break;
+    if (t === dx) tx0 += sx;
+    if (t === dy) ty0 += sy;
+  }
+  /* Check the endpoint tile too. */
+  return W.has(tx1 + ',' + ty1);
+}
 class Projectile {
   constructor(o) {
     Object.assign(this, { splash: 0, pierce: 0, pierceCount: 0, shred: 0, stun: 0,
@@ -3035,6 +3065,13 @@ class Projectile {
       this.vx = Math.cos(this.angle) * this.speed; this.vy = Math.sin(this.angle) * this.speed;
     }
     this.x += this.vx * dt; this.y += this.vy * dt;
+    /* Shot-blocking terrain: straight shots die on wall tiles. Lobbed shells
+       already returned above -- they arc over cover, which is the whole point
+       of a mortar on a walled board. */
+    if (FIELD.walls && FIELD.walls.size > 0) {
+      const px = this.x - this.vx * dt, py = this.y - this.vy * dt;
+      if (wallBlocksShot(px, py, this.x, this.y)) { this.dead = true; return; }
+    }
     if (this.age > 3 || this.x < -80 || this.y < -80 || this.x > game.width + 80 || this.y > game.height + 80) { this.dead = true; return; }
     for (const e of game.enemies) {
       if (!this.hostile(e)) continue;

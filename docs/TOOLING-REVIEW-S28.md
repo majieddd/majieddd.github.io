@@ -183,10 +183,33 @@ Router repaired: the parallel authoring agents invented four reference filenames
 were never written (`gates.md`, `ui-quality.md`, `balance-probes.md`, `process.md`) and
 omitted the five that were. Table now resolves, and UI work routes to `design-forge`.
 
-## Open decisions
+## Open decisions, RESOLVED
 
-1. Check 25.3: fix the check, or fix the data? (A1)
-2. Fix the 8 undraftable towers by extending `LOADOUT_SIZE` to 5, or trimming the cores
-   to 4? (A2)
-3. Fix the 10 escaped em dashes and 21 `transition: all` rules? (A3, A4)
-4. Install puppeteer-core, and `generating-semantic-game-mutants`?
+All four closed. Re-verified live 2026-08-26 rather than trusted from an old
+status line, per this project's own standing rule.
+
+1. **Check 25.3: the check was fixed**, not the data. It currently PASSES,
+   measured: `light survives 12.5 leaks vs human 10.0`. The old failing clause
+   compared raw lives (`light.lives (25) > human.lives (30)`, false on its
+   face since light has FEWER lives). The live check now compares effective
+   survivability, lives divided by leak cost, which is what "defensive" was
+   always supposed to mean: light takes less damage per breach, so 25 lives at
+   its leak rate outlasts human's 30 at human's own. `light.lives` was not
+   moved to satisfy the old clause.
+2. **The 8 undraftable towers: fixed in Session 29** (`OWNER-NOTES-S29.md`,
+   item H2), by a seeded drop plus a second origin-coherent vault core, not by
+   moving `LOADOUT_SIZE`. Measured then: all 8 reachable in 2000 drafts, every
+   drafted set still exactly 4. `LOADOUT_SIZE` is still 4 (`js/config.js:2604`).
+3. **Zero `transition: all` remain repo-wide**, `grep -rc "transition:\s*all"`
+   across every `.js`/`.css` file returns nothing above zero. The em dash count
+   is a moving target this project revisits every session rather than a
+   one-time fix; `node tools/emdash.js` is the live gate and reported 0 across
+   the whole repo as of this session (2026-08-26), after closing two dashes
+   that had crept back into `js/config.js` since S28.
+4. **`tools/mutants.js` exists and works**: 7 of 7 planted defects caught by
+   their predicted checks (`DESIGN-AUDIT-S30.md`). That answers the mutant-
+   generation half of the question; nothing in this repo references
+   puppeteer-core, and `tools/headless.js` (zero-dependency, CDP over the
+   built-in WebSocket) has been the actual screenshot/composite path every
+   session since, so installing it was never taken up and nothing depends on
+   it now.

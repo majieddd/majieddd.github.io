@@ -15,7 +15,12 @@ hand** (this line said 50 towers and 20 units for two sessions after the game
 had 60 and 25, and the missing ten and five were exactly the content with no
 art, so the undercount hid the gap twice over): **60 towers** (12 per origin,
 10 of them 2×2), **26 commanders** across **5 powers**, **25 units**, 20 boons,
-15 maps, 188 art plates. Live on all three surfaces.
+15 maps, **229 art plates** (re-measured 2026-08-26 by parsing `js/artpack.js`
+directly rather than trusting this line: `cmd` 26, `fac` 5, `world` 106, `foe`
+54, `abil` 12, `planet` 12, `twr` 11, plus `title`, `nebula`, `blackhole`. The
+188 this line carried was the same undercount pattern its own parenthetical
+warns about, not the ten missing heavies' art, which is a real, separate,
+still-open gap tracked below). Live on all three surfaces.
 
 ---
 
@@ -40,9 +45,33 @@ more than the destination:
   verdict, the tri-world refusal, both exit paths, both lens escapes, and the
   stranger/ctl guards.
 
-Full story: [`MULTIPLAYER-HANDOFF.md`](MULTIPLAYER-HANDOFF.md). Still open,
-deliberately: WebRTC manual signalling for two MACHINES (BroadcastChannel is
-same-origin, one machine), designed for, not built.
+Full story: [`MULTIPLAYER-HANDOFF.md`](MULTIPLAYER-HANDOFF.md).
+
+**WebRTC two-machine duels: BUILT AND MEASURED WORKING (Session 36).** This
+section said "designed for, not built" for several sessions after it stopped
+being true, and that stale line cost a later session real time re-deriving it.
+Corrected with evidence rather than by assertion:
+
+- `NetRTC` (js/net.js:1526+) is a complete hand-signalled transport: `host()`,
+  `answer()`, `accept()`, `abort()`, `_gathered()` waits for ICE completion,
+  and `NET_RTC_CONFIG` is empty on purpose, so no third party sits in a duel.
+- It IS wired to the interface. `js/ui.js:2230-2377` sets `NetRTC.onState` and
+  `NetRTC.onLink`, calls `host()` and `accept()`, and gives the guest a paste
+  field (`#mv-rtc-take`). A grep for `Net\.` misses all of this because the
+  object is `NetRTC`, not a member of `Net`. That is the trap.
+- **Measured end to end on a composited page:** the whole ritual driven with
+  two real `RTCPeerConnection`s in one document. Host offer 880 chars,
+  `v=6`, `type=offer`. Guest answer 880 chars. After `accept()` both channels
+  reached `open`, both peers reported `connectionState: "connected"`, and the
+  string `DUEL-PING-42` was pushed from the host channel and arrived intact on
+  the guest channel. Verdict: the transport works.
+- Method note for whoever re-runs this: decode blobs with the engine's own
+  `NetRTC._dec`. A probe that guessed a base64-JSON shape reported
+  `blobIsOffer: false` against a perfectly healthy blob.
+
+What is still genuinely absent is unchanged and deliberate: nothing MATCHES you
+with a stranger. You bring the opponent and carry the two blobs across by hand,
+which is what the title-screen copy already says in as many words.
 
 ### 2. Soul-shop surcharge (20.7i). SHIPPED (Session 21)
 The per-shop ladder is live: `soulPrice(kind, id)` is the one price expression,
@@ -222,9 +251,33 @@ Eight owner items, all shipped. What is worth knowing later:
   in ONE session at equivalent paths; never against a number written down on
   a different day.
 
-Still open, and none of it new: the ten heavies have no `twr_` art plates, the
-rival AI draft lists never learnt them, and the soul shop's five new firing
-previews are unwired.
+**Re-verified 2026-08-26, one true and two stale.** The ten 2x2 heavies (ground
+truth from the engine itself, `TOWER_TYPES[id].foot[0] === 2`: `bombard`,
+`coldfront`, `quadmount`, `reactor`, `carronade`, `stokehold`, `suture`,
+`impaler`, `monstrance`, `pharos`, two per origin as the feature promised) are
+the one genuinely still open: all ten have `hasArt: false` in `js/artpack.js`.
+The other two clauses are stale and now corrected:
+
+- **The rival AI draft lists already learnt them.** `js/ai.js:129` names it
+  outright: "THE HEAVIES BELONG IN THESE LISTS. They are already draftable."
+  All ten are present across `DAMAGE` and `AIR`.
+- **The soul shop's firing previews are wired for all ten**, measured on a
+  fresh, untouched profile: `UI.openSoulShop()` emits a `[data-preview]` node
+  for every one of the ten heavy ids, zero missing. (An earlier attempt at
+  this same check force-unlocked every tower first, which hides the ARSENAL
+  section's preview by construction, since it renders only unbought entries,
+  and produced a false "4 missing" reading against four ids, `intertie`,
+  `siegetrain`, `extinction`, `theophany`, that turned out not to be tower ids
+  at all: an over-eager regex had pulled them from a branch/ascension's own
+  `id:` field nested inside a different tower's block. Neither error survived
+  a check against the live engine rather than the source text.)
+
+What remains is purely a GPU-time question, not a wiring one: ten renders.
+`~/.claude/skills/aegis-gamedev/SKILL.md`'s own numbers disagree with each
+other on the cost (Krea 2 Turbo 4-bit or SDXL-Turbo at "~4.5s each" in one
+place, "~138 min/image" measured on this machine in `BACKLOG.md`'s own owner-
+decision table elsewhere), so pin down which pipeline and settings actually
+apply before budgeting the run rather than trusting either number cold.
 
 The pacing worry this round raised is CLOSED and was never real, measured
 properly, pre-doctrine and post-doctrine builds swept back to back in one

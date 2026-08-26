@@ -216,7 +216,7 @@ function generateGalaxy(seed, playerFaction, mapPool) {
            draw moves. Clamped, so a newer save on an older build falls back
            to everything rather than throwing. One rnd() call, same position,
            as ever. */
-        map: (() => { const pool = MAPS.filter(m => !m.tri);
+        map: (() => { const pool = MAPS.filter(m => !m.tri && (!m.minTier || m.minTier <= si));
                       const n2 = (mapPool >= 1 && mapPool <= pool.length) ? mapPool : pool.length;
                       return pool[Math.floor(rnd() * n2)].id; })(),
         arena: rnd() < 0.55 ? ARENA_MODS[Math.floor(rnd() * ARENA_MODS.length)].id : null,

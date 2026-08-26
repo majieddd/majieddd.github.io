@@ -395,7 +395,11 @@ const Game = {
       ? (opts.epoch !== undefined ? (opts.epoch | 0) : maelstromEpoch()) : null;
     this.map = opts.maelstrom ? maelstromMap(opts.maelstrom, this.maelstromEpoch)
                               : (MAPS.find(m => m.id === opts.map) || MAPS[0]);
-    FIELD = buildField(this.map);
+    /* Procedural maps seed their geometry from the world id so both duel
+       clients compute identical boards. Campaign passes `world` (full object);
+       multiplayer and skirmish pass `worldId` (string). */
+    const mapSeed = opts.worldId || (opts.world && opts.world.id) || 'default';
+    FIELD = buildField(this.map, mapSeed);
 
     /* Who GARRISONS this world decides whether its own troops march beside the
        Vigil, and the roster is fixed ONCE here because the preview, the rival's

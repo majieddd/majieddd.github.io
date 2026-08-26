@@ -580,15 +580,55 @@ const MAPS = [
        which is what makes venom LEGAL here; they carry no venom resistance,
        whatever ANVIL's older comment claims about them. */
     nodes: [[7, 10, 'fire', 'build'], [0, 7, 'venom', 'build'], [8, 8, 'frost', 'lane']]
-  }
+  },
+
+  /* ═══════════ PROCEDURAL FAMILIES (mapgen.js) ═══════════
+     Each entry carries `procedural: true` + a family; buildField() calls
+     MapGen.proceduralGeometry(family, worldId) and bakes the result in. The
+     authored lanes/cols below are a FALLBACK only: they keep the board
+     playable if mapgen.js ever fails to load. `minTier` gates discovery by
+     solar-system depth (the galaxy pool filters on it); solo families carry
+     noReanim so they read as last-stand sieges, not two-ended duels. */
+  { id: 'spiral', name: 'Vortex Reach', procedural: true, family: 'spiral', minTier: 1,
+    cols: 24, rows: 20, lanes: [[[3,10],[8,10],[8,5],[16,5],[16,15],[21,15]]],
+    blocks: [[10,9,13,10]], nodes: [] },
+  { id: 'twin-channel', name: 'Twin Straits', procedural: true, family: 'twin-channel', minTier: 2,
+    cols: 26, rows: 20, lanes: [[[3,7],[21,7]],[[3,13],[21,13]]],
+    blocks: [[9,9,16,10]], nodes: [] },
+  { id: 'chokepoint', name: 'The Narrows', procedural: true, family: 'chokepoint', minTier: 3,
+    cols: 24, rows: 20, lanes: [[[3,10],[9,10],[9,6],[15,6],[15,14],[21,14]]],
+    blocks: [[8,7,15,8]], nodes: [] },
+  { id: 'island-scatter', name: 'Shattered Shoals', procedural: true, family: 'island-scatter', minTier: 4,
+    cols: 30, rows: 20, lanes: [[[3,10],[27,10]]],
+    blocks: [[8,6,11,9],[14,11,17,14]], nodes: [] },
+  { id: 'open-field', name: 'The Expanse', procedural: true, family: 'open-field', minTier: 5,
+    cols: 36, rows: 20, lanes: [[[3,10],[33,10]]], blocks: [], nodes: [] },
+  { id: 'convergence', name: 'Last Bastion', procedural: true, family: 'convergence', minTier: 6,
+    noReanim: true, cols: 24, rows: 20, lanes: [[[3,5],[12,9]],[[3,15],[12,11]]],
+    blocks: [[11,8,13,11]], nodes: [] },
+  { id: 'fortress-ring', name: 'Siege Ring', procedural: true, family: 'fortress-ring', minTier: 7,
+    noReanim: true, cols: 26, rows: 20, lanes: [[[3,10],[9,4],[17,4],[17,16],[23,16]]],
+    blocks: [[10,8,15,11]], nodes: [] }
 ];
 
 /** Builds the full mirrored geometry for a map. */
-function buildField(map) {
+function buildField(map, seedStr) {
   /* Asked FIRST: an arena map carries a seat count and no mirror axis at all,
      so the two-sided path below has nothing to say about it. */
   if (map.maelstrom) return buildMaelstromField(map);
   if (map.tri) return buildTriField(map);
+
+  /* PROCEDURAL MAPS: generate geometry deterministically from (family, seed).
+     The seed carries the world id so both duel clients compute identical
+     boards. We merge into a CLONE of the map so callers that reuse the
+     object are safe; authored fields (id, name, noReanim, ...) survive.
+     Every family yields standard two-sided geometry: buildField mirrors it,
+     and solo-survival scenarios already ignore seat 1 on mirrored boards. */
+  if (map.procedural && typeof MapGen !== 'undefined') {
+    const geo = MapGen.proceduralGeometry(map.family, seedStr || map.id);
+    map = Object.assign({}, map, geo);
+  }
+
   const mirror = ([x, y]) => [map.cols - 1 - x, y];
   const lanes0 = map.lanes;
   const lanes1 = lanes0.map(l => l.map(mirror));
@@ -609,6 +649,20 @@ function buildField(map) {
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
       blocked.add(x + ',' + y);
       blocked.add((map.cols - 1 - x) + ',' + y);   // mirror the terrain too
+    }
+  }
+
+  /* WALLS: shot-blocking terrain. Unbuildable (added to `blocked` above via
+     the same loop pattern) AND tracked in a separate set so projectiles and
+     line-of-sight can test against them. Lobbed shells arc over walls. */
+  const wallSet = new Set();
+  for (const [x0, y0, x1, y1] of (map.walls || [])) {
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      blocked.add(x + ',' + y);
+      wallSet.add(x + ',' + y);
+      const mx = map.cols - 1 - x;
+      blocked.add(mx + ',' + y);
+      wallSet.add(mx + ',' + y);   // mirror the walls too
     }
   }
 
@@ -635,6 +689,7 @@ function buildField(map) {
     sendPaths: [send0, send1],
     airLanes: [[c0, base0], [c1, base1]],
     terrain: blocked,
+    walls: wallSet,                                // shot-blocking tiles (empty for authored maps)
     nodes, nodeMap: new Map(nodes.map(n => [n.key, n])),
     neutral: { from: Math.min(...allCentreX) - 1, to: Math.max(...allCentreX) + 1 },
     buildMax: [Math.min(...allCentreX) - 2, Math.max(...allCentreX) + 2],

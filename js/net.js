@@ -1235,6 +1235,10 @@ const Net = {
         rivalFaction: cfg.seats[1].faction,
         worldKind: cfg.world.kind,
         arena: cfg.world.arena,
+        /* Shared by both clients (host builds the table, guest receives it
+           verbatim) -- procedural map geometry seeds from this so the two
+           boards are byte-identical without a new network message. */
+        worldId: cfg.world.id,
         boons: []
       });
       /* INSIDE THE LENS, and seat by seat. setMusterLoadout derives every

@@ -1173,8 +1173,18 @@ const UI = {
         const reason = Meta.lockReason(c.id, n.id);
         const can = reason === null;
         const parent = Meta.parentOf(c, n);
+        /* aria-hidden because this glyph is a DECORATIVE EDGE, not information.
+           Whether a tech is takeable is already carried by the button below it,
+           which renders owned / can / locked / ready and states the reason in
+           its own title. The arrow only draws the line between parent and
+           child, so six screen readers announcing a bare triangle is noise.
+           This is also what exempts its 1.75:1 unlit contrast from WCAG 1.4.3:
+           the dim state is a deliberately recessive connector that lights gold
+           when the parent unlocks, and the lit state is the one that carries
+           meaning. Measured 2026-08-26: it was the last contrast failure
+           standing across six screens, 6 nodes on the commander chart. */
         const arrow = parent
-          ? `<span class="tal-arrow ${Meta.isUnlocked(c.id, parent.id) ? 'lit' : ''}">▲</span>` : '';
+          ? `<span class="tal-arrow ${Meta.isUnlocked(c.id, parent.id) ? 'lit' : ''}" aria-hidden="true">▲</span>` : '';
         cells.push(`<div class="tal-cell">
           ${arrow}
           <button class="tal-node ${owned ? 'owned' : can ? 'can' : 'locked'}${lit && !owned && can ? ' ready' : ''}"
@@ -2161,7 +2171,7 @@ const UI = {
           <span class="br-kind" data-tt="${kind.label.toUpperCase()}|${(kind.note || 'A standard world. No modifier.')}">${kind.icon} ${kind.label}</span>
           <span class="br-sys">${sys.name}</span>
         </div>
-        ${mp ? this.mapPreviewBlock(mp, { size: 'tip' }) : ''}
+        ${mp ? this.mapPreviewBlock(mp, { size: 'tip', seed: w.id }) : ''}
         ${cmdBar}
         ${w.seat ? `<div class="br-seat" data-tt="COMMANDER SEAT|The system's boss fight. A duel table here seats the commander.">⚔ COMMANDER SEAT<span>the system's boss stands on this world</span></div>` : ''}
         ${w.renegade ? `<div class="br-renegade"><b>A SPLINTER OF ITS OWN POWER HOLDS THIS WORLD.</b><span>The only ground that pays <b>${of.short}</b>. Its own soldiers hold its line.</span></div>` : ''}
@@ -2969,7 +2979,7 @@ const UI = {
       /* 3. THE BOARD, directly under the name line, so the shape of the ground
             is read before what the scenario asks of it (owner, Session 29). */
       (m ? this.mapPreviewBlock(m, { size: inline ? 'brief' : 'tip',
-                                     hoverCap: !!inline }) : '') +
+                                     hoverCap: !!inline, seed: w.id }) : '') +
 
       /* 3b. WHO stands on it, now that the ground has been read. */
       cmdBar +
@@ -3067,10 +3077,10 @@ const UI = {
    * as well as id: the arena is a genuinely different board at four seats and
    * at twenty.
    */
-  previewModel(m) {
+  previewModel(m, seed) {
     if (!this._pvModel) this._pvModel = {};
-    const k = m.id + (m.maelstrom ? ':' + m.maelstrom : '');
-    if (!this._pvModel[k]) this._pvModel[k] = this.buildPreview(m);
+    const k = m.id + (m.maelstrom ? ':' + m.maelstrom : '') + (seed ? ':s' + seed : '');
+    if (!this._pvModel[k]) this._pvModel[k] = this.buildPreview(m, seed);
     return this._pvModel[k];
   },
 
@@ -3079,8 +3089,8 @@ const UI = {
    * every width inside it is a fraction of a TILE and the SAME renderer serves
    * a duel, a three-way board and the twenty-seat arena at any card size.
    */
-  buildPreview(m) {
-    const f = buildField(m);
+  buildPreview(m, seed) {
+    const f = buildField(m, seed);
     const cols = f.cols, rows = f.rows, seats = f.lanes.length;
     const q = v => Math.round(v * 100) / 100;
 
@@ -3225,7 +3235,9 @@ const UI = {
   mapPreviewBlock(m, o) {
     if (!m) return '';
     o = o || {};
-    const p = this.previewModel(m);
+    /* Procedural boards seed from the world id so a tooltip shows the SAME
+       geometry the live board will build (the game seeds identically). */
+    const p = this.previewModel(m, o.seed);
     /* Kept to one line at 320px, the tooltip's width -- a caption that wraps
        under a picture reads as a paragraph and stops being scanned. */
     const cap = [p.cols + '\u00d7' + p.rows,
@@ -4448,34 +4460,146 @@ const UI = {
          arsenals read the same way in battle. The shop card is a different
          component from the loadout card (.tower-card vs .lo-card) and already
          rests minimal at five entries, so it needs no disclosure of its own. */
+      /* FOUR THINGS ON THE FACE (owner, Session 36 A2): the number keybind,
+         the tower's icon, its name, its gold cost. The role line and the
+         origin glyph both came off, and neither was lost: towerTooltip has
+         printed the role as .tt-role and the origin as originBadge() since
+         it existed, and the card still states its origin the way the loadout
+         family headings do, through --cc on the machined top rule. What they
+         cost was the name. Measured on the unpatched build at 1600x900:
+         .tc-name had 35px of a 150px card and 59 of the 60 tower names
+         ellipsised inside it. The icon drops 30px to 22px to match the unit
+         card's own icon, which is the sibling half of the same change. */
       return `<button class="tower-card" data-tower="${id}" style="--tc:${t.color}; --cc:${originOf(id).color}"
         aria-label="Build ${t.name}, ${t.role.toLowerCase()}, ${Game.towerLifeCost(0, id)
           ? Game.towerLifeCost(0, id) + ' lives' : t.cost + ' gold'}, hotkey ${keys[i]}"
         aria-keyshortcuts="${keys[i]}">
         <span class="tc-key" aria-hidden="true">${keys[i]}</span>
-        <span class="tc-mini" aria-hidden="true">${this.towerIconHTML(id, 30)}</span>
-        <span class="tc-main">
-          <span class="tc-name">${t.name}<i class="tc-og" aria-hidden="true" style="--og:${
-            originOf(id).color}" title="${originOf(id).name} · ${originOf(id).rule}">${
-            originOf(id).icon}</i></span>
-          <span class="tc-role">${t.role}</span>
-        </span>
+        <span class="tc-mini" aria-hidden="true">${this.towerIconHTML(id, 22)}</span>
+        <span class="tc-main"><span class="tc-name">${t.name}</span></span>
         <span class="tc-cost" data-cost="${id}" aria-hidden="true">${Game.towerLifeCost(0, id)
           ? '♥' + Game.towerLifeCost(0, id) : '◈' + t.cost}</span>
       </button>`;
     }).join('');
     this.paintTowerIcons(this.el.shop);
-    $$('[data-tower]').forEach(b => {
+    /* Scoped to the shop's own root: syncAfford() sweeps [data-tower] across
+       the document deliberately, this loop only ever meant these five. */
+    $$('[data-tower]', this.el.shop).forEach(b => {
       const id = b.dataset.tower;
       b.addEventListener('click', () => {
         Sound.resume();
         Game.selectedType = Game.selectedType === id ? null : id;
         Game.selected = null; Sound.play('click'); this.syncAll();
       });
-      b.addEventListener('mouseenter', ev => { Sound.play('hover'); this.showTooltip(ev, this.towerTooltip(id)); });
-      b.addEventListener('mousemove', ev => this.moveTooltip(ev));
-      b.addEventListener('mouseleave', () => this.hideTooltip());
     });
+    this.bindDockTips(this.el.shop, '.tower-card', el => this.towerTooltip(el.dataset.tower));
+  },
+
+  /**
+   * ONE HOVER BINDING FOR BOTH DOCK CARD FAMILIES.
+   *
+   * The shop's tower cards and the muster's unit cards are the same decision
+   * made twice, and until now they were bound twice: the tower card had a
+   * rich tooltip and no keyboard path, the unit card had a keyboard path
+   * through bindChipTips and only a text blurb. A fix applied to one and not
+   * the other is exactly the drift this round is closing, so there is one
+   * binder and both call it.
+   *
+   * The guard is per ELEMENT, not per root: syncMuster rewrites its innerHTML
+   * on every signature change, so the nodes are new each time and the flag
+   * they carry goes with them.
+   */
+  bindDockTips(root, sel, htmlFor) {
+    if (!root) return;
+    $$(sel, root).forEach(el => {
+      if (el._dockTip) return;
+      el._dockTip = true;
+      const show = ev => { Sound.play('hover'); this.showTooltip(ev, htmlFor(el)); };
+      el.addEventListener('mouseenter', show);
+      el.addEventListener('mousemove', ev => this.moveTooltip(ev));
+      el.addEventListener('mouseleave', () => this.hideTooltip());
+      /* moveTooltip already anchors a coordinate-less event to the element's
+         own box, which is what makes a FocusEvent work here unchanged. */
+      el.addEventListener('focus', show);
+      el.addEventListener('blur', () => this.hideTooltip());
+    });
+  },
+
+  /**
+   * THE UNIT BRIEFING (owner, Session 36 A4).
+   *
+   * Everything A3 took off the card face is recoverable here, plus the stats
+   * the face never carried and the two the owner named outright: what this
+   * send adds to ECON and what it contributes to overall POWER.
+   *
+   * EVERY FIGURE IS READ FROM THE FUNCTION THE ENGINE READS. musterCost is
+   * what canMuster charges, musterGain is the difference of two previewGold
+   * calls so the honest +0 survives the ceiling, musterHpMul is what the
+   * spawn applies, powerOf is what the econ chip quotes. Seven UI/engine
+   * desyncs have shipped on this project and every one of them was a second
+   * copy of a calculation, so this function makes none.
+   */
+  unitTooltip(id) {
+    const tier = Game.musterTiers(0).find(t => t.id === id);
+    if (!tier) return '';
+    const base = ENEMY_TYPES[tier.type];
+    const cost = Game.musterCost(0, tier);
+    const gain = Game.musterGain(0, tier);
+    const vics = Game.musterVictims(0);
+    /* Game.muster sends tier.count at EVERY victim, so a tri board receives
+       more than one victim's slice. */
+    const sent = tier.count * Math.max(1, vics.length);
+    /* musterHpMul is a function OF THE VICTIM (traits.reanimResist, up to
+       -60%), so two rivals do not necessarily receive the same body: where
+       they differ the panel prints the range it will actually send. */
+    const hps = (vics.length ? vics : [vics[0]]).map(v => Math.round(base.hp * Game.musterHpMul(0, v)));
+    const hpLo = Math.min.apply(null, hps), hpHi = Math.max.apply(null, hps);
+    const hpTxt = hpLo === hpHi ? formatNum(hpLo) : formatNum(hpLo) + '–' + formatNum(hpHi);
+    /* The same total the rival's brain scores as `delivered` in js/ai.js,
+       summed from the health figures above rather than re-derived. */
+    const powDelivered = hps.reduce((a, b) => a + b, 0) * tier.count;
+    const addPct = Math.round(tier.incomePct * 100);
+    const capPct = Game.musterCapPct(0);
+    const uncapped = !isFinite(capPct);
+    const earlyPen = Math.round((1 - spawnHpPenaltyMul(Math.max(1, Game.wave))) * 100);
+    const role = unitRole(base);
+    /* data-k is the probe's handle on each figure: tools/dock_test.js reads
+       these back and compares them against the same Game calls made above,
+       which is the only way a desync can be caught rather than assumed. */
+    const rows = [
+      ['sent', 'Sends', sent + ' × ' + base.name],
+      ['health', 'Health each', hpTxt],
+      ['speed', 'Speed', base.speed.toFixed(2) + ' tiles/s'],
+      ['armour', 'Armour', String(base.armor || 0)],
+      ['lives', 'Lives on a leak', String(base.lives)],
+      ['power', 'POWER delivered', formatNum(powDelivered)],
+      ['powmul', 'POWER multiplier', '×' + Game.powerOf(0).toFixed(2)],
+      ['econpct', 'ECON added, for good', '+' + addPct + '%'],
+      ['econgold', 'ECON next wave', '◈' + formatNum(gain)],
+      ['cost', 'Costs now', '◈' + formatNum(cost)]
+    ];
+    /* SAME SHAPE AS towerTooltip, deliberately: name and price in the head,
+       the figure with its badges, the role line, the stats, the footnote.
+       The two cards are siblings on the dock and their briefings are
+       siblings in the tooltip. The head names the UNIT, because that is what
+       the owner asked to see the stats of; the tier BAND is the second
+       badge, the way a tower's origin is. */
+    return `<div class="tt-head" style="color:${base.color}">${base.name}<span class="tt-cost">◈${
+        formatNum(cost)}</span></div>
+      <div class="tt-figure">${this.unitIconHTML(tier.type, 54)}
+        <span class="elem-badge" style="--el:${base.color}">${ROLE_GLYPHS[role]} ${role}</span>
+        <span class="elem-badge" style="--el:var(--text-dim)">${tier.icon} ${tier.name}</span></div>
+      <div class="tt-role">${ROLE_COPY[role]}</div>
+      <div class="tt-stats">${rows.map(r =>
+        `<div data-k="${r[0]}"><span>${r[1]}</span><b>${r[2]}</b></div>`).join('')}</div>
+      <div class="tt-foot">Summoned bodies arrive at <b>${Math.round(MUSTER_DAMP * 100)}%</b> and never rise again${
+        earlyPen > 0
+          ? ', and ' + earlyPen + '% lighter again this early: that fades to nothing by wave ' + SPAWN_HP_PENALTY_END
+          : ''}. ${uncapped
+          ? 'Your ECON has no ceiling, by the MARQUE.'
+          : 'ECON is flat additive, capped at +' + Math.round(capPct * 100) + '%.'}${
+        vics.length > 1 ? ' Split across ' + vics.length + ' rivals.' : ''}
+        <em class="flavor">${base.desc}</em></div>`;
   },
 
   towerTooltip(id) {
@@ -5152,21 +5276,15 @@ const UI = {
     const uncapped = !isFinite(capPct);
     const pct = Math.min(S.musterIncome || 0, capPct);
     const capped = !uncapped && (S.musterIncome || 0) >= capPct;
-    const vic = Game.musterVictims(0)[0];
     const doc = Game.doctrineOf(0);
-    /* 19.16 is already inside the health figure above, because that figure
-       comes from Game.musterHpMul. It is SAID here as well so the number is
-       explicable rather than merely correct -- and it is read from the same
-       function the spawn reads, never re-derived. */
-    const earlyPen = Math.round((1 - spawnHpPenaltyMul(Math.max(1, Game.wave))) * 100);
-    const earlyTxt = earlyPen > 0
-      ? ', and a summoned body is ' + earlyPen + '% lighter again this early: that fades to nothing by wave '
-        + SPAWN_HP_PENALTY_END
-      : '';
+    /* The wave-penalty sentence, the health range, the per-wave gold and the
+       role copy all moved into unitTooltip() with the figures they explain
+       (Session 36, owner A3 and A4): this loop now builds a THREE-figure
+       face and nothing else, so it computes only what that face and its
+       aria-label state. */
     const rows = Game.musterTiers(0).map(tier => {
       const base = ENEMY_TYPES[tier.type];
       const cost = Game.musterCost(0, tier);
-      const gain = Game.musterGain(0, tier);
       const ok = Game.canMuster(0, tier);
       const addPct = Math.round(tier.incomePct * 100);
       /* THE ENGINE'S OWN NUMBERS, both of them.
@@ -5178,39 +5296,23 @@ const UI = {
          will actually send instead of quietly quoting the first one. */
       const vics = Game.musterVictims(0);
       const sent = tier.count * Math.max(1, vics.length);
-      const hps = (vics.length ? vics : [vic]).map(v => Math.round(base.hp * Game.musterHpMul(0, v)));
-      const hpLo = Math.min.apply(null, hps), hpHi = Math.max.apply(null, hps);
-      const hp = hpLo;
-      const hpTxt = hpLo === hpHi ? formatNum(hpLo) : formatNum(hpLo) + '–' + formatNum(hpHi);
-      /* THE THREE FIGURES the owner asked for, in one fixed order: what it
-         COSTS, the POWER it puts in the lane, and the ECON it adds forever.
-         `powDelivered` is the same total the rival's brain scores as
-         `delivered` -- summed from the very health figures above, never
-         re-derived, so the button and the engine cannot disagree. Band name,
-         health range and the per-wave gold move into the tooltip: three
-         numbers is what a glance can hold. */
-      const powDelivered = hps.reduce((a, b) => a + b, 0) * tier.count;
-      /* SYMBOLS, NOT WORDS, on the button face (owner, Session 26): the
-         unit's own icon with its count, then cost, then POWER as the flexing
-         arm, then ECON as gold-percent with a green riser. The WORDS live in
-         the tooltip, where there is room for them; the face is what a glance
-         mid-wave has to read. The em dash is banned from all copy, so the
-         tooltip is punctuated without it. */
+      /* THREE THINGS ON THE FACE (owner, Session 36 A3): the unit's own icon,
+         how many of it this buy sends, and what that costs in gold. The
+         rolemark, the POWER figure and the ECON percent came off. They were
+         not dropped: unitTooltip() names all three in words, next to the
+         stats the face never had room for, and the hover is bound by the same
+         binder the tower cards use. Six figures on a 150px card is what a
+         designer reaches for when the card is the only surface; the card is
+         no longer the only surface.
+         The aria-label still states everything, because a screen reader has
+         no hover to fall back on. */
+      const powDelivered = (vics.length ? vics : [vics[0]])
+        .reduce((a, v) => a + Math.round(base.hp * Game.musterHpMul(0, v)), 0) * tier.count;
       return `<button class="panel-action muster-btn ${ok ? '' : 'poor'}" data-muster="${tier.id}"${ok ? '' : ' disabled'}
-        aria-label="Summon ${tier.name}: ${sent} ${base.name} for ${cost} gold, ${powDelivered} power, econ plus ${addPct} percent"
-        data-tt="SUMMON ${tier.name}|◈${formatNum(cost)} marches ${sent} × ${base.name} at ${hpTxt} health each, ${
-          formatNum(powDelivered)} POWER into the lane${vics.length > 1 ? ', split across ' + vics.length + ' rivals' : ''}. Adds ${
-          addPct}% of every wave reward to your ECON for the rest of the battle, worth ◈${
-          formatNum(gain)} next wave. Every buy also hardens what you send by +${
-          Math.round(doc.powerPerBuy * 100)}%${uncapped ? ' (no ceiling, by the MARQUE)' : ''}. Summoned bodies arrive at ${
-          Math.round(MUSTER_DAMP * 100)}% and never rise again${earlyTxt}. ${ROLE_COPY[unitRole(base)]} ${
-          uncapped ? 'Your ECON has no ceiling.' : 'ECON is flat additive, capped at +' + Math.round(capPct * 100) + '%.'}">
+        aria-label="Summon ${tier.name}: ${sent} ${base.name} for ${cost} gold, ${powDelivered} power, econ plus ${addPct} percent">
         <span class="mu-ic">${this.unitIconHTML(tier.type, 22)}</span>
-        <span class="mu-rolemark" title="${unitRole(base)}">${ROLE_GLYPHS[unitRole(base)]}</span>
-        <span class="mu-body"><b class="mu-n">${sent}×</b>
-          <em class="mu-figs"><span class="mu-cost">◈${formatNum(cost)}</span>
-            <span class="mu-pow">💪${formatNum(powDelivered)}</span>
-            <span class="mu-eco">◈+${addPct}%<i class="mu-up">▲</i></span></em></span>
+        <b class="mu-n">${sent}×</b>
+        <span class="mu-cost">◈${formatNum(cost)}</span>
       </button>`;
     }).join('');
 
@@ -5229,43 +5331,131 @@ const UI = {
        stale mid-DOM the way skipping this call would risk. */
     this.paintUnitIcons(bar);
     this.bindChipTips(bar);
+    /* The unit cards' own briefing, through the SAME binder the shop's tower
+       cards use, so hover, keyboard and the hover cue cannot diverge between
+       the two families again (owner, Session 36 A4). */
+    this.bindDockTips(bar, '.muster-btn', el => this.unitTooltip(el.dataset.muster));
     this.syncEconBar(S, doc, baseIncome, capPct, uncapped, pct, capped, left);
   },
 
-  /** THE ECON BAR: base wave income, the muster stack's own percent, the
-      power multiplier, and (Session 35) the forecast banked-gold interest
-      folded in as one more compact figure rather than the standing
-      "BANKED +N interest next wave" row it replaces. Lives under BASE LEVEL
-      in the middle dock pane now, not beside the muster cards -- the owner
-      asked for both moves in the same note. Split out of syncMuster() so it
-      can render into a different element without a second full data pass. */
+  /** THE ECON BAR: TWO figures (owner, Session 36), the gold a wave pays and
+      what this seat's summons arrive at. It printed FIVE, which is more than
+      the glance it gets mid-wave can hold. Nothing was deleted: the other
+      three moved into econLedgerHtml() below, where the banked-capital
+      arithmetic that was never shown at all joins them. Lives under BASE
+      LEVEL in the middle dock pane. Split out of syncMuster() so it can
+      render into a different element without a second full data pass.
+
+      The signature is unchanged on purpose: syncMuster is the dock's
+      renderer and its call site is not this team's to edit. Only baseIncome
+      is still read here; the rest of the pass now belongs to
+      econLedgerHtml(), which derives it live instead. */
   syncEconBar(S, doc, baseIncome, capPct, uncapped, pct, capped, left) {
     const bar = $('#econ-bar');
     if (!bar) return;
-    const interest = formatNum(Game.previewGold(0,
-      interestOn(S.gold, Game.wave + 1, S.mods.interest)));
-    bar.innerHTML = `<div class="muster-head" data-tt="ECON|Every commander earns the BASE wave reward. Summons stack a flat percent of it on top, every wave, for the rest of the battle: so aggression and economy stop being opposite choices.${
-        uncapped ? ' Under LETTERS OF MARQUE that percent has NO ceiling; what prices it instead is a summon cost that never stops climbing.' : ''} Pick your roster on the loadout screen; conquer worlds to save more denizens for it.">
-        <span>◈/wave</span><b>+◈${formatNum(baseIncome)}</b>
-        <span class="mu-sep">◈%<i class="mu-up">▲</i></span><b class="${capped ? 'capped' : ''}${uncapped ? ' uncapped' : ''}">+${Math.round((uncapped ? (S.musterIncome || 0) : pct) * 100)}%</b>
-        <span class="mu-sep mu-powchip" tabindex="0" data-power="1">💪</span><b>×${Game.powerOf(0).toFixed(2)}</b>
-        <span class="mu-sep" data-tt="BANKED CAPITAL|Gold you still hold when a wave finishes spawning earns interest, capped per wave. Not spending is a play too.">◈+</span><b>${interest}</b>
-        <em>${doc.noPurchase && !Game.noReanim ? 'NO TRADE'
-              : uncapped ? 'NO CAP' : capped ? 'AT CAP' : left + ' left'}</em>
+    /* THE POWER FIGURE, AS A PERCENTAGE, HONESTLY.
+       Game.powerOf is a MULTIPLIER on the health of every body this seat
+       sends: 0.30 means a summoned body arrives at 30% of the enemy it was
+       raised from, which is a 70% REDUCTION and never a "+30% increase".
+       (mul - 1) is the only percentage rendering of that engine value that
+       stays true on BOTH sides of 1, and boons plus bought summons really do
+       push it past 1. Read from Game.powerOf itself, the same call the spawn
+       makes, so the bar and the lane cannot disagree. */
+    const powPct = Math.round((Game.powerOf(0) - 1) * 100);
+    bar.innerHTML = `<div class="muster-head econ-head" tabindex="0"
+        aria-label="Economy: plus ${formatNum(baseIncome)} gold per wave. Summon power ${
+          powPct < 0 ? 'minus' : 'plus'} ${Math.abs(powPct)} percent. Hover or focus for the full ledger.">
+        <b class="ec-fig">+${formatNum(baseIncome)}<i class="ec-coin">◈</i></b><span class="ec-unit">/WAVE</span>
+        <b class="ec-fig ec-pow${powPct < 0 ? ' down' : ''}">${powPct < 0 ? '−' : '+'}${Math.abs(powPct)}%</b><span class="ec-unit">POWER</span>
       </div>`;
-    /* The POWER chip opens the ledger the owner asked for -- every attribute
-       that feeds this number, quoted at the value the spawn will read. Bound
-       directly rather than through data-tt because the body is built HTML. */
-    this.bindChipTips(bar);
-    const chip = bar.querySelector('[data-power]');
-    if (chip) {
-      const show = ev => this.showTooltip(ev, this.powerLedgerHtml(0));
-      chip.addEventListener('mouseenter', show);
-      chip.addEventListener('mousemove', ev => this.moveTooltip(ev));
-      chip.addEventListener('focus', ev => show(ev));
-      chip.addEventListener('mouseleave', () => this.hideTooltip());
-      chip.addEventListener('blur', () => this.hideTooltip());
-    }
+    /* ONE hover target opening ONE panel. The old bar carried three separate
+       tooltips (ECON on the strip, BANKED CAPITAL on a chip, the power ledger
+       on another) and a player had to find each of them. Bound directly
+       rather than through data-tt because the body is built HTML, and bound
+       to the freshly written element every sync, so nothing accumulates. */
+    const head = bar.firstElementChild;
+    if (!head) return;
+    /* The panel takes NOTHING from this render. syncMuster memoises on a
+       render-budget key, so a captured percent can outlive the state it
+       described while a figure the panel derives at open time cannot: mixing
+       the two is how a surface quotes a live payout beside a stale ceiling.
+       econLedgerHtml re-derives every term, exactly as powerLedgerHtml does. */
+    const show = ev => this.showTooltip(ev, this.econLedgerHtml(0));
+    head.addEventListener('mouseenter', show);
+    head.addEventListener('mousemove', ev => this.moveTooltip(ev));
+    head.addEventListener('focus', ev => show(ev));
+    head.addEventListener('mouseleave', () => this.hideTooltip());
+    head.addEventListener('blur', () => this.hideTooltip());
+  },
+
+  /**
+   * THE ECON LEDGER: the three figures the bar stopped printing, plus the
+   * banked-capital arithmetic in full, plus the power ledger it already had.
+   *
+   * Pure, and it takes only a seat. Every number is re-derived at call time
+   * from the SAME functions the wave-end payout calls (waveReward through
+   * Game.previewGold, musterPayout, interestOn), never from a captured copy,
+   * so the panel cannot quote a figure onWaveSpawned will not honour and
+   * cannot outlive the render that opened it.
+   */
+  econLedgerHtml(side) {
+    const S = Game.sides[side];
+    if (!S) return '';
+    /* THE WAVE THE NEXT PAYOUT PRICES ITSELF AGAINST. While a wave is running
+       that is the running wave, because onWaveSpawned pays as it finishes
+       spawning; in prep it is the wave about to start. syncMuster picks BASE
+       with this same expression, but the old bar previewed interest against
+       Game.wave + 1 unconditionally, so for the whole of every running wave
+       it quoted a ceiling one wave too generous. One term now, both figures,
+       no second branch to keep in step. */
+    const w = Game.waveRunning ? Game.wave : Game.wave + 1;
+    /* The same six derivations syncMuster makes, made again rather than
+       handed over: see the note at the bind site. */
+    const doc = Game.doctrineOf(side);
+    const baseIncome = Game.previewGold(side, waveReward(w));
+    const capPct = Game.musterCapPct(side);
+    const uncapped = !isFinite(capPct);
+    const capped = !uncapped && (S.musterIncome || 0) >= capPct;
+    const left = MUSTER_PER_WAVE - (S.musterThisWave || 0);
+    const econPct = uncapped ? (S.musterIncome || 0) : Math.min(S.musterIncome || 0, capPct);
+    const econPaid = Game.previewGold(side, musterPayout(S.musterIncome, w, capPct));
+    /* BANKED CAPITAL, spelled out. interestOn takes the SMALLER of a flat rate
+       on what you hold and a ceiling set by the wave's own reward, then floors
+       it; awardGold puts mods.gold on top, which is why the credited figure
+       goes through Game.previewGold exactly as the payout does. floor() is
+       monotonic, so flooring the two candidates separately and naming the
+       smaller cannot disagree with flooring their minimum. */
+    const rate = INTEREST_RATE * (S.mods.interest || 1);
+    const byRate = Math.floor(S.gold * rate);
+    const byCap = Math.floor(waveReward(w) * INTEREST_CAP_FRAC);
+    const interest = Game.previewGold(side, interestOn(S.gold, w, S.mods.interest));
+    const goldMod = S.mods.gold !== 1
+      ? ' Your ×' + S.mods.gold.toFixed(2) + ' gold is applied on top, as the payout applies it.' : '';
+    const row = (label, fig, note) =>
+      `<div class="pl-row"><span>${label}</span><b>${fig}</b>${note ? `<em>${note}</em>` : ''}</div>`;
+    const econNote = doc.noPurchase && !Game.noReanim
+      ? 'This rite does not trade, so nothing stacks: no purchase, no percent.'
+      : uncapped
+        ? 'NO CEILING, by the MARQUE. What prices it instead is a summon cost that never stops climbing.'
+        : capped
+          ? 'AT CAP: +' + Math.round(capPct * 100) + '% is as far as this rite stacks.'
+          : 'Capped at +' + Math.round(capPct * 100) + '%. ' + left + ' of ' +
+            MUSTER_PER_WAVE + ' summons left this wave.';
+    return `<div class="tt-head">ECON</div>
+      <div class="pl-body">
+        ${row('BASE, WAVE ' + w, '+◈' + formatNum(baseIncome),
+              'The wave reward every commander earns, paid when the wave finishes spawning.' + goldMod)}
+        ${row('SUMMON ECON', '+' + Math.round(econPct * 100) + '%',
+              'A flat percent of every wave reward, added for the rest of the battle: worth ◈' +
+              formatNum(econPaid) + ' next wave. ' + econNote)}
+        ${row('BANKED ◈' + formatNum(S.gold), '+◈' + formatNum(interest),
+              'Gold you still hold when the wave finishes spawning earns ' +
+              (Math.round(rate * 1000) / 10) + '% (◈' + formatNum(byRate) + '), or ' +
+              Math.round(INTEREST_CAP_FRAC * 100) + '% of the wave reward (◈' + formatNum(byCap) +
+              '), whichever is smaller: ' + (byRate <= byCap ? 'the rate' : 'the ceiling') +
+              ' binds here. Not spending is a play too.' + goldMod)}
+      </div>
+      <div class="ec-sect">${this.powerLedgerHtml(side)}</div>`;
   },
 
   /** Render-budget token: whatever about a rite's live state deserves a
@@ -5643,12 +5833,19 @@ const UI = {
     const S = Game.sides[0];
     const list = S.abil || [];
     this._abilSig = list.map(a => a.def.id).join('|');
+    /* FORMATTED LIKE A TOWER CARD (owner, Session 36): the keybind in a small
+       rounded box, then the icon, then the name. The box is the shop's OWN
+       .tc-key primitive rather than a second keycap class invented here, so
+       the two surfaces cannot drift and the sheet does not grow a duplicate.
+       The keybind therefore leaves the sub-line, which now carries only the
+       AIM marker and collapses when there is none. */
     bar.innerHTML = list.map((a, i) => `
       <button class="abil ${a.def.kind}${a.def.aim ? ' aimed' : ''}" data-abil="${i}"
               data-tt="${a.def.name} · ${i === 0 ? 'Q' : 'E'}|${a.def.desc}">
         <span class="ab-sweep"></span>
+        <span class="tc-key ab-key">${i === 0 ? 'Q' : 'E'}</span>
         <span class="ab-icon">${artImg('abil_' + a.def.id, 'ab-art', '') || a.def.icon}</span>
-        <span class="ab-body"><b>${a.def.name}</b><em>${i === 0 ? 'Q' : 'E'}${a.def.aim ? ' · AIM' : ''}</em></span>
+        <span class="ab-body"><b class="ab-name">${a.def.name}</b><em>${a.def.aim ? 'AIM' : ''}</em></span>
         <span class="ab-cd"></span>
       </button>`).join('') ||
       '<div class="abil-none">No commander abilities</div>';

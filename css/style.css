@@ -29,10 +29,68 @@
   --display: 'Bahnschrift SemiCondensed', 'Bahnschrift', 'Avenir Next Condensed', 'Arial Narrow', system-ui, sans-serif;
   --sans: var(--display);
 
-  /* 4px spacing scale (design digest: build all spacing on one base) */
+  /* 4px spacing scale (design digest: build all spacing on one base).
+     STATE OF THE WORLD, recorded in DESIGN.md and not endorsed: these seven
+     are read by ZERO rules. Every spacing value in both sheets is hand-typed.
+     A token nobody reads is this project's signature bug wearing a different
+     hat, so it is written down rather than quietly left alone. */
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px;
 
   --r: 10px;
+
+  /* ---- TYPE SCALE. Ten steps, every font-size lands on one, tolerance
+     0.5px. Measured before it was declared: the rendered interface was using
+     29 DISTINCT sizes across the screens, eleven of them between 8.5px and
+     13.5px, which is half-pixel drift rather than a scale. The scale stops at
+     9px because nothing in this game is set smaller than 9px as text; a
+     decorative mark drawn with a font is not text and does not get a step. */
+  --t-micro:   9px;    /* pips, lock stamps, chart axis marks */
+  --t-caption: 10px;   /* badge text, sub-labels */
+  --t-label:   11px;   /* section labels, chips, tags */
+  --t-body-sm: 12px;   /* dense body: card blurbs, stat rows */
+  --t-body:    13px;   /* body copy in panels */
+  --t-ui:      14px;   /* button labels, control text */
+  --t-title:   17px;   /* card titles */
+  --t-head:    22px;   /* panel headings */
+  --t-display: 28px;   /* screen headings */
+  --t-hero:    52px;   /* the wordmark, and nothing else */
+
+  /* ---- RADIUS SCALE. Five steps. The CEILING on a content container is
+     14px: wide radii read as generated, and the sheets had drifted to 18
+     distinct radii topping out at 20px. --r is the legacy name for --r-3 and
+     is kept because 25 rules read it. --r-pill is for chips and tags only,
+     where the shape IS the affordance. */
+  --r-1: 4px;
+  --r-2: 8px;
+  --r-3: 10px;
+  --r-4: 14px;
+  --r-pill: 999px;
+
+  /* ---- BRAND HUES that existed only in docs/BRAND.md. The art identity
+     names seven colours; the interface had CSS tokens for five of them, so
+     any rule wanting Xeno violet or neon magenta had to hand-type it. */
+  --violet:  #7c3aed;   /* THE XENO. Faction identity, matches FACTIONS.xeno.color */
+  --magenta: #ff2fd6;   /* Neon Reliquary key light. Art-side only, never chrome */
+
+  /* ---- THE INK RULE, and both numbers in it are measured, not chosen.
+     An identity hue is picked to be SATURATED, because its job is to be
+     recognisable on a map at 40% zoom. A saturated hue is a poor text colour
+     on a dark ground, and that was measured rather than assumed: Xeno violet
+     #7c3aed set as 9.5px label text on the soul-shop panel returned 2.88:1
+     against a required 4.5:1, and Pirate crimson #ef4444 returned 4.36:1.
+
+     So an identity hue splits by size:
+       FILL tier, raw hue: fills, strokes, borders, rings, bars, map dots.
+       INK tier, lifted toward --text first:
+         color: color-mix(in srgb, var(--fc) var(--ink-mix), var(--text));
+
+     --ink-mix is 58% because at 58% the DARKEST hue in the catalogue,
+     #6d28d9, lands at 5.04:1 and at 68% it lands at 4.13:1 and fails. Raise
+     it and the bug comes back. --ink-mix-lg is the gentler lift for a glyph
+     mark at 18.66px or over, which is a UI component needing 3:1 rather than
+     text needing 4.5:1; #6d28d9 lands at 3.83:1 there. */
+  --ink-mix:    58%;
+  --ink-mix-lg: 72%;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -402,7 +460,8 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 /* The resting row is a fixed height, so a name too long even for its own line
    is ellipsised rather than allowed to wrap the card into overhanging the one
    beneath it. */
-.lo-top b { font-size: 13px; letter-spacing: .06em; color: var(--tc);
+.lo-top b { font-size: 13px; letter-spacing: .06em;
+            color: color-mix(in srgb, var(--tc) var(--ink-mix), var(--text));
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lo-meta { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
 .lo-meta em { font-style: normal; font-size: 12px; color: var(--gold); flex-shrink: 0; }
@@ -509,14 +568,20 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
           width: 19px; height: 19px; display: grid; place-items: center; flex-shrink: 0; }
 .tc-swatch { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; background: var(--tc); box-shadow: 0 0 9px var(--tc); }
 .tc-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-/* overflow/ellipsis, same as .tc-role below: HUNGERING VEIL and PRESS GANG
-   are real tower names at 14 chars, and the 2-column dock card (Session 33)
-   only ever had ~35px left for this column after the key, the icon and the
-   cost -- without this, a long name simply painted over .tc-cost instead of
-   shrinking, since neither a flex item nor an inline span clips by default. */
+/* overflow/ellipsis: HUNGERING VEIL and PRESS GANG are real tower names at
+   14 chars, and the 2-column dock card (Session 33) only ever had ~35px left
+   for this column after the key, the icon and the cost -- without this, a
+   long name simply painted over .tc-cost instead of shrinking, since neither
+   a flex item nor an inline span clips by default. Session 36 gave the dock
+   card its own two-row #dock .tower-card layout (polish.css) with a full-width
+   name row, which is what actually closed the ellipsis; this class stays
+   because .tc-name is still the selector that layout targets. .tc-role sat
+   here too until Session 36: it printed a role line no card layout has shown
+   since (towerTooltip carries the role now, as .tt-role, not this class), and
+   nothing in js/ui.js emits .tc-role any more. Removed as dead CSS rather
+   than left to be measured against a card it no longer describes. */
 .tc-name { display: block; font-size: 14px; font-weight: 700; letter-spacing: .08em;
            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tc-role { font-size: 10.5px; color: var(--text-mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tc-cost { font-size: 13.5px; color: var(--gold); font-weight: 700; flex-shrink: 0; }
 
 /* ---- inspector ---- */
