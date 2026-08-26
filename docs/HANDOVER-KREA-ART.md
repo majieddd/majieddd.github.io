@@ -21,8 +21,83 @@ The durable law behind all of this now lives in the plugin, not here:
 Load those before starting. This document is the project-specific wrapper
 around them.
 
-**Read section 4 before starting a batch.** The single most expensive mistake
-available here is starting a 52-image run without timing one image first.
+---
+
+## How to run this (read first)
+
+**The section numbers are reference order, not execution order.** Execute in
+this order:
+
+1. **Section 1**, clone both repos and install the plugin.
+2. **Section 2**, build the Python environment. **Section 3** if this is
+   Hermes.
+3. **Section 5**, make both HD edits. Do this BEFORE any render, including the
+   timing run: `out_px` is applied at render time, so a render taken before the
+   edit is saved at 576 and wasted, and a time taken at 1280x720 is not the
+   time you are about to pay at 1920x1080.
+4. **Section 4**, time exactly one image at the real target resolution and do
+   the arithmetic before committing to a batch.
+5. **Section 6**, render the 52 keys.
+6. **Section 7**, repack, rebuild, verify, gate.
+7. **Section 8**, ship.
+
+Load the plugin skill before starting. In Claude Code, invoke `aegis-gamedev`
+with the `Skill` tool, then read sections 12 and 13 of
+`references/media-image.md`.
+
+### Conventions this document assumes
+
+- **Every `python` means the interpreter you verified in section 2**, not
+  whatever is on PATH. On the 4080 the bare `python` has no torch at all.
+  Resolve it once, then prefix every command with it.
+- Commands that start `cd TowerDefense/artgen` are relative to the workspace
+  directory holding both clones. Prefer absolute paths.
+- `TowerDefense` is the game clone. Rename freely; the doc uses that name.
+
+### Decide these yourself
+
+You do not need to ask before: choosing the quantisation tier, moving the text
+encoder, picking 1920x1080 versus 2304x1296 supersample, setting WebP quality
+for the `cut` class, re-rolling a plate by key, or running the batch overnight.
+All are reversible, all are measured, and the doc gives the criteria.
+
+### Stop and ask the owner about these
+
+- **The bundle weight, if it lands somewhere you would not choose.** At
+  1920x1080 the 50 plates are estimated near 12MB of base64, which puts
+  `js/artpack.js` around 19MB on the first-load path against 9.43MB today.
+  Report the measured number and your recommendation. Do not silently accept
+  it and do not silently compress it away.
+- **Switching the plates to on-demand loading instead of inlining.** This is
+  the right long-term answer to the weight and it is an architecture change: it
+  breaks the single-file bundle promise, so it is the owner's call, not yours.
+- **Adopting an upscaler.** None has been vetted in this suite. That is a gated
+  decision.
+- **Anything that would re-roll already-approved art**, including editing a
+  prompt or rendering a non-`cut_` key.
+
+### Long runs
+
+A 52-image batch can be hours. Run it in the background rather than blocking,
+and remember the run caches each image on completion, so an interrupted run
+resumes for free by re-issuing the same command. Nothing is lost by stopping
+one. If your session ends mid-batch, the state that matters is entirely on
+disk in `artgen/cache_krea/`, and the count in section 6 tells the next session
+exactly where it stands.
+
+### Definition of done
+
+All of the following, or it is not finished:
+
+- [ ] `ls artgen/cache_krea/cut_*.webp | wc -l` returns **50**
+- [ ] `cmd_ashtar` and `cmd_isa` exist in `cache_krea/`
+- [ ] A repack reports **0 re-encoded** for `cut_` keys
+- [ ] Browser probe: 52 decoded, 0 missing, 0 broken, `naturalWidth` 1920
+- [ ] `node tools/gate.js <url>` prints **GATE CLEAN**, fail=0 on both harnesses
+- [ ] Committed and pushed to `main`, with the measured numbers in the message
+- [ ] Artifact republished at the existing URL
+- [ ] `docs/OWNER-NOTES-CAMPAIGN2.md` C3 and section E updated with real numbers
+- [ ] Owner told the final `artpack.js` size and per-image render time
 
 ---
 
@@ -260,8 +335,19 @@ this project happened above 96%.
 
 Do not skip this. It is the step the 4080 session skipped and paid for.
 
+**Make section 5's two edits first.** Timing an image at 1280x720 tells you
+nothing about what you are about to pay at 1920x1080, and the render would be
+saved at the old `out_px` anyway.
+
 ```bash
 cd TowerDefense/artgen && python krea_gen.py --force cut_human_intro_1
+```
+
+Expect the file it writes to be **1920x1080**. If it is 576x324, edit 2 did not
+take and everything after this is wasted:
+
+```bash
+python -c "from PIL import Image; print(Image.open('cache_krea/cut_human_intro_1.webp').size)"
 ```
 
 The script prints VRAM after load and the per-image time. Write both down,
@@ -284,6 +370,11 @@ Then prove the pipeline end to end cheaply before committing a night to it:
 python krea_gen.py --only cut_ --limit 3
 ```
 
+Both of these runs call `write_pack()` when they finish, so they will leave
+`js/artpack.js` holding mostly upscaled SDXL plates and a wildly inflated size.
+That is expected and harmless. **Do not commit it**, and do not read anything
+into the size until all 50 are rendered. See section 5's partial-pack trap.
+
 **Laptops throttle.** A per-image time measured cold understates a sustained
 run. Time image 1 and image 20 before trusting an extrapolation.
 
@@ -291,23 +382,47 @@ run. Time image 1 and image 20 before trusting an extrapolation.
 
 ## 5. Set the HD target: 1920x1080
 
-Two numbers control output size, and **both must move.**
+Two numbers control output size. **Both must move, and both must move BEFORE
+you render anything.**
 
-**1. The render size.** `krea_gen.render()` forces wide aspect to 1280x720:
+That ordering is not a style preference. The render loop saves through `fit()`
+at `out_px`:
 
 ```python
-def render(pipe, torch, prompt, gen_px, aspect, seed):
-    w, h = (gen_px, gen_px)
+fit(img, out_px, aspect).save(os.path.join(CACHE, key + '.webp'), ...)
+```
+
+So `out_px` is applied **at render time**, not at pack time. Render at
+1920x1080 while `out_px` is still 576 and the cache file is written at 576x324,
+throwing the HD render away the instant it is made. Raising `out_px` afterwards
+then upscales that 576 file back to 1920 and you have paid full bytes for the
+detail you already discarded.
+
+**Edit 1, the render size.** `artgen/krea_gen.py:133`, inside `render()`.
+
+Find:
+
+```python
     if aspect == 'wide':
         w, h = 1280, 720
 ```
 
-**2. The pack size.** `out_px`, the fourth element of the job tuple, built in
-`krea_jobs.py` in the loop appended just before `build_jobs()` returns:
+Replace the size with `1920, 1080` (or `2304, 1296` to supersample, see below).
+
+**Edit 2, the pack size.** `artgen/krea_jobs.py:725-728`, the loop appended just
+before `build_jobs()` returns. The fourth tuple element is `out_px`.
+
+Find:
 
 ```python
-jobs.append((key, f'...', 1024, 576, 'wide'))
+    for key, fac, scene in CUTSCENE_PLATES:
+        jobs.append((key, f'{scene}, {CUTSCENE_PALETTE.get(fac, "")}. '
+                     f'Wide cinematic composition, dramatic staging, no text anywhere. {STYLE}',
+                     1024, 576, 'wide'))
 ```
+
+Change only the `576` on the last line to `1920`. Leave `1024` alone: `gen_px`
+is ignored for wide aspect, which takes the `render()` branch above.
 
 `fit()` cover-crops and LANCZOS-resamples the render down to `out_px`, deriving
 height as `out_px * 9 / 16`. So `out_px = 1920` yields exactly 1920x1080.
@@ -344,18 +459,37 @@ bare `krea_gen.py` run after this edit would re-roll them.
 **Guard: always scope the run with `--only cut_`.** That is what keeps approved
 art approved.
 
-### The trap that comes with raising out_px
+### The trap that comes with raising out_px: partial packs
 
 `write_pack()` passes cached bytes through **only when the cached file already
 matches the target size**, and re-encodes when it does not. That guard is
-correct and load bearing. But it means:
+correct and load bearing. But once `out_px` is 1920:
 
-> If you raise `out_px` while ANY `cut_` key is still coming from the SDXL
-> `cache/` at 576px, the pack will silently **upscale** that 576px file to
-> 1920. You pay full bytes for zero detail.
+> Any `cut_` key not yet rendered on Krea falls back to the SDXL `cache/` copy
+> at 576px, and the pack **upscales it to 1920**. Full bytes, zero detail.
 
-So: **raise `out_px` only after all 50 plates exist in `cache_krea/`.** The
-check is section 6's count returning 50.
+This is not a reason to delay the edit (section 5 explains why you cannot). It
+is a reason to be careful about **when you pack and what you commit**, because
+`krea_gen.py` calls `write_pack()` itself at the end of every run, including:
+
+- the single-image timing run in section 4,
+- a `--limit 3` trial batch,
+- any partial run you interrupt and restart.
+
+Each of those leaves `js/artpack.js` holding up to 49 upscaled SDXL plates and
+a badly inflated file size. That is a harmless intermediate state and it
+corrects itself the moment all 50 are rendered and you repack.
+
+**The rule is therefore: never commit `js/artpack.js` until the count below
+returns 50.** Verify immediately before committing:
+
+```bash
+ls TowerDefense/artgen/cache_krea/cut_*.webp | wc -l
+```
+
+If a repack reports a non-zero re-encode count for `cut_` keys after all 50
+exist, something is genuinely wrong with a cache file; investigate rather than
+committing it.
 
 ### Budget the bytes, then measure them
 
@@ -586,7 +720,9 @@ Every one of these was paid for once already.
 | Torch wheel older than the GPU arch | No kernel image for device | cu128+ on Blackwell |
 | VRAM above ~85% | 100% GPU, no progress, for many minutes | Watch the printed VRAM line |
 | `render()` changed without `--only cut_` | Approved title and nebula art re-rolls | Scope every run |
-| `out_px` raised too early | SDXL 576px plates silently upscaled to 1920 | All 50 in `cache_krea/` first |
+| `out_px` raised AFTER rendering starts | Every HD render saved at 576, then upscaled back | Both edits before any render, section 5 |
+| One image timed before the HD edits | The number measured is not the number you will pay | Edit first, then time |
+| `js/artpack.js` committed from a partial run | Up to 49 SDXL plates upscaled to 1920, file wildly inflated | Commit only when the count returns 50 |
 | Rendering far above the model's band | Two horizons, duplicated subjects | Drop to 1920x1080, or upscale separately |
 | Trying to prompt artifacts away | Nothing changes | Negative prompt is inert at guidance 0 |
 | Prompt edited to "improve" a plate | Approved art re-rolls, seed is FNV(key) | Re-roll by key with `--force` |
