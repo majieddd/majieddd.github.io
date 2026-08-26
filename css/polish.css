@@ -3489,3 +3489,13 @@ body.rm-user.immersive #battle-controls { transition: none; }
 @media (prefers-reduced-motion: reduce) {
   .cs-art, .cs-art.zoom, .cs-w { animation: none; opacity: 1; transform: none; }
 }
+
+/* Embedded-export fallback. The sandbox grants no download permission, so the
+   payload is shown for manual copy instead of a dead link. */
+.cfm-note { margin: 0 0 10px; font-size: 13px; line-height: 1.55; color: var(--text-mute); }
+.save-out { width: 100%; box-sizing: border-box; resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px;
+  line-height: 1.45; padding: 8px 10px; border-radius: 6px;
+  color: var(--text); background: rgba(4, 8, 16, .72);
+  border: 1px solid color-mix(in srgb, var(--fc) 34%, transparent); }
+.save-out:focus { outline: 2px solid var(--fc); outline-offset: 1px; }

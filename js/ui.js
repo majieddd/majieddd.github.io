@@ -7874,13 +7874,40 @@ const UI = {
        coalesced write behind it, so no flush is needed to export. */
     const payload = { app: 'cosmic-conquest', version: 1,
                       exportedAt: new Date().toISOString(), data: Meta.root() };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const text = JSON.stringify(payload, null, 2);
+
+    /* A sandboxed embed (the artifact viewer) never grants download
+       permission, so a.click() is silently inert there: the old code fired it
+       anyway and then toasted "Save exported", telling the player a file
+       existed when none did. An embedded page cannot hand anyone a file, so
+       it hands them the text instead. window.top is the test because the
+       standalone bundle and the Pages site both load top-level. */
+    if (window.self !== window.top) { this.showSaveText(text); return; }
+
+    const blob = new Blob([text], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'cosmic-conquest-save-' + new Date().toISOString().slice(0, 10) + '.json';
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 5000);
     this.toast('Save exported');
+  },
+
+  /* The fallback export: show the payload, preselected, so one keystroke
+     copies it. No clipboard API call, because it needs a secure context and
+     a permission the sandbox does not grant, and a copy button that silently
+     fails is the same defect this replaced. */
+  showSaveText(text) {
+    this.confirmBox('COPY YOUR SAVE',
+      '<p class="cfm-note">This build runs embedded, so it cannot write a file. ' +
+      'Press Ctrl+C (Cmd+C) to copy, then paste into a .json file to keep it.</p>' +
+      '<textarea id="save-out" class="save-out" readonly rows="8"></textarea>',
+      'DONE', () => {});
+    const ta = $('#save-out');
+    if (!ta) return;
+    ta.value = text;
+    ta.focus();
+    ta.select();
   },
 
   importSave(file) {
