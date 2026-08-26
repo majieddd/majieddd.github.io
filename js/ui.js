@@ -2066,17 +2066,17 @@ const UI = {
       const w = this.worldById(gx, g.dataset.mv);
       const sys = gx.systems[w.si];
       const mp = MAPS.find(x => x.id === w.map);
+      /* THE GROUND, read before the scenario asks of it -- the same order
+         worldBriefing uses for a campaign planet: name line first, then the
+         battlefield minimap. It is built from this world's own map object by
+         the single player's renderer (mapPreviewBlock), so the paths shown
+         here are the identical lanes Game.start will build -- a duel table
+         can never open on a board whose shape was not drawn here. */
       const brief = ev => this.showTooltip(ev, `<div class="brief">
         <div class="br-head"><b>${w.name}</b>
           <span class="tag" style="color:${FACTIONS[w.owner].color}">${
             w.renegade ? FACTIONS[w.owner].short + ' RENEGADE' : FACTIONS[w.owner].short}</span></div>
         <div class="br-trait">${sys.name} · ${WORLD_KINDS[w.kind].icon} ${WORLD_KINDS[w.kind].label}</div>
-        /* THE GROUND, read before the scenario asks of it -- the same order
-           worldBriefing uses for a campaign planet: name line first, then the
-           battlefield minimap. It is built from this world's own map object by
-           the single player's renderer (mapPreviewBlock), so the paths shown
-           here are the identical lanes Game.start will build -- a duel table
-           can never open on a board whose shape was not drawn here. */
         ${mp ? `<div class="br-map"><b>${mp.name}</b>, ${mp.trait}</div>
           ${this.mapPreviewBlock(mp, { size: 'tip' })}` : ''}
         ${mp && mp.blurb ? `<p class="br-blurb">${mp.blurb}</p>` : ''}
