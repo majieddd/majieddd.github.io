@@ -867,8 +867,20 @@ function sideRgba(side, alpha) {
 
 /* --------------------------------------------------------------------------
    LORE CODEX ENTRIES, shown in the Field Manual and on the faction screen.
+
+   RENAMED from `LORE` to `LORE_CODEX` when the canonical lore module landed
+   (js/lore.js, generated from docs/lore/ at release 0.5.0), which declares its
+   own top-level `const LORE`. Two top-level consts of the same name in one
+   inlined bundle is a SyntaxError that kills the entire script: every global
+   goes undefined and the game renders nothing. The bundle is one script, so
+   file boundaries do not scope anything.
+
+   This array is the OLD codex and is scheduled to be rewritten from the
+   canonical module rather than maintained separately, so the collision is
+   temporary by design. The new canon is `LORE`; this is what the Field Manual
+   currently renders.
 -------------------------------------------------------------------------- */
-const LORE = [
+const LORE_CODEX = [
   { id: 'integration', title: 'The Integration',
     body: 'It did not arrive as invasion or as rescue. First contact was a trade ' +
           'delegation, and within a generation human cities carried alien districts, ' +

@@ -41,7 +41,17 @@ const args = process.argv.slice(2).filter(a => !a.startsWith('--'));
    of whole-file normalisation that has corrupted this project twice. The
    exemption is listed here so it is a stated decision rather than a silent
    hole: everything NOT in this list is gated. */
-const VENDORED = ['skills/huashu-design'];
+/* `docs/lore` is the Cosmic Conquest lore repository, vendored at release
+   0.5.0 so the canon travels with the game and future sessions can read it
+   without the zip. It is upstream text with its own editorial style, and
+   diffing a later lore release against a locally de-dashed copy would be
+   impossible. Measured when it landed: 339 dashes across 23 files, every one
+   of them inside docs/lore, none anywhere else in the repo.
+
+   THE EXEMPTION STOPS AT THE DOCS. `js/lore.js` is generated FROM this tree
+   and is player-visible, so it is gated like every other shipping module and
+   was clean on arrival. Anything the player can read still obeys the rule. */
+const VENDORED = ['skills/huashu-design', 'docs/lore'];
 
 function isVendored(p) {
   const n = p.split(path.sep).join('/');

@@ -8,7 +8,10 @@ const read = p => fs.readFileSync(path.join(here, p), 'utf8');
 
 const html = read('index.html');
 const css  = read('css/style.css') + String.fromCharCode(10) + read('css/polish.css');
-const js   = ['artpack', 'mapgen', 'config', 'factions', 'towers2', 'abilities', 'roster', 'dialogue', 'commanders', 'audio', 'entities', 'entities2', 'ai', 'galaxy', 'game', 'net', 'ui', 'main']
+/* `lore` sits early and before `dialogue`, `commanders` and `ui`, which are the
+   modules that read it. It is a frozen data object with no dependencies of its
+   own, generated from the lore repository (docs/lore/) and never hand-edited. */
+const js   = ['artpack', 'mapgen', 'lore', 'config', 'factions', 'towers2', 'abilities', 'roster', 'dialogue', 'commanders', 'audio', 'entities', 'entities2', 'ai', 'galaxy', 'game', 'net', 'ui', 'main']
   .map(n => `/* ── ${n}.js ─────────────────────────────────── */\n` + read(`js/${n}.js`))
   .join('\n\n');
 

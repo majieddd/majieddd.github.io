@@ -7327,7 +7327,9 @@ const UI = {
     /* Lore, factions, elements and abilities were all defined in data and never
        shown anywhere. The Field Manual is the one place a player goes to find
        out what a system IS, so all four live here now. */
-    const lore = LORE.map(l => `
+    /* LORE_CODEX, not LORE: the canonical lore module (js/lore.js) owns the
+       bare `LORE` name now. See the rename note in js/factions.js. */
+    const lore = LORE_CODEX.map(l => `
       <div class="lore-entry"><b>${l.title}</b><p>${l.body}</p></div>`).join('');
 
     /* The fifth power is documented the day it becomes real and not one day
