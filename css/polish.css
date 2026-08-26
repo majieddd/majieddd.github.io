@@ -1932,6 +1932,18 @@ body.tri-field #hud { gap: 8px; padding: 8px 10px; }
   font-size: 10.5px; line-height: 1.45;
 }
 .tt-origin b { color: var(--og); letter-spacing: .07em; }
+
+/* PROVENANCE (lore 0.5.0): where the thing came from, under the stats. It is
+   the quietest row in the tooltip on purpose. .tt-origin above carries an
+   ORIGIN RULE, which is a live mechanic and gets the accent; this carries
+   history, which is the reward for reading further and must never compete
+   with a number the player is deciding on. Muted text, no accent, no border
+   colour of its own. */
+.tt-prov { margin: 6px 0 0; padding: 6px 0 0;
+           border-top: 1px dashed var(--line); }
+.tt-prov b { display: block; font-family: var(--display); font-size: 9px;
+             letter-spacing: .16em; color: var(--text-mute); margin-bottom: 3px; }
+.tt-prov span { font-size: 10.5px; line-height: 1.5; color: var(--text-dim); }
 .origin-flag {
   margin: 6px 0 0;
   padding: 4px 8px;

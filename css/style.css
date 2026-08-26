@@ -307,6 +307,24 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
             border-radius: 9px; padding: 12px 14px; margin-bottom: 18px; }
 .cd-trait b { display: block; color: var(--cc); font-size: 13px; letter-spacing: .13em; margin-bottom: 5px; }
 .cd-trait span { font-size: 13px; color: var(--text-dim); }
+
+/* THE DOSSIER (lore 0.5.0). Deliberately quieter than .cd-trait above it:
+   the trait is a mechanic the player is choosing, this is the reason the
+   character exists. Same radius and padding so the two read as one column,
+   a dashed left rule rather than a full border so it recedes, and the label
+   column is fixed-width so HISTORY / MOTIVE / FRACTURE line up as a table
+   the eye can scan rather than three paragraphs. */
+.cd-dossier { border-left: 2px dashed color-mix(in srgb, var(--cc) 55%, transparent);
+              padding: 2px 0 2px 13px; margin: 0 0 18px; }
+.cd-dossier .section-label { margin-bottom: 7px; }
+.cdo-role { font-size: 12.5px; font-style: italic; color: color-mix(in srgb, var(--cc) 40%, var(--text));
+            margin: 0 0 9px; line-height: 1.5; }
+.cdo-row { display: grid; grid-template-columns: 74px 1fr; gap: 10px;
+           align-items: baseline; margin-bottom: 6px; }
+.cdo-row b { font-family: var(--display); font-size: 9.5px; letter-spacing: .14em;
+             color: var(--text-mute); }
+.cdo-row span { font-size: 12.5px; color: var(--text-dim); line-height: 1.55; }
+
 .cd-techhead { display: flex; justify-content: space-between; align-items: baseline; }
 .pts { font-size: 12px; color: var(--text-mute); }
 .pts.has { color: var(--gold); font-weight: 700; }

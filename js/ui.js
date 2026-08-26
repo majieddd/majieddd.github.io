@@ -1046,6 +1046,61 @@ const UI = {
     this.renderCommanders();
   },
 
+  /* ══════════════════════════════════════════════════ THE LORE LAYER ═════
+     ONE reader for the canonical lore module (js/lore.js, generated from
+     docs/lore/ at release 0.5.0). Every lore-facing surface goes through
+     these, for three reasons the retrofit handoff is explicit about:
+
+       1. Lore is PRESENTATION ONLY. It never reaches the simulation, the
+          fingerprint, save keys, or a random draw. Reading it through named
+          accessors keeps that boundary visible instead of trusting that
+          nobody reaches into LORE from a step path.
+       2. The module may be absent. A build that has not rebuilt yet, or a
+          probe page, can run without it, so every accessor degrades to empty
+          and every caller renders exactly what it rendered before.
+       3. Stable IDs are the join. Lore is keyed by the SAME ids the engine
+          uses (verified on arrival: 26/26 commanders, 60/60 towers, 25/25
+          units, 12/12 abilities, 20/20 boons, zero name drift), so no
+          mapping table exists to fall out of date. */
+  lore(section, id) {
+    if (typeof LORE === 'undefined' || !LORE || !LORE[section]) return null;
+    return (id === undefined ? LORE[section] : LORE[section][id]) || null;
+  },
+
+  /* MECHANICS FIRST, FLAVOUR SECOND, which is why this renders BELOW the
+     blurb and the trait rather than above them: a player opening a commander
+     is deciding whether to field them, and the dossier is why they would
+     want to, not what the commander does. The four rows are the lore's own
+     fields, and FRACTURE is the one that matters: every commander carries a
+     contradiction their own faction cannot resolve, which is the thread the
+     campaign pulls on. */
+  /* ONE provenance line, and it goes UNDER the stat block on purpose. The
+     tooltip's job is still to answer "what does this do and can I afford
+     it"; where the thing came from is the reward for looking longer, not an
+     obstacle in front of the numbers. `field` names which lore key carries
+     the sentence, because towers file it under historical_origin and units
+     and Vigil chassis file it under origin / original_function. */
+  provenance(L, field) {
+    if (!L) return '';
+    const text = L[field] || L.origin || L.canon || '';
+    if (!text) return '';
+    return `<div class="tt-prov"><b>PROVENANCE</b><span>${text}</span></div>`;
+  },
+
+  commanderDossier(c) {
+    const L = this.lore('commanders', c.id);
+    if (!L) return '';
+    const row = (label, text) => text
+      ? `<div class="cdo-row"><b>${label}</b><span>${text}</span></div>` : '';
+    return `<div class="cd-dossier" style="--cc:${c.color}">
+        <h3 class="section-label">DOSSIER</h3>
+        ${L.role ? `<p class="cdo-role">${L.role}</p>` : ''}
+        ${row('HISTORY', L.history)}
+        ${row('MOTIVE', L.motive)}
+        ${row('FRACTURE', L.fracture)}
+      </div>`;
+  },
+
   renderCommanders() {
     $$('[data-cmd]').forEach(b => b.classList.toggle('active', b.dataset.cmd === this.sel.commander));
     for (const c of COMMANDER_ROSTER) {
@@ -1079,6 +1134,7 @@ const UI = {
         <b>${c.trait.name}</b>
         <span>${c.trait.desc}</span>
       </div>
+      ${this.commanderDossier(c)}
       ${Meta.equipped() === c.id
         ? `<div class="cd-equipped" role="status">⚑ IN COMMAND, ${c.name} deploys with your next battle.</div>`
         : `<button class="btn btn-primary cd-equip" data-equip="${c.id}">⚑ EQUIP ${c.name}</button>`}
@@ -4592,6 +4648,7 @@ const UI = {
       <div class="tt-role">${ROLE_COPY[role]}</div>
       <div class="tt-stats">${rows.map(r =>
         `<div data-k="${r[0]}"><span>${r[1]}</span><b>${r[2]}</b></div>`).join('')}</div>
+      ${this.provenance(this.lore('units', tier.type) || this.lore('vigil', tier.type), 'origin')}
       <div class="tt-foot">Summoned bodies arrive at <b>${Math.round(MUSTER_DAMP * 100)}%</b> and never rise again${
         earlyPen > 0
           ? ', and ' + earlyPen + '% lighter again this early: that fades to nothing by wave ' + SPAWN_HP_PENALTY_END
@@ -4630,6 +4687,7 @@ const UI = {
       <div class="tt-origin" style="--og:${originOf(id).color}"><b>${originOf(id).rule}</b>, ${originOf(id).desc}</div>
       <p class="tt-desc">${t.desc}</p>
       <div class="tt-stats">${rows.map(r => `<div><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}</div>
+      ${this.provenance(this.lore('towers', id), 'historical_origin')}
       ${t.groundOnly ? '<div class="tt-warn">⚠ Cannot target flying enemies</div>' : ''}
       ${t.airOnly ? '<div class="tt-warn">⚠ Can ONLY target flying enemies</div>' : ''}
       <div class="tt-foot">${life
