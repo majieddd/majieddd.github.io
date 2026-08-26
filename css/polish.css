@@ -3425,3 +3425,25 @@ body.rm-user.immersive #battle-controls { transition: none; }
    the mission, quiet, because the card's job is still the choice. */
 .fac-leader { display: block; font-style: normal; font-size: 10px;
               letter-spacing: .1em; color: var(--text-mute); margin-bottom: 4px; }
+
+/* THE FINALE CARD inside GALAXY CONQUERED. The beat card was designed for
+   the reward screen's grid, where `grid-column: 1 / -1` is correct and the
+   surrounding text is left-aligned. The victory panel centres its children
+   and constrains them to a column, so the card arrived centre-aligned and
+   spilling the full width: prose set centred over 1200px, which is the one
+   place in the game a paragraph is genuinely hard to read. Found by
+   playtesting the campaign to its end rather than by rendering the card in
+   isolation. Re-align and re-constrain it to the panel it now lives in. */
+.gv .rw-story {
+  grid-column: auto;
+  max-width: 640px;
+  margin: 18px auto 6px;
+  text-align: left;
+}
+.gv .rws-act,
+.gv .rws-body,
+.gv .rws-reveal { text-align: left; }
+.gv .rws-title { text-align: left; }
+/* The closing beat is the campaign's last word, so it gets the accent ground
+   rather than the quiet one, and a touch more room to land in. */
+.rw-story.finale { padding: 16px 18px; }

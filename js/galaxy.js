@@ -92,19 +92,25 @@ const GX_HOME_SYSTEMS = {
    style (planets letter from b). TRAPPIST-1 b through h are all real, seven
    of them, which is exactly a system's world count. SOL appears here so the
    other powers' campaigns can arrive at us: its seat is EARTH. */
+/* `seat` is the LAST world of the system, where the holding commander sits.
+   It gets a named place rather than a catalogue letter, because a playtest
+   read "WOLF 359 h" as the seat of a solar system and it landed as a
+   spreadsheet cell, not somewhere a commander lives. The letters are right
+   for ordinary worlds (real exoplanets letter from b) and wrong for the one
+   world the campaign asks you to remember. */
 const GX_STAR_POOL = [
   { name: 'SOL',              worlds: ['MERCURY', 'VENUS', 'MARS', 'CERES', 'EUROPA', 'TITAN', 'EARTH'] },
-  { name: 'PROXIMA CENTAURI', tag: 'PROXIMA' },
-  { name: 'TAU CETI',         tag: 'TAU CETI' },
-  { name: 'TRAPPIST-1',       tag: 'TRAPPIST-1' },
-  { name: 'SIRIUS',           tag: 'SIRIUS' },
-  { name: 'EPSILON ERIDANI',  tag: 'ERIDANI' },
-  { name: 'GLIESE 581',       tag: 'GLIESE 581' },
-  { name: 'WOLF 359',         tag: 'WOLF 359' },
-  { name: 'ROSS 128',         tag: 'ROSS 128' },
-  { name: 'ALPHA CENTAURI',   tag: 'CENTAURI' },
-  { name: '61 CYGNI',         tag: 'CYGNI' },
-  { name: "KAPTEYN'S STAR",   tag: 'KAPTEYN' },
+  { name: 'PROXIMA CENTAURI', tag: 'PROXIMA',    seat: 'PROXIMA GATE' },
+  { name: 'TAU CETI',         tag: 'TAU CETI',   seat: 'CETI ANCHORAGE' },
+  { name: 'TRAPPIST-1',       tag: 'TRAPPIST-1', seat: 'TRAPPIST PRIME' },
+  { name: 'SIRIUS',           tag: 'SIRIUS',     seat: 'THE DOG STAR' },
+  { name: 'EPSILON ERIDANI',  tag: 'ERIDANI',    seat: 'ERIDANI HIGH' },
+  { name: 'GLIESE 581',       tag: 'GLIESE 581', seat: 'THE TWILIGHT BELT' },
+  { name: 'WOLF 359',         tag: 'WOLF 359',   seat: 'THE EMBER' },
+  { name: 'ROSS 128',         tag: 'ROSS 128',   seat: 'THE QUIET SIGNAL' },
+  { name: 'ALPHA CENTAURI',   tag: 'CENTAURI',   seat: 'THE NEAREST THRONE' },
+  { name: '61 CYGNI',         tag: 'CYGNI',      seat: 'THE FLYING STAR' },
+  { name: "KAPTEYN'S STAR",   tag: 'KAPTEYN',    seat: 'THE HALO WANDERER' },
 ];
 
 /* Pure integer helpers. No rnd() call may ever appear in either. */
@@ -124,6 +130,8 @@ function gxWorldName(faction, seed, si, wi) {
   if (si === 0) return (GX_HOME_SYSTEMS[faction] || GX_HOME_SYSTEMS.human).worlds[wi % 7];
   const entry = gxPoolEntry(faction, seed, si);
   if (entry.worlds) return entry.worlds[wi % 7];
+  /* The seat (last world) is a place; the rest letter like real exoplanets. */
+  if (wi % 7 === 6 && entry.seat) return entry.seat;
   return entry.tag + ' ' + 'bcdefgh'.charAt(wi % 7);
 }
 

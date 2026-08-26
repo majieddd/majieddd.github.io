@@ -1163,13 +1163,33 @@ const UI = {
       </span>`;
   },
 
-  storyBeatHtml() {
+  /* THE CLOSING BEAT, and the reason it needs its own home.
+     FOUND BY PLAYTEST, not by review. Beats are indexed by
+     systemsTaken.length - 1, a campaign is FIVE systems, and every arc is
+     SIX beats: indices 0 to 4 fire as systems fall and index 5, the
+     MAELSTROM where the faction finally names its choice, was unreachable.
+     Every campaign ended one beat short of its own ending, and the earlier
+     "30 of 30 render" check missed it because that check drove the index
+     directly instead of playing the campaign.
+
+     So the finale belongs where the campaign actually ends: the GALAXY
+     CONQUERED screen, which is the one surface guaranteed to be reached
+     exactly once, after the fifth seat falls. Reads the last beat of the
+     arc explicitly rather than trusting the counter. */
+  storyFinaleHtml() {
     if (typeof Story === 'undefined') return '';
     const c = Meta.campaign();
     if (!c) return '';
-    const taken = (c.systemsTaken || []).length;
-    if (!taken) return '';
-    const b = Story.beat(c.faction || Meta.faction() || 'human', taken - 1);
+    const fac = c.faction || Meta.faction() || 'human';
+    const arc = Story.arc(fac);
+    if (!arc.length) return '';
+    return this.storyBeatCard(Story.beat(fac, arc.length - 1), true);
+  },
+
+  /* ONE renderer, two entry points: the reward screen as each system falls,
+     and the GALAXY CONQUERED screen for the closing beat. Split out when the
+     finale needed its own trigger, so the two can never drift apart. */
+  storyBeatCard(b, isFinale) {
     if (!b) return '';
     /* Roster first, then the story figures: ASHTAR is Supreme Commander,
        not a field commander, so the roster cannot resolve him and
@@ -1180,8 +1200,8 @@ const UI = {
                (typeof Story !== 'undefined' && Story.figure && Story.figure(b.speaker)) || null;
     const col = sp ? sp.color : 'var(--fc)';
     const L = this.lore('commanders', b.speaker);
-    return `<div class="rw-story${b.weight ? ' key' : ''}" style="--cc:${col}">
-      <div class="rws-act"><b>${b.act}</b><span>${b.index + 1} of ${b.total}</span></div>
+    return `<div class="rw-story${b.weight || isFinale ? ' key' : ''}${isFinale ? ' finale' : ''}" style="--cc:${col}">
+      <div class="rws-act"><b>${b.act}</b><span>${isFinale ? 'THE CHOICE' : (b.index + 1) + ' of ' + b.total}</span></div>
       <div class="rws-body">
         ${sp ? `<div class="rws-por">${commanderPortrait(sp, 46)}</div>` : ''}
         <div class="rws-text">
@@ -1190,8 +1210,22 @@ const UI = {
           <p class="rws-who">${sp ? sp.name : b.speaker}${L && L.title ? ', ' + L.title : ''}</p>
         </div>
       </div>
-      <div class="rws-reveal"><b>WHAT THIS MEANS</b><span>${b.reveal}</span></div>
+      <div class="rws-reveal"><b>${isFinale ? 'WHAT IT AUTHORISES' : 'WHAT THIS MEANS'}</b><span>${b.reveal}</span></div>
     </div>`;
+  },
+
+  storyBeatHtml() {
+    if (typeof Story === 'undefined') return '';
+    const c = Meta.campaign();
+    if (!c) return '';
+    const taken = (c.systemsTaken || []).length;
+    if (!taken) return '';
+    const arc = Story.arc(c.faction || Meta.faction() || 'human');
+    /* The LAST beat is the finale and belongs to the GALAXY CONQUERED
+       screen, so the reward screen never shows it: without this guard the
+       fifth system would fire beat 5 here and the finale would repeat it. */
+    if (taken - 1 >= arc.length - 1) return '';
+    return this.storyBeatCard(Story.beat(c.faction || Meta.faction() || 'human', taken - 1), false);
   },
 
   /* ONE LINE, not a table. This block used to print HISTORY, MOTIVE and
@@ -2149,6 +2183,7 @@ const UI = {
             <p>The machines have watched you take a galaxy. A fifth banner is now yours to swear.</p>
             <em>A banner is sworn once per commander, raise a new profile to answer it.</em>
           </div>` : ''}
+        ${this.storyFinaleHtml()}
         <p class="gv-next">Galaxy ${['II','III','IV','V','VI','VII','VIII'][Meta.load().galaxyTier || 0]} is already massing: its garrisons will be
            ${Math.round(RAMP_PRESETS[RAMP_DEFAULT].tierHpStep * 100)}% stronger per tier, and you will set the ramp when it musters.</p>
         <button id="btn-gv-claim" class="btn btn-primary btn-big">◉ CLAIM ${payout} SOULS &amp; ADVANCE</button>
