@@ -70,8 +70,12 @@ FLEET = {
 }
 
 FORCE = {
+    # "mission patches" is the same text prior the MARK note above describes,
+    # one scale down. Beats 2 and 3 came back clean on the first five plates,
+    # but a patch is a lettering surface and this class is full-bleed, so the
+    # noun is replaced rather than gambled on while re-rolling is still cheap.
     'human':  ('human troopers in sealed pressure suits and load-bearing rigs, practical plate '
-               'over fabric, mission patches, cyan helmet lamps'),
+               'over fabric, plain geometric shoulder insignia, cyan helmet lamps'),
     'light':  ('Federation wardens drawn from the contact species, tall luminous near-human '
                'figures and slender blue-toned beings among them, hard-light regalia, gold '
                'and ivory'),
@@ -84,9 +88,19 @@ FORCE = {
 }
 
 MARK = {
-    'human':  ('a human mission-patch banner staked in the ground and steel-blue floodlights '
-               'on scaffold towers, cyan work lamps strung between them'),
-    'light':  ('a ring of golden hard light raised over the ground and ivory banners hanging '
+    # NO LETTERING. This entry originally read "a human mission-patch banner",
+    # and the render put the words HUMAN MISSION FARM across the flag in
+    # legible type on pcut_00_human_5. ART-BIBLE section 1 lists lettering as a
+    # Never, and the prompt already ended in "no text anywhere" AND carried
+    # {STYLE}'s "no text, no watermark, no signature": three negations lost to
+    # two nouns. `banner` and `mission-patch` are strong text priors and the
+    # Krea path passes no negative prompt at all (guidance is 0), so the only
+    # lever is what the prompt ASKS FOR. Every flag in this table is therefore
+    # described positively as blank.
+    'human':  ('one plain flag of solid unbroken colour with no writing and no emblem on it, '
+               'steel-blue floodlights on scaffold towers, cyan work lamps strung between them'),
+    'light':  ('a ring of golden hard light raised over the ground and long plain ivory '
+               'hangings of solid unbroken colour with no writing and no emblem, hanging '
                'still, warm holy glow'),
     'xeno':   ('violet resin growth creeping over every surface, magenta light burning up '
                'through it from underneath'),
@@ -494,9 +508,13 @@ def planet_jobs(palette, style):
                 subject = template.format(**fields)
                 jobs.append((
                     'pcut_%s_%s_%s' % (wk, fac, suffix),
-                    '%s, %s. %s, no text anywhere. %s' % (
+                    '%s, %s. %s. %s %s' % (
                         subject, palette.get(fac, ''),
-                        'Dramatic staging, strong readable silhouette', style),
+                        'Dramatic staging, strong readable silhouette',
+                        # Stated as a property of the surfaces rather than as a
+                        # prohibition, for the reason in the MARK note above.
+                        'Every surface blank and unlettered, no writing, no '
+                        'signage, no numerals, no text anywhere.', style),
                     1024, 1920, 'wide'))
     return jobs
 
