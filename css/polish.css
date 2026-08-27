@@ -3853,3 +3853,37 @@ body.rm-user #screen-game #rotate-hint b { animation: none; }
   .gal-grid { grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); }
   .gal-beats { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); }
 }
+
+/* ═══════════ THE SOUL SHOP BUYS ONLY WHEN ASKED (Session 38) ═══════════
+   Owner: "create a Purchase button when you're in the souls shop so you don't
+   accidentally buy something you're just trying to preview when you click on
+   it." Every card used to spend on its first click, and a card is also the
+   only place the item is described, so previewing and buying were one
+   gesture. With no hover on a touch screen that is not an edge case, it is
+   how the screen is normally used.
+
+   The bar sticks to the top of the scrolling modal so the price and the
+   commit stay in sight while the grids scroll under it. */
+.soul-buy-bar {
+  position: sticky; top: 0; z-index: 6;
+  display: flex; align-items: center; gap: 12px;
+  margin: 0 0 14px; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  transition: border-color .2s ease;
+}
+.soul-buy-bar.armed { border-color: color-mix(in srgb, var(--cyan) 55%, transparent); }
+.sbb-what { flex: 1 1 auto; min-width: 0; font-size: 12px; line-height: 1.45;
+            color: var(--text-dim); overflow-wrap: anywhere; }
+.soul-buy-bar.armed .sbb-what { color: var(--text); }
+.soul-buy-bar .btn { flex: 0 0 auto; }
+.soul-buy-bar .btn:disabled { opacity: .45; }
+/* The chosen card, so the bar and the grid never disagree about the subject. */
+.soul-item.picked { border-color: var(--cyan);
+  box-shadow: 0 0 0 1px var(--cyan), 0 10px 30px -12px rgba(56,232,255,.5); }
+@media (max-width: 700px) {
+  /* Thumb reach: the commit goes full width under the description. */
+  .soul-buy-bar { flex-wrap: wrap; row-gap: 8px; }
+  .soul-buy-bar .btn { flex: 1 0 100%; padding: 12px 16px; }
+}

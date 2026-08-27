@@ -1008,8 +1008,16 @@ const UI = {
   /** The soul shop: permanent starting levels bought with campaign souls. */
   renderSoulShop() {
     const body = $('#souls-body');
+    /* A redraw invalidates the pick: the cards are rebuilt, and a selection
+       pointing at a card that no longer exists is the same orphan class the
+       faction tooltip hit. */
+    this._soulPick = null;
     body.innerHTML = `
       <div class="soul-bank">◉ <b>${Meta.souls()}</b> souls banked</div>
+      <div id="soul-buy-bar" class="soul-buy-bar">
+        <span id="soul-buy-what" class="sbb-what"></span>
+        <button id="soul-buy" class="btn btn-primary" disabled>PURCHASE</button>
+      </div>
       <h3 class="section-label">COMMANDERS: recruit permanently</h3>
       <p class="hint">Each commander answers the Concord only once it has proven itself:
         every successive recruit asks one more conquered solar system of this profile
@@ -1137,35 +1145,79 @@ const UI = {
 
     this.paintTowerIcons(body);
     this.bindChipTips(body);
-    /* Every buyer redraws the SHOP (prices just went up for everything else on
-       this banner) and then republishes to the screens underneath. */
-    $$('[data-unlock-cmd]', body).forEach(b => b.addEventListener('click', () => {
-      if (Meta.unlockCommander(b.dataset.unlockCmd))
-        { Sound.play('branch'); this.renderSoulShop(); this.refreshArsenalViews(); }
-      else Sound.play('denied');
-    }));
-    $$('[data-unlock-abil]', body).forEach(b => b.addEventListener('click', () => {
-      if (Meta.unlockAbility(b.dataset.unlockAbil))
-        { Sound.play('branch'); this.renderSoulShop(); this.refreshArsenalViews(); }
-      else Sound.play('denied');
-    }));
-    this.bindTowerPreviews(body);
-    $$('[data-unlock]', body).forEach(b => b.addEventListener('click', () => {
+    /* SELECT, THEN CONFIRM (owner, Session 38). Every card here used to BUY
+       ON ITS FIRST CLICK, and a card is also the only way to read what a
+       thing does, so previewing an item and spending souls on it were the
+       same gesture. On a touch screen, where there is no hover to preview
+       with, that is not a risk, it is the normal way to use the screen: the
+       owner asked for a purchase button so that looking is free.
+
+       One selection model for all four grids rather than four confirm
+       dialogs. A tap SELECTS (and the tower grid keeps its firing preview,
+       which is the other reason to tap a card). Nothing is spent until the
+       bar's own button is pressed, and the bar names the thing and its price
+       so the commit is never ambiguous. */
+    const commit = {
+      cmd:  id => Meta.unlockCommander(id),
+      abil: id => Meta.unlockAbility(id),
+      twr:  id => Meta.unlockTower(id),
+      unit: id => Meta.unlockUnit(id)
+    };
+    const pick = (kind, el) => {
       /* aria-disabled, not disabled: a DISABLED button receives no mouse
          events at all in Chromium or Firefox, which silently killed the
-         firing preview on every card a player had not yet bought -- which is
-         every card this grid shows. The refusal moved here instead. */
-      if (b.getAttribute('aria-disabled') === 'true') { Sound.play('denied'); return; }
-      if (Meta.unlockTower(b.dataset.unlock))
-        { Sound.play('branch'); this.renderSoulShop(); this.refreshArsenalViews(); }
-      else Sound.play('denied');
-    }));
-    $$('[data-unlock-unit]', body).forEach(b => b.addEventListener('click', () => {
-      if (b.getAttribute('aria-disabled') === 'true') { Sound.play('denied'); return; }
-      if (Meta.unlockUnit(b.dataset.unlockUnit))
-        { Sound.play('branch'); this.renderSoulShop(); this.refreshArsenalViews(); }
-      else Sound.play('denied');
-    }));
+         firing preview on every card a player had not yet bought. The
+         refusal lives here instead, and now refuses the SELECTION rather
+         than a purchase, so an unaffordable card still previews. */
+      const locked = el.getAttribute('aria-disabled') === 'true';
+      $$('.soul-item.picked', body).forEach(o => o.classList.remove('picked'));
+      el.classList.add('picked');
+      this._soulPick = { kind: kind, id: el.dataset[({ cmd: 'unlockCmd', abil: 'unlockAbil',
+                                                       twr: 'unlock', unit: 'unlockUnit' })[kind]],
+                         name: (el.querySelector('.si-name') || el).textContent.trim().slice(0, 30),
+                         locked: locked };
+      Sound.play('click');
+      this.syncSoulBar();
+    };
+    $$('[data-unlock-cmd]', body).forEach(b => b.addEventListener('click', () => pick('cmd', b)));
+    $$('[data-unlock-abil]', body).forEach(b => b.addEventListener('click', () => pick('abil', b)));
+    this.bindTowerPreviews(body);
+    $$('[data-unlock]', body).forEach(b => b.addEventListener('click', () => pick('twr', b)));
+    $$('[data-unlock-unit]', body).forEach(b => b.addEventListener('click', () => pick('unit', b)));
+
+    const go = $('#soul-buy', body);
+    if (go) go.addEventListener('click', () => {
+      const p = this._soulPick;
+      if (!p || p.locked) { Sound.play('denied'); return; }
+      if (commit[p.kind] && commit[p.kind](p.id)) {
+        Sound.play('branch');
+        this._soulPick = null;
+        /* Prices just went up for everything else on this banner, so the shop
+           redraws and the screens underneath republish. */
+        this.renderSoulShop();
+        this.refreshArsenalViews();
+      } else Sound.play('denied');
+    });
+    this.syncSoulBar();
+  },
+
+  /** The purchase bar's readout. Split out because both the render and every
+      selection need it, and two copies would eventually disagree about when a
+      thing is affordable. */
+  syncSoulBar() {
+    const bar = $('#soul-buy-bar');
+    if (!bar) return;
+    const p = this._soulPick;
+    const label = $('#soul-buy-what', bar), go = $('#soul-buy', bar);
+    if (!p) {
+      bar.classList.remove('armed');
+      if (label) label.textContent = 'Select something to see what it costs. Nothing is spent until you press purchase.';
+      if (go) { go.disabled = true; go.textContent = 'PURCHASE'; }
+      return;
+    }
+    bar.classList.add('armed');
+    if (label) label.textContent = p.locked ? p.name + ' is not available yet' : p.name;
+    if (go) { go.disabled = !!p.locked; go.textContent = 'PURCHASE'; }
   },
 
   buildCommanderScreen() {
