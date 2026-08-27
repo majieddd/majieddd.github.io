@@ -458,6 +458,16 @@ const Game = {
     /* Each side may have SEVERAL lanes; lanes[side] is an array of Paths. */
     this.lanes     = FIELD.lanes.map(side => side.map(p => new Path(p)));
     this.sendPaths = FIELD.sendPaths.map(p => new Path(p));
+    /* PATROL ROUTES, solo boards only. A survive board has no rival base to
+       march on, so a bought unit walks YOUR OWN lane BACKWARDS: out from your
+       base toward the mouth the wave comes from, which is the one direction
+       that puts it face to face with what is walking at you. Reversed copies
+       of the player's own lanes, so a patrol shares the road it defends and
+       needs no new geometry from buildField (whose shape several harnesses
+       assert on). Built only where they are used; null everywhere else. */
+    this.patrolPaths = this.soloSurvive
+      ? FIELD.lanes[0].map(p => new Path(p.slice().reverse()))
+      : null;
     /* AIR SEND ROUTES (Session 26): a sent flyer flies base to base, the
        straight chord, instead of walking the whole ground send route while
        flagged flying. Derived from bases with zero rnd() draws. */
@@ -2639,6 +2649,28 @@ const Game = {
   },
 
   /** `tier` omitted asks only whether the control is live at all. */
+  /** Patrol routes a muster from `side` would walk, empty off a solo board.
+   *
+   * Only seat 0 patrols: the far seat on a survive board is a spawn mouth
+   * with nobody behind it, and the AI brains are already empty there
+   * (`this.brains` is [] under soloSurvive), so nothing else would ever ask.
+   */
+  patrolRoutesFor(side) {
+    if (!this.soloSurvive || side !== 0 || !this.patrolPaths) return [];
+    return this.patrolPaths;
+  },
+
+  /** How many times `tier.count` a single buy actually puts on the board.
+   *
+   * One per victim on a two-sided board, two on the Confluence, one per
+   * patrolled lane on a survive board. THE PANEL AND THE ENGINE MUST AGREE:
+   * muster() loops victims and then patrol routes, so anything previewing a
+   * buy asks this rather than re-deriving it and quoting a number the buy
+   * will not deliver. */
+  musterFanout(side) {
+    return Math.max(1, this.musterVictims(side).length + this.patrolRoutesFor(side).length);
+  },
+
   canMuster(side, tier) {
     const S = this.sides[side];
     if (!S || this.state !== 'playing' || !S.alive || S.defeated) return false;
@@ -2648,7 +2680,14 @@ const Game = {
        refusal is waived rather than leaving it mute. */
     if (this.doctrineOf(side).noPurchase && !this.noReanim) return false;
     if ((S.musterThisWave || 0) >= MUSTER_PER_WAVE) return false;
-    if (!this.musterVictims(side).length) return false;
+    /* A survive board has nobody to send AT, but it does have somewhere to
+       send TO: your own lane, walked backwards as a patrol. musterVictims
+       stays empty there on purpose (it answers "who is on the other side of
+       this board", and the honest answer is nobody, which is what keeps
+       privateerTake, rivalOf and reanimation closed). So the patrol route is
+       the second thing that can satisfy this gate, not a loosening of the
+       first. */
+    if (!this.musterVictims(side).length && !this.patrolRoutesFor(side).length) return false;
     return !tier || S.gold >= this.musterCost(side, tier);
   },
 
@@ -2698,6 +2737,45 @@ const Game = {
                third life, and what gives it the frailty and halved leak cost
                every sent unit already carries. */
             hostileTo: vic, owner: side, reanimated: true,
+            startDist: rand(0, 10), offset: rand(-8, 8)
+          }));
+          sentUnits++;
+          S.stats.sent++;
+          S.stats.mustered++;
+        }
+      }
+    }
+
+    /* THE PATROL, solo boards only. Same purchase, same cost, same income:
+       the only thing that differs is where the bodies go and what they do at
+       the end of the road.
+
+       `hostileTo: 1` is what makes them FIGHT. The melee pass pairs bodies
+       whose hostileTo differs and skips only pairs where BOTH are unowned
+       (the wave-is-weather gate), so a patrol at hostileTo 1 and owner 0
+       engages the wave's hostileTo 0 bodies exactly as a send engages a
+       rival's defenders. It never means "seat 1 owns this" -- seat 1 is a
+       spawn mouth with nobody behind it, and `patrol` below guarantees these
+       bodies never reach a base to leak into, which is also what stops a
+       patrol walking into the phantom seat and winning the match. */
+    for (const path of this.patrolRoutesFor(side)) {
+      const dbl = S.mods.doubleReanim || 0;
+      for (let i = 0; i < tier.count; i++) {
+        const copies = 1 + ((dbl > 0 && Math.random() < dbl) ? 1 : 0);
+        for (let k = 0; k < copies; k++) {
+          this.pendingSpawns.push(new Enemy(base, path, {
+            /* THE SAME FUNCTION THE PANEL QUOTES. musterHpMul on a victim
+               that does not exist skips exactly one term, the victim's
+               reanimResist, and keeps every other: wave scaling, drift, the
+               early-wave penalty, the sender's swell and summonPower. Passing
+               the raw MUSTER_DAMP constant instead would have dropped all of
+               those, leaving a patrol frozen at its wave-1 strength while the
+               waves it fights kept scaling, and would have disagreed with the
+               figure the muster panel prints for the same buy. */
+            hpMul: this.musterHpMul(side, -1),
+            bountyMul: 1, speedMul: S.traits.reanimSpeed,
+            armorFlat: ((base.armor || 0) + this.drift.armor) * MUSTER_DAMP,
+            hostileTo: 1, owner: side, reanimated: true, patrol: true,
             startDist: rand(0, 10), offset: rand(-8, 8)
           }));
           sentUnits++;
@@ -2765,11 +2843,18 @@ const Game = {
   resolveMelee(dt) {
     if (!UNIT_ROLES_ON) return;
     const es = this.enemies;
-    /* Cheap gate: melee needs at least one sent grounded infantry body. */
+    /* WHO CAN MEET WHOM. Infantry fight infantry, and stealth fight STEALTH
+       (owner): a screen of knives is answered by knives, not by the line
+       infantry it was built to walk past. Air still touches nothing. The
+       pairing rule below is `v.role === e.role`, which is what keeps stealth
+       slipping past infantry exactly as it always has while giving the
+       counter-stealth matchup somewhere to happen. */
+    const meleeRole = r => r === 'infantry' || r === 'stealth';
+    /* Cheap gate: melee needs at least one sent grounded meleeable body. */
     let anySent = false;
     for (let i = 0; i < es.length; i++) {
       const e = es[i];
-      if (!e.dead && !e.leaked && e.owner >= 0 && e.role === 'infantry' && !e.carrier) { anySent = true; break; }
+      if (!e.dead && !e.leaked && e.owner >= 0 && meleeRole(e.role) && !e.carrier) { anySent = true; break; }
     }
     if (!anySent) return;
     /* Bucket grounded, meleeable bodies by tile. Integer keys, insertion
@@ -2777,7 +2862,7 @@ const Game = {
     const buckets = new Map();
     for (let i = 0; i < es.length; i++) {
       const e = es[i];
-      if (e.dead || e.leaked || e.carrier || e.role !== 'infantry') continue;
+      if (e.dead || e.leaked || e.carrier || !meleeRole(e.role)) continue;
       if (e.flying && !e.grounded) continue;
       const k = ((e.x / TILE) | 0) << 8 | ((e.y / TILE) | 0);
       let b = buckets.get(k);
@@ -2787,7 +2872,7 @@ const Game = {
     const held = new Map();
     for (let i = 0; i < es.length; i++) {
       const e = es[i];
-      if (e.dead || e.leaked || e.carrier || e.role !== 'infantry') continue;
+      if (e.dead || e.leaked || e.carrier || !meleeRole(e.role)) continue;
       if (e.flying && !e.grounded) continue;
       const gx = (e.x / TILE) | 0, gy = (e.y / TILE) | 0;
       let best = null, bd = Infinity;
@@ -2797,6 +2882,10 @@ const Game = {
         for (let j = 0; j < b.length; j++) {
           const v = b[j];
           if (v === e || v.dead || v.hostileTo === e.hostileTo) continue;
+          /* LIKE MEETS LIKE. Infantry never stops stealth (that is the whole
+             of what stealth buys) and stealth never stops infantry, so the
+             only new matchup this opens is stealth against stealth. */
+          if (v.role !== e.role) continue;
           /* THE WAVE-WEATHER GATE: no pair of unowned bodies ever fights. */
           if (e.owner < 0 && v.owner < 0) continue;
           const reach = e.radius + v.radius + MELEE_RANGE_PAD;

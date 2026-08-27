@@ -4055,9 +4055,14 @@ const MUSTER_COUNT_MAX = 4;
 
 /* ══════════════ UNIT ROLES (owner item 17, Session 26) ═══════════════════
    Three roles decide how a unit treats OTHER UNITS. Infantry marches the
-   lane and fights the first enemy unit it meets; stealth slips past
-   infantry and only towers can stop it; air flies its own straight route
-   and touches nothing on the ground.
+   lane and fights the first enemy INFANTRY it meets; stealth slips past
+   infantry and is stopped only by towers and by OTHER STEALTH; air flies its
+   own straight route and touches nothing on the ground.
+
+   LIKE MEETS LIKE (owner). The pairing rule is one line in resolveMelee,
+   `v.role !== e.role` continues, which is what makes a screen of knives
+   answerable by knives while leaving stealth's whole promise (walk past the
+   line, never be held by it) exactly as it was.
 
    MELEE ONLY EVER INVOLVES A PLAYER-SENT BODY. Wave against wave stays the
    ghost-through it has always been, and that gate is load-bearing: mirrored
@@ -4078,7 +4083,7 @@ const MELEE_PERIOD = 0.8;       /* seconds between swings                       
 const ROLE_GLYPHS = { infantry: '⚔', stealth: '◇', air: '▲' };
 const ROLE_COPY = {
   infantry: 'INFANTRY: marches the lane and fights the first enemy unit it meets. Held while it fights; at most three attackers pile onto one body, the rest push past.',
-  stealth: 'STEALTH: slips past enemy infantry without being stopped and never fights units. Only towers can hit it.',
+  stealth: 'STEALTH: slips past enemy infantry without being stopped. Only towers and OTHER STEALTH can stop it.',
   air: 'AIR: flies its own straight route to the base. Never touches ground units or ground effects.'
 };
 /* The rule, stated so it GENERATES the table: flying is air; a unit whose

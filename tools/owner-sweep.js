@@ -1327,7 +1327,7 @@
     Game.start({ map: 'spine', difficulty: 'contested', seed: 21, loadout: PIN.slice(),
                  musterLoadout: ['crawler', 'sprinter'] });
     const S = Game.sides[0]; S.gold = 99999;
-    let engaged = 0, waveVwave = 0, stealthMelee = 0, n = 0;
+    let engaged = 0, waveVwave = 0, stealthMelee = 0, mixedRole = 0, n = 0;
     while (Game.state !== 'over' && Game.wave < 5 && n < 9000) {
       if (Game.state === 'choosing' && Game.pendingChoice) Game.takeMod(Game.pendingChoice[0]);
       else if (Game.state === 'escalating' && Game.pendingEscalation)
@@ -1339,7 +1339,14 @@
           if (!e._meleeRef) continue;
           engaged++;
           if (e.owner < 0 && e._meleeRef.owner < 0) waveVwave++;
-          if (e.role === 'stealth' || e._meleeRef.role === 'stealth') stealthMelee++;
+          if (e.role === 'stealth' && e._meleeRef.role === 'stealth') stealthMelee++;
+          /* THE RULE THAT REPLACED "stealth never fights" (owner): like meets
+             like. Stealth answers stealth, and NOTHING pairs across roles, so
+             a mixed pair is the defect this now watches for. Asserting the
+             mixed count is strictly stronger than the old stealth === 0: that
+             one could not tell a stealth screen slipping past infantry from a
+             stealth screen that had stopped existing. */
+          if (e.role !== e._meleeRef.role) mixedRole++;
         }
       }
       n++;
@@ -1348,9 +1355,10 @@
     const flyer = Object.keys(ENEMY_TYPES).find(function (id) { return ENEMY_TYPES[id].flying && musterSendable(id); });
     const chord = flyer ? Game.sendPathFor(0, 1, ENEMY_TYPES[flyer]).pts.length === 2 : false;
     ok('26.1 the three unit roles behave as specified',
-       stealthOk && engaged > 0 && waveVwave === 0 && stealthMelee === 0 && chord,
+       stealthOk && engaged > 0 && waveVwave === 0 && mixedRole === 0 && stealthMelee > 0 && chord,
        'stealth set ' + (stealthOk ? 'exact' : 'WRONG') + ', ' + engaged +
-       ' engaged frames, wave-vs-wave ' + waveVwave + ', stealth melee ' + stealthMelee +
+       ' engaged frames, wave-vs-wave ' + waveVwave + ', cross-role melee ' + mixedRole +
+       ', stealth-vs-stealth ' + stealthMelee +
        ', flyer sends fly a 2-point chord: ' + chord);
   });
 

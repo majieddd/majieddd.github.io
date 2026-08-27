@@ -107,6 +107,10 @@ class Enemy {
     this.hostileTo = o.hostileTo || 0;
     this.owner = o.owner !== undefined ? o.owner : -1;   // -1 = neutral wave
     this.reanimated = !!o.reanimated;
+    /* A PATROL never arrives. On a survive board there is no rival base at
+       the far end of its road, so instead of leaking it wraps to the start
+       and walks the lane again (see the path-end branch in update). */
+    this.patrol = !!o.patrol;
 
     /* The RESONANT FIELD share of this unit's health, carried so the corpse
        can be sent at a rival WITHOUT it. Defaults to 1, so anything built
@@ -724,7 +728,25 @@ class Enemy {
     }
     const spd = this.effectiveSpeed;
     if (spd > 0) { this.dist += spd * TILE * dt; this.updatePosition(); this.crossNode(); }
-    if (this.dist >= this.path.total && !this.leaked) {
+    /* THE PATROL WRAPS. It has walked its lane end to end without meeting
+       anything that stopped it, so it turns around and walks it again rather
+       than reaching an ending it has no business reaching: `leaked` would
+       charge lives to the phantom seat it is nominally hostile to, and on a
+       survive board draining that seat resolves the match as a WIN, which is
+       the exact phantom-seat defect the spawn guards exist to prevent. Wraps
+       to 0 rather than reversing in place so the whole detachment keeps one
+       facing and one road, which is what reads as a patrol instead of a
+       crowd milling at a wall. */
+    if (this.patrol && this.dist >= this.path.total && !this.dead) {
+      this.dist = 0;
+      this.updatePosition();
+      /* crossNode dedupes on the LAST tile key seen, so clearing it re-arms
+         the lane nodes for the next circuit; the wrap teleports the body
+         across the board and the stale key would otherwise be compared
+         against a tile it is no longer standing on. */
+      this.nodeTile = null;
+    }
+    if (this.dist >= this.path.total && !this.leaked && !this.patrol) {
       /* THE OATH -- CUSTODIAN. Resolved here because this is the only frame
          in which the choice exists: the reap downstream knows exactly two
          endings, `dead` (which pays a bounty, credits a kill and sends the

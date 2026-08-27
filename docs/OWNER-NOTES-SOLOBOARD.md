@@ -88,15 +88,65 @@ structure and suppressing what the PLAYER sees is the smaller, provably
 correct change.
 
 ### B3. Summoning stays open, and units patrol
-`[ ]` Scoping question sent to the owner: `muster()` spawns a plain `Enemy`
-object aimed at a rival's base (`hostileTo: <rival seat>`); there is no
-friendly-vs-hostile combat system in this engine and no unit that can stand
-in a lane and fight, and hostile creeps have no concept of noticing or
-attacking an obstacle, they walk a fixed path to a base. "Hold guard" and
-"patrol" have no existing mechanic to extend, so the honest engineering
-choices differ in scope by roughly an order of magnitude depending on
-whether a summoned guard is meant to fight, to soak damage without fighting,
-or to be a cosmetic walk with no mechanical effect.
+`[x]` **MEASURED over a full 90-second battle at real frame rate.**
+
+I was wrong in my first pass and the owner corrected me: I concluded this
+engine had no unit-vs-unit combat, having searched the tower code and found
+only splash grouping. It has a complete melee system (`Game.resolveMelee`,
+`js/config.js` UNIT ROLES), and the rule that matters here is stated in its
+own comment: melee only ever involves a player-sent body, so wave-vs-wave
+stays ghost-through. A bought unit fighting an incoming wave is precisely
+the case it was built for. The lesson is the standing one, applied to my own
+conclusion rather than to a probe: I asserted an absence from a search that
+did not cover the thing I was claiming was absent.
+
+What shipped, per the owner's spec (send troops that fight incoming, and
+instead of being deleted at the end of the path they loop back around):
+
+- `Game.patrolPaths`, solo boards only: reversed copies of the player's OWN
+  lanes, so a bought unit walks out from your base toward the mouth the wave
+  comes from, which is the one direction that puts it face to face with what
+  is walking at you. No new `buildField` geometry, which several harnesses
+  assert the shape of.
+- `canMuster` opens on a survive board through `patrolRoutesFor`, a SECOND
+  way to satisfy the gate rather than a loosening of the first:
+  `musterVictims` still returns empty there, which is what keeps
+  `privateerTake`, `rivalOf` and reanimation correctly closed.
+- Patrol bodies carry `owner: 0, hostileTo: 1, patrol: true`. The `hostileTo`
+  is what makes them FIGHT (melee pairs differing `hostileTo` and skips only
+  pairs where both are unowned); it never means seat 1 owns them.
+- `patrol` bodies WRAP at the end of the road instead of leaking. This is
+  both the owner's ask and a correctness requirement: `leaked` would charge
+  lives to the phantom seat, and draining that seat resolves the match as a
+  WIN, the exact phantom-seat defect the spawn guards exist to prevent.
+- Health comes from `musterHpMul(side, -1)`, the same function the muster
+  panel quotes, so a patrol scales with wave, drift and summon power. The
+  first cut passed the raw `MUSTER_DAMP` constant, which would have frozen
+  patrols at wave-1 strength while the waves kept scaling AND disagreed with
+  the panel's own printed figure.
+
+MEASURED, 5400 frames at 1/60 on a real swarm board with buys every 2s:
+**8147 melee engagement frames** (patrols genuinely fighting the wave),
+**5 wraps** (units that walked the lane end to end turned around and walked
+it again), **0 patrol leaks**, phantom seat lives unchanged at 25, 32 bodies
+sent and none alive at the end (they fight, they die, they are attritable),
+and the player still took real damage, so the board is still a fight.
+
+**Stealth answers stealth** (owner). Previously stealth never fought units at
+all. The rule is now like-meets-like, one line in `resolveMelee`
+(`v.role !== e.role` continues), which opens exactly one new matchup and
+leaves stealth's whole promise (walk past the line, never be held by it)
+untouched. MEASURED as a matrix against the engine's own pass: infantry vs
+infantry engages, stealth vs stealth engages, infantry vs stealth does NOT
+in either order, and two unowned wave bodies still never fight.
+
+owner-sweep 26.1 asserted the OLD spec (`stealthMelee === 0`) and correctly
+failed this change. Rewritten to the new spec and made STRICTLY STRONGER
+rather than merely relaxed: it now asserts no cross-role pair ever engages
+AND that stealth-vs-stealth actually happens, where the old form could not
+tell a stealth screen slipping past infantry from a stealth screen that had
+stopped existing. Proved by planting the defect: removing the one-line guard
+makes 26.1 report 4246 cross-role melees and fail the gate.
 
 ### B4. Some swarms bounded by a wave count
 `[x]` **MEASURED, full run.** `scenario.kind` (`'survive'` vs `'endless'`)
@@ -147,9 +197,19 @@ under the wrong assumption about its own type. Their files stay theirs.
 
 ## E. Follow-ups surfaced by this batch
 
-- `[ ]` B3 (patrol summons) is open pending the owner's answer on what "hold
-  guard" mechanically means; see the question sent alongside this tracker.
+- `[ ]` Patrol BALANCE is unpinned. The mechanic is proven correct but its
+  numbers are inherited, not tuned: a patrol costs exactly what a send costs
+  and fans out one detachment per lane, so a two-lane board buys twice the
+  bodies for one price (defensible, it matches the Confluence precedent where
+  one send marches on both rivals, but it was not chosen for solo boards on
+  purpose). Wants a balance-pins pass against `docs/BALANCE-BASELINE.md`
+  before it is called tuned rather than working.
 - `[ ]` `UI.nodeBriefing` (`js/ui.js:3297`) has zero callers anywhere in the
   repo, found while threading the `solo` preview flag through every ACTIVE
   briefing card. Left untouched, out of scope for this batch; it is either
   dead code worth removing or a briefing surface that stopped being wired up.
+- `[ ]` `js/game.js:1946` holds a bare `Math.random()` inside the enemy update
+  path, spotted in passing while reading melee. It gates a cosmetic voice
+  line, but this project's determinism law does not distinguish cosmetic from
+  simulation inside a stepped path. Worth a look; not touched here because it
+  predates this batch and is not what the owner asked for.

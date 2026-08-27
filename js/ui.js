@@ -4831,8 +4831,9 @@ const UI = {
     const gain = Game.musterGain(0, tier);
     const vics = Game.musterVictims(0);
     /* Game.muster sends tier.count at EVERY victim, so a tri board receives
-       more than one victim's slice. */
-    const sent = tier.count * Math.max(1, vics.length);
+       more than one victim's slice, and a survive board puts one detachment
+       on every lane it patrols. musterFanout is the engine's own count. */
+    const sent = tier.count * Game.musterFanout(0);
     /* musterHpMul is a function OF THE VICTIM (traits.reanimResist, up to
        -60%), so two rivals do not necessarily receive the same body: where
        they differ the panel prints the range it will actually send. */
@@ -5581,7 +5582,7 @@ const UI = {
          receive the same unit. Where they differ the panel prints the range it
          will actually send instead of quietly quoting the first one. */
       const vics = Game.musterVictims(0);
-      const sent = tier.count * Math.max(1, vics.length);
+      const sent = tier.count * Game.musterFanout(0);
       /* THREE THINGS ON THE FACE (owner, Session 36 A3): the unit's own icon,
          how many of it this buy sends, and what that costs in gold. The
          rolemark, the POWER figure and the ECON percent came off. They were
