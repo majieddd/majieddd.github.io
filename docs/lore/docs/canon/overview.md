@@ -1,3 +1,13 @@
+> [!CAUTION]
+> **The fictional timeline below is SUPERSEDED.** The campaign now begins on
+> **April 13, 2029**, not in 2099. See
+> [`../../../CANON-2029.md`](../../../CANON-2029.md), the owner revision of
+> 2026-08-26, which is what the game runs on.
+>
+> Evidence layers **A, B and C** here (the documented record from 1947 to 2026)
+> remain accurate and are the research the 2029 canon draws from. Evidence
+> layer **F** after 2029 describes a future the campaign no longer has.
+
 ---
 id: canon-overview
 title: Canon Overview
