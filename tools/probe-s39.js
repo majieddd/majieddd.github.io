@@ -33,14 +33,24 @@
 (() => {
   const checks = [];
   const bad = msg => { throw new Error(msg); };
+  /* EVERY ROW CARRIES `id` AND `verdict` AS WELL AS `ok`.
+     tools/gate.js counts a harness's failures with `c.verdict === 'FAIL'` and
+     names the row with `c.id`. A probe that reported only `ok` would hand the
+     gate an empty failure list no matter how red it was, and the gate would
+     print pass=N fail=0 and go clean. That would have been the THIRD false
+     green of this session and the worst of them, because it would have been
+     the gate lying rather than the probe. Both shapes are emitted so
+     run_harness and gate.js read the same run correctly. */
   const T = (name, fn) => {
+    const id = name.split(' ')[0];
+    const push = (ok, detail) =>
+      checks.push({ name, id, ok, detail, verdict: ok ? 'PASS' : 'FAIL' });
     try {
       const d = fn();
-      if (d === true) { checks.push({ name, ok: true, detail: '' }); return; }
-      if (typeof d === 'string' && d.length) { checks.push({ name, ok: true, detail: d }); return; }
-      checks.push({ name, ok: false,
-                    detail: 'returned ' + JSON.stringify(d) + ' rather than true, a detail string, or bad()' });
-    } catch (e) { checks.push({ name, ok: false, detail: e.message }); }
+      if (d === true) return push(true, '');
+      if (typeof d === 'string' && d.length) return push(true, d);
+      push(false, 'returned ' + JSON.stringify(d) + ' rather than true, a detail string, or bad()');
+    } catch (e) { push(false, e.message); }
   };
   const FACS = ['human', 'light', 'xeno', 'pirate', 'robot'];
 
