@@ -15,6 +15,14 @@
      open-field     – very wide board, minimal cover, forces spread
      convergence    – several short lanes converge on ONE base (siege pressure)
      fortress-ring  – serpentine road past a broken ring of shot-blocking walls
+     braid          – two lanes weaving over each other; crossings are crossfire hubs
+     gauntlet       – one long fenced corridor, wall posts alternating beside the road
+     staircase      – monotonic down-left steps; cover on one side only
+     horseshoe      – three legs around an open plaza that covers all roads at once
+     switchback     – tight zigzag with short exposure between every bend
+     labyrinth      – coarse grid of walls carved around a winding corridor (LOS maze)
+     twin-temple    – two compact arenas, one per row band; split your attention
+     twin-gate      – one road pierced by wall bars that leave only the gap open
 
    Walls (`map.walls`) are unbuildable AND block direct projectiles and tower
    line-of-sight; lobbed shells arc over them. They never sit on lane tiles.
@@ -77,9 +85,13 @@
   /** Serpentine (HALF-WIDTH): enters from the mirror axis, zigzags leftward
       in horizontal legs, exits at x=-1. Only traverses the LEFT half so that
       buildField's mirror produces a non-overlapping rival lane on the right. */
-  function serpentineWaypoints(cols, rows, rnd) {
+  function serpentineWaypoints(cols, rows, rnd, opts = {}) {
     const margin = irange(rnd, 2, 3);
-    const legH = Math.max(2, Math.floor((rows - 2 * margin) / irange(rnd, 3, 4)));
+    /* `opts.legH` pins the zigzag height (switchback wants tight legs). When it
+       is absent the draw happens exactly as before, so every existing family's
+       PRNG stream, and therefore its boards, stays byte-identical. */
+    const legH = opts.legH !== undefined ? opts.legH
+                                         : Math.max(2, Math.floor((rows - 2 * margin) / irange(rnd, 3, 4)));
     // Start near the mirror axis (left side of it for even cols).
     const startX = Math.floor(cols / 2) - 1 - irange(rnd, 0, 1);
     const wps = [[startX, margin + irange(rnd, 0, 1)]];
@@ -341,6 +353,255 @@
 
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
+  /* ── Additional family geometry (braid / gauntlet / staircase / horseshoe /
+     labyrinth / twin-temple / twin-gate; switchback reuses serpentine) ───── */
+
+  /** Braid (HALF-WIDTH): two lanes that weave over each other at 2-3 swap
+      columns. A tower on a crossing covers both legs, the whole board is one
+      argument about where those crossings land. Both start near the mirror
+      axis on different rows and exit off-grid, possibly swapped. */
+  function braidWaypoints(cols, rows, rnd) {
+    const yA = irange(rnd, 2, Math.max(3, Math.floor(rows / 4)));
+    const yB = clamp(rows - 1 - yA + irange(rnd, -1, 1), yA + 3, rows - 2);
+    const startX = Math.floor(cols / 2) - 1 - irange(rnd, 0, 1);
+    const nSwaps = irange(rnd, 2, 3);
+    // Swap columns evenly spaced between x=5 and just left of the start.
+    const lo = 5, hi = Math.max(lo + 2, startX - 6);
+    const xs = [];
+    for (let i = 0; i < nSwaps; i++) xs.push(Math.floor(lo + (hi - lo) * (i + 1) / (nSwaps + 1)));
+    const uniq = [...new Set(xs)].sort((a, b) => b - a);   // walk leftward
+    const build = rowA => {
+      const rowB = rowA === yA ? yB : yA;
+      const wps = [[startX, rowA]];
+      let cur = rowA;
+      for (const x of uniq) {
+        if (x >= startX) continue;
+        wps.push([x, cur]);            // horizontal to the swap column
+        const other = cur === rowA ? rowB : rowA;
+        wps.push([x, other]);          // vertical swap, shares tiles with the
+                                        // rival lane exactly at the crossing
+        cur = other;
+      }
+      wps.push([-1, cur]);             // final run off-grid on whatever row we're on
+      return wps;
+    };
+    return { a: build(yA), b: build(yB) };
+  }
+
+  /** Gauntlet (HALF-WIDTH): one long near-straight road with at most two gentle
+      bends, the corridor itself is boring ON PURPOSE, because the wall posts
+      beside it are the whole game. */
+  function gauntletWaypoints(cols, rows, rnd) {
+    const y0 = irange(rnd, Math.floor(rows / 3), Math.max(Math.floor(rows / 3) + 1, Math.floor(rows * 2 / 3)));
+    const startX = Math.floor(cols / 2) - 1 - irange(rnd, 0, 1);
+    const wps = [[startX, y0]];
+    let x = startX, y = y0;
+    for (let i = 0; i < irange(rnd, 1, 2); i++) {
+      const nx = Math.max(3, x - irange(rnd, 5, 8));
+      if (nx >= x) break;
+      wps.push([nx, y]);               // long straight leg
+      x = nx;
+      const ny = clamp(y + (rnd() < 0.5 ? -1 : 1) * irange(rnd, 2, 3), 1, rows - 2);
+      if (ny !== y) { wps.push([x, ny]); y = ny; }   // one bend
+    }
+    wps.push([-1, y]);
+    return wps;
+  }
+
+  /** Wall posts beside a lane: short vertical stubs at sampled road columns,
+      offset above/below in alternating fashion so the road reads as a fenced
+      corridor. Every candidate is checked against both lanes AND their mirrors
+      (a wall under a lane tile is an unkillable-enemy soft-lock). */
+  function generateWallPosts(cols, rows, rnd, laneSet, blockSet) {
+    const walls = [];
+    const mirrored = new Set();
+    for (const k of laneSet) {
+      const c = k.indexOf(',');
+      mirrored.add((cols - 1 - Number(k.slice(0, c))) + ',' + k.slice(c + 1));
+    }
+    const onLane = (x, y) => laneSet.has(x + ',' + y) || mirrored.has(x + ',' + y);
+    // The road's row at each authored column in the left half.
+    const byCol = new Map();
+    for (const k of laneSet) {
+      const c = k.indexOf(',');
+      const x = Number(k.slice(0, c)), y = Number(k.slice(c + 1));
+      if (x >= 2 && x < Math.floor(cols / 2)) byCol.set(x, y);
+    }
+    const colsArr = [...byCol.keys()].sort((a, b) => a - b);
+    let side = rnd() < 0.5 ? -1 : 1;   // alternate above/below the road
+    for (let i = 0; i < colsArr.length; i += irange(rnd, 3, 4)) {
+      const x = colsArr[i];
+      if (x > Math.floor((cols - 2) / 2)) break;   // stay left of the axis
+      const yRoad = byCol.get(x);
+      for (const off of [1, 2, 3]) {
+        const len = irange(rnd, 2, 3);
+        const y0 = side === -1 ? yRoad - off - len + 1 : yRoad + off;
+        if (y0 < 1 || y0 + len > rows) continue;
+        let bad = false;
+        for (let ty = y0; ty < y0 + len && !bad; ty++) {
+          const k = x + ',' + ty;
+          if (onLane(x, ty) || onLane(cols - 1 - x, ty) || blockSet.has(k)) bad = true;
+        }
+        if (!bad) { walls.push([x, y0, x, y0 + len - 1]); break; }
+      }
+      side = -side;
+    }
+    return walls;
+  }
+
+  /** Staircase (HALF-WIDTH): a monotonic descent, each tread runs leftward,
+      each riser drops one or two rows. The road only ever goes down-left, so
+      cover sits on one side of the march and there is no backtracking to hide
+      behind. */
+  function staircaseWaypoints(cols, rows, rnd) {
+    const y0 = irange(rnd, 1, Math.max(2, Math.floor(rows / 5)));
+    const startX = Math.floor(cols / 2) - 1 - irange(rnd, 0, 1);
+    const wps = [[startX, y0]];
+    let x = startX, y = y0;
+    while (x > 3 && y < rows - 2) {
+      const nx = Math.max(2, x - irange(rnd, 4, 6));
+      wps.push([nx, y]);               // tread
+      x = nx;
+      if (x <= 2) break;
+      const ny = clamp(y + irange(rnd, 1, 2), 1, rows - 2);   // riser
+      if (ny !== y) { wps.push([x, ny]); y = ny; }
+    }
+    wps.push([-1, y]);                 // final run off-grid on the bottom row
+    return wps;
+  }
+
+  /** Horseshoe (HALF-WIDTH): three horizontal legs joined by two vertical
+      connectors. The open plaza between them is one big kill zone, a tower in
+      it covers all three roads at once, which is exactly what makes the shape
+      worth defending. */
+  function horseshoeWaypoints(cols, rows, rnd) {
+    const yA = irange(rnd, 2, Math.max(3, Math.floor(rows / 4)));
+    const yB = clamp(rows - 1 - yA + irange(rnd, -1, 1), yA + 4, rows - 2);
+    const yM = clamp(Math.floor((yA + yB) / 2) + irange(rnd, -1, 1), yA + 2, yB - 2);
+    const startX = Math.floor(cols / 2) - 1 - irange(rnd, 0, 1);
+    const x1 = Math.max(4, Math.floor(startX * 0.55));
+    const x2 = Math.max(2, x1 - irange(rnd, 3, 5));
+    return [[startX, yA], [x1, yA], [x1, yM], [x2, yM], [x2, yB], [-1, yB]];
+  }
+
+  /** Maze walls (HALF-WIDTH): a coarse grid of short bars across the authored
+      half, then every tile touching a lane (authored OR mirrored) is carved
+      out, clearance by CONSTRUCTION rather than rejection sampling. Surviving
+      tiles are re-packed into horizontal runs. If the corridor carving eats too
+      much maze, it relaxes to direct-touch-only and keeps what remains. */
+  function generateMazeWalls(cols, rows, rnd, laneSet, blockSet) {
+    const mirrored = new Set();
+    for (const k of laneSet) {
+      const c = k.indexOf(',');
+      mirrored.add((cols - 1 - Number(k.slice(0, c))) + ',' + k.slice(c + 1));
+    }
+    const nearLane = (x, y, dist) => {
+      for (let dy = -dist; dy <= dist; dy++)
+        for (let dx = -dist; dx <= dist; dx++)
+          if (laneSet.has((x + dx) + ',' + (y + dy)) || mirrored.has((x + dx) + ',' + (y + dy))) return true;
+      return false;
+    };
+    const halfW = Math.floor((cols - 2) / 2);
+    const gx = irange(rnd, 3, 4), gy = irange(rnd, 3, 4);
+    const tiles = new Set();
+    for (let y = 1; y <= rows - 2; y += gy) {          // horizontal bars
+      let x = irange(rnd, 1, gx);
+      while (x < halfW) {
+        const len = irange(rnd, 2, 3);
+        for (let i = 0; i < len && x + i < halfW; i++) tiles.add((x + i) + ',' + y);
+        x += len + irange(rnd, 1, 2);
+      }
+    }
+    for (let x = irange(rnd, 1, gx); x <= halfW; x += gx) {   // vertical bars
+      let y = irange(rnd, 1, gy);
+      while (y < rows - 1) {
+        const len = irange(rnd, 2, 3);
+        for (let i = 0; i < len && y + i < rows - 1; i++) tiles.add(x + ',' + (y + i));
+        y += len + irange(rnd, 1, 2);
+      }
+    }
+    let kept = [...tiles].filter(k => {
+      const c = k.indexOf(',');
+      return !blockSet.has(k) && !nearLane(Number(k.slice(0, c)), Number(k.slice(c + 1)), 1);
+    });
+    if (kept.length < 6) {   // the corridor ate the maze; relax to touch-only
+      kept = [...tiles].filter(k => {
+        const c = k.indexOf(',');
+        return !blockSet.has(k) && !nearLane(Number(k.slice(0, c)), Number(k.slice(c + 1)), 0);
+      });
+    }
+    // Re-pack surviving tiles into horizontal runs per row.
+    const byRow = new Map();
+    for (const k of kept) {
+      const c = k.indexOf(',');
+      if (!byRow.has(Number(k.slice(c + 1)))) byRow.set(Number(k.slice(c + 1)), []);
+      byRow.get(Number(k.slice(c + 1))).push(Number(k.slice(0, c)));
+    }
+    const walls = [];
+    for (const [y, xs] of byRow) {
+      xs.sort((a, b) => a - b);
+      let run0 = null;
+      for (let i = 0; i <= xs.length; i++) {
+        if (run0 === null) { if (i < xs.length) run0 = xs[i]; continue; }
+        if (i < xs.length && xs[i] === xs[i - 1] + 1) continue;   // extend run
+        walls.push([run0, y, xs[i - 1], y]);                      // close it
+        run0 = i < xs.length ? xs[i] : null;
+      }
+    }
+    return walls;
+  }
+
+  /** Twin temples (HALF-WIDTH): two compact arenas, one per row band. Each lane
+      is a short road with one bend into its own off-grid exit, the board asks
+      you to split your towers between two kill zones far apart. */
+  function twinTempleWaypoints(cols, rows, rnd) {
+    const yA = irange(rnd, 2, Math.max(3, Math.floor(rows / 4)));
+    const yB = clamp(rows - 1 - yA + irange(rnd, -1, 1), yA + 5, rows - 2);
+    const startX = Math.floor(cols / 2) - 1 - irange(rnd, 0, 1);
+    const mk = (yIn, dir) => {
+      const xBend = Math.max(3, Math.floor(startX * (dir > 0 ? 0.45 : 0.6)));
+      const yOut = clamp(yIn + dir * irange(rnd, 1, 2), 1, rows - 2);
+      return [[startX, yIn], [xBend, yIn], [xBend, yOut], [-1, yOut]];
+    };
+    return { a: mk(yA, +1), b: mk(yB, -1) };
+  }
+
+  /** Twin gates (HALF-WIDTH): one road pierced by two or three wall bars that
+      leave only the road itself open. Enemies funnel through each gap where
+      towers can focus, the gaps ARE the kill zones. */
+  function generateGateWalls(cols, rows, rnd, laneSet, blockSet) {
+    const mirrored = new Set();
+    for (const k of laneSet) {
+      const c = k.indexOf(',');
+      mirrored.add((cols - 1 - Number(k.slice(0, c))) + ',' + k.slice(c + 1));
+    }
+    const onLane = (x, y) => laneSet.has(x + ',' + y) || mirrored.has(x + ',' + y);
+    const byCol = new Map();
+    for (const k of laneSet) {
+      const c = k.indexOf(',');
+      const x = Number(k.slice(0, c)), y = Number(k.slice(c + 1));
+      if (x >= 2 && x < Math.floor(cols / 2)) byCol.set(x, y);
+    }
+    const xs = [...byCol.keys()].sort((a, b) => a - b);
+    if (!xs.length) return [];
+    const nGates = irange(rnd, 2, 3);
+    const walls = [];
+    for (let g = 0; g < nGates; g++) {
+      const x = xs[Math.floor(xs.length * (g + 1) / (nGates + 1))];
+      if (!x || x > Math.floor((cols - 2) / 2)) continue;   // stay left of axis
+      const yRoad = byCol.get(x);
+      let bad = false;                                       // bar above the road
+      for (let ty = 1; ty <= yRoad - 2 && !bad; ty++)
+        if (onLane(x, ty) || onLane(cols - 1 - x, ty) || blockSet.has(x + ',' + ty)) bad = true;
+      if (!bad && yRoad - 2 >= 1) walls.push([x, 1, x, yRoad - 2]);
+      bad = false;                                           // bar below the road
+      for (let ty = yRoad + 2; ty <= rows - 2 && !bad; ty++)
+        if (onLane(x, ty) || onLane(cols - 1 - x, ty) || blockSet.has(x + ',' + ty)) bad = true;
+      if (!bad && yRoad + 2 <= rows - 2) walls.push([x, yRoad + 2, x, rows - 2]);
+    }
+    return walls;
+  }
+
   /* ── Main entry point ──────────────────────────────────────────────── */
 
   /**
@@ -466,6 +727,107 @@
         });
         geo.blocks = generateBlocks(cols, rows, rnd, ls, 2);
         const bs = blockTileSet(geo.blocks);
+        geo.nodes = generateNodes(cols, rows, rnd, ls, bs);
+        break;
+      }
+      case 'braid': {
+        const cols = irange(rnd, 13, 15) * 2, rows = irange(rnd, 14, 17);
+        const br = braidWaypoints(cols, rows, rnd);
+        const laneA = orthoLane(br.a), laneB = orthoLane(br.b);
+        const ls = tileSet([laneA, laneB]);
+        geo = { lanes: [laneA, laneB], cols, rows };
+        geo.blocks = generateBlocks(cols, rows, rnd, ls, 3);
+        const bs = blockTileSet(geo.blocks);
+        geo.walls = generateWalls(cols, rows, rnd, ls, bs, irange(rnd, 2, 4));
+        geo.nodes = generateNodes(cols, rows, rnd, ls, bs);
+        break;
+      }
+      case 'gauntlet': {
+        const cols = irange(rnd, 14, 16) * 2, rows = irange(rnd, 13, 15);
+        const lane = orthoLane(gauntletWaypoints(cols, rows, rnd));
+        const ls = tileSet([lane]);
+        geo = { lanes: [lane], cols, rows };
+        geo.blocks = generateBlocks(cols, rows, rnd, ls, 2);
+        const bs = blockTileSet(geo.blocks);
+        // The posts ARE the family; fall back to random walls only if none fit.
+        geo.walls = generateWallPosts(cols, rows, rnd, ls, bs);
+        if (!geo.walls.length) geo.walls = generateWalls(cols, rows, rnd, ls, bs, irange(rnd, 2, 3));
+        geo.nodes = generateNodes(cols, rows, rnd, ls, bs);
+        break;
+      }
+      case 'staircase': {
+        const cols = irange(rnd, 13, 15) * 2, rows = irange(rnd, 14, 17);
+        const lane = orthoLane(staircaseWaypoints(cols, rows, rnd));
+        const ls = tileSet([lane]);
+        geo = { lanes: [lane], cols, rows };
+        geo.blocks = generateBlocks(cols, rows, rnd, ls, 3);
+        const bs = blockTileSet(geo.blocks);
+        geo.walls = generateWalls(cols, rows, rnd, ls, bs, irange(rnd, 2, 4));
+        geo.nodes = generateNodes(cols, rows, rnd, ls, bs);
+        break;
+      }
+      case 'horseshoe': {
+        const cols = irange(rnd, 13, 15) * 2, rows = irange(rnd, 14, 17);
+        const lane = orthoLane(horseshoeWaypoints(cols, rows, rnd));
+        const ls = tileSet([lane]);
+        geo = { lanes: [lane], cols, rows };
+        // The plaza between the legs must stay open, that is the kill zone.
+        geo.blocks = generateBlocks(cols, rows, rnd, ls, 1);
+        const bs = blockTileSet(geo.blocks);
+        geo.walls = generateWalls(cols, rows, rnd, ls, bs, irange(rnd, 2, 3));
+        geo.nodes = generateNodes(cols, rows, rnd, ls, bs);
+        break;
+      }
+      case 'switchback': {
+        const cols = irange(rnd, 13, 15) * 2, rows = irange(rnd, 14, 17);
+        // Tight legs: every bend is close to the last one, so exposure between
+        // cover is short and constant.
+        const lane = orthoLane(serpentineWaypoints(cols, rows, rnd, { legH: irange(rnd, 2, 3) }));
+        const ls = tileSet([lane]);
+        geo = { lanes: [lane], cols, rows };
+        geo.blocks = generateBlocks(cols, rows, rnd, ls, 3);
+        const bs = blockTileSet(geo.blocks);
+        geo.walls = generateWalls(cols, rows, rnd, ls, bs, irange(rnd, 3, 5));
+        geo.nodes = generateNodes(cols, rows, rnd, ls, bs);
+        break;
+      }
+      case 'labyrinth': {
+        const cols = irange(rnd, 14, 16) * 2, rows = irange(rnd, 15, 18);
+        const lane = orthoLane(serpentineWaypoints(cols, rows, rnd));
+        const ls = tileSet([lane]);
+        geo = { lanes: [lane], cols, rows };
+        geo.blocks = generateBlocks(cols, rows, rnd, ls, 2);
+        const bs = blockTileSet(geo.blocks);
+        // The maze is the family: grid walls carved around the corridor.
+        geo.walls = generateMazeWalls(cols, rows, rnd, ls, bs);
+        if (!geo.walls.length) geo.walls = generateWalls(cols, rows, rnd, ls, bs, irange(rnd, 3, 5));
+        // More lane nodes: the gates you pass through are part of the maze.
+        geo.nodes = generateNodes(cols, rows, rnd, ls, bs);
+        break;
+      }
+      case 'twin-temple': {
+        const cols = irange(rnd, 13, 15) * 2, rows = irange(rnd, 15, 18);
+        const tt = twinTempleWaypoints(cols, rows, rnd);
+        const laneA = orthoLane(tt.a), laneB = orthoLane(tt.b);
+        const ls = tileSet([laneA, laneB]);
+        geo = { lanes: [laneA, laneB], cols, rows };
+        geo.blocks = generateBlocks(cols, rows, rnd, ls, 3);
+        const bs = blockTileSet(geo.blocks);
+        // Walls in both arena bands, the temples have walls for a reason.
+        geo.walls = generateWalls(cols, rows, rnd, ls, bs, irange(rnd, 4, 6));
+        geo.nodes = generateNodes(cols, rows, rnd, ls, bs);
+        break;
+      }
+      case 'twin-gate': {
+        const cols = irange(rnd, 14, 16) * 2, rows = irange(rnd, 15, 18);
+        const lane = orthoLane(gauntletWaypoints(cols, rows, rnd));
+        const ls = tileSet([lane]);
+        geo = { lanes: [lane], cols, rows };
+        geo.blocks = generateBlocks(cols, rows, rnd, ls, 2);
+        const bs = blockTileSet(geo.blocks);
+        // The gate bars ARE the family; fall back to random walls if none fit.
+        geo.walls = generateGateWalls(cols, rows, rnd, ls, bs);
+        if (!geo.walls.length) geo.walls = generateWalls(cols, rows, rnd, ls, bs, irange(rnd, 2, 3));
         geo.nodes = generateNodes(cols, rows, rnd, ls, bs);
         break;
       }

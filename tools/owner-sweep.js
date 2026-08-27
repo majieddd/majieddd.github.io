@@ -2637,6 +2637,152 @@
     });
   })();
 
+  /* == 41. EVERY BOARD HAS A DOSSIER ======================================
+     js/worldlore.js ships a selfCheck() that compares its authored records
+     and its MAP_MANIFEST against the live MAPS table, in both directions,
+     and REFUSES to go green unless the live table was actually present. It
+     is a good check and it was wired into nothing, so it sat there returning
+     ok:false to nobody.
+
+     What that cost: js/mapgen.js grew from seven procedural families to
+     fifteen and MAPS grew with it, and eight boards shipped with no dossier
+     record. WorldLore.world() still returned a headline and a body for them,
+     because those come from the owner-and-kind sentence banks, so nothing
+     looked broken. functionThen and conflictNow came back EMPTY. Eight
+     boards whose dossier said nothing about the board.
+
+     The lesson is the one this suite already holds about error buffers: a
+     checker with no caller is a place defects go to be ignored. This is the
+     caller. */
+  (function everyBoardHasADossier() {
+    T('41.1 every shipped board has a world dossier', function () {
+      if (typeof WorldLore === 'undefined' || !WorldLore.selfCheck) {
+        ok('41.1 every shipped board has a world dossier', false,
+           'js/worldlore.js did not load, or no longer exports selfCheck');
+        return;
+      }
+      const r = WorldLore.selfCheck();
+      /* selfCheck deliberately EXCLUDES loreNameDrift from `ok`: that is a
+         disagreement between LORE.maps and js/config.js which only a lore
+         regeneration can settle, and is not this file's to fix. Everything
+         `ok` does cover is owned here and is therefore a real failure. */
+      const why = [];
+      if (!r.mapsLoaded) why.push('MAPS absent, so the comparison proved nothing');
+      if (r.missing.length) why.push('no record: ' + r.missing.join(', '));
+      if (r.incomplete.length) why.push('record missing a field: ' + r.incomplete.join(', '));
+      if (r.authoredNameDrift.length) why.push('name drift: ' + r.authoredNameDrift.join('; '));
+      if (r.manifestDrift.length) why.push('manifest drift: ' + r.manifestDrift.join(', '));
+      ok('41.1 every shipped board has a world dossier',
+         r.ok,
+         why.length ? why.join(' | ')
+                    : r.resolved + ' of ' + r.checked + ' boards resolved, manifest matches MAPS ' +
+                      'in both directions' +
+                      (r.loreNameDrift.length
+                        ? ' (' + r.loreNameDrift.length + ' LORE.maps name drifts, not owned here)'
+                        : ''));
+    });
+
+    T('41.2 a dossier actually reaches the screen for every board', function () {
+      /* 41.1 asserts the RECORDS exist. This asserts the thing the player
+         reads is non-empty, which is a different question: the eight missing
+         records did not make WorldLore.world() throw or return null, they
+         made it return a body with two empty halves, and any check that only
+         asked "did it return something" would have passed throughout. */
+      if (typeof WorldLore === 'undefined' || !WorldLore.world) {
+        ok('41.2 a dossier actually reaches the screen for every board', false,
+           'WorldLore.world is unavailable');
+        return;
+      }
+      const bare = [];
+      for (const m of MAPS) {
+        let d = null;
+        try {
+          d = WorldLore.world({ id: m.id, map: m.id, name: m.name, owner: 'human', kind: 'forge', si: 1 },
+                              { name: 'Probe' });
+        } catch (e) { bare.push(m.id + ' threw: ' + e.message); continue; }
+        if (!d) { bare.push(m.id + ' returned null'); continue; }
+        if (!d.functionThen || !String(d.functionThen).trim()) bare.push(m.id + ' functionThen empty');
+        else if (!d.conflictNow || !String(d.conflictNow).trim()) bare.push(m.id + ' conflictNow empty');
+      }
+      ok('41.2 a dossier actually reaches the screen for every board',
+         bare.length === 0,
+         bare.length ? bare.slice(0, 6).join('; ')
+                     : 'all ' + MAPS.length + ' boards return a dossier with both halves written');
+    });
+
+    T('41.4 every map family has a generator of its own', function () {
+      /* THE DEFECT THIS WAS WRITTEN FOR, and it was live on the deployed site
+         when it was found. js/config.js MAPS declared FIFTEEN procedural
+         families. js/mapgen.js handled SEVEN. The other eight hit the switch's
+         `default:` arm, which exists so an unknown family still builds a board
+         rather than throwing, and quietly handed all eight the same plain
+         28x15 serpentine: same size, same 17 lane tiles, zero walls.
+
+         Woven Roads, The Fenced Road, Descent Steps, The Plaza, Hairpin Pass,
+         The Maze, Twin Sanctums and The Bars were one board wearing eight
+         names, and nothing failed, because a graceful fallback is
+         indistinguishable from a working generator unless something compares
+         them.
+
+         So this compares them. A nonsense family id can only take the default
+         arm; any real family whose geometry matches it for the same seed took
+         the same arm and has no generator. Seed is fixed so the comparison is
+         like for like, and geometry here is deterministic on (family, seed). */
+      if (typeof MapGen === 'undefined' || !MapGen.proceduralGeometry) {
+        ok('41.4 every map family has a generator of its own', false, 'MapGen is unavailable');
+        return;
+      }
+      const SEED = 'family-coverage-probe';
+      const shape = g => JSON.stringify({
+        cols: g.cols, rows: g.rows,
+        lanes: (g.lanes || []).map(l => l.length),
+        walls: (g.walls || []).length, blocks: (g.blocks || []).length
+      });
+      let fallback = '';
+      try { fallback = shape(MapGen.proceduralGeometry('__no_such_family__', SEED)); }
+      catch (e) {
+        ok('41.4 every map family has a generator of its own', false,
+           'the default arm threw, so nothing can be compared against it: ' + e.message);
+        return;
+      }
+      const fell = [], threw = [];
+      const fams = [...new Set(MAPS.filter(m => m.family).map(m => m.family))];
+      for (const f of fams) {
+        let sh;
+        try { sh = shape(MapGen.proceduralGeometry(f, SEED)); }
+        catch (e) { threw.push(f + ': ' + e.message); continue; }
+        if (sh === fallback) fell.push(f);
+      }
+      ok('41.4 every map family has a generator of its own',
+         fell.length === 0 && threw.length === 0,
+         threw.length ? 'threw: ' + threw.join('; ')
+           : fell.length ? fell.length + ' of ' + fams.length +
+                           ' families fall through to the default serpentine: ' + fell.join(', ')
+           : 'all ' + fams.length + ' MAPS families build geometry of their own, none matches ' +
+             'the default fallback');
+    });
+
+    T('41.3 no retired canon in an authored world dossier', function () {
+      /* 39.1 guards the four consumed LORE fields. It does not read this
+         table, and this table had one: the open-field record named the "Old
+         Weather array", which is retired vocabulary the owner asked to be
+         purged. Same list, second surface. */
+      const RETIRED = ['old weather', 'sol gate', 'archive war', 'signal winter',
+                       'open-sky compact', 'abyssal reply', 'noetic', '2099'];
+      const hits = [];
+      for (const m of MAPS) {
+        const rec = WorldLore.map && WorldLore.map(m.id);
+        if (!rec || rec.source !== 'authored') continue;
+        const t = JSON.stringify(rec).toLowerCase();
+        for (const term of RETIRED) if (t.indexOf(term) !== -1) hits.push(m.id + ':' + term);
+      }
+      ok('41.3 no retired canon in an authored world dossier',
+         hits.length === 0,
+         hits.length ? hits.join(', ')
+                     : 'no authored dossier carries retired-timeline vocabulary');
+    });
+  })();
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;
