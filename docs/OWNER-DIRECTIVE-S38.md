@@ -30,13 +30,13 @@ The owner's direction, verbatim where it matters:
   contemporary-grounded spacecraft ("spaceships that humans today use"),
   crewed-program and commercial-launch vocabulary. Armor pulled back from
   medieval toward practical sci-fi. **The reference universe is DUNE**:
-  "grounded in a way that I feel comfortable adapting this style" — ships,
+  "grounded in a way that I feel comfortable adapting this style", ships,
   armor, technology treated with that restraint.
 - **Pirates: keep the space-galleon idea the owner likes, but show VARIETY**
   of ship kinds, and crews that are visibly multi-species: "don't just show
   humans show different types of alien both humanoid and non-humanoid."
 - **Xeno: scarier.** Aligned with the lore's predatory register.
-- **Federation of Light: the benevolent contact species from the research** —
+- **Federation of Light: the benevolent contact species from the research**
   Pleiadians, Arcturians, Nordics, and the rest of the bible's cooperative
   archetypes (the species machinery already exists in
   docs/lore/COSMIC-CONQUEST-LORE-BIBLE.md, Species and Ontologies).
@@ -49,7 +49,7 @@ Deliverables:
   hardware vocabularies.
 - [ ] A rendered DIRECTION BOARD (committed, small) showing the law in
   pictures: modern human spacecraft, pirate ship variety, Dune-grounded armor,
-  Federation species, scarier xeno — so "what to draw" is shown, not told.
+  Federation species, scarier xeno, so "what to draw" is shown, not told.
 - [ ] Applies to all FUTURE renders. The 50 shipped cutscene plates are
   approved and stay; they re-roll only if the owner names one.
 
@@ -90,7 +90,7 @@ The replacement law:
 
 - [ ] Motion is SUBTLE: "as if the lines are alive and slightly moving...
   breathing or living... it shouldn't be very trippy." Glow, shimmer, drift of
-  light — the ILLUSION of life, not objects travelling.
+  light, the ILLUSION of life, not objects travelling.
 - [ ] Perfect loops: "when it loops you can't even tell that it is looping."
   Crossfade the tail into the head; never reverse playback.
 - [ ] Replace all five hero clips; verify the seam numerically and by eye.
@@ -99,9 +99,9 @@ The replacement law:
 
 On deploying to a planet, a three-slide sequence:
 
-1. **The setting** — the planet and its nature. Same for all factions.
-2. **The scenario** — what you are walking into. May depend on faction.
-3. **The commanders** — the two seats talking, with dialogue that can vary by
+1. **The setting**, the planet and its nature. Same for all factions.
+2. **The scenario**, what you are walking into. May depend on faction.
+3. **The commanders**, the two seats talking, with dialogue that can vary by
    the pair and their history.
 
 - [ ] Built on the existing surfaces (worldlore WAS/NOW, scenario defs, the
