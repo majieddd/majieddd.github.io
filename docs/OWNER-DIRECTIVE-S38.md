@@ -121,11 +121,11 @@ On deploying to a planet, a three-slide sequence:
 
 | Item | State | Evidence |
 |---|---|---|
-| A | open | |
-| B | open | |
-| C | open | |
-| D | open | |
-| E | open | |
-| F | open | |
-| G | open | |
-| H | open | |
+| A | **DONE** | docs/ART-BIBLE.md shipped; BRAND.md and LOOKBOOK.md open with pointers to it; pushed to main (commit "The art bible, and the content law rendered as a direction board") |
+| B | **DONE** | Content law is ART-BIBLE section 3; docs/brand-board/ carries eight rendered examples (artgen/board.py, seeded); the 50 shipped plates untouched |
+| C | **DONE** | 28/28 portraits re-rendered wholesale on Krea (24s each), pack passthrough 281/0, gate clean. By-eye note: cmd_lumen and cmd_cinder hold style but read less insectoid; re-roll by key if wanted |
+| D | **DONE** | galaxy v2: one universe from GX_UNIVERSE_SEED 20290413, five homes in fixed order, per-faction start rotation, authored 5x5 holder table, versioned so old saves keep v1 byte-identical. Sweep 38.1 asserts world-state identity across all five factions, own-home starts, 0 self-garrisons, 0 spoilers |
+| E | **DONE** | Probed live: 25/25 sys cells exist, THE TURNING plays and closes with done() once; trigger wiring at ui.js systemTaken path |
+| F | open | Five living loops rendering (121 frames each, crossfade close); ships when the seam verifies |
+| G | **DONE** | Deploy plays SETTING then SCENARIO through Cutscenes.playList, then the existing VS screen as the commanders beat (canonExchange pair history). Probed: VENUS slides sourced and keyed, handoff called once, 0 console errors |
+| H | **AUDITED, gaps quantified** | Census (probe, this session): 19 lore relationship seeds cover 18 of 318 meetable cross-faction pairs; the other 300 fall back to authored per-commander openers which read on-register (sampled). Codex: 26 entries, ZERO species contradictions against the item-C changes. Worst-gap fix this session: the planet setting slide now carries the WAS/NOW site line. REMAINDER, honestly: growing pair coverage means authoring relationship seeds in docs/lore data and regenerating js/lore.js (it is generated, never hand-edited); that is an owner-scoped writing project, listed here rather than half-done |

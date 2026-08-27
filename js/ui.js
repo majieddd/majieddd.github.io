@@ -612,7 +612,12 @@ const UI = {
        dossier headline second so they know what the place IS. */
     const where = w.name.toUpperCase() + (sys ? ', ' + sys.name : '') + '.';
     const headline = (d && d.headline) ? ' ' + d.headline : '';
-    const setting = { key: 'world_' + w.map, text: where + headline };
+    /* The site line is the WAS/NOW record: what this ground used to be for
+       and why two powers are standing on it now. It is the sentence the
+       owner's "description of the setting" asks for, and it already exists
+       in the dossier layer; the slide only borrows it. */
+    const site = (d && d.line) ? ' ' + d.line : '';
+    const setting = { key: 'world_' + w.map, text: where + headline + site };
     /* SCENARIO. Who holds the ground, then what winning here means. The
        resolver pair is the same one the briefing card and Game.start read,
        so the slide cannot promise a scenario the battle refuses. */
