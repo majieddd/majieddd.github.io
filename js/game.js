@@ -4956,7 +4956,13 @@ const Game = {
   radialAim(fromX, fromY, atX, atY, mx, my) {
     const vx = atX - fromX, vy = atY - fromY;
     const len = Math.hypot(vx, vy);
-    if (len < 1e-6) return 0;
+    /* NO VECTOR AT ALL is the normal case now, not a degenerate one: the ring
+       opens on a TAP, which has an origin and no direction. Aim the leader
+       straight UP so the fan is the same every time and reads as a menu
+       rather than as a compass; items alternate either side of it from
+       there. This used to return 0 (due east) back when only a drag could
+       open the ring and a zero vector meant something had gone wrong. */
+    if (len < 1e-6) return -Math.PI / 2;
     const dx = vx / len, dy = vy / len;
     const px = fromX - mx, py = fromY - my;
     const rr = RADIAL_RING_TILES * TILE;
@@ -5312,7 +5318,7 @@ const Game = {
     const cv = this.canvas;
     /* The ring runs on POINTER events so one code path serves a mouse, a
        trackpad and a finger; `drag` is the press it is currently tracking. */
-    const drag = { id: null, sx: 0, sy: 0, gx: -1, gy: -1, open: false, live: false };
+    const drag = { id: null, sx: 0, sy: 0, gx: -1, gy: -1, open: false, live: false, cx: 0, cy: 0 };
     cv.addEventListener('mousemove', e => {
       if (!this.boardInteractive()) return;
       const p = this.pointerToGrid(e);
@@ -5348,14 +5354,19 @@ const Game = {
          camera is actually zoomed -- which is also the only time there is
          anywhere to pan TO. A left press is a MAYBE-pan: it does nothing
          until it travels PAN_OPEN_PX, so a click is still a click. */
-      const zoomed = this.camZoom() > 1.001;
+      /* A DRAG ALWAYS PANS NOW (owner, Session 38): "so you can navigate by
+         touch by clicking and dragging, and in order to place a tower you
+         have to specifically click on a tile." The ring used to own the press
+         on buildable ground at rest, which is why panning there was refused,
+         and it is exactly the collision the note above worried about. The
+         ring is a TAP now (see the radial block below), so the two gestures
+         no longer compete: press-and-travel is the camera, press-and-release
+         is the ring. A left press is still a MAYBE-pan and does nothing until
+         it travels PAN_OPEN_PX, so a tap remains a clean tap. */
       let ok = false;
       if (e.button === 1) ok = true;
       else if (e.button === 0 && this.boardInteractive() &&
-               this.aimingAbility === null && !this.movingTower && !this.selectedType) {
-        const p = this.pointerToGrid(e);
-        ok = zoomed || !this.canBuild(0, p.gx, p.gy);
-      }
+               this.aimingAbility === null && !this.movingTower && !this.selectedType) ok = true;
       if (!ok) return;
       if (e.button === 1) e.preventDefault();
       panning = { id: e.pointerId, x: e.clientX, y: e.clientY,
@@ -5465,63 +5476,81 @@ const Game = {
          lands off-canvas, which produces no click at all, cannot leave the
          suppression armed for the next genuine one. */
       this._radialAte = false;
-      /* Self-healing: a ring left open by a gesture that never released, a
-         pointerup swallowed by another window, a second finger, must not
-         outlive the next press. */
-      this.radial = null;
+
+      /* A RING IS ALREADY OPEN: this press answers it. Handled before the
+         self-heal below, because that clear would otherwise throw the ring
+         away on the very press meant to choose from it. Tapping a wedge
+         builds; tapping the dead centre, past the outer edge, or anywhere
+         else dismisses. Either way the press is spent and must not also
+         reach the select/place click handler. */
+      if (this.radial) {
+        const pp = this.pointerToGrid(e);
+        /* TAPPING THE TILE AGAIN CLOSES IT, and this test comes first on
+           purpose. Near a board edge the ring centre is clamped inward by a
+           whole ring's width, so the tile the ring belongs to can sit UNDER
+           one of its own wedges: measured at tile (0,0), a second tap on the
+           very spot that opened the ring built a tower instead of dismissing
+           it. Geometrically the picker was right and the player was not
+           wrong either, which is exactly the kind of disagreement to settle
+           with a rule rather than with more geometry. Tap the tile, get the
+           ring; tap it again, get rid of it, wherever it was clamped to. */
+        if (pp && pp.gx === this.radial.gx && pp.gy === this.radial.gy) {
+          this.radial = null; UI.syncAll();
+        } else {
+          const bb = this.pointerToBoard(e);
+          this.radial.hover = this.radialPick(bb.x, bb.y);
+          if (this.radial.hover >= 0) this.radialCommit();
+          else { this.radial = null; UI.syncAll(); }
+        }
+        drag.live = false; drag.open = false;
+        this._radialAte = true;
+        return;
+      }
+
       drag.live = false; drag.open = false; drag.id = e.pointerId;
       if (!this.boardInteractive()) return;
       if (this.aimingAbility !== null || this.movingTower || this.selectedType) return;
       const S = this.sides[0];
       if (!S || !S.loadout || !S.loadout.length) return;
-      /* While the camera is ZOOMED the left drag belongs to the pan -- that is
-         the only time there is anywhere to go, and two gestures cannot share
-         one press. At rest the ring keeps it, exactly as before; click-to-
-         build works at any zoom either way. */
-      if (this.camZoom() > 1.001) return;
       const p = this.pointerToGrid(e);
       if (!this.canBuild(0, p.gx, p.gy)) return;
       const b = this.pointerToBoard(e);
+      /* Armed as a TAP, not a drag: sx/sy are the origin a release is measured
+         against, and the ring opens only if the pointer never travelled. */
       drag.live = true; drag.sx = b.x; drag.sy = b.y; drag.gx = p.gx; drag.gy = p.gy;
+      drag.cx = e.clientX; drag.cy = e.clientY;
     });
 
-    /* On window, not the canvas: a drag that leaves the board still has to be
-       tracked, and its release still has to be answered. */
+    /* Hover, for a mouse. A touch has no hover, which is exactly why the ring
+       had to stop being a drag: there was no way to see what you were about
+       to pick until you had already committed to picking it. */
     window.addEventListener('pointermove', e => {
-      if (!drag.live || e.pointerId !== drag.id) return;
-      const b = this.pointerToBoard(e);
-      if (!drag.open) {
-        /* The threshold is in CSS pixels, so the gesture feels identical at
-           every board scale, the player's hand does not scale with the
-           fitted canvas, so the number that gates it must not either. */
-        /* Board distance back to SCREEN pixels, so the ring opens after the
-           same physical drag at any fit -- and at any zoom, which multiplies
-           the same way viewScale does. */
-        if (Math.hypot(b.x - drag.sx, b.y - drag.sy) * (this.viewScale || 1) * this.camZoom() < RADIAL_OPEN_PX) return;
-        drag.open = this.openRadial(drag.gx, drag.gy, drag.sx, drag.sy, b.x, b.y);
-        if (!drag.open) { drag.live = false; return; }
+      if (this.radial) {
+        const b = this.pointerToBoard(e);
+        this.radial.hover = this.radialPick(b.x, b.y);
       }
-      if (this.radial) this.radial.hover = this.radialPick(b.x, b.y);
     }, { passive: true });
 
     window.addEventListener('pointerup', e => {
       if (!drag.live || e.pointerId !== drag.id) return;
       drag.live = false;
-      if (!drag.open || !this.radial) return;
-      drag.open = false;
-      const b = this.pointerToBoard(e);
-      this.radial.hover = this.radialPick(b.x, b.y);
-      this.radialCommit();
-      /* The release also produces a click on the canvas, and that click must
-         not reach the select/place handler, the gesture has already been
-         answered. */
+      /* TAP, NOT DRAG. Measured in CSS pixels against the press origin, the
+         same units and the same reason PAN_OPEN_PX uses them: the player's
+         hand does not scale with the fitted canvas, so the number that gates
+         the gesture must not either. Anything that travelled was a pan and
+         has already been answered by the pan handler. */
+      if (Math.hypot(e.clientX - drag.cx, e.clientY - drag.cy) >= PAN_OPEN_PX) return;
+      if (!this.openRadial(drag.gx, drag.gy, drag.sx, drag.sy, drag.sx, drag.sy)) return;
+      /* Open and STICKY: nothing is chosen yet, and the ring waits for a
+         second, deliberate tap. The release also produces a click on the
+         canvas, and that click must not reach the select/place handler. */
       this._radialAte = true;
+      UI.syncAll();
     });
 
     window.addEventListener('pointercancel', e => {
       if (!drag.live || e.pointerId !== drag.id) return;
       drag.live = false;
-      if (drag.open) { drag.open = false; this.radial = null; this._radialAte = true; }
     });
 
     /* Capture phase on the WRAP, so a suppressed click is stopped before it
