@@ -3258,6 +3258,39 @@ body:not(.arena-field) .arena-ladder { display: none; }
 #dock .muster-btn .mu-ic   { grid-column: 1; }
 #dock .muster-btn .mu-n    { grid-column: 2; }
 #dock .muster-btn .mu-cost { grid-column: 4; justify-self: end; }
+/* ==========================================================================
+   THE DETACHMENT COOLDOWN, Session 38.
+
+   A card that is RECOVERING is disabled for a completely different reason
+   than one you cannot afford, and `.poor` said the same thing for both: a
+   player who cannot tell "wait" from "earn more" can plan around neither.
+
+   `.poor` is a refusal and reads as loss elsewhere in the kit. This is a wait,
+   so it desaturates rather than warning. The bar underneath is `--cyan`
+   because a detachment of YOURS recovering is a readout about you, which is
+   the job that token already holds. No sixth hue enters the table.
+
+   The bar animates `transform` only (scaleX, set inline per render) at 220ms,
+   inside the 300ms interface ceiling. The in-game OPTIONS switch is already
+   covered by the generic `body.rm-user` dampener at the top of this file,
+   which zeroes transition-duration globally, so only the OS query is named. */
+#dock .muster-btn { position: relative; }
+#dock .muster-btn.cooling { filter: grayscale(.75); opacity: .62; cursor: default; }
+#dock .muster-btn.cooling .mu-cost {
+  color: var(--cyan);
+  font-family: var(--num);
+  font-variant-numeric: tabular-nums;
+}
+#dock .muster-btn .mu-cd {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+  background: var(--cyan); opacity: .55;
+  transform-origin: left center;
+  transition: transform 220ms var(--e-tap);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  #dock .muster-btn .mu-cd { transition: none; }
+}
 /* THE COUNT, the one figure the owner asked to make bigger: 10px to 19px,
    both measured. --num because a count that jitters as it changes width is a
    count the eye has to re-find. */
@@ -3648,4 +3681,168 @@ body.rm-user.immersive #battle-controls { transition: none; }
   #screen-loadout .lo-col, #screen-loadout .lo-card,
   #screen-loadout .lo-col > *, #screen-loadout .lo-card > * { min-width: 0; }
   #screen-loadout .lo-card, #screen-loadout .lo-col { overflow-wrap: anywhere; }
+}
+
+/* ==========================================================================
+   THE DEBUG BAR, Session 38.
+
+   A developer surface, not a game readout, so it deliberately takes NO signal
+   hue. The five-colour table in DESIGN.md governs things the player reads as
+   information; a cheat toolbar is chrome that should never be mistaken for
+   any of them. It is built from the neutral ground, line and text tokens
+   alone, which is also why it cannot be confused with the real HUD in a
+   screenshot.
+
+   Fixed to the bottom so it never covers the wave banner or the dock, and
+   `pointer-events` stay on the bar only, so the board behind it is still
+   clickable everywhere the bar is not. Disabled controls drop opacity rather
+   than inventing a fourth grey, per the text-tier rule. */
+#debug-bar {
+  position: fixed;
+  left: 8px;
+  top: 96px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: min(46vw, 420px);
+  padding: 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  backdrop-filter: blur(6px);
+}
+#debug-bar:not(.open) { padding: 0; background: none; border: none; backdrop-filter: none; }
+#debug-bar .dbg-tag {
+  /* THIS IS A BUTTON, so it must be reset. It began life as a <span> and
+     became a <button> when the bar was made collapsible; without an explicit
+     background it inherited the UA default rgb(240,240,240) and the contrast
+     gate measured 1.7:1. Raising the TEXT colour made it worse, which is the
+     tell that the background, not the text, was wrong. Measured, twice. */
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--panel-2);
+  cursor: pointer;
+  font-family: var(--num);
+  font-size: 10px;
+  letter-spacing: .14em;
+  /* --text-dim, not --text-mute. Mute clears AA on the page ground (5.3:1) but
+     this tag sits on --panel-2 over the board, where it measured 2.75:1 and
+     failed. Measured, not guessed: the first draft shipped mute and the
+     contrast gate caught it. */
+  color: var(--text-dim);
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+#debug-bar .dbg-note { font-size: 11px; color: var(--text-mute); }
+#debug-bar .dbg-b {
+  font-family: var(--num);
+  font-size: 11px;
+  letter-spacing: .06em;
+  color: var(--text-dim);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: transform 120ms var(--e-tap), border-color 120ms var(--e-tap), color 120ms var(--e-tap);
+}
+#debug-bar .dbg-b:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--line-2);
+  transform: translateY(-1px);
+}
+#debug-bar .dbg-b:active:not(:disabled) { transform: translateY(0) scale(.98); }
+#debug-bar .dbg-b:disabled { opacity: .45; cursor: default; }
+#debug-bar .dbg-b:focus-visible,
+#debug-bar .dbg-tag:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #debug-bar .dbg-b { transition: none; }
+}
+
+/* ==========================================================================
+   THE FIELD MANUAL, illustrated. Session 38.
+
+   The manual described every tower, unit and commander and PICTURED none of
+   them, so a reader had to carry a name in their head and go find the shape
+   on the board. Each entry now leads with the same icon primitive the shop
+   and the dock paint, so the manual and the board agree by construction
+   rather than by a second drawing that can drift out of sync.
+
+   Layout is a two-column grid rather than a float: the figure column is a
+   fixed track so every entry's text starts on the same x, which is what makes
+   a long list scannable. */
+.codex-entry.has-fig {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  column-gap: 10px;
+  align-items: start;
+}
+.codex-entry .ce-fig {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  overflow: hidden;
+}
+.codex-entry .ce-fig .ce-port {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.codex-entry .ce-fig .ce-glyph { font-size: 20px; line-height: 1; }
+.codex-entry .ce-body { min-width: 0; display: flex; flex-direction: column; }
+/* The whole entry is the hover target, so it gets the affordance and the
+   focus ring rather than the figure alone: a 40px icon is a small thing to
+   ask a pointer to find, and a keyboard has no pointer at all. */
+.codex-entry.has-fig { cursor: help; }
+.codex-entry.has-fig:hover { border-color: var(--line-2); }
+.codex-entry.has-fig:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   THE FIELD MANUAL AND THE INK RULE, Session 38.
+
+   Pre-existing debt, found while illustrating the manual and measured on the
+   pristine tree before any of this session's changes: the codex returned 17
+   AA contrast failures, worst at 2.42:1 against a required 4.5:1.
+
+   Every one had the same cause, and it is the exact case DESIGN.md's ink rule
+   was written for. These rules set text under 24px to the raw identity hue
+   `var(--tc)`. A faction hue is chosen to be SATURATED so it survives a map at
+   40 percent zoom, which is precisely what makes it a poor ink on a dark
+   ground: the Xeno violet measures 2.88:1 as small label text. The fix is not
+   a new colour, it is the documented lift toward `--text`.
+
+   `--ink-mix` (58%) is the measured small-text tier. Everything here is under
+   18.66px, so none of it qualifies for the gentler `--ink-mix-lg`.
+
+   `.fx-creed` additionally carried `opacity: .85`, which the ink rule's
+   measurement does not account for and which pushed it down again. Italic at
+   11px already demarcates a creed from the mechanic block; the opacity was
+   doing nothing the type was not already doing. */
+.codex-entry.fac .fx-creed {
+  color: color-mix(in srgb, var(--tc) var(--ink-mix), var(--text));
+  opacity: 1;
+}
+.codex-entry .fx-bonus b,
+.codex-entry .cb-recipe,
+.codex-entry .cx-abil,
+.codex-entry .ce-head b,
+.codex-entry > .ce-body > b,
+.codex-entry > b {
+  color: color-mix(in srgb, var(--tc) var(--ink-mix), var(--text));
 }
