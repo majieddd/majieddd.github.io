@@ -160,6 +160,36 @@ const RUN = `
                        return o.call(this, opts); };
                      return () => { Game.start = o; }; } },
 
+    { id: 'universe-splits-by-faction',
+      why: 'the one universe: each faction gets a different galaxy again, which is ' +
+           'the exact defect the owner reported in Session 38 ("completely different ' +
+           'solar systems"). Salting the v2 seed with the player faction is the ' +
+           'smallest change that reintroduces it',
+      expect: '38.1',
+      /* generateGalaxy is a top-level FUNCTION DECLARATION, so the binding is
+         reassignable and every caller resolves it at call time. (Contrast the
+         equivalent-mutant trap in the header: a top-level const cannot be
+         patched this way.) Salting only the v2 path leaves every v1 caller
+         alone, so this mutant targets 38.1 and cannot make 38.2 fail for a
+         reason that has nothing to do with the save contract. */
+      plant: () => { const o = generateGalaxy;
+                     generateGalaxy = function (seed, fac, mapPool, kindsW, gxv) {
+                       if (gxv >= 2) seed = String(seed) + ':' + fac;
+                       return o.call(this, seed, fac, mapPool, kindsW, gxv); };
+                     return () => { generateGalaxy = o; }; } },
+
+    { id: 'v1-galaxy-unfrozen',
+      why: 'the save contract: an absent gxv silently generates the v2 galaxy, so ' +
+           'every in-flight campaign regenerates onto different boards, arenas and ' +
+           'boons mid-run. A campaign stores only its seed, so this is the shape ' +
+           'that moves a saved galaxy underneath its owner',
+      expect: '38.2',
+      plant: () => { const o = generateGalaxy;
+                     generateGalaxy = function (seed, fac, mapPool, kindsW, gxv) {
+                       return o.call(this, seed, fac, mapPool, kindsW,
+                                     gxv === undefined ? 2 : gxv); };
+                     return () => { generateGalaxy = o; }; } },
+
     { id: 'CONTROL-clean',
       why: 'the clean control: nothing is planted, the suite must stay green',
       expect: 'none',
