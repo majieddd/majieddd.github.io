@@ -1823,16 +1823,24 @@
          with zero towers, and the check reported a vacuous negative. It did
          not pass: the sawMuster guard below is what caught it. */
       S.gold = 999999;
+      /* BUILD WHAT THIS SIDE ACTUALLY HOLDS. Game.build refuses outright with
+         `if (!S.loadout.includes(type))`, and side 1 is the AI, whose arsenal
+         is DRAFTED rather than the PIN the player deployed with. Building
+         PIN[0] therefore succeeded or failed on the draw: this check passed
+         repeatedly on a branch and then failed on the merge commit with
+         "towers 0", which is the same re-run-until-green trap the rite pin
+         above was added to close. Same defect, second source. */
+      const aiType = (S.loadout && S.loadout.length) ? S.loadout[0] : PIN[0];
       while (S.towers.length < MUSTER_AI_MIN_TOWERS + 1) {
         /* bestSpotFor returns a WRAPPER, {spot:{gx,gy,...}, cov}, not the
            spot itself, and build(side, type, gx, gy) takes the type second.
            Earlier drafts of this check got both wrong and reported 0 towers
            rather than failing loudly, which is what the sawMuster guard is
            for. */
-        const pick = brain.bestSpotFor(TOWER_TYPES[PIN[0]]);
+        const pick = brain.bestSpotFor(TOWER_TYPES[aiType]);
         const spot = pick && pick.spot;
         if (!spot) break;
-        if (!Game.build(1, PIN[0], spot.gx, spot.gy)) break;
+        if (!Game.build(1, aiType, spot.gx, spot.gy)) break;
       }
       S.gold = 999999;
       const tiers = Game.musterTiers(1);
@@ -1850,7 +1858,8 @@
       ok('38.16 the rival brain never proposes a recovering detachment',
          sawMuster && !proposedHot,
          'brain musters when ready ' + sawMuster + ', proposes a recovering one ' + proposedHot +
-         ' (rite ' + S.doctrine + ', towers ' + S.towers.length + ', wave ' + Game.wave + ')');
+         ' (rite ' + S.doctrine + ', built ' + aiType + ' x' + S.towers.length +
+         ', wave ' + Game.wave + ')');
     });
 
     /* ---- 38.17 to 38.21 THE PATHS SESSION 38 SHIPPED UNTESTED ----------
