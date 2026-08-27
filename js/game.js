@@ -952,9 +952,23 @@ const Game = {
 
     /* Every battle opens on the whole board. A camera carried in from the
        last one would start a match looking at a corner of a map the player
-       has not seen yet. */
-    this.resetCam();
+       has not seen yet.
+
+       RESIZE FIRST, AND THAT ORDER IS THE WHOLE FIX. resetCam sets the zoom
+       to camMinZoom(), and camMinZoom() is derived from fitScale and
+       viewScale, which is what resize() computes. Called before it, those are
+       unset, camMinZoom hits its own `if (!(this.fitScale > 0)) return 1`
+       guard, and the camera is pinned at zoom 1: the COVER fit, which on a
+       phone is a keyhole. Measured at 390x844 before the swap: 25% of the
+       board visible at rest against a floor of 0.20 that would have shown all
+       of it, with the comment above claiming the opposite. The owner reported
+       it as "I only see a section of the board".
+
+       It was invisible on desktop because outside immersive mode the two
+       scales are equal, so the wrong answer (1) and the right one differ only
+       by ZOOM_OUT_EXTRA. */
     this.resize();
+    this.resetCam();
     this.renderBackground();
     Sound.resume(); Sound.setIntensity(1); Sound.startMusic(1);
     this.banner('HOLD THE LINE', 2.4);
@@ -5449,7 +5463,14 @@ const Game = {
     /* ZOOM_OUT_EXTRA widens the floor past the exact whole-board view, so
        pulling back buys real margin around the field: the larger FOV the
        owner asked for, with the surplus centred by camClamped. */
-    return Math.min(1, (this.fitScale / this.viewScale) * ZOOM_OUT_EXTRA);
+    /* ZOOM_OUT_EXTRA buys margin AROUND the board on a desktop, where there is
+       screen to spare. On a portrait phone there is not: the board is 1.87
+       wide against a band that is taller than it is wide, so the fit is
+       already width-limited and the extra 18% is 70px of board traded for
+       black bars that were already 250px tall. The phone takes the exact fit
+       and spends every pixel it has on the map. */
+    const extra = (typeof window !== 'undefined' && window.innerWidth <= 760) ? 1 : ZOOM_OUT_EXTRA;
+    return Math.min(1, (this.fitScale / this.viewScale) * extra);
   },
   camZoom() { return clamp(fin((this.cam && this.cam.z), 1), this.camMinZoom(), BATTLE_ZOOM_MAX); },
   /** The camera's top-left in world pixels, clamped so the view can never
@@ -5617,6 +5638,101 @@ const Game = {
     };
     cv.addEventListener('pointerup', endPan);
     cv.addEventListener('pointercancel', endPan);
+
+    /* ---- PINCH TO ZOOM, AND DOUBLE TAP TO TOGGLE THE FIT ------------------
+       THE GAP THIS CLOSES. Game.zoomAt had exactly ONE caller: the wheel
+       handler. A phone has no wheel and no 0 key, so on touch the zoom could
+       never change from whatever the match opened at, in either direction.
+
+       That is what the owner reported as "I only see a section of the board
+       and I can't really do much". Panning worked the whole time; there was
+       simply no way to pull back and no way to get closer, and on a portrait
+       phone neither end of that range is optional:
+
+         whole board fitted   1064x570 into 390 wide is a 16px tile
+         a tappable tile      needs about 44px, which is 3x closer
+
+       So "see everything" and "place a tower" are different zooms on a phone
+       and the player has to be able to move between them. Pinch is the idiom
+       every phone user already has; the double tap is the discoverable
+       shortcut for people who do not think to try it, and it toggles rather
+       than only zooming in so it can always undo itself.
+
+       Presentation only: the camera is not simulation state and none of this
+       is fingerprinted. */
+    const pts = new Map();
+    let pinch = null;
+    const spanOf = () => {
+      const a = [...pts.values()];
+      return { d: Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y),
+               mx: (a[0].x + a[1].x) / 2, my: (a[0].y + a[1].y) / 2 };
+    };
+    cv.addEventListener('pointerdown', e => {
+      if (e.pointerType !== 'touch') return;
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pts.size === 2) {
+        /* A second finger means the gesture was never a pan. Cancelling it
+           here is what stops the board lurching as the hand settles. */
+        panning = null;
+        cv.style.cursor = '';
+        const s0 = spanOf();
+        pinch = { d: s0.d, mx: s0.mx, my: s0.my };
+      }
+    });
+    cv.addEventListener('pointermove', e => {
+      if (e.pointerType !== 'touch' || !pts.has(e.pointerId)) return;
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (!pinch || pts.size !== 2) return;
+      const s1 = spanOf();
+      if (!(s1.d > 0) || !(pinch.d > 0)) return;
+      e.preventDefault();
+      /* Zoom about the MIDPOINT, so the board grows around the hand rather
+         than around a corner, and pan by the midpoint's own travel so a
+         two-finger drag still moves the board. */
+      const b = this.pointerToBoard({ clientX: s1.mx, clientY: s1.my });
+      if (b) this.zoomAt(b.x, b.y, s1.d / pinch.d);
+      const z = this.camZoom();
+      const inv = 1 / (this.viewScale * z);
+      this.panBy(-(s1.mx - pinch.mx) * inv, -(s1.my - pinch.my) * inv);
+      pinch = { d: s1.d, mx: s1.mx, my: s1.my };
+    }, { passive: false });
+    const endTouch = e => {
+      if (e.pointerType !== 'touch') return;
+      pts.delete(e.pointerId);
+      if (pts.size < 2) pinch = null;
+    };
+    cv.addEventListener('pointerup', endTouch);
+    cv.addEventListener('pointercancel', endTouch);
+
+    /* DOUBLE TAP toggles between the whole board and a tile you can hit.
+       Tracked here rather than through dblclick, which coarse pointers fire
+       inconsistently and which would also fire for a mouse. */
+    let lastTap = { t: -1e9, x: 0, y: 0 };
+    cv.addEventListener('pointerup', e => {
+      if (e.pointerType !== 'touch' || pts.size > 0) return;
+      const now = (typeof performance !== 'undefined' ? performance.now() : 0);
+      const near = Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 32;
+      if (now - lastTap.t < 300 && near) {
+        lastTap.t = -1e9;
+        const b = this.pointerToBoard(e);
+        if (!b) return;
+        const floor = this.camMinZoom();
+        /* THE WORK ZOOM IS A TILE SIZE, not a multiple of the fit. Stated as
+           "three times fitted" it measured 34.3px at 390 wide and 31.6px at
+           360: both under the 44px thumb floor, and both wrong by a different
+           amount, because a multiple of the fit inherits whatever the fit
+           happens to be on that viewport and board.
+           Solving for the tile instead makes the gesture mean the same thing
+           everywhere: land on a tile a thumb can hit, whatever it takes. */
+        const want = TOUCH_TILE_PX / Math.max(1e-6, TILE * this.viewScale);
+        const work = clamp(want, floor, BATTLE_ZOOM_MAX);
+        const closeToFloor = this.camZoom() <= floor * 1.25;
+        this.zoomAt(b.x, b.y, (closeToFloor ? work : floor) / this.camZoom());
+        Sound.play('click');
+        return;
+      }
+      lastTap = { t: now, x: e.clientX, y: e.clientY };
+    });
     cv.addEventListener('click', e => {
       if (!this.boardInteractive()) return;
       Sound.resume();

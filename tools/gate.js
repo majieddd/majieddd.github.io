@@ -171,6 +171,13 @@ if (!STATIC_ONLY) {
      is the tightest of the common Android sizes and the one that failed the
      hardest when it was first measured. */
   browserHarness('mobile', '/tools/mobile-hud-audit.js', null, [360, 800]);
+  /* THE BOARD ITSELF, which is a different question from the layout. The
+     mobile audit measures how much CANVAS is not under a panel; this measures
+     how much of the WORLD that canvas is showing and whether a hand can reach
+     the rest. A canvas can pass every layout check and still be a keyhole:
+     measured before this release, a fresh phone battle showed 25% of the
+     board and had no gesture that could change the zoom in either direction. */
+  browserHarness('board-view', '/tools/probe-board-view.js', null, [390, 844]);
 } else if (!BASE) {
   say('browser gates: SKIPPED (no URL given; pass one to run them)');
 }

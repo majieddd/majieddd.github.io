@@ -4317,6 +4317,23 @@ body.rm-user #screen-game #rotate-hint b { animation: none; }
    3. NOTHING BUDGETED VERTICAL SPACE. The board is the game; chrome is
       everything else. The sheet folds away to its tab strip so the board can
       have the screen, and folding is one tap on the tab you are already on. */
+/* PORTRAIT PHONE ONLY, and that scope is deliberate rather than lazy.
+
+   Extending this block to landscape (`, (max-height: 460px)`) was tried and
+   reverted in the same session. It pulled a 844x390 phone into this layout
+   while the co-contributor's own `max-width: 860px` and `max-height: 460px`
+   blocks were also active, and the two dock treatments interleaved: measured
+   at 844x390, `#dock[data-pane]` correctly reported `muster` after a tab tap
+   while the muster pane computed `display: none` and the shop pane stayed
+   visible. Three passes did not root out which rule won, and shipping a
+   half-reconciled orientation is worse than shipping one good one.
+
+   So landscape keeps the treatment that was already there and already passes
+   its own checks, and this block owns portrait. The BOARD fixes in this
+   release (the zoom-order bug, pinch, double tap) are orientation-independent
+   and help both. Recorded here rather than in a summary nobody reads: the
+   landscape merge is open work, and tools/mobile-hud-audit.js at 844x390 is
+   the thing that will tell whoever picks it up. */
 @media (max-width: 760px) {
 
   /* ---- the top strip ---------------------------------------------------- */
@@ -4340,14 +4357,108 @@ body.rm-user #screen-game #rotate-hint b { animation: none; }
      screen by exactly its own left offset. Caught by the phone pass added to
      tools/gate.js in this same release, which is the first time any gate ran
      at a width where these rules exist. */
+  /* THE HUD IS A BOTTOM OVERLAY ON A PHONE (owner, Session 39).
+
+     "anchoring an overlay for the HUD at the bottom that you can always see
+     when you're in game makes sense and should work pretty well."
+
+     It does, and the reason is where hands are. A phone is held at the
+     bottom; the top third of a 844px screen is the part a thumb cannot reach
+     and the part the eye is least often on. Putting the readouts there cost
+     the board 150px of its best real estate and put every operated control
+     as far from the thumb as the screen allows.
+
+     So the bottom is a stack of TILED fixed layers, each with a declared
+     height so the next one can sit on it without measuring anything at
+     runtime, and the board gets everything above:
+
+       0                          #battle-controls   52px
+       ctl                        RUSH               48px
+       ctl+rush                   #hud strip         72px
+       ctl+rush+hud               #dock sheet        tabs, plus a pane if open
+
+     Nothing here is absolute-positioned inside a blurred ancestor, which is
+     the containing-block trap that put RUSH across the wave readout earlier
+     in this same release. */
+  :root {
+    /* 88px clipped the wave row: the two rows measured about 52 for the
+       commander cards and 30 for the wave block, plus the strip's own 8px of
+       padding, which is 90. A strip with `overflow: hidden` does not warn, it
+       just deletes the readout. */
+    /* One row of cards plus one row for the wave block, now that the wave
+       block is itself a single row rather than a four-item column. */
+    --phone-hud-h: 96px;   /* 84 left hud-centre 9px past the bottom edge, caught by M2c */
+    --phone-tabs-h: 47px;
+    /* Everything that is ALWAYS on screen, folded. The sheet's pane is not in
+       here on purpose: it is opened deliberately and is allowed to cover the
+       board while it is. */
+    --phone-stack-h: calc(var(--phone-ctl-h) + var(--phone-rush-h)
+                          + var(--phone-hud-h) + var(--phone-tabs-h));
+  }
+
+  /* THE BOARD GETS THE SPACE ABOVE THE STACK, AND IS FITTED INTO IT.
+     `body.immersive #canvas-wrap` is `inset: 0`, so the canvas is the whole
+     screen and the board is letterboxed inside it. That was invisible while
+     the HUD sat at the top, because the top bar of the letterbox was exactly
+     what the HUD covered. Moving the HUD to the bottom exposed it as a black
+     void about 300px tall above the map.
+     Insetting the wrap by the stack makes the fit centre in the band the
+     player can actually see, which is also what makes the board bigger. */
+  body.immersive #canvas-wrap,
+  #canvas-wrap { inset: 0 0 var(--phone-stack-h) 0; }
   body.immersive #hud, #hud {
+    position: fixed;
     left: 0;
     right: auto;
+    width: 100%;
+    top: auto;
+    bottom: calc(var(--phone-ctl-h) + var(--phone-rush-h));
+    height: var(--phone-hud-h);
+    z-index: 22;
     padding: 4px 8px;
-    gap: 4px 6px;
-    align-items: start;
+    gap: 2px 6px;
+    align-items: center;
     flex-wrap: wrap;
+    background: var(--panel-2);
+    border-top: 1px solid var(--line);
+    border-bottom: none;
+    box-shadow: none;
+    overflow: hidden;
   }
+  /* TWO ROWS INSIDE THE STRIP: YOU and RIVAL share the first, the wave block
+     takes the second at full width. One row of three was tried first and the
+     wave block wrapped to a row the strip's own `overflow: hidden` then
+     clipped, so the readout vanished entirely: visible in the screenshot as
+     a strip with two commander cards and no wave at all. */
+  #hud > .hud-side { flex: 1 1 0; min-width: 0; }
+  #hud > .hud-centre {
+    order: 2;
+    flex: 1 1 100%;
+    min-width: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    display: flex;
+    /* ROW, EXPLICITLY. The base `.hud-centre` is a flex COLUMN, and setting
+       `display: flex` here without a direction inherits it: the wave badge,
+       phase, prep bar and chips stacked into 75px inside a 98px strip that
+       had 36px left for them, and `overflow: hidden` silently cut the bottom
+       two off. Measured: hud-centre 714..789 inside a #hud ending at 750. */
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 6px;
+  }
+  /* Inline, because a stacked wave badge over a phase label over a bar is
+     three rows of chrome for one sentence. */
+  #hud .wave-badge, #hud .phase { flex: 0 0 auto; }
+  #hud .prep { flex: 1 1 auto; min-width: 40px; }
+  /* The escalation chips are a readout, not a control, and they are the one
+     thing in here that can grow without bound. They scroll in place. */
+  /* In a row now, so the chips take the slack rather than a line of their
+     own, and scroll when there are more than fit. */
+  #hud .chip-rows { max-height: 22px; flex: 1 1 auto; min-width: 0; }
   #hud > .hud-side { flex: 1 1 0; min-width: 0; }
   #hud > .hud-centre { order: 2; flex: 1 1 100%; min-width: 0; }
   /* The quit button was stacking ABOVE the YOU card rather than sitting
@@ -4403,6 +4514,7 @@ body.rm-user #screen-game #rotate-hint b { animation: none; }
   /* The dock's own bottom is set in the sheet block below, which is later
      in this file and would otherwise reset it. */
   #hud .cmdr-stats { font-size: 12px; gap: 6px; }
+  #hud .cmdr { padding: 3px 6px; }
   #hud .cmdr-tag { font-size: 8.5px; letter-spacing: .1em; }
   /* 40px of "WAVE 0" on an 800px screen is a twentieth of the game spent on
      two words. Measured: hud-centre held wave-badge 40 + phase 15 + prep 6 +
@@ -4460,7 +4572,7 @@ body.rm-user #screen-game #rotate-hint b { animation: none; }
        layers TILE: controls at 0, rush at 52, sheet at 100. Written here and
        not beside the rush rule because this block is later in the file and
        reset it, which put the sheet straight on top of the button. */
-    bottom: calc(var(--phone-ctl-h) + var(--phone-rush-h));
+    bottom: calc(var(--phone-ctl-h) + var(--phone-rush-h) + var(--phone-hud-h));
     transform: none;
     max-width: 100%;
     display: block;
@@ -4576,12 +4688,20 @@ body.rm-user #screen-game #rotate-hint b { animation: none; }
   #dock .muster-bar, #dock #shop-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+@media (max-width: 760px), (max-height: 460px) { /* reduced motion, same audience */ }
+@media (prefers-reduced-motion: reduce) {
   #dock-tabs .dock-tab { transition: none; }
 }
 
 /* Desktop never sees the strip: the panes sit side by side exactly as before
    and `data-pane` selects nothing, because every pane is display:flex here. */
+/* THE EXACT COMPLEMENT of the phone query above, which is
+   `(max-width: 760px), (max-height: 460px)`. Written as `min-width: 761px`
+   alone it overlapped: a 926x428 landscape phone matched BOTH, so the phone
+   pane rules were active while the tab strip that drives them was hidden,
+   leaving no way to switch panes and no rule showing only one. De Morgan, not
+   taste: the negation of (A or B) is (not A and not B). */
 @media (min-width: 761px) {
   #dock-tabs { display: none; }
 }
+

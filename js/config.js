@@ -68,6 +68,13 @@ const LEAK_STEALS_BACK = false;
    this is entirely opt-in; past about 2.6 the hand-drawn sprites soften for
    the same reason viewScale stops at 1.9. */
 const BATTLE_ZOOM_MAX = 2.6;
+/* THE TILE A THUMB CAN HIT. A double tap on a phone zooms to whatever makes a
+   board tile this many CSS pixels, rather than to a fixed multiple of the
+   fitted view: the fit depends on the board and the viewport, so a multiple
+   of it lands on a different tile size every time (measured 34.3px at 390
+   wide and 31.6px at 360, both under the floor). 46 rather than exactly 44 so
+   the tile clears the floor rather than sitting on it. */
+const TOUCH_TILE_PX = 46;
 
 /* Ring geometry in LOGICAL board units (Game.width/height space, TILE=38),
    never in CSS pixels -- the canvas is fitted by viewScale, so measuring the
