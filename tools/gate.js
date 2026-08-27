@@ -77,7 +77,12 @@ function staticGates() {
   if (missing.length) fail('build.js never inlines: ' + missing.join(', '));
   else say('module list: all ' + onDisk.length + ' listed');
 
-  const em = run(process.execPath, ['tools/emdash.js', 'js', 'css', 'tools', 'build.js', 'index.html']);
+  /* `docs` IS IN THE SCAN. The owner's no-em-dash rule is absolute and covers
+     prose, not just shipped strings, and docs/ was outside this list for its
+     whole life: docs/ART-BIBLE.md carried one for months and was flagged in
+     three separate sessions as "outside the gate's scan" rather than fixed.
+     A rule phrased with never needs an exhaustive scan or it is a preference. */
+  const em = run(process.execPath, ['tools/emdash.js', 'js', 'css', 'tools', 'docs', 'build.js', 'index.html']);
   if (/would fix 0 occurrences/.test(em.out)) say('em dash: clean');
   else fail('em dash: ' + em.out.trim().split('\n').slice(0, 4).join(' | '));
 
@@ -94,6 +99,49 @@ function staticGates() {
   if (df.code === 0) say('dead config fields: none');
   else fail('dead config fields: ' + df.out.trim().split('\n').filter(l => /^\s{2}\S/.test(l))
                                        .map(l => l.trim().split(/\s+/)[0]).join(', '));
+
+  /* AN UNCLOSED CSS BLOCK CANNOT THROW, so it needs a counter. css/polish.css
+     shipped with an `@media (max-width: 860px)` opened and never closed, which
+     silently scoped the debug bar and the entire field-manual figure layout to
+     phones: measured at 1280px, `.ce-fig` computed to display:inline at 0x0,
+     so the portraits worked on a phone and were invisible on every desktop.
+     No error, no red gate, because CSS auto-closes at EOF. */
+  const cb = run(process.execPath, ['tools/cssbrace.js']);
+  if (cb.code === 0) say(cb.out.trim());
+  else fail('css braces: ' + cb.out.trim().split('\n')[0]);
+
+  /* GAME DATA, ASSERTED BY LOADING THE GAME. tools/facts.js check holds the
+     commander signature contract (own-origin towers, own-faction denizens, no
+     shared pairs) and the banner-to-origin mapping that flyTheBanner depends
+     on. It runs HERE, before the build, because it is a source-level contract
+     and because it is fast: it loads the data modules in-process rather than
+     driving a browser. */
+  const ft = run(process.execPath, ['tools/facts.js', 'check']);
+  if (ft.code === 0) say('commander signatures: ' + ft.out.trim().replace(/^facts check OK: /, ''));
+  else fail('commander signatures: ' + ft.out.trim().split('\n').slice(1).map(l => l.trim()).join('; '));
+
+  /* GEOMETRY PROPERTIES of every procedural board, in node because they are
+     pure functions of (family, seed) and need no browser. Determinism is the
+     one that matters for duels: both clients build the board from the same
+     seed, so a non-deterministic generator desyncs on the first spawn. */
+  const pm = run(process.execPath, ['tools/probe-mapgen.js', '40']);
+  const pmLines = pm.out.trim().split(/\r?\n/).filter(l => l.trim());
+  if (pm.code === 0) say('map geometry: ' + pmLines[pmLines.length - 1]);
+  else {
+    /* A CRASH IS NOT A FAILED PROPERTY, and the first cut printed an empty
+       reason for one. Planting a laneless family made probe-mapgen.js throw
+       before it could print any `FAIL Gn` line, so the filter matched nothing
+       and the gate reported "map geometry:" followed by silence. Fall back to
+       the tail of whatever it did say, which is the stack. */
+    const named = pmLines.filter(l => /^FAIL/.test(l));
+    /* The MESSAGE, not the tail of the stack. `slice(-3)` gave
+       "at Module.executeUserEntryPoint ... Node.js v24.14.0", which says a
+       crash happened and nothing about what. The throw line is the one that
+       names it. */
+    const thrown = pmLines.filter(l => /(Error|Cannot|undefined|is not a function)/.test(l))[0];
+    fail('map geometry: ' + (named.length ? named.join(' | ')
+                                          : (thrown || pmLines.slice(-1)[0] || 'probe produced no output')));
+  }
 
   const b = run(process.execPath, ['build.js']);
   if (b.code !== 0) fail('build.js: ' + b.out.trim().split('\n')[0]);
@@ -180,6 +228,11 @@ if (!STATIC_ONLY) {
      predicted check. Placed after owner-sweep and before MPT because it reads
      source-level state and MPT installs wrappers (invariant 3). */
   browserHarness('planet-cutscenes', '/tools/probe-s39.js', null);
+  /* GEOMETRY IS NOT PLAYABILITY. probe-mapgen.js proves the arrays are sane;
+     this starts a real battle on every procedural board and walks a body the
+     length of the lane. A road that is generated, drawn, and never completed
+     by anything looks perfect in every static check. */
+  browserHarness('boards-play', '/tools/probe-boards-play.js', null);
   if (!QUICK) browserHarness('mpt', '/tools/multiplayer_test.js', ';MPT.all()');
   /* THE PHONE. Its own run at a real phone size, because every check above
      runs at 1600x900 where none of the phone rules exist. The owner's report

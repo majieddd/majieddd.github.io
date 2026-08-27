@@ -2473,6 +2473,316 @@
     });
   })();
 
+  /* ══ 40. COMMANDER THEMING ══════════════════════════════════════════════
+     Owner, Session 38: "commanders only use their factions towers
+     thematically everything makes sense and making sure that certain
+     commanders favor certain tower combinations and unit combinations so
+     that each commander feels unique."
+
+     Two halves, and they fail differently, so they are checked separately.
+     The FACTION half is about origin law and is asserted against the drafted
+     board, not against the data. The UNIQUENESS half is about the signature
+     table and is asserted in tools/facts.js (which runs in gate.js and can
+     load the modules without a browser); what is checked here is the part
+     facts.js cannot see, which is whether any of it survives a real draft. */
+  (function commanderTheming() {
+    const POWERS = POWER_ORDER.filter(function (f) { return f !== null; });
+
+    T('40.1 every power maps to a real tower origin', function () {
+      const bad = [];
+      POWERS.forEach(function (f) {
+        const o = originKeyOf(f);
+        const n = TOWER_ORDER.filter(function (t) {
+          return (TOWER_TYPES[t] || {}).origin === o;
+        }).length;
+        if (ORIGIN_ORDER.indexOf(o) < 0) bad.push(f + ' maps to ' + o + ', not an origin');
+        else if (n < LOADOUT_SIZE) bad.push(f + ' has only ' + n + ' own towers');
+      });
+      /* THE DEFECT THIS EXISTS FOR. 'robot' is a banner and 'robotic' is an
+         origin. AI.flyTheBanner compared them directly and so found nothing
+         to fly for the machines, on every draft, forever, with no error and
+         no red gate: an empty candidate list is a silent no-op. Measured
+         before the fix: machine rivals fielded 1.23 own-origin towers with
+         45% of drafts carrying NONE, against a target every other banner met. */
+      ok('40.1 every power maps to a real tower origin',
+         bad.length === 0,
+         bad.length ? bad.join('; ')
+                    : POWERS.length + ' powers map to an origin holding at least ' +
+                      LOADOUT_SIZE + ' towers (' + POWERS.map(function (f) {
+                        return f + '>' + originKeyOf(f);
+                      }).join(', ') + ')');
+    });
+
+    T('40.2 a drafted rival board flies its own banner', function () {
+      /* Drafted, not read. The data can be perfect and the draft still throw
+         it away, which is exactly what happened here: flyTheBanner evicted
+         the signature towers flySignature had just pressed in, because the
+         third of three origin comparisons in js/ai.js still read `faction`. */
+      const worst = [];
+      POWERS.forEach(function (f) {
+        const o = originKeyOf(f);
+        let sum = 0, zero = 0;
+        for (let i = 0; i < 60; i++) {
+          let x = (i * 2654435761) >>> 0;
+          const rng = function () { x = (x * 1664525 + 1013904223) >>> 0; return x / 4294967296; };
+          const set = AI.pickLoadout({ id: 'spine' }, DIFFICULTIES[1], TOWER_ORDER.slice(), f, rng);
+          const own = set.filter(function (t) { return (TOWER_TYPES[t] || {}).origin === o; }).length;
+          sum += own; if (!own) zero++;
+        }
+        if (zero > 0 || sum / 60 < 2) worst.push(f + ' avg ' + (sum / 60).toFixed(2) + ', ' + zero + ' bare');
+      });
+      ok('40.2 a drafted rival board flies its own banner',
+         worst.length === 0,
+         worst.length ? worst.join('; ')
+                      : 'all ' + POWERS.length + ' banners draft at least 2 own-origin towers ' +
+                        'on average and never a board with none');
+    });
+
+    T('40.3 a commander drafts the towers it is known for', function () {
+      const miss = [];
+      COMMANDER_ROSTER.forEach(function (c) {
+        if (!c.faction || !c.signature) return;
+        let got = 0;
+        for (let i = 0; i < 24; i++) {
+          let x = (i * 2654435761) >>> 0;
+          const rng = function () { x = (x * 1664525 + 1013904223) >>> 0; return x / 4294967296; };
+          const set = AI.pickLoadout({ id: 'spine' }, DIFFICULTIES[1], TOWER_ORDER.slice(), c.faction, rng, c);
+          got += c.signature.towers.filter(function (t) { return set.indexOf(t) >= 0; }).length;
+        }
+        if (got / 24 < 1.5) miss.push(c.id + ' ' + (got / 24).toFixed(2) + '/2');
+      });
+      ok('40.3 a commander drafts the towers it is known for',
+         miss.length === 0,
+         miss.length ? miss.join(', ')
+                     : 'all 27 signature commanders carry at least 1.5 of their 2 signature ' +
+                       'towers on an average draft');
+    });
+
+    T('40.4 two commanders of one banner field different boards', function () {
+      /* The whole point of the feature. Before it, every Federation rival
+         drafted from the same twelve towers with the same seeds and were
+         indistinguishable on the field. */
+      const same = [];
+      POWERS.forEach(function (f) {
+        const crew = COMMANDER_ROSTER.filter(function (c) { return c.faction === f && c.signature; });
+        for (let a = 0; a < crew.length; a++) {
+          for (let b = a + 1; b < crew.length; b++) {
+            let x = 99991;
+            const rng = function () { x = (x * 1664525 + 1013904223) >>> 0; return x / 4294967296; };
+            const A = AI.pickLoadout({ id: 'spine' }, DIFFICULTIES[1], TOWER_ORDER.slice(), f, rng, crew[a]);
+            x = 99991;
+            const B = AI.pickLoadout({ id: 'spine' }, DIFFICULTIES[1], TOWER_ORDER.slice(), f, rng, crew[b]);
+            if (A.slice().sort().join(',') === B.slice().sort().join(','))
+              same.push(crew[a].id + '=' + crew[b].id);
+          }
+        }
+      });
+      ok('40.4 two commanders of one banner field different boards',
+         same.length === 0,
+         same.length ? same.length + ' identical pairs on the same seed: ' + same.slice(0, 4).join(', ')
+                     : 'every same-banner commander pair drafts a different set from an identical seed');
+    });
+
+    T('40.5 a signature never costs a board its ability to fight', function () {
+      /* The guard that makes this a bias and not a lock. Two of the machine
+         signatures are a pair of support towers (AXIOM builds VAULT and
+         PYLON, DREGG-R builds REACTOR and ECHO), so forcing both in without
+         this guard would field a board that cannot kill anything. */
+      const broken = [];
+      COMMANDER_ROSTER.forEach(function (c) {
+        if (!c.faction || !c.signature) return;
+        for (let i = 0; i < 24; i++) {
+          let x = (i * 2654435761) >>> 0;
+          const rng = function () { x = (x * 1664525 + 1013904223) >>> 0; return x / 4294967296; };
+          const set = AI.pickLoadout({ id: 'spine' }, DIFFICULTIES[1], TOWER_ORDER.slice(), c.faction, rng, c);
+          /* base.damage, and it took a measurement to get right. The first
+             cut read `!(TOWER_TYPES[t]||{}).noDamage`, and there is no
+             noDamage field on any tower def, so EVERY tower counted as a
+             damage dealer and this check was vacuously green. There is no
+             top-level `dmg` either: the stat lives at base.damage, and 38 of
+             60 towers carry it (VAULT, BEACON, WARD and 19 others are pure
+             support and correctly score zero). */
+          const dmg = set.filter(function (t) {
+            const b = (TOWER_TYPES[t] || {}).base || {};
+            /* EVERY route to a dead body, not just the direct one. Measured:
+               DRONEBAY, FOUNDRY and CAPACITOR all carry no base.damage and
+               all kill (drones, minions, a released nova), so a base.damage
+               test alone reports three real damage dealers as support and
+               fails boards that fight perfectly well. */
+            return b.damage > 0 || b.droneDamage > 0 || b.minionDps > 0 || b.novaMin > 0;
+          }).length;
+          if (!set.length || dmg < 2) { broken.push(c.id + ' seed ' + i + ': ' + set.join('/')); break; }
+        }
+      });
+      ok('40.5 a signature never costs a board its ability to fight',
+         broken.length === 0,
+         broken.length ? broken.slice(0, 3).join('; ')
+                       : 'no commander drafts a board of fewer than two damage-capable towers');
+    });
+
+    T('40.6 a commander musters the denizens it is known for', function () {
+      const miss = [];
+      COMMANDER_ROSTER.forEach(function (c) {
+        if (!c.faction || !c.signature) return;
+        const pool = Object.keys(ENEMY_TYPES).filter(musterSendable);
+        const got = AI.pickMusterLoadout(pool, MUSTER_LOADOUT_SIZE, c);
+        const hit = c.signature.units.filter(function (u) { return got.indexOf(u) >= 0; }).length;
+        if (hit < 2) miss.push(c.id + ' ' + hit + '/2 (' + got.join('/') + ')');
+      });
+      ok('40.6 a commander musters the denizens it is known for',
+         miss.length === 0,
+         miss.length ? miss.slice(0, 4).join('; ')
+                     : 'all 27 signature commanders muster both of their named denizens ' +
+                       'when the vault holds them');
+    });
+  })();
+
+  /* == 41. EVERY BOARD HAS A DOSSIER ======================================
+     js/worldlore.js ships a selfCheck() that compares its authored records
+     and its MAP_MANIFEST against the live MAPS table, in both directions,
+     and REFUSES to go green unless the live table was actually present. It
+     is a good check and it was wired into nothing, so it sat there returning
+     ok:false to nobody.
+
+     What that cost: js/mapgen.js grew from seven procedural families to
+     fifteen and MAPS grew with it, and eight boards shipped with no dossier
+     record. WorldLore.world() still returned a headline and a body for them,
+     because those come from the owner-and-kind sentence banks, so nothing
+     looked broken. functionThen and conflictNow came back EMPTY. Eight
+     boards whose dossier said nothing about the board.
+
+     The lesson is the one this suite already holds about error buffers: a
+     checker with no caller is a place defects go to be ignored. This is the
+     caller. */
+  (function everyBoardHasADossier() {
+    T('41.1 every shipped board has a world dossier', function () {
+      if (typeof WorldLore === 'undefined' || !WorldLore.selfCheck) {
+        ok('41.1 every shipped board has a world dossier', false,
+           'js/worldlore.js did not load, or no longer exports selfCheck');
+        return;
+      }
+      const r = WorldLore.selfCheck();
+      /* selfCheck deliberately EXCLUDES loreNameDrift from `ok`: that is a
+         disagreement between LORE.maps and js/config.js which only a lore
+         regeneration can settle, and is not this file's to fix. Everything
+         `ok` does cover is owned here and is therefore a real failure. */
+      const why = [];
+      if (!r.mapsLoaded) why.push('MAPS absent, so the comparison proved nothing');
+      if (r.missing.length) why.push('no record: ' + r.missing.join(', '));
+      if (r.incomplete.length) why.push('record missing a field: ' + r.incomplete.join(', '));
+      if (r.authoredNameDrift.length) why.push('name drift: ' + r.authoredNameDrift.join('; '));
+      if (r.manifestDrift.length) why.push('manifest drift: ' + r.manifestDrift.join(', '));
+      ok('41.1 every shipped board has a world dossier',
+         r.ok,
+         why.length ? why.join(' | ')
+                    : r.resolved + ' of ' + r.checked + ' boards resolved, manifest matches MAPS ' +
+                      'in both directions' +
+                      (r.loreNameDrift.length
+                        ? ' (' + r.loreNameDrift.length + ' LORE.maps name drifts, not owned here)'
+                        : ''));
+    });
+
+    T('41.2 a dossier actually reaches the screen for every board', function () {
+      /* 41.1 asserts the RECORDS exist. This asserts the thing the player
+         reads is non-empty, which is a different question: the eight missing
+         records did not make WorldLore.world() throw or return null, they
+         made it return a body with two empty halves, and any check that only
+         asked "did it return something" would have passed throughout. */
+      if (typeof WorldLore === 'undefined' || !WorldLore.world) {
+        ok('41.2 a dossier actually reaches the screen for every board', false,
+           'WorldLore.world is unavailable');
+        return;
+      }
+      const bare = [];
+      for (const m of MAPS) {
+        let d = null;
+        try {
+          d = WorldLore.world({ id: m.id, map: m.id, name: m.name, owner: 'human', kind: 'forge', si: 1 },
+                              { name: 'Probe' });
+        } catch (e) { bare.push(m.id + ' threw: ' + e.message); continue; }
+        if (!d) { bare.push(m.id + ' returned null'); continue; }
+        if (!d.functionThen || !String(d.functionThen).trim()) bare.push(m.id + ' functionThen empty');
+        else if (!d.conflictNow || !String(d.conflictNow).trim()) bare.push(m.id + ' conflictNow empty');
+      }
+      ok('41.2 a dossier actually reaches the screen for every board',
+         bare.length === 0,
+         bare.length ? bare.slice(0, 6).join('; ')
+                     : 'all ' + MAPS.length + ' boards return a dossier with both halves written');
+    });
+
+    T('41.4 every map family has a generator of its own', function () {
+      /* THE DEFECT THIS WAS WRITTEN FOR, and it was live on the deployed site
+         when it was found. js/config.js MAPS declared FIFTEEN procedural
+         families. js/mapgen.js handled SEVEN. The other eight hit the switch's
+         `default:` arm, which exists so an unknown family still builds a board
+         rather than throwing, and quietly handed all eight the same plain
+         28x15 serpentine: same size, same 17 lane tiles, zero walls.
+
+         Woven Roads, The Fenced Road, Descent Steps, The Plaza, Hairpin Pass,
+         The Maze, Twin Sanctums and The Bars were one board wearing eight
+         names, and nothing failed, because a graceful fallback is
+         indistinguishable from a working generator unless something compares
+         them.
+
+         So this compares them. A nonsense family id can only take the default
+         arm; any real family whose geometry matches it for the same seed took
+         the same arm and has no generator. Seed is fixed so the comparison is
+         like for like, and geometry here is deterministic on (family, seed). */
+      if (typeof MapGen === 'undefined' || !MapGen.proceduralGeometry) {
+        ok('41.4 every map family has a generator of its own', false, 'MapGen is unavailable');
+        return;
+      }
+      const SEED = 'family-coverage-probe';
+      const shape = g => JSON.stringify({
+        cols: g.cols, rows: g.rows,
+        lanes: (g.lanes || []).map(l => l.length),
+        walls: (g.walls || []).length, blocks: (g.blocks || []).length
+      });
+      let fallback = '';
+      try { fallback = shape(MapGen.proceduralGeometry('__no_such_family__', SEED)); }
+      catch (e) {
+        ok('41.4 every map family has a generator of its own', false,
+           'the default arm threw, so nothing can be compared against it: ' + e.message);
+        return;
+      }
+      const fell = [], threw = [];
+      const fams = [...new Set(MAPS.filter(m => m.family).map(m => m.family))];
+      for (const f of fams) {
+        let sh;
+        try { sh = shape(MapGen.proceduralGeometry(f, SEED)); }
+        catch (e) { threw.push(f + ': ' + e.message); continue; }
+        if (sh === fallback) fell.push(f);
+      }
+      ok('41.4 every map family has a generator of its own',
+         fell.length === 0 && threw.length === 0,
+         threw.length ? 'threw: ' + threw.join('; ')
+           : fell.length ? fell.length + ' of ' + fams.length +
+                           ' families fall through to the default serpentine: ' + fell.join(', ')
+           : 'all ' + fams.length + ' MAPS families build geometry of their own, none matches ' +
+             'the default fallback');
+    });
+
+    T('41.3 no retired canon in an authored world dossier', function () {
+      /* 39.1 guards the four consumed LORE fields. It does not read this
+         table, and this table had one: the open-field record named the "Old
+         Weather array", which is retired vocabulary the owner asked to be
+         purged. Same list, second surface. */
+      const RETIRED = ['old weather', 'sol gate', 'archive war', 'signal winter',
+                       'open-sky compact', 'abyssal reply', 'noetic', '2099'];
+      const hits = [];
+      for (const m of MAPS) {
+        const rec = WorldLore.map && WorldLore.map(m.id);
+        if (!rec || rec.source !== 'authored') continue;
+        const t = JSON.stringify(rec).toLowerCase();
+        for (const term of RETIRED) if (t.indexOf(term) !== -1) hits.push(m.id + ':' + term);
+      }
+      ok('41.3 no retired canon in an authored world dossier',
+         hits.length === 0,
+         hits.length ? hits.join(', ')
+                     : 'no authored dossier carries retired-timeline vocabulary');
+    });
+  })();
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;

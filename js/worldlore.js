@@ -88,7 +88,7 @@
     'twin-channel': {
       id: 'twin-channel', name: 'Twin Straits',
       classification: 'Paired distribution channel',
-      canon: 'Two separated flow channels of an Old Weather distribution bank, held apart so a failure in one could never reach the other.',
+      canon: 'Two separated flow channels of a climate distribution bank, held apart so a failure in one could never reach the other.',
       functionThen: 'Containment. The bank between the channels was not scenery, it was the wall, and the entire design goal was that nothing crossing one channel could touch the second.',
       conflictNow: 'The containment still works, which is the problem. Nothing placed on one channel covers the other, so a defence has to be bought twice, and the channel you buy first is the one they stop using.'
     },
@@ -112,7 +112,7 @@
     'open-field': {
       id: 'open-field', name: 'The Expanse',
       classification: 'Cleared receiver flat',
-      canon: 'A reception flat kept clear by statute, because the Old Weather array standing on it required an unobstructed horizon in every direction.',
+      canon: 'A reception flat kept clear by statute, because the survey array standing on it required an unobstructed horizon in every direction.',
       functionThen: 'Sightline law. Nothing was permitted to stand on the flat, for as long as the array ran, because the array had to see past it and the clearance was easier to enforce than to rebuild.',
       conflictNow: 'The array is dead and the ground still enforces its clearance. There is almost nothing to hold, so no position covers much of anything, and the only way to cover more is to own more of it.'
     },
@@ -131,6 +131,87 @@
       canon: 'A defensive ring around a command seat, broken open often enough that the road now runs through the wall rather than around it.',
       functionThen: 'Screening. The ring stood between the seat and every line of fire, and the approach road was kept outside it so that nothing walking in ever had the seat in view.',
       conflictNow: 'The wall still stops shots and no longer stops the road. The march passes through the breaches, so the ring shields whoever is walking it exactly as well as whoever is holding the seat.'
+    },
+
+    /* ── THE EIGHT ADDED WITH THE SECOND GEOMETRY PASS ────────────────────
+       js/mapgen.js grew from seven procedural families to fifteen and
+       js/config.js MAPS grew with it. This table did not, and nothing caught
+       that, because selfCheck() was wired into no gate: it reported
+       ok:false with eight missing ids to any caller who thought to ask, and
+       nobody asked. owner-sweep 41.1 is that caller now.
+
+       The visible symptom, measured before these were written: WorldLore.world()
+       still produced a headline and a body for all eight, because those come
+       from the owner-and-kind sentence banks, but functionThen and conflictNow
+       came back as EMPTY STRINGS. Eight boards whose dossier said nothing
+       about the board.
+
+       Each record is written against the geometry the generator actually
+       produces, not against the name. The function is what the site was FOR;
+       the conflict is what that same shape does to a battle now. */
+
+    braid: {
+      id: 'braid', name: 'Woven Roads',
+      classification: 'Paired haulage run',
+      canon: 'Two haulage roads laid under one contract and crossed at intervals, so a stalled convoy on either could be stepped around without leaving the corridor.',
+      functionThen: 'Redundancy by crossing. Neither road was the main one, and the swaps existed so that a blockage on one became a detour rather than a closure.',
+      conflictNow: 'The crossings are the only ground that touches both roads. A tower standing between two swaps is worth two placed anywhere else, and everything away from them is defending half a battle.'
+    },
+
+    gauntlet: {
+      id: 'gauntlet', name: 'The Fenced Road',
+      classification: 'Posted transit road',
+      canon: 'A long open haul lined with survey posts, set alternately to either side so a driver always had one in view and never had two.',
+      functionThen: 'Position by alternation. The posts kept a vehicle located on a road with no other landmark, and they were staggered so that no two ever stood on the same side to be confused with each other.',
+      conflictNow: 'Those posts are the only cover on the whole run, and they change sides as the road goes. A line built along one flank is answered by the next post standing on the other.'
+    },
+
+    staircase: {
+      id: 'staircase', name: 'Descent Steps',
+      classification: 'Graded descent road',
+      canon: 'A cut that drops a terrace at a time, each tread run out flat before the next fall, so loads came down under their own weight and never had to be held.',
+      functionThen: 'Descent without brakes. Every leg falls in the same direction, because a road that never climbs never needs a load stopped on it.',
+      conflictNow: 'The march never doubles back, so nothing you build is ever passed twice. Cover stands on one side of the road the whole way down, and the far side pays for its view in range.'
+    },
+
+    horseshoe: {
+      id: 'horseshoe', name: 'The Plaza',
+      classification: 'Enclosed muster ground',
+      canon: 'A muster yard wrapped on three sides by its own approach road, so a formation could be counted from the middle without anyone walking the perimeter.',
+      functionThen: 'Inspection from the centre. The road was bent around the yard rather than driven through it, because one clerk standing in the open could see every leg of it at once.',
+      conflictNow: 'That is still true and it is now a firing solution. One tower in the plaza covers all three legs, so the ground is not contested along the road, it is contested for the middle.'
+    },
+
+    switchback: {
+      id: 'switchback', name: 'Hairpin Pass',
+      classification: 'Hairpin grade',
+      canon: 'A climb folded back on itself as tightly as the grade allowed, trading distance for a gradient a loaded vehicle could take without a winch.',
+      functionThen: 'Gradient by folding. Each leg is short because a short leg can be shallow, and a shallow leg is one a full load climbs unassisted.',
+      conflictNow: 'Short legs mean the march is never far from the last bend or the next. Exposure is brief and constant rather than long and occasional, and a tower that reaches two legs is reaching most of the pass.'
+    },
+
+    labyrinth: {
+      id: 'labyrinth', name: 'The Maze',
+      classification: 'Partitioned holding works',
+      canon: 'A holding site divided and redivided until the only route across it was a single corridor, with a gate at every partition that corridor crossed.',
+      functionThen: 'Containment by partition. Nothing held here was meant to move except along the one line that was watched, and every wall existed to make a second line expensive to cut.',
+      conflictNow: 'The walls outlived what they contained and still decide what can see what. Most of the board is ground that watches nothing, and the corridor is worth exactly what the gates standing on it are worth.'
+    },
+
+    'twin-temple': {
+      id: 'twin-temple', name: 'Twin Sanctums',
+      classification: 'Paired precinct halls',
+      canon: 'Two precinct halls raised on one warrant and kept deliberately identical, so that neither could be called the seat and neither could be closed on its own.',
+      functionThen: 'Authority in duplicate. What one hall ruled the other could ratify, and the walls between them were raised so that a crowd in either could not be addressed from the other.',
+      conflictNow: 'Two roads and two walled halls is two battles that cannot reinforce each other. Whatever is not spent on one is spent on the other, and no position is spending on both.'
+    },
+
+    'twin-gate': {
+      id: 'twin-gate', name: 'The Bars',
+      classification: 'Barred inspection run',
+      canon: 'A single road interrupted by standing bars, each one a checkpoint that could be closed without closing the others.',
+      functionThen: 'Metered advance. Traffic was released one bar at a time, so a queue formed at a known place instead of wherever it happened to stop.',
+      conflictNow: 'The bars still meter the advance and no longer choose who is metered. Each one turns the road in front of it into a queue, which is a killing floor to whoever holds the ground beside that bar and nothing at all to whoever does not.'
     }
   };
 
@@ -249,7 +330,13 @@
     'rift', 'confluence', 'crown', 'carousel', 'orrery', 'lattice', 'causeway',
     'anvil', 'lance', 'skew', 'strait', 'loom', 'ossuary', 'atoll',
     'spiral', 'twin-channel', 'chokepoint', 'island-scatter', 'open-field',
-    'convergence', 'fortress-ring'
+    'convergence', 'fortress-ring',
+    /* The second geometry pass. Added here in the same change as the records
+       above, because selfCheck compares this list against the live MAPS in
+       BOTH directions and a manifest that lags the table is the drift this
+       comment warns about. */
+    'braid', 'gauntlet', 'staircase', 'horseshoe', 'switchback', 'labyrinth',
+    'twin-temple', 'twin-gate'
   ];
 
   /* --------------------------------------------------------------------------

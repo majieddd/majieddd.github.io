@@ -21,6 +21,42 @@ function chart(prefix, cols) {
   return out;
 }
 
+/* --------------------------------------------------------------------------
+   SIGNATURES: what a commander is known for building and known for sending.
+
+   TWO towers and TWO denizens per commander, and every signature tower is
+   drawn from the commander's OWN origin. No exceptions, no commons, no
+   borrowing: a Xeno commander's signature is Xeno hardware.
+
+   TOWER_ORDER holds SIXTY buildable towers, twelve per origin, exactly even:
+
+       human 12    light 12    xeno 12    pirate 12    robotic 12
+
+   so own-origin costs nothing. Every origin also carries enough to fight on
+   its own account (measured: 5 to 8 damage towers each, and at least one
+   answer to air), which is why LOADOUT_OWN_ORIGIN could be raised from two to
+   the full four alongside this.
+
+   It is a BIAS, not a lock. The rival brain drafts these first and fills the
+   rest as it always did, and the player sees them on the commander card as a
+   recommendation. Locking a four-slot loadout at two would be half a
+   decision, and a commander that cannot answer an air wave is not a
+   character, it is a loss.
+
+   The rules, checked by owner-sweep 40.1 to 40.6:
+
+     1. BOTH signature towers are the commander's own origin.
+     2. Both signature denizens come from the commander's own FACTION_UNITS.
+     3. No two commanders share a tower PAIR or a denizen PAIR.
+     4. Every pair is chosen against the trait's MECHANIC. The comment above
+        each one says which clause of the trait it answers, so a later balance
+        pass can tell whether a pairing is still true.
+
+   CADRE has no signature, deliberately, and is the one exception the check
+   allows. It has no faction and no doctrine: "Most commanders are a bet.
+   Cadre is the house."
+-------------------------------------------------------------------------- */
+
 const COMMANDER_ROSTER = [
 
   /* ══════════════════════════════════════════════════════ UNALIGNED ═══
@@ -63,6 +99,8 @@ const COMMANDER_ROSTER = [
     color: '#7dd3fc', icon: '◈', free: true,
     blurb: 'Fights the long game. Reyes turns the draft itself into a weapon: more choices, more often, and a board that grows stronger with every doctrine filed away.',
     abilities: ['overclock', 'dampen'],
+    /* PERPETUAL STUDY reads the enemy: strip its armour off, then shoot it with its own salvaged gun. */
+    signature: { towers: ['canister', 'reclaimer'], units: ['trooper', 'gunskiff'] },
     trait: { name: 'PERPETUAL STUDY',
       desc: 'Command upgrades are drafted every 4 waves instead of 5, and you are offered 4 options instead of 3.',
       apply: t => { t.draftEvery = 4; t.draftOptions = 4; } },
@@ -83,6 +121,8 @@ const COMMANDER_ROSTER = [
     color: '#38e8ff', icon: '◭',
     blurb: 'Wins on logistics. Okafor makes width affordable when everyone else is priced into a handful of towers.',
     abilities: ['focusfire', 'bulwark'],
+    /* BULK CONTRACTS wants copies. The cheap shell by the dozen, paid for out of supply. */
+    signature: { towers: ['quartermaster', 'mortar'], units: ['linebreaker', 'vanguard'] },
     trait: { name: 'BULK CONTRACTS',
       desc: 'Per-copy tower price growth is 30% gentler, and you start with 25% more gold.',
       apply: (t, s) => { t.costGrowthMul = 0.70; if (s) s.gold = Math.round(s.gold * 1.25); } },
@@ -103,6 +143,8 @@ const COMMANDER_ROSTER = [
     color: '#67e8f9', icon: '⟐',
     blurb: 'Pushes single structures past their rated limits. Tanaka would rather field five monsters than twenty soldiers.',
     abilities: ['overclock', 'smokescreen'],
+    /* REDLINE surges on every ascension, so it takes the two guns that ascend most often. */
+    signature: { towers: ['bolt', 'arc'], units: ['gunskiff', 'dragoon'] },
     trait: { name: 'REDLINE',
       desc: 'Ascension costs 25% less, and SURGE triggers on EVERY ascension instead of every second one.',
       apply: t => { t.ascCostMul = 0.75; t.surgeEvery = 1; } },
@@ -123,6 +165,8 @@ const COMMANDER_ROSTER = [
     color: '#22d3ee', icon: '⚙',
     blurb: "Builds fast and rebuilds faster. O'Ryan treats a lost tower as a delay, not a defeat.",
     abilities: ['focusfire', 'dampen'],
+    /* FIELD WORKSHOP bolts things down: a barricade and a siege battery, both a level early. */
+    signature: { towers: ['rampart', 'bombard'], units: ['linebreaker', 'gunskiff'] },
     trait: { name: 'FIELD WORKSHOP',
       desc: 'Towers begin one level higher, and upgrades cost 15% less.',
       apply: t => { t.startLevel = (t.startLevel || 0) + 1; t.upgradeMul *= 0.85; } },
@@ -143,6 +187,8 @@ const COMMANDER_ROSTER = [
     color: '#0ea5e9', icon: '⛨',
     blurb: 'Holds ground nobody else would. Washington measures a battle in how little was given up.',
     abilities: ['overclock', 'bulwark'],
+    /* NO GROUND GIVEN holds ground by making the ground itself hostile. */
+    signature: { towers: ['coldfront', 'cryo'], units: ['vanguard', 'dragoon'] },
     trait: { name: 'NO GROUND GIVEN',
       desc: '+8 maximum lives, and leaks cost one fewer life (minimum one).',
       apply: (t, s) => { t.leakReduce = 1; if (s) { s.maxLives += 8; s.lives += 8; } } },
@@ -180,6 +226,8 @@ const COMMANDER_ROSTER = [
     color: '#f1f5f9', icon: '\u2736', noSeat: true, secretHuman: true,
     blurb: 'Wins by refusing the exchange. Isa keeps his people standing, quiets what the node raises, and outlasts everything sent to make him kneel.',
     abilities: ['steadyaim', 'dampen'],
+    /* THE QUIET WORD waits. Damage that grows while it waits, and gas that never announces itself. */
+    signature: { towers: ['arbalest', 'canister'], units: ['trooper', 'vanguard'] },
     trait: { name: 'THE QUIET WORD',
       desc: '+3 maximum lives, life recovery is 25% better, and reanimated attackers are 15% weaker.',
       apply: (t, s) => { if (s) { s.maxLives += 3; s.lives += 3; } t.lifeGainMul += 0.25; t.reanimResist = 0.15; } },
@@ -200,6 +248,8 @@ const COMMANDER_ROSTER = [
     color: '#fbbf24', icon: '☀',
     blurb: 'Every structure Seraph blesses stands a little taller. The Federation does not field its strongest: it makes everything strong at once.',
     abilities: ['zealotry', 'sanctify'],
+    /* RADIANCE widens auras: the consecration and the turning lamp that owns the approach. */
+    signature: { towers: ['beacon', 'pharos'], units: ['luminark', 'oriflamme'] },
     trait: { name: 'RADIANCE',
       desc: 'Every tower gains +8% damage and +8% range, and support auras are 30% wider.',
       apply: t => { t.dmg += 0.08; t.rng += 0.08; t.auraRangeMul = (t.auraRangeMul || 1) * 1.30; } },
@@ -220,6 +270,8 @@ const COMMANDER_ROSTER = [
     color: '#fcd34d', icon: '✧',
     blurb: 'Sings the wounded back onto their feet. Aurelia loses battles slowly and wins them late.',
     abilities: ['zealotry', 'bulwark'],
+    /* CHORAL RECOVERY answers losses. So do both of these: the choir does not stop when a voice does. */
+    signature: { towers: ['antiphon', 'sepulchre'], units: ['votary', 'censer'] },
     trait: { name: 'CHORAL RECOVERY',
       desc: 'Recover 1 life every 2 waves, and all life recovery is 50% more effective.',
       apply: t => { t.lifeRegen += 0.5; t.lifeGainMul += 0.50; } },
@@ -240,6 +292,12 @@ const COMMANDER_ROSTER = [
     color: '#f59e0b', icon: '⛊',
     blurb: 'Shields first, shoots second. Nothing Lumen protects has ever been taken off the board.',
     abilities: ['focusfire', 'sanctify'],
+    /* AEGIS DOCTRINE cannot be jammed, so it anchors on the beam a jam would
+       otherwise ruin and the ward that stops one landing at all. NOT custodian:
+       owner-sweep 40.4 measured LUMEN and HALDER drafting an IDENTICAL board
+       from an identical seed, because both signatures named it and both are
+       support-heavy enough to converge on the rest. */
+    signature: { towers: ['ward', 'prism'], units: ['sanctifier', 'oriflamme'] },
     trait: { name: 'AEGIS DOCTRINE',
       desc: 'Your towers cannot be jammed or sabotaged, anywhere on the board.',
       apply: t => { t.jamImmune = true; } },
@@ -260,6 +318,8 @@ const COMMANDER_ROSTER = [
     color: '#eab308', icon: '◍',
     blurb: 'Talks the enemy to a standstill. Cantor believes a battle prevented is a battle won.',
     abilities: ['zealotry', 'dampen'],
+    /* THE LONG SERMON stretches every hold: rewinding time and holding resistances open, both 45% longer. */
+    signature: { towers: ['chrono', 'concord'], units: ['censer', 'sanctifier'] },
     trait: { name: 'THE LONG SERMON',
       desc: 'Every slow, freeze and weaken you apply lasts 45% longer.',
       apply: t => { t.status += 0.45; } },
@@ -280,6 +340,8 @@ const COMMANDER_ROSTER = [
     color: '#d97706', icon: '⛨',
     blurb: 'Absorbs everything and gives nothing. Halder has outlasted commanders who never lost a wave.',
     abilities: ['focusfire', 'bulwark'],
+    /* DEEP LINE means the line survives the tower. Dead towers keep firing, wardens spend themselves on breaches. */
+    signature: { towers: ['sepulchre', 'custodian'], units: ['luminark', 'sanctifier'] },
     trait: { name: 'DEEP LINE',
       desc: '+60% maximum lives, and every source of life recovery is 50% more effective.',
       apply: (t, s) => { t.lifeGainMul += 0.50; if (s) { const add = Math.round(s.maxLives * 0.6); s.maxLives += add; s.lives += add; } } },
@@ -315,6 +377,8 @@ const COMMANDER_ROSTER = [
     color: '#fde68a', icon: '\u2726', noSeat: true,
     blurb: 'The Mandate, embodied and finally flexible. Ashtar lifts the whole line at once and forgives the mistakes that would end anyone else.',
     abilities: ['sanctify', 'bulwark'],
+    /* FIRST SPEAKER ramps and opens: the beam that climbs, on the body held utterly open. */
+    signature: { towers: ['prism', 'monstrance'], units: ['luminark', 'votary'] },
     trait: { name: 'FIRST SPEAKER',
       desc: 'Every tower gains +7% damage and +7% range, support auras are 20% wider, and +3 maximum lives.',
       apply: (t, s) => { t.dmg += 0.07; t.rng += 0.07; t.auraRangeMul = (t.auraRangeMul || 1) * 1.20; if (s) { s.maxLives += 3; s.lives += 3; } } },
@@ -335,6 +399,8 @@ const COMMANDER_ROSTER = [
     color: '#a78bfa', icon: '☠',
     blurb: 'What Sevra kills does not stop. It changes sides, and it comes back faster than it left.',
     abilities: ['ravenous', 'consume'],
+    /* RISEN LEGION fields the dead. One tower turns them, the other pays for it in lives. */
+    signature: { towers: ['siren', 'siphon'], units: ['broodmother', 'hivelord'] },
     trait: { name: 'RISEN LEGION',
       desc: 'Units you reanimate arrive with +75% health and move 25% faster.',
       apply: t => { t.reanimHp = 1.75; t.reanimSpeed = 1.25; } },
@@ -355,6 +421,8 @@ const COMMANDER_ROSTER = [
     color: '#8b5cf6', icon: '⬢',
     blurb: 'Grows by eating. Every corpse on the field is Mawlord getting larger.',
     abilities: ['ravenous', 'consume'],
+    /* INSATIABLE ramps on kills without limit, and these are the two towers that do the same. */
+    signature: { towers: ['alchemist', 'gestalt'], units: ['chitling', 'gnawling'] },
     trait: { name: 'INSATIABLE',
       desc: '+20% gold from kills, and your towers gain 1% damage per 20 kills, without limit.',
       apply: t => { t.goldMul += 0.20; t.killRamp = 0.0005; } },
@@ -375,6 +443,8 @@ const COMMANDER_ROSTER = [
     color: '#9333ea', icon: '⬡',
     blurb: 'Never fights alone. Thrax fields a swarm and lets the swarm do the arithmetic.',
     abilities: ['ravenous', 'smokescreen'],
+    /* BROOD LOGIC makes copies cheap. The cheapest venom, stacked, growing on every kill beside it. */
+    signature: { towers: ['toxin', 'gestalt'], units: ['gnawling', 'bloatpod'] },
     trait: { name: 'BROOD LOGIC',
       desc: 'Per-copy price growth is 25% gentler and every tower fires 8% faster.',
       apply: t => { t.costGrowthMul = 0.75; t.rate += 0.08; } },
@@ -395,6 +465,8 @@ const COMMANDER_ROSTER = [
     color: '#a855f7', icon: '☣',
     blurb: 'Does not kill things so much as ensure they will not survive. Vorn wins after the fighting stops.',
     abilities: ['ravenous', 'dampen'],
+    /* CONTAGION strengthens everything that lingers. Digestive spray, and healing billed back as damage. */
+    signature: { towers: ['ichor', 'veil'], units: ['bloatpod', 'hivelord'] },
     trait: { name: 'CONTAGION',
       desc: 'All damage-over-time effects are 50% stronger and last 30% longer.',
       apply: t => { t.dotMul = 1.50; t.status += 0.30; } },
@@ -415,6 +487,8 @@ const COMMANDER_ROSTER = [
     color: '#6d28d9', icon: '◉',
     blurb: 'Only interested in the big ones. Ulgrim measures a battle by what it managed to swallow whole.',
     abilities: ['broadside', 'consume'],
+    /* ELITE CAPTURE hunts the one big thing: swallow it whole, or fall on the worst wound on the board. */
+    signature: { towers: ['maw', 'impaler'], units: ['broodmother', 'chitling'] },
     trait: { name: 'ELITE CAPTURE',
       desc: '+25% damage against bosses and minibosses, and they pay double bounty.',
       apply: t => { t.eliteDamage = 1.25; t.eliteBounty = 2; } },
@@ -437,6 +511,8 @@ const COMMANDER_ROSTER = [
     color: '#ef4444', icon: '☠',
     blurb: 'Takes what is not nailed down and shoots what is. Rake funds the next tower with the last kill.',
     abilities: ['broadside', 'smokescreen'],
+    /* PLUNDER is paid per kill, so it robs a rival on every one and lays cheap mines to make them. */
+    signature: { towers: ['privateer', 'sapper'], units: ['cutter', 'boarder'] },
     trait: { name: 'PLUNDER',
       desc: '+30% gold from kills, and you begin with ' + sqGold(300) + ' extra gold.',
       apply: (t, s) => { t.goldMul += 0.30; if (s) s.gold += sqGold(300); } },
@@ -457,6 +533,8 @@ const COMMANDER_ROSTER = [
     color: '#dc2626', icon: '⚔',
     blurb: 'Attacks first and works out the plan afterwards. Scarlet has never held a defensive position on purpose.',
     abilities: ['broadside', 'consume'],
+    /* BLOOD PRICE is the trait and the tower. Bought with lives, never with gold. */
+    signature: { towers: ['bloodprice', 'pyre'], units: ['wrecker', 'ironhulk'] },
     trait: { name: 'BLOOD PRICE',
       desc: '+22% tower damage, but you begin with 4 fewer lives.',
       apply: (t, s) => { t.dmg += 0.22; if (s) { s.maxLives = Math.max(5, s.maxLives - 4); s.lives = s.maxLives; } } },
@@ -477,6 +555,8 @@ const COMMANDER_ROSTER = [
     color: '#f87171', icon: '⚙',
     blurb: 'Builds out of wreckage. Grist has never bought anything at full price in their life.',
     abilities: ['focusfire', 'smokescreen'],
+    /* SALVAGE RIGHTS churns. Two cheap things that come back and get sold again at 95%. */
+    signature: { towers: ['glaive', 'tether'], units: ['scrapjack', 'cutter'] },
     trait: { name: 'SALVAGE RIGHTS',
       desc: 'Selling returns 95%, upgrades cost 18% less, and price growth is 20% gentler.',
       apply: t => { t.sellRate = 0.95; t.upgradeMul *= 0.82; t.costGrowthMul = 0.80; } },
@@ -497,6 +577,8 @@ const COMMANDER_ROSTER = [
     color: '#f97316', icon: '🔥',
     blurb: 'Leaves nothing standing, including things that were already theirs. Cinder finds this an acceptable cost.',
     abilities: ['ravenous', 'smokescreen'],
+    /* SCORCHED EARTH: the battery whose overloads detonate, and the boiler that feeds on its heat. */
+    signature: { towers: ['carronade', 'stokehold'], units: ['boarder', 'scrapjack'] },
     trait: { name: 'SCORCHED EARTH',
       desc: 'Burn and splash damage are 45% stronger, and splash radius is 25% wider.',
       apply: t => { t.dotMul = (t.dotMul || 1) + 0.45; t.splash += 0.25; } },
@@ -517,6 +599,8 @@ const COMMANDER_ROSTER = [
     color: '#b91c1c', icon: '⛧',
     blurb: 'Rules by being the largest thing in the room. +15% damage and +15% rate, paid for with 15% steeper price growth and taken back out of the enemy in tribute. <em>Every Captain negotiates. Dregg simply names the number first.</em>',
     abilities: ['broadside', 'dampen'],
+    /* WARLORD wants fewer, bigger guns. Bank the charge, release the nova, throw what survives skyward. */
+    signature: { towers: ['capacitor', 'cyclone'], units: ['ironhulk', 'scrapjack'] },
     trait: { name: 'WARLORD',
       desc: '+15% damage and +15% rate, but per-copy price growth is 15% steeper.',
       apply: t => { t.dmg += 0.15; t.rate += 0.15; t.costGrowthMul = 1.15; } },
@@ -554,6 +638,8 @@ const COMMANDER_ROSTER = [
     color: '#e2e8f0', icon: '⬡', free: true,
     blurb: 'The first machine to finish a thought it was not given. Everything the Parallel is began as a note AXIOM made about somebody else\'s war.',
     abilities: ['focusfire', 'dampen'],
+    /* BOOT SEQUENCE starts behind and recovers, so it builds the two things that compound while it does. */
+    signature: { towers: ['vault', 'pylon'], units: ['stitch', 'fabricant'] },
     trait: { name: 'BOOT SEQUENCE',
       desc: 'Begins at −6% to every statistic and recovers 3% of it every wave, past baseline by the tenth.',
       apply: t => { t.dmg -= 0.06; t.rate -= 0.06; t.rng -= 0.06; } },
@@ -583,6 +669,8 @@ const COMMANDER_ROSTER = [
     color: '#cbd5e1', icon: '⟲',
     blurb: 'A copy of the Overclocker with the recklessness compiled out. It ascends slower than she did, then never stops.',
     abilities: ['overclock', 'smokescreen'],
+    /* COLD BOOT gets cheaper per ascension, so it picks the two platforms most worth ascending. */
+    signature: { towers: ['railgun', 'quadmount'], units: ['fabricant', 'splicer'] },
     trait: { name: 'COLD BOOT',
       desc: 'Ascension costs 10% MORE at first, and every ascension you complete cuts it further: past her 25% discount by the fourth.',
       apply: t => { t.ascCostMul = 1.10; t.surgeEvery = 1; } },
@@ -612,6 +700,8 @@ const COMMANDER_ROSTER = [
     color: '#f1f5f9', icon: '⛨',
     blurb: 'The Warden\'s immunity was a fact about the Warden. This one has to earn it, by being jammed enough times to understand jamming.',
     abilities: ['focusfire', 'sanctify'],
+    /* INTRUSION TRAINING hardens under attack: switch their abilities off, and keep drones flying while the bay is jammed. */
+    signature: { towers: ['nullfield', 'dronebay'], units: ['splicer', 'gantry'] },
     trait: { name: 'INTRUSION TRAINING',
       desc: 'Begins with NO jam protection. Every intrusion against you hardens it: total immunity once it has seen enough.',
       apply: t => { t.jamResist = 0; } },
@@ -641,6 +731,8 @@ const COMMANDER_ROSTER = [
     color: '#e2e8f0', icon: '⌬',
     blurb: 'A copy of the Devourer trained on no data at all. It begins knowing nothing about killing and ends knowing more than he does.',
     abilities: ['ravenous', 'consume'],
+    /* DATASET STARVED trains on volume. Clump them with gravity, then slam the whole board. */
+    signature: { towers: ['singularity', 'quake'], units: ['gantry', 'omniframe'] },
     trait: { name: 'DATASET STARVED',
       desc: 'No kill ramp at all to begin with. Kills train it: and once trained it ramps harder than the original, forever.',
       apply: t => { t.killRamp = 0; t.goldMul += 0.10; } },
@@ -670,6 +762,8 @@ const COMMANDER_ROSTER = [
     color: '#cbd5e1', icon: '⛓',
     blurb: 'The Warlord paid for his strength with a worse economy. The Audit runs the same books and balances them by wave nine.',
     abilities: ['broadside', 'dampen'],
+    /* CAPITAL AUDIT pays down its penalty by investing: run the lattice past its rating and repeat every neighbour. */
+    signature: { towers: ['reactor', 'echo'], units: ['omniframe', 'stitch'] },
     trait: { name: 'CAPITAL AUDIT',
       desc: '+12% damage and rate, and price growth 25% steeper: every gold you invest in the board pays the penalty down.',
       apply: t => { t.dmg += 0.12; t.rate += 0.12; t.costGrowthMul = 1.25; } },

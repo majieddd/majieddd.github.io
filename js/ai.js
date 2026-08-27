@@ -67,14 +67,27 @@ const AI = {
       rival keeps the skirmish/assault/siege bands the derivation is pinned
       around. Deterministic on purpose: rerolling per retry would read as
       random rather than as a commander's doctrine. */
-  pickMusterLoadout(pool, size) {
+  /* `commander` is optional. When it carries a signature, its two named
+     denizens are seeded FIRST and the lightest/middle/heaviest spread fills
+     whatever is left. That is what makes one Xeno commander read differently
+     from another: SEVRA sends Broodmothers and Hivelords, MAWLORD sends
+     Chitlings and Gnawlings, and both are drafting from the same vault. The
+     spread is kept as the filler rather than replaced because it is what
+     guarantees the detachment still covers the skirmish/assault/siege bands. */
+  pickMusterLoadout(pool, size, commander) {
     const ids = (pool || []).filter(musterSendable)
       .sort((a, b) => ENEMY_TYPES[a].hp - ENEMY_TYPES[b].hp);
     const n = Math.max(1, Math.min(MUSTER_LOADOUT_SIZE, size || MUSTER_LOADOUT_SIZE, ids.length));
     if (!ids.length) return MUSTER_BASE_UNLOCK.slice();
-    if (n === 1) return [ids[0]];
-    if (n === 2) return [ids[0], ids[ids.length - 1]];
-    return [ids[0], ids[Math.floor(ids.length / 2)], ids[ids.length - 1]];
+
+    const sig = (commander && commander.signature && commander.signature.units || [])
+      .filter(u => ids.includes(u));
+    const out = [];
+    for (const u of sig) if (out.length < n && !out.includes(u)) out.push(u);
+    for (const u of [ids[0], ids[Math.floor(ids.length / 2)], ids[ids.length - 1]])
+      if (out.length < n && !out.includes(u)) out.push(u);
+    for (const u of ids) if (out.length < n && !out.includes(u)) out.push(u);
+    return out;
   },
 
   /**
@@ -86,7 +99,9 @@ const AI = {
   /* `rng` is optional and defaults to the native generator. A campaign world
      passes a seeded one derived from worldLoadoutSeed, so the five towers the
      briefing card shows are the five the battle fields. */
-  pickLoadout(map, diff, pool, faction, rng) {
+  /* `commander` is optional and is what makes two rivals of the SAME banner
+     field different boards. Without it this behaves exactly as it always did. */
+  pickLoadout(map, diff, pool, faction, rng, commander) {
     rng = rng || Math.random;
     /* Every core carries at least two genuine damage dealers plus an answer to
        air. A set built purely from control and support towers cannot kill
@@ -143,7 +158,21 @@ const AI = {
     const DAMAGE = ['bolt', 'mortar', 'arc', 'pyre', 'railgun', 'prism', 'sapper', 'dronebay', 'toxin',
                     'flak', 'siphon', 'executioner', 'quake', 'glaive', 'cyclone', 'capacitor',
                     'reckoning', 'arbalest', 'foundry',
-                    'canister', 'reclaimer', 'concord', 'ichor', 'custodian',
+                    'canister', 'reclaimer', 'concord', 'ichor',
+                    /* CUSTODIAN IS NOT HERE, and was, which is a defect owner-sweep
+                       40.5 caught the day it was written. Its own def says
+                       "It shoots nothing and it blocks nothing": dmgType is
+                       'none', its whole stat block is vigilHold/vigilEvery, and
+                       it removes one body that reaches the line without dealing
+                       a point of damage. Counting it let this brain draft
+                       SERAPH a board of custodian/sepulchre/pharos/beacon and
+                       believe it could fight, when exactly one of those four
+                       can kill anything.
+                       The three that STAY despite an empty base.damage are
+                       correct and must not be pruned with it: DRONEBAY damages
+                       through droneDamage, FOUNDRY through minionDps, and
+                       CAPACITOR through its nova. base.damage alone is not the
+                       test for whether a tower kills. */
                     'bombard', 'carronade', 'quadmount', 'impaler', 'monstrance', 'pharos'];
     const AIR    = ['flak', 'arc', 'prism', 'dronebay', 'bolt', 'railgun', 'cyclone', 'arbalest',
                     'reclaimer', 'concord',
@@ -156,7 +185,7 @@ const AI = {
        never fewer. The seed comes from the roster size and the map so a given
        theatre reads consistently rather than rerolling every retry. */
     const budget = Math.max(LOADOUT_SIZE, (pool && pool.length) || TOWER_ORDER.length);
-    const allowed = this.rivalArsenal(budget, map, DAMAGE, AIR, faction);
+    const allowed = this.rivalArsenal(budget, map, DAMAGE, AIR, faction, commander);
 
     const viable = cores.filter(c => c.every(t => allowed.includes(t)));
     let set = (viable.length
@@ -198,7 +227,43 @@ const AI = {
       if (out.length >= LOADOUT_SIZE) break;
       if (allowed.includes(d) && !out.includes(d)) out.push(d);
     }
-    return this.flyTheBanner(out, allowed, faction, DAMAGE, AIR, rng);
+    return this.flyTheBanner(this.flySignature(out, allowed, commander, DAMAGE, AIR),
+                             allowed, faction, DAMAGE, AIR, rng);
+  },
+
+  /**
+   * A commander's SIGNATURE, pressed into the drafted set before the banner
+   * top-up runs.
+   *
+   * The banner pass answers "is this a Xeno board". This answers "is this
+   * THRAX's Xeno board", which the banner pass cannot: every Xeno commander
+   * flew the same twelve towers and the six Federation commanders were
+   * indistinguishable from each other on the field. The signature is two
+   * towers of the commander's own origin chosen against its trait's mechanic
+   * (see the block above COMMANDER_ROSTER in js/roster.js).
+   *
+   * A BIAS, NOT A LOCK, for the same reason flyTheBanner is: this refuses any
+   * swap that would leave the set without two damage dealers or without an
+   * answer to air. A commander that cannot shoot upward is not a character,
+   * it is a loss. Least essential slots go first, exactly as the banner pass
+   * does, because a core puts its support and economy picks last.
+   *
+   * DETERMINISTIC on purpose, and the one pass here that draws no random
+   * number: a signature that varied per draft would not be a signature.
+   */
+  flySignature(set, allowed, commander, DAMAGE, AIR) {
+    const sig = (commander && commander.signature && commander.signature.towers) || [];
+    if (!sig.length) return set;
+    for (const want of sig) {
+      if (set.includes(want) || !allowed.includes(want)) continue;
+      for (let i = set.length - 1; i >= 0; i--) {
+        if (sig.includes(set[i])) continue;          /* never evict the other signature tower */
+        const after = set.slice(); after[i] = want;
+        if (after.filter(t => DAMAGE.includes(t)).length >= 2 &&
+            after.some(t => AIR.includes(t))) { set = after; break; }
+      }
+    }
+    return set;
   },
 
   /**
@@ -224,11 +289,22 @@ const AI = {
   flyTheBanner(set, allowed, faction, DAMAGE, AIR, rng) {
     rng = rng || Math.random;
     if (!faction) return set;
-    const own = allowed.filter(t => (TOWER_TYPES[t] || {}).origin === faction &&
+    /* originKeyOf, not `faction`. 'robot' is a banner and 'robotic' is an
+       origin, so this comparison found nothing for the machines on every
+       draft they ever made. See the POWER_ORIGIN note in js/factions.js for
+       the measurement. */
+    const origin = originKeyOf(faction);
+    const own = allowed.filter(t => (TOWER_TYPES[t] || {}).origin === origin &&
                                     !set.includes(t));
-    let flown = set.filter(t => (TOWER_TYPES[t] || {}).origin === faction).length;
+    let flown = set.filter(t => (TOWER_TYPES[t] || {}).origin === origin).length;
     for (let i = set.length - 1; i >= 0 && flown < LOADOUT_OWN_ORIGIN && own.length; i--) {
-      if ((TOWER_TYPES[set[i]] || {}).origin === faction) continue;
+      /* `origin`, not `faction`, and this was the THIRD of three comparisons
+         in this file that had to change together. Fixing the other two left
+         this one reading `origin === 'robot'`, which is never true, so the
+         loop stopped treating machine towers as own-origin and evicted the
+         very ones flySignature had just pressed in. Measured while it was
+         wrong: nyx_r drafted railgun and quadmount and shipped neither. */
+      if ((TOWER_TYPES[set[i]] || {}).origin === origin) continue;
       const k = Math.floor(rng() * own.length);
       const after = set.slice(); after[i] = own[k];
       if (after.filter(t => DAMAGE.includes(t)).length >= 2 &&
@@ -241,7 +317,7 @@ const AI = {
    * The rival's own unlocked shelf: `budget` towers, deterministic per map,
    * always seeded with the five staples so a small arsenal is still playable.
    */
-  rivalArsenal(budget, map, DAMAGE, AIR, faction) {
+  rivalArsenal(budget, map, DAMAGE, AIR, faction, commander) {
     let h = 2166136261;
     for (const ch of String((map && map.id) || 'field')) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
     const seed = ((h >>> 0) + budget * 104729) >>> 0;
@@ -259,10 +335,22 @@ const AI = {
        commander whose whole shelf came up human reads as no commander at all,
        so one own-origin tower is seeded for every two staples -- even the
        smallest shelf still says which banner it fights under. */
+    /* THE SIGNATURE GOES ON THE SHELF FIRST. flySignature can only press a
+       tower into the set if the rival is allowed to own it, and the shuffled
+       tail below reaches a signature tower only by luck. Seeding it here is
+       what turns the signature from a preference into something that actually
+       appears on the board. Signature towers are own-origin by contract, so
+       this can never widen the shelf past the origin law above. */
+    const sigT = ((commander && commander.signature && commander.signature.towers) || [])
+      .filter(t => legal.includes(t));
     const staples = ['bolt', 'cryo', 'mortar', 'arc', 'flak'].filter(t => legal.includes(t));
-    const own = faction ? legal.filter(t => (TOWER_TYPES[t] || {}).origin === faction) : [];
-    const out = [];
+    /* Same banner-versus-origin correction as flyTheBanner: without it the
+       machines got none of the own-origin seeds this loop exists to plant. */
+    const ownOrigin = originKeyOf(faction);
+    const own = faction ? legal.filter(t => (TOWER_TYPES[t] || {}).origin === ownOrigin) : [];
+    const out = sigT.slice();
     for (let i = 0; i < staples.length; i++) {
+      if (out.includes(staples[i])) continue;
       out.push(staples[i]);
       if (i % 2 === 1 && own.length) { const o = own.shift(); if (!out.includes(o)) out.push(o); }
     }

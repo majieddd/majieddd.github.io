@@ -145,7 +145,9 @@ function stripDashes(text) {
     let cut = out.length;
     while (cut > 0 && (out[cut - 1] === ' ' || out[cut - 1] === '\t')) cut--;
     const leftChar = cut > 0 ? out[cut - 1] : '';
-    const hadLeftSpace = cut < out.length;
+    /* Kept verbatim, not measured as a boolean: a line-opening dash has to put
+       the author's exact indent back, and "was there a space" cannot do that. */
+    const leftWs = out.slice(cut);
     out = out.slice(0, cut);
 
     /* Absorb spaces and tabs immediately right of the dash, same newline rule. */
@@ -159,9 +161,17 @@ function stripDashes(text) {
       /* Dash ends a line. Drop it and any space it sat on; the newline stays
          where it is and the next line is untouched. */
     } else if (leftChar === '' || leftChar === '\n' || leftChar === '\r') {
-      /* Dash opens a line, e.g. a wrapped comment. Leave no punctuation, and
-         restore a single space only if the author had one. */
-      if (hadLeftSpace) out += ' ';
+      /* Dash opens a line, e.g. a wrapped comment or a hanging indent. Leave
+         no punctuation, and restore THE INDENT THE AUTHOR WROTE.
+
+         It used to restore a single space, which is how `   ` + dash + `flat`
+         became ` flat`: the absorb loop above takes the whole leading
+         whitespace run and one space came back. The header of this file has
+         claimed since Session 29 that "line structure and indentation are
+         untouched", and for a line-opening dash that was false. Measured on
+         docs/NEXT-SESSION.md, where a three-space hanging indent under a
+         numbered list item collapsed to one and broke the wrap. */
+      out += leftWs;
     } else if (/[.!?:,;]/.test(leftChar)) {
       out += ' ';
     } else if (/[A-Z0-9]/.test(rightChar) && /[a-z0-9)\]"']/.test(leftChar)) {
