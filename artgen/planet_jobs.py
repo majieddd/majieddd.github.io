@@ -575,6 +575,18 @@ ORDER_OVERRIDE = {
                     'accounted for and every hull logged',
     ('40', 'xeno'): 'the dormant rows left exactly as they stand, unwoken and unasked, '
                     'under guard',
+    # Three more, found by a keyword sweep for an art line promising OPENING
+    # against a text describing KEEPING. The sweep shortlisted 14 and only
+    # these 3 survived reading, so treat it as a shortlist and never a gate:
+    # it matched "sealed page" as a retention word and flagged all five
+    # STEROPE cells wrongly. All three real hits are the Compact, again, for
+    # the same reason as the other nine.
+    ('12', 'xeno'): 'the ring anchor rebuilt and the ring relit, closing exactly as tightly '
+                    'as it always did',
+    ('33', 'xeno'): 'the toll gate re-crewed and standing across the lane, the toll still '
+                    'collected and the collector changed',
+    ('34', 'xeno'): 'the shelter doors working and shut, the warren below them run as a '
+                    'holding pen',
 }
 
 INTRO_BEATS = ('1', '2', '3')
