@@ -187,9 +187,16 @@ Animated plates exist to make a painting feel ALIVE, not to make a movie.
   refused automatically under reduced-motion and data-saver. The still plate
   is always the poster and always the fallback.
 - Generator: `tools/plate_to_video.py` (Wan 2.2 TI2V-5B through local
-  ComfyUI). Prompt the MOTION only; the image already carries the scene. The
-  negative prompt is LIVE on this path (guidance is not zero): `static`,
-  `motionless frame` are load-bearing clauses.
+  ComfyUI), with `--loop-fade 24` for the seamless close. Prompt the MOTION
+  only; the image already carries the scene. The negative prompt is LIVE on
+  this path (guidance is not zero).
+- **Prompt the stillness as hard as the motion.** Measured on the first
+  living-portraiture pass: asked for breathing glow, the model still swirled
+  a nebula (drift 35.95 RMS) and made background figures change pose
+  (16.50). The accepted takes carry explicit clauses like "completely static
+  and never changes shape", "never changes pose", "no swirling", and landed
+  at 4 to 17 drift with all motion in brightness. The model would rather
+  animate the scene than the light; do not let it.
 
 ## 8. Verification, always
 
