@@ -1035,6 +1035,52 @@
        : 'four powers x six seeds: every galaxy pays all five, one renegade world per system');
   });
 
+  /* ---- 38.1 the one universe ------------------------------------------- */
+  T('38.1 v2 galaxies share one universe and never self-garrison', function () {
+    const id = '38.1 v2 galaxies share one universe and never self-garrison';
+    if (typeof generateGalaxy !== 'function' || typeof GX_UNIVERSE_SEED === 'undefined') {
+      skip(id, 'no v2 generator'); return;
+    }
+    const facs = ['human', 'light', 'xeno', 'pirate', 'robot'];
+    const bad = [];
+    /* The shared-state fingerprint: everything the owner named as "the same
+       universe" (worlds, kinds, boards, states), keyed by universe world id.
+       Holders and owners are the POLITICAL layer and are exempt: the
+       own-faction garrison ban forces them to vary, and 38.1 instead asserts
+       the ban itself over all 25 cells. */
+    const print = g => {
+      const m = {};
+      g.systems.forEach(sys => sys.worlds.forEach(w => {
+        m[w.id] = [w.name, w.kind, w.map, w.arena || '', !!w.contested, !!w.seat,
+                   w.x.toFixed(3), w.y.toFixed(3)].join('|');
+      }));
+      return m;
+    };
+    const gxs = {};
+    facs.forEach(f => { gxs[f] = generateGalaxy(GX_UNIVERSE_SEED, f, MAPS.filter(m => !m.tri).length, 2, 2); });
+    const ref = print(gxs.human);
+    facs.forEach(f => {
+      const m = print(gxs[f]);
+      Object.keys(ref).forEach(k => {
+        if (m[k] !== ref[k]) bad.push(f + ' ' + k + ' diverges: ' + m[k] + ' vs ' + ref[k]);
+      });
+      /* Tier 0 is the faction's own home, by name. */
+      const home = GX_HOME_SYSTEMS[f].name;
+      if (gxs[f].systems[0].name !== home)
+        bad.push(f + ' starts at ' + gxs[f].systems[0].name + ' not ' + home);
+      /* No cell of the holder table may ever hand a system to its player. */
+      gxs[f].systems.forEach(sys => {
+        if (sys.holder === f) bad.push(f + ' self-garrisons ' + sys.name);
+        if (sys.holder === 'robot') bad.push(f + ' meets a Parallel garrison at ' + sys.name + ', spoiler');
+      });
+    });
+    ok(id, bad.length === 0,
+       bad.length ? bad.slice(0, 3).join('; ')
+       : 'five factions, one universe: ' + Object.keys(ref).length +
+         ' worlds byte-identical in name, kind, board, arena, slot and place; ' +
+         'every faction opens at its own home; 25 holder cells, 0 self, 0 spoilers');
+  });
+
   /* ---- 24.2 the Parallel gets no splinter ------------------------------ */
   T('24.2 THE PARALLEL has no renegade world and no own-power boon', function () {
     if (typeof generateGalaxy !== 'function') { skip('24.2 THE PARALLEL has no renegade world and no own-power boon', 'no generator'); return; }

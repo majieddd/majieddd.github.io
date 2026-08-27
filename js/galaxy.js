@@ -128,6 +128,51 @@ const GX_STAR_POOL = [
   { name: "KAPTEYN'S STAR",   tag: 'KAPTEYN',    seat: 'THE HALO WANDERER' },
 ];
 
+/* ──────────────────────────── THE ONE UNIVERSE (v2, Session 38) ────────────
+   Owner directive 2026-08-27: factions were each generating their own random
+   galaxy, so a human campaign and a light campaign showed unrelated solar
+   systems. The direction is ONE galaxy: the same five systems, the same
+   worlds in the same states, and each faction simply STARTS at its own home
+   and conquers outward from there. "The same universe from different sides."
+
+   v2 therefore generates the five HOME systems in a fixed UNIVERSE ORDER
+   (below), from a fixed UNIVERSE SEED, for every faction. The rnd() stream is
+   identical whoever is playing, so kinds, maps, arenas, contested slots and
+   boon slots are byte-identical across factions. What is then rotated per
+   faction is only the CAMPAIGN ORDER (your home is tier 0) and what is
+   necessarily political is only the HOLDER of each system, because the
+   standing law that your own faction never garrisons a board against you
+   (battleHostFaction, driven to 0.0%) forbids a light player besieging a
+   light-held Pleiades. The deviation is authored, not rolled, in the table
+   below.
+
+   The seed is the intercept date. April 13, 2029 is the day the rock broke
+   and every one of these campaigns began at once, which is exactly the
+   owner's reason the universe must be shared. */
+const GX_UNIVERSE_SEED = 20290413;
+const GX_UNIVERSE_ORDER = ['human', 'light', 'xeno', 'pirate', 'robot'];
+
+/* Who HOLDS each home system, per player faction. Row: universe system by its
+   home faction. Column rule: the canonical holder, unless that would be the
+   player's own faction, in which case the authored occupier of their story
+   (the harvest holds Earth, the broken fence lets the xeno into the Pleiades,
+   the shattered pods put a human fleet over Zeta, a human crackdown blockades
+   Barnard's, and the jagged alien knot has the Veil). 'robot' never appears
+   as a holder: seating Parallel commanders in front of a player who has not
+   unlocked the faction would spoil it, so the corrupted machines of Tabby's
+   Star read as what corrupted them. */
+const GX_V2_HOLDER = {
+  /* system EARTH   */ human:  { human: 'xeno',   light: 'xeno',   xeno: 'human',  pirate: 'xeno',   robot: 'xeno' },
+  /* system PLEIADES*/ light:  { human: 'light',  light: 'xeno',   xeno: 'light',  pirate: 'light',  robot: 'light' },
+  /* system ZETA    */ xeno:   { human: 'xeno',   light: 'xeno',   xeno: 'human',  pirate: 'xeno',   robot: 'xeno' },
+  /* system BARNARD */ pirate: { human: 'pirate', light: 'pirate', xeno: 'pirate', pirate: 'human',  robot: 'pirate' },
+  /* system TABBY   */ robot:  { human: 'xeno',   light: 'xeno',   xeno: 'pirate', pirate: 'xeno',   robot: 'xeno' },
+};
+/* GX_V2_HOLDER[homeFaction][playerFaction] = who garrisons that system in
+   that player's campaign. Every diagonal case (you at your own home) resolves
+   to your story's occupier, never to yourself; the sweep asserts this for all
+   25 cells because a table this small is exactly where a typo hides. */
+
 /* Pure integer helpers. No rnd() call may ever appear in either. */
 function gxPoolEntry(faction, seed, si) {
   /* Humanity's home IS Sol, so its travelling pool must not offer a second
@@ -227,7 +272,18 @@ const WORLD_KINDS = {
  * Build a whole galaxy from a seed. Systems are laid out around a spiral so the
  * map reads as a galaxy rather than a grid; worlds orbit their system centre.
  */
-function generateGalaxy(seed, playerFaction, mapPool, kindsW) {
+function generateGalaxy(seed, playerFaction, mapPool, kindsW, gxv) {
+  /* v2 is the ONE UNIVERSE (see GX_UNIVERSE_SEED above). Every caller that
+     does not pass gxv gets v1 byte-identical: the flag changes which VALUES
+     are looked up (names, holders, tiers), never how many rnd() draws are
+     taken or in what order, so the stream discipline this file is built on
+     holds across both versions with one generator. */
+  const v2 = gxv >= 2;
+  /* Campaign order rotation: universe index u renders at campaign tier
+     (u - uHome + 5) % 5, so every faction opens at its own home and the
+     universe itself never moves. */
+  const uHome = Math.max(0, GX_UNIVERSE_ORDER.indexOf(playerFaction));
+  const campTier = u => (u - uHome + GX_UNIVERSE_ORDER.length) % GX_UNIVERSE_ORDER.length;
   const KW = KIND_WEIGHTS[kindsW] || KIND_WEIGHTS[1];
   const rnd = galaxyRng(seed);
   const rivals = rivalFactionsOf(playerFaction);
@@ -260,8 +316,13 @@ function generateGalaxy(seed, playerFaction, mapPool, kindsW) {
        conversion, so no saved campaign’s maps, arenas or boons move. */
     const cx = slot[0], cy = slot[1] / GX_RENDER_SQUASH;
 
-    /* Each system is dominated by one rival power, which supplies its commander. */
-    const holder = rivals[si % rivals.length];
+    /* Each system is dominated by one enemy power, which supplies its
+       commander. v1 cycles the player's rivals; v2 reads the authored
+       politics of the one universe (GX_V2_HOLDER), where si IS the universe
+       index because v2 generates the homes in universe order. */
+    const holder = v2
+      ? GX_V2_HOLDER[GX_UNIVERSE_ORDER[si]][playerFaction] || rivals[si % rivals.length]
+      : rivals[si % rivals.length];
     const pool = commandersOf(holder);
     const boss = pool[Math.floor(rnd() * pool.length)];
 
@@ -299,7 +360,8 @@ function generateGalaxy(seed, playerFaction, mapPool, kindsW) {
         /* Canon 2029: real names, index-derived exactly as before, zero
            draws. The numeral suffix went with the invented names: MARS is
            not MARS X, and TRAPPIST-1e is already a real designation. */
-        name: gxWorldName(playerFaction, seed, si, wi),
+        name: v2 ? GX_HOME_SYSTEMS[GX_UNIVERSE_ORDER[si]].worlds[wi % 7]
+                : gxWorldName(playerFaction, seed, si, wi),
         x: Math.min(GX_X_MAX, Math.max(GX_X_MIN, cx + Math.cos(wa) * wr)),
         /* Divided by the render squash so the orbit is round ON SCREEN. The
            clamp is a guard now, not a shaper: with GX_SYSTEM_SLOTS nothing
@@ -337,7 +399,7 @@ function generateGalaxy(seed, playerFaction, mapPool, kindsW) {
         /* Still exactly ONE rnd() call, in the same position: boonFor
            takes the VALUE, never the generator. */
         boon: boonFor(worldOwner, kindId, false, rnd()).id,
-        tier: si,
+        tier: v2 ? campTier(si) : si,
         /* Filled by buildRoutes() once every world exists. Declared here so a
            world is never a shape that has links on some code paths and not on
            others -- `links` is read on every galaxy-map frame. */
@@ -429,16 +491,33 @@ function generateGalaxy(seed, playerFaction, mapPool, kindsW) {
            untouched: it is the world’s identity, it drives the briefing card
            and the garrison rules, and a fortress that calls itself a forge to
            move a boon would be a lie on the card to save a line here. */
-        const bk = RENEGADE_BOON_KINDS[si % RENEGADE_BOON_KINDS.length];
-        const apex = si === SYSTEMS_PER_GALAXY - 1;
+        const rsi = v2 ? campTier(si) : si;
+        const bk = RENEGADE_BOON_KINDS[rsi % RENEGADE_BOON_KINDS.length];
+        const apex = rsi === SYSTEMS_PER_GALAXY - 1;
         w.boon = boonFor(playerFaction, apex ? w.kind : bk, apex, 0).id;
       }
     }
 
     systems.push({
       id: 'sys' + si, index: si,
-      name: gxSystemName(playerFaction, seed, si),
+      name: v2 ? GX_HOME_SYSTEMS[GX_UNIVERSE_ORDER[si]].name
+               : gxSystemName(playerFaction, seed, si),
+      home: v2 ? GX_UNIVERSE_ORDER[si] : undefined,
       x: cx, y: cy, holder, boss: boss.id, worlds
+    });
+  }
+  if (v2) {
+    /* Rotate the ARRAY into campaign order and relabel index/si to match,
+       while ids and coordinates keep their universe identity: 's2w4' is the
+       same world with the same name at the same screen slot in every
+       faction's campaign, which is what makes authored per-planet content
+       possible at all. Ids are what saves and cutscene keys hold; index and
+       si are what progression walks. Nothing here draws from rnd(), so the
+       stream fingerprint is untouched. */
+    systems.sort((p, q) => campTier(p.index) - campTier(q.index));
+    systems.forEach((sys, pos) => {
+      sys.index = pos;
+      for (const w of sys.worlds) { w.si = pos; w.tier = pos; }
     });
   }
   const galaxy = { seed, playerFaction, raider, systems };
