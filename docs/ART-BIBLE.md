@@ -722,3 +722,77 @@ whether the house style holds.** The mechanism is verified end to end, a
 2688x1536 source lands as a 1920x1080 RGB WEBP that `--pack` passes through
 untouched, a 1280x720 source is refused, a non-key filename is reported. The
 *art* is not verified. Render two, compare, then decide.
+
+## 15. Hosted painters: what "unlimited" actually means (researched 2026-08-27)
+
+The owner asked for a hosted API with unlimited monthly generation, having
+seen Higgsfield advertise it. The word is doing a lot of work in this market,
+and it fails in three distinct ways. **The failure mode matters more than the
+price**, because two of the three are the same trap Firefly sprang.
+
+| Provider | Price | Unlimited? | Reachable from a script? |
+|---|---|---|---|
+| **ModelsLab** | $149/mo | **Yes, genuinely.** No per-image charge, no daily cap, all models | **Yes.** Key-auth REST, same shape as our painters |
+| **Leonardo** | $30 Artisan / $48 Maestro | Only "relaxed" generation, **and not through the API** | Yes, but **pay-as-you-go, billed separately from the subscription** |
+| **Scenario** | $15 / $45 / $75 | No. Credit allowance, resets monthly | Yes, API-first, built for game pipelines |
+| **Higgsfield** | $39 Plus | 365-day unlimited **image** models (not 7-day, and not video) | **Unconfirmed — likely app-only** |
+| **Segmind** | $39-$599 | No. Credits, despite the marketing word | Unlimited only via hourly GPU rental |
+
+### The trap, stated once
+
+**Unlimited generation in a web app is not unlimited generation in an API.**
+Firefly taught this the expensive way (section 13), Higgsfield looks identical
+in shape, and Leonardo is a subtler version: the unlimited tier and the API
+tier are the same company selling two different products, and the generous one
+is not the scriptable one. **Before adopting any provider, confirm the
+unlimited claim and the API claim refer to the same product.**
+
+### Where each one actually fits
+
+**ModelsLab** is the only true flat-rate scriptable option found, and $149/mo
+against 875 planet plates plus textures is cheap next to per-image billing.
+Trustpilot sits at 2.5/5 with reports of undocumented error responses, so it
+is a trial-first candidate, not a commitment.
+
+**Leonardo** gives every new API account **$5 of non-expiring free credit**,
+which is the cheapest honest way to answer the style question. Use the free
+credit for the trial regardless of who wins.
+
+**Scenario is the one to take seriously for gameplay assets**, and for a
+reason none of the others address: it trains a **custom model on your own
+art**, 10-30 images for a style. This project's whole problem is holding one
+locked house style across hundreds of assets, and a fine-tune is the only
+mechanism here that solves that structurally rather than by prompt-stuffing.
+It also emits PBR-textured meshes and is built API-first for Unity/Unreal.
+Its credit ceiling is the cost of that.
+
+### Textures are a different problem, and general painters are bad at it
+
+A game texture must be **seamless, tileable, and PBR-complete** (base colour,
+normal, roughness, metallic, height). Providers that achieve real seamlessness
+train on tileable datasets so the result is continuous by construction; the
+rest blend edges afterwards and it shows under repetition. Tools named as
+current: 3D AI Studio, Prodia, Scenario, Polycam. **This catalogue has no
+texture class at all today** -- `build_jobs()` is cmd/fac/world/foe/planet/
+abil/twr/cut/pcut -- so adding one is new work, not a re-render.
+
+### The trial harness
+
+`artgen/api_trial.py` answers the only question that matters before adopting
+anyone: **can this provider paint the house style.**
+
+```bash
+export LEONARDO_API_KEY=...        # or MODELSLAB_API_KEY
+python artgen/api_trial.py --check
+python artgen/api_trial.py --provider leonardo --keys cut_human_sys1,cut_xeno_sys1
+python artgen/api_trial.py --provider leonardo --texture rock,hull_plating
+```
+
+**It writes to `docs/api-trial/`, never to the cache.** Its output is evidence,
+not art, and trialling a key that already has shipped art is the point: the
+local plate is the thing to hold the candidate against. It appends the section
+1 style spine to catalogue prompts so a provider is judged on this project's
+terms, uses a separate flat-swatch prompt plus the tiling flag for textures
+because a cutscene prompt would prove nothing about tiling, and trials at
+1024x576 rather than the 1920x1080 delivery size because style is legible at
+any size and the larger render spends money to learn the same thing.
