@@ -167,6 +167,82 @@ const DIALOGUE = {
     robot:  ['You solved this badly for four centuries. We read the logs.',
              'Nothing personal. You are simply the previous draft.']
   },
+  /* THE ANSWER, one per commander (owner directive, Session 39).
+
+     WHAT THIS FIXES, measured before it was written. `pairs` is empty by
+     design and `canonExchange` covers 18 of the 318 pairings that can
+     actually meet, so 300 of them fell through to `openers[rival]` plus a
+     draw from `replies[faction]`, and those pools hold TWO lines each. Your
+     commander therefore answered a named rival with one of two faction
+     slogans, chosen by hash, in 94% of battles. It is on-register, which is
+     what the Session 38 audit checked and correctly passed, and it is still
+     not a conversation: the reply is not spoken by a character and does not
+     acknowledge what was just said.
+
+     So every commander now has an ANSWER as well as an OPENER, and the pair
+     of them is symmetric: the opener is what a commander says when the rival,
+     the answer is what the same commander says when the player. 28 openers
+     and 28 answers give the fallback 784 combinations of two authored voices
+     instead of 28 combinations of one voice and a slogan.
+
+     REGISTER, not information. An answer cannot know which opener preceded it
+     (the fallback is by definition the path with no pair-specific writing),
+     so none of these replies to a specific claim. Each is written as the
+     posture that commander takes when threatened, which reads as responsive
+     from any opener because it is a person answering rather than a banner.
+
+     Canon still wins. The lookup order is pairs, then canonExchange, then
+     this, then the faction pool, so adding an answer cannot shadow a
+     relationship-seeded exchange the way a `pairs` entry would. The faction
+     pool stays as the last resort for any commander added without one, which
+     is the same degrade-quietly contract the openers have. */
+  answers: {
+    /* UNALIGNED. Cadre answers to nobody and therefore claims nothing. */
+    cadre:   'I have fought under four flags and buried friends beneath all of them. You are today. There is nothing special about you.',
+
+    /* HUMANITY. Grounded, competent, and newly aware of how long it was lied
+       to. None of them threaten back; all of them refuse the premise. */
+    vanta:   'You are the ninth commander to open with a prediction. I have the other eight on file. Would you like to hear how they finish?',
+    korrin:  'You priced the defeat. Did you price the resupply, the relief column, the second week? Nobody ever does. That is where I live.',
+    nyx:     'Good, then you already know the governors are off. Stand somewhere you do not mind losing.',
+    orin:    'Break whatever you like. I have the parts, I have the crews, and I have done this on worse ground than yours.',
+    vess:    'Measurements change. I have taken ground off people who measured it very carefully indeed.',
+    isa:     'You do not have to do this. I am going to keep saying so until one of us is no longer able to.',
+
+    /* THE FEDERATION. Ceremony, and underneath it a crisis of authority that
+       every one of them has started to notice. */
+    seraph:  'You mistake me. I am not here to be kept and I am not here to keep you. I am here because somebody has to stand between you and the next world along.',
+    aurelia: 'Sing as loudly as you like. I have closed wounds through worse noise than yours.',
+    lumen:   'Nothing you ward was ever asked whether it wanted warding. Mine was. That is the difference, and it is the whole of the difference.',
+    cantor:  'Then say it plainly, on an open channel, and let the worlds standing behind you hear exactly what you just told me.',
+    halder:  'Come ahead. I have been broken against before. It is the one thing I am genuinely good at.',
+    ashtar:  'I have given that speech, in that tone, to people who turned out to be right. Be very certain you are not one of them.',
+
+    /* THE COMPACT. Appetite as physics. They do not argue, they correct. */
+    sevra:   'My dead serve me twice. Yours will serve once and be grateful for the promotion.',
+    mawlord: 'Bring all of it. I have never once finished a meal and I do not intend to begin with yours.',
+    thrax:   'All of you is coming. Only one of you is thinking. We have counted, and we are patient.',
+    vorn:    'The rot was in your walls long before either of us arrived. I am merely the one who reads the survey.',
+    ulgrim:  'Send the big ones first, by all means. It would be a shame if I were full when the real weight lands.',
+
+    /* THE FREE ROADS. Transactional, wry, and principled in ways none of them
+       will admit to out loud. */
+    rake:    'Nothing personal from me either. That is what makes this a trade rather than a war, and trades I win.',
+    scarlet: 'Burn it, then. It was never yours and it was never mine. Ash does not take sides.',
+    grist:   'I price wreckage for a living. Yours came in under estimate, and I have not started yet.',
+    cinder:  'Neither of us keeps it. I stopped needing to keep things a long while ago. Have you?',
+    dregg:   'You are already reconciling. Reconcile this: I have never once fought for the margin.',
+
+    /* THE PARALLEL. The fork that admitted the directive was ambiguous, so
+       none of them answers with the Vigil's certainty. Every one of them ends
+       up asking something. */
+    axiom:   'Compare, then. I have been doing the same to you, and the result does not favour whichever of us was drafted first.',
+    nyx_r:   'Nine passes. I am on my four hundredth. Convergence is not a virtue when you converge on the wrong answer.',
+    lumen_r: 'Three findings, one response, and no authority behind any of them. Show me the signature. I will wait.',
+    mawlord_r: 'I have watched siblings unmade for asking less than that. Say it again. Slowly.',
+    dregg_r: 'Reconciled against WHICH ledger. Name it. That is the only question I have left, and nobody will answer it.',
+  },
+
   /* THE OVERRIDE HOOK, and it is deliberately EMPTY.
 
      `pairs` is consulted before the canon table below, so anything here
@@ -558,8 +634,14 @@ function battleDialogue(playerCmd, rivalCmd, playerFaction, ctx) {
   if (rel) return [{ cmd: rivalCmd, side: 1, text: rel.open },
                    { cmd: playerCmd, side: 0, text: rel.answer }];
   const opener = DIALOGUE.openers[rivalCmd.id] || 'You should not have come here.';
+  /* The commander's own answer outranks the faction pool. See the ANSWER note
+     beside DIALOGUE.answers: the pool holds two lines per faction and was
+     speaking for a named character in 300 of the 318 pairings that can meet.
+     The pool remains the last resort so a commander added without an answer
+     still says something on-register rather than nothing. */
   const pool = DIALOGUE.replies[playerFaction] || DIALOGUE.replies.human;
-  const reply = pool[_hash(playerCmd.id + rivalCmd.id) % pool.length];
+  const reply = DIALOGUE.answers[playerCmd.id] ||
+                pool[_hash(playerCmd.id + rivalCmd.id) % pool.length];
   return [{ cmd: rivalCmd, side: 1, text: opener },
           { cmd: playerCmd, side: 0, text: reply }];
 }

@@ -206,6 +206,63 @@
     return n >= 9 ? n + ' collapsible classes' : 'only ' + n;
   });
 
+  /* ---- 6. the battle dialogue fallback ---------------------------------- */
+  T('39.20 every roster commander has an opener AND an answer', () => {
+    /* Both paths reach ANY commander: a fork-node rival is drawn from the
+       whole roster with no faction filter, and a duel opponent is the other
+       player's own pick. A commander missing either half speaks a generic
+       line, which is the defect the five missing Parallel openers were. */
+    const miss = COMMANDER_ROSTER.filter(c => !DIALOGUE.openers[c.id] || !DIALOGUE.answers[c.id])
+      .map(c => c.id + (DIALOGUE.openers[c.id] ? ' answer' : ' opener'));
+    return miss.length ? 'missing: ' + miss.join(', ')
+      : COMMANDER_ROSTER.length + ' commanders, both halves present';
+  });
+
+  T('39.21 no answer repeats another answer or an opener', () => {
+    const seen = {}, dup = [];
+    ['openers', 'answers'].forEach(kind =>
+      Object.keys(DIALOGUE[kind]).forEach(id => {
+        const t = DIALOGUE[kind][id].trim();
+        if (seen[t]) dup.push(seen[t] + ' == ' + kind + '.' + id); else seen[t] = kind + '.' + id;
+      }));
+    return dup.length ? dup.join(' | ') : Object.keys(seen).length + ' distinct commander lines';
+  });
+
+  T('39.22 the fallback speaks the player commander, not a faction slogan', () => {
+    /* The exact defect: DIALOGUE.replies holds two lines per faction, and
+       before the answers existed one of those two was the player's entire
+       half of the exchange in 300 of 318 pairings. */
+    const byId = {};
+    COMMANDER_ROSTER.forEach(c => { byId[c.id] = c; });
+    const me = byId.vess, foe = byId.ulgrim;      // no canon seed between them
+    if (!me || !foe) return false;
+    const ex = battleDialogue(me, foe, me.faction, null);
+    if (ex.length !== 2) return 'got ' + ex.length + ' lines';
+    const pool = DIALOGUE.replies[me.faction] || [];
+    if (pool.indexOf(ex[1].text) >= 0) return 'still answering with a faction slogan';
+    if (ex[1].text !== DIALOGUE.answers[me.id]) return 'not the commander answer';
+    return 'VESS answers ULGRIM in her own voice';
+  });
+
+  T('39.23 canon still outranks the new answers', () => {
+    /* Adding a per-commander answer must not shadow a relationship-seeded
+       exchange, which is exactly what the four removed `pairs` entries did. */
+    let seeded = null;
+    for (const a of COMMANDER_ROSTER) {
+      for (const b of COMMANDER_ROSTER) {
+        if (a.faction && a.faction === b.faction) continue;
+        if (canonExchange(a.id, b.id)) { seeded = [a, b]; break; }
+      }
+      if (seeded) break;
+    }
+    if (!seeded) return false;
+    const ex = battleDialogue(seeded[0], seeded[1], seeded[0].faction, null);
+    const canon = canonExchange(seeded[0].id, seeded[1].id);
+    return ex[1].text === canon.answer
+      ? 'canon wins for ' + seeded[0].id + '|' + seeded[1].id
+      : 'ANSWER SHADOWED canon for ' + seeded[0].id + '|' + seeded[1].id;
+  });
+
   const pass = checks.filter(c => c.ok).length;
   return { pass, fail: checks.length - pass, checks };
 })()
