@@ -735,7 +735,7 @@ price**, because two of the three are the same trap Firefly sprang.
 | **ModelsLab** | $149/mo | **Yes, genuinely.** No per-image charge, no daily cap, all models | **Yes.** Key-auth REST, same shape as our painters |
 | **Leonardo** | $30 Artisan / $48 Maestro | Only "relaxed" generation, **and not through the API** | Yes, but **pay-as-you-go, billed separately from the subscription** |
 | **Scenario** | $15 / $45 / $75 | No. Credit allowance, resets monthly | Yes, API-first, built for game pipelines |
-| **Higgsfield** | $39 Plus | 365-day unlimited **image** models (not 7-day, and not video) | **Unconfirmed — likely app-only** |
+| **Higgsfield** | $39 Plus | 365-day unlimited **image** models (not 7-day, and not video) | **Unconfirmed, likely app-only** |
 | **Segmind** | $39-$599 | No. Credits, despite the marketing word | Unlimited only via hourly GPU rental |
 
 ### The trap, stated once
