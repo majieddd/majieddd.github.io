@@ -135,9 +135,16 @@ const Cutscenes = {
       a click mid-text completes the text, a second advances. Draws nothing:
       all motion is DOM timers, and reduced motion collapses to instant. */
   play(kind, factionId, idx, done) {
-    const list = this.slides(kind, factionId, idx);
+    return this.playList(factionId, this.slides(kind, factionId, idx), done);
+  },
+
+  /** Play an arbitrary slide list through the same overlay, same skip
+      semantics, same degrade rules. Extracted (Session 38) so the per-planet
+      deploy sequence can feed authored world slides through the one cutscene
+      surface instead of growing a second overlay that would drift. */
+  playList(factionId, list, done) {
     const fin = () => { if (done) { const d = done; done = null; d(); } };
-    if (!list.length) return fin();
+    if (!list || !list.length) return fin();
 
     const fac = (typeof FACTIONS !== 'undefined' && FACTIONS[factionId]) || { color: '#7dd3fc', icon: '◈', name: '' };
     const reduced = (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) ||

@@ -568,9 +568,69 @@ const UI = {
        screen was staging a conversation between the player and empty air.
        Skirmish already skips this call with no substitute; a solo board
        follows the same precedent rather than inventing a new screen. */
-    if (!Game._skirmish && !Game.soloSurvive) this.showBattleIntro();
+    if (!Game._skirmish && !Game.soloSurvive) {
+      /* THE THREE-PANEL PLANET SEQUENCE (owner directive 2026-08-27, tracker
+         item G). Beat one is the SETTING, the same for every faction because
+         it is derived from fields the world itself carries. Beat two is the
+         SCENARIO, which is allowed to depend on who you are and who holds
+         the ground. Beat three is the COMMANDERS talking, which is the
+         existing VS screen: it already draws both portraits and speaks
+         canonExchange lines seeded by the pair's own history, so growing a
+         third surface for it would only create a second opinion. The game is
+         paused for the slides exactly the way the VS screen pauses for
+         itself, and every beat is one click to advance, SKIP to drop. */
+      const slides = this.worldSlides(seatWorld ||
+        (Meta.galaxy() && this.worldById(Meta.galaxy(), node.world)));
+      if (slides.length && typeof Cutscenes !== 'undefined' && Cutscenes.playList) {
+        Game.paused = true;
+        this.syncSpeed();
+        Cutscenes.playList(Meta.faction() || 'human', slides,
+                           () => this.showBattleIntro());
+      } else {
+        this.showBattleIntro();
+      }
+    }
     this.startFirstRunCoach();
     this.syncAll();
+  },
+
+  /** The two authored slides that open a planet battle: the setting, then the
+      scenario. Every sentence is sourced from fields the world already
+      carries (WorldLore and the scenario resolver), so the same world says
+      the same thing in every campaign, and the setting slide is identical
+      whichever faction is reading it. Returns [] whenever anything it needs
+      is missing, and [] means the deploy flow goes straight to the VS
+      screen, which is exactly what shipped before this existed. */
+  worldSlides(w) {
+    if (!w) return [];
+    const gx = Meta.galaxy();
+    const sys = gx && gx.systems[w.si];
+    let d = null;
+    try { d = (typeof WorldLore !== 'undefined' && WorldLore.world) ? WorldLore.world(w, sys) : null; }
+    catch (e) { d = null; }
+    /* SETTING. Name and system first so the player knows where they are, the
+       dossier headline second so they know what the place IS. */
+    const where = w.name.toUpperCase() + (sys ? ', ' + sys.name : '') + '.';
+    const headline = (d && d.headline) ? ' ' + d.headline : '';
+    const setting = { key: 'world_' + w.map, text: where + headline };
+    /* SCENARIO. Who holds the ground, then what winning here means. The
+       resolver pair is the same one the briefing card and Game.start read,
+       so the slide cannot promise a scenario the battle refuses. */
+    const sc = ((typeof ownedWorldScenarioOf === 'function' &&
+                 ownedWorldScenarioOf(w, Meta.campaign())) ||
+                (typeof worldScenarioOf === 'function' && worldScenarioOf(w))) || null;
+    const holder = w.owner && typeof FACTIONS !== 'undefined' && FACTIONS[w.owner];
+    const holdLine = w.renegade ? 'Your own banner holds this ground, and will not stand down.'
+      : w.contested ? 'Two rival claims already stand on this ground. Yours makes three.'
+      : holder ? holder.name + ' hold this ground.' : '';
+    const scLine = sc ? ' ' + sc.name + ': ' + sc.brief + (sc.flavor ? ' ' + sc.flavor : '') : '';
+    /* The holder-tinted plate when the pack carries one, the base plate
+       otherwise. Read lexically: ARTPACK is a top-level const. */
+    const tinted = 'world_' + w.map + '_' + (w.owner || '');
+    const hasTint = typeof ARTPACK !== 'undefined' && !!ARTPACK[tinted];
+    const scenario = { key: hasTint ? tinted : 'world_' + w.map,
+                       text: (holdLine + scLine).trim() };
+    return scenario.text ? [setting, scenario] : [setting];
   },
 
   /* ═══════════════════════════════════ THE FIRST-RUN COACH (A1) ═══ */
