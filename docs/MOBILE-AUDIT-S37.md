@@ -154,3 +154,36 @@ runs its browser harnesses at. Every session that touches layout should finish
 with the breakpoint sweep and report its divergence list, and that rule now
 lives in the plugin at `aegis-gamedev/references/verification.md` section 11
 so it is not this document's private lesson.
+
+## Session 38: the fold bug HAD a second instance, exactly as the ledger warned
+
+`bug.mobile-fold-two-instances` in the plugin ledger says this defect class
+leaves a second live instance at another width after the first fix, and that a
+fresh load at that width is what surfaces it. The S37 pass was measured at
+390x844 only, so it did not look.
+
+Measured at 900px tall across five widths, running the design-forge Step 1
+preflight gates against the shipped CSS:
+
+| Width | CTA visible without scrolling, BEFORE | AFTER |
+|---|---|---|
+| 390 | yes | yes |
+| 640 | yes | yes |
+| 858 | yes | yes |
+| **862** | **NO** | yes |
+| **1024** | **NO** | yes |
+
+The trigger was never the phone. It is the TWO-COLUMN GRID: `.faction-grid`
+goes 2-up at `max-width: 1080px` (polish.css:686), the cards are tall, and the
+footer lands below the fold on any viewport shorter than the content. The S37
+fix was keyed to 860px, an arbitrary phone-ish number, rather than to the
+breakpoint of the thing that actually causes the overflow. 861 to 1080px is a
+laptop and a tablet in landscape.
+
+The sticky behaviour is now keyed to the same breakpoint as the grid. The
+touch-target and wrap rules stay at 860px, because those genuinely are about
+fingers.
+
+Also measured on the same pass and passing at every width: the primary label
+fits one line, zero labels clip, zero buttons fall under the 44px touch floor,
+and the CTA's contrast is 18.97 against a WCAG AA requirement of 4.5.
