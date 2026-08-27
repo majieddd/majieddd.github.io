@@ -562,7 +562,13 @@ const UI = {
        fight, and rubble clearance can open ground later. */
     if (this.sel.loadout.some(t => towerFoot(TOWER_TYPES[t]) > 1) && !Game.canFitFoot(0, 2))
       Game.banner('NO GROUND FITS A 2×2 EMPLACEMENT ON THIS MAP', 4, '#f59e0b');
-    if (!Game._skirmish) this.showBattleIntro();
+    /* NO COMMANDER, NO VS SCREEN. showBattleIntro reads Game.sides[1]
+       unconditionally for a portrait, a name and a line of dialogue -- on a
+       survive board that seat is a swarm with nobody behind it, so the
+       screen was staging a conversation between the player and empty air.
+       Skirmish already skips this call with no substitute; a solo board
+       follows the same precedent rather than inventing a new screen. */
+    if (!Game._skirmish && !Game.soloSurvive) this.showBattleIntro();
     this.startFirstRunCoach();
     this.syncAll();
   },
@@ -2420,7 +2426,7 @@ const UI = {
           <span class="br-kind" data-tt="${kind.label.toUpperCase()}|${(kind.note || 'A standard world. No modifier.')}">${kind.icon} ${kind.label}</span>
           <span class="br-sys">${sys.name}</span>
         </div>
-        ${mp ? this.mapPreviewBlock(mp, { size: 'tip', seed: w.id }) : ''}
+        ${mp ? this.mapPreviewBlock(mp, { size: 'tip', seed: w.id, solo: !!sc.noCommander }) : ''}
         ${cmdBar}
         ${w.seat ? `<div class="br-seat" data-tt="COMMANDER SEAT|The system's boss fight. A duel table here seats the commander.">⚔ COMMANDER SEAT<span>the system's boss stands on this world</span></div>` : ''}
         ${w.renegade ? `<div class="br-renegade"><b>A SPLINTER OF ITS OWN POWER HOLDS THIS WORLD.</b><span>The only ground that pays <b>${of.short}</b>. Its own soldiers hold its line.</span></div>` : ''}
@@ -3228,7 +3234,7 @@ const UI = {
       /* 3. THE BOARD, directly under the name line, so the shape of the ground
             is read before what the scenario asks of it (owner, Session 29). */
       (m ? this.mapPreviewBlock(m, { size: inline ? 'brief' : 'tip',
-                                     hoverCap: !!inline, seed: w.id }) : '') +
+                                     hoverCap: !!inline, seed: w.id, solo: !!sc.noCommander }) : '') +
 
       /* 3b. WHO stands on it, now that the ground has been read. */
       cmdBar +
@@ -3333,10 +3339,13 @@ const UI = {
    * as well as id: the arena is a genuinely different board at four seats and
    * at twenty.
    */
-  previewModel(m, seed) {
+  previewModel(m, seed, solo) {
     if (!this._pvModel) this._pvModel = {};
-    const k = m.id + (m.maelstrom ? ':' + m.maelstrom : '') + (seed ? ':s' + seed : '');
-    if (!this._pvModel[k]) this._pvModel[k] = this.buildPreview(m, seed);
+    /* `solo` joins the cache key for the same reason `seed` already does: two
+       different renders of one map must not share a slot, or the second
+       caller reads back the first caller's picture. */
+    const k = m.id + (m.maelstrom ? ':' + m.maelstrom : '') + (seed ? ':s' + seed : '') + (solo ? ':solo' : '');
+    if (!this._pvModel[k]) this._pvModel[k] = this.buildPreview(m, seed, solo);
     return this._pvModel[k];
   },
 
@@ -3345,14 +3354,25 @@ const UI = {
    * every width inside it is a fraction of a TILE and the SAME renderer serves
    * a duel, a three-way board and the twenty-seat arena at any card size.
    */
-  buildPreview(m, seed) {
+  buildPreview(m, seed, solo) {
     const f = buildField(m, seed);
-    const cols = f.cols, rows = f.rows, seats = f.lanes.length;
+    const cols = f.cols, rows = f.rows;
+    /* `solo`: the SAME board Game.start builds (buildField knows nothing of
+       scenarios and still mirrors a full rival half; the live canvas caps
+       its OWN draw loops on Game.soloSurvive rather than asking buildField
+       for a different field, and this preview follows the identical rule so
+       the two never show a different seat count for the same world). `seats`
+       is downstream of this cap; `f.lanes.length` stays the engine's real
+       count for anything that must still walk both mirrored halves. */
+    const seats = solo ? 1 : f.lanes.length;
     const q = v => Math.round(v * 100) / 100;
 
     /* THE ENGINE'S OWN UNBUILDABLE SET, by the engine's own rule. A tile a
        lane passes through is not ground, and a preview that painted it as
-       ground would be offering placements `Game.canBuild` refuses. */
+       ground would be offering placements `Game.canBuild` refuses. Built from
+       EVERY mirrored lane regardless of `solo`: the far half is still real
+       unbuildable ground the engine will refuse a tower on, so the preview
+       must still exclude it from `ground` even where it stops drawing it. */
     const laneTiles = new Set();
     const lanes = [];
     f.lanes.forEach((side, si) => side.forEach(pts => {
@@ -3361,6 +3381,9 @@ const UI = {
     }));
     for (const sp of (f.sendPaths || []))
       for (const k of new Path(sp).blockedTiles()) laneTiles.add(k);
+    /* What actually DRAWS is capped to `seats`; `lanes` above stays the full
+       mirrored set so laneTiles (buildability) is unaffected by the cap. */
+    const drawLanes = solo ? lanes.filter(L => L.si === 0) : lanes;
 
     /* The arena is a diamond inside a square field; everything outside the L1
        rim is not board at all and must not be painted as ground. */
@@ -3391,7 +3414,11 @@ const UI = {
 
     const g = [];
     g.push(layer(runs((x, y) => !isVoid(x, y)), 'pv-board'));
-    g.push(layer(runs((x, y) => ground(x, y) && ownerAt(x, y) < 0), 'pv-neutral'));
+    /* Ground owned by a seat past the `solo` cap reads as neutral, the same
+       call the live canvas makes: it is real ground the engine still refuses
+       a tower on, just not a RIVAL's ground, so it takes the corridor's tint
+       rather than going unpainted and reading as void. */
+    g.push(layer(runs((x, y) => ground(x, y) && (ownerAt(x, y) < 0 || ownerAt(x, y) >= seats)), 'pv-neutral'));
     if (seats <= MAP_PV_TINT_MAX_SEATS) {
       for (let i = 0; i < seats; i++)
         g.push(layer(runs((x, y) => ground(x, y) && ownerAt(x, y) === i),
@@ -3418,17 +3445,17 @@ const UI = {
        segments from, divided by TILE. */
     const poly = pts => pts.map((p, i) =>
       (i ? 'L' : 'M') + q(p[0] + 0.5) + ' ' + q(p[1] + 0.5)).join(' ');
-    for (const L of lanes)
+    for (const L of drawLanes)
       g.push('<path class="pv-lane-case" d="' + poly(L.pts) +
              '" stroke-width="' + MAP_PV_LANE_CASE_W + '"/>');
-    for (const L of lanes)
+    for (const L of drawLanes)
       g.push('<path class="pv-lane" data-lane="' + L.si + '" d="' + poly(L.pts) +
              '" stroke="' + previewSeatTint(L.si) + '" stroke-width="' + MAP_PV_LANE_W + '"/>');
 
     /* Where a wave enters. On THE LATTICE that is three separate gates and the
        blurb spends a sentence on it; on a tri board it is the shared hub. */
     const gates = new Set();
-    for (const L of lanes) gates.add(L.pts[0][0] + ',' + L.pts[0][1]);
+    for (const L of drawLanes) gates.add(L.pts[0][0] + ',' + L.pts[0][1]);
     for (const key of gates) {
       const p = key.split(',').map(Number);
       g.push('<circle class="pv-gate" cx="' + q(p[0] + 0.5) + '" cy="' + q(p[1] + 0.5) +
@@ -3444,6 +3471,7 @@ const UI = {
     }
 
     f.bases.forEach((b, i) => {
+      if (i >= seats) return;   /* the rival base a solo world does not have */
       g.push('<circle class="pv-base" data-base="' + i + '" cx="' + q(b[0] + 0.5) +
              '" cy="' + q(b[1] + 0.5) + '" r="' + MAP_PV_BASE_R +
              '" stroke="' + previewSeatTint(i) + '"/>');
@@ -3493,11 +3521,11 @@ const UI = {
     o = o || {};
     /* Procedural boards seed from the world id so a tooltip shows the SAME
        geometry the live board will build (the game seeds identically). */
-    const p = this.previewModel(m, o.seed);
+    const p = this.previewModel(m, o.seed, o.solo);
     /* Kept to one line at 320px, the tooltip's width -- a caption that wraps
        under a picture reads as a paragraph and stops being scanned. */
     const cap = [p.cols + '\u00d7' + p.rows,
-                 p.seats + ' seats',
+                 p.seats + (p.seats === 1 ? ' seat' : ' seats'),
                  p.perSide + (p.perSide === 1 ? ' lane' : ' lanes') + ' a side',
                  p.ground + ' buildable'];
     const capText = cap.join(' \u00b7 ');

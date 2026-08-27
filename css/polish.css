@@ -1288,6 +1288,10 @@ body::before {
    sets no width and no height -- it only removes the box from the flow, so it
    cannot resize one axis of a box the base rule sized. */
 body:not(.tri-field) #rival3 { display: none; }
+/* A survive board has no rival to show: no name, no gold, no lives bar for
+   a seat nobody commands. Same reasoning and the same display:none-only
+   shape as the #rival3 rule above, so it only removes the box from flow. */
+body.solo-field #hud-rivals { display: none; }
 .cmdr.third { border-right-width: 2px !important; opacity: .95; }
 /* Widened from `.cmdr.third.down`: the third commander's panel is built at
    runtime and carried the class, the static RIVAL panel beside it never

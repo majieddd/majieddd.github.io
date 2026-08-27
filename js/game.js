@@ -396,9 +396,32 @@ const Game = {
     this.map = opts.maelstrom ? maelstromMap(opts.maelstrom, this.maelstromEpoch)
                               : (MAPS.find(m => m.id === opts.map) || MAPS[0]);
     /* Procedural maps seed their geometry from the world id so both duel
-       clients compute identical boards. Campaign passes `world` (full object);
-       multiplayer and skirmish pass `worldId` (string). */
-    const mapSeed = opts.worldId || (opts.world && opts.world.id) || 'default';
+       clients compute identical boards. BOTH `opts.world` (campaign,
+       js/ui.js:520, "the world id" per its own comment) and `opts.worldId`
+       (multiplayer, js/net.js:1244; skirmish) are STRINGS -- neither caller
+       ever passes a world object, so `opts.world.id` on the campaign path
+       always read undefined and every campaign battle fell through to the
+       literal 'default'. MEASURED: 16 of 16 same-family campaign worlds
+       sampled came back byte-identical boards; a whole galaxy of twin-channel
+       worlds was one map wearing many names. Fixed by reading `opts.world`
+       itself as the id, which is what the comment already claimed it was.
+
+       A CAMPAIGN additionally salts the seed with its own seed, so two
+       campaigns that happen to hold the same world fight on different
+       boards, while a duel never does: only the campaign path is salted, so
+       both MP clients still compute the bare world id and skirmish/maelstrom
+       keep their standing seeds. */
+    /* `let`, not const: the campaign salt below appends to this. As a const it
+       threw "Assignment to constant variable" out of Game.start on EVERY
+       campaign battle, because every campaign carries a seed and every
+       campaign battle passes opts.world. node --check cannot see it (it is a
+       runtime TypeError) and no harness drives this path, so the gate stayed
+       green while the campaign was unstartable. */
+    let mapSeed = opts.worldId || opts.world || 'default';
+    if (opts.world && typeof Meta !== 'undefined' && typeof Meta.campaign === 'function') {
+      const c0s = Meta.campaign();
+      if (c0s && c0s.seed !== undefined) mapSeed += ':' + c0s.seed;
+    }
     FIELD = buildField(this.map, mapSeed);
 
     /* Who GARRISONS this world decides whether its own troops march beside the
@@ -492,6 +515,12 @@ const Game = {
     /* Drives the narrower three-panel HUD; two panels plus a third do not
        fit at 232px each below ~1180px wide. */
     document.body.classList.toggle('tri-field', this.triMode);
+    /* NO RIVAL TO SHOW. `soloSurvive` already hides the muster path and the
+       spawn queue; this is the same fact stated to the HUD and the canvas.
+       CSS-only, same idiom as tri-field above: `#hud-rivals` (name, gold,
+       towers, the lives bar) hides outright, and draw() below reads this
+       class rather than re-deriving soloSurvive on every frame. */
+    document.body.classList.toggle('solo-field', this.soloSurvive);
     /* The third commander's HUD panel is built LAZILY by the UI and nothing
        else ever removed it, so one CONFLUENCE battle left a dead rival's name
        and lives standing over every later two-sided one. Drop it here, at the
@@ -1144,6 +1173,34 @@ const Game = {
   },
 
   /** Called the moment the last unit of a wave has spawned. */
+  /** A BOUNDED SURVIVE BOARD CAN BE WON, not merely outlasted.
+   *
+   * `endMatch`'s win test is `this.sides[0].alive`, which only ever resolves
+   * when some OTHER seat falls. Nothing attacks the far seat on a survive
+   * board (the spawn loops skip it deliberately), so before this the only
+   * exit from a swarm was losing: a flawless defence and a collapse both
+   * ended in defeat, scored on the wave you happened to die at.
+   *
+   * `scenario.surviveWaves` is the wave that, once spawned AND cleared, ends
+   * the battle as a victory. Scenarios without the field are unbounded and
+   * behave exactly as before, which is what keeps THE LONG VIGIL endless:
+   * "No end. Stand as long as you can." is its whole identity.
+   *
+   * Cleared means what a player means by it: nothing of that wave is still
+   * walking at you. Dead and leaked bodies linger in `this.enemies` for a
+   * tick, so both are excluded, and `hostileTo` is checked so a body bound
+   * for another seat could never hold the win open on a multi-seat board.
+   */
+  checkSurviveWin() {
+    const n = this.scenario && this.scenario.surviveWaves;
+    if (!n || this.state === 'over') return;
+    if (this.wave < n || this.waveRunning || this.spawnQueue.length) return;
+    for (const e of this.enemies)
+      if (!e.dead && !e.leaked && e.hostileTo === 0) return;
+    this.banner('THE LINE HELD', 4, '#4ade80');
+    this.endMatch(true);
+  },
+
   onWaveSpawned() {
     this.waveRunning = false;
     this.prepTimer = prepTime(this.wave);
@@ -3823,6 +3880,7 @@ const Game = {
     }
     while (this.spawnQueue.length && this.spawnQueue[0].t <= this.clock) this.spawnFromQueue(this.spawnQueue.shift());
     if (this.waveRunning && !this.spawnQueue.length) this.onWaveSpawned();
+    this.checkSurviveWin();
 
     /* --- towers --- */
     for (const S of this.sides) for (const t of S.towers) { t.tickCooldowns(dt); t.update(dt, this); }
@@ -4108,12 +4166,18 @@ const Game = {
     });
     for (let gy = 0; gy < FIELD.rows; gy++) {
       for (let gx = 0; gx < FIELD.cols; gx++) {
-        const neutral = FIELD.ownerGrid
+        let neutral = FIELD.ownerGrid
           ? FIELD.ownerGrid[gy][gx] === -1
           : (gx >= FIELD.neutral.from && gx <= FIELD.neutral.to);
-        const side = FIELD.ownerGrid
+        let side = FIELD.ownerGrid
           ? FIELD.ownerGrid[gy][gx]
           : (gx <= FIELD.buildMax[0] ? 0 : gx >= FIELD.buildMax[1] ? 1 : -1);
+        /* NO ENEMY SIDE TO OWN GROUND. buildField still mirrors the far half's
+           terrain (rubble and nodes stay authored ground the swarm walks
+           through), but painting it in the rival's tint told the player a
+           commander held it. On a solo board every tile that is not yours is
+           unclaimed, read exactly like the corridor already reads. */
+        if (this.soloSurvive && side === 1) { side = -1; neutral = true; }
         if (this.blocked.has(this.tileKey(gx, gy))) continue;
         const px = gx * TILE, py = gy * TILE;
         x.fillStyle = neutral ? 'rgba(255,255,255,0.012)' : (side >= 0 ? tint[side] : 'rgba(255,255,255,0.012)');
@@ -4217,8 +4281,10 @@ const Game = {
 
     /* neutral corridor marking -- a band between two facing halves, which is
        not a thing a radial board has: there the neutral ground is the hub, and
-       the singularity is drawn over it every frame. */
-    if (!FIELD.radial) {
+       the singularity is drawn over it every frame. Not a thing a solo board
+       has either: the band marks a DMZ between two commanders, and a swarm
+       board has one commander and open ground. */
+    if (!FIELD.radial && !this.soloSurvive) {
       const nx = FIELD.neutral.from * TILE, nw = (FIELD.neutral.to - FIELD.neutral.from + 1) * TILE;
       x.fillStyle = 'rgba(200,180,255,0.035)';
       x.fillRect(nx, 0, nw, this.height);
@@ -4237,9 +4303,14 @@ const Game = {
     rg.addColorStop(1, 'rgba(216,180,254,0)');
     x.fillStyle = rg; x.beginPath(); x.arc(cx, cy, TILE * 2.2, 0, TAU); x.fill();
 
-    /* base markers */
+    /* base markers. Seat 1 stops here on a solo board: soloSeatCap is 1 while
+       Game.sides.length is still 2 (the seat exists so the spawn/AI code
+       every other loop already guards keeps working), so this is the one
+       loop bound that changes rather than a new guard threaded through the
+       whole function. */
+    const soloSeatCap = this.soloSurvive ? 1 : this.sides.length;
     const bcol = this.sides.map((S2, i) => FACTIONS[S2.faction] ? FACTIONS[S2.faction].color : (i ? '#ff6b9d' : '#38e8ff'));
-    for (let s = 0; s < this.sides.length && s < FIELD.bases.length; s++) {
+    for (let s = 0; s < soloSeatCap && s < FIELD.bases.length; s++) {
       const b = FIELD.bases[s];
       const bx = (b[0] + 0.5) * TILE, by = (b[1] + 0.5) * TILE;
       const bg = x.createRadialGradient(bx, by, 4, bx, by, TILE * 2.4);
@@ -4646,7 +4717,10 @@ const Game = {
        narrowed past it. BATCH-C/nside */
     const foes = this.musterVictims(this.viewSide);
     const crowd = this.sides.length > PIP_CROWD_SEATS;
-    for (let s = 0; s < this.sides.length && s < FIELD.bases.length; s++) {
+    /* Same solo cap as the base-marker loop above: a ♥ N / RIVAL pip floating
+       over a seat with no commander is the same defect as the base ring. */
+    const soloSeatCap2 = this.soloSurvive ? 1 : this.sides.length;
+    for (let s = 0; s < soloSeatCap2 && s < FIELD.bases.length; s++) {
       const S = this.sides[s];
       const b = FIELD.bases[s];
       /* The x clamp keeps a pip on a board-edge base readable. A ring board

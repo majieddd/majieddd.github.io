@@ -603,12 +603,33 @@ const MAPS = [
     blocks: [[8,6,11,9],[14,11,17,14]], nodes: [] },
   { id: 'open-field', name: 'The Expanse', procedural: true, family: 'open-field', minTier: 5,
     cols: 36, rows: 20, lanes: [[[3,10],[33,10]]], blocks: [], nodes: [] },
-  { id: 'convergence', name: 'Last Bastion', procedural: true, family: 'convergence', minTier: 6,
+  { id: 'convergence', name: 'Last Bastion', procedural: true, family: 'convergence', minTier: 4,
     noReanim: true, cols: 24, rows: 20, lanes: [[[3,5],[12,9]],[[3,15],[12,11]]],
     blocks: [[11,8,13,11]], nodes: [] },
-  { id: 'fortress-ring', name: 'Siege Ring', procedural: true, family: 'fortress-ring', minTier: 7,
+  { id: 'fortress-ring', name: 'Siege Ring', procedural: true, family: 'fortress-ring', minTier: 4,
     noReanim: true, cols: 26, rows: 20, lanes: [[[3,10],[9,4],[17,4],[17,16],[23,16]]],
-    blocks: [[10,8,15,11]], nodes: [] }
+    blocks: [[10,8,15,11]], nodes: [] },
+
+  /* ── SECOND WAVE OF FAMILIES (mapgen.js) ─────────────────────────────
+     Same contract as above. Tier gates spread across systems 1-4 so every
+     system's themed pool (galaxy.js GX_THEMES) has at least one family that
+     is actually eligible when it is reached. */
+  { id: 'braid', name: 'Woven Roads', procedural: true, family: 'braid', minTier: 1,
+    cols: 26, rows: 20, lanes: [[[3,7],[21,7]],[[3,13],[21,13]]], blocks: [], nodes: [] },
+  { id: 'gauntlet', name: 'The Fenced Road', procedural: true, family: 'gauntlet', minTier: 2,
+    cols: 28, rows: 20, lanes: [[[3,10],[25,10]]], blocks: [], nodes: [] },
+  { id: 'staircase', name: 'Descent Steps', procedural: true, family: 'staircase', minTier: 3,
+    cols: 26, rows: 20, lanes: [[[3,4],[10,4],[10,8],[17,8],[17,12],[25,12]]], blocks: [], nodes: [] },
+  { id: 'horseshoe', name: 'The Plaza', procedural: true, family: 'horseshoe', minTier: 2,
+    cols: 26, rows: 20, lanes: [[[3,5],[14,5],[14,10],[8,10],[8,15],[2,15]]], blocks: [], nodes: [] },
+  { id: 'switchback', name: 'Hairpin Pass', procedural: true, family: 'switchback', minTier: 3,
+    cols: 26, rows: 20, lanes: [[[3,4],[8,4],[8,15],[14,15],[14,4],[20,4]]], blocks: [], nodes: [] },
+  { id: 'labyrinth', name: 'The Maze', procedural: true, family: 'labyrinth', minTier: 4,
+    cols: 30, rows: 20, lanes: [[[3,10],[9,10],[9,5],[16,5],[16,15],[27,15]]], blocks: [], nodes: [] },
+  { id: 'twin-temple', name: 'Twin Sanctums', procedural: true, family: 'twin-temple', minTier: 3,
+    cols: 26, rows: 20, lanes: [[[3,5],[14,5]],[[3,15],[14,15]]], blocks: [], nodes: [] },
+  { id: 'twin-gate', name: 'The Bars', procedural: true, family: 'twin-gate', minTier: 4,
+    cols: 28, rows: 20, lanes: [[[3,10],[25,10]]], blocks: [], nodes: [] }
 ];
 
 /** Builds the full mirrored geometry for a map. */
@@ -2451,7 +2472,12 @@ const SCENARIOS = [
        no drafted arsenal, no sends back at you. */
     id: 'swarm', name: 'THE SWARM', kind: 'survive', icon: '☠',
     noCommander: true, spawn: 'enemyside', waves: [12, 16, 20],
-    brief: 'Survive the swarm. There is no commander to beat.',
+    /* BOUNDED (owner). Clearing wave 20 with the board empty WINS. Before
+       this, `kind: 'survive'` was decoration the engine never read and the
+       only exit from a swarm was losing: stars were scored on the wave you
+       died at, so a perfect defence and a collapse both ended in defeat. */
+    surviveWaves: 20,
+    brief: 'Hold for 20 waves. There is no commander to beat, only the tide.',
     stars: ['Survive 12 waves', 'Survive 16 waves', 'Survive 20 waves'],
     flavor: 'Nothing here wants the ground. It wants the ground empty.',
     test: function (r) {
@@ -2469,7 +2495,8 @@ const SCENARIOS = [
        scenario rather than a flag, so the two read as two different battles. */
     id: 'overrun', name: 'OVERRUN', kind: 'survive', icon: '☣',
     noCommander: true, spawn: 'neutral', waves: [10, 14, 18],
-    brief: 'The world already fell. Hold your line against what took it.',
+    surviveWaves: 18,
+    brief: 'The world already fell. Hold your line for 18 waves against what took it.',
     stars: ['Survive 10 waves', 'Survive 14 waves', 'Survive 18 waves'],
     flavor: 'No banner flies here. The ground stopped answering to anyone.',
     test: function (r) {
@@ -2542,7 +2569,8 @@ const OWNED_REVISIT_SCENARIOS = [
   {
     id: 'swarm_defense', name: 'SWARM DEFENSE', kind: 'survive', icon: '🛡',
     noCommander: true, spawn: 'enemyside', waves: [12, 16, 20],
-    brief: 'Hold what is already yours. There is no commander to beat here.',
+    surviveWaves: 20,
+    brief: 'Hold what is already yours for 20 waves. No commander to beat here.',
     stars: ['Survive 12 waves', 'Survive 16 waves', 'Survive 20 waves'],
     flavor: 'This ground answers to you. Something out there has not heard.',
     test: function (r) {
@@ -2566,7 +2594,8 @@ const OWNED_REVISIT_SCENARIOS = [
     id: 'coop_reinforcement', name: 'REINFORCEMENT LINE', kind: 'survive', icon: '🤝',
     noCommander: true, spawn: 'enemyside', waves: [12, 16, 20],
     reinforce: { every: 3, gold: 40 },
-    brief: 'Hold what is already yours. Every third wave, your own power sends gold, not guns.',
+    surviveWaves: 20,
+    brief: 'Hold for 20 waves. Every third wave, your own power sends gold, not guns.',
     stars: ['Survive 12 waves', 'Survive 16 waves', 'Survive 20 waves'],
     flavor: 'Nobody else is standing on this line. Somebody else is still paying for it.',
     test: function (r) {
