@@ -41,6 +41,78 @@ MODEL_PROFILES = {
     },
 }
 
+# Study prompts remain intentionally bounded. The bridge never takes arbitrary
+# prompt text: a review run must be reproducible and its added art direction
+# must be explicit in the manifest.
+STUDY_PROFILES = {
+    "catalogue": {
+        "seed_suffix": "",
+        "description": "unaltered canonical catalogue prompt",
+        "style_suffix": "",
+    },
+    "oil-water-abstract": {
+        "seed_suffix": "#oil-water-abstract-v1",
+        "description": "nonshipping oil-and-water modernist commander study",
+        "style_suffix": (
+            "Oil-and-water paint illustrative design: opaque oil-paint planes under "
+            "translucent watercolour washes, visible bristle marks, wet blooms and dry brush. "
+            "Modernist fractured colour relationships and slightly abstracted planes, but a familiar "
+            "readable face and silhouette. Artistic, expressive and tactile, never photorealistic, "
+            "never glossy 3D, never a realistic portrait."
+        ),
+    },
+}
+
+# The fresh faction selector exposes these four commanders. Cues come from the
+# lore commander bible and art-direction brief. They stay outside krea_jobs.py
+# because this is a review study, not a change to the shipping catalogue.
+COMMANDER_STUDY_CUES = {
+    "cmd_vanta": (
+        "Lore fidelity: Director Reyes of the Open Archive Combat Index wears an archive coat with "
+        "transparent provenance panes, timestamp marks and a portable evidence lattice. She is disciplined "
+        "archival intelligence, not a paranoid detective."
+    ),
+    "cmd_seraph": (
+        "Lore fidelity: Seraph coordinates a mixed-species defense through consent-limited treaty infrastructure. "
+        "Many distinct consent seals orbit as a radiant field harness without merging into one identity. "
+        "Do not use biological angel wings, church ornament or faceless saint imagery."
+    ),
+    "cmd_sevra": (
+        "Lore fidelity: Sevra is a clinical continuity notary with estate seals, echo capsules and death-contract "
+        "ledgers. Her horror is administrative, not undead sorcery."
+    ),
+    "cmd_rake": (
+        "Lore fidelity: Rake's route charts are stitched into his coat and hull plates beside quarantine tags. "
+        "The interstellar route network is his regalia. He is dry and confident, never a cartoon pirate."
+    ),
+}
+
+# The canonical portrait catalogue predates the lore's more precise political
+# art briefs. These narrow replacements prevent old shorthand from overruling
+# a study's current canon. A changed study subject gets its own seed suffix.
+COMMANDER_STUDY_REVISIONS = {
+    "cmd_seraph": {
+        "seed_suffix": "#treaty-infrastructure-v2",
+        "replacements": (
+            (
+                "a radiant pleiadian commander haloed in golden light, six wings of hard light, serene and terrible",
+                "a Federation field harmonist coordinating mixed-species defenders through distinct orbiting consent seals and transparent treaty-interface geometry, calm, protective and visibly individual",
+            ),
+            (
+                "golden holographic armour of hard-light panels, luminous circuitry halos, serene ceremonial bearing, glowing seams",
+                "golden emergency field harness with transparent boundary projectors, separate consent seals and visible identity markers, practical protective bearing",
+            ),
+        ),
+    },
+    "cmd_rake": {
+        "seed_suffix": "#void-field-v2",
+        "prefix": (
+            "Head-and-shoulders commander portrait isolated on a solid void-black field. "
+            "The entire background is pure unlit black, with no white paper, canvas, studio backdrop or scenery"
+        ),
+    },
+}
+
 sys.path.insert(0, str(HERE))
 from krea_jobs import build_jobs  # noqa: E402
 
@@ -66,6 +138,30 @@ def job_for(key):
                 "aspect": aspect,
             }
     raise ValueError(f"unknown catalogue key: {key}")
+
+
+def study_prompt(job, study_name):
+    """Return a reproducible review prompt without changing the catalogue."""
+    study = dict(STUDY_PROFILES[study_name])
+    if study_name == "catalogue":
+        return job["prompt"], study
+    cue = COMMANDER_STUDY_CUES.get(job["key"])
+    if not cue:
+        raise ValueError(
+            f"{study_name} is presently defined only for the four initial faction commanders"
+        )
+    prompt = job["prompt"]
+    revision = COMMANDER_STUDY_REVISIONS.get(job["key"])
+    if revision:
+        if revision.get("prefix"):
+            prompt = revision["prefix"] + ". " + prompt
+        for old, new in revision.get("replacements", ()):
+            if old not in prompt:
+                raise ValueError(f"study replacement no longer matches {job['key']} catalogue prompt")
+            prompt = prompt.replace(old, new)
+        study["seed_suffix"] += revision["seed_suffix"]
+        study["prompt_revision"] = revision["seed_suffix"].lstrip("#")
+    return f"{prompt}. {cue} {study['style_suffix']}", study
 
 
 def workflow(prompt, seed, width, height, filename_prefix, model_profile):
@@ -177,10 +273,13 @@ def run(args):
     if job["aspect"] == "wide" and args.width * 9 != args.height * 16:
         raise ValueError(f"{args.key} is a wide asset and requires a 16:9 preflight size")
 
-    seed = fnv1a_seed(job["key"])
-    run_id = f"{job['key']}_{seed}_{args.width}x{args.height}_{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())}"
+    prompt, study = study_prompt(job, args.study)
+    seed_key = job["key"] + study["seed_suffix"]
+    seed = fnv1a_seed(seed_key)
+    study_slug = args.study.replace("-", "_")
+    run_id = f"{job['key']}_{study_slug}_{seed}_{args.width}x{args.height}_{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())}"
     filename_prefix = f"cosmic_preflight/{run_id}"
-    graph = workflow(job["prompt"], seed, args.width, args.height, filename_prefix, args.model_profile)
+    graph = workflow(prompt, seed, args.width, args.height, filename_prefix, args.model_profile)
 
     payload = json.dumps({
         "prompt": graph,
@@ -191,7 +290,7 @@ def run(args):
     if "prompt_id" not in queued:
         raise RuntimeError(f"ComfyUI did not accept the workflow: {queued}")
     prompt_id = queued["prompt_id"]
-    print(f"queued {job['key']} with catalogue seed {seed} on {args.model_profile}: {prompt_id}", flush=True)
+    print(f"queued {job['key']} with study seed {seed} on {args.model_profile}: {prompt_id}", flush=True)
 
     deadline = started + args.timeout
     record = None
@@ -224,6 +323,9 @@ def run(args):
         "server": server,
         "model_profile": {"name": args.model_profile, **MODEL_PROFILES[args.model_profile]},
         "catalogue": job,
+        "study": {"name": args.study, **study},
+        "effective_prompt": prompt,
+        "seed_key": seed_key,
         "seed": seed,
         "preflight_size": {"width": args.width, "height": args.height},
         "sampler": {"steps": 8, "cfg": 1.0, "sampler": "euler", "scheduler": "simple"},
@@ -248,6 +350,12 @@ def main():
         choices=sorted(MODEL_PROFILES),
         default="gguf-q5",
         help="local Krea model loader, default: gguf-q5",
+    )
+    parser.add_argument(
+        "--study",
+        choices=sorted(STUDY_PROFILES),
+        default="catalogue",
+        help="bounded nonshipping art-direction study, default: catalogue",
     )
     parser.add_argument("--timeout", type=int, default=1800, help="maximum wait in seconds, default: 1800")
     args = parser.parse_args()
