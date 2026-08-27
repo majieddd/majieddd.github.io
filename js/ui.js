@@ -350,6 +350,51 @@ const UI = {
     /* Reduced motion. The checkbox is the USER override -- the OS preference
        already works without it. One writer for all three surfaces: the cached
        canvas gate, the CSS class, and the saved setting. */
+    /* THE DOCK TABS, phone only (the strip is display:none above the
+       breakpoint, so these listeners are harmless on desktop and cost one
+       delegated handler).
+
+       `data-pane` on #dock IS the state. Nothing re-renders on a tab change:
+       the panes are all built and populated exactly as they always were, CSS
+       simply shows one. That matters because the muster cards and the shop
+       cards carry live cooldowns and prices that a rebuild would have to
+       re-derive, and because a tab that rebuilt its pane would drop the
+       inspector's current selection. */
+    const tabs = $('#dock-tabs');
+    if (tabs) tabs.addEventListener('click', ev => {
+      const b = ev.target.closest('.dock-tab');
+      if (!b) return;
+      const dock = $('#dock');
+      if (b.id === 'dock-collapse') {
+        const folded = document.body.classList.toggle('dock-folded');
+        b.setAttribute('aria-expanded', String(!folded));
+        b.textContent = folded ? '▴' : '▾';
+        Sound.play('click');
+        /* The board grew or shrank, so the canvas has to be re-measured or it
+           keeps drawing at the old size and the pointer maths goes with it. */
+        if (Game.resize) Game.resize();
+        return;
+      }
+      if (!b.dataset.pane) return;
+      /* Tapping the pane you are already on folds the sheet away, which is
+         the gesture a player reaches for when they want to see the board. */
+      if (dock.dataset.pane === b.dataset.pane && !document.body.classList.contains('dock-folded')) {
+        document.body.classList.add('dock-folded');
+        const c = $('#dock-collapse');
+        if (c) { c.setAttribute('aria-expanded', 'false'); c.textContent = '▴'; }
+      } else {
+        dock.dataset.pane = b.dataset.pane;
+        document.body.classList.remove('dock-folded');
+        const c = $('#dock-collapse');
+        if (c) { c.setAttribute('aria-expanded', 'true'); c.textContent = '▾'; }
+      }
+      this.syncDockTabs();
+      Sound.play('click');
+      if (Game.resize) Game.resize();
+    });
+
+    this.syncDockTabs();
+
     /* DEBUG MODE. Off by default and never persisted as on by accident: it is
        a checkbox like any other, so a player who turns it on knows they did. */
     const dbg = $('#set-debug');
@@ -8104,6 +8149,19 @@ const UI = {
     Sound.setSfxVolume(s.sfx); Sound.setMusicVolume(s.music);
     Sound.toggleSfx(s.sfxOn); Sound.toggleMusic(s.musicOn);
   },
+  /** Keep aria-selected honest on the dock tabs. A tablist whose selection
+      lives only in a CSS attribute selector tells a screen reader nothing. */
+  syncDockTabs() {
+    const dock = $('#dock');
+    if (!dock) return;
+    const cur = dock.dataset.pane;
+    $$('#dock-tabs .dock-tab[data-pane]').forEach(b => {
+      const on = b.dataset.pane === cur;
+      b.setAttribute('aria-selected', String(on));
+      b.classList.toggle('on', on);
+    });
+  },
+
   saveSettings() {
     Storage.saveSettings({ sfx: $('#set-sfx').value / 100, music: $('#set-music').value / 100,
       sfxOn: $('#set-sfx-on').checked, musicOn: $('#set-music-on').checked,

@@ -3846,3 +3846,270 @@ body.rm-user.immersive #battle-controls { transition: none; }
 .codex-entry > b {
   color: color-mix(in srgb, var(--tc) var(--ink-mix), var(--text));
 }
+
+/* ==========================================================================
+   THE BATTLE SCREEN ON A PHONE, Session 38.
+
+   docs/MOBILE-AUDIT-S37.md fixed the SETUP screens and said in its own scope
+   note: "The in-game HUD at phone width ... none of it was measured here. Do
+   not assume this pass helped it." It did not. Measured on the unpatched
+   build with tools/mobile-hud-audit.js:
+
+     360x800   chrome 570px of 800 (71%), only 45% of the board uncovered
+     412x915   chrome 549px of 915 (60%)
+     both      #hud covering #battle-controls by 266x46px
+     both      tower card internals 27px to 35px past the right edge
+     both      10 to 15 controls under the 44px thumb floor
+
+   THREE ROOT CAUSES, and each fix below names the one it answers.
+
+   1. THREE DOCK PANES SIDE BY SIDE IS A DESKTOP SHAPE. --dock-side-w is
+      328px twice plus a 300px inspector: about 980px of content inside a
+      388px box. flex shrank the boxes and the CARDS INSIDE THEM did not
+      follow, which is the horizontal overflow. On a phone the dock becomes
+      one sheet showing ONE pane, chosen by the tab strip.
+
+   2. #battle-controls WAS MOVED TO THE TOP AT max-width:1550px, on the
+      reasoning (quoted in that rule) that "#hud has no fixed height to
+      collide with". True at the 1366px laptop it was measured on, false at
+      412px where #hud is 204px tall and centred. On a phone the bar goes
+      back to the bottom, below the sheet, where nothing is above it.
+
+   3. NOTHING BUDGETED VERTICAL SPACE. The board is the game; chrome is
+      everything else. The sheet folds away to its tab strip so the board can
+      have the screen, and folding is one tap on the tab you are already on. */
+@media (max-width: 760px) {
+
+  /* ---- the top strip ---------------------------------------------------- */
+  /* 204px of header on an 800px screen is a quarter of the game. The three
+     columns stay (YOU, wave, RIVAL) because ownership is the one thing that
+     must never need a label, but everything inside them tightens. */
+  /* TWO ROWS, NOT THREE COLUMNS. Three cards sharing a 390px row leaves each
+     about 110px, which is not enough for a label, three stats and a bar: the
+     cards do not technically overlap (M2b measures that) and the row is still
+     unreadable, which is what the owner meant by cluttered. Wrapping puts YOU
+     and RIVAL side by side on their own row, where the comparison actually
+     belongs, and gives the wave block the full width underneath.
+
+     `order` rather than a DOM move: the markup is YOU, centre, RIVAL, and
+     desktop wants exactly that. */
+  #hud {
+    padding: 4px 8px;
+    gap: 4px 6px;
+    align-items: start;
+    flex-wrap: wrap;
+  }
+  #hud > .hud-side { flex: 1 1 0; min-width: 0; }
+  #hud > .hud-centre { order: 2; flex: 1 1 100%; min-width: 0; }
+  /* The quit button was stacking ABOVE the YOU card rather than sitting
+     beside it, which cost the header 44px of pure whitespace once the button
+     was raised to a thumb target. Measured: the sides row was 100px for two
+     ~55px cards. */
+  #hud .hud-side { display: flex; flex-direction: row; align-items: center; gap: 6px; }
+
+  /* RUSH GOES TO THE THUMB. It is the primary action of the build phase and
+     it sat at the very top of the screen, the furthest point from a hand.
+     Fixed above the controls bar, full width, it is both reachable and out of
+     the header's height budget. The dock is pushed up by exactly its height,
+     so the three fixed layers tile rather than overlap: controls at 0, rush
+     above it, sheet above that. Two constants, no measurement at runtime. */
+  :root { --phone-rush-h: 48px; }
+  /* BACKDROP-FILTER CREATES A CONTAINING BLOCK FOR position:fixed.
+     `body.immersive #hud > .hud-centre` sets `backdrop-filter: blur(6px)`, so
+     a fixed child of that card anchors to THE CARD, not to the viewport:
+     `bottom: 52px` put RUSH 52px from the bottom of a 90px header card, which
+     rendered it straight across the wave readout. The button was correctly
+     out of flow and correctly 48px tall, and the probe counted it as chrome, so
+     every number looked right while the screen was visibly wrong.
+     Dropping the blur on the centre card alone restores the viewport as the
+     containing block. The card keeps its own background, so it still reads as
+     a card, and the sides keep their blur. */
+  body.immersive #hud > .hud-centre {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  /* AND ON #hud ITSELF, which is the one that actually mattered. The base
+     rule sets `backdrop-filter: blur(16px) saturate(1.2)` on #hud in BOTH
+     display modes, so #hud was the containing block whether immersive was on
+     or not, and clearing the centre card alone changed nothing. Found by the
+     overlap check within one run of adding floating layers to it, having been
+     invisible to every number before that.
+     The header keeps its background; in immersive the side cards keep their
+     own blur, so the only thing lost is a blur nobody can name. */
+  #hud {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  #hud .btn-wave {
+    position: fixed;
+    left: 0; right: 0;
+    bottom: var(--phone-ctl-h);
+    z-index: 23;
+    width: auto;
+    height: var(--phone-rush-h);
+    min-height: var(--phone-rush-h);
+    border-radius: 0;
+    margin: 0;
+  }
+  /* The dock's own bottom is set in the sheet block below, which is later
+     in this file and would otherwise reset it. */
+  #hud .cmdr-stats { font-size: 12px; gap: 6px; }
+  #hud .cmdr-tag { font-size: 8.5px; letter-spacing: .1em; }
+  /* 40px of "WAVE 0" on an 800px screen is a twentieth of the game spent on
+     two words. Measured: hud-centre held wave-badge 40 + phase 15 + prep 6 +
+     chips 18 + rush 46, and the badge was the largest single item that is
+     pure readout. */
+  #hud .wave-badge { font-size: 11px; line-height: 1.1; padding: 2px 0; }
+  #hud .wave-badge b { font-size: 15px; }
+  #hud .phase { font-size: 10px; line-height: 1.1; }
+  #hud .hud-centre { gap: 3px; }
+  /* The escalation chips are reference, not control: they scroll in one row
+     instead of wrapping into three and pushing RUSH down the screen. */
+  #hud .chip-rows {
+    display: flex; flex-direction: row; gap: 4px;
+    overflow-x: auto; overflow-y: hidden;
+    scrollbar-width: none;
+    max-width: 100%;
+  }
+  #hud .chip-rows::-webkit-scrollbar { display: none; }
+  #hud .chip-row { flex-wrap: nowrap; }
+  /* RUSH is the primary action of the build phase and it is now a real
+     target rather than a 35px sliver. */
+  #hud .btn-wave { min-height: 46px; font-size: 13px; }
+
+  /* ---- the controls bar, bottom, under the sheet ------------------------- */
+  #battle-controls {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0; right: 0;
+    transform: none;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px max(6px, env(safe-area-inset-left)) max(4px, env(safe-area-inset-bottom));
+    height: var(--phone-ctl-h);
+    background: var(--panel-2);
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    backdrop-filter: blur(6px);
+    z-index: 24;
+  }
+  #battle-controls .icon-btn,
+  #battle-controls .speed-btn {
+    min-width: 44px; min-height: 44px;
+    flex: 1 1 auto; max-width: 64px;
+  }
+
+  /* ---- the sheet -------------------------------------------------------- */
+  :root { --phone-ctl-h: 52px; }
+  #dock {
+    position: fixed;
+    left: 0; right: 0;
+    /* ABOVE the RUSH bar, which is above the controls bar. The three fixed
+       layers TILE: controls at 0, rush at 52, sheet at 100. Written here and
+       not beside the rush rule because this block is later in the file and
+       reset it, which put the sheet straight on top of the button. */
+    bottom: calc(var(--phone-ctl-h) + var(--phone-rush-h));
+    transform: none;
+    max-width: 100%;
+    display: block;
+    z-index: 22;
+    background: var(--panel-2);
+    border-top: 1px solid var(--line-2);
+    backdrop-filter: blur(8px);
+    pointer-events: auto;
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+  #dock-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  #dock-tabs .dock-tab {
+    flex: 1 1 0;
+    min-height: 46px;
+    appearance: none; -webkit-appearance: none;
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    color: var(--text-mute);
+    font-family: var(--display);
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    cursor: pointer;
+    transition: color 140ms var(--e-tap), border-color 140ms var(--e-tap);
+  }
+  #dock-tabs .dock-tab.on {
+    color: var(--cyan);
+    border-bottom-color: var(--cyan);
+  }
+  #dock-tabs .dock-tab:focus-visible { outline: 2px solid var(--cyan); outline-offset: -3px; }
+  #dock-tabs .dock-fold { flex: 0 0 52px; font-size: 13px; }
+
+  /* ONE PANE AT A TIME. Everything stays built and populated, so a tab change
+     re-renders nothing: the muster cards keep their live cooldowns and the
+     inspector keeps its selection. */
+  /* TWO IDS, DELIBERATELY. `#dock #dock-inspector` (2-0-0) already exists
+     above and sets `display: flex`; a rule written as `#dock .dock-pane`
+     (1-1-0) loses to it and the inspector stayed visible UNDERNEATH the shop
+     pane, adding a silent 220px to the sheet. This file's own comment warns
+     about this exact cascade a hundred lines up, in the opposite direction.
+     Measured before the fix: dock 412px holding tabs 47 + inspector 220 +
+     shop 144. After: tabs 47 + one pane. */
+  #dock #dock-muster,
+  #dock #dock-inspector,
+  #dock #dock-shop { display: none; width: auto; max-width: 100%; height: auto; }
+  #dock[data-pane="muster"]    #dock-muster,
+  #dock[data-pane="shop"]      #dock-shop { display: block; }
+  #dock[data-pane="inspector"] #dock-inspector { display: flex; }
+  #dock #dock-muster,
+  #dock #dock-inspector,
+  #dock #dock-shop { max-height: 30vh; overflow-y: auto; }
+
+  /* The two controls still under the thumb floor after the first pass. */
+  #dock .abil, #dock #btn-baselvl { min-height: 46px; }
+
+  /* The header columns overflowed the viewport by 4px at 360, which is the
+     grid min-width:auto default again: a track refuses to shrink below its
+     content and every descendant inherits the overflow. */
+  #hud, #hud > * { min-width: 0; }
+  #hud .cmdr-stats, #hud .cmdr { min-width: 0; }
+
+  /* THE OVERFLOW FIX. A grid item defaults to min-width:auto and refuses to
+     shrink below its content, which is the same root cause docs/
+     MOBILE-AUDIT-S37.md found on three setup screens. The cards inherited it
+     and sat past the right edge where a phone cannot scroll. */
+  #dock .dock-pane > *, #dock .tower-card, #dock .muster-btn { min-width: 0; }
+  #dock .tower-card .tc-main, #dock .tower-card .tc-name, #dock .tower-card .tc-cost {
+    min-width: 0; overflow-wrap: anywhere;
+  }
+  #dock .tower-card, #dock .muster-btn { min-height: 46px; }
+
+  /* FOLDED: the sheet is its tab strip and nothing else, so the board gets
+     the screen. One tap on the active tab, or on the fold control.
+
+     THREE IDS, and this is the THIRD time this cascade has bitten inside this
+     one file. The selector that SHOWS a pane is `#dock[data-pane="shop"]
+     #dock-shop` (2-1-0), so anything hiding it must outrank that: written as
+     `body.dock-folded #dock .dock-pane` (1-1-0) the fold silently did nothing
+     and folded chrome measured 382px of 800 against an unfolded 409px. The
+     control moved, the arrow flipped, and the sheet stayed. */
+  body.dock-folded #dock #dock-muster,
+  body.dock-folded #dock #dock-inspector,
+  body.dock-folded #dock #dock-shop { display: none; }
+
+  /* The quit button is a real target, not a 32px corner. */
+  #hud #btn-quit { min-width: 44px; min-height: 44px; }
+}
+
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  #dock-tabs .dock-tab { transition: none; }
+}
+
+/* Desktop never sees the strip: the panes sit side by side exactly as before
+   and `data-pane` selects nothing, because every pane is display:flex here. */
+@media (min-width: 761px) {
+  #dock-tabs { display: none; }
+}
