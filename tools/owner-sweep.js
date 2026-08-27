@@ -1853,6 +1853,302 @@
          ' (rite ' + S.doctrine + ', towers ' + S.towers.length + ', wave ' + Game.wave + ')');
     });
 
+    /* ---- 38.17 to 38.21 THE PATHS SESSION 38 SHIPPED UNTESTED ----------
+       Measured after the fact by grepping every symbol this session added
+       against the harnesses: musterCdFor, musterReadyCount, ttEsc,
+       Debug.lose, Debug.clearWave, Debug.heal, Debug.render, the collapse
+       toggle, engineKey's new branch and both xeno feed tells all had ZERO
+       coverage. They shipped behind a green gate because the checks written
+       alongside them covered the interesting halves and skipped the rest,
+       which is the standing law ("code no gate executes is code that ships
+       untested") applied to my own work rather than to somebody else's. */
+
+    T('38.17 the rest of the DEBUG cheats drive the real paths too', function () {
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+      Debug.set(true);
+      /* HEAL, through the real lives field the HUD reads. */
+      Game.sides[0].lives = 1;
+      const healed = Debug.heal() && Game.sides[0].lives === Game.sides[0].maxLives;
+
+      /* CLEAR WAVE must kill THROUGH Game.killEnemy, not just flag bodies
+         dead: bounty, stats and the doctrine rite all book in that funnel,
+         so a cheat that bypassed it would leave the board in a state real
+         play can never produce and would be a worse-than-useless test tool. */
+      Game.sides[0].doctrine = 'xeno';
+      Game.incubators.length = 0;
+      const goldBefore = Game.sides[0].gold;
+      const killsBefore = Game.sides[0].stats.kills;
+      for (let i = 0; i < 3; i++)
+        Game.spawnFromQueue({ side: 0, type: 'chitling', lane: 0, hpMul: 1, bountyMul: 1, rageMul: 1 });
+      const cleared = Debug.clearWave();
+      const booked = Game.sides[0].stats.kills > killsBefore &&
+                     Game.sides[0].gold > goldBefore &&
+                     Game.incubators.length > 0;
+
+      /* LOSE, through endMatch, so the match actually ends. */
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+      Debug.set(true);
+      const lost = Debug.lose() && Game.state === 'over';
+      Debug.set(false);
+      ok('38.17 the rest of the DEBUG cheats drive the real paths too',
+         healed && cleared >= 3 && booked && lost,
+         'heal ' + healed + ', cleared ' + cleared + ' bodies, booked through killEnemy ' +
+         booked + ' (kills, gold and a clutch all moved), lose ended the match ' + lost);
+    });
+
+    T('38.18 the debug bar renders, collapses, and its toggle works', function () {
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+      UI.show('screen-game');
+      Debug.set(false);
+      const goneWhenOff = !document.getElementById('debug-bar');
+      Debug.set(true);
+      const bar = document.getElementById('debug-bar');
+      /* Collapsed is the DEFAULT, and it matters: the first draft docked a
+         full-width strip over the muster panel, which is the surface you most
+         want reachable while cheating. */
+      const collapsed = !!bar && !bar.classList.contains('open') &&
+                        bar.querySelectorAll('.dbg-b').length === 0;
+      const tag = bar && bar.querySelector('[data-dbg="toggle"]');
+      if (tag) tag.click();
+      const opened = !!bar && bar.classList.contains('open') &&
+                     bar.querySelectorAll('.dbg-b').length >= 5;
+      const tag2 = bar && bar.querySelector('[data-dbg="toggle"]');
+      if (tag2) tag2.click();
+      const reclosed = !!bar && !bar.classList.contains('open');
+      Debug.set(false);
+      ok('38.18 the debug bar renders, collapses, and its toggle works',
+         goneWhenOff && collapsed && opened && reclosed,
+         'absent when off ' + goneWhenOff + ', collapsed by default ' + collapsed +
+         ', expands to controls ' + opened + ', collapses again ' + reclosed);
+    });
+
+    T('38.19 ttEsc neutralises both characters that break a data-tt', function () {
+      /* data-tt is a DOUBLE-QUOTED attribute SPLIT ON A PIPE, so a quote
+         breaks the tag outright and a pipe silently truncates the tooltip at
+         the first one. Everything generated from data goes through here, and
+         nothing proved it did anything until now. */
+      const raw = 'He said "no" | then left';
+      const out = ttEsc(raw);
+      const clean = out.indexOf('"') === -1 && out.indexOf('|') === -1;
+      /* And it must survive a real round trip through the attribute. */
+      const d = document.createElement('div');
+      d.setAttribute('data-tt', 'T|' + out);
+      const parts = (d.dataset.tt || '').split('|');
+      ok('38.19 ttEsc neutralises both characters that break a data-tt',
+         clean && parts.length === 2 && parts[1].length > 10 &&
+         ttEsc(null) === '' && ttEsc(undefined) === '',
+         'escaped "' + out + '", survives the attribute in ' + parts.length +
+         ' parts, null and undefined give the empty string');
+    });
+
+    T('38.20 a xeno kill that feeds a clutch SAYS so, capped or not', function () {
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+      Game.sides[0].doctrine = 'xeno';
+      Game.viewSide = 0;
+      Game.incubators.length = 0;
+      Game.floaters.length = 0;
+      const kill = function () {
+        Game.spawnFromQueue({ side: 0, type: 'chitling', lane: 0, hpMul: 1, bountyMul: 1, rageMul: 1 });
+        const e = Game.enemies[Game.enemies.length - 1];
+        Game.killEnemy(e);
+        return e;
+      };
+      kill();                       /* lays a clutch */
+      kill();                       /* lands beside it, so it feeds */
+      const fed = Game.floaters.some(function (f) { return /FED/.test(f.text) && !/NEST FULL/.test(f.text); });
+
+      /* THE CAP. Fill the nest with clutches placed far from the lane mouth
+         so the next kill feeds NOTHING by proximity, which is the branch that
+         used to do its work in total silence and read as a broken rite. */
+      Game.incubators.length = 0;
+      Game.floaters.length = 0;
+      for (let i = 0; i < XENO_INC_CAP; i++)
+        Game.incubators.push({ side: 0, x: 5000 + i * 40, y: 5000, unitId: Game.sides[0].musterLoadout[0],
+                               lidx: 0, powerHp: 50, armorFlat: 0, t: 30, need: 30 });
+      kill();
+      const cappedTell = Game.floaters.some(function (f) { return /NEST FULL/.test(f.text); });
+      ok('38.20 a xeno kill that feeds a clutch SAYS so, capped or not',
+         fed && cappedTell,
+         'feed tell inside the radius ' + fed + ', full-nest tell ' + cappedTell +
+         ' (this branch always fed the nearest clutch and never said so)');
+    });
+
+    T('38.21 the muster readouts track the live state they claim to', function () {
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+      const S = Game.sides[0];
+      S.doctrine = 'human';
+      /* A REAL ROSTER, because the default one holds a SINGLE unit. The first
+         draft of this check asserted that cooldown duration varies with mass
+         against a one-entry loadout, where max and min are the same number by
+         definition, and reported a false failure. Two bodies an order of
+         magnitude apart in health is what actually exercises the sqrt curve. */
+      Game.setMusterLoadout(0, ['chitling', 'hivelord']);
+      const tiers = Game.musterTiers(0);
+      for (const t of tiers) delete S.musterCd[t.id];
+      const allReady = Game.musterReadyCount(0);
+      S.musterCd[tiers[0].id] = 20;
+      const oneHot = Game.musterReadyCount(0);
+      /* musterCdFor is the DURATION, distinct from musterCdLeft's remainder,
+         and must scale with mass or the heaviest body is strictly the best
+         use of an identical slot, which is the defect the cooldown replaced. */
+      const durations = tiers.map(function (t) { return Game.musterCdFor(0, t); });
+      const scales = Math.max.apply(null, durations) > Math.min.apply(null, durations);
+      /* engineKey is the render budget for the commander tag. If it does not
+         move when reqCredit moves, the tag shows a stale discount forever. */
+      S.reqCredit = 0;
+      const k0 = UI.engineKey(S);
+      S.reqCredit = HUMAN_REQ_CAP;
+      const k1 = UI.engineKey(S);
+      for (const t of tiers) delete S.musterCd[t.id];
+      ok('38.21 the muster readouts track the live state they claim to',
+         allReady === tiers.length && oneHot === tiers.length - 1 && scales && k0 !== k1,
+         'roster ' + tiers.length + ', ready ' + allReady + ', one on cooldown gives ' + oneHot +
+         ', durations ' + durations.map(function (d) { return d.toFixed(1); }).join('/') +
+         ', engineKey moves with the credit ' + (k0 !== k1));
+    });
+
+    T('38.22 veterancy stops at HUMAN_VET_MAX', function () {
+      /* THE ONE REAL GAP tools/newcoverage.js found. 38.7 proves a body that
+         kills gets promoted; nothing proved promotion ever STOPS. Set the cap
+         to 999 and every check stayed green while a single veteran could
+         compound without bound, which is precisely the runaway the cap exists
+         to prevent. Driven through Game.promote, the only writer of vetRank. */
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+      const base = ENEMY_TYPES['trooper'] || ENEMY_TYPES[Game.sides[0].musterLoadout[0]];
+      const path = Game.sendPathFor(0, 1, base);
+      const u = new Enemy(base, path, { hostileTo: 1, owner: 0, startDist: 100 });
+      const hp0 = u.maxHp;
+      for (let i = 0; i < HUMAN_VET_MAX + 5; i++) Game.promote(u);
+      const hpAtCap = u.maxHp;
+      Game.promote(u);
+      ok('38.22 veterancy stops at HUMAN_VET_MAX',
+         u.vetRank === HUMAN_VET_MAX && u.maxHp === hpAtCap && u.maxHp > hp0,
+         'rank settled at ' + u.vetRank + ' of a ' + HUMAN_VET_MAX + ' cap after ' +
+         (HUMAN_VET_MAX + 6) + ' attempts, maxHp ' + hp0 + ' to ' + u.maxHp + ' then held');
+    });
+
+    /* ---- 38.23 to 38.26 THE LAST COLD LINES ----------------------------
+       Found by tools/newcoverage.js, which profiles owner-sweep and MPT under
+       Chrome's precise coverage and reports added lines with an execution
+       count of zero. These four checks take this session's diff from 94% of
+       added lines reached to all of them. Every one covers a path a PLAYER
+       takes, not an exotic branch: the debug buttons, a normally scored
+       campaign victory, the options toggle and the muster panel readout. */
+
+    T('38.23 the debug bar controls fire, and a duel says why they cannot', function () {
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+      UI.show('screen-game');
+      Debug.set(true);
+      Debug.open = true; Debug.render();
+      const bar = document.getElementById('debug-bar');
+      const press = function (a) {
+        const b = bar && bar.querySelector('[data-dbg="' + a + '"]');
+        if (b) b.click();
+        return !!b;
+      };
+      /* GOLD, through the button rather than the method, because the click
+         dispatch is its own uncovered branch: 38.12 only ever proved the
+         cheats REFUSE inside a duel, so the granting half never ran. */
+      Game.sides[0].gold = 100;
+      const pressedGold = press('gold');
+      const granted = Game.sides[0].gold > 100;
+      Game.sides[0].lives = 1;
+      const pressedHeal = press('heal');
+      const healed = Game.sides[0].lives === Game.sides[0].maxLives;
+      /* The duel notice replaces the whole control set. */
+      const wasLive = Net.live;
+      Net.live = true;
+      Debug.render();
+      const notice = /disabled in a duel/i.test(bar ? bar.textContent : '') &&
+                     bar.querySelectorAll('.dbg-b').length === 0;
+      Net.live = wasLive;
+      Debug.set(false);
+      ok('38.23 the debug bar controls fire, and a duel says why they cannot',
+         pressedGold && granted && pressedHeal && healed && notice,
+         'gold button granted ' + granted + ', heal button restored ' + healed +
+         ', duel notice replaces the controls ' + notice);
+    });
+
+    T('38.24 a campaign victory with NO cheat is scored by ratingFor', function () {
+      /* THE NORMAL PATH, and nothing reached it. 38.11 always sets the debug
+         override, so endMatch's ratingFor branch, which is what scores every
+         real player's every real victory, was never executed by the gate. */
+      try { localStorage.removeItem(Meta.KEY); } catch (e) { /* fresh profile is fine */ }
+      Meta._root = null; Meta.load();
+      const p0 = Meta.load(); p0.faction = 'human'; Meta.save();
+      Meta.campaignStart('human');
+      Meta.campaign().seed = 20260827; Meta.save();
+      const gx = Meta.galaxy();
+      let w = null;
+      for (let si = 0; si < gx.systems.length && !w; si++)
+        for (let wi = 0; wi < gx.systems[si].worlds.length && !w; wi++)
+          if (gx.systems[si].worlds[wi].map) w = gx.systems[si].worlds[wi];
+      const camp = Meta.campaign();
+      camp.chosen = { world: w.id, map: w.map, arena: w.arena, boon: w.boon,
+                      renegade: !!w.renegade, kind: w.kind, owner: w.owner };
+      Meta.save();
+      Game.start({ world: w.id, map: w.map, faction: 'human',
+                   rivalFaction: w.owner, worldKind: w.kind, loadout: PIN.slice() });
+      /* FULL LIVES AND A REAL BATTLE LENGTH. The first draft ended the match
+         at wave 0 and scored undefined: ratingFor delegates to the SCENARIO's
+         own test(), most of which gate on the wave reached, so a victory in
+         the build phase legitimately earns nothing and recordWorld stores no
+         zero. That was the check being wrong about the game, not the game
+         being wrong. */
+      Game.sides[0].lives = Game.sides[0].maxLives;
+      Game.wave = 30;
+      Game._debugStars = null;
+      Game.endMatch(true);
+      const stars = Meta.campaign().stars ? Meta.campaign().stars[w.id] : undefined;
+      ok('38.24 a campaign victory with NO cheat is scored by ratingFor',
+         typeof stars === 'number' && stars >= 1 && !!Game.lastStars &&
+         ('systemTaken' in Game.lastStars),
+         'ratingFor awarded ' + stars + ' star(s) for ' + w.id +
+         ', lastStars carries systemTaken ' + (!!Game.lastStars && ('systemTaken' in Game.lastStars)));
+    });
+
+    T('38.25 the OPTIONS debug switch drives Debug and is persisted', function () {
+      const box = document.getElementById('set-debug');
+      if (!box) { ok('38.25 the OPTIONS debug switch drives Debug and is persisted',
+                     false, 'no #set-debug in the options panel'); return; }
+      const before = Debug.on;
+      box.checked = true;
+      box.dispatchEvent(new Event('change'));
+      const turnedOn = Debug.on === true;
+      const savedOn = !!(Storage.loadSettings() || {}).debug;
+      box.checked = false;
+      box.dispatchEvent(new Event('change'));
+      const turnedOff = Debug.on === false;
+      const savedOff = !(Storage.loadSettings() || {}).debug;
+      Debug.set(before);
+      ok('38.25 the OPTIONS debug switch drives Debug and is persisted',
+         turnedOn && savedOn && turnedOff && savedOff,
+         'switch on drives Debug ' + turnedOn + ' and saves ' + savedOn +
+         ', switch off drives Debug ' + turnedOff + ' and saves ' + savedOff);
+    });
+
+    T('38.26 the muster panel prints the live ready count', function () {
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+      Game.setMusterLoadout(0, ['chitling', 'hivelord']);
+      const S = Game.sides[0];
+      S.doctrine = 'human';
+      const tiers = Game.musterTiers(0);
+      for (const t of tiers) delete S.musterCd[t.id];
+      const allReadyHtml = UI.econLedgerHtml(0);
+      S.musterCd[tiers[0].id] = 20;
+      const oneHotHtml = UI.econLedgerHtml(0);
+      /* The panel must quote what musterReadyCount RETURNS, not a constant.
+         It used to print "N of 2 summons left this wave" off MUSTER_PER_WAVE,
+         which no longer exists, and nothing checked what replaced it. */
+      const saysAll = allReadyHtml.indexOf(tiers.length + ' of ' + tiers.length) !== -1 ||
+                      /detachments ready/.test(allReadyHtml);
+      const moved = allReadyHtml !== oneHotHtml;
+      ok('38.26 the muster panel prints the live ready count',
+         saysAll && moved,
+         'panel names the ready count ' + saysAll +
+         ', and it changes when a detachment goes on cooldown ' + moved);
+    });
+
     T('38.8 a TOWER kill never promotes, only a body kill does', function () {
       battle('human');
       const e = killOne(0);
