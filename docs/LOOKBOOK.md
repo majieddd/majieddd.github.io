@@ -1,5 +1,13 @@
 # Cosmic Conquest. Commander Portrait Lookbook
 
+> **Start at docs/ART-BIBLE.md**, which carries the Session 38 content law.
+> The portrait class was reworked under it on 2026-08-27: Federation
+> commanders are now cast from the contact species (stated by FORM words so
+> the class duotone keeps winning), pirates are visibly multi-species, humans
+> wear grounded Dune-restraint dress, the xeno are sharpened. The anatomy,
+> measurements and failure catalogue below still govern HOW a portrait prompt
+> is built.
+
 > **STATUS, read before building against this.** The commander half of note 20.4
 > was **reversed by the owner** mid-Session-20: the commanders keep the approved
 > full-palette look and were restored byte-identical in `4a2974b`. Only the twenty

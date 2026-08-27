@@ -1,5 +1,12 @@
 # Cosmic Conquest. Brand & Art Kit
 
+> **Start at docs/ART-BIBLE.md.** Session 38 consolidated the style law, the
+> owner's content law (Dune-grounded tech, modern humans, contact-species
+> Federation, multi-species pirates, scarier xeno), the prompt anatomy and the
+> pipeline runbook into that one file, with rendered examples under
+> docs/brand-board/. This file remains the measured evidence record (token
+> cliffs, colour-word measurements, amendments); the bible is the entry point.
+
 The single source of truth for every generated or authored visual. Locked by the owner
 in Session 15. Any future generation, regeneration, or new asset class starts here.
 
