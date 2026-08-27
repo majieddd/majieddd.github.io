@@ -384,3 +384,35 @@ a class of 28 takes about fifteen minutes rather than twelve. **Time ONE image
 before any batch.** A per-image figure inferred from a whole run INCLUDING load
 reads about twice the true cost: that happened once in Session 39 and briefly
 made an eleven-hour job look like a twenty-nine-hour one.
+
+### 12.1 The complete generation inventory on this machine
+
+Asked directly by the owner: is anything being missed that would generate art
+faster or more on-brand? Surveyed rather than guessed, and the answer is no.
+
+| Capability | What runs it | Where | Cost |
+|---|---|---|---|
+| Images, shipping tier | Krea 2 Turbo, 4-bit NF4 | `artgen/krea2-turbo` (34GB) | 47.5s per 1920x1080, 26.5s per 320px |
+| Images, draft tier | SDXL-Turbo | `artgen/` | about 4.5s each |
+| Video from image | Wan 2.2 TI2V-5B via local ComfyUI | `comfy-models/split_files` | the five living-portraiture clips |
+| Speech | kokoro-onnx | the isolated `voicegen` env | 2.9s for 7.5s of 24kHz |
+| Gameplay capture | `tools/capture.js` into `tools/headless.js` | deterministic, ffmpeg encode |
+
+Adobe adds editing only (section 12 above). The only other MCP server
+configured on this machine is unrelated to media. There is no unused
+generation capability sitting here.
+
+**And a hosted image API would COST us something the local path gives free.**
+The brand consistency in this project does not come from the model. It comes
+from `build_jobs()` being a single catalogue, from the shared `{STYLE}` spine,
+and above all from the FNV-1a seed over the asset key, which is what makes
+"same key, same image, every run" true and makes a re-render a RESTORE rather
+than a re-roll. That property is what let the commander class be re-rendered
+wholesale twice in one session without losing the twenty-eight approved
+pictures. A hosted endpoint that does not accept a seed, or that changes its
+model under you, breaks it silently.
+
+**If more speed is genuinely wanted, the honest levers are two, and neither is
+batching:** a desktop card without this laptop's 175W ceiling, or fewer denoise
+steps than the distillation schedule's 8, which is a quality trade and an
+art-direction call rather than an optimisation.
