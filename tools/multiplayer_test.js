@@ -39,6 +39,31 @@ const MPT = (function () {
      anything twice: Game.build gates on S.loadout alone (game.js:1266) and
      never on the unlock shelf, and beginMatch overwrites S.loadout out of the
      contract (net.js beginMatch), so a pin needs no unlocks to be legal. */
+  /* The rite this rig drives when the subject is reanimation. THE BROOD is
+     the choice because it both BUYS and RAISES: the machine rite raises but
+     cannot purchase (noPurchase), so `bought > 0` could never hold under it. */
+  const RAISING_RITE = 'xeno';
+  /* THE REACHABILITY GRANT, hoisted so the isolation canary can have it too.
+     The pvp rig documented why it needs this ("a duel test that cannot afford
+     its own opening is a test of poverty"): without it most builds in the log
+     are refused for gold and the surviving board kills nothing.
+     The isolation canary needs the SAME thing for a different reason. It
+     proves that viewSide-gated cosmetics are what the isolation is suppressing,
+     which requires cosmetics to actually roll. It used to get that for free,
+     because the old human rite raised a body on EVERY kill and the resulting
+     traffic guaranteed melee sparks. FIELD DOCTRINE raises none, so the canary
+     went quiet and reported STILL AGREED, which reads as "the mechanism does
+     nothing" when it in fact means "this board was too empty to test it". */
+  const RIG_GOLD = 4000;
+  /* THE ISOLATION CANARY'S rite is a different choice from the pvp rig's, and
+     the difference is the point. The pvp rig needs a seat that both BUYS and
+     RAISES, so it uses THE BROOD. The canary needs only TRAFFIC: the most
+     bodies on the board in the fewest ticks, so that a viewSide-gated cosmetic
+     rolls at all. THE LATTICE raises one body on every kill with no purchase
+     and no gestation, which is the closest thing left to the CONSCRIPTION the
+     canary used to inherit by accident. It never checks `bought`, so the
+     machine rite's noPurchase costs it nothing. */
+  const TRAFFIC_RITE = 'robot';
   const PIN_LOADOUT = ['bolt', 'cryo', 'mortar', 'flak', 'beacon'];
   const PIN_MUSTER = ['crawler'];
 
@@ -137,6 +162,25 @@ const MPT = (function () {
        on both seats and on both clients, so it buys reachability and costs
        nothing in determinism. */
     if (opts.gold) { Net._realSides[0].gold = opts.gold; Net._realSides[1].gold = opts.gold; }
+    /* THE RITE, MADE EXPLICIT (Session 38).
+       This rig used to inherit whatever doctrine contract()'s two commanders
+       happened to carry, and that was COMMANDERS[0] (cadre, faction null, so
+       it fell through to the seat's human banner) and COMMANDERS[1] (vanta,
+       whose own faction is human and therefore beat the seat's xeno banner).
+       Both seats ran the human rite by accident, nobody had written that down,
+       and three checks silently depended on it: the send/raise loop, the
+       wire-carried rival reanimation, and the isolation canary, which needs
+       enough sent bodies on the board for melee to roll a viewSide-gated
+       cosmetic at all.
+       When FIELD DOCTRINE replaced CONSCRIPTION's free body per kill, all
+       three went red at once for a reason that had nothing to do with the
+       wire. A rig whose subject is reanimation must NAME the rite that
+       reanimates rather than inherit one. Applied identically on both seats
+       and on both clients, so it costs nothing in determinism. */
+    if (opts.doctrine) {
+      Net._realSides[0].doctrine = opts.doctrine;
+      Net._realSides[1].doctrine = opts.doctrine;
+    }
     const byTurn = {};
     for (const a of log) (byTurn[a.turn] = byTurn[a.turn] || []).push(a);
 
@@ -416,8 +460,8 @@ const MPT = (function () {
       let on = null, off = null;
       T('net.isolation ON: two viewSides agree', function () {
         Net._isolate = true;
-        const a = runClient(cfg, 0, log, N);
-        const b = runClient(cfg, 1, log, N);
+        const a = runClient(cfg, 0, log, N, null, { gold: RIG_GOLD, doctrine: TRAFFIC_RITE });
+        const b = runClient(cfg, 1, log, N, null, { gold: RIG_GOLD, doctrine: TRAFFIC_RITE });
         on = same(a, b);
         ok('net.isolation ON: two viewSides agree', on,
            'sums ' + a.sum + ' / ' + b.sum + ' at wave ' + a.wave +
@@ -427,8 +471,8 @@ const MPT = (function () {
         Net._isolate = false;
         let a, b;
         try {
-          a = runClient(cfg, 0, log, N);
-          b = runClient(cfg, 1, log, N);
+          a = runClient(cfg, 0, log, N, null, { gold: RIG_GOLD, doctrine: TRAFFIC_RITE });
+          b = runClient(cfg, 1, log, N, null, { gold: RIG_GOLD, doctrine: TRAFFIC_RITE });
         } finally { Net._isolate = true; }
         off = !same(a, b);
         ok('net.isolation OFF: the same two clients diverge', off,
@@ -1166,7 +1210,7 @@ T('net.rules conceding a duel does not promise a garrison', function () {
          charm (entities2.js:391). SPINE is not triMode and PIN_LOADOUT has no
          SIREN, so on this contract sends-minus-bought IS reanimate() and can
          be nothing else. */
-      const GOLD = 4000;
+      const GOLD = RIG_GOLD;
       let a = null, b = null, deaf = null;
       /* Guarded, because these three runs are outside every T() below and a
          throw here would take the whole suite down with it rather than
@@ -1177,12 +1221,12 @@ T('net.rules conceding a duel does not promise a garrison', function () {
         const log = buildLog(p);
         /* This client holds seat 0, so every seat-1 action in the log arrives
            the way the other window's would: as a command inside a turn packet. */
-        a = runClient(cfg, 0, log, 7200, null, { gold: GOLD });
+        a = runClient(cfg, 0, log, 7200, null, { gold: GOLD, doctrine: RAISING_RITE });
         /* The OTHER window: the same log, the same seed, the seats swapped
            over the local and the remote path. */
-        b = runClient(cfg, 1, log, 7200, null, { gold: GOLD });
+        b = runClient(cfg, 1, log, 7200, null, { gold: GOLD, doctrine: RAISING_RITE });
         /* The same client as `a`, with the peer's turns arriving empty. */
-        deaf = runClient(cfg, 0, log, 7200, null, { gold: GOLD, deaf: true });
+        deaf = runClient(cfg, 0, log, 7200, null, { gold: GOLD, deaf: true, doctrine: RAISING_RITE });
         ok('net.pvp the three duel runs complete', !!(a && b && deaf),
            'wired ' + a.ticks + ' ticks (' + a._why + '), mirror ' + b.ticks +
            ' ticks (' + b._why + '), deaf ' + deaf.ticks + ' ticks (' + deaf._why + ')');

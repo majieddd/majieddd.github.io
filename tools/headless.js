@@ -156,7 +156,14 @@ async function main() {
   await send('Page.navigate', { url: URL_ });
   await sleep(3500);
 
-  const steps = require(STEPFILE);
+  /* RESOLVE AGAINST THE CALLER'S CWD, not against this file.
+     `require` resolves a relative specifier relative to the REQUIRING module,
+     so the usage line at the top of tools/mutants.js
+       node tools/headless.js <url> <outdir> tools/mutants.js
+     resolved to tools/tools/mutants.js and died with "Cannot find module".
+     gate.js never hit it because it passes an absolute tmpdir path, so the
+     documented CLI form was the only broken one and nothing exercised it. */
+  const steps = require(path.resolve(process.cwd(), STEPFILE));
   const results = [];
   for (const step of steps) {
     if (step.size) {

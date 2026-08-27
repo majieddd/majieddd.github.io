@@ -1501,6 +1501,368 @@
        ', identical same-family boards ' + dupFamilies + '/' + compared);
   });
 
+  /* ---- 38.x THE SUMMONING RITES, driven through the REAL death funnel ---
+     THE GAP THIS CLOSES. This sweep exercised tickProcession (the light rite)
+     and had never once executed tickIncubators, so THE BROOD shipped its whole
+     life with zero coverage while THE PROCESSION had some. The owner reported
+     the xeno rite as "not quite working"; it was in fact working and merely
+     undertuned and invisible, which only a measurement could distinguish.
+
+     Every kill below goes through Game.spawnFromQueue then Game.killEnemy, the
+     same two calls a real wave uses. Nothing calls incubate() or requisition()
+     directly: a probe that calls the function under test bypasses the dispatch
+     deciding whether the function is reached at all, and the dispatch is
+     exactly where a rite dies. */
+  (function rites38() {
+    function battle(doctrine) {
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+      Game.sides[0].doctrine = doctrine;
+      Game.incubators.length = 0;
+      Game.pendingSpawns.length = 0;
+      return Game.sides[0];
+    }
+    function killOne(side) {
+      const n = Game.enemies.length;
+      Game.spawnFromQueue({ side: side, type: 'chitling', lane: 0, hpMul: 1, bountyMul: 1, rageMul: 1 });
+      if (Game.enemies.length === n) return null;
+      const e = Game.enemies[Game.enemies.length - 1];
+      Game.killEnemy(e);
+      return e;
+    }
+
+    T('38.1 THE BROOD lays a clutch on a kill, and it hatches into a body', function () {
+      battle('xeno');
+      killOne(0);
+      const one = Game.incubators.length === 1;
+      const need = one ? Game.incubators[0].need : -1;
+      Game.pendingSpawns.length = 0;
+      let guard = 0;
+      while (Game.incubators.length && guard++ < 4000) Game.tickIncubators(0.05);
+      ok('38.1 THE BROOD lays a clutch on a kill, and it hatches into a body',
+         one && Game.incubators.length === 0 && Game.pendingSpawns.length > 0,
+         'clutch laid ' + one + ', gestation ' + need.toFixed(1) + 's, hatched ' +
+         Game.pendingSpawns.length + ' body/bodies');
+    });
+
+    T('38.2 a hatchling enters with most of the lane still ahead of it', function () {
+      battle('xeno');
+      killOne(0);
+      Game.pendingSpawns.length = 0;
+      let guard = 0;
+      while (Game.incubators.length && guard++ < 4000) Game.tickIncubators(0.05);
+      const b = Game.pendingSpawns[0];
+      const total = b && b.path ? b.path.total : -1;
+      const frac = (b && total > 0) ? b.dist / total : -1;
+      ok('38.2 a hatchling enters with most of the lane still ahead of it',
+         !!b && frac >= 0 && frac < 0.9,
+         b ? ('enters at ' + (frac * 100).toFixed(1) + '% of a ' + total.toFixed(0) + ' lane')
+           : 'no body produced');
+    });
+
+    T('38.3 FIELD DOCTRINE raises no free body at all', function () {
+      battle('human');
+      const before = Game.pendingSpawns.length;
+      for (let i = 0; i < 10; i++) killOne(0);
+      ok('38.3 FIELD DOCTRINE raises no free body at all',
+         Game.pendingSpawns.length === before && Game.incubators.length === 0,
+         '10 kills produced ' + (Game.pendingSpawns.length - before) +
+         ' bodies (CONSCRIPTION measured exactly 1.00 per kill before it was replaced)');
+    });
+
+    T('38.4 kills bank requisition, it cuts the price, and a send spends it', function () {
+      const S = battle('human');
+      const tier = Game.musterTiers(0)[0];
+      const list = Game.musterCost(0, tier);
+      for (let i = 0; i < 5; i++) killOne(0);
+      const cut = Game.musterCost(0, tier);
+      for (let i = 0; i < 60; i++) killOne(0);
+      const capped = Math.abs(S.reqCredit - HUMAN_REQ_CAP) < 1e-9;
+      S.gold = 99999;
+      const bought = Game.muster(0, tier);
+      ok('38.4 kills bank requisition, it cuts the price, and a send spends it',
+         cut < list && capped && bought && S.reqCredit === 0,
+         'price ' + list + ' -> ' + cut + ' after 5 kills, credit capped ' + capped +
+         ', spent on send ' + (S.reqCredit === 0));
+    });
+
+    T('38.5 a send arms that detachment cooldown, and it expires', function () {
+      const S = battle('human');
+      const tier = Game.musterTiers(0)[0];
+      S.gold = 99999;
+      Game.muster(0, tier);
+      const cd = Game.musterCdLeft(0, tier);
+      const blocked = !Game.canMuster(0, tier);
+      Game.tickMusterCooldowns(cd + 0.1);
+      ok('38.5 a send arms that detachment cooldown, and it expires',
+         cd > 0 && blocked && Game.canMuster(0, tier),
+         'cooldown ' + cd.toFixed(1) + 's, blocked while hot ' + blocked + ', ready after');
+    });
+
+    T('38.6 LETTERS OF MARQUE waits only for coin', function () {
+      const S = battle('pirate');
+      const tier = Game.musterTiers(0)[0];
+      S.gold = 999999;
+      const a = Game.muster(0, tier);
+      ok('38.6 LETTERS OF MARQUE waits only for coin',
+         a && Game.musterCdLeft(0, tier) === 0 && Game.canMuster(0, tier),
+         'sent ' + a + ', cooldown ' + Game.musterCdLeft(0, tier) + ', may resend at once');
+    });
+
+    T('38.7 a sent body that kills another body is promoted', function () {
+      battle('human');
+      const base = ENEMY_TYPES['trooper'] || ENEMY_TYPES[Game.sides[0].musterLoadout[0]];
+      const path = Game.sendPathFor(0, 1, base);
+      const mine = new Enemy(base, path, { hostileTo: 1, owner: 0, startDist: 200 });
+      const foe = new Enemy(base, path, { hostileTo: 0, owner: -1, startDist: 200, hpMul: 0.05 });
+      mine.updatePosition(); foe.updatePosition();
+      foe.x = mine.x; foe.y = mine.y;
+      Game.enemies.push(mine, foe);
+      let guard = 0;
+      while (!foe.dead && guard++ < 600) Game.resolveMelee(0.05);
+      ok('38.7 a sent body that kills another body is promoted',
+         foe.dead && (mine.vetRank || 0) >= 1,
+         'victim dead ' + foe.dead + ', killer rank ' + (mine.vetRank || 0) +
+         ', maxHp ' + mine.maxHp + ' from base ' + base.hp);
+    });
+
+    T('38.9 a recovering detachment SAYS it is recovering, on its own card', function () {
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+      Game.sides[0].doctrine = 'human';
+      UI.show('screen-game'); UI.buildShop(); UI.buildAbilityBar();
+      Game.sides[0].gold = 99999;
+      const tier = Game.musterTiers(0)[0];
+      Game.muster(0, tier);
+      UI.syncAll();
+      const btn = document.querySelector('.muster-btn[data-muster="' + tier.id + '"]');
+      const cls = btn ? btn.className : '(no card)';
+      const label = btn ? (btn.getAttribute('aria-label') || '') : '';
+      const bar = btn ? btn.querySelector('.mu-cd') : null;
+      /* `.poor` would be a LIE here: the seat is holding 99999 gold. A card
+         that says "cannot afford" when the real reason is "not yet recovered"
+         is the exact confusion this class was added to remove. */
+      ok('38.9 a recovering detachment SAYS it is recovering, on its own card',
+         !!btn && /cooling/.test(cls) && !/poor/.test(cls) && /recovering/.test(label) && !!bar,
+         'class "' + cls + '", aria mentions recovering ' + /recovering/.test(label) +
+         ', progress bar present ' + !!bar);
+    });
+
+    T('38.10 FIELD DOCTRINE does not advertise another rite on its tag', function () {
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+      Game.sides[0].doctrine = 'human';
+      const txt = UI.doctrineInfo(Game.sides[0], Game.doctrineOf(0));
+      /* Before this branch existed Humanity fell through to the final `else`
+         and printed the Marque's own line, so the tag told a human commander
+         they were flying under LETTERS OF MARQUE. */
+      ok('38.10 FIELD DOCTRINE does not advertise another rite on its tag',
+         /REQUISITION/.test(txt) && !/NOTHING RISES FREE/.test(txt) && /FIELD DOCTRINE/.test(txt),
+         txt.slice(0, 120));
+    });
+
+    T('38.11 DEBUG finish awards the forced rating THROUGH recordWorld', function () {
+      try { localStorage.removeItem(Meta.KEY); } catch (e) { /* fresh profile is fine */ }
+      Meta._root = null; Meta.load();
+      const p0 = Meta.load(); p0.faction = 'human'; Meta.save();
+      Meta.campaignStart('human');
+      Meta.campaign().seed = 20260827; Meta.save();
+      const gx = Meta.galaxy();
+      let w = null;
+      for (let si = 0; si < gx.systems.length && !w; si++)
+        for (let wi = 0; wi < gx.systems[si].worlds.length && !w; wi++)
+          if (gx.systems[si].worlds[wi].map) w = gx.systems[si].worlds[wi];
+      /* THE CHOSEN NODE. endMatch reads `Meta.campaign().chosen`, which the
+         galaxy map sets when a world is picked (ui.js, `c.chosen = {...}`).
+         A probe that calls Game.start directly skips that step, and then
+         recordWorld has no node to write to: the first draft of this check
+         reported "saved stars undefined" and the fault was the probe, not the
+         cheat. Set it the way deploy does. */
+      const camp = Meta.campaign();
+      camp.chosen = { world: w.id, map: w.map, arena: w.arena, boon: w.boon,
+                      renegade: !!w.renegade, kind: w.kind, owner: w.owner };
+      Meta.save();
+      Game.start({ world: w.id, map: w.map, faction: 'human',
+                   rivalFaction: w.owner, worldKind: w.kind, loadout: PIN.slice() });
+      Debug.set(true);
+      const ran = Debug.finish(3);
+      const stars = Meta.campaign() && Meta.campaign().stars ? Meta.campaign().stars[w.id] : undefined;
+      /* lastStars is recordWorld's RETURN VALUE, and `systemTaken` on it is
+         the only thing the results screen consults before queueing the
+         interstitial. Asserting the object exists is asserting the cutscene
+         remains reachable, which is the owner's stated constraint: a forced
+         rating must still proc and queue the cutscene. */
+      const ls = Game.lastStars;
+      ok('38.11 DEBUG finish awards the forced rating THROUGH recordWorld',
+         ran === true && stars === 3 && !!ls && ('systemTaken' in ls) && Game._debugStars === null,
+         'ran ' + ran + ', saved stars for ' + w.id + ' = ' + stars +
+         ', lastStars carries systemTaken ' + (!!ls && ('systemTaken' in ls)) +
+         ', override consumed ' + (Game._debugStars === null));
+      Debug.set(false);
+    });
+
+    T('38.12 DEBUG refuses to touch a duel', function () {
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+      Debug.set(true);
+      const wasLive = Net.live;
+      Net.live = true;
+      /* Lockstep carries indices and a seeded stream. A seat granting itself
+         gold parts from its peer on the next fingerprint, so the gate is a
+         refusal rather than a warning. */
+      const g = Debug.gold(5000);
+      const f = Debug.finish(3);
+      const allowed = Debug.allowed();
+      Net.live = wasLive;
+      Debug.set(false);
+      ok('38.12 DEBUG refuses to touch a duel',
+         g === false && f === false && allowed === false,
+         'gold refused ' + (g === false) + ', finish refused ' + (f === false) +
+         ', allowed() ' + allowed);
+    });
+
+    T('38.13 the manual pictures every tower, unit and commander it describes', function () {
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+      UI.buildCodex();
+      const body = document.getElementById('codex-body');
+      const figs = body ? body.querySelectorAll('.codex-entry.has-fig') : [];
+      let withArt = 0, withDossier = 0, focusable = 0;
+      for (const el of figs) {
+        const f = el.querySelector('.ce-fig');
+        if (f && (f.querySelector('img') || f.querySelector('svg') ||
+                  f.querySelector('canvas') || f.textContent.trim())) withArt++;
+        const tt = el.getAttribute('data-tt') || '';
+        if (tt.indexOf('|') > 0 && tt.split('|')[1].length > 3) withDossier++;
+        /* bindChipTips gives any non-focusable data-tt element a tabindex, so
+           a keyboard reaches the dossier too. Asserted rather than assumed:
+           before this the manual bound no tooltips at all. */
+        if (el.hasAttribute('tabindex')) focusable++;
+      }
+      const n = figs.length;
+      ok('38.13 the manual pictures every tower, unit and commander it describes',
+         n >= TOWER_ORDER.length && withArt === n && withDossier === n && focusable === n,
+         n + ' illustrated entries, ' + withArt + ' carry art, ' + withDossier +
+         ' carry a hover dossier, ' + focusable + ' reachable by keyboard');
+    });
+
+    T('38.14 the manual describes the rite the engine actually runs', function () {
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+      UI.buildCodex();
+      const txt = (document.getElementById('codex-body') || {}).textContent || '';
+      /* The Attrition section named CONSCRIPTION's behaviour ("drafts a
+         different soldier from your own roster") for as long as that rite
+         existed, and would have gone on naming it after the rite was
+         replaced. A manual that describes a removed mechanic is worse than
+         one that omits it, because a player will trust it. */
+      const namesRite = txt.indexOf(SUMMON_DOCTRINES.human.name) !== -1;
+      const stale = /drafts a different soldier/i.test(txt);
+      const cd = /time to recover/i.test(txt);
+      ok('38.14 the manual describes the rite the engine actually runs',
+         namesRite && !stale && cd,
+         'names ' + SUMMON_DOCTRINES.human.name + ' ' + namesRite +
+         ', stale conscription copy present ' + stale + ', documents the cooldown ' + cd);
+    });
+
+    T('38.15 every commander answers what was actually said to them', function () {
+      /* MEASURED BEFORE THE FIX: of 756 ordered pairings, 718 (95%) fell to a
+         generic path holding TEN distinct player replies, two per faction,
+         none of which answered the opener. Two speakers not addressing each
+         other is not a conversation, which is what the owner reported as
+         dialogue that feels flat.
+         This asserts the three things that keep it fixed: every opener is
+         tagged, every faction can answer every stance, and the resulting
+         variety across the generic set stays well above the old ten. */
+      const ids = COMMANDER_ROSTER.map(function (c) { return c.id; });
+      const byId = {}; for (const c of COMMANDER_ROSTER) byId[c.id] = c;
+      let untagged = 0; const holes = [];
+      for (const id of ids) {
+        const st = DIALOGUE.stance[id];
+        if (!st) { untagged++; continue; }
+        for (const fac in DIALOGUE.answers)
+          if (!DIALOGUE.answers[fac][st]) holes.push(fac + '/' + st);
+      }
+      const seen = {};
+      let generic = 0, n = 0;
+      for (const p of ids) for (const r of ids) {
+        if (p === r || DIALOGUE.pairs[p + '|' + r] || canonExchange(p, r)) continue;
+        generic++;
+        const d = battleDialogue(byId[p], byId[r], byId[p].faction || 'human', {});
+        if (d && d[1] && d[1].text && !seen[d[1].text]) { seen[d[1].text] = 1; n++; }
+      }
+      ok('38.15 every commander answers what was actually said to them',
+         untagged === 0 && holes.length === 0 && n >= 50,
+         untagged + ' openers untagged, ' + holes.length + ' faction/stance holes' +
+         (holes.length ? ' (' + holes.slice(0, 3).join(', ') + ')' : '') +
+         ', ' + n + ' distinct replies across ' + generic + ' generic pairings (was 10)');
+    });
+
+    T('38.16 the rival brain never proposes a recovering detachment', function () {
+      /* THE GAP THIS CLOSES. ai.js gates the whole muster block on
+         `Game.canMuster(S.index)` with NO tier, which answers only "is the
+         muster path open at all". The per-tier cooldown lives in
+         canMuster(side, tier), so without an explicit skip the brain scored a
+         recovering detachment, won its own decision with it, and then had the
+         buy refused inside Game.muster. The tick was spent and nothing was
+         bought, with every gate still green: the rival simply got quieter.
+         Driven through AI.bestAction, the real chooser. */
+      Game.start({ map: 'spine', difficulty: 'contested', loadout: PIN.slice() });
+      const S = Game.sides[1];
+      const brain = Game.brains && Game.brains[0];
+      if (!brain) { ok('38.16 the rival brain never proposes a recovering detachment',
+                       false, 'no brain on this board'); return; }
+      /* PIN THE RIVAL'S RITE. This check failed intermittently until it did:
+         the rival commander is drawn per battle, and a rival holding LETTERS
+         OF MARQUE is EXEMPT from cooldowns by design, so musterCdLeft returns
+         0 and the brain proposes a detachment perfectly legitimately. The
+         check was therefore asserting a rule that does not apply to every
+         seat, and would pass or fail on the draw. A gate that moves between
+         runs teaches the next session to re-run until green, which is how a
+         real failure eventually gets waved through. */
+      S.doctrine = 'human';
+      /* Satisfy the defence-first gate so musters are reachable at all. */
+      Game.wave = Math.max(Game.wave, MUSTER_AI_MIN_WAVE + 2);
+      S.lives = S.maxLives;
+      /* GOLD BEFORE THE BUILDS. The first draft granted it after the loop, so
+         every build was refused for cost, the side reached the muster gate
+         with zero towers, and the check reported a vacuous negative. It did
+         not pass: the sawMuster guard below is what caught it. */
+      S.gold = 999999;
+      while (S.towers.length < MUSTER_AI_MIN_TOWERS + 1) {
+        /* bestSpotFor returns a WRAPPER, {spot:{gx,gy,...}, cov}, not the
+           spot itself, and build(side, type, gx, gy) takes the type second.
+           Earlier drafts of this check got both wrong and reported 0 towers
+           rather than failing loudly, which is what the sawMuster guard is
+           for. */
+        const pick = brain.bestSpotFor(TOWER_TYPES[PIN[0]]);
+        const spot = pick && pick.spot;
+        if (!spot) break;
+        if (!Game.build(1, PIN[0], spot.gx, spot.gy)) break;
+      }
+      S.gold = 999999;
+      const tiers = Game.musterTiers(1);
+      const hot = () => (brain.bestAction({}) || {}).best;
+      /* First prove the brain WOULD muster when everything is ready, or the
+         negative below proves nothing at all. */
+      for (const t of tiers) delete S.musterCd[t.id];
+      let sawMuster = false;
+      for (let i = 0; i < 6 && !sawMuster; i++) { const b = hot(); if (b && b.kind === 'muster') sawMuster = true; }
+      /* Now put every detachment on cooldown and confirm none is proposed. */
+      for (const t of tiers) S.musterCd[t.id] = 99;
+      let proposedHot = false;
+      for (let i = 0; i < 6; i++) { const b = hot(); if (b && b.kind === 'muster') proposedHot = true; }
+      for (const t of tiers) delete S.musterCd[t.id];
+      ok('38.16 the rival brain never proposes a recovering detachment',
+         sawMuster && !proposedHot,
+         'brain musters when ready ' + sawMuster + ', proposes a recovering one ' + proposedHot +
+         ' (rite ' + S.doctrine + ', towers ' + S.towers.length + ', wave ' + Game.wave + ')');
+    });
+
+    T('38.8 a TOWER kill never promotes, only a body kill does', function () {
+      battle('human');
+      const e = killOne(0);
+      ok('38.8 a TOWER kill never promotes, only a body kill does',
+         !!e && !e.vetRank,
+         'the owner was explicit that tower kills are the common case and must not count; ' +
+         'rank after a funnel kill: ' + (e ? (e.vetRank || 0) : 'no body'));
+    });
+  })();
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;
