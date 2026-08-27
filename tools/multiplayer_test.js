@@ -92,17 +92,23 @@ const MPT = (function () {
   const PIN_MUSTER = ['crawler'];
 
   /** A duel contract that does not need a second window. */
-  function contract(seed) {
+  /* `mapId` is optional and defaults to the pinned authored board, so every
+     existing caller is unchanged. It exists so a duel can be fought on a
+     PROCEDURAL board: those are generated from (family, seed) at Game.start on
+     each client independently, which is a determinism surface the authored
+     boards do not have and which nothing here exercised. */
+  function contract(seed, mapId) {
     const seat = (cmdId, fac) => ({
       name: 'TEST', faction: fac, commander: cmdId,
       loadout: PIN_LOADOUT.slice(),
       muster: PIN_MUSTER.slice(),
       talents: {}, prestige: 0, tech: [], second: false
     });
+    const m = mapId || MAPS[0].id;
     return {
       seed: seed >>> 0,
-      world: { id: 'test', name: 'TEST WORLD', map: MAPS[0].id, kind: 'core', owner: 'xeno', arena: null },
-      map: MAPS[0].id,
+      world: { id: 'test', name: 'TEST WORLD', map: m, kind: 'core', owner: 'xeno', arena: null },
+      map: m,
       difficulty: NET_DUEL_DIFFICULTY,
       seats: [seat(COMMANDERS[0].id, 'human'), seat(COMMANDERS[1].id, 'xeno')]
     };
@@ -437,6 +443,71 @@ const MPT = (function () {
            ' enemies=' + (a.enemies ? a.enemies.split('|').length : 0) +
            ' sum=' + a.sum + '/' + b.sum + where);
       });
+      return api;
+    },
+
+    /**
+     * THE SAME HEADLINE, ON GROUND THAT IS NOT AUTHORED.
+     *
+     * Every duel test above fights on MAPS[0], an authored board whose
+     * geometry is a literal in js/config.js and therefore identical on both
+     * clients by construction. A PROCEDURAL board is not: each client runs
+     * MapGen.proceduralGeometry(family, seed) itself at Game.start and has to
+     * arrive at the same lanes, blocks, walls and nodes, or the two players
+     * are standing on different ground and every later tick is meaningless.
+     *
+     * tools/probe-mapgen.js G1 proves the generator is deterministic when
+     * called twice in one process. That is necessary and not sufficient: it
+     * says nothing about whether the seed the net layer hands each client is
+     * the same seed. This closes that, end to end, through Net.
+     *
+     * Three boards rather than fifteen, chosen for what they stress: one of
+     * the eight families whose generators only just shipped, one that carves
+     * maze walls (the most stateful generator), and the longest lane in the
+     * set.
+     *
+     * WHAT THIS CAN AND CANNOT CATCH, measured by planting both:
+     *
+     *   An unseeded Math.random() inside a generator does NOT desync a duel,
+     *   and this test correctly stays green on one. Net.beginMatch runs
+     *   Game.start inside the lens, and the lens REPLACES Math.random with a
+     *   per-tick seeded stream: instrumented during a real duel, all three
+     *   braid generations (the probe and both clients) saw the seeded
+     *   function and all three returned the identical board. That is a real
+     *   property of the engine, not a hole here, and it is why the plant that
+     *   looks obvious is the wrong plant.
+     *
+     *   Geometry that depends on anything OTHER than (family, seed) does
+     *   desync, and this catches it: a per-call counter inside
+     *   proceduralGeometry produced sum=1154303216 against 3958057680, first
+     *   difference sides.1.gold 17 vs 5.
+     *
+     * tools/probe-mapgen.js G1 catches BOTH, because it compares two calls
+     * outside any match, where Math.random is still native. The two checks are
+     * complementary and neither replaces the other.
+     */
+    proceduralDuel(ticks) {
+      ticks = ticks || 1200;
+      const boards = ['braid', 'labyrinth', 'spiral']
+        .filter(id => MAPS.some(m => m.id === id && m.procedural));
+      if (!boards.length) {
+        info('net.duel procedural', 'no procedural boards in MAPS, nothing to duel on');
+        return api;
+      }
+      for (const mapId of boards) {
+        T('net.duel two clients agree on the procedural board ' + mapId, function () {
+          const cfg = contract(SEED, mapId);
+          const p = probe(cfg);
+          const log = buildLog(p);
+          const a = runClient(cfg, 0, log, ticks);
+          const b = runClient(cfg, 1, log, ticks);
+          const agree = same(a, b);
+          const where = agree ? '' : ' | first difference, ' + firstDiff(a, b);
+          ok('net.duel two clients agree on the procedural board ' + mapId,
+             agree && a.ticks === b.ticks,
+             'ticks=' + a.ticks + '/' + b.ticks + ' sum=' + a.sum + '/' + b.sum + where);
+        });
+      }
       return api;
     },
 
@@ -1454,6 +1525,7 @@ T('net.rules conceding a duel does not promise a garrison', function () {
       api.pvp();
       api.isolation();
       api.twoClients(2400);
+      api.proceduralDuel(1200);
       api.determinism(2400);
       if (typeof BroadcastChannel === 'function') api.wire(done || (r => r));
       else info('net.wire', 'no BroadcastChannel in this browser, the relay is unavailable');
