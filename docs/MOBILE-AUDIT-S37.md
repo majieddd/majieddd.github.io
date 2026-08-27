@@ -117,3 +117,40 @@ with three consecutive full gate runs, all `pass=62 fail=0`.
 Deliberately NOT done: raising the tolerance to allow 1/20 collisions. That is
 widening an assertion until it stops failing, which is the thing this entry was
 written to warn about.
+
+---
+
+## Session 38 addendum: the audit was run at one width, and a tool existed
+
+The Session 37 pass above measured a single viewport (390x844) with a
+hand-written probe. `tools/breakpoint-sweep.js` was already in this repo and
+does exactly this across a breakpoint SET, failing on any check whose verdict
+diverges by width. It was not run. Running it now:
+
+```
+1600x900: pass 64 fail 0 info 2
+1024x900: pass 65 fail 0 info 1
+768x1024: pass 65 fail 0 info 1
+390x844:  pass 64 fail 1 info 1
+  FAIL 25.5 the board fills the window and the chrome floats above it
+DIVERGES BY WIDTH: 25.5   1600 PASS / 1024 PASS / 768 PASS / 390 FAIL
+```
+
+**The failure is REAL and PRE-EXISTING, not a regression from the S37 work.**
+Verified by running the same sweep against a worktree at the commit before the
+mobile pass: identical numbers (`clipped 7`, home zoom `0.20` showing
+1298x2808 of 1064x570). The S37 changes were all scoped inside
+`@media (max-width: 860px)` on setup screens and never touched `#screen-game`.
+
+`[ ]` **OPEN, and now measured rather than merely suspected: the in-game board
+at phone width.** S37 listed "the in-game HUD at phone width" as unmeasured;
+this is that item with a number on it. The canvas fills 390x844 while the home
+zoom of 0.20 tries to show a 1298x2808 world in a 1064x570 box, and 7 elements
+clip. It is the last width-specific defect standing.
+
+**The process lesson, which is the more valuable half:** `GATE CLEAN` in this
+project means "clean at 1600x900", because that is the only width `gate.js`
+runs its browser harnesses at. Every session that touches layout should finish
+with the breakpoint sweep and report its divergence list, and that rule now
+lives in the plugin at `aegis-gamedev/references/verification.md` section 11
+so it is not this document's private lesson.

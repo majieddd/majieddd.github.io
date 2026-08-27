@@ -1081,6 +1081,41 @@
          'every faction opens at its own home; 25 holder cells, 0 self, 0 spoilers');
   });
 
+  /* ---- 38.2 the v1 galaxy is frozen ------------------------------------ */
+  T('38.2 an absent gxv generates the v1 galaxy byte for byte', function () {
+    const id = '38.2 an absent gxv generates the v1 galaxy byte for byte';
+    if (typeof generateGalaxy !== 'function') { skip(id, 'no generator'); return; }
+    /* THE SAVE CONTRACT. A campaign stores only its seed, so an in-flight
+       galaxy is REGENERATED on every load. If the v2 parameter ever changes
+       what the generator produces when it is absent, every saved campaign's
+       boards, arenas and boons move underneath its owner mid-run.
+       This was CLAIMED when v2 landed and not measured, which is the exact
+       thing this project's house rule forbids. It is measured now. */
+    const print = g => JSON.stringify(g.systems.map(function (s) {
+      return { n: s.name, h: s.holder, b: s.boss, i: s.index,
+        w: s.worlds.map(function (w) {
+          return [w.id, w.name, w.kind, w.map, w.arena, w.owner, w.boon,
+                  w.tier, w.si, w.wi, !!w.seat, !!w.contested, !!w.renegade,
+                  +w.x.toFixed(6), +w.y.toFixed(6),
+                  w.links.slice().sort().join(','), !!w.entry];
+        }) };
+    }));
+    const diffs = [];
+    ['human', 'light', 'xeno', 'pirate', 'robot'].forEach(function (f) {
+      [1, 42, 'seed1', 7777].forEach(function (seed) {
+        const four = print(generateGalaxy(seed, f, undefined, 1));
+        if (print(generateGalaxy(seed, f, undefined, 1, undefined)) !== four)
+          diffs.push(f + '/' + seed + ': explicit undefined diverges');
+        if (print(generateGalaxy(seed, f, undefined, 1, 1)) !== four)
+          diffs.push(f + '/' + seed + ': gxv=1 diverges');
+      });
+    });
+    ok(id, diffs.length === 0,
+       diffs.length ? diffs.slice(0, 3).join('; ')
+       : 'five factions x four seeds x three call shapes: the v1 galaxy is ' +
+         'identical in every field, so no saved campaign moves');
+  });
+
   /* ---- 24.2 the Parallel gets no splinter ------------------------------ */
   T('24.2 THE PARALLEL has no renegade world and no own-power boon', function () {
     if (typeof generateGalaxy !== 'function') { skip('24.2 THE PARALLEL has no renegade world and no own-power boon', 'no generator'); return; }
