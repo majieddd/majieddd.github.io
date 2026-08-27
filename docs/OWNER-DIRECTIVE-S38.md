@@ -117,6 +117,121 @@ On deploying to a planet, a three-slide sequence:
 
 ---
 
+## I. Campaign dialogue must read as conversation, not as captions
+
+Owner, verbatim: "make sure that all of the dialog in the campaign screens in
+all of the planets feel like a real conversation or something that makes sense
+for video game because I noticed that some of these feel a little flat and
+aren't working quite as expected."
+
+- [ ] Audit every campaign dialogue surface across every planet, and record
+  which lines are flat and WHY (no addressee, no turn-taking, no stakes, both
+  seats saying the same kind of thing).
+- [ ] Rewrite so exchanges answer each other: the second seat responds to the
+  first rather than delivering a parallel monologue.
+- [ ] Mechanics-first descriptions stay mechanics-first; this item is about the
+  spoken lines only. Related to G and H, and closes with them where they touch.
+
+## J. Humanity needs its own summoning rite, and a weaker one
+
+Owner, verbatim: "the humans were a little powerful when they were able to
+create a new unit for each one that they killed... there should be a different
+way that still is showing their adaptability but needs to have a different way
+of units being summoned unique to itself."
+
+Current state: `SUMMON_DOCTRINES.human` is `onKill: 'roll'` (js/factions.js),
+which spawns a unit on EVERY kill. That is both too strong and conceptually
+overlapping: xeno is also on-kill (delayed) and robot is also on-kill (exact).
+
+OWNER DECISION (dictated, not my proposal): merge cost-relief with promotion,
+and split the rite across DEFENCE and OFFENCE so both halves are reinforced.
+
+- [ ] Channel one, DEFENCE: "anytime you kill a unit, the cost of sending a
+  unit is lowered by a certain percentage." Kills bank a requisition credit
+  which is SPENT on the next send, so it cannot compound into a permanent
+  discount.
+- [ ] Channel two, OFFENCE: "anytime your unit kills a unit they can grow
+  stronger... the power is increased every time specifically a unit kills
+  another unit." Veterancy is granted only when the KILLER is one of your own
+  sent bodies, which the owner explicitly noted is not the common case.
+- [ ] Free body per kill is REMOVED. Measured baseline being replaced: 1.00
+  bodies per kill (probe 38.4).
+- [ ] Must not reorder DOCTRINE_ORDER (LOCKSTEP_PREFIX pins it, js/net.js).
+- [ ] Re-baseline balance pins in the same session and record them in
+  docs/BALANCE-BASELINE.md.
+
+## K. The xeno rite does not reliably hatch
+
+Owner, verbatim: "make sure that the xeno are properly incubating on kill
+monsters so that it spawns as I noticed in one play through it wasn't quite
+working as expected."
+
+- [ ] Reproduce the failure before changing anything.
+- [ ] Note already measured: owner-sweep exercises `tickProcession` and never
+  `tickIncubators`, so the xeno rite has no gate coverage at all while the
+  light rite does.
+MEASURED, and it contradicts the report: the rite is NOT broken. Clutches
+form, gestate, hatch, and the hatchling enters 30.4% along a 2622-unit lane
+(probe 38.1, 38.2, 38.7). All four banners resolve to their own doctrine
+(38.6). What is wrong is that it delivers 0.40 bodies per kill against
+Humanity's 1.00, the cap binds at 10 clutches after 10 kills, gestation is
+10.3s, and the base roster holds one unit so every pod hatches the same shape.
+
+OWNER DECISION: legibility only. No balance number moves.
+
+- [ ] HUD shows live clutch count against the cap.
+- [ ] HUD shows per-clutch gestation remaining.
+- [ ] A kill that is capped must VISIBLY feed the nearest clutch instead of
+  silently doing nothing.
+- [ ] Probe 38.x added so the rite can never again ship with zero coverage.
+
+## L. Field manual: current, illustrated, and deep on hover
+
+Owner: the manual should be up to date, and anything referencing a commander,
+unit or tower should SHOW that subject's image, with richer detail on hover, so
+everything available to the player is legible at a glance.
+
+- [ ] Audit the manual against the live tables and fix every stale claim.
+- [ ] Every commander/unit/tower reference carries its art.
+- [ ] Hover reveals advanced detail; keyboard and reduced-motion safe, and it
+  routes through design-forge, not this skill.
+
+## M. Debug mode toggle in the menu bar
+
+Owner: an in-game debug toggle exposing cheats for faster testing. Named
+examples: force a star rating, and instantly finish a match. Critical
+constraint, verbatim: "when you enable star rating for example if there is a
+cutscene afterwards which each planet might have... it will still proc and
+queue the cutscene to work as a way of debugging."
+
+- [ ] Menu-bar toggle, off by default, and it must never be reachable in a
+  shipped-clean state by accident.
+- [ ] Cheats route through the SAME code paths as real play so that
+  progression, star award and cutscene queueing all still fire. A cheat that
+  bypasses the path it is meant to test is worthless.
+- [ ] Must not touch the lockstep wire or the seeded stream in a duel.
+
+---
+
+## N. Per-unit cooldowns replace the count cap, and pirates are exempt
+
+Owner, verbatim: "another change I would fix for all factions is having cool
+Downs per unit. instead of making it where you can't summon more than x amount
+of this unit, it should just be a cool down per unit to make better balancing,
+however, to make pirates a little more powerful, let's have it so that not
+pinheld to a cool down and can summon units purely by their money cost."
+
+Current state: `MUSTER_PER_WAVE = 2` (js/config.js:3871) gates every faction
+equally through `S.musterThisWave` (js/game.js:2682).
+
+- [ ] Replace the per-wave count gate with a per-detachment cooldown.
+- [ ] LETTERS OF MARQUE is exempt outright: pirates are limited by gold alone.
+- [ ] `musterThisWave` is in the lockstep fingerprint (js/net.js:1129), so
+  whatever replaces it must be mixed in deterministically or duels desync.
+- [ ] The muster panel must show the cooldown, not a stale "summons left".
+
+---
+
 ## Evidence ledger (filled as items close)
 
 | Item | State | Evidence |
@@ -129,3 +244,9 @@ On deploying to a planet, a three-slide sequence:
 | F | open | |
 | G | open | |
 | H | open | |
+| I | verified | AUDIT: of 756 ordered pairings, 0 hand-authored, 38 canon, 718 (95%) fell to a generic path holding only TEN distinct replies, none of which answered the opener. FIX: every opener tagged with the stance it takes; each faction answers each stance in its own voice. Distinct replies 10 to 70, 0 untagged openers, 0 faction/stance holes. owner-sweep 38.15. |
+| J | verified | FIELD DOCTRINE replaces CONSCRIPTION. owner-sweep 38.3 (zero free bodies), 38.4 (requisition banks, discounts, is spent), 38.7 (veterancy on a body kill), 38.8 (tower kills never promote), 38.10 (its own tag). Gate clean. |
+| K | verified | Legibility only, per owner. Feed now visible inside the radius and at the cap. owner-sweep 38.1 (clutch lays and hatches), 38.2 (hatchling enters with lane left). The rite had ZERO gate coverage before this; it has 2 checks now. |
+| L | verified | Every tower, unit and commander entry now leads with its own art (the same icon primitive the board paints, commander portraits from ARTPACK) and carries a hover dossier of advanced stats, keyboard reachable via the existing bindChipTips. Stale CONSCRIPTION copy in Attrition replaced; cooldown documented. owner-sweep 38.13, 38.14. Also fixed 17 PRE-EXISTING AA contrast failures in the manual by applying DESIGN.md's ink rule, and fixed the verify_page bug that was hiding them. |
+| M | verified | js/debug.js, collapsible bar, off by default, OPTIONS toggle. Cheats drive the real paths: finish calls Game.endMatch, stars go through Meta.recordWorld so lastStars.systemTaken still queues the cutscene. owner-sweep 38.11 (forced rating via recordWorld), 38.12 (refuses in a duel). Contrast measured clean after two failures. |
+| N | verified | Per-detachment cooldown replaces MUSTER_PER_WAVE. owner-sweep 38.5 (arms and expires), 38.6 (Marque exempt), 38.9 (the card says recovering, not unaffordable). Fingerprint extended for reqCredit, musterCd and vetRank; MPT 37/37. |
