@@ -1367,6 +1367,20 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
 /* the battlefield plate that heads a world briefing */
 .br-plate { position: relative; margin: -14px -14px 10px; border-radius: 12px 12px 0 0;
             overflow: hidden; aspect-ratio: 16 / 7; }
+/* A PLATE WITH NO ART MUST NOT RESERVE A PLATE'S WORTH OF SPACE. The `bare`
+   state already sets a min-height (54 to 104px depending on breakpoint), but
+   min-height is a FLOOR and aspect-ratio was still sizing the box: measured on
+   a world briefing at 1000px wide, an empty plate was 968x424, a dark void
+   taller than the card it headed and exactly the blank band the owner
+   photographed above BARNARD d. Releasing the ratio lets the min-height
+   actually govern. Set once here rather than in each of the three breakpoint
+   copies, so a fourth cannot forget it.
+
+   WHY a plate is bare at all is a separate, known item: procedural boards
+   added by the co-contributor have no world_<map> art yet, and this state is
+   what the pack degrading gracefully looks like. It should look deliberate,
+   not broken. */
+.br-plate.bare { aspect-ratio: auto; }
 .br-plate .br-art { width: 100%; height: 100%; object-fit: cover; display: block;
                     filter: saturate(.92) contrast(1.04); }
 /* fade the plate into the card so it reads as one surface, not a pasted photo */
@@ -4028,4 +4042,30 @@ body.rm-user #screen-game #rotate-hint b { animation: none; }
   #battle-controls .icon-btn, #battle-controls .speed-btn {
     min-width: 30px; min-height: 30px; font-size: 10px;
   }
+}
+
+/* ════════ THE LAST TWO MOBILE AUDIT ITEMS (Session 38) ════════════════
+   Both were listed as open in docs/MOBILE-AUDIT-S37.md and both are measured.
+
+   1. EQUIP SAT 177px BELOW THE FOLD at 390x844. It is the action the screen
+      itself instructs ("No standing order: press EQUIP on a commander"), and
+      the commander screen cannot be completed without it, so it was the same
+      class of defect as the setup footers: reachable, invisible, and read as
+      broken. It is not a footer though, it is an inline verb belonging to the
+      card being read, so it does not get a sticky bar of its own; a second
+      pinned bar above the existing one is how a phone screen ends up all
+      chrome. Instead the detail panel becomes a column and the verb is
+      ordered to sit directly under the commander's own header, which is where
+      it belongs on any screen and merely matters more on this one.
+
+   2. FOUR CONTROLS AT 22px WIDE. The 44px touch floor is both dimensions, and
+      these passed on height and failed on width: the drawer close and reset
+      icons on the loadout screen were 22x44. */
+@media (max-width: 860px) {
+  #commander-detail { display: flex; flex-direction: column; }
+  #commander-detail > .cd-head { order: -2; }
+  #commander-detail > .cd-equip,
+  #commander-detail > .cd-equipped { order: -1; margin-bottom: 10px; }
+
+  .icon-btn.sm { min-width: 44px; }
 }

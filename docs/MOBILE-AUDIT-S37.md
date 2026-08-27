@@ -73,14 +73,18 @@ held at `pass=62 fail=0` and `pass=37 fail=0` across the change.
 
 Still open, and worth a session of its own:
 
-- `[ ]` **The in-game HUD at phone width.** `screen-game` is a different
-  density problem (canvas, rails, tower tray, wave banner) and none of it was
-  measured here. Do not assume this pass helped it.
-- `[ ]` **Three controls under 44px on the loadout screen.** Down from ten.
-- `[ ]` **The inline EQUIP button** on a commander card sits below the fold on
-  a phone. It is inside a card the player is deliberately reading, so it is
-  less severe than the faction case, but it is the same shape of problem and
-  the commander screen cannot be completed without it.
+- `[x]` **The in-game HUD at phone width. DONE, Session 38.** Measured and
+  rebuilt: chrome was 65% of the viewport in portrait and 93% in landscape,
+  the commander cards were 22px wide holding 190px of content, and #hud
+  overlapped #battle-controls by 12236px2. See the battle HUD section below.
+- `[x]` **Three controls under 44px on the loadout screen. DONE.** They were
+  the drawer close and reset icons at 22x44: passing on height, failing on
+  width, because the 44px floor is both dimensions. Now 0.
+- `[x]` **The inline EQUIP button. DONE.** Measured 177px below the fold at
+  390x844, on the screen whose own copy says "press EQUIP on a commander".
+  It does not get a sticky bar of its own (a second pinned bar is how a phone
+  ends up all chrome); the detail panel became a column and the verb is
+  ordered directly under the commander header, where it belongs anyway.
 - `[ ]` **Real device testing.** Every number here is Chrome's device emulation
   at one viewport. Touch latency, momentum scrolling, iOS Safari's dynamic
   toolbar and `env(safe-area-inset-bottom)` on a notched device are all
