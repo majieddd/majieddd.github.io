@@ -2424,6 +2424,45 @@
          ', and it changes when a detachment goes on cooldown ' + moved);
     });
 
+    T('39.1 no retired 2099 canon reaches anything the game reads', function () {
+      /* THE RECURSION THIS CLOSES. docs/lore release 0.5.0 builds toward a
+         campaign set in 2099. The owner superseded it on 2026-08-26: the
+         campaign now begins on April 13 2029 (docs/CANON-2029.md). The lore
+         tree was never retired, and js/lore.js is still generated from it.
+
+         MEASURED, and the honest number is smaller than it first looked. Most
+         of that 495KB blob is INERT: `mythos` alone carries 58 mentions of
+         retired vocabulary and nothing reads it. What matters is the four
+         fields the game actually consumes, and those carried 11, of which 9
+         were the word "Lattice", which is NOT retired (THE LATTICE is the
+         machine doctrine's current name). The genuine leak was "Old Weather",
+         twice, in world briefings a player reads.
+
+         So this asserts the narrow true thing rather than the dramatic false
+         one: the CONSUMED fields carry no vocabulary from the retired
+         timeline. Widening it to the whole blob would fail forever against
+         research that is deliberately kept. */
+      const READ = ['relationships', 'maps', 'archiveWarMissions', 'worldGeneration'];
+      /* "Lattice" is deliberately absent: it is current canon. */
+      const RETIRED = ['old weather', 'sol gate', 'archive war', 'signal winter',
+                       'open-sky compact', 'abyssal reply', 'noetic', '2099'];
+      const hits = [];
+      for (const k of READ) {
+        const v = (typeof LORE !== 'undefined' && LORE) ? LORE[k] : null;
+        if (!v) continue;
+        const t = JSON.stringify(v).toLowerCase();
+        for (const term of RETIRED) {
+          let n = 0, i = t.indexOf(term);
+          while (i !== -1) { n++; i = t.indexOf(term, i + term.length); }
+          if (n) hits.push(k + ':' + term + ' x' + n);
+        }
+      }
+      ok('39.1 no retired 2099 canon reaches anything the game reads',
+         hits.length === 0,
+         hits.length ? hits.join(', ')
+                     : READ.length + ' consumed LORE fields carry no retired-timeline vocabulary');
+    });
+
     T('38.8 a TOWER kill never promotes, only a body kill does', function () {
       battle('human');
       const e = killOne(0);

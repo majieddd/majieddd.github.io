@@ -1,3 +1,13 @@
+> [!CAUTION]
+> **The fictional timeline below is SUPERSEDED.** The campaign now begins on
+> **April 13, 2029**, not in 2099. See
+> [`../../../CANON-2029.md`](../../../CANON-2029.md), the owner revision of
+> 2026-08-26, which is what the game runs on.
+>
+> Evidence layers **A, B and C** here (the documented record from 1947 to 2026)
+> remain accurate and are the research the 2029 canon draws from. Evidence
+> layer **F** after 2029 describes a future the campaign no longer has.
+
 ---
 id: hidden-history
 title: The Hidden History and the Five-Way War
@@ -46,7 +56,7 @@ A sincere transcendent experience could be mediated by a visitor, translated thr
 
 This ambiguity was useful to every power. Compact agents could hide authentic operations beneath ridiculous rumors. Human governments could conceal weapons programs by contaminating witnesses. Machine interfaces could continue answering rituals after their builders vanished. The Federation could transmit a valid warning that later followers converted into compulsory doctrine.
 
-By 2099, **theology forensics**—textual criticism combined with archaeology, cryptography, noetic signatures, intelligence records, and alien linguistics—has become a strategic science.
+By 2099, **theology forensics**: textual criticism combined with archaeology, cryptography, noetic signatures, intelligence records, and alien linguistics: has become a strategic science.
 
 ## Ashtar and the Luminous Accord
 

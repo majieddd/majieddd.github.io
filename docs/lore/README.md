@@ -1,14 +1,33 @@
-> [!IMPORTANT]
-> **Embedded workspace target.** This lore project is prepared to live inside the game repository at
-> `majieddd/majieddd.github.io/lore/`. Run lore commands from this directory. The
-> standalone-repository references retained below document the original packaging
-> and remain useful if the lore is later split back into its own repository.
+> [!CAUTION]
+> **THE TIMELINE IN THIS TREE IS SUPERSEDED. Read [`../CANON-2029.md`](../CANON-2029.md) first.**
+>
+> Release `0.5.0` builds toward a campaign set in **2099**, after a seventy-year
+> fictional divergence. The game does not use that setting any more. The owner
+> revised the canon on 2026-08-26 and the campaign now **begins on April 13,
+> 2029**, the day the Apophis intercept succeeds and the fleet built to save
+> Earth declines to stand down.
+>
+> If you came here to learn what Cosmic Conquest is about, this file will tell
+> you the wrong story. That is not hypothetical: it already happened.
+>
+> **What is still authoritative here** is the research layer, and it is the
+> reason this tree is kept rather than deleted. The documented record from 1947
+> to 2026 (evidence layers A, B and C: real cases, real sensor history, real
+> cultural history) is sourced, careful, and is the material the 2029 canon
+> draws its texture from. The disclosed hardware, the case dossiers and the
+> mythos atlas are all fuel.
+>
+> **What is not** is the fictional layer after 2029 (evidence layer F): the
+> 2030-2099 divergence, the Sol Gate era, Old Weather, the Archive Wars,
+> Signal Winter and the Noetic sequence. Those describe a future the campaign
+> no longer has.
 
 # Cosmic Conquest Lore
 
-The public, version-controlled universe bible for **Cosmic Conquest**.
+The research corpus and universe bible for **Cosmic Conquest**.
 
-**Current lore release:** `0.5.0`
+**Canonical timeline:** [`../CANON-2029.md`](../CANON-2029.md), owner revision, 2026-08-26
+**This tree's release:** `0.5.0` (research current, fictional timeline superseded)
 
 **Newest research delta:** 84 myth systems, 130 Mythos Operations, a deep-time-to-2099 master chronology, explicit causal history, 28 global case dossiers, 57 mutation edges, and the Inside Job-inspired institutional design pass.
 
@@ -19,13 +38,14 @@ The playable game remains in [`majieddd/majieddd.github.io`](https://github.com/
 
 ## Read in this order
 
+0. [`../CANON-2029.md`](../CANON-2029.md) FIRST. It is the timeline the game runs on.
 1. [`docs/visual-overview.md`](docs/visual-overview.md)
 2. [`docs/canon/overview.md`](docs/canon/overview.md)
 3. [`docs/canon/hidden-history.md`](docs/canon/hidden-history.md)
 4. [`docs/canon/causal-history.md`](docs/canon/causal-history.md)
 5. [`docs/canon/master-chronology.md`](docs/canon/master-chronology.md)
 6. [`docs/canon/unresolved-mysteries.md`](docs/canon/unresolved-mysteries.md)
-7. [`docs/canon/campaign-era-2099.md`](docs/canon/campaign-era-2099.md)
+7. [`docs/canon/campaign-era-2099.md`](docs/canon/campaign-era-2099.md) SUPERSEDED, see `../CANON-2029.md`
 8. [`docs/game/campaign-premise.md`](docs/game/campaign-premise.md)
 9. [`docs/game/commander-bible.md`](docs/game/commander-bible.md)
 10. [`docs/game/commander-relationships.md`](docs/game/commander-relationships.md)

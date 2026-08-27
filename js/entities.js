@@ -801,13 +801,40 @@ class Enemy {
        the third commander arrived wearing the second commander's rose and the
        player could not tell whose dead were walking at them. BATCH-C/nside */
     if (this.reanimated && !this.carrier) {
+      /* OWNERSHIP HAS TO BE UNMISTAKABLE, not merely present.
+
+         A body is drawn in `def.color`, which belongs to the unit TYPE, so a
+         trooper you sent and a trooper the wave sent are the same sprite. On a
+         human-held world that is not a rare coincidence: the wave roster is
+         drawn from FACTION_ENEMIES[holder] (config.js battleRosterFor), so
+         fighting a human garrison means both sides field human units.
+
+         Measured (tools/probe-melee-ff.js) after the owner reported his troops
+         "almost attacking each other" at the gate: no same-owner and no
+         same-target strike exists, so there is no friendly-fire bug. Every
+         engagement sampled was `trooper owner 0` against `trooper owner -1`,
+         which is legitimate and unreadable.
+
+         The ring is the only thing that says whose body this is, and at 0.55
+         alpha on a 2px stroke, pulsing down to 0.35, it was losing that
+         argument against the sprite underneath it. It is now a solid ring with
+         a bright inner edge, and the pulse rides ON TOP of a floor rather than
+         swinging through it, so the mark never fades to ambiguous.
+
+         No random draw here: the phase comes from `age`, which is per-body sim
+         state, so two clients running one seed paint identically. */
       const hue = sideColor(this.owner);
       ctx.save();
-      ctx.globalAlpha = 0.55 + Math.sin(this.age * 5) * 0.2;
-      ctx.strokeStyle = hue; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(0, 0, this.radius + 4.5, 0, TAU); ctx.stroke();
-      ctx.globalAlpha = 0.16; ctx.fillStyle = hue;
-      ctx.beginPath(); ctx.arc(0, 0, this.radius + 4.5, 0, TAU); ctx.fill();
+      ctx.globalAlpha = 0.30;
+      ctx.fillStyle = hue;
+      ctx.beginPath(); ctx.arc(0, 0, this.radius + 5.5, 0, TAU); ctx.fill();
+      /* The dark separator keeps the ring legible over a same-hue sprite. */
+      ctx.globalAlpha = 0.85;
+      ctx.strokeStyle = 'rgba(5,8,14,.9)'; ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.arc(0, 0, this.radius + 5.5, 0, TAU); ctx.stroke();
+      ctx.globalAlpha = motionReduced() ? 1 : 0.85 + Math.sin(this.age * 5) * 0.15;
+      ctx.strokeStyle = hue; ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.arc(0, 0, this.radius + 5.5, 0, TAU); ctx.stroke();
       ctx.restore();
     }
 
