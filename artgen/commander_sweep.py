@@ -128,10 +128,15 @@ def main():
     header_font = font(15)
     row_font = font(18)
 
+    title = (
+        "COMMANDER SWEEP: SHIPPING-LOCKED STUDY"
+        if args.study == "shipping-locked"
+        else "COMMANDER SWEEP: OIL-AND-WATER ILLUSTRATIVE STUDY"
+    )
     draw_centered(
         draw,
         (MARGIN, 0, width - MARGIN, TITLE_HEIGHT // 2),
-        "COMMANDER SWEEP: OIL-AND-WATER ILLUSTRATIVE STUDY",
+        title,
         title_font,
         "#e2e8f0",
     )

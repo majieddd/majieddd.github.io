@@ -61,6 +61,15 @@ STUDY_PROFILES = {
             "never glossy 3D, never a realistic portrait."
         ),
     },
+    "shipping-locked": {
+        "seed_suffix": "#shipping-locked-v1",
+        "description": "nonshipping study locked to the established commander catalogue look",
+        "style_suffix": (
+            "Preserve the established Cosmic Conquest shipping portrait look: flat interlocking colour shapes, "
+            "heavy black shadow masses, hard cel edges, bold ink line, matte screen-print texture and a strong "
+            "readable silhouette. Keep the illustration graphic and familiar, never photorealistic, never glossy 3D."
+        ),
+    },
 }
 
 # The fresh faction selector exposes these four commanders. Cues come from the
@@ -91,6 +100,23 @@ COMMANDER_STUDY_CUES = {
 # art briefs. These narrow replacements prevent old shorthand from overruling
 # a study's current canon. A changed study subject gets its own seed suffix.
 COMMANDER_STUDY_REVISIONS = {
+    "cmd_sevra": {
+        "seed_suffix": "#clinical-records-v2",
+        "replacements": (
+            (
+                "a necrotic commander trailing reanimated husks on dark filaments, puppeteer gestures, hollow glowing eyes, a lipless smile",
+                "a clinical continuity notary holding a sealed echo capsule, calm unreadable expression, orderly record-keeper posture, no exposed skull",
+            ),
+            (
+                "deep violet biomechanical carapace fused with neon-lit implants, too many joints, unsettling asymmetry, bioluminescent veins",
+                "structured deep violet notary coat with a clean biomechanical collar, cyan identity lights, estate seals and orderly data tabs, restrained asymmetry",
+            ),
+            (
+                "painted in violet and magenta with iridescent chitin",
+                "painted in violet, magenta and cyan with matte polymer, paper seals and luminous record marks",
+            ),
+        ),
+    },
     "cmd_seraph": {
         "seed_suffix": "#treaty-infrastructure-v2",
         "replacements": (
