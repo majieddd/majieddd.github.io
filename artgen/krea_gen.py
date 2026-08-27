@@ -54,7 +54,7 @@ STEPS = 8
 # WebP quality per asset class. Portraits and key art carry the look, so they
 # get the bits; icons and dossier cards are small on screen and compress hard.
 QUALITY = {'cmd': 88, 'title': 88, 'nebula': 86, 'world': 86,
-           'fac': 90, 'foe': 84, 'abil': 88}
+           'fac': 90, 'foe': 84, 'abil': 88, 'cut': 82}
 
 
 def quality_for(key):
@@ -71,9 +71,25 @@ def load_pipe():
     if not torch.cuda.is_available():
         raise SystemExit('Krea 2 needs CUDA; run generate.py for the CPU-capable fallback.')
 
-    print('loading transformer (4-bit nf4) ...', flush=True)
+    # Quantisation is chosen from the card, not hardcoded: the bf16 transformer
+    # is ~26GB and fits neither card, but 8-bit lands near 13GB and is both
+    # faster and better than NF4 wherever it has room. The 85% headroom law
+    # (media-image section 12) is what sets the threshold: 8-bit plus the VAE
+    # and 1080p activations needs a 24GB-class card, so a 12GB one keeps NF4.
+    # bf16 is ~26GB and fits no card here, so the transformer is always
+    # quantised. 8-bit would be the better tier on a 24GB card and it was
+    # TRIED FIRST: bitsandbytes 0.50.2 int8 dies in its own outlier path,
+    # `torch.argwhere(outliers.any(dim=0)).view(-1)` raising "view size is not
+    # compatible with input tensor's size and stride" under torch 2.11.0+cu128.
+    # A bare Linear8bitLt smoke test passes on this card, so the card and the
+    # kernels are fine and the bug is in that one call. NF4 is the vetted tier
+    # and it works, so the 24GB of headroom is spent on supersampling instead
+    # (render(), and media-image section 13: downsampling is free antialiasing,
+    # and it buys more than the 4-bit to 8-bit step would).
+    tot_gib = torch.cuda.get_device_properties(0).total_memory / 2 ** 30
     q = dict(load_in_4bit=True, bnb_4bit_quant_type='nf4',
              bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
+    print(f'loading transformer (4-bit nf4) on a {tot_gib:.1f} GiB card ...', flush=True)
     # bitsandbytes modules are built directly on the target device. Without an
     # explicit device_map accelerate dispatches afterwards and tries to .to()
     # params that are still meta tensors, which raises. Pinning both quantised
@@ -130,7 +146,16 @@ def _seed(key):
 def render(pipe, torch, prompt, gen_px, aspect, seed):
     w, h = (gen_px, gen_px)
     if aspect == 'wide':
-        w, h = 1280, 720
+        # 1920x1080 native, NOT the 2304x1296 supersample. Both were rendered
+        # and compared on cut_human_intro_1 (44.4s vs 65.6s, VRAM 7.8/23.9 GiB
+        # either way, so this is an art-direction call and not a memory one).
+        # 2304 is 3.24x Krea 2's default wide band and the drift shows up as
+        # palette, not as duplication: the {STYLE} vaporwave tail took over and
+        # hot magenta displaced the faction's steel blue across the whole frame.
+        # These plates are full-bleed backdrops behind dialogue, so faction
+        # legibility at a glance outranks linework that sits under a text
+        # scrim. 1920 keeps the render in band and the faction colour dominant.
+        w, h = 1920, 1080
     # The encoder lives on the CPU, so the prompt is embedded there explicitly
     # and only the (small) embedding tensor crosses to the card. Turbo is
     # distilled with guidance off, so there is no negative branch to embed.
@@ -230,7 +255,7 @@ def main():
     jobs = build_jobs()
 
     if a.pack:
-        write_pack(jobs + derived_jobs(), 'Krea 2 Turbo, local RTX 4080')
+        write_pack(jobs + derived_jobs(), 'Krea 2 Turbo, local RTX 5090')
         return
 
     todo = [j for j in jobs if j[1] is not None and j[0].startswith(a.only)]
@@ -253,7 +278,7 @@ def main():
         # world_<map>_<holder> to world_<map>, so every battle briefing just
         # quietly lost its holder tint. This branch is the NORMAL ending of an
         # overnight class run (everything requested already cached).
-        write_pack(jobs + derived_jobs(), 'Krea 2 Turbo, local RTX 4080')
+        write_pack(jobs + derived_jobs(), 'Krea 2 Turbo, local RTX 5090')
         return
 
     pipe, torch = load_pipe()
@@ -275,7 +300,7 @@ def main():
         print(f'[{i+1}/{len(todo)}] {key:18s} {time.time()-t1:5.1f}s '
               f'(total {time.time()-t0:6.0f}s)', flush=True)
 
-    write_pack(jobs + derived_jobs(), 'Krea 2 Turbo, local RTX 4080')
+    write_pack(jobs + derived_jobs(), 'Krea 2 Turbo, local RTX 5090')
 
 
 if __name__ == '__main__':

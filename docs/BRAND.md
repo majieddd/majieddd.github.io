@@ -40,6 +40,7 @@ point of monochrome; rival colours never share the frame.
 | Planets | `planet_<kind>` | Engraved-line planet portraits on void black: `standard`, `fortress`, `forge`, `nest`. |
 | Galaxy backdrop | `galaxy_bg` | Deep vaporwave starfield, dim enough that owner rings stay readable on top. |
 | Ability emblems | `abil_<id>` | Single bold glowing emblem, minimal, high contrast, no background detail. |
+| Cutscene plates | `cut_<faction>_intro_<1..5>`, `cut_<faction>_sys<1..5>` | Wide 16:9 full-bleed story backdrop, **faction palette dominant**, figures allowed (unlike world plates). Rendered 1920x1080, packed 1920, WebP 82. See the cutscene section below. |
 | Key art | `title`, `nebula` | Full-palette cinematic. |
 
 ## Prompt recipes
@@ -306,3 +307,63 @@ Three ways out, all cheap except the last, and the choice is the owner's:
 1. Re-render `cmd_cadre` on SDXL so the grid is uniform again (minutes).
 2. Leave it and accept one sharper portrait among twenty-one.
 3. Commit the GPU time and upgrade a whole class.
+
+---
+
+## The cutscene class (`cut_`), Session 37
+
+Fifty wide plates carry the campaign: five factions times five THE OATH intro
+slides plus five THE TURNING post-system slides. `js/cutscenes.js` names each
+key and supplies the text; a missing key degrades to the faction crest, so the
+art is presentation only and never gates the story.
+
+### What makes this class different from every other one
+
+| Property | Cutscene plates | Why |
+|---|---|---|
+| Figures | **Allowed and often required** | World plates ban foreground figures; a cutscene is a story beat and half the fifty are about people. |
+| Palette | **Faction palette dominant**, `CUTSCENE_PALETTE` | The plate has to read as human, Light, xeno, pirate or robot before the reader reaches the text. |
+| Text | **None, ever** | The dialogue is DOM text drawn over the plate. Any lettering in the art collides with it. |
+| Size | 1920x1080, packed 1920 | Full-bleed backdrop. On a 1600px viewport a 1920 plate finally downscales instead of stretching. |
+| Quality | WebP 82 | Backdrops sit behind a dark gradient and a text scrim. Portraits want 88; these do not. |
+
+### The five faction grounds
+
+`CUTSCENE_PALETTE` is `FACTION_PALETTE` plus a robot entry. The dominant hue is
+the faction's identity and it must survive to the finished frame:
+
+| Faction | Ground | Reads as |
+|---|---|---|
+| `human` | steel blue and neon cyan, warm highlights | Cold competent industry |
+| `light` | radiant gold and ivory, warm holy light | Cathedral authority |
+| `xeno` | violet and magenta, iridescent chitin | Organic, wet, alive |
+| `pirate` | blood crimson and rust, scavenged metal | Improvised and dangerous |
+| `robot` | chrome and pale teal, cold white light | Absence of a maker |
+
+### Measured on the Krea path, RTX 5090 Laptop 24GB
+
+The `{STYLE}` tail closes with `vaporwave neon palette of magenta cyan violet
+and chrome`. On the SDXL path that clause was truncated away past CLIP token 77
+and never encoded. On the Krea path the Qwen3-VL encoder has no such window, so
+the tail IS encoded and competes with the faction clause for the frame.
+
+**At 1920x1080 the faction clause wins.** Verified by eye on two factions at
+opposite ends of the palette: `cut_human_intro_1` came back blue dominant with
+magenta as a corner accent, `cut_light_intro_1` came back gold and ivory with no
+vaporwave bleed at all. No prompt change is needed and none was made.
+
+**At 2304x1296 the faction clause loses.** The same key rendered as a 1.2x
+supersample put hot magenta ribbons across the whole frame and through the
+Earth's surface, displacing the steel blue. It is not duplication, which is the
+documented out of band failure; it is palette drift, and it appears earlier.
+2304 is 3.24x Krea 2's default wide band. So supersampling is REJECTED for this
+class, on art direction rather than on memory:
+
+| Render | Time | VRAM | Linework | Faction colour |
+|---|---|---|---|---|
+| 1920x1080 native | 44.4s | 7.8 / 23.9 GiB | Flatter shapes | **Dominant, correct** |
+| 2304x1296 down to 1920 | 65.6s | 7.8 / 23.9 GiB | More engraved detail | Overrun by magenta |
+
+Linework that sits under a text scrim is worth less than a plate that reads as
+its faction in the first half second. The rule for this class is therefore
+**render in band**, and it is recorded at `artgen/krea_gen.py` in `render()`.

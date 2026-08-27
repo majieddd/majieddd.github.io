@@ -725,7 +725,7 @@ def build_jobs():
     for key, fac, scene in CUTSCENE_PLATES:
         jobs.append((key, f'{scene}, {CUTSCENE_PALETTE.get(fac, "")}. '
                      f'Wide cinematic composition, dramatic staging, no text anywhere. {STYLE}',
-                     1024, 576, 'wide'))
+                     1024, 1920, 'wide'))
     return jobs
 
 

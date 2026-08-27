@@ -87,6 +87,43 @@ Verified in a browser, not by reading the pack: 52/52 decode as images, 0
 missing, 0 broken, 50 at 576x324 and 2 at 320x320, and the oath paints a
 real `<img class="cs-art">` rather than the crest fallback.
 
+**Session 37: the handover was executed. The interim tier is retired.**
+
+All 52 keys re-rendered on Krea 2 Turbo on Hermes (RTX 5090 Laptop, 24GB,
+Blackwell sm_120, torch 2.11.0+cu128). Measured, not estimated:
+
+| Number | Value |
+|---|---|
+| Per image, 1920x1080 | **48.4s sustained** (44.4s cold), against 83 min on the 12GB 4080 |
+| The 48 plate batch | 2315s, 38.6 min wall clock |
+| The 2 portraits | 24.0s and 24.7s, square path, out_px 320 unchanged |
+| VRAM, whole run | **7.8 / 23.9 GiB after load, 10.2 GiB peak**, 42% of the card |
+| Quantisation | 4-bit NF4. 8-bit was tried first and bitsandbytes 0.50.2 int8 is broken on this torch |
+| `js/artpack.js` | 9.43MB to **19.54MB** |
+| `aegis-protocol.html` | 11.48MB to **22.03MB** |
+| Repack | 281 passed through, **0 re-encoded**, so no cumulative requantisation |
+| Browser probe | 52 decoded, 0 missing, 0 broken, `naturalWidth` **1920** on all 50 plates, 320 on both portraits, 0 console errors |
+| Gate | GATE CLEAN, owner-sweep pass=62 fail=0, mpt pass=37 fail=0 |
+
+Two decisions were taken inside the latitude the handover granted, both
+recorded with their evidence in `docs/BRAND.md`:
+
+1. **Render 1920x1080 native, not the 2304x1296 supersample.** Both were
+   rendered on the same key and compared. The supersample buys engraved
+   linework and costs faction colour: the `{STYLE}` vaporwave tail took the
+   frame and hot magenta displaced the human steel blue. These plates are
+   backdrops behind dialogue, so faction legibility outranks linework.
+2. **WebP quality 82 for the `cut` class.** It had no `QUALITY` entry and was
+   silently taking the default 86.
+
+**AVIF was measured and does NOT help this content.** The reference estimated 30
+to 50% smaller at matched quality. On a real plate: AVIF q70 is 94% of WebP q82
+and AVIF q80 is 125% of it. Only q60 saves anything (71%) and that is a visible
+quality drop. Flat painterly art with large uniform regions is what WebP is best
+at. The lever is not available; do not re-try it.
+
+**OPEN, and the owner's call: the first-load weight.** See section G below.
+
 Plate width stays 576 deliberately. The art is a full-bleed backdrop, so a
 1600px desktop upscales 2.80x, and the byte count predicted softness. The
 screenshot refuted it: flat painterly brushwork has no fine detail for an
@@ -119,10 +156,16 @@ fingerprint-verified.
   rather than against the current 576px interim tier, since re-rendering on a
   different model re-rolls the image anyway and a miss judged now may not
   survive. Owned by the HD handover: `docs/HANDOVER-KREA-ART.md`.
-- `[ ]` HD art pass, handed to the 5090 machine: 52 keys at 1920x1080 on
-  Krea 2, per `docs/HANDOVER-KREA-ART.md`. The two-tier cache means this
-  lands per key with no branch to merge, so the current tier ships until it
-  does.
+- `[x]` **HD art pass: DONE, Session 37.** 52 keys at 1920x1080 on Krea 2 on
+  the 5090, 48.4s per image, gate clean. Numbers in C3, decisions in BRAND.md,
+  the one open question in section G.
+- `[ ]` **Read the fifty plates against their slide text.** Now unblocked: the
+  HD pass is the render this was waiting for, so a miss judged today will
+  survive. Four factions were spot-checked by eye during the batch (human,
+  Light, xeno, robot read correctly against their briefs; pirate `intro_1`
+  is the one to look at first, since its prompt says "neon nebula" and the
+  nebula takes more of the frame than the crimson ships do). The other 45 are
+  unread. Re-roll a miss by key with `--force`, never by editing the prompt.
 
 ## F. Cross-checks the batch held to
 
@@ -135,3 +178,45 @@ fingerprint-verified.
 - Naming stays byte-identical under the fingerprint; kind weights change
   only under the per-campaign pin.
 - gate.js full run green at every commit: owner-sweep 61/0/2, MPT 37/0/2.
+
+## G. OPEN DECISION: the first-load weight (Session 37)
+
+The HD tier doubled the bytes players download before they see anything. This
+is flagged rather than absorbed because `docs/HANDOVER-KREA-ART.md` names it an
+owner decision, and because the levers below are not all reversible.
+
+| Path | Today | After the HD tier |
+|---|---|---|
+| `js/artpack.js`, the FIRST LOAD path | 9.43MB | **19.54MB** |
+| `aegis-protocol.html`, a download | 11.48MB | 22.03MB |
+
+The live site has no build step: players load `js/artpack.js` as its own file,
+so the first number is the one that matters. The 50 plates are 13.0MB of that
+19.54MB, and a player sees each one **at exactly one story moment**.
+
+### The levers, measured
+
+| Lever | Result | Verdict |
+|---|---|---|
+| Lower WebP quality | q70 saves 3.4MB of 19.54MB, q78 saves 1.4MB | **Poor trade.** It degrades every plate to move the total from very heavy to heavy |
+| AVIF | 94% of WebP at matched quality, 125% at q80 | **Not available.** Measured, see C3 |
+| Supersample then pack down | No byte change, wrong on art direction | Already rejected, see BRAND.md |
+| **On-demand loading of the `cut` class** | Removes **13.0MB** from first load | **The real answer, and an architecture change** |
+
+### Recommendation
+
+**Ship the plates as rendered at q82, and move the `cut` class off the inline
+path in a follow-up.** Reasoning:
+
+- Compressing harder is the wrong axis. It pays in visible quality across all
+  fifty plates to save a sixth of the weight, and the plates are the deliverable.
+- On-demand loading is the only lever with the right shape: it is the whole
+  13.0MB, it costs no quality, and full-screen art seen once at a scripted
+  moment is the strongest candidate in the catalogue for it.
+- It is not a change to make silently: it breaks the single-file bundle promise,
+  which is a stated property of this project. That is why it is here and not
+  done.
+
+**If the doubled first load is not acceptable even as an interim state**, say so
+and the plates stay in `cache_krea/` unpushed until on-demand loading lands. The
+art is rendered and cached either way; nothing needs re-rendering.
