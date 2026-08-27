@@ -59,6 +59,30 @@ ACHROMATIC_SAT_CEIL = 0.42
 # only a fault when it DISPLACES the faction, which is what purity measures.
 SAT_FLOOR = 0.18        # below this a pixel is ground or ink, not colour
 
+# BEAT 1 IS SCORED DIFFERENTLY, AND THE REASON IS NOT LENIENCY.
+#
+# The first version of this tool applied hue DOMINANCE to all five beats and
+# reported APPROACH at 64.2% against 91 to 94% everywhere else. The prompt was
+# rewritten to bring the fleet close, which helped a great deal (MERCURY/pirate
+# went to hue 350 at 0.75 purity), and VENUS/pirate still measured hue 50 at
+# 0.05. Looking at that plate rather than at its number settles it: enormous
+# crimson-lit galleons with rigging fill the foreground and it reads as a
+# pirate armada instantly. The pixel-count winner is the sulphur-yellow cloud
+# deck, because that is what Venus IS.
+#
+# So the threshold was wrong, not the plate. Beats 2 to 5 are ON the ground:
+# the faction's own forces, marks and lighting fill the frame, and hue
+# dominance is the correct test. Beat 1 is an ORBITAL shot in which the planet
+# legitimately owns most of the frame, and ART-BIBLE section 1 is explicit that
+# subjects are "readable as silhouette before they are readable as detail".
+# Forcing hue dominance there would mean repainting Venus, Titan and Electra to
+# their occupier's colours, which trades a real identity for a measured one.
+#
+# Beat 1 therefore passes on PRESENCE: enough of the faction's own hue to be
+# read against the world, not more than the world. Reported separately so the
+# two tests are never confused for one number.
+APPROACH_PRESENCE_FLOOR = 0.10
+
 
 def measure(path):
     im = Image.open(path).convert('RGB')
@@ -103,6 +127,11 @@ def faction_of(key):
     return p[2] if key.startswith('pcut_') and len(p) >= 4 else None
 
 
+def beat_of(key):
+    p = key.split('_')
+    return p[3] if key.startswith('pcut_') and len(p) >= 4 else None
+
+
 def main():
     args = sys.argv[1:]
     worst_n = 20
@@ -118,6 +147,7 @@ def main():
         return
 
     per_fac = collections.defaultdict(list)
+    per_beat = collections.defaultdict(lambda: [0, 0])
     flags, sizes = [], collections.Counter()
     for name in names:
         key = name[:-5]
@@ -126,15 +156,21 @@ def main():
         fac = faction_of(key)
         if fac is None:
             continue
+        beat = beat_of(key)
         if fac in ACHROMATIC:
             ok = m['sat'] <= ACHROMATIC_SAT_CEIL
             score = m['sat']
         else:
             bands = BANDS[fac]
             p = purity(m.get('hist', {}), m.get('total', 0), bands)
-            ok = in_band(m['hue'], bands) if m['hue'] is not None else False
             score = p
+            if beat == '1':
+                ok = p >= APPROACH_PRESENCE_FLOOR      # presence, see the note above
+            else:
+                ok = in_band(m['hue'], bands) if m['hue'] is not None else False
         per_fac[fac].append((ok, score, m))
+        per_beat[beat][0] += 1
+        per_beat[beat][1] += 1 if ok else 0
         if not ok:
             flags.append((score, key, fac, m))
 
@@ -158,6 +194,15 @@ def main():
         label = 'sat<=%.2f' % ACHROMATIC_SAT_CEIL if fac in ACHROMATIC else 'hue'
         print('  %-8s %6d %7d/%-4d %7.2f %8.2f %8.2f   (%s)' %
               (fac, len(rows), ok, len(rows), avg_p, avg_s, avg_l, label))
+
+    print()
+    print('BY BEAT   (beat 1 on presence >= %.2f, beats 2 to 5 on hue dominance)'
+          % APPROACH_PRESENCE_FLOOR)
+    labels = {'1': 'APPROACH', '2': 'THE GROUND', '3': 'THE ASSAULT',
+              '4': 'AFTERMATH', '5': 'NEW ORDER'}
+    for b in sorted(per_beat):
+        t, o = per_beat[b]
+        print('  beat %s %-12s %4d/%-4d %6.1f%%' % (b, labels.get(b, '?'), o, t, 100.0 * o / max(1, t)))
 
     total = sum(len(v) for v in per_fac.values())
     okall = sum(1 for v in per_fac.values() for r in v if r[0])

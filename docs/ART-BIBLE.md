@@ -372,6 +372,46 @@ modes that need three different responses: the render missed the prompt (a
 re-roll), the prompt missed the writing (a catalogue edit), or the writing is
 wrong for the beat (a rewrite). Tell them apart before acting.
 
+### 11.2 The colour law is measured now, and beat 1 is scored differently
+
+`tools/brand_audit.py` reads every plate and reports its saturation-weighted
+dominant hue, the share of coloured pixels inside the band its power owns, mean
+saturation and mean luminance, then flags anything outside the section 2 bands.
+The Parallel is judged on a saturation CEILING rather than a hue band, because
+its identity is that it owns no hue and a hue test on it would mean nothing.
+
+It exists because eye does not scale to 875 plates, and because
+`artgen/firefly_gen.py` now writes into the same cache as `krea_gen.py`: a
+hosted model drifting from the locked look would be invisible by filename. Run
+it before any repack of the `pcut` class.
+
+**BEAT 1 PASSES ON PRESENCE, NOT DOMINANCE, AND THAT IS NOT LENIENCY.** The
+first version applied hue dominance to all five beats and reported APPROACH at
+64.2% against 91 to 94% everywhere else. The prompt was rewritten to bring the
+fleet close and give it its own running lights, which helped a great deal, and
+some plates still measured off band. Looking at one rather than at its number
+settled it: VENUS/pirate scores hue 50 at 0.05 purity while showing enormous
+crimson-lit galleons filling the foreground, and it reads as a pirate armada
+instantly. The pixel-count winner is the sulphur-yellow cloud deck, because
+that is what Venus IS.
+
+The threshold was wrong, not the plate. Beats 2 to 5 are ON the ground, where
+the faction's forces, marks and lighting fill the frame and hue dominance is
+the right test. Beat 1 is an ORBITAL shot where the planet legitimately owns
+most of the frame, and section 1 already says subjects are readable as
+SILHOUETTE before they are readable as detail. A pirate galleon is a pirate
+galleon against any sky.
+
+**The worlds where this trade always bites** are the ones with a strong colour
+of their own: VENUS (sulphur yellow), TITAN (orange haze), ELECTRA and the
+Pleiades generally (blue nebulosity). On those, a power whose hue fights the
+world will not win the pixel count and is not meant to. Forcing it would mean
+repainting Venus, which trades a real identity for a measured one. **Do not
+"fix" these by re-rolling; check the silhouette instead.**
+
+Standing at the last full run: 92.6% of plates read as their own power, all at
+1920x1080, no dimension drift across painters.
+
 ## 12. What the tooling can and cannot do (measured, Session 39)
 
 **Adobe Firefly Services IS reachable, through its REST API, and is now the
@@ -486,7 +526,18 @@ batching:** a desktop card without this laptop's 175W ceiling, or fewer denoise
 steps than the distillation schedule's 8, which is a quality trade and an
 art-direction call rather than an optimisation.
 
-## 13. Firefly Services: the cloud tier, tried first
+## 13. Firefly Services: the cloud tier (licence-blocked)
+
+> **STATUS, 2026-08-27: LICENCE-BLOCKED, NOT BROKEN.** Everything in this
+> section is built and its plumbing is verified, but the owner's Adobe plan
+> does not include Firefly **Services** API access: that is an Enterprise
+> entitlement, separate from a Firefly subscription, and the credentials
+> cannot be created without it. `firefly_gen.py` therefore cannot run today.
+> It is kept, not deleted, because the day the entitlement exists it is one
+> `--check` away from working. **The unlimited generation the owner DOES have
+> is in the Firefly web app, which has no API at all** — section 14 is the
+> bridge that makes those generations usable by this pipeline.
+
 
 ONE CATALOGUE, THREE PAINTERS. `krea_jobs.build_jobs()` is still the single
 source of truth for every key, prompt and size. `artgen/firefly_gen.py` is a
@@ -565,3 +616,66 @@ plate through it. Firefly has a strong look of its own and the style spine in
 section 1 is specific. Before adopting it for a class, render two plates, put
 them beside their local siblings, and judge. If the style does not hold, this
 tier is for classes where it does not matter, or it is not for this project.
+
+## 14. Ingesting art this pipeline did not generate
+
+**The gap this closes.** Section 13's REST API needs an entitlement the owner
+does not have. The unlimited generation the owner *does* have lives in the
+Firefly **web app**, which offers no API — so those generations were
+unreachable from here, not because of a technical limit but because a
+downloaded PNG is not a cache entry. The cache wants a specific size, a
+specific quality per class, and a specific filename.
+
+`artgen/ingest_art.py` is that last mile and nothing more. It runs the same
+three steps every painter in this project runs — `fit()`, then
+`quality_for()`, then `cache_krea/<key>.webp` — against images produced
+elsewhere, so `krea_gen.py --pack` cannot tell the difference and does not
+need to. It is deliberately **generator-agnostic**: Firefly today, anything
+tomorrow, including a phone photo if a plate ever wants one.
+
+```bash
+# 1. What still needs painting, and the exact prompt for each
+python artgen/ingest_art.py --todo pcut_ > prompts.txt
+
+# 2. Generate in the web app. Download. Name each file <key>.png
+#    into one folder. .png .jpg .jpeg .webp all accepted.
+
+# 3. Bring them in
+python artgen/ingest_art.py --from ~/Downloads/plates --dry-run   # report only
+python artgen/ingest_art.py --from ~/Downloads/plates
+python artgen/krea_gen.py --pack                                  # as ever
+```
+
+`--todo PREFIX` prints one block per uncached key: the filename to save as,
+the target pixel size, and the full catalogue prompt to paste. It is written
+to be piped to a file and worked through, not read on screen.
+
+### The three rules it enforces
+
+**It refuses to upscale.** `fit()` will happily enlarge a small source, and
+the result costs full bytes for detail that was never there. A source smaller
+than its target is REFUSED and named, not silently inflated. This is the same
+law the render tiers follow (plugin image law, section 13); the only
+difference is that here the source came from somebody else. **Generate wider
+than the target wherever the generator allows it** — downsampling is free
+antialiasing.
+
+**A filename is a key, not a label.** A file whose stem is not in
+`build_jobs()` is reported as unknown rather than guessed at. There is no
+fuzzy matching, because a plate silently landing on the wrong key is a defect
+that surfaces months later in a cutscene nobody was looking at.
+
+**A cached key is left alone** unless `--overwrite` says otherwise, and every
+write goes through a temp file plus an atomic rename — the same discipline the
+other painters use, because a local render may be working the same cache at
+the same time and a half-written file is indistinguishable from a finished one
+to whoever looks next.
+
+### What is unproven here
+
+The same caveat section 13 ends on applies, and for the same reason: **nobody
+has yet put a Firefly-painted plate beside its local sibling and judged
+whether the house style holds.** The mechanism is verified end to end — a
+2688x1536 source lands as a 1920x1080 RGB WEBP that `--pack` passes through
+untouched, a 1280x720 source is refused, a non-key filename is reported. The
+*art* is not verified. Render two, compare, then decide.
