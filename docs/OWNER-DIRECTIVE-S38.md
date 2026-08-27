@@ -254,6 +254,44 @@ session's work rather than to somebody else's.
 
 ---
 
+## P. The battle screen on a phone
+
+Owner, with a screenshot: "make a UI ux experience that is really good on
+mobile and works properly because as of right now it doesn't really function
+that well on mobile ... it looks way too cluttered on mobile and hard to
+decipher what's even going on."
+
+docs/MOBILE-AUDIT-S37.md fixed the SETUP screens and deferred this one in its
+own scope note: "The in-game HUD at phone width ... none of it was measured
+here. Do not assume this pass helped it."
+
+MEASURED FIRST (tools/mobile-hud-audit.js), on the build the owner photographed:
+
+| | 360x800 | 412x915 |
+|---|---|---|
+| chrome | 570px of 800 (71%) | 549px of 915 (60%) |
+| board uncovered | 45% | 40% |
+| hud over battle-controls | 266x46px | 266x46px |
+| content past the right edge | 35px | 27px |
+| controls under the 44px thumb floor | 15 | 10 |
+
+- [x] The dock becomes a tabbed sheet showing ONE pane (UNITS / COMMAND /
+  TOWERS) with a fold. Three panes are ~980px of content in a 388px box.
+- [x] #battle-controls returns to the bottom. It had been moved to the top at
+  max-width:1550px on the reasoning that "#hud has no fixed height to collide
+  with", true at 1366px and false at 412px.
+- [x] The header wraps: YOU and RIVAL share a row, the wave block gets full
+  width. Three cards in a 390px row gave each ~110px.
+- [x] RUSH moved to a full-width bar at the thumb.
+- [x] Every battle control is at least 44px.
+- [x] AFTER: 9 of 9 checks pass at 412x915, 390x844 and 360x800. Folded, the
+  board keeps over 70% and chrome is under 42%.
+- [x] tools/gate.js now runs a phone pass at 360x800. Every check in it ran at
+  1600x900, a width at which none of the phone rules exist, which is how the
+  HUD could be this broken with a clean gate.
+
+---
+
 ## Evidence ledger (filled as items close)
 
 | Item | State | Evidence |
@@ -273,3 +311,4 @@ session's work rather than to somebody else's.
 | M | verified | js/debug.js, collapsible bar, off by default, OPTIONS toggle. Cheats drive the real paths: finish calls Game.endMatch, stars go through Meta.recordWorld so lastStars.systemTaken still queues the cutscene. owner-sweep 38.11 (forced rating via recordWorld), 38.12 (refuses in a duel). Contrast measured clean after two failures. |
 | N | verified | Per-detachment cooldown replaces MUSTER_PER_WAVE. owner-sweep 38.5 (arms and expires), 38.6 (Marque exempt), 38.9 (the card says recovering, not unaffordable). Fingerprint extended for reqCredit, musterCd and vetRank; MPT 37/37. |
 | O | verified | owner-sweep 62 to 88 checks. newcoverage reports 351 of 351 added executable lines reached, proven by planting a dead branch. Every new check proven by planting the defect it catches. |
+| P | verified | mobile 9/9 at three phone widths, gate carries a 360x800 pass, and the gate was proven to catch the regression (planting the three-pane dock reports board 0% uncovered, chrome 98%). Desktop untouched: owner-sweep 88/0, MPT 37/0. |

@@ -109,13 +109,18 @@ function staticGates() {
 /* Each harness gets its OWN headless.js run, which is its own page load and
    its own browser. That is what makes the ordering invariant structural
    rather than remembered. */
-function browserHarness(label, harnessPath, expression) {
+function browserHarness(label, harnessPath, expression, size) {
   const stepsFile = path.join(os.tmpdir(), 'gate-steps-' + label + '-' + process.pid + '.js');
   const outDir = path.join(os.tmpdir(), 'gate-shots-' + process.pid);
   const load = '(async () => { const t = await (await fetch(' + JSON.stringify(harnessPath) +
     ')).text(); return (0, eval)(t' + (expression ? ' + ' + JSON.stringify(expression) : '') + '); })()';
+  /* THE SIZE IS AN ARGUMENT NOW. It was hard-coded to 1600x900, which is a
+     width the phone rules never activate at: the mobile HUD could be, and
+     was, completely broken with this gate fully green. tools/breakpoint-sweep.js
+     already made this exact argument about a different breakpoint. */
+  const px = size || [1600, 900];
   fs.writeFileSync(stepsFile,
-    'module.exports = [{ size: [1600, 900] }, { wait: 2200 },' +
+    'module.exports = [{ size: [' + px[0] + ', ' + px[1] + '] }, { wait: 2200 },' +
     ' { eval: ' + JSON.stringify('document.hidden') + ' },' +
     ' { eval: ' + JSON.stringify(load) + ' }];\n');
 
@@ -150,6 +155,13 @@ staticGates();
 if (!STATIC_ONLY) {
   browserHarness('owner-sweep', '/tools/owner-sweep.js', null);
   if (!QUICK) browserHarness('mpt', '/tools/multiplayer_test.js', ';MPT.all()');
+  /* THE PHONE. Its own run at a real phone size, because every check above
+     runs at 1600x900 where none of the phone rules exist. The owner's report
+     that the game "doesn't really function that well on mobile" was true
+     while this gate was clean, and nothing here could have said so. 360x800
+     is the tightest of the common Android sizes and the one that failed the
+     hardest when it was first measured. */
+  browserHarness('mobile', '/tools/mobile-hud-audit.js', null, [360, 800]);
 } else if (!BASE) {
   say('browser gates: SKIPPED (no URL given; pass one to run them)');
 }

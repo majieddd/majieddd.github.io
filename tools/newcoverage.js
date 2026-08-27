@@ -63,7 +63,15 @@ if (!base) { console.error('newcoverage: no base ref found, pass one explicitly'
    `--unified=0` so a hunk header names exactly the added run and nothing
    around it: context lines are not this change's responsibility. */
 let diff;
-try { diff = git(['diff', '--unified=0', base + '...HEAD', '--', 'js/']); }
+/* THE WORKING TREE, not `base...HEAD`.
+   The line numbers from the diff are used to index the file ON DISK, so the
+   two sides have to be the same revision. Diffing the committed HEAD while
+   reading an edited working tree shifts every number by however much is
+   uncommitted: measured, it attributed 28 lines of untouched reward-screen
+   code in js/ui.js to a change that never went near it, and reported them
+   cold. Comparing to the working tree also matches how this is used, which is
+   BEFORE committing, to ask what the change left unexercised. */
+try { diff = git(['diff', '--unified=0', base, '--', 'js/']); }
 catch (e) { console.error('newcoverage: git diff against ' + base + ' failed: ' + e.message); process.exit(2); }
 
 const added = new Map();                 /* 'js/game.js' -> Set(lineNo) */
@@ -94,19 +102,28 @@ if (!added.size) { console.log('newcoverage: no js/ lines added since ' + base);
    requires it: MPT installs wrappers over Net._orig, so owner-sweep's
    source-reading checks would grep the wrapper rather than the engine if it
    ran second on the same page. gate.js splits them for the same reason. */
-const HARNESSES = ['tools/owner-sweep.js', 'tools/multiplayer_test.js'];
-const EXPRESSION = { 'tools/multiplayer_test.js': ';MPT.all()' };
+/* EVERY HARNESS THE GATE RUNS, at the SIZE the gate runs it. The mobile
+   audit only exists at phone width (the dock tab strip is display:none above
+   the breakpoint), so profiling it at 1600x900 would execute none of it and
+   report its whole surface as dead. That is the same "one implicit desktop
+   size" mistake tools/breakpoint-sweep.js was written about. */
+const HARNESSES = [
+  { path: 'tools/owner-sweep.js', size: [1600, 900] },
+  { path: 'tools/multiplayer_test.js', size: [1600, 900], expr: ';MPT.all()' },
+  { path: 'tools/mobile-hud-audit.js', size: [360, 800] },
+];
 
 const coverageEntries = [];
-for (const h of HARNESSES) {
+for (const hh of HARNESSES) {
+  const h = hh.path;
   const stepsFile = path.join(os.tmpdir(),
     'newcov-' + path.basename(h, '.js') + '-' + process.pid + '.js');
   const harnessUrl = URL_.replace(/\/$/, '') + '/' + h;
-  const expr = EXPRESSION[h] ? ' + ' + JSON.stringify(EXPRESSION[h]) : '';
+  const expr = hh.expr ? ' + ' + JSON.stringify(hh.expr) : '';
   const load = '(async () => { const t = await (await fetch(' + JSON.stringify(harnessUrl) +
                ')).text(); return (0, eval)(t' + expr + '); })()';
   fs.writeFileSync(stepsFile,
-    'module.exports = [{ size: [1600, 900] }, { wait: 2200 }, { eval: ' +
+    'module.exports = [{ size: [' + hh.size[0] + ', ' + hh.size[1] + '] }, { wait: 2200 }, { eval: ' +
     JSON.stringify(load) + ' }];' + String.fromCharCode(10));
   let raw;
   try {
@@ -126,10 +143,10 @@ for (const h of HARNESSES) {
   let parsed;
   try { parsed = JSON.parse(raw); }
   catch (e) { console.error('newcoverage: could not parse the ' + h + ' run output'); process.exit(2); }
-  if (parsed.coverage) coverageEntries.push(...parsed.coverage);
+  coverageEntries.push(parsed.coverage || []);   /* one array PER RUN */
 }
 
-const out = { coverage: coverageEntries };
+const out = { coverage: coverageEntries.flat() };
 if (!out.coverage.length) {
   console.error('newcoverage: no coverage for js/ came back. Is the page serving separate modules?');
   process.exit(2);
@@ -162,27 +179,60 @@ function lineIndex(text) {
   return starts;
 }
 
-const perFile = new Map();               /* 'js/game.js' -> { starts, ranges } */
-for (const entry of out.coverage) {
-  const m = /\/(js\/[A-Za-z0-9_]+\.js)/.exec(entry.url || '');
-  if (!m) continue;
-  const rel = m[1];
-  const abs = path.join(ROOT, rel);
-  if (!fs.existsSync(abs)) continue;
-  if (!perFile.has(rel))
-    perFile.set(rel, { starts: lineIndex(fs.readFileSync(abs, 'utf8')), ranges: [] });
-  const bucket = perFile.get(rel);
-  for (const fn of entry.functions || [])
-    for (const r of fn.ranges || []) bucket.ranges.push(r);
-}
-/* Smallest first, so the FIRST range containing an offset is the innermost. */
-for (const b of perFile.values())
-  b.ranges.sort((x, y) => (x.endOffset - x.startOffset) - (y.endOffset - y.startOffset));
+/* COVERAGE IS UNIONED PER RUN, NOT POOLED.
+   The first cut concatenated the ranges from all three runs into one list and
+   took the count of the smallest range containing a line. That is not a union
+   of coverage, it is a mixture of contradictory reports: the desktop run
+   carries a count-0 range for the dock-tab handler (the tab strip is
+   display:none at 1600px, so it never fires there) and the phone run carries
+   a count-1 range for the same code. Whichever happened to be smaller won,
+   and four lines that demonstrably execute were reported dead while the
+   mobile harness that executes them passed 9 of 9.
 
-function countAt(bucket, off) {
-  for (const r of bucket.ranges)
-    if (r.startOffset <= off && off < r.endOffset) return r.count;
-  return null;                           /* no range covers it: unknown, not cold */
+   A line is covered if ANY run executed it, so each run is resolved to its
+   own hit set first and the sets are unioned. */
+const fileText = new Map();
+function startsFor(rel) {
+  if (!fileText.has(rel)) {
+    const abs = path.join(ROOT, rel);
+    if (!fs.existsSync(abs)) return null;
+    fileText.set(rel, lineIndex(fs.readFileSync(abs, 'utf8')));
+  }
+  return fileText.get(rel);
+}
+
+const covered = new Map();
+const seenFile = new Set();
+for (const runEntries of coverageEntries) {
+  const perRun = new Map();
+  for (const entry of runEntries) {
+    const m = /\/(js\/[A-Za-z0-9_]+\.js)/.exec(entry.url || '');
+    if (!m) continue;
+    const rel = m[1];
+    if (!startsFor(rel)) continue;
+    seenFile.add(rel);
+    if (!perRun.has(rel)) perRun.set(rel, []);
+    const rs = perRun.get(rel);
+    for (const fn of entry.functions || [])
+      for (const r of fn.ranges || []) rs.push(r);
+  }
+  for (const [rel, ranges] of perRun) {
+    ranges.sort((x, y) => (x.endOffset - x.startOffset) - (y.endOffset - y.startOffset));
+    const starts = startsFor(rel);
+    if (!covered.has(rel)) covered.set(rel, new Set());
+    const hit = covered.get(rel);
+    const src = fs.readFileSync(path.join(ROOT, rel), 'utf8').split('\n');
+    const code = codeLines(src);
+    for (let L = 1; L <= src.length; L++) {
+      if (!code[L - 1]) continue;
+      const text = src[L - 1];
+      const lead = text.length - text.replace(/^\s+/, '').length;
+      const off = starts[L - 1] + lead;
+      let c = null;
+      for (const r of ranges) if (r.startOffset <= off && off < r.endOffset) { c = r.count; break; }
+      if (c) hit.add(L);
+    }
+  }
 }
 
 /* ---- 4. added AND never executed ---------------------------------------
@@ -229,20 +279,16 @@ const report = [];
 for (const [rel, lines] of added) {
   const abs = path.join(ROOT, rel);
   if (!fs.existsSync(abs)) continue;
-  const bucket = perFile.get(rel);
-  if (!bucket) continue;                 /* this page never loaded that file */
+  if (!seenFile.has(rel)) continue;      /* this page never loaded that file */
+  const hit = covered.get(rel) || new Set();
   const src = fs.readFileSync(abs, 'utf8').split('\n');
   const isCode = codeLines(src);
   const cold = [];
   for (const L of [...lines].sort((a, b) => a - b)) {
     const text = src[L - 1];
     if (text === undefined || !isCode[L - 1]) continue;
-    const lead = text.length - text.replace(/^\s+/, '').length;
-    const off = bucket.starts[L - 1] + lead;
-    const c = countAt(bucket, off);
-    if (c === null) continue;            /* unattributed, do not guess */
     totalAdded++;
-    if (c === 0) { totalCold++; cold.push({ L, text: text.trim().slice(0, 88) }); }
+    if (!hit.has(L)) { totalCold++; cold.push({ L, text: text.trim().slice(0, 88) }); }
   }
   if (cold.length) report.push({ rel, cold });
 }
