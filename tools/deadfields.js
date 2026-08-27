@@ -47,6 +47,21 @@ const ALLOW = new Map([
   ['icon',  'universal display field, read through generic renderers'],
   ['color', 'universal display field, read through generic renderers'],
   ['desc',  'universal display field, read through generic renderers'],
+  /* THE STANCE KEYS of DIALOGUE.answers.<faction>. All seven are read by one
+     computed dispatch, `(set && set[stance])` in battleDialogue
+     (js/dialogue.js), where `stance` comes from DIALOGUE.stance[rivalId].
+     There is no literal `.certainty` anywhere and there never will be.
+     All seven are listed even though the scan flagged only `certainty`: the
+     other six are currently spared by coincidental `.offer` / `.duty` style
+     matches elsewhere in the tree, so listing just the one that fired would
+     leave the rest to go red the moment an unrelated reference is deleted. */
+  ['certainty', 'DIALOGUE.answers stance key, read via set[stance] in battleDialogue'],
+  ['contempt',  'DIALOGUE.answers stance key, read via set[stance] in battleDialogue'],
+  ['appetite',  'DIALOGUE.answers stance key, read via set[stance] in battleDialogue'],
+  ['offer',     'DIALOGUE.answers stance key, read via set[stance] in battleDialogue'],
+  ['plunder',   'DIALOGUE.answers stance key, read via set[stance] in battleDialogue'],
+  ['duty',      'DIALOGUE.answers stance key, read via set[stance] in battleDialogue'],
+  ['doubt',     'DIALOGUE.answers stance key, read via set[stance] in battleDialogue'],
 ]);
 
 /* Whole SHAPES of key that are read by computed access, with the dispatch

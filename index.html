@@ -293,7 +293,20 @@
          (owner: "nothing on the sides"): rush joined the top hud-centre
          cluster, and abilities + base level now sit at the TOP of this
          centre pane, above the description they used to stand beside. -->
-    <div id="dock">
+    <div id="dock" data-pane="shop">
+      <!-- PHONE ONLY, and inert above the breakpoint (display:none on desktop).
+           Three dock panes side by side is a desktop shape: at 412px they add
+           up to ~980px of content inside a 388px box, which is what pushed the
+           tower cards 27px past the right edge and left 45% of the board
+           visible at 360px. On a phone they become one sheet showing ONE pane,
+           chosen here. `data-pane` on #dock is the whole state; CSS does the
+           rest, so nothing re-renders on a tab change. -->
+      <div id="dock-tabs" role="tablist" aria-label="Battle panels">
+        <button class="dock-tab" role="tab" data-pane="muster" aria-controls="dock-muster">UNITS</button>
+        <button class="dock-tab" role="tab" data-pane="inspector" aria-controls="dock-inspector">COMMAND</button>
+        <button class="dock-tab" role="tab" data-pane="shop" aria-controls="dock-shop">TOWERS</button>
+        <button id="dock-collapse" class="dock-tab dock-fold" aria-label="Collapse panel" aria-expanded="true">▾</button>
+      </div>
       <div class="dock-pane" id="dock-muster">
         <h2 class="section-label">DETACHMENT</h2>
         <div id="muster-bar" class="muster-bar"></div>
@@ -448,6 +461,7 @@
       <label class="set-row"><span>Music</span><input type="checkbox" id="set-music-on" checked></label>
       <label class="set-row"><span>Reduced motion</span><input type="checkbox" id="set-reduced-motion"></label>
       <label class="set-row"><span>Damage numbers</span><input type="checkbox" id="set-dmg-numbers" checked></label>
+      <label class="set-row" data-tt="DEBUG MODE|Testing tools: finish a battle at a chosen star rating, force a defeat, grant gold, clear a wave. Every one drives the same code path real play drives, so stars, campaign progress and any cutscene that follows still fire. Disabled in duels."><span>Debug mode</span><input type="checkbox" id="set-debug"></label>
       <div class="set-row"><span>Save file</span><span style="display:flex;gap:8px">
         <button class="btn btn-sm" id="btn-export-save">EXPORT</button>
         <button class="btn btn-sm" id="btn-import-save">IMPORT</button></span></div>
@@ -481,6 +495,7 @@
 <script src="js/game.js"></script>
 <script src="js/net.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/debug.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

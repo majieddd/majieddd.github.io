@@ -510,10 +510,11 @@ function unitDoctrineOf(id) { return UNIT_DOCTRINES[unitFactionOf(id)] || null; 
    different rule about a different thing and is untouched by any of this. */
 const SUMMON_DOCTRINES = {
   human: {
-    id: 'human', name: 'CONSCRIPTION', onKill: 'roll', scheduler: false, noPurchase: false,
+    id: 'human', name: 'FIELD DOCTRINE', onKill: 'requisition', veterancy: true,
+    scheduler: false, noPurchase: false,
     incomeCapPct: MUSTER_INCOME_CAP_PCT, costGrowth: MUSTER_COST_GROWTH, costSteps: MUSTER_COST_STEPS,
     powerPerBuy: POWER_PER_BUY, powerCap: SUMMON_POWER_CAP,
-    desc: 'Every kill drafts. The fallen return as a soldier drawn at random from your own roster: a different shape, never a heavier one.'
+    desc: 'Every kill banks requisition and cuts the price of your next send, spent when you send. A body of yours that kills another grows permanently harder. Humanity learns: the line that holds pays for the line that advances.'
   },
   light: {
     id: 'light', name: 'THE PROCESSION', onKill: null, scheduler: true, noPurchase: false,
@@ -529,9 +530,15 @@ const SUMMON_DOCTRINES = {
   },
   pirate: {
     id: 'pirate', name: 'LETTERS OF MARQUE', onKill: null, scheduler: false, noPurchase: false,
+    /* THE ONE RITE WITH NO COOLDOWN, by owner instruction. Every other flag
+       waits for a detachment to recover; the Marque waits only for coin. That
+       is not an unbounded rite, it is a rite bounded in a different currency:
+       PIRATE_COST_GROWTH compounds unbounded at 1.09 a buy where everyone else
+       plateaus at MUSTER_COST_STEPS. */
+    noCooldown: true,
     incomeCapPct: Infinity, costGrowth: PIRATE_COST_GROWTH, costSteps: Infinity,
     powerPerBuy: POWER_PER_BUY_PIRATE, powerCap: Infinity, aiPressureMul: 1.25, aiMinWave: 3,
-    desc: 'Nothing rises free under this flag. Every body is bought: and neither your POWER nor your ECON has a ceiling.'
+    desc: 'Nothing rises free under this flag, and nothing waits. Every body is bought, no detachment ever needs to recover, and neither your POWER nor your ECON has a ceiling.'
   },
   robot: {
     id: 'robot', name: 'THE LATTICE', onKill: 'clone', scheduler: false, noPurchase: true,

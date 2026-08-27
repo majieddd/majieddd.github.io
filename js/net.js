@@ -1127,6 +1127,16 @@ const Net = {
       mix(S.procIdx | 0); mix(S.procCycle | 0); mix(q(S.procTimer || 0));
       mix(q(S.rollDebt || 0)); mix(q(S.summonPower || 0));
       mix(S.musterThisWave | 0);
+      /* FIELD DOCTRINE's banked credit, and the detachment cooldowns that
+         replaced MUSTER_PER_WAVE. Both GATE what a seat may do next, so a
+         client that disagrees about either has already made a different
+         decision available -- the same reasoning the clutch block above gives.
+         Walked in musterTiers order rather than by iterating the cooldown
+         object, because key insertion order encodes the sequence of buys and
+         two clients that bought the same set in a different order would then
+         hash differently while being in identical states. */
+      mix(q(S.reqCredit || 0));
+      for (const t of (S.musterTiers || [])) mix(q((S.musterCd && S.musterCd[t.id]) || 0));
       /* THE COMPILE and THE BOOTSTRAP. A clone commander rewrites its own
          traits at wave boundaries and the Parallel's towers ramp every wave,
          so both sides' STATS depend on these even though `mods` themselves
@@ -1156,6 +1166,12 @@ const Net = {
     }
     for (const e of Game.enemies) {
       mix(q(e.x)); mix(q(e.y)); mix(q(e.hp)); mix(e.hostileTo); mix(e.dead ? 1 : 0);
+      /* VETERANCY. `maxHp` is what a promotion moves, and resolveMelee reads
+         maxHp to price every strike, so a veteran is a body that hits harder.
+         Hashing the rank rather than maxHp keeps this one integer wide: the
+         rank determines maxHp exactly, and an integer cannot drift the way a
+         quantised float can. */
+      mix(e.vetRank | 0);
     }
     return h >>> 0;
   },

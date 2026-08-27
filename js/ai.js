@@ -802,6 +802,14 @@ const AI = {
       for (const tier of Game.musterTiers(S.index)) {
         const base = ENEMY_TYPES[tier.type];
         if (!base) continue;
+        /* A RECOVERING DETACHMENT IS NOT A CHOICE. The gate above asks
+           canMuster(S.index) with no tier, which answers only "is the muster
+           path open at all", so without this the brain scored a detachment
+           that is still on cooldown, won its own decision with it, and then
+           had the buy refused by canMuster(side, tier) inside Game.muster.
+           The tick was spent and nothing was bought. Cheap to miss because
+           every gate stayed green: the rival simply got quieter. */
+        if (Game.musterCdLeft && Game.musterCdLeft(S.index, tier) > 0) continue;
         const cost = Game.musterCost(S.index, tier);
         if (cost > gold * 1.8) continue;
         let delivered = 0;

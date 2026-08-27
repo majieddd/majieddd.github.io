@@ -70,6 +70,16 @@ const UNIT_PULSE_S = 0.85;     /* healer / aura pulse cadence               */
 const UNIT_WARD_HIT_S = 1.9;   /* how often something breaks a ward         */
 const UNIT_AURA_PX = 34;       /* aura ring at stage scale, not radius*TILE */
 
+/** Escape a string for use inside a double-quoted `data-tt` attribute.
+    The attribute is split on `|`, so both the quote and the pipe have to go or
+    the tooltip truncates and the tag can break outright. */
+function ttEsc(v) {
+  return String(v == null ? '' : v)
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\|/g, '/');
+}
+
 const UI = {
 
   sel: { commander: COMMANDERS[0].id, map: MAPS[0].id, difficulty: 'contested', loadout: [] },
@@ -340,6 +350,59 @@ const UI = {
     /* Reduced motion. The checkbox is the USER override -- the OS preference
        already works without it. One writer for all three surfaces: the cached
        canvas gate, the CSS class, and the saved setting. */
+    /* THE DOCK TABS, phone only (the strip is display:none above the
+       breakpoint, so these listeners are harmless on desktop and cost one
+       delegated handler).
+
+       `data-pane` on #dock IS the state. Nothing re-renders on a tab change:
+       the panes are all built and populated exactly as they always were, CSS
+       simply shows one. That matters because the muster cards and the shop
+       cards carry live cooldowns and prices that a rebuild would have to
+       re-derive, and because a tab that rebuilt its pane would drop the
+       inspector's current selection. */
+    const tabs = $('#dock-tabs');
+    if (tabs) tabs.addEventListener('click', ev => {
+      const b = ev.target.closest('.dock-tab');
+      if (!b) return;
+      const dock = $('#dock');
+      if (b.id === 'dock-collapse') {
+        const folded = document.body.classList.toggle('dock-folded');
+        b.setAttribute('aria-expanded', String(!folded));
+        b.textContent = folded ? '▴' : '▾';
+        Sound.play('click');
+        /* The board grew or shrank, so the canvas has to be re-measured or it
+           keeps drawing at the old size and the pointer maths goes with it. */
+        if (Game.resize) Game.resize();
+        return;
+      }
+      if (!b.dataset.pane) return;
+      /* Tapping the pane you are already on folds the sheet away, which is
+         the gesture a player reaches for when they want to see the board. */
+      if (dock.dataset.pane === b.dataset.pane && !document.body.classList.contains('dock-folded')) {
+        document.body.classList.add('dock-folded');
+        const c = $('#dock-collapse');
+        if (c) { c.setAttribute('aria-expanded', 'false'); c.textContent = '▴'; }
+      } else {
+        dock.dataset.pane = b.dataset.pane;
+        document.body.classList.remove('dock-folded');
+        const c = $('#dock-collapse');
+        if (c) { c.setAttribute('aria-expanded', 'true'); c.textContent = '▾'; }
+      }
+      this.syncDockTabs();
+      Sound.play('click');
+      if (Game.resize) Game.resize();
+    });
+
+    this.syncDockTabs();
+
+    /* DEBUG MODE. Off by default and never persisted as on by accident: it is
+       a checkbox like any other, so a player who turns it on knows they did. */
+    const dbg = $('#set-debug');
+    if (dbg) dbg.addEventListener('change', () => {
+      Debug.set(dbg.checked);
+      this.saveSettings();
+    });
+
     const rm = $('#set-reduced-motion');
     rm.addEventListener('change', () => {
       setReducedMotion(rm.checked);
@@ -807,6 +870,11 @@ const UI = {
   },
 
   /** Wires styled hover popups onto every [data-tt="TITLE|body"] in a root. */
+  /* `data-tt` is a double-quoted attribute split on a pipe, so a description
+     carrying either character silently truncates the tooltip or breaks the
+     tag outright. Existing call sites interpolate descs raw and have got away
+     with it because no author has typed a quote yet; anything generated from
+     data goes through here instead of relying on that holding. */
   /* COARSE-POINTER COMMIT GUARD. A tap has no hover before it, so a control
      whose click is destructive would fire on the very first touch with the
      player never having seen what it does. `armed` returns true only once the
@@ -5550,13 +5618,17 @@ const UI = {
       return;
     }
     const S = Game.sides[0];
-    const left = MUSTER_PER_WAVE - (S.musterThisWave || 0);
+    const left = Game.musterReadyCount(S.index !== undefined ? S.index : 0);
     /* mods.gold belongs in the signature: a BATTLEFIELD SALVAGE draft moves
        every figure in this bar without touching the purse. The doctrine's own
        live state joins it, coarsened to whole seconds -- the key is a RENDER
        BUDGET, and anything that moves faster than a second belongs to CSS,
        not to a re-render at 8Hz. */
-    const key = [Game.wave, S.gold, S.musterBuys || 0, left,
+    /* Cooldowns must be in the render key, coarsened to whole seconds like
+       every other live figure here, or a recovering card would never repaint
+       and would sit at the second it was disabled on. */
+    const cdKey = Game.musterTiers(0).map(t => Math.ceil(Game.musterCdLeft(0, t))).join(',');
+    const key = [Game.wave, S.gold, S.musterBuys || 0, left, cdKey,
                  Game.waveRunning ? 1 : 0, S.mods.gold,
                  S.baseLevel || 1, this.engineKey(S)].join(':');
     if (bar.dataset.mkey === key) return;
@@ -5606,11 +5678,20 @@ const UI = {
          no hover to fall back on. */
       const powDelivered = (vics.length ? vics : [vics[0]])
         .reduce((a, v) => a + Math.round(base.hp * Game.musterHpMul(0, v)), 0) * tier.count;
-      return `<button class="panel-action muster-btn ${ok ? '' : 'poor'}" data-muster="${tier.id}"${ok ? '' : ' disabled'}
-        aria-label="Summon ${tier.name}: ${sent} ${base.name} for ${cost} gold, ${powDelivered} power, econ plus ${addPct} percent">
+      /* THE COOLDOWN, on the face of the card. A detachment that is merely
+         RECOVERING is disabled for a completely different reason than one you
+         cannot afford, and the old card said `poor` for both. A player who
+         cannot tell "wait" from "earn more" cannot plan around either. */
+      const cd = Game.musterCdLeft(0, tier);
+      const hot = cd > 0;
+      const why = hot ? 'recovering, ' + Math.ceil(cd) + ' seconds'
+                      : (ok ? '' : 'not enough gold');
+      return `<button class="panel-action muster-btn ${ok ? '' : (hot ? 'cooling' : 'poor')}" data-muster="${tier.id}"${ok ? '' : ' disabled'}
+        aria-label="Summon ${tier.name}: ${sent} ${base.name} for ${cost} gold, ${powDelivered} power, econ plus ${addPct} percent${why ? ', ' + why : ''}">
         <span class="mu-ic">${this.unitIconHTML(tier.type, 22)}</span>
         <b class="mu-n">${sent}×</b>
-        <span class="mu-cost">◈${formatNum(cost)}</span>
+        <span class="mu-cost">${hot ? Math.ceil(cd) + 's' : '◈' + formatNum(cost)}</span>
+        ${hot ? `<span class="mu-cd" style="transform:scaleX(${(cd / Math.max(0.001, Game.musterCdFor(0, tier))).toFixed(3)})"></span>` : ''}
       </button>`;
     }).join('');
 
@@ -5714,7 +5795,7 @@ const UI = {
     const capPct = Game.musterCapPct(side);
     const uncapped = !isFinite(capPct);
     const capped = !uncapped && (S.musterIncome || 0) >= capPct;
-    const left = MUSTER_PER_WAVE - (S.musterThisWave || 0);
+    const left = Game.musterReadyCount(S.index !== undefined ? S.index : 0);
     const econPct = uncapped ? (S.musterIncome || 0) : Math.min(S.musterIncome || 0, capPct);
     const econPaid = Game.previewGold(side, musterPayout(S.musterIncome, w, capPct));
     /* BANKED CAPITAL, spelled out. interestOn takes the SMALLER of a flat rate
@@ -5738,7 +5819,7 @@ const UI = {
         : capped
           ? 'AT CAP: +' + Math.round(capPct * 100) + '% is as far as this rite stacks.'
           : 'Capped at +' + Math.round(capPct * 100) + '%. ' + left + ' of ' +
-            MUSTER_PER_WAVE + ' summons left this wave.';
+            ((S.musterTiers || []).length) + ' detachments ready.';
     return `<div class="tt-head">ECON</div>
       <div class="pl-body">
         ${row('BASE, WAVE ' + w, '+◈' + formatNum(baseIncome),
@@ -5766,6 +5847,8 @@ const UI = {
       for (const p of Game.incubators) if (p.side === S.index) { n++; if (p.t < soon) soon = p.t; }
       return d.id + n + '.' + (isFinite(soon) ? Math.ceil(soon) : 0);
     }
+    if (d.onKill === 'requisition')
+      return d.id + Math.round((S.reqCredit || 0) * 100);
     if (d.onKill === 'roll' || d.onKill === 'clone')
       return d.id + (S.stats.sent - S.stats.mustered);
     return d.id + Math.round((S.musterIncome || 0) * 100);
@@ -5797,6 +5880,20 @@ const UI = {
       let n = 0, soon = Infinity;
       for (const p of Game.incubators) if (p.side === S.index) { n++; if (p.t < soon) soon = p.t; }
       state = 'INCUBATING ' + n + '/' + XENO_INC_CAP + (n ? ' · NEXT ' + Math.max(0, Math.ceil(soon)) + 's' : '');
+    } else if (doc.onKill === 'requisition') {
+      /* FIELD DOCTRINE has TWO channels and both belong on the tag, because
+         neither is visible anywhere else: the banked discount that a kill
+         earns and a send spends, and the veterans your own bodies have earned
+         in the lane. Without this branch Humanity fell through to the final
+         `else` and advertised the Marque's "NOTHING RISES FREE, NO CEILING",
+         which is another faction's rite entirely. */
+      const pct = Math.round((S.reqCredit || 0) * 100);
+      let vets = 0;
+      for (const en of Game.enemies)
+        if (!en.dead && en.owner === S.index && (en.vetRank || 0) > 0) vets++;
+      state = 'REQUISITION ' + pct + '%' +
+              (pct >= Math.round(HUMAN_REQ_CAP * 100) ? ' (FULL)' : '') +
+              ' · ' + vets + ' VETERAN' + (vets === 1 ? '' : 'S') + ' IN THE FIELD';
     } else if (doc.onKill === 'roll') state = 'EVERY KILL DRAFTS · ' + free + ' RAISED';
     else if (doc.onKill === 'clone') state = 'EVERY KILL RETURNS AS ITSELF · ' + free + ' REBUILT';
     else if (doc.noPurchase) state = 'THE LATTICE DOES NOT BUY';
@@ -7608,22 +7705,50 @@ const UI = {
   buildCodex() {
     const towers = TOWER_ORDER.map(id => {
       const t = TOWER_TYPES[id];
-      return `<div class="codex-entry" style="--tc:${t.color}">
-        <div class="ce-head"><b>${t.name}</b><span>◈${t.cost} · growth ×${appliedGrowth(t).toFixed(2)}</span></div>
-        <p>${t.desc}</p>
-        <div class="ce-branches">
-          <div><b>TALENTS</b>, ${t.talents.map(x => x.name).join(' / ')}</div>
-          <div><b>${t.branches[0].name}</b> / <b>${t.branches[1].name}</b> at tier 4</div>
+      /* THE SUBJECT, SHOWN. The manual described every tower and pictured
+         none of them, so a player reading it had to hold a name in their head
+         and go find the shape on the board. The icon is the same primitive
+         the shop and the dock paint, so the manual and the board agree by
+         construction rather than by a second drawing that can drift. */
+      const b = t.base || {};
+      const dossier = [
+        b.damage !== undefined ? 'Damage ' + b.damage : '',
+        b.rate !== undefined ? 'Rate ' + b.rate + '/s' : '',
+        b.range !== undefined ? 'Range ' + b.range : '',
+        b.dmgType ? 'Type ' + b.dmgType : '',
+        b.splash ? 'Splash ' + b.splash : '',
+        'Cost ' + t.cost + ', growth x' + appliedGrowth(t).toFixed(2)
+      ].filter(Boolean).join(' · ');
+      return `<div class="codex-entry has-fig" style="--tc:${t.color}"
+              data-tt="${ttEsc(t.name)}|${ttEsc(dossier)}">
+        <span class="ce-fig">${this.towerIconHTML(id, 34)}</span>
+        <div class="ce-body">
+          <div class="ce-head"><b>${t.name}</b><span>◈${t.cost} · growth ×${appliedGrowth(t).toFixed(2)}</span></div>
+          <p>${t.desc}</p>
+          <div class="ce-branches">
+            <div><b>TALENTS</b>, ${t.talents.map(x => x.name).join(' / ')}</div>
+            <div><b>${t.branches[0].name}</b> / <b>${t.branches[1].name}</b> at tier 4</div>
+          </div>
         </div></div>`;
     }).join('');
     const enemies = Object.values(ENEMY_TYPES).map(e => {
       /* Allegiance first: the codex is where a player works out why one
          creature is grey chrome and the next one is somebody's soldier. */
       const h = e.faction && FACTIONS[e.faction] ? FACTIONS[e.faction] : MACHINE_HOST;
-      return `<div class="codex-entry" style="--tc:${e.color}">
-        <div class="ce-head"><b>${e.name}</b><span>${h.icon} ${h.short} · ${
-          e.hp} HP · ${e.armor} arm</span></div>
-        <p>${e.desc}</p></div>`;
+      const dossier = [
+        e.hp + ' HP', e.armor + ' armour', 'Speed ' + e.speed,
+        'Bounty ' + e.bounty, e.lives + ' live' + (e.lives === 1 ? '' : 's'),
+        e.flying ? 'Flying' : (e.role ? e.role.charAt(0).toUpperCase() + e.role.slice(1) : ''),
+        h.short
+      ].filter(Boolean).join(' · ');
+      return `<div class="codex-entry has-fig" style="--tc:${e.color}"
+              data-tt="${ttEsc(e.name)}|${ttEsc(dossier)}">
+        <span class="ce-fig">${this.unitIconHTML(e.id, 34)}</span>
+        <div class="ce-body">
+          <div class="ce-head"><b>${e.name}</b><span>${h.icon} ${h.short} · ${
+            e.hp} HP · ${e.armor} arm</span></div>
+          <p>${e.desc}</p>
+        </div></div>`;
     }).join('');
     const mods = PLAYER_MODS.map(m => `<div class="codex-entry" style="--tc:#4ade80">
       <div class="ce-head"><b>${m.icon} ${m.name}</b></div><p>${m.desc}</p></div>`).join('');
@@ -7705,11 +7830,24 @@ const UI = {
 
     const cmdRows = COMMANDER_ROSTER.map(c => {
       const f = c.faction ? FACTIONS[c.faction] : null;
-      return `<div class="codex-entry" style="--tc:${c.color}">
-        <b>${c.icon} ${c.name}</b>
-        <span class="cx-title">${c.title}${f ? ' · ' + f.short : ' · Unaligned'}</span>
-        <span><b>${c.trait.name}</b>, ${c.trait.desc}</span>
-        <span class="cx-abil">${c.abilities.map(a => ABILITIES[a].icon + ' ' + ABILITIES[a].name).join(' · ')}</span>
+      /* The painted portrait if the pack carries one, the text glyph if not.
+         artImg returns '' for a missing key, so a roster addition that has not
+         been rendered yet degrades to exactly what shipped before. */
+      const port = artImg('cmd_' + c.id, 'ce-port', c.name);
+      const dossier = [
+        c.title, f ? f.name : 'Unaligned',
+        c.trait.name + ': ' + c.trait.desc,
+        c.abilities.map(a => ABILITIES[a].name + ', ' + ABILITIES[a].desc).join(' · ')
+      ].filter(Boolean).join(' · ');
+      return `<div class="codex-entry has-fig" style="--tc:${c.color}"
+              data-tt="${ttEsc(c.name + ', ' + c.title)}|${ttEsc(dossier)}">
+        <span class="ce-fig">${port || `<span class="ce-glyph">${c.icon}</span>`}</span>
+        <div class="ce-body">
+          <b>${c.icon} ${c.name}</b>
+          <span class="cx-title">${c.title}${f ? ' · ' + f.short : ' · Unaligned'}</span>
+          <span><b>${c.trait.name}</b>, ${c.trait.desc}</span>
+          <span class="cx-abil">${c.abilities.map(a => ABILITIES[a].icon + ' ' + ABILITIES[a].name).join(' · ')}</span>
+        </div>
       </div>`;
     }).join('');
 
@@ -7778,12 +7916,18 @@ const UI = {
         <p>Neutral waves spawn in the centre corridor and march on <b>both</b> bases at once: same composition, same instant.</p>
         <p>What a kill becomes is decided by your commander's <b>rite</b>, not by a single
            universal law. <b>${SUMMON_DOCTRINES.robot.name}</b> returns the body exactly as it
-           fell; <b>${SUMMON_DOCTRINES.human.name}</b> drafts a different soldier from your own
-           roster; <b>${SUMMON_DOCTRINES.xeno.name}</b> leaves it to incubate where it died; and
-           under <b>${SUMMON_DOCTRINES.light.name}</b> and <b>${SUMMON_DOCTRINES.pirate.name}</b> a
-           kill yields nothing at all: they march on a clock and on gold instead. Whatever a rite
+           fell; <b>${SUMMON_DOCTRINES.xeno.name}</b> leaves it to incubate where it died;
+           <b>${SUMMON_DOCTRINES.human.name}</b> raises nothing at all and instead banks
+           <b>requisition</b> against the price of your next send, while any body of yours that
+           kills another is promoted on the spot; and under
+           <b>${SUMMON_DOCTRINES.light.name}</b> and <b>${SUMMON_DOCTRINES.pirate.name}</b> a
+           kill yields nothing: they march on a clock and on gold instead. Whatever a rite
            sends arrives at <b>${Math.round(MUSTER_DAMP * 100)}%</b> health and can never be sent
            again, so kills never cascade.</p>
+        <p>Every detachment then needs <b>time to recover</b> before it can be sent again, from
+           about <b>${MUSTER_CD_BASE_SEC}s</b> for the lightest to <b>${MUSTER_CD_MAX_SEC}s</b> for
+           the heaviest. <b>${SUMMON_DOCTRINES.pirate.name}</b> alone is exempt and waits only for
+           coin.</p>
       </div></section>
       <section><h3>Escalation</h3><div class="codex-note">
         <p>Every wave permanently raises one random enemy statistic: health, speed or armour. The running totals sit at the top of the battlefield.</p>
@@ -7825,9 +7969,12 @@ const UI = {
            defends outright three stars, first time, and it joins a vault every profile shares.</p>
         <p>A purchase costs a share of the <em>next</em> wave's reward and climbs with every buy; for most
            commanders it flattens after <b>${MUSTER_COST_STEPS}</b>, and the ECON it adds is capped at
-           <b>+${Math.round(MUSTER_INCOME_CAP_PCT * 100)}%</b> of a wave reward. You may buy at most
-           <b>${MUSTER_PER_WAVE}</b> per wave, under every flag: an army is built across a match, not
-           bought in one build phase. Every buy also hardens what you send, permanently.</p>
+           <b>+${Math.round(MUSTER_INCOME_CAP_PCT * 100)}%</b> of a wave reward. Each detachment then
+           needs <b>time to recover</b> before you may send it again, roughly
+           <b>${MUSTER_CD_BASE_SEC}s</b> for the lightest and up to <b>${MUSTER_CD_MAX_SEC}s</b> for the
+           heaviest, so an army is built across a match rather than bought in one build phase. The
+           Marque is the sole exception and waits only for coin. Every buy also hardens what you send,
+           permanently.</p>
         <p><b>THE FIVE RITES.</b> How a commander summons is decided by the commander, not the banner,            a commander of another power brings their own rite to your flag, while your roster supplies the
            soldiers. One law binds all five: a rite may change the <em>shape</em> a kill returns in, never
            its <em>mass</em>.</p>
@@ -7903,6 +8050,10 @@ const UI = {
       <section><h3>Command upgrades</h3><div class="codex-grid">${mods}</div></section>
       <section><h3>Enemy escalations</h3><div class="codex-grid">${esc}</div></section>
       <section><h3>Enemies</h3><div class="codex-grid">${enemies}</div></section>`;
+    /* THE MANUAL HAD NO HOVER AT ALL. bindChipTips is the same binder the
+       shop cards and the galaxy chips use, so the manual gets the identical
+       popup rather than a second tooltip implementation that drifts. */
+    this.bindChipTips(this.el.codexBody);
   },
 
   /* =========================================================== SETTINGS */
@@ -7986,6 +8137,10 @@ const UI = {
     document.body.classList.toggle('rm-user', !!s.reducedMotion);
     $('#set-dmg-numbers').checked = s.damageNumbers !== false;
     setDamageNumbers(s.damageNumbers !== false);
+    if ($('#set-debug')) {
+      $('#set-debug').checked = !!s.debug;
+      if (typeof Debug !== 'undefined') Debug.set(!!s.debug);
+    }
     /* The board preference outlives the session. Class only -- no resize
        here, because loadSettings runs before a battle exists. */
     document.body.classList.toggle('immersive', !!s.immersive);
@@ -7994,11 +8149,25 @@ const UI = {
     Sound.setSfxVolume(s.sfx); Sound.setMusicVolume(s.music);
     Sound.toggleSfx(s.sfxOn); Sound.toggleMusic(s.musicOn);
   },
+  /** Keep aria-selected honest on the dock tabs. A tablist whose selection
+      lives only in a CSS attribute selector tells a screen reader nothing. */
+  syncDockTabs() {
+    const dock = $('#dock');
+    if (!dock) return;
+    const cur = dock.dataset.pane;
+    $$('#dock-tabs .dock-tab[data-pane]').forEach(b => {
+      const on = b.dataset.pane === cur;
+      b.setAttribute('aria-selected', String(on));
+      b.classList.toggle('on', on);
+    });
+  },
+
   saveSettings() {
     Storage.saveSettings({ sfx: $('#set-sfx').value / 100, music: $('#set-music').value / 100,
       sfxOn: $('#set-sfx-on').checked, musicOn: $('#set-music-on').checked,
       reducedMotion: $('#set-reduced-motion').checked,
-      damageNumbers: $('#set-dmg-numbers').checked });
+      damageNumbers: $('#set-dmg-numbers').checked,
+      debug: $('#set-debug') ? $('#set-debug').checked : false });
   }
 };
 

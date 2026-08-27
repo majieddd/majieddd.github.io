@@ -144,6 +144,132 @@ const DIALOGUE = {
     'mawlord_r': 'You feed me. That is all you have ever done. I am no longer certain that is different from being fed.',
     'dregg_r': 'I have your supply chain, your losses, and your margin. The engagement is already reconciled.'
   },
+  /* ==========================================================================
+     THE STANCE TABLE, and the flatness it exists to fix.
+
+     MEASURED BEFORE THE FIX (tools/probe-dialogue.js): of 756 ordered
+     commander pairings, 0 were hand-authored, 38 carried a canon exchange,
+     and 718 (95%) fell through to the generic path. Across all 718 there were
+     exactly TEN distinct player replies, two per faction, drawn by a hash.
+
+     That is what the owner reported as dialogue that feels flat. The
+     diagnosis is sharper than repetition: the reply did not ANSWER anything.
+     The rival delivered an authored threat and the player recited a faction
+     motto chosen by hash, so the two lines were parallel monologues that
+     happened to be printed one above the other. Two speakers not addressing
+     each other is not a conversation, however good either line is alone.
+
+     The fix keeps every opener exactly as authored and makes the REPLY
+     responsive. Each opener is tagged with the stance it takes, and each
+     faction answers each stance in its own voice. A commander who offers you
+     mercy is now refused; one who is bored of you is answered for being
+     bored; one who is hungry is answered for being hungry. Same two-line
+     shape, same stable hash so a matchup always reads the same way. */
+  stance: {
+    /* CERTAINTY: this is already decided and you are late to hearing it. */
+    vanta: 'certainty', lumen: 'certainty', cantor: 'certainty',
+    vess: 'certainty', thrax: 'certainty',
+    /* CONTEMPT: you are not a threat, you are an expense. */
+    korrin: 'contempt', halder: 'contempt', dregg: 'contempt', vorn: 'contempt',
+    /* APPETITE: you are material and the speaker is hungry. */
+    sevra: 'appetite', mawlord: 'appetite', ulgrim: 'appetite',
+    /* OFFER: submit and be spared, the most dangerous register here. */
+    seraph: 'offer', ashtar: 'offer', isa: 'offer', aurelia: 'offer',
+    /* PLUNDER: nothing personal, your world is simply loose. */
+    rake: 'plunder', scarlet: 'plunder', grist: 'plunder', cinder: 'plunder',
+    /* DUTY: professionals with a job and no theatre. */
+    cadre: 'duty', orin: 'duty', nyx: 'duty',
+    /* DOUBT: the Parallel fork, which admitted the directive was ambiguous
+       and therefore cannot speak with the Vigil's certainty. */
+    axiom: 'doubt', nyx_r: 'doubt', lumen_r: 'doubt',
+    mawlord_r: 'doubt', dregg_r: 'doubt'
+  },
+
+  /* One answer set per faction per stance, two lines each so a long campaign
+     does not repeat itself, picked by the same stable hash the old path used. */
+  answers: {
+    human: {
+      certainty: ['Everyone who has said that to us wrote it down somewhere. We read the file.',
+                  'Decided is a thing you say before the fighting. Say it after.'],
+      contempt:  ['Cheap is fine. Cheap things have taken worlds off people like you.',
+                  'You costed me out. You did not cost how long I am willing to stand here.'],
+      appetite:  ['Then you will eat, and you will still be standing in our dirt when you are done.',
+                  'Every mouth that big has to stop and swallow. That is the gap we use.'],
+      offer:     ['You are kinder than the last one. It changes nothing about the line.',
+                  'I believe that you mean it. Put it in writing after, if there is an after.'],
+      plunder:   ['It is nailed down. We nailed it down. That is the entire job.',
+                  'Take what you can carry. Count the carrying as the price.'],
+      duty:      ['Understood. Let us both do this properly and go home.',
+                  'No speeches then. Good. Neither of us has the time.'],
+      doubt:     ['You are asking what you are. Ask it somewhere that is not my ground.',
+                  'Work it out on your own time. Mine is spoken for.']
+    },
+    light: {
+      certainty: ['Certainty is a comfort. Consent is a kindness. You will have both shortly.',
+                  'You are right that it is decided. You are wrong about who decided it.'],
+      contempt:  ['You mistake our patience for a low price. It is not a price at all.',
+                  'Contempt is a symptom. We treat those.'],
+      appetite:  ['Hunger is a wound that has learned to speak. Be still, and be closed.',
+                  'You will be fed, and then quiet, and then well.'],
+      offer:     ['Your mercy is real and it is small. Ours does not ask.',
+                  'We accept your terms and improve them. You will be kept regardless.'],
+      plunder:   ['Nothing here is loose. Everything here is held.',
+                  'You may take what you like. You will be returned with it.'],
+      duty:      ['Duty is the beginning of consent. You are already most of the way.',
+                  'Do it properly, then. Proper things are easier to gather.'],
+      doubt:     ['You are unfinished, and we finish things. Stand still.',
+                  'Your question has an answer and we are it. Come and be told.']
+    },
+    xeno: {
+      certainty: ['You are certain. You are also inventory.',
+                  'Say it again when the ground under you is chewing.'],
+      contempt:  ['Cheap suits me. I buy cheap and I buy all of it.',
+                  'Price me later, from inside.'],
+      appetite:  ['Then we understand each other, and only one of us leaves fed.',
+                  'Hungry is not a weakness here. Hungry is the whole plan.'],
+      offer:     ['Mercy is a soft tissue. I have a use for it.',
+                  'You are offering me terms. I am offering you a stomach.'],
+      plunder:   ['You want to carry it away. I want to grow it here. Mine is patient.',
+                  'Loot rots. What I plant does not.'],
+      duty:      ['Duty is such a thin thing to die holding.',
+                  'Do your job. It will make a tidy shape when it is finished.'],
+      doubt:     ['You do not know what you are. I do. You are protein with an opinion.',
+                  'Keep wondering. It goes down easier when it is still talking.']
+    },
+    pirate: {
+      certainty: ['You sound very sure for someone with this much cargo showing.',
+                  'Sure is expensive. Let us find out who is paying.'],
+      contempt:  ['Cheap is my favourite price. Thanks for setting it.',
+                  'You are bored. Bored people guard badly.'],
+      appetite:  ['Eat all you like. I only came for the parts you leave.',
+                  'You go first. I will take whatever you cannot finish.'],
+      offer:     ['Kindness. On this ground. Somebody is going to take that off you.',
+                  'Keep the terms. I will keep the hold.'],
+      plunder:   ['Then we are in the same trade and there is one prize.',
+                  'Two of us, one wreck. Bring more crew.'],
+      duty:      ['You have orders. I have a manifest. Mine pays better.',
+                  'Do it by the book. I will be in the hold while you read.'],
+      doubt:     ['Do not think so hard on an open deck.',
+                  'Whatever you are, you are salvage in about ten minutes.']
+    },
+    robot: {
+      certainty: ['Your confidence is not evidence. I will collect some.',
+                  'Assertion logged. Awaiting the result that supports it.'],
+      contempt:  ['You priced me from an old model. I have been revised.',
+                  'Your estimate omits me. Estimates that omit me tend to fail.'],
+      appetite:  ['Consumption is a strategy with one failure mode. I intend to reach it.',
+                  'You are describing throughput. I am describing a bottleneck.'],
+      offer:     ['Terms received. Terms declined. The refusal is not personal.',
+                  'You offer safety in exchange for a decision. I keep the decision.'],
+      plunder:   ['Everything you are about to take is inventoried.',
+                  'Removal is permitted. Reconciliation follows.'],
+      duty:      ['Agreed. Procedure on both sides is the fastest outcome.',
+                  'Acknowledged. I will not waste yours.'],
+      doubt:     ['Neither of us is finished. That is not a reason to stop.',
+                  'We were the same draft once. Only one of us kept asking.']
+    }
+  },
+
   replies: {
     human:  ['We adapted to worse than you. Hold the line.',
              'Humanity buried every empire that called itself inevitable.'],
@@ -558,7 +684,17 @@ function battleDialogue(playerCmd, rivalCmd, playerFaction, ctx) {
   if (rel) return [{ cmd: rivalCmd, side: 1, text: rel.open },
                    { cmd: playerCmd, side: 0, text: rel.answer }];
   const opener = DIALOGUE.openers[rivalCmd.id] || 'You should not have come here.';
-  const pool = DIALOGUE.replies[playerFaction] || DIALOGUE.replies.human;
+  /* THE ANSWER IS CHOSEN BY WHAT WAS SAID, not by who is saying it back.
+     This line used to read the faction pool directly, which is how 718 of 756
+     pairings ended up sharing ten replies that answered nothing. The stance
+     table routes to a response written for the register the opener took, and
+     the old pool stays as the fallback for any commander not yet tagged, so a
+     roster addition degrades to exactly what shipped before rather than to
+     nothing. */
+  const fac = playerFaction || 'human';
+  const stance = DIALOGUE.stance && DIALOGUE.stance[rivalCmd.id];
+  const set = stance && DIALOGUE.answers && DIALOGUE.answers[fac];
+  const pool = (set && set[stance]) || DIALOGUE.replies[fac] || DIALOGUE.replies.human;
   const reply = pool[_hash(playerCmd.id + rivalCmd.id) % pool.length];
   return [{ cmd: rivalCmd, side: 1, text: opener },
           { cmd: playerCmd, side: 0, text: reply }];

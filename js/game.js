@@ -89,6 +89,13 @@ class Side {
     this.doctrine = 'human';
     this.procIdx = 0; this.procCycle = 0; this.procTimer = 0;
     this.rollDebt = 0;
+    /* FIELD DOCTRINE's two channels. `reqCredit` is the banked discount a kill
+       earns and a send spends; it is sim state and is fingerprinted, because a
+       client whose next send is 12% cheaper than the other client's is already
+       a different match. `musterCd` is the per-detachment cooldown that
+       replaced MUSTER_PER_WAVE: keyed by tier id, seconds remaining. */
+    this.reqCredit = 0;
+    this.musterCd = {};
     this.summonPower = 0;
     /* How far a compiling commander has rewritten itself. */
     this.compileLevel = 0;
@@ -2265,9 +2272,23 @@ const Game = {
        recordWorld below can move it. ratingFor needs exactly that snapshot to
        know whether the board that just finished was already yours going in,
        not whether it is now -- which this same call is what decides. */
+    /* DEBUG MODE's one-shot star override (js/debug.js). Read HERE, inside the
+       real terminator, rather than by writing a rating straight into the save.
+       recordWorld is what computes `systemTaken`, and `systemTaken` is the only
+       thing the results screen consults before queueing the interstitial
+       (ui.js, Cutscenes.play('sys', ...)). A cheat that set the number directly
+       would look correct and would silently skip the cutscene it exists to
+       test, which is exactly what the owner asked not to happen. Consumed on
+       read so it can never leak into the next battle. */
+    let dbgStars = null;
+    if (this._debugStars !== null && this._debugStars !== undefined) {
+      dbgStars = this._debugStars;
+      this._debugStars = null;
+    }
     this.lastStars = node
-      ? Meta.recordWorld(node.world, ratingFor(won, this.sides[0].lives, this.sides[0].maxLives,
-                                               this.wave, this.worldRecord, c0 && c0.stars))
+      ? Meta.recordWorld(node.world, dbgStars !== null ? dbgStars
+          : ratingFor(won, this.sides[0].lives, this.sides[0].maxLives,
+                      this.wave, this.worldRecord, c0 && c0.stars))
       : null;
     this.campaignResult = c0
       ? (won ? Meta.campaignAdvance(this)
@@ -2624,9 +2645,15 @@ const Game = {
        so a discount applied here cannot show one price and charge another. */
     const t = this.sides[side].traits;
     const d = this.doctrineOf(side);
+    /* FIELD DOCTRINE's banked credit is applied HERE and nowhere else, for the
+       same reason the comment above gives: canMuster and muster both read this
+       funnel, so a discount applied anywhere else would quote one price and
+       charge another. */
+    const req = d.onKill === 'requisition' ? (this.sides[side].reqCredit || 0) : 0;
     return Math.max(1, Math.round(
       musterCost(tier, this.wave, this.sides[side].musterBuys || 0, d.costGrowth, d.costSteps)
-      * (t && t.musterCostMul ? t.musterCostMul : 1)));
+      * (t && t.musterCostMul ? t.musterCostMul : 1)
+      * (1 - req)));
   },
 
   /**
@@ -2671,6 +2698,53 @@ const Game = {
     return Math.max(1, this.musterVictims(side).length + this.patrolRoutesFor(side).length);
   },
 
+  /** Seconds THIS detachment takes to recover, 0 for a rite with no cooldown.
+   *
+   * Scales on sqrt of the detachment's mass, the same curve the xeno clutch
+   * gestation uses. A FLAT cooldown would reintroduce the exact defect it
+   * replaces: identical recovery for every body makes the heaviest body always
+   * correct, which is what MUSTER_PER_WAVE did wrong. */
+  musterCdFor(side, tier) {
+    if (this.doctrineOf(side).noCooldown) return 0;
+    const base = ENEMY_TYPES[tier && tier.type];
+    if (!base) return 0;
+    const mass = base.hp * Math.max(1, tier.count || 1);
+    return Math.min(MUSTER_CD_MAX_SEC,
+                    MUSTER_CD_BASE_SEC + MUSTER_CD_SQRT_SEC * Math.sqrt(mass));
+  },
+
+  /** Seconds left before `tier` may be sent again. 0 means ready. */
+  musterCdLeft(side, tier) {
+    const S = this.sides[side];
+    if (!S || !tier) return 0;
+    if (this.doctrineOf(side).noCooldown) return 0;
+    return Math.max(0, (S.musterCd && S.musterCd[tier.id]) || 0);
+  },
+
+  /** Detachments recover on the step clock, never on a frame clock: a cooldown
+      that ticks on frame rate is a cooldown two clients disagree about. */
+  tickMusterCooldowns(dt) {
+    for (const S of this.sides) {
+      if (!S.musterCd) continue;
+      for (const k in S.musterCd) {
+        const v = S.musterCd[k] - dt;
+        if (v <= 0) delete S.musterCd[k]; else S.musterCd[k] = v;
+      }
+    }
+  },
+
+  /** How many detachments are off cooldown right now. The muster panel shows
+      this where it used to show "N summons left this wave": the old number
+      counted a spent allowance, this one counts available CHOICES, which is
+      what the cooldown made the interesting quantity. */
+  musterReadyCount(side) {
+    const S = this.sides[side];
+    if (!S) return 0;
+    let n = 0;
+    for (const t of (S.musterTiers || [])) if (this.musterCdLeft(side, t) <= 0) n++;
+    return n;
+  },
+
   canMuster(side, tier) {
     const S = this.sides[side];
     if (!S || this.state !== 'playing' || !S.alive || S.defeated) return false;
@@ -2679,7 +2753,13 @@ const Game = {
        that can neither earn a body nor buy one has no offence at all, so the
        refusal is waived rather than leaving it mute. */
     if (this.doctrineOf(side).noPurchase && !this.noReanim) return false;
-    if ((S.musterThisWave || 0) >= MUSTER_PER_WAVE) return false;
+    /* THE DETACHMENT COOLDOWN replaced MUSTER_PER_WAVE here. The old gate asked
+       only HOW MANY sends you had made this wave, never which body you spent
+       the slot on, so the heaviest detachment was always the correct use of an
+       identical slot. This asks whether THIS detachment has recovered.
+       LETTERS OF MARQUE is exempt by owner instruction: pirates are bounded by
+       gold alone, and PIRATE_COST_GROWTH is what bounds them. */
+    if (tier && this.musterCdLeft(side, tier) > 0) return false;
     /* A survive board has nobody to send AT, but it does have somewhere to
        send TO: your own lane, walked backwards as a patrol. musterVictims
        stays empty there on purpose (it answers "who is on the other side of
@@ -2707,6 +2787,17 @@ const Game = {
     S.musterIncome = (S.musterIncome || 0) + step;
     S.musterBuys = (S.musterBuys || 0) + 1;
     S.musterThisWave = (S.musterThisWave || 0) + 1;
+    /* FIELD DOCTRINE: the credit is SPENT by the send that used it. Banking it
+       instead would let a defensive stretch compound into a standing discount,
+       which is the snowball this rite exists to remove. Cleared for every rite,
+       not just Humanity's, so a doctrine change mid-match cannot leave a stale
+       credit behind that musterCost would then read. */
+    S.reqCredit = 0;
+    /* And this detachment is spent until it recovers. */
+    {
+      const cd = this.musterCdFor(side, tier);
+      if (cd > 0) { if (!S.musterCd) S.musterCd = {}; S.musterCd[tier.id] = cd; }
+    }
     /* And the buy hardens every future send, permanently. Without this a
        summon bought past the income ceiling was pure tempo and the button's
        standing promise was half a lie. Bounded for four rites; for LETTERS OF
@@ -2906,6 +2997,15 @@ const Game = {
       if (e.meleeT <= 0) {
         e.meleeT = MELEE_PERIOD;
         const dealt = best.takeDamage(Math.max(1, Math.round(e.maxHp * MELEE_STRIKE_FRAC)), 'physical', {});
+        /* FIELD DOCTRINE, channel two: the OFFENSIVE half of Humanity's rite.
+           A body of yours that kills another body is promoted on the spot.
+           This is the ONLY place a unit-versus-unit kill is observable, which
+           is why the hook lives here and not in killEnemy: killEnemy knows the
+           killing SIDE (e.hostileTo) and has never known the killing BODY, so
+           a promotion booked there would fire on tower kills too, and the
+           owner was explicit that the tower case is the common one and must
+           not count. Gated on owner >= 0 so wave weather can never promote. */
+        if (best.dead && e.owner >= 0 && this.doctrineOf(e.owner).veterancy) this.promote(e);
         /* THE DRAW COMES BEFORE THE GATE. viewSide differs between the two
            clients of a duel, so a draw gated on it would move the seeded
            stream on one machine and not the other: the same desync the
@@ -2918,11 +3018,58 @@ const Game = {
     }
   },
 
+  /**
+   * Promote a veteran. Raising maxHp is the whole of it, deliberately: melee
+   * damage is computed as `maxHp * MELEE_STRIKE_FRAC` (resolveMelee above), so
+   * one field makes a veteran both harder to kill AND harder to be hit by,
+   * which is what "grows stronger" has to mean for a body that fights in the
+   * lane. A second damage field would have to be folded everywhere maxHp
+   * already is, and foldTraits' triple-compile bug is the standing lesson
+   * about what happens when one quantity is folded in two places.
+   *
+   * The heal is proportional, not full: a veteran that killed at 10% health is
+   * still a veteran at 10% health, merely a bigger one.
+   */
+  promote(u) {
+    const rank = u.vetRank || 0;
+    if (rank >= HUMAN_VET_MAX) return;
+    u.vetRank = rank + 1;
+    const before = u.maxHp;
+    u.maxHp = Math.max(1, Math.round(u.maxHp * (1 + HUMAN_VET_HP_STEP)));
+    u.hp = Math.min(u.maxHp, u.hp + (u.maxHp - before));
+    u.damage = (u.damage || 0) * (1 + HUMAN_VET_DMG_STEP);
+    /* Cosmetic only, and it draws NOTHING random: viewSide differs between the
+       two clients of a duel, so a seeded draw gated on it moves one client's
+       stream and not the other's. That is the desync the damage-number toggle
+       shipped in Session 22. */
+    if (u.owner === this.viewSide)
+      this.addFloater(u.x, u.y, 'VETERAN ' + u.vetRank, false, '#38e8ff', 12);
+  },
+
   doctrineOnKill(e) {
     const d = this.doctrineOf(e.hostileTo);
     if (d.onKill === 'clone') return this.reanimate(e);
     if (d.onKill === 'roll') return this.conscript(e);
     if (d.onKill === 'incubate') return this.incubate(e);
+    if (d.onKill === 'requisition') return this.requisition(e);
+  },
+
+  /**
+   * FIELD DOCTRINE, channel one: the DEFENSIVE half of Humanity's rite.
+   *
+   * A kill does not raise a body. It banks credit against the price of the
+   * next send, and that send spends it. Banking rather than spawning is the
+   * whole of the nerf: CONSCRIPTION measured 1.00 bodies per kill, and this
+   * measures zero, paying instead in a discount whose ceiling bounds ONE send.
+   *
+   * Deliberately NOT scaled by corpse mass. A mass-weighted credit would make
+   * the rite strongest exactly when the board is already going well, which is
+   * the snowball this replaces rather than a different shape of it.
+   */
+  requisition(e) {
+    const S = this.sides[e.hostileTo];
+    if (!S) return;
+    S.reqCredit = Math.min(HUMAN_REQ_CAP, (S.reqCredit || 0) + HUMAN_REQ_PER_KILL);
   },
 
   /**
@@ -3018,6 +3165,13 @@ const Game = {
       if (pod.side !== killer) continue;
       if (dist2(pod.x, pod.y, e.x, e.y) <= (XENO_INC_FEED_RADIUS * TILE) * (XENO_INC_FEED_RADIUS * TILE)) {
         pod.t -= XENO_INC_FEED_SEC; fed = true;
+        /* THE FEED, MADE VISIBLE. This was the rite's most important
+           interaction and it had no tell at all: the pod's timer moved and
+           nothing on screen said so, so a player killing beside a clutch could
+           not learn that it mattered. Cosmetic, viewSide-gated, and it draws
+           NOTHING random, which is the rule every gated cosmetic here obeys. */
+        if (killer === this.viewSide)
+          this.addFloater(pod.x, pod.y - 12, '+FED', false, '#a855f7', 11);
       }
     }
 
@@ -3036,7 +3190,17 @@ const Game = {
           const d = dist2(pod.x, pod.y, e.x, e.y);
           if (d < bestD) { bestD = d; best = pod; }
         }
-        if (best) best.t -= XENO_INC_FEED_SEC;
+        if (best) {
+          best.t -= XENO_INC_FEED_SEC;
+          /* A CAPPED KILL IS NOT A WASTED KILL, and the player had no way to
+             know that. At the cap every further kill looked like it did
+             nothing, which is precisely the "the rite is not working" the
+             owner reported. It always fed the nearest clutch; it just never
+             said so. */
+          if (killer === this.viewSide) {
+            this.addFloater(best.x, best.y - 12, 'NEST FULL · FED', false, '#a855f7', 11);
+          }
+        }
       }
       return;
     }
@@ -3990,6 +4154,7 @@ const Game = {
        would hatch at different moments on two clients running one seed. */
     this.tickProcession(dt);
     this.tickIncubators(dt);
+    this.tickMusterCooldowns(dt);
     this.tickRelays(dt);
 
     /* --- burning ground --- */

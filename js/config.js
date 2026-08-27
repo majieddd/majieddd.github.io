@@ -3825,12 +3825,16 @@ const MUSTER_INCOME_CAP_PCT = 1.80;   /* ceiling on the additive percent -- the
    so a ceiling of 1.00 would have been reached by the THIRD buy and the
    control would have gone dead in the middle of the match it is supposed to
    be played across. 1.80 keeps the ceiling about six purchases away, which
-   with MUSTER_PER_WAVE = 2 is three waves of total commitment.
+   under the old two-sends-a-wave cap was three waves of total commitment.
+   (That cap is gone as of Session 38; the detachment cooldown below is what
+   paces this now, and it paces per BODY rather than per slot.)
 
    WHAT STILL STOPS A RUNAWAY, now that the number is larger -- five things,
    and the cap is only the last of them:
-     1. MUSTER_PER_WAVE = 2. The ceiling cannot be bought in one build phase;
-        it takes three waves of spending nothing on defence to reach.
+     1. The detachment cooldown (MUSTER_CD_BASE_SEC below, Session 38, which
+        replaced a flat two-sends-a-wave cap). The ceiling cannot be bought
+        in one build phase: every send puts THAT detachment out of reach
+        while it recovers, and heavier bodies recover slower.
      2. MUSTER_COST_GROWTH for MUSTER_COST_STEPS buys. The sixth purchase
         costs 1.76x the first and the plateau sits at 3.11x, so the gold that
         reaches the ceiling is ~3.4 wave rewards that did not become towers.
@@ -3844,7 +3848,7 @@ const MUSTER_INCOME_CAP_PCT = 1.80;   /* ceiling on the additive percent -- the
         reward and not one gold more, however many further sends it buys. */
 const MUSTER_COST_GROWTH = 1.12;      /* and each buy costs 12% more          */
 /* ...but only for the first COST_GROWTH_STEPS buys. Unbounded, 1.12^buys with
-   MUSTER_PER_WAVE=2 compounds at 1.25x per WAVE against an economy that grows
+   two sends a wave compounds at 1.25x per WAVE against an economy that grows
    1.14x per wave, so the control prices itself out of its own game: by wave 9
    the cheapest muster costs 4x a wave reward and by wave 13 it costs 10x. The
    mechanic would be dead by mid-match for the only players who used it, which
@@ -3866,9 +3870,12 @@ const MUSTER_REANIM_GOLD_MUL = 1.0;
 const MUSTER_AI_MIN_WAVE = 4;
 const MUSTER_AI_MIN_TOWERS = 5;
 const MUSTER_AI_SAFE_LIVES = 0.8;         /* ceiling 1.12^10 = 3.11x base cost    */
-/* Purchases per wave cycle. Without it a single prep window can be spent
-   straight into the income ceiling, which is the snowball with extra steps. */
-const MUSTER_PER_WAVE = 2;
+/* MUSTER_PER_WAVE IS GONE (Session 38). It capped purchases per wave cycle so
+   a single prep window could not be spent straight into the income ceiling.
+   The per-detachment cooldown below does that job and does it per BODY rather
+   than per slot, so the constant had no readers left and a constant nothing
+   reads is the dead-field problem with a different shape. `S.musterThisWave`
+   survives as a statistic and stays fingerprinted; nothing gates on it. */
 
 /* ==========================================================================
    THE SUMMONING DOCTRINES, tunables
@@ -3893,8 +3900,32 @@ const SUMMON_POWER_CAP = 0.20;
    unbounded against a FLAT income step means the payback horizon of the Nth
    buy diverges -- roughly 4.4 waves at buy ten, 9.7 at buy twenty, against
    matches that resolve by about wave 25. That divergence IS the cap; there is
-   no second brake, and MUSTER_PER_WAVE still stands for them as for everyone. */
+   no second brake, and as of Session 38 there is no cooldown on them either:
+   the Marque is the one rite exempt from it, by owner instruction, so cost
+   growth is the ONLY thing pacing a pirate. That is the trade. */
 const PIRATE_COST_GROWTH = 1.09;
+
+/* ==========================================================================
+   THE DETACHMENT COOLDOWN, which replaces the per-wave count cap.
+
+   MUSTER_PER_WAVE gated every rite with a single number: two sends a wave,
+   whatever you sent. That is a budget, not a decision. It never asked WHICH
+   body was being spent, so a light screen and a heavy line cost the identical
+   slot and the heavy one was therefore always correct.
+
+   A per-detachment cooldown prices the CHOICE instead: commit a heavy line and
+   that line is spent while a lighter one is still available to you. Recovery
+   scales on the same sqrt curve the clutch gestation uses, because a FLAT
+   cooldown reintroduces the exact defect it replaces (heaviest body is always
+   the best use of an identical slot).
+
+   LETTERS OF MARQUE IS EXEMPT, by owner instruction: pirates are held by gold
+   and by nothing else. The brake is still there, it is priced in coin rather
+   than in seconds, and it is PIRATE_COST_GROWTH's unbounded 1.09 per buy. */
+const MUSTER_CD_BASE_SEC = 9.0;
+const MUSTER_CD_SQRT_SEC = 0.34;
+const MUSTER_CD_MAX_SEC = 30.0;
+
 
 /* CONSCRIPTION's band. A corpse pays for a body of its own mass in a
    different shape, so a light kill rolling a heavy unit arrives as a husk of
@@ -3906,6 +3937,34 @@ const PIRATE_COST_GROWTH = 1.09;
    instead of spawning -- so the clamp can never print mass. */
 const HUMAN_ROLL_HPMUL_MIN = 0.30;
 const HUMAN_ROLL_HPMUL_MAX = 2.20;
+
+/* ==========================================================================
+   FIELD DOCTRINE, Humanity's rite, replacing CONSCRIPTION's free body.
+
+   CONSCRIPTION measured 1.00 bodies per kill (probe 38.4) against THE BROOD's
+   0.40, which made it the strongest rite in the game by two and a half times
+   and, worse, made it a THIRD on-kill spawn beside the xeno and machine rites.
+   Humanity had no mechanical identity of its own; it had the others' idea with
+   a bigger number.
+
+   Two channels, because the owner asked for a rite reinforcing DEFENCE and
+   OFFENCE rather than one that merely pays out for kills:
+
+     DEFENCE. Every kill banks a requisition credit that discounts the next
+     send. The credit is SPENT by that send rather than accumulated, so it can
+     never settle into a standing discount: the ceiling bounds ONE send, not
+     the match.
+
+     OFFENCE. A body of yours that kills another body gets permanently harder.
+     The owner named the caveat himself, that your towers do most of the
+     killing, so this channel fires rarely and is priced to be felt when it
+     does rather than to be a steady stream. */
+const HUMAN_REQ_PER_KILL = 0.02;
+const HUMAN_REQ_CAP = 0.40;
+const HUMAN_VET_DMG_STEP = 0.20;
+const HUMAN_VET_HP_STEP = 0.14;
+const HUMAN_VET_MAX = 3;
+
 
 /* THE PROCESSION's four bounds, because a stream that ignores kills is the
    easiest thing here to make unanswerable: it starts late (wave 3, the same
@@ -4112,7 +4171,7 @@ const MUSTER_COST_PER_MASS = 0.00065;   /* crawler pack (248) -> 0.56x         *
 
    RIVAL PARITY: the rival prices a send through Game.musterGain, the same
    post-ceiling delta the player's button prints, so the whole of this raise
-   reaches the AI under the same rules and the same MUSTER_PER_WAVE limit. */
+   reaches the AI under the same rules and the same detachment cooldown. */
 const MUSTER_INCOME_BASE = 0.20;        /* percent points at 0 mass             */
 const MUSTER_INCOME_PER_MASS = 0.00050; /* crawler pack (248) -> +32.4%         */
 /* Display bands by mass keep the three familiar names; nothing reads them
