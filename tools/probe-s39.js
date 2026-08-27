@@ -337,6 +337,42 @@
     return world.name + ', holder named, ' + all.length + ' characters across 3 beats';
   });
 
+  /* ---- 8. the coupling the deploy path actually depends on -------------- */
+  T('39.27 EVERY world in a generated galaxy resolves to authored copy', () => {
+    /* 39.7 proves one world resolves. This proves the table has no holes a
+       player can walk into: a single unauthored world would silently drop that
+       battle back to the derived briefing, which looks like nothing is wrong. */
+    const misses = [];
+    gx.systems.forEach(sy => sy.worlds.forEach(w => {
+      if (!PlanetCuts.entry(w)) misses.push(w.name + ' si' + w.si + ' wi' + w.wi);
+      else if (PlanetCuts.entry(w).name !== w.name)
+        misses.push(w.name + ' resolved to ' + PlanetCuts.entry(w).name);
+    }));
+    if (misses.length) bad(misses.slice(0, 6).join(', '));
+    let n = 0; gx.systems.forEach(sy => { n += sy.worlds.length; });
+    return n + ' of ' + n + ' worlds resolve to their own authored entry';
+  });
+
+  T('39.28 worldById returns a world the planet cutscenes can key', () => {
+    /* THE DEPLOY PATH'S ACTUAL ARGUMENT. js/ui.js:583 does not hand
+       worldSlides the object this probe built; it hands it whatever
+       worldById returns. If that ever became a plain id, a copy, or a
+       stripped record, keyFor would return null and every planet cutscene in
+       the game would quietly fall back to the derived briefing with no error
+       anywhere. That is the failure this check exists for, and nothing else
+       in the suite was watching the seam. */
+    const id = gx.systems[2].worlds[4].id;
+    const w = UI.worldById(gx, id);
+    if (!w) bad('worldById returned nothing for ' + id);
+    if (typeof w.si !== 'number' || typeof w.wi !== 'number')
+      bad('worldById returned a world with no coordinates: ' + JSON.stringify(Object.keys(w)).slice(0, 80));
+    const key = PlanetCuts.keyFor(w);
+    if (!key || !PLANET_CUTS[key]) bad('worldById world does not key: ' + key);
+    const s = UI.worldSlides(w);
+    if (s.length !== 3) bad('deploy path produced ' + s.length + ' slides');
+    return id + ' -> ' + w.name + ' -> ' + s.map(x => x.key).join(' ');
+  });
+
   const pass = checks.filter(c => c.ok).length;
   return { pass, fail: checks.length - pass, checks };
 })()
