@@ -166,6 +166,25 @@ def _seed(key):
     return h % (2 ** 31)
 
 
+def _seed_v(key, variant):
+    """The seed for a VARIANT of a key.
+
+    WHY THIS EXISTS. The documented way to fix a plate that misses its scene is
+    `--force <key>`, and it could not work: the seed is a pure function of the
+    key, so deleting the cache and re-rendering reproduced the SAME image
+    exactly. Found while reading all fifty cutscene plates against their slide
+    text (docs/OWNER-NOTES-CAMPAIGN2.md section E): two plates miss, and the
+    only tool for fixing them was a no-op that costs a minute of GPU to prove
+    it.
+
+    Variant 0 is `_seed(key)` unchanged and MUST stay that way: every approved
+    plate in the catalogue is on variant 0, and moving it would re-roll art the
+    owner has already accepted. A variant is still deterministic, so a plate
+    stays reproducible; the number is simply part of what identifies it, and
+    belongs in the commit message beside the key."""
+    return _seed(key) if not variant else _seed(key + '#' + str(variant))
+
+
 def render(pipe, torch, prompt, gen_px, aspect, seed):
     w, h = (gen_px, gen_px)
     if aspect == 'wide':
@@ -298,6 +317,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--only', default='')
     ap.add_argument('--force', default='')
+    # A variant re-rolls a key to a DIFFERENT image without touching the
+    # prompt, which the class law forbids. Variant 0 is the shipped seed.
+    ap.add_argument('--variant', type=int, default=0)
     ap.add_argument('--pack', action='store_true')
     ap.add_argument('--limit', type=int, default=0)
     a = ap.parse_args()
@@ -344,7 +366,7 @@ def main():
         # unreproducible seed is most expensive. Note the GPU is not bit-
         # deterministic (see commit 4a2974b), so a stable seed buys "recognisably
         # itself", not byte-equality -- which is the whole of what --force needs.
-        seed = _seed(key)
+        seed = _seed_v(key, a.variant)
         img = render(pipe, torch, prompt, gen_px, aspect, seed)
         fit(img, out_px, aspect).save(os.path.join(CACHE, key + '.webp'),
                                       'WEBP', quality=quality_for(key), method=6)
