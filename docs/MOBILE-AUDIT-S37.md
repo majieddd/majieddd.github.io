@@ -310,3 +310,50 @@ re-renders the grid and destroys the element `_ttFor` holds; after that the
 Two fixes: a document-level `pointerdown` dismiss, bound once rather than per
 chip, and `renderFactions` now clears a tooltip it is about to orphan.
 Verified on five behaviours including the detached-owner case.
+
+## Session 38, third report: it was 100vh all along
+
+The owner reported the same defect a third time, on faction, commander AND
+planet select, after two rounds that both measured clean here. The third
+report is the one that matters, because it proves the harness was the problem.
+
+**`.screen { height: 100vh }`.** On a phone browser 100vh is the LARGE
+viewport: the height the page would have if the URL bar were hidden. While
+that bar is showing, which it is in every screenshot the owner sent, 100vh is
+TALLER than the visible area. A full-screen box then extends off the bottom of
+the screen, and anything pinned to its bottom edge goes with it: the sticky
+setup footers from the last fix, and the absolutely positioned theatre footer
+on the planet screen. One root cause, all three screens, exactly as reported.
+
+**Headless Chrome has no URL bar, so 100vh EQUALS innerHeight there and the
+defect cannot be reproduced by geometry at all.** Every probe run against
+these screens was structurally incapable of seeing it. That is why three
+rounds of measurement said 0px below the fold while the owner watched the
+button sit off screen.
+
+Fixed at all seven full-screen sites by pairing the unit:
+`height: 100vh; height: 100dvh;`. The bare line stays first as the fallback;
+`dvh` is the dynamic viewport height, what is actually visible right now,
+and it tracks the bar as it shows and hides.
+
+### The check, and the bug inside the check
+
+Since geometry cannot see this, **owner-sweep 38.4** reads the CSSOM and
+refuses the construct: authored as a fallback pair, a browser supporting dvh
+keeps only the winner, so `rule.style.height` reads back `100dvh` and a
+revert reads back `100vh`.
+
+Its first version was worthless and said so with a confident pass. It walked
+rules as `if (r.cssRules) { recurse; continue; }`, which was correct before
+CSS Nesting shipped. Now a plain `CSSStyleRule` also implements
+`CSSGroupingRule`, so `r.cssRules` is truthy (an empty list) on EVERY
+ordinary rule, and that `continue` skipped every rule that had a declaration
+in it. Measured: **1249 of 1291 rules in polish.css walked past, 42
+inspected**, and it skipped a bare-vh rule planted directly in front of it.
+
+It was caught because the mutant was written before the check was trusted.
+`mutants.js` plants `.screen { height: 100vh }` and 38.4 must fail; on the
+first run it did not, which is the only reason any of this was noticed.
+Detection is now 14 of 14, all by predicted check, control green.
+
+*A check that has never failed is not a check. It is a hope with a name.*

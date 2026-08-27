@@ -112,7 +112,23 @@ body {
 }
 
 .hidden { display: none !important; }
-.screen { height: 100vh; width: 100vw; }
+/* THE MOBILE URL BAR, and why this is two declarations rather than one.
+   On a phone browser 100vh is the LARGE viewport: the height the page would
+   have if the URL bar were hidden. While that bar is on screen, which is most
+   of the time and in every screenshot the owner sent, 100vh is TALLER than
+   what the player can actually see. A full-screen box then extends below the
+   visible area, and anything pinned to its bottom edge (a sticky setup
+   footer, an absolutely positioned map footer) is pinned off screen.
+
+   That is the whole of the "I can't see the deploy button" report. It also
+   explains why three rounds of fixes measured clean: headless Chrome has no
+   URL bar, so there 100vh EQUALS innerHeight and the defect cannot appear.
+   The harness was structurally blind to it.
+
+   100dvh is the DYNAMIC viewport height: what is actually visible right now,
+   tracking the bar as it shows and hides. The bare vh line stays first as the
+   fallback for anything that does not support dvh. */
+.screen { height: 100vh; height: 100dvh; width: 100vw; }
 
 kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); border-bottom-width:2px;
       border-radius:4px; background:rgba(255,255,255,0.06); font-size:12px; }
@@ -226,7 +242,8 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 #screen-command, #screen-theatre, #screen-loadout,
 #screen-faction, #screen-multiverse { overflow-y: auto; }
 .setup-wrap { max-width: 1400px; margin: 0 auto; padding: 26px 24px 20px;
-              min-height: 100vh; display: flex; flex-direction: column; gap: 18px; }
+              min-height: 100vh; min-height: 100dvh;
+              display: flex; flex-direction: column; gap: 18px; }
 
 .setup-head { text-align: center; }
 .setup-head.compact { margin-bottom: -4px; }
@@ -485,7 +502,7 @@ kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); bor
 
 /* ============================================================== BATTLE == */
 
-#screen-game { display: flex; flex-direction: column; height: 100vh; }
+#screen-game { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
 
 /* Centre aligned in BOTH modes (owner, Session 31): auto columns justified to
    the centre, not 1fr rails that pin the two side cards to the edges. */

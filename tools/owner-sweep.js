@@ -1081,6 +1081,72 @@
          'every faction opens at its own home; 25 holder cells, 0 self, 0 spoilers');
   });
 
+  /* ---- 38.4 no full-screen box is sized in bare vh --------------------- */
+  T('38.4 full-screen height uses dvh, not the phone-breaking bare vh', function () {
+    const id = '38.4 full-screen height uses dvh, not the phone-breaking bare vh';
+    /* THE ONE DEFECT THIS HARNESS CANNOT SEE BY MEASURING.
+
+       On a phone browser 100vh is the LARGE viewport: the height the page
+       would have if the URL bar were hidden. While that bar is showing, which
+       is most of the time, 100vh is TALLER than the visible area, so a
+       full-screen box extends off screen and anything pinned to its bottom
+       edge goes with it. That is the owner's "I can't see the deploy button",
+       reported three times across three rounds of fixes.
+
+       Every one of those rounds measured clean here, because HEADLESS CHROME
+       HAS NO URL BAR: 100vh equals innerHeight and the defect cannot be
+       reproduced by geometry at all. So this check does not measure geometry.
+       It reads the CSSOM and refuses the construct.
+
+       That works because of how the fallback pair resolves: authored as
+       `height: 100vh; height: 100dvh;`, a browser supporting dvh keeps only
+       the winning declaration, so rule.style.height reads back "100dvh". A
+       revert to bare vh reads back "100vh" and is caught. */
+    const PROPS = ['height', 'min-height', 'max-height'];
+    const bad = [];
+    let scanned = 0, sheets = 0;
+    for (let i = 0; i < document.styleSheets.length; i++) {
+      let rules = null;
+      try { rules = document.styleSheets[i].cssRules; } catch (e) { continue; }
+      if (!rules) continue;
+      sheets++;
+      /* A RULE IS NOT EITHER/OR, and assuming it was made the first version of
+         this check worthless. Now that Chrome ships CSS Nesting, a plain
+         CSSStyleRule also implements CSSGroupingRule, so `r.cssRules` is
+         TRUTHY (an empty list) on every ordinary rule. An `if (r.cssRules)
+         { recurse; continue; }` therefore skipped every rule that had a
+         declaration in it: MEASURED, 1249 of 1291 rules in polish.css were
+         walked past, the check inspected 42, found nothing, and reported a
+         confident pass. It even skipped a bare-vh rule planted directly in
+         front of it, which is how it was caught.
+
+         So: read the declarations FIRST, then recurse only if there is
+         actually something nested. */
+      const walk = function (list) {
+        for (let j = 0; j < list.length; j++) {
+          const r = list[j];
+          if (r.style) {
+            scanned++;
+            for (let k = 0; k < PROPS.length; k++) {
+              const v = r.style.getPropertyValue(PROPS[k]);
+              /* Only FULL-viewport sizing causes this. A 42vh dock pane is
+                 fine and deliberate; it is 100vh that promises a screenful
+                 and then delivers more than the phone can show. */
+              if (v && /(^|[^ds])\b100vh\b/.test(v) && v.indexOf('dvh') < 0)
+                bad.push((r.selectorText || '?').slice(0, 46) + ' { ' + PROPS[k] + ': ' + v + ' }');
+            }
+          }
+          if (r.cssRules && r.cssRules.length) walk(r.cssRules);
+        }
+      };
+      walk(rules);
+    }
+    ok(id, bad.length === 0,
+       bad.length ? bad.slice(0, 3).join('; ')
+       : scanned + ' style rules across ' + sheets + ' readable sheets: no full-screen ' +
+         'box is sized in bare 100vh, so nothing pins a control below the phone URL bar');
+  });
+
   /* ---- 38.3 every setup screen's CTA is on screen ---------------------- */
   T('38.3 the way forward is on screen on every setup screen', function () {
     const id = '38.3 the way forward is on screen on every setup screen';

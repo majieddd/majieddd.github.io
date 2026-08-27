@@ -208,6 +208,19 @@ const RUN = `
                      return () => { const n = document.getElementById('mutant-unstick');
                                     if (n) n.remove(); }; } },
 
+    { id: 'screen-height-reverts-to-vh',
+      why: 'the phone defect no geometry probe here can see: a full-screen box sized ' +
+           'in bare 100vh is TALLER than a phone viewport while the URL bar shows, so ' +
+           'whatever is pinned to its bottom edge sits off screen. Headless has no URL ' +
+           'bar, so 100vh equals innerHeight and only a CSSOM check can catch it',
+      expect: '38.4',
+      plant: () => { const s = document.createElement('style');
+                     s.id = 'mutant-vh';
+                     s.textContent = '.screen { height: 100vh; }';
+                     document.head.appendChild(s);
+                     return () => { const n = document.getElementById('mutant-vh');
+                                    if (n) n.remove(); }; } },
+
     { id: 'CONTROL-clean',
       why: 'the clean control: nothing is planted, the suite must stay green',
       expect: 'none',
