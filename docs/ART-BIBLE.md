@@ -374,6 +374,10 @@ wrong for the beat (a rewrite). Tell them apart before acting.
 
 ## 12. What the tooling can and cannot do (measured, Session 39)
 
+**Adobe Firefly Services IS reachable, through its REST API, and is now the
+FIRST tier to try.** See section 13. What follows is about the MCP CONNECTOR,
+which is a different mechanism and remains editing-only.
+
 **Adobe Firefly is not reachable from the Claude connector.** Checked
 exhaustively rather than assumed, because the owner had enabled the connector
 specifically to generate art faster. The Adobe MCP surface exposes
@@ -458,3 +462,83 @@ model under you, breaks it silently.
 batching:** a desktop card without this laptop's 175W ceiling, or fewer denoise
 steps than the distillation schedule's 8, which is a quality trade and an
 art-direction call rather than an optimisation.
+
+## 13. Firefly Services: the cloud tier, tried first
+
+ONE CATALOGUE, THREE PAINTERS. `krea_jobs.build_jobs()` is still the single
+source of truth for every key, prompt and size. `artgen/firefly_gen.py` is a
+third renderer consuming it, beside `sdxl_all.py` and `krea_gen.py`, writing
+the SAME cache in the SAME shape: `krea_gen.py --pack` cannot tell which
+painter produced a plate, and does not need to.
+
+**Why it goes first.** The local Krea tier measures ~48s per 1920x1080 plate
+and is GPU-bound. Firefly is network-bound. They contend for nothing, so they
+run AT THE SAME TIME and a class can be split between them: give Firefly the
+prefix, give the card the rest, and both write into `cache_krea/` by key.
+Each skips a key that already exists and writes through a temp file plus an
+atomic rename, so running both at once is safe by construction rather than by
+scheduling.
+
+**This is not the connector.** Section 12 records the Adobe MCP surface as
+editing-only, with no text-to-image, and that finding stands. This is the
+Firefly Services REST API with OAuth server-to-server credentials, a different
+mechanism with a different premise. Do not collapse the two.
+
+### Credentials, once
+
+The script stores nothing. Create them at <https://developer.adobe.com/console>:
+new project, **Add API**, **Firefly - Firefly Services**, **OAuth
+Server-to-Server**, choose the product profiles, save. Then copy the Client ID
+and the Client Secret and put them in the environment:
+
+```bash
+export FIREFLY_CLIENT_ID=...
+export FIREFLY_CLIENT_SECRET=...
+python artgen/firefly_gen.py --check      # authenticates, generates nothing
+```
+
+Tokens last 24 hours and are cached in `artgen/.firefly_token.json`
+(gitignored), so a batch authenticates once rather than once per plate.
+
+### The runbook
+
+```bash
+python artgen/firefly_gen.py --only cut_ --limit 2    # trial, ALWAYS first
+python artgen/firefly_gen.py --only cut_              # the class
+python artgen/firefly_gen.py --force cut_light_sys3 --variant 1   # re-roll one
+python artgen/krea_gen.py --pack                      # same pack step as ever
+```
+
+### Two things that are NOT negotiable here
+
+**Supersample down, never up.** Firefly v3 renders a fixed set of sizes; the
+widest landscape is **2688x1536**, and every wide plate delivers at 1920x1080.
+So generation is a 1.4x supersample that `fit()` LANCZOS-resamples down, which
+is the same direction section 13 of the plugin's image law requires and the
+same `fit()` the local painters use. No wide plate is generated at its
+delivery size.
+
+**The seed is still FNV-1a of the key.** `_seed_v(key, variant)` is shared with
+`krea_gen.py`, so a key is reproducible on this painter too and a re-roll is
+deliberate. Variant 0 is the shipped seed on every painter.
+
+### What will refuse, and what to do about it
+
+Firefly enforces a content policy, and this catalogue is full of devouring
+maws, burning fields and predators. A refusal is DATA: the script names the key
+and carries on, then prints the refused list at the end. **Those keys go to the
+local tier**, which has no such policy. That is the division of labour, not a
+failure: cloud for volume, local for whatever the cloud will not paint.
+
+### What is UNPROVEN, and must be measured before trusting
+
+Everything above is the plumbing, and the plumbing is verified: both endpoints
+answer from this machine, the auth path surfaces Adobe's own refusal rather
+than crashing, and a synthetic 2688x1536 response lands in the cache as a
+1920x1080 RGB WEBP that `--pack` passes through untouched.
+
+**Not verified: whether Firefly can paint THIS house style.** Nobody has run a
+plate through it. Firefly has a strong look of its own and the style spine in
+section 1 is specific. Before adopting it for a class, render two plates, put
+them beside their local siblings, and judge. If the style does not hold, this
+tier is for classes where it does not matter, or it is not for this project.

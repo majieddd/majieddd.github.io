@@ -49,3 +49,6 @@ venv/
 !docs/lore/
 !docs/lore/**
 _review/
+
+# Adobe Firefly access token cache: a 24h bearer token, never committed.
+artgen/.firefly_token.json
