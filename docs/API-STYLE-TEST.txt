@@ -1,4 +1,5 @@
-Firefly web-app style test. Generate these two in the web app, download,
+Provider style test, generator-agnostic. Generate these two on whichever
+candidate is being judged (Higgsfield, Leonardo, ModelsLab, Firefly),
 and put each beside the local plate named under COMPARE TO. Do NOT ingest
 them: these keys already have shipped art. This is a judgement, not a render.
 

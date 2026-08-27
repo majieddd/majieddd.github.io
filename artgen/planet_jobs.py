@@ -529,6 +529,66 @@ BEATS = [
           'new hand'),
 ]
 
+# THE ONE PLACE A NEUTRAL ART LINE IS NOT NEUTRAL.
+#
+# `after` and `order` are written once per world, and beats 4 and 5 use them
+# for every power. That works for 34 of the 35 world/home pairings because the
+# aftermath of a battle looks the same whoever won it, and because the NEW
+# ORDER a liberator imposes is close enough to what any of the four
+# non-Compact powers would do.
+#
+# It inverts on ZETA RETICULI when the player IS the Compact. Those `order`
+# lines were written from a liberator's view (cut the pens out, scour the
+# rendering yards, cut the chorus spire to a stump), and a Compact commander
+# retaking their own home RESTORES all of it. Caught by tools/review_sheet.py,
+# which puts the prompt and the player-facing sentence side by side: the plate
+# showed the pens stripped back to rock while the slide read "The pens run
+# again". Five of the seven Zeta worlds contradicted outright.
+#
+# Beat 4 needs no override. An aftermath is damage from either side, and the
+# Compact lines already mourn it rather than celebrate it.
+#
+# Keyed by (world key, faction) so the mechanism generalises, but deliberately
+# NOT filled in for cases that do not need it: a per-faction line for all 35
+# worlds would be 350 lines to keep in step with 350 more, and the neutral
+# line is correct everywhere else. Add a row only when the review sheet shows
+# ASKED disagreeing with READS.
+ORDER_OVERRIDE = {
+    ('20', 'xeno'): 'the pod rows refilled and glowing again, the chitin floor breathing, '
+                    'the pens running exactly as they always have',
+    ('21', 'xeno'): 'the sloped floors running at full yield again, the run-off channels '
+                    'wet and moving',
+    ('22', 'xeno'): 'the honeycomb tiers relit and every banked lineage stable in its cell',
+    ('23', 'xeno'): 'the chorus spire repaired and whole, singing out across the plain as before',
+    ('24', 'xeno'): 'the furrows sown with blight again and the spore-vent towers standing back up',
+    ('25', 'xeno'): 'the chamber walls resealed and the living record whole and glowing again',
+    ('26', 'xeno'): 'the exchange compound rebuilt as a holding station, its records sealed inside it',
+    # Two more found by sweeping the Compact against every world it is NOT
+    # home on. Away from Zeta its text fits the neutral line everywhere,
+    # because "X now serves the swarm" and "X restored and running" are the
+    # same picture under a new owner, which is what beat 5 is for. These two
+    # are the exceptions, and both for the same reason: the neutral line
+    # carries the HOME power's VALUE, not just its function. A bay that asks
+    # nobody for papers is a pirate sentiment, and a garden asked what it
+    # wants is the Parallel's whole arc. The Compact grants neither.
+    ('36', 'xeno'): 'the sanctuary bay converted into a holding harbour, every berth '
+                    'accounted for and every hull logged',
+    ('40', 'xeno'): 'the dormant rows left exactly as they stand, unwoken and unasked, '
+                    'under guard',
+    # Three more, found by a keyword sweep for an art line promising OPENING
+    # against a text describing KEEPING. The sweep shortlisted 14 and only
+    # these 3 survived reading, so treat it as a shortlist and never a gate:
+    # it matched "sealed page" as a retention word and flagged all five
+    # STEROPE cells wrongly. All three real hits are the Compact, again, for
+    # the same reason as the other nine.
+    ('12', 'xeno'): 'the ring anchor rebuilt and the ring relit, closing exactly as tightly '
+                    'as it always did',
+    ('33', 'xeno'): 'the toll gate re-crewed and standing across the lane, the toll still '
+                    'collected and the collector changed',
+    ('34', 'xeno'): 'the shelter doors working and shut, the warren below them run as a '
+                    'holding pen',
+}
+
 INTRO_BEATS = ('1', '2', '3')
 OUTRO_BEATS = ('4', '5')
 
@@ -552,7 +612,8 @@ def planet_jobs(palette, style):
         wk = world_key(si, wi)
         for fac in FACTIONS:
             fields = dict(fleet=FLEET[fac], force=FORCE[fac], mark=MARK[fac],
-                          sky=sky, site=site, works=works, after=after, order=order)
+                          sky=sky, site=site, works=works, after=after,
+                          order=ORDER_OVERRIDE.get((wk, fac), order))
             for suffix, template in BEATS:
                 subject = template.format(**fields)
                 jobs.append((
