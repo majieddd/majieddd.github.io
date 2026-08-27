@@ -15,11 +15,11 @@ change below is about the CONTENT being drawn, never the rendering language.
 
 ## A. Solidify the brand pack for collaborators
 
-- [ ] A single art bible a new collaborator can read and then produce on-style
+- [x] A single art bible a new collaborator can read and then produce on-style
   work: style spine, palettes, class treatments, prompt recipes, pipeline
   runbook, verification gates. On GitHub (this repo) and saved locally.
-- [ ] BRAND.md and LOOKBOOK.md point at it rather than duplicating it.
-- [ ] The aegis plugin references point at it (durable law lives in the plugin,
+- [x] BRAND.md and LOOKBOOK.md point at it rather than duplicating it.
+- [x] The aegis plugin references point at it (durable law lives in the plugin,
   project specifics live here).
 
 ## B. The content law (what is DRAWN, not how)
@@ -45,22 +45,22 @@ The owner's direction, verbatim where it matters:
 
 Deliverables:
 
-- [ ] The content law written into the art bible with per-faction species and
+- [x] The content law written into the art bible with per-faction species and
   hardware vocabularies.
-- [ ] A rendered DIRECTION BOARD (committed, small) showing the law in
+- [x] A rendered DIRECTION BOARD (committed, small) showing the law in
   pictures: modern human spacecraft, pirate ship variety, Dune-grounded armor,
   Federation species, scarier xeno, so "what to draw" is shown, not told.
-- [ ] Applies to all FUTURE renders. The 50 shipped cutscene plates are
+- [x] Applies to all FUTURE renders. The 50 shipped cutscene plates are
   approved and stay; they re-roll only if the owner names one.
 
 ## C. Commander portraits reworked to the content law
 
-- [ ] All 28 portrait subject prompts revised: species assignments for the
+- [x] All 28 portrait subject prompts revised: species assignments for the
   Federation roster, multi-species pirates, scarier xeno, grounded human
   armor. Style tokens untouched; subject and material clauses only.
-- [ ] Re-rendered WHOLESALE on the Krea tier (the class law forbids partial
+- [x] Re-rendered WHOLESALE on the Krea tier (the class law forbids partial
   regeneration), verified in a browser, shipped.
-- [ ] Roster blurbs touched ONLY where a species change contradicts the text.
+- [x] Roster blurbs touched ONLY where a species change contradicts the text.
   Ids never move; names stay.
 
 ## D. One galaxy, five vantage points
@@ -68,18 +68,18 @@ Deliverables:
 Observed defect, owner's words: different factions "are showing completely
 different solar systems in the Galaxy." Direction:
 
-- [ ] One shared galaxy: the same systems and worlds for every faction.
-- [ ] Each faction STARTS in a different (its own) home system.
-- [ ] Planet states predetermined and identical across factions: "the same
+- [x] One shared galaxy: the same systems and worlds for every faction.
+- [x] Each faction STARTS in a different (its own) home system.
+- [x] Planet states predetermined and identical across factions: "the same
   universe but from different sides."
-- [ ] Procedural mapgen stays, but a given planet is LOCKED to the board it
+- [x] Procedural mapgen stays, but a given planet is LOCKED to the board it
   generates, so the same world is the same battlefield for everyone.
-- [ ] Existing in-flight campaigns must not have their boards swapped under a
+- [x] Existing in-flight campaigns must not have their boards swapped under a
   mid-campaign save: the change is versioned, old saves keep the old draw.
 
 ## E. Cutscene progression at system conquest
 
-- [ ] Verify THE TURNING interstitials actually fire on closing a solar system
+- [x] Verify THE TURNING interstitials actually fire on closing a solar system
   (the wiring exists at ui.js "systemTaken" -> Cutscenes.play('sys', ...));
   prove it in a browser, fix anything that does not fire.
 
@@ -88,12 +88,16 @@ different solar systems in the Galaxy." Direction:
 Owner on the shipped ping-pong loops: "the rewind part... is not that great."
 The replacement law:
 
-- [ ] Motion is SUBTLE: "as if the lines are alive and slightly moving...
+- [x] Motion is SUBTLE: "as if the lines are alive and slightly moving...
   breathing or living... it shouldn't be very trippy." Glow, shimmer, drift of
   light, the ILLUSION of life, not objects travelling.
-- [ ] Perfect loops: "when it loops you can't even tell that it is looping."
+- [x] Perfect loops: "when it loops you can't even tell that it is looping."
   Crossfade the tail into the head; never reverse playback.
-- [ ] Replace all five hero clips; verify the seam numerically and by eye.
+- [x] Replace all five hero clips; verify the seam numerically and by eye.
+
+**Still open in this file, and only this:** whether to animate the other 45
+plates. Five hero clips ship; the rest is an owner call on weight, written up
+in docs/VIDEO-TIER3-S37.md.
 
 ## G. Three-panel cutscene for every planet
 
@@ -104,16 +108,16 @@ On deploying to a planet, a three-slide sequence:
 3. **The commanders**, the two seats talking, with dialogue that can vary by
    the pair and their history.
 
-- [ ] Built on the existing surfaces (worldlore WAS/NOW, scenario defs, the
+- [x] Built on the existing surfaces (worldlore WAS/NOW, scenario defs, the
   relationship-driven dialogue engine) presented through the cutscene overlay.
-- [ ] Skippable, reduced-motion safe, and it must not double-show the
+- [x] Skippable, reduced-motion safe, and it must not double-show the
   existing briefing content.
 
 ## H. Dialogue attuned to the lore
 
-- [ ] Audit the dialogue surfaces against the lore bible; enumerate where
+- [x] Audit the dialogue surfaces against the lore bible; enumerate where
   interactions are missing or off-lore.
-- [ ] Fill the worst gaps this session; list the remainder here honestly.
+- [x] Fill the worst gaps this session; list the remainder here honestly.
 
 ---
 
