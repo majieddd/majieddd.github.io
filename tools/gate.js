@@ -150,7 +150,24 @@ function browserHarness(label, harnessPath, expression, size) {
     ' { eval: ' + JSON.stringify(load) + ' }];\n');
 
   const url = BASE.replace(/\/$/, '') + '/aegis-protocol.html?v=gate' + Date.now() + label;
-  const r = run(process.execPath, ['tools/headless.js', url, outDir, stepsFile], { timeout: 600000 });
+  /* RETRY ONLY A FAILURE TO LAUNCH, and only once.
+     Chrome intermittently never brings its debugger port up when the gate runs
+     six browsers back to back against a machine whose GPU is saturated by a
+     render. Measured twice in one session, on two different harnesses, and
+     both times a plain re-run of the whole gate came back clean, which is the
+     worst possible situation: a flake that is cleared by re-running is
+     indistinguishable from a real failure that is being waved through.
+     So the retry is NARROW. It fires only on the startup signature, never on a
+     harness that actually ran and returned failures, and it says so in the
+     output so a flaky machine is visible rather than silently smoothed over.
+     If this line ever starts printing every run, the machine is the problem
+     and hiding it here would be the bug. */
+  const LAUNCH_FAIL = /chrome debugger never came up|Failed to launch|ERR_CONNECTION_REFUSED/i;
+  let r = run(process.execPath, ['tools/headless.js', url, outDir, stepsFile], { timeout: 600000 });
+  if (LAUNCH_FAIL.test(r.out || '')) {
+    say(label + ': chrome did not start, retrying once (this is the browser, not the game)');
+    r = run(process.execPath, ['tools/headless.js', url + 'r', outDir, stepsFile], { timeout: 600000 });
+  }
   try { fs.unlinkSync(stepsFile); } catch (e) {}
 
   let d = null;

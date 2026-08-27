@@ -126,6 +126,36 @@
       },
     },
     {
+      id: 'M11', expect: '39.30',
+      what: 'the pirate arc closes act 3 and act 5 on the same line, as it did before Session 39 fixed it',
+      plant() {
+        const e = PLANET_CUTS['26'].f.pirate, was = e[2];
+        /* The literal line that shipped, restored. Act 3 on LUNA already ends
+           "Some things you do not sell." */
+        e[2] = 'Serpo is rebuilt and the manifest is nailed to the gate. Twelve names, ' +
+               'three seals, and no bidding. Some things you do not sell.';
+        return () => { e[2] = was; };
+      },
+    },
+    {
+      id: 'M12', expect: '39.31',
+      what: 'a faction claims a world it is invading',
+      plant() {
+        const e = PLANET_CUTS['16'].f.human, was = e[2];
+        e[2] = 'Alcyone is ours again, our own cathedral, and the seat is gone.';
+        return () => { e[2] = was; };
+      },
+    },
+    {
+      id: 'M14', expect: '39.32',
+      what: 'a TURNING act names a system the player has not reached at that act',
+      plant() {
+        const a = CUTSCENES.human.sys[2], was = a.a;
+        a.a = 'The Pleiades stand secured and the seats fall one by one.';
+        return () => { a.a = was; };
+      },
+    },
+    {
       id: 'M10', expect: '39.18',
       what: 'the gallery stops listing worlds it has no plates for',
       plant() {
@@ -164,7 +194,7 @@
   /* The restores have to actually restore, or a later session inherits a page
      that lies. Re-run the control and require it green again. */
   const after = runProbe();
-  record('M11 every plant was restored and the probe is green again',
+  record('M13 every plant was restored and the probe is green again',
          after.fail === 0,
          'pass=' + after.pass + ' fail=' + after.fail +
          (after.fail ? ' :: ' + after.checks.filter(c => !c.ok).map(c => c.name).join(', ') : ''));

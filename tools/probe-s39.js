@@ -383,6 +383,130 @@
     return id + ' -> ' + w.name + ' -> ' + s.map(x => x.key).join(' ');
   });
 
+  /* ---- 9. the campaign arc, not just the individual slide ---------------- */
+  /* THE SPINE. js/galaxy.js rotates the campaign so every faction opens at its
+     OWN home and conquers outward: campTier(u) = (u - uHome + 5) % 5, and the
+     systems array is sorted by it. So a faction's five SEAT worlds, read in
+     tier order, are the five acts of its campaign, and they are the only five
+     slides every player of that faction is guaranteed to see in a fixed
+     order. If the writing has an arc anywhere, it has to be there. */
+  const SEATS = { 0: '06', 1: '16', 2: '26', 3: '36', 4: '46' };
+  const UORDER = ['human', 'light', 'xeno', 'pirate', 'robot'];
+  const spineOf = fac => {
+    const h = UORDER.indexOf(fac);
+    const out = [];
+    for (let t = 0; t < 5; t++) {
+      const e = PLANET_CUTS[SEATS[(h + t) % 5]];
+      out.push({ act: t + 1, world: e.name, text: e.f[fac][2] });
+    }
+    return out;
+  };
+
+  T('39.29 every faction has a five-act seat spine in campaign order', () => {
+    const out = [];
+    UORDER.forEach(f => {
+      const s = spineOf(f);
+      if (s.length !== 5 || s.some(x => !x.text)) bad(f + ' spine incomplete');
+      if (s[0].world !== PLANET_CUTS[SEATS[UORDER.indexOf(f)]].name)
+        bad(f + ' does not open on its own home seat');
+      out.push(f + ':' + s[0].world);
+    });
+    return out.join(' ');
+  });
+
+  T('39.30 no faction repeats itself across its own five acts', () => {
+    /* MEASURED AND FIXED, Session 39. The Federation named "three seats above
+       field command" in act 1 AND act 5, so its climax was pre-empted by its
+       opening. The pirates closed both act 3 and act 5 on "some things you do
+       not sell". Both read fine slide by slide and only fail as an arc, which
+       is why a per-slide check could never have caught them. */
+    const dupes = [];
+    UORDER.forEach(f => {
+      const lines = spineOf(f);
+      for (let i = 0; i < 5; i++) {
+        const a = lines[i].text.toLowerCase().match(/[a-z0-9]+/g) || [];
+        for (let j = i + 1; j < 5; j++) {
+          const b = lines[j].text.toLowerCase().match(/[a-z0-9]+/g) || [];
+          const set = new Set();
+          for (let k = 0; k + 6 <= b.length; k++) set.add(b.slice(k, k + 6).join(' '));
+          for (let k = 0; k + 6 <= a.length; k++) {
+            const ph = a.slice(k, k + 6).join(' ');
+            if (set.has(ph)) dupes.push(f + ' act' + (i + 1) + '/act' + (j + 1) + ' "' + ph + '"');
+          }
+        }
+      }
+    });
+    if (dupes.length) bad(dupes.slice(0, 4).join(' | '));
+    return '25 act lines across 5 factions, no shared six-word phrase';
+  });
+
+  T('39.31 a faction reclaims only at home, and invades everywhere else', () => {
+    /* A faction takes its OWN home first and is the aggressor for the other
+       four systems, so possessive reclaiming language outside home would be
+       wrong. "recovered" is excluded: the Parallel says "the recovered core"
+       constantly and means retrieved, not repossessed. */
+    const RECLAIM = /\b(our own (pens|ring|archive|tribunal|cathedral|foundry|yard|anchorage|shelter)|ours again|we built (this|these|it))\b/i;
+    const bads = [];
+    Object.keys(PLANET_CUTS).forEach(wk => {
+      const si = +wk[0], e = PLANET_CUTS[wk];
+      UORDER.forEach(f => {
+        if (UORDER.indexOf(f) === si) return;          // home, reclaiming is right
+        (e.f[f] || []).forEach((t, i) => {
+          /* LUNA's relay dish IS a Compact installation, so the Compact saying
+             "ours again" there is canon, not a slip. The one allowed pair. */
+          if (wk === '06' && f === 'xeno') return;
+          if (RECLAIM.test(t)) bads.push(e.name + '/' + f + ' beat' + [1, 4, 5][i]);
+        });
+      });
+    });
+    if (bads.length) bad(bads.join(', '));
+    return 'no faction claims ownership of a world it is invading';
+  });
+
+  T('39.32 no TURNING act names a system the player is not on yet', () => {
+    /* THREE NARRATIVE LAYERS HAVE TO AGREE ABOUT WHERE THE PLAYER IS.
+       THE OATH opens the campaign, the planet cutscenes play per world, and
+       THE TURNING fires after each SYSTEM falls, one act per system. Because
+       js/galaxy.js rotates the campaign to open at each faction's own home,
+       act N fires after the system at universe index (home + N - 1) % 5, and
+       that is a different system for every faction.
+
+       So a proper noun in a TURNING slide is a claim about WHEN the player
+       reads it. "The Pleiades stand secured" is correct in the Federation's
+       act 1 and wrong in anybody else's, and the same sentence would be wrong
+       in the Federation's act 3. The acts are written generically for exactly
+       this reason, except act 1, which names each faction's home and is the
+       one place a name is safe.
+
+       Nothing else in the suite was checking this, and it is the kind of thing
+       a later writing pass breaks without noticing, because every slide still
+       reads perfectly well on its own. */
+    if (typeof CUTSCENES === 'undefined') bad('CUTSCENES not loaded');
+    const OWNS = {
+      'earth system': 'human', 'luna': 'human',
+      'pleiades': 'light', 'alcyone': 'light',
+      'zeta reticuli': 'xeno', 'serpo': 'xeno',
+      'barnard': 'pirate', 'harbour nine': 'pirate',
+      'tabby': 'robot', 'the veil': 'robot',
+    };
+    const wrong = [];
+    UORDER.forEach(fac => {
+      const home = UORDER.indexOf(fac);
+      const acts = (CUTSCENES[fac] && CUTSCENES[fac].sys) || [];
+      acts.forEach((slide, i) => {
+        const owner = UORDER[(home + i) % 5];      // whose system act i+1 follows
+        const text = ((slide.a || '') + ' ' + (slide.b || '')).toLowerCase();
+        Object.keys(OWNS).forEach(noun => {
+          if (text.indexOf(noun) >= 0 && OWNS[noun] !== owner)
+            wrong.push(fac + ' act' + (i + 1) + ' names "' + noun + '" (belongs to ' +
+                       OWNS[noun] + ', act follows the ' + owner + ' system)');
+        });
+      });
+    });
+    if (wrong.length) bad(wrong.slice(0, 4).join(' | '));
+    return '25 turning acts, every system name lands on the act that follows it';
+  });
+
   const pass = checks.filter(c => c.ok).length;
   return { pass, fail: checks.length - pass, checks };
 })()
