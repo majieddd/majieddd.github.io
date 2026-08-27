@@ -31,11 +31,20 @@ buying. That is an open question, not a settled one.
 - **Adobe is a dead end, twice over.** Firefly Services API needs an Enterprise
   entitlement this account lacks; the Adobe connector is editing-only with no
   text-to-image. ART-BIBLE sections 12 and 13.
-- **Artlist MCP is registered but NOT authorised.** It is the more interesting
-  candidate: reportedly usable on the free plan, and the only one covering
-  music, SFX and voiceover. `js/audio.js` is pure Web Audio synthesis today —
-  no recorded music, no SFX, no voice for cutscene dialogue. That is the real
-  gap; images already work locally. Authorise via `tools/mcp-setup.cmd`.
+- **Artlist cannot be added from the CLI, and this is measured, not guessed.**
+  Its Auth0 tenant answers `dynamic client registration is disabled`;
+  `claude mcp login` holds no pre-issued client_id, so it must register
+  dynamically and never can. Higgsfield allows DCR and returns a client_id
+  instantly — that is the control that isolates the cause. The CLI entry was
+  removed rather than left permanently unauthenticated. **The only way in is
+  claude.ai → Settings → Connectors → Add custom connector**, URL
+  `https://mcp.artlist.io/mcp`. Whether an account connector's tools then
+  reach a Claude Code CLI session is UNCONFIRMED — the Adobe one connects but
+  its tools have never loaded here.
+  Artlist is still the more interesting candidate: reportedly usable on the
+  free plan, and the only one covering music, SFX and voiceover. `js/audio.js`
+  is pure Web Audio synthesis today — no recorded music, no SFX, no voice for
+  cutscene dialogue. That is the real gap; images already work locally.
 - **MCP tools load only at session start.** Authorising mid-session does
   nothing until a genuine restart (resuming a session is not enough).
 
