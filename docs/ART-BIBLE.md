@@ -122,11 +122,12 @@ organic silhouette, minus the thing that made it alive) is approved and stays.
 
 | Class | Keys | Treatment |
 |---|---|---|
-| Commander portraits | `cmd_<id>` | Painted bust, 320px, duotone or monochrome per LOOKBOOK.md. One silhouette and one prop nobody else owns. Species per section 3. Regenerate ONLY wholesale. |
+| Commander portraits | `cmd_<id>` | Painted bust, 320px. THE ILLUSTRATIVE REGISTER, section 10. One silhouette and one prop nobody else owns. Species per section 3. Regenerate ONLY wholesale. |
 | Faction crests | `fac_<id>` | Strict monochrome, one hue on void black, rose-window geometry. |
 | Enemy dossiers | `foe_<id>` | Greyscale plus ONE accent by allegiance. |
 | World plates | `world_<mapId>` | Wide establishing scene, no foreground figures. |
 | Holder variants | `world_<mapId>_<factionId>` | DERIVED in code (PIL duotone), never generated. |
+| Planet cutscenes | `pcut_<si><wi>_<faction>_<beat>` | 1920x1080, 875 of them: five beats for each of 35 worlds for each of 5 powers. Catalogue in `artgen/planet_jobs.py`, copy in `js/planetcuts.js`. NEVER inlined into the bundle (build.js drops the class). Section 11. |
 | Cutscene plates | `cut_<faction>_...` | 1920x1080 wide story beat, faction palette dominant, figures allowed, no text ever. WebP q82. Render in band: no supersampling this class (measured, BRAND.md). |
 | Animated plates | `art/<key>.mp4` beside the still | LIVING PORTRAITURE, section 7. |
 | Key art | `title`, `nebula` | Full-palette cinematic. |
@@ -214,3 +215,152 @@ the locked style: modern human spacecraft, pirate fleet variety, Dune-grounded
 armor, Federation species, scarier xeno. They are REFERENCE, not shipped
 assets: they exist so "what to draw" is shown, not argued about. Regenerate
 with `python artgen/board.py` (seeded, reproducible).
+
+## 10. The illustrative register for figures (owner direction, Session 39)
+
+The owner's note: the commander portraits read "too much on the side of
+realism textures", and should carry "that art illustrative feel that we
+reclaimed in the intro cutscenes."
+
+**Diagnosed against the shipped art, not guessed.** Put a cutscene plate and a
+commander bust side by side and the difference is construction, not subject.
+The plates are built from flat interlocking shapes with heavy black shadow
+masses doing the drawing. The busts came back with modelled skin, specular
+highlights on the cheekbones, and soft airbrushed volume. Three causes, all of
+them in the prompt:
+
+1. the non-robot commander tail asked for **`shallow depth of field`**, which
+   is a photographic lens term. It was requesting the exact thing the note
+   objects to, on twenty-three of the twenty-eight;
+2. the non-robot commanders were the **only figure class in the catalogue with
+   no inking register**. `TROOP_REGISTER` gives the troops and the five machine
+   commanders "inked cel shading, halftone screen-print, heavy black shadows";
+   the other twenty-three received none of it, and the machine portraits were
+   visibly the most illustrative of the class for precisely that reason;
+3. `{STYLE}` says "bold flat expressive brushwork" and nothing else about
+   construction, which does not survive contact with a human FACE. A face is
+   the subject a diffusion model pulls hardest toward photography, so the
+   counter-pressure has to be explicit and it has to be in front.
+
+**The register now leads.** `CMD_REGISTER` in `artgen/krea_jobs.py` names the
+construction rather than a mood, and `CMD_ANTIPHOTO` closes the prompt.
+
+**AND THE PALETTE STILL OUTRANKS IT.** The first pass of this restyle led with
+the register and left colour to the `{STYLE}` tail, which names a vaporwave
+neon palette of magenta, cyan, violet and chrome. The register worked and
+section 2 broke: a human commander came back magenta and teal, and the
+Federation's supreme commander came back framed in violet. That is a rainbow
+where a faction owns the frame, which section 1 lists as a Never.
+
+The fix was to copy the composition the 50 cutscene plates already prove:
+SUBJECT, then the faction palette clause, then the `{STYLE}` tail. Those plates
+carry the same tail and still read blue for humanity and gold for the
+Federation, because a NAMED palette sitting directly behind the subject
+outranks a generic one sitting behind that. **A register change is not a licence
+to move colour.** If a restyle costs faction identity, the restyle is wrong,
+however good the linework got.
+
+### 10.1 ASHTAR has an outside reference
+
+He is the one commander whose likeness is answerable to something outside this
+repository: he must read as the **Ashtar Sheran of the 1950s contactee record**,
+because that is what a player finds when they search the name. That record is
+consistent on the particulars: young and athletic rather than aged, light
+silver-blond hair a little past the shoulders, deep blue eyes, tall, and an
+elegantly tailored high-collared uniform, white and ivory dominant, carrying
+decorations. The portrait that shipped before Session 39 was an elderly grey
+figure in ornate gold plate: wrong on age, hair and dress at once.
+
+Ivory and white with gold decoration is ALSO the Federation's own palette
+(section 3.2), so the outside reference and the faction identity ask for the
+same picture and nothing is traded away.
+
+## 11. The planet cutscenes (owner direction, Session 39)
+
+Deploying to a world used to open on three beats whose middle beat was the
+world plate **with a hue applied in code**, the `world_<map>_<faction>` PIL
+duotone. The owner's note names it exactly: "I don't want just one picture and
+then you change the hue. I really want to make sure that each and every single
+cutscene that is generated and made is truly unique."
+
+So there are now 875 separately generated plates: five beats, for each of 35
+worlds, for each of 5 powers.
+
+| Beat | Key suffix | Subject | Shown |
+|---|---|---|---|
+| APPROACH | `_1` | your fleet arriving over this world | on deploy |
+| THE GROUND | `_2` | your force making landfall at this world's site | on deploy |
+| THE ASSAULT | `_3` | your force against this world's own defence works | on deploy |
+| AFTERMATH | `_4` | that same site once you have taken it | on a win, 1+ star |
+| NEW ORDER | `_5` | what your banner turns this world into | on a win, 1+ star |
+
+**The defender is never drawn.** The obvious composition for beat 3 is your
+force against the HOLDER's force, and it is wrong here: a world's `owner` is
+the system holder for a seat and a 20% per-seed raider squat otherwise
+(js/galaxy.js), so at render time the defending faction is a PRNG roll this
+catalogue cannot see. Drawing a Compact defender onto a world a pirate squat
+happens to hold would be the art promising a battle the engine refuses. Every
+world instead carries its own DEFENCE WORKS, which are a property of the place
+and true whoever is standing on them. The live holder is named in the TEXT,
+which is read off the world at play time and is therefore always right.
+
+**Keys are the universe coordinate `<si><wi>`, never the map id.** `map` is
+drawn from `rnd()` and re-rolls per seed; `(si, wi)` is fixed for the one
+universe. `artgen/planet_jobs.py` and `js/planetcuts.js` key the same way, and
+`tools/probe-s39.js` asserts the authored names against `GX_HOME_SYSTEMS`.
+
+**The class is dropped from the single-file bundle, not inlined.** At roughly
+200KB a plate the class is about 175MB, which base64 inflates by a further
+third, against a bundle that is 22MB. `build.js` strips it and
+`js/cutscenes.js` falls back through a slide's `alt` key to the world plate,
+which is a picture of the same world rather than a faction crest. The live
+site fetches all 875 from `art/` on demand.
+
+**The writing.** Beats 2 and 3 describe the PLACE and are authored once per
+world, because a mirror farm is a mirror farm from every side and five versions
+of that sentence would be five chances to contradict ourselves. Beats 1, 4 and
+5 are authored per world per faction, in that faction's own register, because
+they are the only beats about the reader rather than the ground. 525 faction
+lines, and the probe asserts no two of them are the same string.
+
+**The commander interaction on the outro** is the exchange the result screen
+already carries (`victoryExchangeHtml`, seeded from the pair's own canon in
+js/dialogue.js). The outro adds the two pictures and does not grow a second
+commander surface, for the same reason the deploy sequence hands beat four to
+the existing VS screen: a second opinion about what two commanders say to each
+other is a bug waiting to be found.
+
+## 12. What the tooling can and cannot do (measured, Session 39)
+
+**Adobe Firefly is not reachable from the Claude connector.** Checked
+exhaustively rather than assumed, because the owner had enabled the connector
+specifically to generate art faster. The Adobe MCP surface exposes
+Photoshop-style EDITING only: masks, exposure, HSL, grain, crop, plus
+`image_generative_expand` (outpainting an image that already exists) and
+Firefly *Boards* (which assembles a board from assets that already exist).
+Several of the tool descriptions say it outright, that generative editing is
+not currently available and the tools must not be used for generative
+requests. There is no text-to-image and no text-to-video endpoint. Unlimited
+Firefly generation in the web app does not translate into an API this pipeline
+can call. **Do not re-investigate this without first re-reading the tool list;
+if a Firefly image-generation tool ever appears there, that is the signal, not
+a hunch.**
+
+The Adobe tools that ARE worth reaching for, all of them operating on art this
+pipeline has already produced: `image_remove_background`, `image_vectorize`
+(crest and emblem work), `image_generative_expand` (widening a plate to a new
+aspect without a re-roll), and the font tools.
+
+**Local render throughput, this machine (RTX 5090 Laptop, 24GB).** Measured by
+file mtimes across a full class, not quoted from a previous session:
+
+| Class | Size | Measured |
+|---|---|---|
+| `cmd` portrait | 1024 gen, 320 out, square | **26.5s each**, 28 in the class |
+| `pcut` plate | 1024 gen, 1920 out, wide | budget ~48s, see the render log |
+
+Model load is roughly two to three minutes before the first image, which is why
+a class of 28 takes about fifteen minutes rather than twelve. **Time ONE image
+before any batch.** A per-image figure inferred from a whole run INCLUDING load
+reads about twice the true cost: that happened once in Session 39 and briefly
+made an eleven-hour job look like a twenty-nine-hour one.

@@ -25,6 +25,35 @@ const css  = read('css/style.css') + String.fromCharCode(10) + read('css/polish.
    set gets. The bundle stays self-contained and stays lean. */
 const stripVideo = s => s.replace(/const ARTVID = \{[^\n]*?\};/, 'const ARTVID = {};');
 
+/* THE PLANET PLATES ARE DROPPED FROM THE BUNDLE, NOT INLINED.
+   The `cut` class is inlined below because 50 plates is about 10MB and a
+   single-file download that silently lost its story art would be a worse
+   trade. The `pcut` class cannot take that deal: 875 plates at ~200KB is
+   roughly 175MB of raw art, which base64 inflates by a further third, against
+   a bundle that is 22MB today. A 230MB single HTML file is not a download, it
+   is a denial of service, and most browsers will not parse it.
+
+   So the bundle drops them, and js/ui.js falls back to the world plate for any
+   planet beat whose key is absent. That fallback is not special-cased for the
+   bundle: it is the same path a partially rendered pack takes, so it is
+   exercised on every machine that has ever run this game mid-render rather
+   than only on the one artefact nobody tests. The live site, which CAN fetch a
+   sibling file, serves all 875 from art/ on demand.
+
+   Verified by the two guards at the foot of this file: the bundle must contain
+   no `art/` URL at all, so a pcut entry surviving this strip fails the build
+   rather than shipping a broken image. */
+const PLANET_ENTRY_RE = /"pcut_[A-Za-z0-9_]+":"art\/pcut_[A-Za-z0-9_]+\.webp",?/g;
+const stripPlanet = s => {
+  const before = (s.match(PLANET_ENTRY_RE) || []).length;
+  let out = s.replace(PLANET_ENTRY_RE, '');
+  /* Removing the final entry of the object leaves a dangling comma. Repair it
+     rather than trusting key order, which json.dumps does not promise. */
+  out = out.replace(/,\s*\}/g, '}').replace(/\{\s*,/g, '{');
+  if (before) console.log('  dropped ' + before + ' planet plates from the bundle');
+  return out;
+};
+
 const ONDEMAND_RE = /"art\/([A-Za-z0-9_]+)\.webp"/g;
 const inlineOnDemand = s => s.replace(ONDEMAND_RE, (m, key) => {
   const file = path.join(here, 'art', key + '.webp');
@@ -35,9 +64,9 @@ const inlineOnDemand = s => s.replace(ONDEMAND_RE, (m, key) => {
   return '"data:image/webp;base64,' + fs.readFileSync(file).toString('base64') + '"';
 });
 
-const js   = ['artpack', 'mapgen', 'lore', 'story', 'cutscenes', 'worldlore', 'missions', 'config', 'factions', 'towers2', 'abilities', 'roster', 'dialogue', 'commanders', 'audio', 'entities', 'entities2', 'ai', 'galaxy', 'game', 'net', 'ui', 'main']
+const js   = ['artpack', 'mapgen', 'lore', 'story', 'cutscenes', 'planetcuts', 'worldlore', 'missions', 'config', 'factions', 'towers2', 'abilities', 'roster', 'dialogue', 'commanders', 'audio', 'entities', 'entities2', 'ai', 'galaxy', 'game', 'net', 'ui', 'main']
   .map(n => `/* ── ${n}.js ─────────────────────────────────── */\n` +
-            (n === 'artpack' ? stripVideo(inlineOnDemand(read(`js/${n}.js`))) : read(`js/${n}.js`)))
+            (n === 'artpack' ? stripVideo(inlineOnDemand(stripPlanet(read(`js/${n}.js`)))) : read(`js/${n}.js`)))
   .join('\n\n');
 
 /* The replacement text is passed as a FUNCTION on purpose. A plain string

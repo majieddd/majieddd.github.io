@@ -162,7 +162,15 @@ const Cutscenes = {
 
     const renderSlide = () => {
       const sl = list[i];
-      const src = (typeof ARTPACK !== 'undefined' && ARTPACK[sl.key]) || '';
+      /* THE SECOND-CHOICE PLATE. A slide may name an `alt` key, tried only
+         when its first choice is absent from the pack. The planet cutscenes
+         (js/planetcuts.js) use it to fall back to the world plate, which is a
+         picture OF THE SAME WORLD, rather than dropping to the faction crest.
+         Two live callers, neither of them exotic: the single-file bundle
+         drops the 875 planet plates on purpose (build.js), and any clone
+         rendering the pack has a partial `pcut` class for several hours. */
+      const src = (typeof ARTPACK !== 'undefined' &&
+                   (ARTPACK[sl.key] || (sl.alt && ARTPACK[sl.alt]))) || '';
       /* THE ANIMATED PLATE, when there is one and the reader wants motion.
          Three gates, and all three are refusals rather than opt-ins, because
          a clip is roughly 900KB against the still's 200KB and that is a cost
@@ -217,7 +225,8 @@ const Cutscenes = {
          when the pack inlines data URIs instead, as the single-file bundle
          does: assigning .src to a data URI decodes it and never hits network. */
       const nxt = list[i + 1];
-      const nsrc = nxt && typeof ARTPACK !== 'undefined' && ARTPACK[nxt.key];
+      const nsrc = nxt && typeof ARTPACK !== 'undefined' &&
+                   (ARTPACK[nxt.key] || (nxt.alt && ARTPACK[nxt.alt]));
       if (nsrc) new Image().src = nsrc;
     };
 

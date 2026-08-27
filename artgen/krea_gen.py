@@ -40,7 +40,11 @@ OUT = _artpack_out()
 # by URL instead. art() hands whatever string it finds straight to an <img
 # src>, and a URL works there exactly as a data URI does, so nothing
 # downstream changes. build.js inlines them back for the single-file bundle.
-ONDEMAND_CLASSES = {'cut'}
+# `pcut` (the 875 planet cutscene plates, artgen/planet_jobs.py) is on-demand
+# for the same reason `cut` is, only harder: at ~200KB a plate the class is
+# roughly 175MB, which is eight times the entire rest of the game. It is
+# also the one class build.js DROPS rather than inlines; see the note there.
+ONDEMAND_CLASSES = {'cut', 'pcut'}
 ART_DIR = os.path.join(os.path.dirname(OUT), '..', 'art')
 CACHE = os.path.join(HERE, 'cache_krea')
 FALLBACK_CACHE = os.path.join(HERE, 'cache')      # the SDXL baseline
@@ -62,7 +66,7 @@ STEPS = 8
 # WebP quality per asset class. Portraits and key art carry the look, so they
 # get the bits; icons and dossier cards are small on screen and compress hard.
 QUALITY = {'cmd': 88, 'title': 88, 'nebula': 86, 'world': 86,
-           'fac': 90, 'foe': 84, 'abil': 88, 'cut': 82}
+           'fac': 90, 'foe': 84, 'abil': 88, 'cut': 82, 'pcut': 82}
 
 
 def quality_for(key):

@@ -3813,3 +3813,43 @@ body.rm-user.immersive #battle-controls { transition: none; }
 }
 body.rm-user #screen-game #rotate-hint,
 body.rm-user #screen-game #rotate-hint b { animation: none; }
+
+/* ── THE ART GALLERY (Session 39) ──────────────────────────────────────────
+   The field manual's grading surface: every generated plate in the pack, so a
+   world's art can be judged without winning that world. Grids are filled on
+   first expand by UI.wireGallery, so a closed gallery costs one element per
+   class and an open one lazy-loads only what scrolls into view. */
+.gal-class, .gal-world { border:1px solid rgba(148,163,184,.22); border-radius:8px;
+  margin:10px 0; background:rgba(10,14,23,.55); }
+.gal-class > summary, .gal-world > summary { cursor:pointer; padding:10px 14px;
+  font-weight:700; letter-spacing:.04em; display:flex; align-items:center; gap:10px;
+  list-style:none; }
+.gal-class > summary::-webkit-details-marker, .gal-world > summary::-webkit-details-marker { display:none; }
+.gal-class > summary::before, .gal-world > summary::before { content:'▸'; opacity:.6; }
+.gal-class[open] > summary::before, .gal-world[open] > summary::before { content:'▾'; }
+.gal-count { margin-left:auto; font-weight:500; opacity:.65; font-variant-numeric:tabular-nums;
+  font-size:.85em; }
+.gal-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:10px; padding:4px 14px 14px; }
+.gal-tile { margin:0; display:flex; flex-direction:column; gap:4px; }
+.gal-tile img { width:100%; height:auto; border-radius:6px; display:block;
+  background:#0a0e17; border:1px solid rgba(148,163,184,.18); }
+.gal-tile figcaption { font-size:11px; opacity:.6; word-break:break-all; line-height:1.3; }
+.gal-vid { color:#38e8ff; font-size:9px; letter-spacing:.08em; }
+.gal-hole { aspect-ratio:16/9; border:1px dashed rgba(148,163,184,.28); border-radius:6px;
+  display:grid; place-items:center; }
+.gal-hole span { font-size:10px; opacity:.4; letter-spacing:.06em; }
+.gal-missing figcaption { opacity:.35; }
+.gal-blurb { padding:0 14px; margin:2px 0 8px; font-size:12px; opacity:.7; font-style:italic; }
+.gal-facrow { padding:0 14px 6px; }
+.gal-facrow h5 { margin:8px 0 4px; font-size:12px; letter-spacing:.08em; color:var(--fc,#7dd3fc); }
+.gal-beats { grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); padding:0; }
+.gal-beat { display:flex; flex-direction:column; gap:3px; }
+.gal-beatname { font-size:10px; letter-spacing:.07em; opacity:.55; }
+.gal-world { margin:8px 14px; }
+/* Phones: the codex is already a narrow column, so two plates per row at most
+   or every caption wraps to four lines and the grid stops being scannable. */
+@media (max-width:560px){
+  .gal-grid { grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); }
+  .gal-beats { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); }
+}

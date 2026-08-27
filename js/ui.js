@@ -605,22 +605,13 @@ const UI = {
     if (!w) return [];
     const gx = Meta.galaxy();
     const sys = gx && gx.systems[w.si];
-    let d = null;
-    try { d = (typeof WorldLore !== 'undefined' && WorldLore.world) ? WorldLore.world(w, sys) : null; }
-    catch (e) { d = null; }
-    /* SETTING. Name and system first so the player knows where they are, the
-       dossier headline second so they know what the place IS. */
-    const where = w.name.toUpperCase() + (sys ? ', ' + sys.name : '') + '.';
-    const headline = (d && d.headline) ? ' ' + d.headline : '';
-    /* The site line is the WAS/NOW record: what this ground used to be for
-       and why two powers are standing on it now. It is the sentence the
-       owner's "description of the setting" asks for, and it already exists
-       in the dossier layer; the slide only borrows it. */
-    const site = (d && d.line) ? ' ' + d.line : '';
-    const setting = { key: 'world_' + w.map, text: where + headline + site };
-    /* SCENARIO. Who holds the ground, then what winning here means. The
-       resolver pair is the same one the briefing card and Game.start read,
-       so the slide cannot promise a scenario the battle refuses. */
+    const fac = Meta.faction() || 'human';
+    /* WHO HOLDS THE GROUND is read here, off the live world, and never baked
+       into the authored copy: `owner` is a per-seed roll for any world that is
+       not a seat (js/galaxy.js), so a sentence written into planetcuts.js
+       naming the defender would be wrong on roughly a fifth of ordinary
+       worlds. Same resolver pair the briefing card and Game.start read, so the
+       slide cannot promise a scenario the battle refuses. */
     const sc = ((typeof ownedWorldScenarioOf === 'function' &&
                  ownedWorldScenarioOf(w, Meta.campaign())) ||
                 (typeof worldScenarioOf === 'function' && worldScenarioOf(w))) || null;
@@ -628,14 +619,72 @@ const UI = {
     const holdLine = w.renegade ? 'Your own banner holds this ground, and will not stand down.'
       : w.contested ? 'Two rival claims already stand on this ground. Yours makes three.'
       : holder ? holder.name + ' hold this ground.' : '';
-    const scLine = sc ? ' ' + sc.name + ': ' + sc.brief + (sc.flavor ? ' ' + sc.flavor : '') : '';
-    /* The holder-tinted plate when the pack carries one, the base plate
-       otherwise. Read lexically: ARTPACK is a top-level const. */
+    const scLine = sc ? sc.name + ': ' + sc.brief + (sc.flavor ? ' ' + sc.flavor : '') : '';
+    const where = w.name.toUpperCase() + (sys ? ', ' + sys.name : '') + '.';
+    /* Every planet beat falls back to the world plate rather than to the
+       crest: a picture of the same world is a better wrong answer than a
+       logo. See the `alt` note in js/cutscenes.js. */
+    const alt = 'world_' + w.map;
+
+    /* THE AUTHORED PATH (owner directive, Session 39). Three beats, three
+       separately generated plates, nothing tinted and nothing re-used.
+       Beat 2 and beat 3 describe the PLACE and are written once per world;
+       beats 1, 4 and 5 are written per world per faction. */
+    const pc = (typeof PlanetCuts !== 'undefined') ? PlanetCuts.entry(w) : null;
+    const lines = pc && typeof PlanetCuts !== 'undefined' ? PlanetCuts.lines(w, fac) : null;
+    if (pc && lines) {
+      const k = b => PlanetCuts.plate(w, fac, b);
+      return [
+        /* APPROACH. Where you are, then your own power's voice on arriving. */
+        { key: k(1), alt: alt, text: where + ' ' + lines[0] },
+        /* THE GROUND. What this place is, then who is standing on it. */
+        { key: k(2), alt: alt, text: (pc.ground + ' ' + holdLine).trim() },
+        /* THE ASSAULT. What defends it, then what winning here means. The
+           scenario clause is the same one the briefing card shows. */
+        { key: k(3), alt: alt, text: (pc.works + ' ' + scLine).trim() },
+      ];
+    }
+
+    /* THE DERIVED PATH, unchanged. Any world with no authored entry (every
+       v1 saved galaxy, whose worlds carry no si/wi) keeps the WorldLore
+       briefing it has always had, and [] still means straight to the VS
+       screen, which is exactly what shipped before any of this existed. */
+    let d = null;
+    try { d = (typeof WorldLore !== 'undefined' && WorldLore.world) ? WorldLore.world(w, sys) : null; }
+    catch (e) { d = null; }
+    const headline = (d && d.headline) ? ' ' + d.headline : '';
+    const site = (d && d.line) ? ' ' + d.line : '';
+    const setting = { key: alt, text: where + headline + site };
     const tinted = 'world_' + w.map + '_' + (w.owner || '');
     const hasTint = typeof ARTPACK !== 'undefined' && !!ARTPACK[tinted];
-    const scenario = { key: hasTint ? tinted : 'world_' + w.map,
-                       text: (holdLine + scLine).trim() };
+    const scenario = { key: hasTint ? tinted : alt,
+                       text: (holdLine + (scLine ? ' ' + scLine : '')).trim() };
     return scenario.text ? [setting, scenario] : [setting];
+  },
+
+  /** THE VICTORY OUTRO (owner directive, Session 39). Two more authored
+      beats, shown only on a win of at least one star: what your banner did to
+      this specific world, and what the world becomes now. The commander
+      interaction the owner asked for is the exchange already on the result
+      screen (victoryExchangeHtml, seeded from the pair's own canon), so this
+      adds the two pictures and does not grow a second commander surface.
+
+      Returns [] whenever anything it needs is missing, and [] means the
+      result screen opens immediately, which is the pre-existing flow. */
+  outroSlides(w, won, stars) {
+    if (!won || !(stars >= 1) || !w) return [];
+    if (Game._skirmish) return [];
+    if (typeof Net !== 'undefined' && Net.live) return [];
+    if (typeof PlanetCuts === 'undefined') return [];
+    const fac = Meta.faction() || 'human';
+    const pc = PlanetCuts.entry(w);
+    const lines = PlanetCuts.lines(w, fac);
+    if (!pc || !lines) return [];
+    const alt = 'world_' + w.map;
+    return [
+      { key: PlanetCuts.plate(w, fac, 4), alt: alt, text: lines[1] },
+      { key: PlanetCuts.plate(w, fac, 5), alt: alt, text: lines[2] },
+    ];
   },
 
   /* ═══════════════════════════════════ THE FIRST-RUN COACH (A1) ═══ */
@@ -7383,7 +7432,28 @@ const UI = {
    * onto the total. Everything is driven off one timeline so it can be skipped
    * with a click and never blocks the player.
    */
+  /** THE END OF A BATTLE. On a win of at least one star this plays the two
+      authored outro beats first and opens the result screen after them; on a
+      defeat, a zero-star win, a skirmish or a duel it opens the result screen
+      immediately, which is exactly what shipped before the outro existed.
+
+      The game is already stopped by the time endMatch calls this, so there is
+      nothing to pause: unlike the deploy sequence, the outro cannot hold a
+      running simulation open. `Game.worldRecord` is resolved by endMatch a few
+      lines before this call (js/game.js) and is the live world object, which
+      is what carries si and wi. */
   showEnd(won) {
+    const st = Game.lastStars;
+    const slides = this.outroSlides(Game.worldRecord, won, st ? st.stars : 0);
+    if (slides.length && typeof Cutscenes !== 'undefined' && Cutscenes.playList) {
+      Cutscenes.playList(Meta.faction() || 'human', slides,
+                         () => this.showEndScreen(won));
+      return;
+    }
+    this.showEndScreen(won);
+  },
+
+  showEndScreen(won) {
     /* "The rival" is seat 1 only on a two-sided board. On a tri board or in
        the arena seat 1 is very often the seat that fell FIRST, so the loss
        line reported a rout as a close-run thing -- "They held with 0." with
@@ -8000,8 +8070,147 @@ const UI = {
       <section><h3>Towers</h3><div class="codex-grid">${towers}</div></section>
       <section><h3>Command upgrades</h3><div class="codex-grid">${mods}</div></section>
       <section><h3>Enemy escalations</h3><div class="codex-grid">${esc}</div></section>
-      <section><h3>Enemies</h3><div class="codex-grid">${enemies}</div></section>`;
+      <section><h3>Enemies</h3><div class="codex-grid">${enemies}</div></section>
+      ${this.galleryHtml()}`;
+    this.wireGallery();
   },
+
+  /* ============================================ THE ART GALLERY (S39) ===
+     Owner directive: "add to the field manual section all of the generated
+     assets that we've been working on so that I can go through and grade each
+     one of them without having to complete each and every single one of the
+     campaign missions."
+
+     So this enumerates the PACK, not a hand-written list. Every tile is a key
+     that is actually in ARTPACK, which means the gallery cannot claim art that
+     does not exist and cannot go stale when a class is re-rendered. The one
+     place it looks the other way round is the planet class, where it walks the
+     EXPECTED 875 keys from js/planetcuts.js and marks the ones the pack does
+     not have yet: during an eleven-hour render that view is the only honest
+     picture of progress, and a gallery that silently omitted them would read
+     as "finished" the entire time.
+
+     BUILT ON DEMAND. 875 plates is far too many nodes to put in the codex on
+     every open, so each class is a <details> and its grid is materialised the
+     first time it is expanded. Images carry loading="lazy", so an expanded
+     class still fetches only what scrolls into view. Measured cost of the
+     closed gallery: one <details> element per class.
+  */
+
+  /** The classes, in the order a person would want to grade them. `label` is
+      what the section calls itself; `pre` is the ARTPACK key prefix. */
+  galleryClasses() {
+    return [
+      { pre: 'cmd',    label: 'Commander portraits' },
+      { pre: 'fac',    label: 'Faction crests' },
+      { pre: 'foe',    label: 'Enemy dossiers and troops' },
+      { pre: 'twr',    label: 'Tower plates' },
+      { pre: 'abil',   label: 'Ability emblems' },
+      { pre: 'world',  label: 'World plates' },
+      { pre: 'planet', label: 'Planet spheres' },
+      { pre: 'cut',    label: 'Story cutscenes: the oath and the turning' },
+    ];
+  },
+
+  /** One tile. `have` false renders the frame and the key with no image, which
+      is what an unrendered plate looks like. */
+  galleryTile(key, have) {
+    const src = (typeof ARTPACK !== 'undefined' && ARTPACK[key]) || '';
+    const vid = (typeof ARTVID !== 'undefined' && ARTVID[key]) ? ' <b class="gal-vid">MOTION</b>' : '';
+    return `<figure class="gal-tile${have ? '' : ' gal-missing'}">
+      ${have && src ? `<img src="${src}" alt="${key}" loading="lazy" decoding="async">`
+                    : `<div class="gal-hole"><span>not rendered</span></div>`}
+      <figcaption>${key}${vid}</figcaption></figure>`;
+  },
+
+  /** The expected planet keys, walked from the authored table rather than from
+      the pack, so unrendered plates are visible as gaps. */
+  galleryPlanetHtml() {
+    if (typeof PLANET_CUTS === 'undefined') return '<p class="codex-note">No planet cutscenes are authored.</p>';
+    const BEATS = ['APPROACH', 'THE GROUND', 'THE ASSAULT', 'AFTERMATH', 'NEW ORDER'];
+    const facs = ['human', 'light', 'xeno', 'pirate', 'robot'];
+    let out = '';
+    Object.keys(PLANET_CUTS).sort().forEach(wk => {
+      const w = PLANET_CUTS[wk];
+      let have = 0, want = 0, body = '';
+      facs.forEach(fid => {
+        const f = (typeof FACTIONS !== 'undefined' && FACTIONS[fid]) || { name: fid, color: '#7dd3fc' };
+        let row = '';
+        for (let b = 1; b <= 5; b++) {
+          const key = 'pcut_' + wk + '_' + fid + '_' + b;
+          const ok = typeof ARTPACK !== 'undefined' && !!ARTPACK[key];
+          want++; if (ok) have++;
+          row += `<div class="gal-beat"><span class="gal-beatname">${b}. ${BEATS[b - 1]}</span>${this.galleryTile(key, ok)}</div>`;
+        }
+        body += `<div class="gal-facrow" style="--fc:${f.color}">
+                   <h5>${f.name || fid}</h5><div class="gal-grid gal-beats">${row}</div></div>`;
+      });
+      out += `<details class="gal-world"><summary>${w.name}
+                <span class="gal-count">${have} / ${want}</span></summary>
+              <p class="gal-blurb">${w.ground}</p>${body}</details>`;
+    });
+    return out;
+  },
+
+  /** The whole gallery. Grids are filled on first expand, see buildCodex. */
+  galleryHtml() {
+    const packKeys = (typeof ARTPACK !== 'undefined') ? Object.keys(ARTPACK) : [];
+    const claimed = {};
+    const secs = this.galleryClasses().map(c => {
+      const keys = packKeys.filter(k => k.split('_')[0] === c.pre).sort();
+      keys.forEach(k => { claimed[k] = 1; });
+      return `<details class="gal-class" data-pre="${c.pre}">
+        <summary>${c.label}<span class="gal-count">${keys.length}</span></summary>
+        <div class="gal-grid" data-keys="${keys.join(' ')}"></div></details>`;
+    }).join('');
+    /* Anything in the pack that no class above claimed, and that is not a
+       planet plate: key art, the black hole, and whatever a future session
+       adds without remembering to update galleryClasses(). Listing the
+       remainder is what stops this gallery from quietly under-reporting. */
+    const rest = packKeys.filter(k => !claimed[k] && k.split('_')[0] !== 'pcut').sort();
+    const planet = (typeof PLANET_CUTS !== 'undefined')
+      ? Object.keys(PLANET_CUTS).length * 25 : 0;
+    const planetHave = packKeys.filter(k => k.split('_')[0] === 'pcut').length;
+    return `
+      <section><h3>Art gallery</h3>
+        <div class="codex-note">
+          <p>Every generated asset in the pack, so a plate can be graded without
+             reaching the world that shows it. Counts are read from the pack itself:
+             what is listed here is what actually ships.</p>
+          <p><b>${packKeys.length}</b> images in the pack. The planet cutscenes are
+             <b>${planetHave} of ${planet}</b> rendered.</p>
+        </div>
+        ${secs}
+        ${rest.length ? `<details class="gal-class" data-pre="*">
+          <summary>Key art and everything else<span class="gal-count">${rest.length}</span></summary>
+          <div class="gal-grid" data-keys="${rest.join(' ')}"></div></details>` : ''}
+        <details class="gal-class gal-planetclass">
+          <summary>Planet cutscenes, five beats per world per power
+            <span class="gal-count">${planetHave} / ${planet}</span></summary>
+          <div class="gal-planets"></div></details>
+      </section>`;
+  },
+
+  /** Fill a class grid the first time it opens, and never again. */
+  wireGallery() {
+    const body = this.el.codexBody;
+    if (!body) return;
+    body.querySelectorAll('details.gal-class').forEach(d => {
+      d.addEventListener('toggle', () => {
+        if (!d.open || d.dataset.filled) return;
+        d.dataset.filled = '1';
+        const grid = d.querySelector('.gal-grid[data-keys]');
+        if (grid) {
+          grid.innerHTML = (grid.dataset.keys ? grid.dataset.keys.split(' ') : [])
+            .map(k => this.galleryTile(k, true)).join('');
+          return;
+        }
+        const planets = d.querySelector('.gal-planets');
+        if (planets) planets.innerHTML = this.galleryPlanetHtml();
+      });
+    });
+  },
+
 
   /* =========================================================== SETTINGS */
 
