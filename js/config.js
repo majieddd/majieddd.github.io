@@ -3676,13 +3676,29 @@ const NODE_HOLD_MARK = 7;          /* a marking tower on a node of ANOTHER eleme
 const NODE_LANE_MARK = 2.5;        /* a lane node's mark is short on purpose: long
    enough to carry into a killzone, too short to stand as a free half-reaction. */
 /** How many towers of its OWN origin a rival's arsenal should end up flying.
-    Two of five, not one: one reads as coincidence beside four commons, and
-    three costs the draft its variety -- the canned cores are mostly built
-    from the human and robotic hardware that is legal to everyone, so a
-    higher target means more of a set is decided by origin than by whether
-    the five towers work together. It is a target, never a floor: a shelf
-    holding fewer of its own simply flies fewer. */
-const LOADOUT_OWN_ORIGIN = 2;
+
+    THE WHOLE LOADOUT. Owner, Session 38: "commanders only use their factions
+    towers thematically." That was previously refused on a variety argument
+    (the canned cores are mostly human and robotic commons, so a higher target
+    was said to decide a set by origin rather than by whether its towers work
+    together) and the argument does not survive the arithmetic:
+
+      TOWER_ORDER holds 60 towers, TWELVE PER ORIGIN, exactly even. Measured
+      per origin: human 8 damage / 5 anti-air, light 5 / 4, xeno 6 / 1,
+      pirate 6 / 1, robotic 5 / 3.
+
+    Every origin can therefore field four towers that fight, out of its own
+    hardware, without borrowing. The variety cost is real but it is paid in
+    the right currency: a Xeno board now looks like a Xeno board.
+
+    Still a TARGET, never a floor, and AI.flyTheBanner still refuses any swap
+    that would cost the set its two damage dealers or its answer to air. Xeno
+    and Pirate carry exactly ONE anti-air tower each (IMPALER at 59, CYCLONE
+    at 30), so when that tower is not on the rival's shelf those banners land
+    at three own-origin plus a borrowed answer to air rather than fielding a
+    set that cannot shoot upward. That degradation is deliberate: a pure
+    board is worth less than a board that can play. */
+const LOADOUT_OWN_ORIGIN = 4;
 const AI_NODE_BIAS = 1.15;         /* the rival's appetite for any build node */
 const AI_NODE_BIAS_MATCH = 1.40;   /* ...and for one its tower can actually use, so
    rivals contest the same tiles the player wants (ROADMAP rival parity). */

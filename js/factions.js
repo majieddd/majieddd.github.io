@@ -819,6 +819,36 @@ const TOWER_ORIGINS = {
 
 const ORIGIN_ORDER = ['human', 'light', 'xeno', 'pirate', 'robotic'];
 
+/* --------------------------------------------------------------------------
+   BANNER KEY versus ORIGIN KEY, and the one place they disagree.
+
+   A commander's banner is a POWER key (POWER_ORDER: human, light, xeno,
+   pirate, robot). A tower's `origin` is an ORIGIN key (ORIGIN_ORDER: human,
+   light, xeno, pirate, robotic). Four of the five spell the same and the
+   fifth does not, so every `origin === faction` comparison in the codebase is
+   silently correct four times out of five and silently wrong the fifth.
+
+   MEASURED at HEAD, 400 seeded drafts per banner, own-origin towers in a
+   four-slot loadout against a LOADOUT_OWN_ORIGIN target of two:
+
+       human 3.17   light 2.23   xeno 2.17   pirate 2.11   robot 1.23
+
+   and 45% of machine drafts carried NO robotic tower at all, because
+   AI.flyTheBanner looked for towers whose origin was 'robot' and there has
+   never been one. The machines were the only power that could not fly its own
+   banner, and nothing failed: the swap loop simply found an empty list.
+
+   TOWER_ORIGINS.robotic.faction stays null deliberately and is NOT the fix.
+   That field answers "which banner may BUY this", and for the machines the
+   answer is everyone. This answers "which origin IS this banner's work",
+   which is a different question with a different answer.
+-------------------------------------------------------------------------- */
+const POWER_ORIGIN = { human: 'human', light: 'light', xeno: 'xeno', pirate: 'pirate', robot: 'robotic' };
+
+/** The ORIGIN key a banner builds under. Passes unknown keys through so a
+    caller that already holds an origin key is not punished for it. */
+function originKeyOf(faction) { return POWER_ORIGIN[faction] || faction || null; }
+
 /** The origin record for a tower id, never null -- an unlabelled def reads as
     human, which is the baseline every other origin is a departure from. */
 function originOf(id) {

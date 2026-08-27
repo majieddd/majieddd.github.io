@@ -1551,6 +1551,56 @@ const UI = {
      everything else, through the story beats, where these same people speak
      for themselves. The role line stays because a player choosing a
      commander deserves one sentence of who this is. */
+  /**
+   * A commander's SIGNATURE, rendered as painted icons rather than names.
+   *
+   * The player-facing half of the roster signature block (js/roster.js). The
+   * rival brain drafts these first, so showing them is not decoration: it is
+   * the same information the AI acts on, which is what lets a player read a
+   * briefing card and know what is coming.
+   *
+   * PAINTED TILES, not glyph characters, for the reason the briefing row
+   * records at the AI.pickLoadout call below: TOWER_TYPES carries no `glyph`
+   * field at runtime (measured: zero entries), so a text glyph renders as a
+   * literal question mark. towerIconHTML and unitIconHTML are the same
+   * contract the loadout screen and the briefing card already use.
+   *
+   * Returns '' for a commander with no signature, so CADRE renders exactly
+   * what it did before rather than an empty labelled box.
+   */
+  commanderSignatureHTML(c) {
+    const sg = c && c.signature;
+    if (!sg || !sg.towers || !sg.units) return '';
+    const tw = sg.towers.map(id => {
+      const t = TOWER_TYPES[id];
+      return t ? '<i class="sig-ci tw" style="--tc:' + t.color + '" data-tt="' +
+                 ttEsc(t.name) + '|' + ttEsc(t.role || '') + '">' +
+                 this.towerIconHTML(id, 22) + '</i>' : '';
+    }).join('');
+    const un = sg.units.map(id => {
+      const u = ENEMY_TYPES[id];
+      return u ? '<i class="sig-ci un" style="--tc:' + u.color + '" data-tt="' +
+                 ttEsc(u.name) + '|' + ttEsc((u.desc || '').slice(0, 150)) + '">' +
+                 this.unitIconHTML(id, 22) + '</i>' : '';
+    }).join('');
+    if (!tw && !un) return '';
+    return `<div class="cd-sig" style="--cc:${c.color}">
+      <b>SIGNATURE</b>
+      <span class="sig-row"><em>Builds</em>${tw}<em>Sends</em>${un}</span>
+      <span class="sig-note">Favoured, not fixed. ${c.name} drafts these first and fills the rest to suit the board.</span>
+    </div>`;
+  },
+
+  /** The signature as plain text, for tooltips and any place that cannot
+      carry markup. Empty string when there is no signature. */
+  commanderSignatureText(c) {
+    const sg = c && c.signature;
+    if (!sg || !sg.towers || !sg.units) return '';
+    const nm = (tbl, id) => (tbl[id] && tbl[id].name) || id;
+    return 'SIGNATURE: builds ' + sg.towers.map(t => nm(TOWER_TYPES, t)).join(' and ') +
+           ', sends ' + sg.units.map(u => nm(ENEMY_TYPES, u)).join(' and ');
+  },
+
   commanderDossier(c) {
     const L = this.lore('commanders', c.id);
     if (!L || !L.role) return '';
@@ -1592,6 +1642,7 @@ const UI = {
         <b>${c.trait.name}</b>
         <span>${c.trait.desc}</span>
       </div>
+      ${this.commanderSignatureHTML(c)}
       ${this.commanderDossier(c)}
       ${Meta.equipped() === c.id
         ? `<div class="cd-equipped" role="status">⚑ IN COMMAND, ${c.name} deploys with your next battle.</div>`
@@ -3355,8 +3406,11 @@ const UI = {
     if (c && boss && !w.contested && !sc.noCommander && typeof AI !== 'undefined' && AI.pickLoadout) {
       try {
         const diff = DIFFICULTIES.find(d => d.id === this.rampOf(c).diffFor(w.si)) || DIFFICULTIES[1];
+        /* `boss` too. The card promises the four towers the battle will field,
+           and the battle now drafts with the commander's signature pressed in,
+           so a card drafted without it would show a different four. */
         const set = AI.pickLoadout(m, diff, Meta.unlockedTowers(), w.owner,
-                                   seededDraw(worldLoadoutSeed(c.seed, w.id)));
+                                   seededDraw(worldLoadoutSeed(c.seed, w.id)), boss);
         towerIcons = set.slice(0, 4).map(id => {
           const t = TOWER_TYPES[id];
           /* The PAINTED tile, not a glyph character. `glyph` is not a field on
@@ -3377,8 +3431,15 @@ const UI = {
     let unitIcons = '';
     try {
       if (sc.noCommander) throw 0;   /* nobody fields these; skip the work */
-      const own = Object.keys(ENEMY_TYPES)
-        .filter(id => ENEMY_TYPES[id].faction === w.owner)
+      /* THE COMMANDER'S OWN DENIZENS FIRST. This row previously took the
+         first four ENEMY_TYPES of the holding power, so every Xeno world
+         showed the same four soldiers no matter who held it, while the
+         battle's rival actually musters its signature pair (AI.pickMusterLoadout).
+         The card is a promise about the battle, so it leads with the same
+         two and fills the rest from the power as before. */
+      const sig = (boss && boss.signature && boss.signature.units) || [];
+      const own = sig.concat(Object.keys(ENEMY_TYPES)
+        .filter(id => ENEMY_TYPES[id].faction === w.owner && !sig.includes(id)))
         .slice(0, 4);
       unitIcons = own.map(id => {
         const u = ENEMY_TYPES[id];
@@ -8068,6 +8129,7 @@ const UI = {
       const dossier = [
         c.title, f ? f.name : 'Unaligned',
         c.trait.name + ': ' + c.trait.desc,
+        this.commanderSignatureText(c),
         c.abilities.map(a => ABILITIES[a].name + ', ' + ABILITIES[a].desc).join(' · ')
       ].filter(Boolean).join(' · ');
       return `<div class="codex-entry has-fig" style="--tc:${c.color}"
@@ -8078,6 +8140,17 @@ const UI = {
           <span class="cx-title">${c.title}${f ? ' · ' + f.short : ' · Unaligned'}</span>
           <span><b>${c.trait.name}</b>, ${c.trait.desc}</span>
           <span class="cx-abil">${c.abilities.map(a => ABILITIES[a].icon + ' ' + ABILITIES[a].name).join(' · ')}</span>
+          ${c.signature ? `<span class="cx-sig">${
+            c.signature.towers.map(id => TOWER_TYPES[id]
+              ? `<i class="sig-ci tw" style="--tc:${TOWER_TYPES[id].color}" data-tt="${
+                  ttEsc(TOWER_TYPES[id].name)}|${ttEsc(TOWER_TYPES[id].role || '')}">${
+                  this.towerIconHTML(id, 18)}</i>` : '').join('')
+          }<em>and</em>${
+            c.signature.units.map(id => ENEMY_TYPES[id]
+              ? `<i class="sig-ci un" style="--tc:${ENEMY_TYPES[id].color}" data-tt="${
+                  ttEsc(ENEMY_TYPES[id].name)}|${ttEsc((ENEMY_TYPES[id].desc || '').slice(0, 150))}">${
+                  this.unitIconHTML(id, 18)}</i>` : '').join('')
+          }</span>` : ''}
         </div>
       </div>`;
     }).join('');

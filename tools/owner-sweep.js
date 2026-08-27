@@ -2473,6 +2473,170 @@
     });
   })();
 
+  /* ══ 40. COMMANDER THEMING ══════════════════════════════════════════════
+     Owner, Session 38: "commanders only use their factions towers
+     thematically everything makes sense and making sure that certain
+     commanders favor certain tower combinations and unit combinations so
+     that each commander feels unique."
+
+     Two halves, and they fail differently, so they are checked separately.
+     The FACTION half is about origin law and is asserted against the drafted
+     board, not against the data. The UNIQUENESS half is about the signature
+     table and is asserted in tools/facts.js (which runs in gate.js and can
+     load the modules without a browser); what is checked here is the part
+     facts.js cannot see, which is whether any of it survives a real draft. */
+  (function commanderTheming() {
+    const POWERS = POWER_ORDER.filter(function (f) { return f !== null; });
+
+    T('40.1 every power maps to a real tower origin', function () {
+      const bad = [];
+      POWERS.forEach(function (f) {
+        const o = originKeyOf(f);
+        const n = TOWER_ORDER.filter(function (t) {
+          return (TOWER_TYPES[t] || {}).origin === o;
+        }).length;
+        if (ORIGIN_ORDER.indexOf(o) < 0) bad.push(f + ' maps to ' + o + ', not an origin');
+        else if (n < LOADOUT_SIZE) bad.push(f + ' has only ' + n + ' own towers');
+      });
+      /* THE DEFECT THIS EXISTS FOR. 'robot' is a banner and 'robotic' is an
+         origin. AI.flyTheBanner compared them directly and so found nothing
+         to fly for the machines, on every draft, forever, with no error and
+         no red gate: an empty candidate list is a silent no-op. Measured
+         before the fix: machine rivals fielded 1.23 own-origin towers with
+         45% of drafts carrying NONE, against a target every other banner met. */
+      ok('40.1 every power maps to a real tower origin',
+         bad.length === 0,
+         bad.length ? bad.join('; ')
+                    : POWERS.length + ' powers map to an origin holding at least ' +
+                      LOADOUT_SIZE + ' towers (' + POWERS.map(function (f) {
+                        return f + '>' + originKeyOf(f);
+                      }).join(', ') + ')');
+    });
+
+    T('40.2 a drafted rival board flies its own banner', function () {
+      /* Drafted, not read. The data can be perfect and the draft still throw
+         it away, which is exactly what happened here: flyTheBanner evicted
+         the signature towers flySignature had just pressed in, because the
+         third of three origin comparisons in js/ai.js still read `faction`. */
+      const worst = [];
+      POWERS.forEach(function (f) {
+        const o = originKeyOf(f);
+        let sum = 0, zero = 0;
+        for (let i = 0; i < 60; i++) {
+          let x = (i * 2654435761) >>> 0;
+          const rng = function () { x = (x * 1664525 + 1013904223) >>> 0; return x / 4294967296; };
+          const set = AI.pickLoadout({ id: 'spine' }, DIFFICULTIES[1], TOWER_ORDER.slice(), f, rng);
+          const own = set.filter(function (t) { return (TOWER_TYPES[t] || {}).origin === o; }).length;
+          sum += own; if (!own) zero++;
+        }
+        if (zero > 0 || sum / 60 < 2) worst.push(f + ' avg ' + (sum / 60).toFixed(2) + ', ' + zero + ' bare');
+      });
+      ok('40.2 a drafted rival board flies its own banner',
+         worst.length === 0,
+         worst.length ? worst.join('; ')
+                      : 'all ' + POWERS.length + ' banners draft at least 2 own-origin towers ' +
+                        'on average and never a board with none');
+    });
+
+    T('40.3 a commander drafts the towers it is known for', function () {
+      const miss = [];
+      COMMANDER_ROSTER.forEach(function (c) {
+        if (!c.faction || !c.signature) return;
+        let got = 0;
+        for (let i = 0; i < 24; i++) {
+          let x = (i * 2654435761) >>> 0;
+          const rng = function () { x = (x * 1664525 + 1013904223) >>> 0; return x / 4294967296; };
+          const set = AI.pickLoadout({ id: 'spine' }, DIFFICULTIES[1], TOWER_ORDER.slice(), c.faction, rng, c);
+          got += c.signature.towers.filter(function (t) { return set.indexOf(t) >= 0; }).length;
+        }
+        if (got / 24 < 1.5) miss.push(c.id + ' ' + (got / 24).toFixed(2) + '/2');
+      });
+      ok('40.3 a commander drafts the towers it is known for',
+         miss.length === 0,
+         miss.length ? miss.join(', ')
+                     : 'all 27 signature commanders carry at least 1.5 of their 2 signature ' +
+                       'towers on an average draft');
+    });
+
+    T('40.4 two commanders of one banner field different boards', function () {
+      /* The whole point of the feature. Before it, every Federation rival
+         drafted from the same twelve towers with the same seeds and were
+         indistinguishable on the field. */
+      const same = [];
+      POWERS.forEach(function (f) {
+        const crew = COMMANDER_ROSTER.filter(function (c) { return c.faction === f && c.signature; });
+        for (let a = 0; a < crew.length; a++) {
+          for (let b = a + 1; b < crew.length; b++) {
+            let x = 99991;
+            const rng = function () { x = (x * 1664525 + 1013904223) >>> 0; return x / 4294967296; };
+            const A = AI.pickLoadout({ id: 'spine' }, DIFFICULTIES[1], TOWER_ORDER.slice(), f, rng, crew[a]);
+            x = 99991;
+            const B = AI.pickLoadout({ id: 'spine' }, DIFFICULTIES[1], TOWER_ORDER.slice(), f, rng, crew[b]);
+            if (A.slice().sort().join(',') === B.slice().sort().join(','))
+              same.push(crew[a].id + '=' + crew[b].id);
+          }
+        }
+      });
+      ok('40.4 two commanders of one banner field different boards',
+         same.length === 0,
+         same.length ? same.length + ' identical pairs on the same seed: ' + same.slice(0, 4).join(', ')
+                     : 'every same-banner commander pair drafts a different set from an identical seed');
+    });
+
+    T('40.5 a signature never costs a board its ability to fight', function () {
+      /* The guard that makes this a bias and not a lock. Two of the machine
+         signatures are a pair of support towers (AXIOM builds VAULT and
+         PYLON, DREGG-R builds REACTOR and ECHO), so forcing both in without
+         this guard would field a board that cannot kill anything. */
+      const broken = [];
+      COMMANDER_ROSTER.forEach(function (c) {
+        if (!c.faction || !c.signature) return;
+        for (let i = 0; i < 24; i++) {
+          let x = (i * 2654435761) >>> 0;
+          const rng = function () { x = (x * 1664525 + 1013904223) >>> 0; return x / 4294967296; };
+          const set = AI.pickLoadout({ id: 'spine' }, DIFFICULTIES[1], TOWER_ORDER.slice(), c.faction, rng, c);
+          /* base.damage, and it took a measurement to get right. The first
+             cut read `!(TOWER_TYPES[t]||{}).noDamage`, and there is no
+             noDamage field on any tower def, so EVERY tower counted as a
+             damage dealer and this check was vacuously green. There is no
+             top-level `dmg` either: the stat lives at base.damage, and 38 of
+             60 towers carry it (VAULT, BEACON, WARD and 19 others are pure
+             support and correctly score zero). */
+          const dmg = set.filter(function (t) {
+            const b = (TOWER_TYPES[t] || {}).base || {};
+            /* EVERY route to a dead body, not just the direct one. Measured:
+               DRONEBAY, FOUNDRY and CAPACITOR all carry no base.damage and
+               all kill (drones, minions, a released nova), so a base.damage
+               test alone reports three real damage dealers as support and
+               fails boards that fight perfectly well. */
+            return b.damage > 0 || b.droneDamage > 0 || b.minionDps > 0 || b.novaMin > 0;
+          }).length;
+          if (!set.length || dmg < 2) { broken.push(c.id + ' seed ' + i + ': ' + set.join('/')); break; }
+        }
+      });
+      ok('40.5 a signature never costs a board its ability to fight',
+         broken.length === 0,
+         broken.length ? broken.slice(0, 3).join('; ')
+                       : 'no commander drafts a board of fewer than two damage-capable towers');
+    });
+
+    T('40.6 a commander musters the denizens it is known for', function () {
+      const miss = [];
+      COMMANDER_ROSTER.forEach(function (c) {
+        if (!c.faction || !c.signature) return;
+        const pool = Object.keys(ENEMY_TYPES).filter(musterSendable);
+        const got = AI.pickMusterLoadout(pool, MUSTER_LOADOUT_SIZE, c);
+        const hit = c.signature.units.filter(function (u) { return got.indexOf(u) >= 0; }).length;
+        if (hit < 2) miss.push(c.id + ' ' + hit + '/2 (' + got.join('/') + ')');
+      });
+      ok('40.6 a commander musters the denizens it is known for',
+         miss.length === 0,
+         miss.length ? miss.slice(0, 4).join('; ')
+                     : 'all 27 signature commanders muster both of their named denizens ' +
+                       'when the vault holds them');
+    });
+  })();
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;

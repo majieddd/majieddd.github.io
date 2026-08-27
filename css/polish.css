@@ -4101,6 +4101,21 @@ body.rm-user #screen-game #rotate-hint b { animation: none; }
   #commander-detail > .cd-equipped { order: -1; margin-bottom: 10px; }
 
   .icon-btn.sm { min-width: 44px; }
+}
+/* ^ THE BRACE THAT WAS MISSING. The Session 39 merge note directly below
+   records two phone passes landing on the same surface on the same day;
+   the merge dropped this closing brace, so `@media (max-width: 860px)`
+   opened above stayed open to END OF FILE and silently swallowed every
+   rule after it: the debug bar, the whole field-manual figure layout, and
+   anything a later session appended.
+
+   MEASURED at 1280px before the fix: `.codex-entry.has-fig` computed to
+   `display: block` with `cursor: auto`, and `.ce-fig` to `display: inline`
+   at 0x0 pixels. The field manual portraits the owner asked for were
+   working on phones and invisible on every desktop, and nothing failed:
+   CSS auto-closes an unterminated block at EOF, so the file parses, the
+   rules exist, and they simply never match. tools/cssbrace.js is in
+   tools/gate.js now so this cannot recur quietly. */
 
 /* ==========================================================================
    MERGE NOTE, Session 39. Two phone passes landed on the same surface on the
@@ -4705,3 +4720,54 @@ body.rm-user #screen-game #rotate-hint b { animation: none; }
   #dock-tabs { display: none; }
 }
 
+
+/* ── COMMANDER SIGNATURE ──────────────────────────────────────────────────
+   The two towers and two denizens a commander is known for. Authored in
+   js/roster.js, drafted first by AI.pickLoadout and AI.pickMusterLoadout, and
+   shown here so the player reads the SAME information the rival brain acts on.
+
+   Styled as a quieter sibling of .cd-trait rather than a second loud box: the
+   trait is a mechanic the player is choosing between commanders, the signature
+   is a description of how one plays. Same radius, same padding, half the
+   border weight, so the pair reads as one column (the design contract's
+   "one accent" rule, and the reason there is no second colour here: --cc is
+   the commander's own, already established by the card above). */
+.cd-sig { background: color-mix(in srgb, var(--cc) 6%, transparent);
+          border: 1px solid color-mix(in srgb, var(--cc) 38%, transparent);
+          border-radius: 9px; padding: 11px 14px; margin-bottom: 18px; }
+.cd-sig > b { display: block; color: var(--cc); font-size: 12px;
+              letter-spacing: .13em; margin-bottom: 7px; }
+.sig-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.sig-row em { font-style: normal; font-size: 11px; letter-spacing: .1em;
+              color: var(--text-mute); text-transform: uppercase; }
+.sig-row em + em { margin-left: 6px; }
+.sig-note { display: block; margin-top: 7px; font-size: 12px; color: var(--text-mute); }
+
+/* Same chip contract as .br-ci on the briefing card, so a tower reads
+   identically wherever it appears. Deliberately NOT a new primitive: the kit
+   rule says reach for the existing one, and this only differs in size. */
+.sig-ci { display: inline-flex; align-items: center; justify-content: center;
+          width: 26px; height: 26px; border-radius: 6px; font-size: 13px;
+          color: var(--tc, var(--text)); background: rgba(4,8,14,.72);
+          border: 1px solid color-mix(in oklab, var(--tc, #7aa) 45%, transparent);
+          transition: transform .14s var(--e-tap); }
+.sig-ci.un { line-height: 0; }
+@media (hover: hover) and (pointer: fine) { .sig-ci:hover { transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) { .sig-ci { transition: none; } }
+
+/* The field manual row is tighter: it sits under the ability line inside a
+   codex entry that is already dense, so it carries icons and one joining
+   word rather than the labelled two-column form the commander card uses. */
+.cx-sig { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.cx-sig em { font-style: normal; font-size: 10.5px; letter-spacing: .08em;
+             color: var(--text-mute); margin: 0 2px; }
+.cx-sig .sig-ci { width: 22px; height: 22px; }
+
+/* Phones: the labels wrap before the icons do, and a 26px chip is below the
+   44px touch floor, so the row is not interactive there. It is a readout,
+   its tooltips are hover-only by the media query above, and nothing in it
+   needs a tap target. */
+@media (max-width: 760px) {
+  .cd-sig { padding: 10px 12px; }
+  .sig-note { font-size: 11.5px; }
+}

@@ -718,10 +718,14 @@ const Game = {
        its own power's hardware plus the human and robotic commons, never a
        third power's. A shelf the player is forbidden is not a difficulty
        setting, it is an asymmetry. */
+    /* The COMMANDER rides along, not just its banner. Meta.applyToAI above has
+       already seated it, so its signature is available here and is what makes
+       two rivals of the same power field different boards. */
     this.sides[1].loadout = AI.pickLoadout(this.map, this.difficulty,
                                            Meta.unlockedTowers(), this.sides[1].faction,
                                            (typeof opts.loadoutSeed === 'number')
-                                             ? seededDraw(opts.loadoutSeed) : undefined);
+                                             ? seededDraw(opts.loadoutSeed) : undefined,
+                                           this.sides[1].commander);
     /* Variety parity: the rival fields exactly as many tower TYPES as you do.
        Once you have claimed two worlds it earns one more than you -- never
        more than the loadout maximum. */
@@ -748,7 +752,8 @@ const Game = {
     this.setMusterLoadout(0, (opts.musterLoadout && opts.musterLoadout.length)
       ? opts.musterLoadout : Meta.musterLoadout());
     this.setMusterLoadout(1, AI.pickMusterLoadout(Meta.musterUnlocked(),
-      Math.max(1, this.sides[0].musterLoadout.length - (this.rivalStage === 0 ? 1 : 0))));
+      Math.max(1, this.sides[0].musterLoadout.length - (this.rivalStage === 0 ? 1 : 0)),
+      this.sides[1].commander));
 
     /* Talents are prepared before the match: yours from the saved trees, the
        rival's drafted to suit its own loadout, and only as deep as your own
@@ -835,9 +840,12 @@ const Game = {
          player's own arsenal size, and the third seat may never field more
          tower types than either of them. */
       this.sides[2].loadout = AI.pickLoadout(this.map, this.difficulty,
-                                             Meta.unlockedTowers(), this.sides[2].faction)
+                                             Meta.unlockedTowers(), this.sides[2].faction,
+                                             undefined, this.sides[2].commander)
                                 .slice(0, this.sides[1].loadout.length);
-      this.setMusterLoadout(2, this.sides[1].musterLoadout);
+      this.setMusterLoadout(2, AI.pickMusterLoadout(Meta.musterUnlocked(),
+                                                    this.sides[1].musterLoadout.length,
+                                                    this.sides[2].commander));
       this.sides[2].talentSets = AI.pickTalents(this.sides[2].loadout, this.rivalDepth, this.difficulty);
       this.sides[2].baseLevel = this.sides[1].baseLevel || 1;
     }
@@ -859,10 +867,12 @@ const Game = {
         const cmd = own[0] || spare[0] || COMMANDERS[i % COMMANDERS.length];
         taken.add(cmd.id);
         Meta.applyToAI(S2, cmd.id, rivalTech);
-        S2.loadout = AI.pickLoadout(this.map, this.difficulty, Meta.unlockedTowers(), S2.faction);
+        S2.loadout = AI.pickLoadout(this.map, this.difficulty, Meta.unlockedTowers(),
+                                    S2.faction, undefined, S2.commander);
         if (S2.loadout.length > variety) S2.loadout = S2.loadout.slice(0, variety);
         this.setMusterLoadout(i, AI.pickMusterLoadout(Meta.musterUnlocked(),
-                                                      this.sides[0].musterLoadout.length));
+                                                      this.sides[0].musterLoadout.length,
+                                                      S2.commander));
         S2.talentSets = AI.pickTalents(S2.loadout, this.rivalDepth, this.difficulty);
         S2.baseLevel = this.sides[1].baseLevel || 1;
       }
