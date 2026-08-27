@@ -12,8 +12,8 @@ and report the verdict:
    Prompts and target sizes are in `docs/API-STYLE-TEST.txt`.
 2. Put each beside its local sibling: `art/cut_human_sys1.webp`,
    `art/cut_xeno_sys1.webp`.
-3. Judge one thing only: **does it hold the house style** (ART-BIBLE section 1
-   — flat expressive brushwork, hard-edged graphic shapes, gothic engraved
+3. Judge one thing only: **does it hold the house style** (ART-BIBLE section 1:
+   flat expressive brushwork, hard-edged graphic shapes, gothic engraved
    linework, chromatic fringing, limited cyan/magenta/chrome palette).
 
 Do **not** write trial output into `artgen/cache_krea/`. It is evidence, not
@@ -35,15 +35,15 @@ buying. That is an open question, not a settled one.
   Its Auth0 tenant answers `dynamic client registration is disabled`;
   `claude mcp login` holds no pre-issued client_id, so it must register
   dynamically and never can. Higgsfield allows DCR and returns a client_id
-  instantly — that is the control that isolates the cause. The CLI entry was
+  instantly, that is the control that isolates the cause. The CLI entry was
   removed rather than left permanently unauthenticated. **The only way in is
   claude.ai → Settings → Connectors → Add custom connector**, URL
   `https://mcp.artlist.io/mcp`. Whether an account connector's tools then
-  reach a Claude Code CLI session is UNCONFIRMED — the Adobe one connects but
+  reach a Claude Code CLI session is UNCONFIRMED, the Adobe one connects but
   its tools have never loaded here.
   Artlist is still the more interesting candidate: reportedly usable on the
   free plan, and the only one covering music, SFX and voiceover. `js/audio.js`
-  is pure Web Audio synthesis today — no recorded music, no SFX, no voice for
+  is pure Web Audio synthesis today, no recorded music, no SFX, no voice for
   cutscene dialogue. That is the real gap; images already work locally.
 - **MCP tools load only at session start.** Authorising mid-session does
   nothing until a genuine restart (resuming a session is not enough).
