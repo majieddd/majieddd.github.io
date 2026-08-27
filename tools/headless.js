@@ -153,6 +153,16 @@ async function main() {
         (m.params.exceptionDetails.exception && m.params.exceptionDetails.exception.description || ''));
   });
 
+  /* PRECISE COVERAGE, opt in. Enabled BEFORE navigation so the modules'
+     top-level execution is counted too, not just what a harness calls into
+     afterwards. Off by default: it costs a few hundred ms and every existing
+     caller (gate.js) wants neither the cost nor the extra output. */
+  const WANT_COVERAGE = process.argv.includes('--coverage');
+  if (WANT_COVERAGE) {
+    await send('Profiler.enable');
+    await send('Profiler.startPreciseCoverage', { callCount: true, detailed: true });
+  }
+
   await send('Page.navigate', { url: URL_ });
   await sleep(3500);
 
@@ -194,7 +204,16 @@ async function main() {
   }
 
 
-    console.log(JSON.stringify({ results, consoleErrors: consoleErrors.slice(0, 20) }, null, 1));
+    let coverage = null;
+    if (WANT_COVERAGE) {
+      const cov = await send('Profiler.takePreciseCoverage');
+      /* Only this project's own modules. The page also runs Chrome internals
+         and any inlined blob, and neither is anybody's diff. */
+      coverage = (cov.result || []).filter(e => /\/js\/[A-Za-z0-9_]+\.js(\?|$)/.test(e.url || ''));
+      await send('Profiler.stopPreciseCoverage').catch(() => {});
+    }
+    console.log(JSON.stringify({ results, consoleErrors: consoleErrors.slice(0, 20),
+                                 coverage }, null, 1));
   } finally {
     if (ws) { try { ws.close(); } catch (e) { /* already closed */ } }
     await cleanup(chrome);

@@ -232,6 +232,28 @@ equally through `S.musterThisWave` (js/game.js:2682).
 
 ---
 
+## O. Close this session's own test debt
+
+Not an owner item. Added because the batch's own checks were audited against
+what they actually EXECUTE and found wanting, which is the standing law
+("code no gate executes is code that ships untested") applied to this
+session's work rather than to somebody else's.
+
+- [x] Ten paths shipped with zero coverage behind a green gate: musterCdFor,
+  musterReadyCount, ttEsc, Debug.lose, Debug.clearWave, Debug.heal,
+  Debug.render, the collapse toggle, engineKey's new branch and both xeno
+  feed tells. owner-sweep 38.17 to 38.21, each proven by planting the defect
+  it catches.
+- [x] HUMAN_VET_MAX capped nothing that any check would notice. 38.22.
+- [x] tools/newcoverage.js: profiles owner-sweep and MPT under Chrome precise
+  coverage and reports added lines with an execution count of zero. It found
+  20 more cold lines after the above, including endMatch's ratingFor call,
+  the path scoring every real victory. Closed by 38.23 to 38.26.
+- [x] Added lines reached by the gate: 100% (351 of 351), verified by planting
+  an unreachable branch and confirming the tool reports exactly it.
+
+---
+
 ## Evidence ledger (filled as items close)
 
 | Item | State | Evidence |
@@ -250,3 +272,4 @@ equally through `S.musterThisWave` (js/game.js:2682).
 | L | verified | Every tower, unit and commander entry now leads with its own art (the same icon primitive the board paints, commander portraits from ARTPACK) and carries a hover dossier of advanced stats, keyboard reachable via the existing bindChipTips. Stale CONSCRIPTION copy in Attrition replaced; cooldown documented. owner-sweep 38.13, 38.14. Also fixed 17 PRE-EXISTING AA contrast failures in the manual by applying DESIGN.md's ink rule, and fixed the verify_page bug that was hiding them. |
 | M | verified | js/debug.js, collapsible bar, off by default, OPTIONS toggle. Cheats drive the real paths: finish calls Game.endMatch, stars go through Meta.recordWorld so lastStars.systemTaken still queues the cutscene. owner-sweep 38.11 (forced rating via recordWorld), 38.12 (refuses in a duel). Contrast measured clean after two failures. |
 | N | verified | Per-detachment cooldown replaces MUSTER_PER_WAVE. owner-sweep 38.5 (arms and expires), 38.6 (Marque exempt), 38.9 (the card says recovering, not unaffordable). Fingerprint extended for reqCredit, musterCd and vetRank; MPT 37/37. |
+| O | verified | owner-sweep 62 to 88 checks. newcoverage reports 351 of 351 added executable lines reached, proven by planting a dead branch. Every new check proven by planting the defect it catches. |
