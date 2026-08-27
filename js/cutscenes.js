@@ -147,6 +147,9 @@ const Cutscenes = {
     if (!ov) { ov = document.createElement('div'); ov.id = 'cutscene'; document.body.appendChild(ov); }
     ov.style.setProperty('--fc', fac.color);
     ov.className = 'show';
+    /* The faction's own harmony under its own slides, pad only. The engine
+       does the work; this just names the chord set. See SCORES in audio.js. */
+    if (typeof Sound !== 'undefined' && Sound.startCutsceneScore) Sound.startCutsceneScore(factionId);
 
     let i = 0, typing = null;
 
@@ -205,6 +208,10 @@ const Cutscenes = {
       if (typing) { clearInterval(typing); typing = null; }
       ov.className = '';
       ov.innerHTML = '';
+      /* Restores whatever the score interrupted, including silence. Called on
+         SKIP and on the last slide alike, so there is no path that leaves the
+         cutscene harmony running under the game. */
+      if (typeof Sound !== 'undefined' && Sound.endCutsceneScore) Sound.endCutsceneScore();
       fin();
     };
 

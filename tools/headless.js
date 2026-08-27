@@ -65,6 +65,15 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const chromeFlags = [
   '--headless=new', '--disable-gpu', '--no-sandbox',
   '--mute-audio', '--no-first-run', '--no-default-browser-check',
+  /* --mute-audio silences the SPEAKERS; it does not stop the graph. What did
+     stop the graph was autoplay policy: with no trusted user gesture the
+     AudioContext stays `suspended`, every node processes nothing, and an
+     analyser tapped off the music bus reads a flat 0. That zero looks exactly
+     like broken audio and is not, which makes it the worst possible reading
+     to get from a gate. The two flags are complementary: this one lets the
+     context RUN so signal can be measured, --mute-audio keeps the machine
+     quiet while it does. */
+  '--autoplay-policy=no-user-gesture-required',
   '--disable-extensions', '--disable-background-networking',
   `--remote-debugging-port=${PORT}`, `--user-data-dir=${USERDIR}`,
   '--window-size=1600,900', 'about:blank',

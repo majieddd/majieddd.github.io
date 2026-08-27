@@ -85,3 +85,22 @@ Still open, and worth a session of its own:
   at one viewport. Touch latency, momentum scrolling, iOS Safari's dynamic
   toolbar and `env(safe-area-inset-bottom)` on a notched device are all
   unverified.
+
+---
+
+## Unrelated finding: owner-sweep 29.1 is flaky
+
+Recorded here because a flaky gate is worse than a missing one: it teaches the
+next session to re-run until green, which is how a real failure gets waved
+through.
+
+`owner-sweep 29.1`, "a campaign battle starts on every scenario, and worlds
+differ", failed once in roughly five full gate runs this session with
+`identical same-family boards 1/20`, then passed on an immediate re-run with
+the working tree untouched. The check samples 20 generated boards and fails if
+any two of the same family match, so a collision is a probability, not a
+defect: nothing in the run changed between the fail and the pass.
+
+`[ ]` Either raise the sample, seed the sweep's board selection so the check is
+deterministic, or state a tolerance (1/20 collisions allowed) and assert
+against that. Do not simply widen it until it stops failing.

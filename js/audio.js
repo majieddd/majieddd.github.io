@@ -1105,8 +1105,8 @@ const Sound = (() => {
   ------------------------------------------------------------------------ */
 
   const NOTE = { A2: 110.00, C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.00,
-                 A3: 220.00, C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00,
-                 A4: 440.00, C5: 523.25, E5: 659.25 };
+                 A3: 220.00, B3: 246.94, C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23,
+                 G4: 392.00, A4: 440.00, C5: 523.25, E5: 659.25 };
 
   /* i - VI - III - VII in A minor: Am, F, C, G */
   const PROGRESSION = [
@@ -1115,6 +1115,71 @@ const Sound = (() => {
     { root: NOTE.C3, arp: [NOTE.C4, NOTE.E4, NOTE.G4, NOTE.E4] },
     { root: NOTE.G3 / 2, arp: [NOTE.G3, NOTE.D4, NOTE.F4, NOTE.D4] }
   ];
+
+  /* ------------------------------------------- CUTSCENE SCORE, per faction
+
+     THE PROBLEM THIS SOLVES. The music engine gates its layers on `intensity`
+     0..3, which is wave pressure. A cutscene has no wave and therefore nothing
+     to react to, so the engine's whole premise has nothing to bite on and the
+     campaign has been playing its battle harmony under its story beats.
+
+     THE ANSWER IS NOT A FILE. A static track would be megabytes against an
+     engine that costs zero bytes, and js/audio.js:5-6 states the no-audio-files
+     property as a design decision. What a cutscene needs is not new machinery,
+     it is a different HARMONY through the machinery that already exists, run
+     at intensity 0 where only the pad is gated on. That is a bed, and it costs
+     four chords per faction.
+
+     Each set is chosen to be the audio analogue of the cut_ palette law in
+     docs/BRAND.md: the faction should be identifiable before the text is read.
+     The tempo is NOT touched. It is locked at 84 by brand law (TEMPO_LOCK) and
+     a cutscene is not a reason to move it. */
+  const SCORES = {
+    /* Humanity, steel blue. i - III - VII - v: resolves, then keeps going.
+       Determined rather than triumphant; they have not won anything yet. */
+    human: [
+      { root: NOTE.A2,     arp: [NOTE.A3, NOTE.C4, NOTE.E4, NOTE.C4] },
+      { root: NOTE.C3,     arp: [NOTE.C4, NOTE.E4, NOTE.G4, NOTE.E4] },
+      { root: NOTE.G3 / 2, arp: [NOTE.G3, NOTE.B3, NOTE.D4, NOTE.B3] },
+      { root: NOTE.E3 / 2, arp: [NOTE.E3, NOTE.G3, NOTE.B3, NOTE.G3] }
+    ],
+    /* Federation of Light, radiant gold. I - V - vi - IV, the plain hymn
+       cadence. It is the only major set here, and the vi is the shadow in it:
+       the Mandate believes its own hymn and the hymn is still wrong. */
+    light: [
+      { root: NOTE.C3,     arp: [NOTE.C4, NOTE.E4, NOTE.G4, NOTE.E4] },
+      { root: NOTE.G3 / 2, arp: [NOTE.G3, NOTE.B3, NOTE.D4, NOTE.B3] },
+      { root: NOTE.A2,     arp: [NOTE.A3, NOTE.C4, NOTE.E4, NOTE.C4] },
+      { root: NOTE.F3 / 2, arp: [NOTE.F3, NOTE.A3, NOTE.C4, NOTE.A3] }
+    ],
+    /* The Xeno, violet. E Phrygian: i - bII - i - vii. The bII a semitone
+       above the root is the Phrygian signature and it never resolves, which
+       is the point. Organic, wrong, and completely sure of itself. */
+    xeno: [
+      { root: NOTE.E3 / 2, arp: [NOTE.E3, NOTE.G3, NOTE.B3, NOTE.G3] },
+      { root: NOTE.F3 / 2, arp: [NOTE.F3, NOTE.A3, NOTE.C4, NOTE.A3] },
+      { root: NOTE.E3 / 2, arp: [NOTE.E3, NOTE.G3, NOTE.B3, NOTE.G3] },
+      { root: NOTE.D3 / 2, arp: [NOTE.D3, NOTE.F3, NOTE.A3, NOTE.F3] }
+    ],
+    /* The Pirates, crimson. D Dorian: i - IV - i - bVII. The major IV inside a
+       minor key is the swagger, and Dorian is the mode that sounds like it is
+       getting away with something. */
+    pirate: [
+      { root: NOTE.D3 / 2, arp: [NOTE.D3, NOTE.F3, NOTE.A3, NOTE.F3] },
+      { root: NOTE.G3 / 2, arp: [NOTE.G3, NOTE.B3, NOTE.D4, NOTE.B3] },
+      { root: NOTE.D3 / 2, arp: [NOTE.D3, NOTE.F3, NOTE.A3, NOTE.F3] },
+      { root: NOTE.C3,     arp: [NOTE.C4, NOTE.E4, NOTE.G4, NOTE.E4] }
+    ],
+    /* The Parallel, chrome. Two chords across four bars, so it barely moves,
+       and the second is a maj7 whose seventh never resolves down. Machines
+       tending a garden for a maker who is not coming back. */
+    robot: [
+      { root: NOTE.A2,     arp: [NOTE.A3, NOTE.C4, NOTE.E4, NOTE.C4] },
+      { root: NOTE.A2,     arp: [NOTE.A3, NOTE.C4, NOTE.E4, NOTE.C4] },
+      { root: NOTE.F3 / 2, arp: [NOTE.F3, NOTE.A3, NOTE.C4, NOTE.E4] },
+      { root: NOTE.F3 / 2, arp: [NOTE.F3, NOTE.A3, NOTE.C4, NOTE.E4] }
+    ]
+  };
 
   /* Placement. The pad is wide because it is the bed; the rhythm parts are
      narrow because a kit that wanders is distracting rather than wide. */
@@ -1242,6 +1307,12 @@ const Sound = (() => {
     step: 0,          // grid counter, sixteenths at 168, wraps every LOOP_STEPS
     tempo: TEMPO_LOCK,
     intensity: 1,
+    /* The chord set currently playing. Combat harmony by default; a
+       cutscene swaps it for its faction's and puts it back on close. */
+    prog: PROGRESSION,
+    /* Set while a cutscene score is up, so endCutsceneScore can restore
+       exactly the state it interrupted rather than guessing. */
+    priorScore: null,
     /* Break density, 0..1. See setTempo(): this is where the game's per-wave
        tempo request is spent now that the tempo itself is pinned. */
     drive: 0.4,
@@ -1383,7 +1454,7 @@ const Sound = (() => {
 
   function scheduleStep(step, t) {
     const bar   = Math.floor(step / HARM_BAR_STEPS) % 4;   // which chord
-    const chord = PROGRESSION[bar];
+    const chord = music.prog[bar];
     const b     = step % HARM_BAR_STEPS;                   // 0..31 in the 84 bar
     const d     = Math.floor(step / DRUM_BAR_STEPS) % 8;   // which drum bar
     const h     = step % DRUM_BAR_STEPS;                   // 0..15 in the 168 bar
@@ -1628,6 +1699,32 @@ const Sound = (() => {
     music.intensity = Math.max(0, Math.min(3, level));
   }
 
+  /** The cutscene bed: this faction's harmony, pad only, tempo untouched.
+      Intensity 0 is the existing gate under which bass, kick, snare, hats,
+      arpeggio and lead are all silent and the pad is not, so no new layer or
+      node type is introduced. An unknown faction is a no-op rather than a
+      throw: art and audio both degrade quietly here by design. */
+  function startCutsceneScore(facId) {
+    if (!ready || !SCORES[facId]) return;
+    if (!music.priorScore) {
+      music.priorScore = { prog: music.prog, intensity: music.intensity,
+                           playing: music.playing };
+    }
+    music.prog = SCORES[facId];
+    setIntensity(0);
+    if (!music.playing) startMusic(0);
+  }
+
+  /** Put back exactly what the cutscene interrupted. */
+  function endCutsceneScore() {
+    const p = music.priorScore;
+    music.priorScore = null;
+    if (!p) return;
+    music.prog = p.prog;
+    setIntensity(p.intensity);
+    if (!p.playing) stopMusic();
+  }
+
   /* THE TEMPO IS NOT SETTABLE, and this does not ignore its caller either.
 
      game.js:1127 asks for 96 + 2 * wave, which is 98 rising to 126, and that
@@ -1678,6 +1775,7 @@ const Sound = (() => {
   return {
     init, resume, play, sfx, settings,
     startMusic, stopMusic, setIntensity, setTempo,
+    startCutsceneScore, endCutsceneScore,
     setSfxVolume, setMusicVolume, toggleSfx, toggleMusic,
     get isReady() { return ready; },
     /* MEASUREMENT ONLY, both of these, and named so they are greppable.
