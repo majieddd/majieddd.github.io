@@ -195,6 +195,43 @@ under the wrong assumption about its own type. Their files stay theirs.
   preview function on the same map without the `solo` flag draws 2 seats and
   2 bases.
 
+## D2. The process audit, and what it changed
+
+Every defect in this batch reached the owner through a hole in the tooling,
+not through a rule nobody followed, so the audit hunted holes.
+
+**Two new gates, each proved by planting the defect it exists to catch.**
+
+`tools/deadfields.js`, wired into `gate.js`. A config key nothing reads is a
+promise the engine does not keep, which is exactly what `scenario.spawn` and
+`scenario.kind` were. Building it was the same lesson four times over: its
+first cut reported 200+ entity ids as dead fields (repetition separates a
+schema field from an id), then MISSED BOTH defects it was written for (a bare
+`.key` scan cannot tell whose key it found: `scenario.kind` was dead while
+`world.kind` was read everywhere), then pronounced them live off the strings
+in its own header (the linter's documentation defeated the linter), then
+reported a line of dialogue as a field (prose needs stripping too). 35 dead
+fields removed, including `WAVES.reward`, ten authored per-wave gold values
+superseded by a formula, so anyone tuning them would have seen nothing happen.
+
+`owner-sweep 29.1`, the campaign smoke check. 61 checks and not one started a
+campaign battle: every `Game.start` in `tools/` passes `map:` and usually
+`skirmish: true`. Planting the two original defects back: `const mapSeed`
+gives "0 campaign battles started, 16 failed (Assignment to constant
+variable)", and `opts.world.id` gives "identical same-family boards 28/28".
+
+**A live law violation, found by running the law rather than trusting it.**
+The standing rule "a harness may never catch an exception it does not report"
+carried the check `grep -c 'catch (e) {}' tools/owner-sweep.js` must stay 0.
+It returned 2, and neither hit was a defect: one was the comment describing
+the historical fix, one a setup line. The law had been un-runnable for its
+whole life. Scanning code instead of prose found a real one it had never
+caught: `js/game.js` ran the delayed-effects queue (cyclone drops,
+aftershocks, real work inside `step()`) as `try { d.fn(); } catch (e) {}`, so
+an effect could throw on every trigger forever with every gate green. Now
+reports through `recordLoopError`, which owner-sweep 22.12 already reads.
+Proved by planting a throwing effect.
+
 ## E. Follow-ups surfaced by this batch
 
 - `[ ]` Patrol BALANCE is unpinned. The mechanic is proven correct but its
