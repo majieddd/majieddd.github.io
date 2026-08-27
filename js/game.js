@@ -280,6 +280,43 @@ const Game = {
     this.width = FIELD.cols * TILE;
     this.height = FIELD.rows * TILE;
 
+    /* PUBLISH THE HUD'S REAL HEIGHT. #battle-controls is absolutely
+       positioned and, below 1550px, moves to the top to get out of the dock's
+       way; the top is where #hud already is, so the two overlapped by a
+       measured 12236 square pixels at every phone size and the speed buttons
+       sat on the player's own commander card. CSS cannot ask a sibling how
+       tall it is, and the alternative was hardcoding a number that the HUD
+       would then drift away from, which is this project's signature defect.
+       So the measurement is published once per resize and the CSS
+       reads it. Presentation only: nothing here is read by the simulation. */
+    const hudEl = document.getElementById('hud');
+    const sgEl = document.getElementById('screen-game');
+    if (hudEl && sgEl) {
+      const publish = () => {
+        /* The BOTTOM EDGE, not the height. #hud is inset from the top of the
+           screen, so positioning a sibling at `height + gap` lands it INSIDE
+           the HUD by exactly that inset: measured, a constant 544px2 of
+           overlap at every phone size, which is 2px down a 266px control and
+           precisely the 10px top inset minus the 8px gap. What the controls
+           need to clear is where the HUD ENDS. */
+        const hb = hudEl.getBoundingClientRect(), sb = sgEl.getBoundingClientRect();
+        const bottom = Math.round(hb.bottom - sb.top);
+        if (hb.height > 0) sgEl.style.setProperty('--hud-b', bottom + 'px');
+      };
+      publish();
+      /* A RESIZE IS NOT THE ONLY THING THAT CHANGES THE HUD'S HEIGHT. Chips
+         appear and vanish as doctrine and escalations land, and the row count
+         moves with them: publishing only here left the variable a couple of
+         pixels stale and the controls still clipped the HUD by a measured
+         544px2. An observer tracks the real box whenever it changes, for any
+         reason, and removes the whole staleness class rather than the two
+         pixels of it that happened to be visible. Bound once. */
+      if (!this._hudRO && typeof ResizeObserver === 'function') {
+        this._hudRO = new ResizeObserver(publish);
+        this._hudRO.observe(hudEl);
+      }
+    }
+
     /* The container can report a near-zero box when the game screen has not been
        laid out yet -- mid screen-transition, or on the very first frame. Fitting
        to that would lock the board at the minimum scale and leave it there, so

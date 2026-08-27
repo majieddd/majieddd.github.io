@@ -3777,7 +3777,13 @@ body.rm-user.immersive #battle-controls { transition: none; }
 @media (max-width: 767px) and (orientation: portrait) {
   #screen-game #rotate-hint {
     display: flex; align-items: center; justify-content: center; gap: 9px;
-    position: absolute; left: 50%; top: 27vh; transform: translateX(-50%);
+    /* Below the controls, which are themselves below the HUD. 27vh was a
+       guess taken before the battle HUD was compacted and it now lands the
+       chip UNDER #battle-controls: measured, the hint was half hidden behind
+       the speed buttons. Both offsets read the same published --hud-b, so
+       the stack stays in order whatever the HUD does. */
+    position: absolute; left: 50%; top: calc(var(--hud-b, 214px) + 66px);
+    transform: translateX(-50%);
     z-index: 15;                    /* under #hud and #dock (both z20) */
     pointer-events: none;
     max-width: min(300px, 82vw); padding: 7px 13px;
@@ -3886,4 +3892,140 @@ body.rm-user #screen-game #rotate-hint b { animation: none; }
   /* Thumb reach: the commit goes full width under the description. */
   .soul-buy-bar { flex-wrap: wrap; row-gap: 8px; }
   .soul-buy-bar .btn { flex: 1 0 100%; padding: 12px 16px; }
+}
+
+/* ═════════════ THE BATTLE HUD ON A PHONE (Session 38, owner) ═══════════
+   Owner: "it is currently difficult to navigate during a battle and actually
+   try to do the battle because the screen is so cluttered with information
+   and doesn't really fit."
+
+   MEASURED at 412x800 before this block, and the numbers are the argument:
+
+     chrome (hud + dock + controls)   65% of the viewport
+     the same in landscape 844x390    93% of the viewport
+     #hud                             204px tall, of which .hud-centre is 194
+     .hud-side                        22px WIDE holding a 190px commander card
+     #hud x #battle-controls          12236px2 of overlap, at every phone size
+
+   Three separate faults, one screen.
+
+   1. THE CONTROLS SAT ON THE HUD. Below 1550px #battle-controls moves to the
+      top to clear the dock, and the top is where #hud lives. It now sits
+      under the HUD, offset by the HUD's OWN measured height, published as
+      --hud-h by Game.resize because CSS cannot ask a sibling how tall it is
+      and a hardcoded number would drift.
+
+   2. THE COMMANDER CARDS OVERFLOWED THEIR COLUMNS. .cmdr carries min-width
+      190px inside a flex column that a 412px screen can only give 22px. The
+      card did not shrink, it spilled, which is what cut "YOU" in half in the
+      owner's screenshot. min-width:0 lets the column win.
+
+   3. THE CENTRE COLUMN WAS ALMOST THE WHOLE HUD. 194 of 204px, and 63 of
+      those were three chip rows, two of which usually say "no doctrine" and
+      "no escalations": empty states earning full rows on the smallest screen
+      there is. They are hidden here, and reappear the moment they carry a
+      real chip, because .chip-row:empty is not the same as a row holding an
+      "empty" chip. */
+@media (max-width: 860px) {
+  #battle-controls {
+    top: calc(var(--hud-b, 214px) + 8px); bottom: auto;
+    right: 8px; padding: 4px 6px; gap: 4px;
+  }
+  #battle-controls .icon-btn, #battle-controls .speed-btn {
+    min-width: 34px; min-height: 34px; padding: 4px 6px; font-size: 11px;
+  }
+
+  /* TWO ROWS, NOT ONE. READ THE BINDING SITE FIRST, which this did not.
+
+     #hud is authored as a GRID (style.css:509) and three tuning passes were
+     spent on grid-template-columns before the computed style was actually
+     read: in immersive mode, which is what a battle runs in,
+     `body.immersive #hud` (polish.css:353) sets display:flex, so every
+     grid rule written here was inert. The measurements never moved because
+     nothing was being applied. That is section 4 of session-hygiene, and it
+     cost three rounds.
+
+     The real layout is a nowrap flex row, and 412px cannot hold two commander
+     cards and a 300px centre: measured, each card got 95px of box holding
+     123px of stats, so the cards did not shrink, they OVERFLOWED, which is
+     the text running across WAVE in the owner's screenshot. Wrapping the
+     stats was tried and measured WORSE (159px of HUD became 223px and it
+     still clipped, because wrapping cannot help an item with no room on any
+     line).
+
+     So: let the ROW wrap, give the two cards a share each, and send the
+     centre to a line of its own. Selectors carry body.immersive so they meet
+     the rule they are correcting rather than losing to it silently. */
+  body.immersive #hud, #hud { gap: 4px 6px; padding: 4px 8px; position: relative; }
+  body.immersive #hud > .hud-side, #hud > .hud-side {
+    flex: 1 1 0; min-width: 0; padding: 4px 8px;
+  }
+  body.immersive #hud > .hud-centre, #hud > .hud-centre {
+    min-width: 0; padding: 4px 8px;
+  }
+  .hud-centre .btn-wave { width: 100%; }
+  .cmdr { min-width: 0; padding: 2px 4px; gap: 1px; }
+  .cmdr-stats { min-width: 0; gap: 8px; }
+  .cmdr-stats b { font-size: 13px; }
+  .cmdr-tag { font-size: 7.5px; }
+  .wave-badge { font-size: 11px; padding: 2px 8px; }
+
+  /* Abandoning a match is the rarest control here and it was taking 32px out
+     of a column the card needed. It goes to the corner. */
+  #hud .hud-side #btn-quit {
+    position: absolute; left: 5px; top: 5px; z-index: 2;
+    width: 24px; height: 24px; min-width: 0; min-height: 0;
+    padding: 0; font-size: 12px; line-height: 1; opacity: .7;
+  }
+  #hud .hud-side:first-child { padding-left: 24px; }
+}
+
+/* THE SECOND ROW IS FOR PORTRAIT ONLY. Wrapping was applied at 860px first
+   and measured a REGRESSION on a landscape phone: 844x390 has plenty of width
+   for one row, so wrapping it pushed the HUD from 159px to 213px, drove chrome
+   from 82% of the viewport to 97%, and put the controls back on top of the
+   dock (11968px2). The cards need about 190px each and the centre about 300,
+   so one row stops fitting below roughly 700px. That, not the phone tier, is
+   where the wrap belongs. */
+@media (max-width: 700px) {
+  body.immersive #hud, #hud { flex-wrap: wrap; }
+  body.immersive #hud > .hud-centre, #hud > .hud-centre { flex: 1 0 100%; order: 3; }
+  /* The dock's panes cap at 42vh, which on an 800px phone is 336px, and with
+     a two-row HUD above it that left the board a 260px band. The panes scroll
+     internally, so a tighter cap costs reach rather than content, and tower
+     placement no longer depends on the shop pane at all now that a tap on the
+     board opens the ring. */
+  #dock .dock-pane { max-height: 32vh; }
+  #btn-rush.btn { padding: 8px 10px; }
+  /* An empty state does not earn a row on a phone. The chip carries the class,
+     so the ROW is hidden by having only empty chips in it. */
+  .chip-rows { gap: 3px; }
+  .chip-row:has(> .chip.empty:only-child) { display: none; }
+}
+
+/* ═══════ A SHORT VIEWPORT IS ITS OWN PROBLEM (Session 38, owner) ═══════
+   A landscape phone is 390px TALL. Measured there before this block: the HUD
+   and the dock together took 352 of those 390 pixels, chrome reached 93% of
+   the viewport, and the controls sat on the dock by 9248px2. Width was never
+   the constraint; height was, and every rule above is keyed to width.
+
+   What goes first is what a player is not reading mid-wave. The chip rows are
+   a status readout (doctrine, escalations, the three modifiers) and they cost
+   a third of the HUD; the wave badge and the RUSH button are the two things
+   that are actually operated. The dock keeps every pane and every card, it
+   just stops being allowed to claim nearly half the screen. */
+@media (max-height: 460px) {
+  .chip-rows { display: none; }
+  #phase-label.phase { font-size: 9px; }
+  .hud-centre { gap: 2px; }
+  .wave-badge { font-size: 10px; padding: 1px 6px; }
+  #btn-rush.btn { padding: 6px 10px; font-size: 12px; }
+  .cmdr { padding: 2px 5px; }
+  .cmdr-stats b { font-size: 12px; }
+  /* The dock scrolls internally already, so a cap costs reach, not content. */
+  #dock .dock-pane { max-height: 30vh; }
+  #battle-controls { padding: 3px 5px; }
+  #battle-controls .icon-btn, #battle-controls .speed-btn {
+    min-width: 30px; min-height: 30px; font-size: 10px;
+  }
 }

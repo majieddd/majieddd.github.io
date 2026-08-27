@@ -110,7 +110,14 @@ const out = html
   .replace(/<script src="js\/artpack\.js"><\/script>[\s\S]*?<script src="js\/main\.js"><\/script>/, () =>
            `<script>\n${js}\n</script>`);
 
-if (out.includes('<script src=') || out.includes('stylesheet')) {
+/* MATCH THE TAG, NOT THE WORD. This guard used to test for the bare string
+   "stylesheet" anywhere in the finished bundle, and the bundle is every source
+   file this project has: a single COMMENT in js/game.js containing that word
+   aborted the build with "Bundle still references external files", a message
+   that sends you hunting for a link tag which was never there. Measured in
+   Session 38, and it cost a real detour. What the guard actually cares about
+   is a <link> that survived inlining, so that is what it looks for now. */
+if (out.includes('<script src=') || /<link\b[^>]*rel=["']?stylesheet/i.test(out)) {
   console.error('Bundle still references external files, aborting.');
   process.exit(1);
 }
