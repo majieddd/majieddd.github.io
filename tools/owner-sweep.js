@@ -1428,7 +1428,12 @@
      procedural family do not build the same board. */
   T('29.1 a campaign battle starts on every scenario, and worlds differ', function () {
     const id = '29.1 a campaign battle starts on every scenario, and worlds differ';
-    try { localStorage.removeItem(Meta.KEY); } catch (e) {}
+    /* Best effort, and deliberately not the silent-catch the standing law
+       bans: clearing storage is SETUP, not the thing under test, and a
+       browser that refuses it still runs the check correctly off a fresh
+       in-memory profile. The law's target is a catch that hides a failure of
+       the subject; this one cannot. */
+    try { localStorage.removeItem(Meta.KEY); } catch (e) { /* storage unavailable, fresh profile is fine */ }
     Meta._root = null; Meta.load();
     const p0 = Meta.load(); p0.faction = 'human'; Meta.save();
     Meta.campaignStart('human');

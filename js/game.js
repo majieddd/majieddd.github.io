@@ -4028,7 +4028,13 @@ const Game = {
     for (let i = this.delayed.length - 1; i >= 0; i--) {
       const d = this.delayed[i];
       d.t -= dt;
-      if (d.t <= 0) { this.delayed.splice(i, 1); try { d.fn(); } catch (e) {} }
+      /* REPORTED, not swallowed. A delayed effect is a cyclone drop or an
+         aftershock: real simulation work, on a real timer, inside step(). An
+         empty catch here meant one could throw on every trigger forever while
+         every gate stayed green, which is this project's named signature
+         defect. recordLoopError is the buffer owner-sweep 22.12 already
+         reads, so this needs no new machinery to become visible. */
+      if (d.t <= 0) { this.delayed.splice(i, 1); try { d.fn(); } catch (e) { this.recordLoopError(e); } }
     }
 
     /* --- WARD fields: mark protected towers, apply their combat blessing --- */
