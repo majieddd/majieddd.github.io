@@ -3503,3 +3503,149 @@ body.rm-user.immersive #battle-controls { transition: none; }
   color: var(--text); background: rgba(4, 8, 16, .72);
   border: 1px solid color-mix(in srgb, var(--fc) 34%, transparent); }
 .save-out:focus { outline: 2px solid var(--fc); outline-offset: 1px; }
+
+/* ══════════════════════ FACTION SELECT ON A PHONE ══════════════════════
+   MEASURED FAILURE, iPhone-class 390x844 viewport: the faction screen's
+   content is 1372px tall, so BEGIN CONQUEST sat at y=1286, which is 510px
+   BELOW THE FOLD. Tapping a card enabled the button correctly, but the
+   player never saw that anything had happened and had no reason to believe a
+   confirm existed at all. Selection worked; the affordance did not.
+
+   The fix is a sticky action bar rather than a pop-up one. Always visible
+   means the CTA is discoverable BEFORE the choice, so the screen reads as
+   "pick one, then press this" instead of "pick one, then guess". It gains
+   emphasis on .ready rather than appearing from nothing, because an element
+   that materialises under a thumb mid-tap is its own bug.
+
+   Scoped to #screen-faction: #screen-multiverse and #screen-theatre already
+   position their own .setup-foot absolutely and must not be touched. */
+@media (max-width: 860px) {
+  #screen-faction .setup-foot {
+    position: sticky; bottom: 0; z-index: 8;
+    margin: 0 -18px 0; padding: 12px 18px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to top,
+                color-mix(in srgb, var(--bg) 96%, transparent) 62%,
+                transparent);
+    backdrop-filter: blur(9px);
+    border-top: 1px solid var(--line);
+    transition: border-color .22s ease, background .22s ease;
+  }
+  /* The last card must clear the bar rather than hide behind it. */
+  #screen-faction .faction-grid { padding-bottom: 12px; }
+  /* Thumbs are not mice: the primary action gets the width it needs. */
+  #screen-faction .setup-foot .btn-primary { flex: 1 1 auto; padding: 14px 18px; }
+  #screen-faction .setup-foot #btn-faction-back { flex: 0 0 auto; }
+
+  /* A banner is chosen. Lift the bar in that banner's own colour, which is
+     the same signal the chosen card is already showing. */
+  #screen-faction .setup-foot.ready {
+    border-top-color: color-mix(in srgb, var(--fc, var(--acc)) 60%, transparent);
+    box-shadow: 0 -10px 30px -12px color-mix(in srgb, var(--fc, var(--acc)) 45%, transparent);
+  }
+  #screen-faction .setup-foot.ready .btn-primary { animation: facGoPulse .42s ease-out 1; }
+}
+@keyframes facGoPulse {
+  0%   { transform: scale(1); }
+  46%  { transform: scale(1.045); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #screen-faction .setup-foot.ready .btn-primary { animation: none; }
+}
+
+/* ══════════════════════ MOBILE AUDIT, SESSION 37 ═══════════════════════
+   Measured at 390x844 (iPhone-class) with every setup screen rendered. Four
+   defects, each a number rather than an opinion:
+
+     screen-command   footer overflowed its own width by 120px, and the
+                      primary CTA sat 12px below the fold
+     screen-loadout   .lo-col-head overflowed by 88px; 10 controls under the
+                      44px touch floor
+     screen-theatre   a 45px horizontal overflow
+     screen-faction   CTA 510px below the fold (fixed in the block above)
+
+   Horizontal overflow is the worst of these because it is silent: the layout
+   does not break visibly, it just puts content past the right edge where a
+   player has no reason to look and often cannot scroll to. */
+@media (max-width: 860px) {
+  /* THE FOOTER PATTERN. Four items (back, shop, step dots, primary) cannot
+     share a 390px row, so the primary takes its own full-width row and the
+     rest wrap above it. Sticky for the same reason as the faction screen:
+     a confirm you have to hunt for is a confirm that does not exist. */
+  #screen-command .setup-foot,
+  #screen-loadout .setup-foot {
+    position: sticky; bottom: 0; z-index: 8;
+    flex-wrap: wrap; row-gap: 8px; justify-content: flex-start;
+    margin: 0 -18px 0; padding: 12px 18px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to top,
+                color-mix(in srgb, var(--bg) 96%, transparent) 62%, transparent);
+    backdrop-filter: blur(9px);
+    border-top: 1px solid var(--line);
+  }
+  #screen-command .setup-foot .btn-primary,
+  #screen-loadout .setup-foot .btn-primary {
+    flex: 1 0 100%; order: 10; padding: 14px 18px;
+  }
+  /* The step dots are a progress readout, not a control. They keep their
+     place in the wrap order but never force the row wider. */
+  #screen-command .setup-foot .step-dots { flex: 0 1 auto; margin-left: auto; }
+
+  /* THE LOADOUT COLUMN HEAD. Four auto/1fr tracks plus a fifth child on an
+     implicit row is what pushed it 88px past the edge. Two tracks fit, and
+     the chosen-units strip spans both rather than competing for one. */
+  .lo-col-head { grid-template-columns: 1fr auto; gap: 6px 9px; }
+  .lo-col-head .lo-col-kind { grid-column: 1 / -1; }
+  .lo-col-head .lo-chosen  { grid-column: 1 / -1; }
+  .lo-col-name { font-size: 14px; letter-spacing: .16em; }
+
+  /* THE TOUCH FLOOR. 44px is the accessibility minimum for a tap target and
+     ten controls on the loadout screen were under it. Applied to the setup
+     screens only: the in-game HUD is a different density problem and is not
+     in this pass. */
+  #screen-command button, #screen-loadout button, #screen-faction button,
+  #screen-title button { min-height: 44px; }
+
+  /* Nothing in a setup screen may exceed the viewport width. This is the
+     backstop that keeps the next long word or wide grid from re-opening the
+     silent-overflow class of bug. */
+  #screen-command, #screen-loadout, #screen-theatre, #screen-faction { overflow-x: hidden; }
+  #screen-theatre .setup-foot { flex-wrap: wrap; row-gap: 8px; }
+}
+
+@media (max-width: 860px) {
+  /* A grid item defaults to min-width:auto, so it refuses to shrink below its
+     own min-content width. .setup-body collapses to one column under 900px,
+     but the rail still measured 401px inside a 390px viewport and pushed
+     every child past the right edge with it. min-width:0 lets the track win,
+     and the long unbreakable strings inside are the ones that must wrap. */
+  .setup-body { min-width: 0; }
+  .setup-body > * { min-width: 0; }
+  .setup-rail, #commander-list, .cmd-card { min-width: 0; max-width: 100%; }
+  .cmd-card { flex-wrap: wrap; }
+  .cmd-card * { min-width: 0; overflow-wrap: anywhere; }
+  /* Three equal buttons in the rail cannot hold their labels at this width. */
+  .rail-actions { flex-wrap: wrap; }
+  .rail-actions .btn { flex: 1 1 46%; }
+}
+
+@media (max-width: 860px) {
+  /* .cd-head was the root of the commander screen's residual 69px: a three
+     track auto/1fr/auto grid holding a 26px name at .12em letter-spacing has
+     a min-content width no viewport this narrow can satisfy, and every
+     ancestor inherited the overflow from it. Portrait and name share the top
+     row, the level block drops to its own. */
+  .cd-head { grid-template-columns: auto 1fr; gap: 10px 12px; }
+  .cd-head > .cd-level { grid-column: 1 / -1; flex-direction: row;
+                         align-items: center; justify-content: flex-start; gap: 10px; }
+  .cd-name { font-size: 19px; letter-spacing: .07em; overflow-wrap: anywhere; }
+  .cd-title { font-size: 12px; }
+  .cd-head, .cd-head > * { min-width: 0; }
+
+  /* Same class of defect on the loadout column: long letter-spaced labels
+     inside fixed tracks. Let every setup panel's text wrap rather than push. */
+  #screen-loadout .lo-col, #screen-loadout .lo-card,
+  #screen-loadout .lo-col > *, #screen-loadout .lo-card > * { min-width: 0; }
+  #screen-loadout .lo-card, #screen-loadout .lo-col { overflow-wrap: anywhere; }
+}

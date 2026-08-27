@@ -1511,7 +1511,18 @@ const UI = {
       this.sel.faction = b.dataset.fac; Sound.play('click'); this.renderFactions();
     }));
     this.bindChipTips($('#faction-grid'));
-    $('#btn-faction-go').disabled = !(this.sel.faction || Meta.faction());
+    const picked = this.sel.faction || Meta.faction();
+    $('#btn-faction-go').disabled = !picked;
+    /* On a phone the confirm is a sticky bar (polish.css, the 860px block).
+       It carries the chosen banner's colour so the bar and the chosen card
+       agree, which is the whole signal that a choice registered: measured at
+       390x844, the CTA otherwise sat 510px below the fold and a player had no
+       way to know tapping a card had done anything. */
+    const foot = $('#screen-faction .setup-foot');
+    if (foot) {
+      foot.classList.toggle('ready', !!picked);
+      if (picked && FACTIONS[picked]) foot.style.setProperty('--fc', FACTIONS[picked].color);
+    }
   },
 
   /* ======================================================= GALAXY MAP === */
