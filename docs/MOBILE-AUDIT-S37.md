@@ -88,7 +88,7 @@ Still open, and worth a session of its own:
 
 ---
 
-## Unrelated finding: owner-sweep 29.1 is flaky
+## Unrelated finding: owner-sweep 29.1 was flaky. FIXED
 
 Recorded here because a flaky gate is worse than a missing one: it teaches the
 next session to re-run until green, which is how a real failure gets waved
@@ -101,6 +101,19 @@ the working tree untouched. The check samples 20 generated boards and fails if
 any two of the same family match, so a collision is a probability, not a
 defect: nothing in the run changed between the fail and the pass.
 
-`[ ]` Either raise the sample, seed the sweep's board selection so the check is
-deterministic, or state a tolerance (1/20 collisions allowed) and assert
-against that. Do not simply widen it until it stops failing.
+`[x]` **FIXED, same session, by pinning the draw rather than widening the
+assertion.** The root cause was upstream of the check: `campaignStart` seeds
+with `Math.random` (commanders.js:514), which is right for a campaign and
+wrong for a gate, so every run sampled a different set of worlds. The tell was
+that the counts moved between runs, 20 battles across 5 scenarios one time and
+17 across 15 comparisons the next.
+
+The sweep now assigns `Meta.campaign().seed = 20260827` before reading the
+galaxy. `galaxy()` caches on seed plus mapPool, so the assignment both pins
+the draw and invalidates the cache. The check is deterministic now: it either
+passes every run or fails every run, and a failure means something. Verified
+with three consecutive full gate runs, all `pass=62 fail=0`.
+
+Deliberately NOT done: raising the tolerance to allow 1/20 collisions. That is
+widening an assertion until it stops failing, which is the thing this entry was
+written to warn about.

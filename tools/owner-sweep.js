@@ -1437,6 +1437,23 @@
     Meta._root = null; Meta.load();
     const p0 = Meta.load(); p0.faction = 'human'; Meta.save();
     Meta.campaignStart('human');
+    /* PIN THE GALAXY. campaignStart seeds with Math.random (commanders.js:514),
+       which is right for a campaign and wrong for a gate: every run sampled a
+       DIFFERENT set of worlds, so this check asserted against a fresh random
+       draw each time. Measured: it failed intermittently with "identical
+       same-family boards 1/20" and then passed on an immediate re-run with the
+       tree untouched, and the battle and comparison counts moved between runs
+       (20/5 scenarios one run, 17/15 the next), which is the tell.
+
+       That is worse than a missing check, because it teaches the next session
+       to re-run until green, and re-running until green is how a real failure
+       eventually gets waved through. galaxy() caches on seed + mapPool, so
+       assigning the seed here both pins the draw and invalidates the cache.
+       The check is now deterministic: it either passes every run or fails
+       every run, and a failure means something. Change this constant only to
+       widen coverage, never to make a red gate go green. */
+    Meta.campaign().seed = 20260827;
+    Meta.save();
     const gx = Meta.galaxy();
     const seen = {}, started = [], failed = [];
     const fp = {};

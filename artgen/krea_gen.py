@@ -242,10 +242,22 @@ def write_pack(jobs, source_note):
             pack[key] = 'data:image/webp;base64,' + base64.b64encode(blob).decode()
 
     total = sum(len(v) for v in pack.values())
+    # ANIMATED PLATES: an optional second tier over the same keys. They are
+    # produced OUTSIDE this pipeline by tools/plate_to_video.py (Wan 2.2 via a
+    # local ComfyUI), so nothing here generates them; this only publishes
+    # whichever ones happen to be on disk beside their still. A key with no
+    # clip is simply absent from the map and its still is what plays, which is
+    # the same degrade-quietly contract the art pack itself has.
+    vids = {}
+    if os.path.isdir(ART_DIR):
+        for key in pack:
+            if os.path.exists(os.path.join(ART_DIR, key + '.mp4')):
+                vids[key] = 'art/' + key + '.mp4'
     body = (f'/* Generated illustrative art, {source_note}.\n'
             f'   Regenerate with artgen/krea_gen.py. Keys: cmd_<id>, fac_<id>, world_<id>,\n'
             f'   foe_<id>, abil_<id>, title, nebula. */\n'
-            'const ARTPACK = ' + json.dumps(pack) + ';\n')
+            'const ARTPACK = ' + json.dumps(pack) + ';\n'
+            'const ARTVID = ' + json.dumps(vids) + ';\n')
     # newline='' pins LF on Windows too. The repo is uniformly LF
     # (.gitattributes) and CI fails on any CRLF reaching the index, so a
     # default text-mode write here would make every repack fight the
@@ -258,6 +270,10 @@ def write_pack(jobs, source_note):
     if ondemand:
         print(f'      {ondemand} on-demand plates written to art/ '
               f'({ondemand_bytes//1024}KB raw, off the first-load path)', flush=True)
+    if vids:
+        vb = sum(os.path.getsize(os.path.join(ART_DIR, k + '.mp4')) for k in vids)
+        print(f'      {len(vids)} animated plates published ({vb//1024}KB, '
+              f'fetched only when motion is wanted)', flush=True)
     if missing:
         print(f'  still missing ({len(missing)}): {", ".join(missing[:12])}'
               f'{" ..." if len(missing) > 12 else ""}', flush=True)

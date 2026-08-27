@@ -30,7 +30,7 @@ Caveat that has not changed: capture steps at 1/30 where the live loop steps at
 1/60, so a captured battle reproduces run to run but is **not** the battle a
 live client plays from that seed. Never quote it as balance evidence.
 
-## Tier 3: generative motion on the cutscene plates. Proven, not adopted
+## Tier 3: generative motion on the cutscene plates. Proven, and SHIPPED for five
 
 The plugin rejected this for a 24GB floor against a 12GB card. This card has
 24GB, so the premise changed and it was re-tested rather than re-litigated.
@@ -84,3 +84,61 @@ Three ways to take it, in the order I would consider them:
 
 `[ ]` **Owner decision. Nothing is shipped and nothing needs re-rendering
 either way.** Three sample clips are at `../videogen/` for a look.
+
+---
+
+## Shipped: the five hero plates are animated
+
+The owner took option 1. The five `intro_1` plates, the first image a player
+sees on each faction's campaign, now carry real motion. The other 45 are
+unchanged stills and the pipeline treats that as normal rather than as missing.
+
+**How it ships.** `write_pack()` scans `art/` for a `<key>.mp4` beside each
+still and emits a second map, `ARTVID`. A key with no clip is simply absent,
+which is the same degrade-quietly contract the art pack already has.
+`cutscenes.js` plays a clip only when one exists AND the reader has not
+refused motion, with three gates that are all refusals rather than opt-ins:
+
+| Gate | Behaviour |
+|---|---|
+| `prefers-reduced-motion`, or the in-game toggle | still plate, no clip fetched |
+| `navigator.connection.saveData` | still plate, no clip fetched |
+| no clip for this key | still plate, silently |
+
+The still is the **poster** either way, so the frame paints instantly from a
+file already in cache and the clip swaps in when it arrives. A clip that never
+loads is invisible. The video carries no `zoom` class, because it has its own
+camera move and `csZoom` on top would be two pans fighting.
+
+**Seamless, not snapping.** A 2s clip that drifts (RMS 43.9 end to end) snaps
+visibly on loop. Each clip is therefore built as a ping-pong: 49 frames forward
+then 47 back, 96 frames, a 4.0s loop with no seam. The reversal reads as a
+camera settling rather than a rewind, because the motion is drift and light
+rather than an event.
+
+**Measured.**
+
+| Number | Value |
+|---|---|
+| Encode | h264 crf 26, preset slow, no audio track |
+| crf 18 master to crf 26 web | 31 to 34% of the bytes, no visible loss on the busiest clip |
+| Per clip | 399KB to 953KB, **2.84MB for all five** |
+| Per animated slide | about 580KB against the still's 200KB |
+| `js/artpack.js` | **6.44MB, unchanged**: ARTVID is a five-entry map of paths |
+| Bundle | 22.03MB, unchanged |
+
+**The bundle takes stills.** A single-file download cannot fetch a sibling
+file, so the choice was inline the clips or drop them, and five clips would
+have added about 6MB of base64 for art nobody asked to download. `build.js`
+strips `ARTVID` to `{}` and refuses to write a bundle that still references an
+`art/*.mp4`, exactly as it already refuses one referencing an `art/*.webp`.
+
+**Verified in a browser, not by reading the pack.** `<video>` element,
+readyState 4, 1280x704, duration 4.00s, playhead advanced 1.21s across 1.2s of
+wall clock so it is genuinely playing, poster set to the still, no `zoom`
+class, and with reduced motion set the same slide returns an `IMG`. Zero
+console errors. Gate clean.
+
+`[ ]` The remaining 45 plates are one command each and about 90 minutes total
+if the owner ever wants them. Nothing needs re-rendering to add them: drop an
+mp4 into `art/` and repack.

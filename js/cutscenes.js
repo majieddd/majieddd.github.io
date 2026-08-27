@@ -156,9 +156,31 @@ const Cutscenes = {
     const renderSlide = () => {
       const sl = list[i];
       const src = (typeof ARTPACK !== 'undefined' && ARTPACK[sl.key]) || '';
+      /* THE ANIMATED PLATE, when there is one and the reader wants motion.
+         Three gates, and all three are refusals rather than opt-ins, because
+         a clip is roughly 900KB against the still's 200KB and that is a cost
+         nobody asked for:
+
+           reduced   prefers-reduced-motion, or the in-game toggle. A pan that
+                     the reader did not ask for is exactly what that setting
+                     exists to refuse, and a still plate loses nothing.
+           saveData  the browser is telling us the connection is metered.
+           absent    most keys have no clip and never will. Absence is the
+                     normal case, not a failure, so it degrades in silence.
+
+         The still is the POSTER either way, so the frame paints immediately
+         from a file already in cache and the clip swaps in when it arrives.
+         No blank frame, and a clip that never loads is invisible.
+         No `zoom` class on the video: it carries its own camera move, and
+         csZoom on top of that would be two pans fighting. */
+      const saveData = typeof navigator !== 'undefined' && navigator.connection &&
+                       navigator.connection.saveData;
+      const vid = (!reduced && !saveData && typeof ARTVID !== 'undefined' &&
+                   ARTVID[sl.key]) || '';
       ov.innerHTML = `
         <div class="cs-stage">
-          ${src ? `<img class="cs-art${reduced ? '' : ' zoom'}" src="${src}" alt="">`
+          ${vid ? `<video class="cs-art" src="${vid}" poster="${src}" autoplay muted loop playsinline></video>`
+                : src ? `<img class="cs-art${reduced ? '' : ' zoom'}" src="${src}" alt="">`
                 : `<div class="cs-art fallback${reduced ? '' : ' zoom'}"><span>${fac.icon}</span></div>`}
           <div class="cs-shade"></div>
           <p class="cs-text" aria-live="polite"></p>

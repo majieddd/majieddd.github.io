@@ -16,6 +16,15 @@ const css  = read('css/style.css') + String.fromCharCode(10) + read('css/polish.
    artgen/krea_gen.py). A single-file download cannot fetch a sibling file, so
    inline them back HERE and only here: the bundle carries data URIs, the site
    carries URLs, and both are read through the same art() accessor. */
+/* The animated plates are deliberately NOT inlined. A single-file download
+   cannot fetch a sibling file, so the choice is inline them or drop them, and
+   five clips would add about 6MB of base64 to a bundle that is already 22MB
+   for art nobody asked to download. Dropping ARTVID to an empty map is the
+   honest option: cutscenes.js already treats an absent key as the normal case
+   and plays the still, which is the same thing a reader with reduced-motion
+   set gets. The bundle stays self-contained and stays lean. */
+const stripVideo = s => s.replace(/const ARTVID = \{[^\n]*?\};/, 'const ARTVID = {};');
+
 const ONDEMAND_RE = /"art\/([A-Za-z0-9_]+)\.webp"/g;
 const inlineOnDemand = s => s.replace(ONDEMAND_RE, (m, key) => {
   const file = path.join(here, 'art', key + '.webp');
@@ -28,7 +37,7 @@ const inlineOnDemand = s => s.replace(ONDEMAND_RE, (m, key) => {
 
 const js   = ['artpack', 'mapgen', 'lore', 'story', 'cutscenes', 'worldlore', 'missions', 'config', 'factions', 'towers2', 'abilities', 'roster', 'dialogue', 'commanders', 'audio', 'entities', 'entities2', 'ai', 'galaxy', 'game', 'net', 'ui', 'main']
   .map(n => `/* ── ${n}.js ─────────────────────────────────── */\n` +
-            (n === 'artpack' ? inlineOnDemand(read(`js/${n}.js`)) : read(`js/${n}.js`)))
+            (n === 'artpack' ? stripVideo(inlineOnDemand(read(`js/${n}.js`))) : read(`js/${n}.js`)))
   .join('\n\n');
 
 /* The replacement text is passed as a FUNCTION on purpose. A plain string
@@ -52,6 +61,13 @@ if (out.includes('<script src=') || out.includes('stylesheet')) {
 ONDEMAND_RE.lastIndex = 0;
 if (ONDEMAND_RE.test(out)) {
   console.error('Bundle still references art/ URLs, aborting.');
+  process.exit(1);
+}
+
+/* Same law for the clips: a bundle that points at art/*.mp4 would show a
+   broken video element instead of the plate, and would do it silently. */
+if (/"art\/[A-Za-z0-9_]+\.mp4"/.test(out)) {
+  console.error('Bundle still references art/ video URLs, aborting.');
   process.exit(1);
 }
 
