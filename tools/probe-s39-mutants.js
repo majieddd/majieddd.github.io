@@ -147,6 +147,15 @@
       },
     },
     {
+      id: 'M14', expect: '39.32',
+      what: 'a TURNING act names a system the player has not reached at that act',
+      plant() {
+        const a = CUTSCENES.human.sys[2], was = a.a;
+        a.a = 'The Pleiades stand secured and the seats fall one by one.';
+        return () => { a.a = was; };
+      },
+    },
+    {
       id: 'M10', expect: '39.18',
       what: 'the gallery stops listing worlds it has no plates for',
       plant() {

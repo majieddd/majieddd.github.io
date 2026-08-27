@@ -463,6 +463,50 @@
     return 'no faction claims ownership of a world it is invading';
   });
 
+  T('39.32 no TURNING act names a system the player is not on yet', () => {
+    /* THREE NARRATIVE LAYERS HAVE TO AGREE ABOUT WHERE THE PLAYER IS.
+       THE OATH opens the campaign, the planet cutscenes play per world, and
+       THE TURNING fires after each SYSTEM falls, one act per system. Because
+       js/galaxy.js rotates the campaign to open at each faction's own home,
+       act N fires after the system at universe index (home + N - 1) % 5, and
+       that is a different system for every faction.
+
+       So a proper noun in a TURNING slide is a claim about WHEN the player
+       reads it. "The Pleiades stand secured" is correct in the Federation's
+       act 1 and wrong in anybody else's, and the same sentence would be wrong
+       in the Federation's act 3. The acts are written generically for exactly
+       this reason, except act 1, which names each faction's home and is the
+       one place a name is safe.
+
+       Nothing else in the suite was checking this, and it is the kind of thing
+       a later writing pass breaks without noticing, because every slide still
+       reads perfectly well on its own. */
+    if (typeof CUTSCENES === 'undefined') bad('CUTSCENES not loaded');
+    const OWNS = {
+      'earth system': 'human', 'luna': 'human',
+      'pleiades': 'light', 'alcyone': 'light',
+      'zeta reticuli': 'xeno', 'serpo': 'xeno',
+      'barnard': 'pirate', 'harbour nine': 'pirate',
+      'tabby': 'robot', 'the veil': 'robot',
+    };
+    const wrong = [];
+    UORDER.forEach(fac => {
+      const home = UORDER.indexOf(fac);
+      const acts = (CUTSCENES[fac] && CUTSCENES[fac].sys) || [];
+      acts.forEach((slide, i) => {
+        const owner = UORDER[(home + i) % 5];      // whose system act i+1 follows
+        const text = ((slide.a || '') + ' ' + (slide.b || '')).toLowerCase();
+        Object.keys(OWNS).forEach(noun => {
+          if (text.indexOf(noun) >= 0 && OWNS[noun] !== owner)
+            wrong.push(fac + ' act' + (i + 1) + ' names "' + noun + '" (belongs to ' +
+                       OWNS[noun] + ', act follows the ' + owner + ' system)');
+        });
+      });
+    });
+    if (wrong.length) bad(wrong.slice(0, 4).join(' | '));
+    return '25 turning acts, every system name lands on the act that follows it';
+  });
+
   const pass = checks.filter(c => c.ok).length;
   return { pass, fail: checks.length - pass, checks };
 })()
