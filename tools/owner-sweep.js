@@ -1081,6 +1081,64 @@
          'every faction opens at its own home; 25 holder cells, 0 self, 0 spoilers');
   });
 
+  /* ---- 38.3 every setup screen's CTA is on screen ---------------------- */
+  T('38.3 the way forward is on screen on every setup screen', function () {
+    const id = '38.3 the way forward is on screen on every setup screen';
+    /* WHY THIS EXISTS. The owner could not start a mission: "I can't even
+       start a mission because I can't see the deploy button." Measured, the
+       footer's own primary button below the fold, at the size THIS GATE RUNS
+       AT (1600x900): command 209px, loadout 71px. At 1000x670, the owner's
+       folded phone, command was 463px under. The buttons were reachable by
+       scrolling, but a player sees a sliver at the bottom edge of a screen
+       that looks finished and concludes it is broken.
+
+       Nothing measured it. Every browser check in this suite looked at the
+       board, the HUD or a specific panel; not one asked whether the control
+       that advances the game was visible. A whole class of screen was
+       unverified, which is why this failed at every viewport for a long time
+       without any gate noticing.
+
+       It measures the FOOTER's primary, never the first .btn-primary on the
+       screen: an earlier audit made that mistake and measured an inline EQUIP
+       button on the commander screen, then "fixed" something else. */
+    /* THE INSTRUMENT FIRST. renderFactions() early-returns and navigates to
+       the commander screen when a profile already has a banner, so an earlier
+       check in this sweep that starts a campaign leaves #screen-faction
+       hidden and its button measuring zero width. The first run of this check
+       reported "faction primary has no width" at all four breakpoints, which
+       was the harness describing itself and not the layout. Borrow the
+       profile's banner for the measurement and hand it straight back. */
+    const prof = Meta.load();
+    const heldFaction = prof.faction;
+    const screens = [
+      ['screen-faction', function () { prof.faction = null; UI.renderFactions(); }],
+      ['screen-command', function () { prof.faction = heldFaction;
+                                       if (UI.buildCommanderScreen) UI.buildCommanderScreen(); }],
+      ['screen-loadout', function () { if (UI.renderLoadout) UI.renderLoadout(); }]
+    ];
+    const bad = [], seen = [];
+    screens.forEach(function (pair) {
+      const el = document.getElementById(pair[0]);
+      if (!el) { bad.push(pair[0] + ' missing'); return; }
+      UI.show(pair[0]);
+      try { pair[1](); } catch (e) { /* a screen needing state still lays out */ }
+      const foot = el.querySelector('.setup-foot');
+      if (!foot) { bad.push(pair[0] + ' has no footer'); return; }
+      const cta = foot.querySelector('.btn-primary');
+      if (!cta) { bad.push(pair[0] + ' footer has no primary'); return; }
+      const r = cta.getBoundingClientRect();
+      const under = Math.round(r.bottom - window.innerHeight);
+      seen.push(pair[0].replace('screen-', '') + (under > 1 ? ' +' + under : ' ok'));
+      if (under > 1) bad.push(pair[0].replace('screen-', '') + ' ' + under + 'px below the fold');
+      if (r.width < 1) bad.push(pair[0].replace('screen-', '') + ' primary has no width');
+    });
+    prof.faction = heldFaction;
+    ok(id, bad.length === 0,
+       bad.length ? bad.slice(0, 3).join('; ')
+       : 'faction, command and loadout: the primary action is on screen with no ' +
+         'scrolling at ' + window.innerWidth + 'x' + window.innerHeight + ' (' + seen.join(', ') + ')');
+  });
+
   /* ---- 38.2 the v1 galaxy is frozen ------------------------------------ */
   T('38.2 an absent gxv generates the v1 galaxy byte for byte', function () {
     const id = '38.2 an absent gxv generates the v1 galaxy byte for byte';

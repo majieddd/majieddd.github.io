@@ -887,6 +887,33 @@ const UI = {
 
   bindChipTips(root) {
     if (!root) return;
+    /* TAPPING ELSEWHERE DISMISSES IT, which the per-element handler below has
+       promised in a comment since it was written and never implemented.
+
+       MEASURED on the owner's device: a tooltip opened by tapping a faction
+       card stayed on screen permanently, covering the cards beside it. Two
+       things combine to make it unrecoverable rather than merely annoying.
+       There was no outside-tap handler at all, so only a second tap on the
+       SAME element could close it; and on the faction screen the chips ARE
+       the cards, so selecting one re-renders the grid and destroys the very
+       element `_ttFor` is holding. After that the `_ttFor === el` test can
+       never match again and nothing in the game can close the tooltip.
+
+       Bound ONCE on the document rather than per chip: this is a screen-level
+       behaviour, and binding it per element would add a listener for every
+       chip on every re-render. Capture phase, so it runs before a re-render
+       can remove the element under the pointer. */
+    if (!this._ttDismissBound) {
+      this._ttDismissBound = true;
+      document.addEventListener('pointerdown', ev => {
+        if (!this._ttFor) return;
+        /* A tap on the chip that owns the tooltip is the per-element
+           handler's business (it toggles); anything else closes. */
+        if (this._ttFor.contains && this._ttFor.contains(ev.target)) return;
+        this.hideTooltip();
+        this._ttFor = null;
+      }, true);
+    }
     $$('[data-tt]', root).forEach(el => {
       if (el._ttBound) return;
       el._ttBound = true;
@@ -1575,6 +1602,12 @@ const UI = {
     $$('[data-fac]').forEach(b => b.addEventListener('click', () => {
       this.sel.faction = b.dataset.fac; Sound.play('click'); this.renderFactions();
     }));
+    /* This render just destroyed every card, including whichever one a tap
+       had opened a tooltip against. Leaving it up orphans it: the owner is
+       detached, so the per-element toggle can never match it again. The
+       document dismiss in bindChipTips recovers it on the next tap anywhere,
+       but the tooltip should not outlive its own subject even for that long. */
+    if (this._ttFor) { this.hideTooltip(); this._ttFor = null; }
     this.bindChipTips($('#faction-grid'));
     const picked = this.sel.faction || Meta.faction();
     $('#btn-faction-go').disabled = !picked;

@@ -3519,30 +3519,13 @@ body.rm-user.immersive #battle-controls { transition: none; }
 
    Scoped to #screen-faction: #screen-multiverse and #screen-theatre already
    position their own .setup-foot absolutely and must not be touched. */
+/* The STICKY half of this block moved out and became unconditional: see "THE
+   SETUP FOOTER IS STICKY, AT EVERY WIDTH" below. What is left here is only
+   what genuinely belongs to the phone tier, which is thumbs. */
 @media (max-width: 860px) {
-  #screen-faction .setup-foot {
-    position: sticky; bottom: 0; z-index: 8;
-    margin: 0 -18px 0; padding: 12px 18px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    background: linear-gradient(to top,
-                color-mix(in srgb, var(--bg) 96%, transparent) 62%,
-                transparent);
-    backdrop-filter: blur(9px);
-    border-top: 1px solid var(--line);
-    transition: border-color .22s ease, background .22s ease;
-  }
-  /* The last card must clear the bar rather than hide behind it. */
-  #screen-faction .faction-grid { padding-bottom: 12px; }
   /* Thumbs are not mice: the primary action gets the width it needs. */
   #screen-faction .setup-foot .btn-primary { flex: 1 1 auto; padding: 14px 18px; }
   #screen-faction .setup-foot #btn-faction-back { flex: 0 0 auto; }
-
-  /* A banner is chosen. Lift the bar in that banner's own colour, which is
-     the same signal the chosen card is already showing. */
-  #screen-faction .setup-foot.ready {
-    border-top-color: color-mix(in srgb, var(--fc, var(--acc)) 60%, transparent);
-    box-shadow: 0 -10px 30px -12px color-mix(in srgb, var(--fc, var(--acc)) 45%, transparent);
-  }
   #screen-faction .setup-foot.ready .btn-primary { animation: facGoPulse .42s ease-out 1; }
 }
 @keyframes facGoPulse {
@@ -3573,16 +3556,12 @@ body.rm-user.immersive #battle-controls { transition: none; }
      share a 390px row, so the primary takes its own full-width row and the
      rest wrap above it. Sticky for the same reason as the faction screen:
      a confirm you have to hunt for is a confirm that does not exist. */
+  /* Sticky, the backdrop and the offsets are unconditional now (see "THE
+     SETUP FOOTER IS STICKY, AT EVERY WIDTH" below). Only the WRAP belongs to
+     the phone: four items cannot share a 390px row. */
   #screen-command .setup-foot,
   #screen-loadout .setup-foot {
-    position: sticky; bottom: 0; z-index: 8;
     flex-wrap: wrap; row-gap: 8px; justify-content: flex-start;
-    margin: 0 -18px 0; padding: 12px 18px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    background: linear-gradient(to top,
-                color-mix(in srgb, var(--bg) 96%, transparent) 62%, transparent);
-    backdrop-filter: blur(9px);
-    border-top: 1px solid var(--line);
   }
   #screen-command .setup-foot .btn-primary,
   #screen-loadout .setup-foot .btn-primary {
@@ -3650,37 +3629,58 @@ body.rm-user.immersive #battle-controls { transition: none; }
   #screen-loadout .lo-card, #screen-loadout .lo-col { overflow-wrap: anywhere; }
 }
 
-/* ══════════ THE SECOND INSTANCE OF THE FOLD BUG (Session 38) ══════════
-   The Session 37 fix made the faction confirm sticky below 860px and stopped
-   there. It was measured at 390px only, and the ledger's own
-   bug.mobile-fold-two-instances warns that this defect class leaves a SECOND
-   live instance at another width after the first fix. It did.
+/* ═══════ THE SETUP FOOTER IS STICKY, AT EVERY WIDTH (Session 38) ═══════
+   OWNER REPORT, on a Google Fold: "I could barely see the button to go to the
+   next page or deploy... I can't even start a mission because I can't see the
+   deploy button." Reproduced immediately, and the reproduction indicted two
+   earlier fixes in this same file.
 
-   MEASURED at 900px tall: cta-visible-without-scrolling was true at 390, 640
-   and 858, and FALSE at 862 and 1024. The cause is that the trigger is not
-   the phone, it is the TWO-COLUMN GRID: .faction-grid goes 2-up at
-   max-width 1080px (line 686), the cards are tall, and the footer lands below
-   the fold on any viewport shorter than the content. 861 to 1080px is a
-   laptop and a tablet in landscape, not an edge case.
+   MEASURED, the footer's own primary button, pixels BELOW the fold:
 
-   So the sticky behaviour is keyed to the SAME breakpoint as the grid that
-   causes it. The touch-target and wrap rules stay at 860px, because those
-   really are about fingers and really do belong to the phone tier. */
-@media (min-width: 861px) and (max-width: 1080px) {
-  #screen-faction .setup-foot {
-    position: sticky; bottom: 0; z-index: 8;
-    margin: 0 -18px 0; padding: 12px 18px;
-    background: linear-gradient(to top,
-                color-mix(in srgb, var(--bg) 96%, transparent) 62%, transparent);
-    backdrop-filter: blur(9px);
-    border-top: 1px solid var(--line);
-    transition: border-color .22s ease, background .22s ease;
-  }
-  #screen-faction .faction-grid { padding-bottom: 12px; }
-  #screen-faction .setup-foot.ready {
-    border-top-color: color-mix(in srgb, var(--fc, var(--acc)) 60%, transparent);
-    box-shadow: 0 -10px 30px -12px color-mix(in srgb, var(--fc, var(--acc)) 45%, transparent);
-  }
+     viewport     faction   command   loadout
+     1000x670        0       463        0
+     1280x600       70       509       71
+     1440x700        0       409       71
+      900x500        0       902      163
+     1600x900        0       209       71     <- the size the gate runs at
+
+   SELECT THEATRE has been 209px below the fold ON DESKTOP. It is reachable,
+   the screens do scroll, but a player sees a sliver of a button at the bottom
+   edge of a screen that looks complete and reasonably concludes it is broken.
+
+   THE TWO EARLIER FIXES WERE KEYED TO WIDTH AND THE CAUSE IS HEIGHT. A footer
+   goes under the fold when the CONTENT IS TALLER THAN THE VIEWPORT, and that
+   happens at any width on a short viewport: a folded phone, a laptop with
+   browser chrome, a small window. Keying to 860px, and then to 1080px, was
+   chasing instances of one bug and finding a new one each time.
+
+   So it is not keyed at all. `position: sticky` costs nothing when the
+   content fits (the footer sits at its natural place and never moves) and
+   holds the CTA on screen the moment it does not. That is correct at every
+   width and every height, which is why this replaces both earlier rules
+   rather than joining them.
+
+   #screen-multiverse and #screen-theatre are excluded on purpose: they
+   position their own footers absolutely over a map, which is a different
+   contract and is already handled above at lines 431 and 445. */
+#screen-faction .setup-foot,
+#screen-command .setup-foot,
+#screen-loadout .setup-foot {
+  position: sticky; bottom: 0; z-index: 8;
+  margin: 0 -18px 0; padding: 12px 18px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top,
+              color-mix(in srgb, var(--bg) 96%, transparent) 62%, transparent);
+  backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px);
+  border-top: 1px solid var(--line);
+  transition: border-color .22s ease, background .22s ease;
+}
+/* The last card must clear the bar rather than hide behind it. */
+#screen-faction .faction-grid { padding-bottom: 12px; }
+/* A chosen banner lifts the bar in its own colour. Set by renderFactions. */
+#screen-faction .setup-foot.ready {
+  border-top-color: color-mix(in srgb, var(--fc, var(--acc)) 60%, transparent);
+  box-shadow: 0 -10px 30px -12px color-mix(in srgb, var(--fc, var(--acc)) 45%, transparent);
 }
 
 /* ══════════ THE IN-GAME DOCK ON A PHONE (Session 38, owner-sweep 25.5) ══

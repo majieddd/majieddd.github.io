@@ -190,6 +190,24 @@ const RUN = `
                                      gxv === undefined ? 2 : gxv); };
                      return () => { generateGalaxy = o; }; } },
 
+    { id: 'setup-footer-unsticks',
+      why: 'the owner-reported defect: the setup footers stop being sticky, so the ' +
+           'button that advances the game falls below the fold. Measured before the ' +
+           'fix: command 209px under at 1600x900, 463px at the reporter 1000x670',
+      expect: '38.3',
+      /* A stylesheet rule, because that is what the defect WAS. Planting it
+         through CSS rather than by moving an element means the mutant exercises
+         the same path the regression would take if someone edited polish.css. */
+      plant: () => { const s = document.createElement('style');
+                     s.id = 'mutant-unstick';
+                     s.textContent = '#screen-faction .setup-foot,' +
+                                     '#screen-command .setup-foot,' +
+                                     '#screen-loadout .setup-foot' +
+                                     '{ position: static !important; }';
+                     document.head.appendChild(s);
+                     return () => { const n = document.getElementById('mutant-unstick');
+                                    if (n) n.remove(); }; } },
+
     { id: 'CONTROL-clean',
       why: 'the clean control: nothing is planted, the suite must stay green',
       expect: 'none',

@@ -252,3 +252,61 @@ no clipping, the whole dock on screen, and the board at 58% of the view.
 `[ ]` **Optional, not done:** a rotate-to-landscape hint on a portrait phone.
 It would be a new UI affordance rather than a fix, so it is offered rather
 than assumed.
+
+## Session 38, owner report: the CTA was below the fold at EVERY size
+
+> "I could barely see the button to go to the next page or deploy... I can't
+> even start a mission because I can't see the deploy button. This is on my
+> Google Fold with the open screen."
+
+Reproduced immediately, and the reproduction indicted both earlier fixes in
+this document. Pixels BELOW the fold, measuring the footer's own primary:
+
+| viewport | faction | command | loadout |
+|---|---|---|---|
+| 1000x670 (the Fold) | 0 | **463** | 0 |
+| 1280x600 | 70 | **509** | 71 |
+| 1440x700 | 0 | **409** | 71 |
+| 900x500 | 0 | **902** | 163 |
+| **1600x900** (the size the gate runs at) | 0 | **209** | **71** |
+
+`SELECT THEATRE` had been 209px below the fold ON DESKTOP. The screens do
+scroll and the buttons were reachable, but a player sees a sliver of a button
+at the bottom edge of a screen that looks complete and concludes it is broken.
+That is exactly what happened.
+
+**Both earlier fixes were keyed to WIDTH and the cause is HEIGHT.** A footer
+goes under the fold when the content is taller than the viewport, and that
+happens at any width on a short viewport: a folded phone, a laptop with
+browser chrome, a small window. Keying to 860px and then to 1080px was chasing
+instances of one bug and finding a new one each time.
+
+So it is not keyed at all now. `position: sticky` costs nothing when the
+content fits and holds the CTA on screen the moment it does not, which is
+correct at every width and every height. The one unconditional rule REPLACED
+both media-query versions rather than joining them, so the duplication those
+two passes created is gone.
+
+After: faction, command and loadout all visible with 0px below the fold at all
+five viewports above.
+
+### The gap that let it ship
+
+Nothing measured it. Every browser check in the suite looked at the board, the
+HUD or a named panel; not one asked whether the control that advances the game
+was visible. **owner-sweep 38.3** now does, and `mutants.js` proves it can
+fail: planting `position: static` on the setup footers is caught by 38.3 and
+by nothing else. Detection is 13 of 13, all by predicted check, control green.
+
+### Also fixed: the tooltip that could not be dismissed
+
+The owner's first screenshot shows a faction tooltip stuck over the cards. The
+touch path in `bindChipTips` has promised "a second tap (or tapping elsewhere)
+dismisses it" in a comment since it was written, and **no outside-tap handler
+existed**. Worse, on this screen the chips ARE the cards, so selecting one
+re-renders the grid and destroys the element `_ttFor` holds; after that the
+`_ttFor === el` toggle can never match and nothing in the game closes it.
+
+Two fixes: a document-level `pointerdown` dismiss, bound once rather than per
+chip, and `renderFactions` now clears a tooltip it is about to orphan.
+Verified on five behaviours including the detached-owner case.
