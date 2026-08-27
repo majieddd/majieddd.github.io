@@ -178,6 +178,11 @@ if (!STATIC_ONLY) {
      measured before this release, a fresh phone battle showed 25% of the
      board and had no gesture that could change the zoom in either direction. */
   browserHarness('board-view', '/tools/probe-board-view.js', null, [390, 844]);
+  /* THE MIX WHEN NOTHING IS PLAYING. An always-on voice is the easiest thing
+     in an audio engine to add and the hardest to notice: it never triggers, it
+     never errors, and the person who finds it is the player. A room-tone bed
+     shipped that way and was 30 dB of a mix that was supposed to be empty. */
+  browserHarness('audio-silence', '/tools/probe-hiss.js', null, [1280, 800]);
 } else if (!BASE) {
   say('browser gates: SKIPPED (no URL given; pass one to run them)');
 }

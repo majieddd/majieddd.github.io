@@ -78,7 +78,7 @@ const Sound = (() => {
   }
 
   let ctx = null;
-  let master, comp, limiter, ceiling, sfxBus, musicBus, ambBus, sfxSend, musSend;
+  let master, comp, limiter, ceiling, sfxBus, musicBus, sfxSend, musSend;
   /* Music sub-buses and the fixed per-voice channels of the kit. All built
      once at init and never rebuilt, so they cost nothing per bar. */
   let drumBus, bassBus, tunedBus, hatChan, ghostChan, clickChan;
@@ -223,7 +223,6 @@ const Sound = (() => {
     const d = noiseBuf.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
 
-    buildAmbience();
 
     ready = true;
     return true;
@@ -387,76 +386,31 @@ const Sound = (() => {
 
   /* ------------------------------------------------------------- ambience */
 
-  /* ROOM TONE. A studio mix is never digitally silent. A low bed plus a band
-     of slowly moving air gives every cue something to sit on top of, and the
-     absence of one is a large part of what reads as "hobby project" even when
-     the individual cues are good. The baseline engine rendered exactly zero
-     signal with the music scheduler stopped; measured, not assumed.
+  /* THE ROOM TONE BED WAS REMOVED (owner, Session 39): "there's a weird white
+     noise in the background of audio playing. please remove it."
 
-     Built once at init and never touched again, so the per-frame cost is nil:
-     a static graph running on the audio thread. Routed through musicBus so
-     the existing music toggle governs it and no new setting appears. */
-  const AIR_SUB_HZ    = 190;    // lowpass corner of the rumble bed
-  const AIR_SUB_GAIN  = 0.020;  // felt as weight, never heard as a pitch
-  const AIR_BAND_HZ   = 2050;   // centre of the moving air band
-  /* Set by measurement, not by ear. The bed must be present and must not
-     become the loudest thing in a calm wave: at 0.011 it rendered 18.2 dB
-     under the intensity-1 music, which dragged that mix's spectral centroid
-     from 485 Hz to 1635 Hz and would have read as hiss rather than as air.
-     0.0072 puts it near 22 dB down, which is a room and not a layer. */
-  const AIR_BAND_GAIN = 0.0072;
-  const AIR_SPREAD    = 0.78;   // the two air voices, wide left and right
-  /* Two LFOs at deliberately unrelated rates. One rate driving both sides
-     would pump the image in lockstep, which reads as a tremolo pedal rather
-     than as a room. */
-  const AIR_LFO_L_HZ  = 0.043;
-  const AIR_LFO_R_HZ  = 0.037;
-  const AIR_LFO_DEPTH = 620;    // Hz of sweep either side of centre
-  /* Unrelated playback rates too. The shared noise buffer is one second long,
-     so three bed voices reading it at 1.0 would share an audible one-second
-     cycle. At these rates the periods are 2.7 s, 1.4 s and 1.9 s and share no
-     common cycle short enough to hear. */
-  const AIR_RATE_SUB  = 0.37;
-  const AIR_RATE_L    = 0.71;
-  const AIR_RATE_R    = 0.53;
+     What was here: a lowpassed sub rumble plus two wide bandpass voices, all
+     looping the shared white-noise buffer forever, built once at init.
 
-  function airVoice(centreHz, gainV, pan, lfoHz, rate) {
-    const src = ctx.createBufferSource();
-    src.buffer = noiseBuf; src.loop = true;
-    src.playbackRate.value = rate;
-    const f = ctx.createBiquadFilter();
-    f.type = 'bandpass'; f.Q.value = 0.9;
-    f.frequency.value = centreHz;
-    const lfo = ctx.createOscillator();
-    lfo.type = 'sine'; lfo.frequency.value = lfoHz;
-    const lfoAmt = ctx.createGain(); lfoAmt.gain.value = AIR_LFO_DEPTH;
-    lfo.connect(lfoAmt); lfoAmt.connect(f.frequency);
-    const g = ctx.createGain(); g.gain.value = gainV;
-    const p = ctx.createStereoPanner(); p.pan.value = pan;
-    src.connect(f); f.connect(g); g.connect(p); p.connect(ambBus);
-    src.start(0); lfo.start(0);
-  }
+     It was not badly built and its gain was genuinely measured: 0.0072 put
+     the air band about 22 dB under the intensity-1 music, which is a room and
+     not a layer. The flaw was WHAT it was measured against. The bed starts at
+     init and never stops, so it also plays on the title screen, between waves
+     and any time the mix is otherwise quiet, where there is nothing for it to
+     sit under and it is simply the only thing audible.
 
-  function buildAmbience() {
-    ambBus = ctx.createGain();
-    ambBus.gain.value = 1;
-    ambBus.connect(musicBus);
-    /* The rumble stays centred. Low content that is spread smears on any
-       system that sums to one driver, which is why bass is kept mono on every
-       real desk; only the air above it is placed. */
-    const sub = ctx.createBufferSource();
-    sub.buffer = noiseBuf; sub.loop = true;
-    sub.playbackRate.value = AIR_RATE_SUB;
-    const sf = ctx.createBiquadFilter();
-    sf.type = 'lowpass'; sf.frequency.value = AIR_SUB_HZ; sf.Q.value = 0.7;
-    const sg = ctx.createGain(); sg.gain.value = AIR_SUB_GAIN;
-    sub.connect(sf); sf.connect(sg); sg.connect(ambBus);
-    sub.start(0);
-    /* The two air voices sit a minor sixth apart rather than on one centre,
-       so the bed has a width that does not collapse when it is summed. */
-    airVoice(AIR_BAND_HZ, AIR_BAND_GAIN, -AIR_SPREAD, AIR_LFO_L_HZ, AIR_RATE_L);
-    airVoice(AIR_BAND_HZ * 0.86, AIR_BAND_GAIN, AIR_SPREAD, AIR_LFO_R_HZ, AIR_RATE_R);
-  }
+     Measured before removal (tools/probe-hiss.js): with the scheduler stopped
+     the idle mix read -110 dBFS averaged across 40Hz to 16kHz, and muting the
+     bed alone took that to -140, which is digital silence. The bed was 30 dB
+     of a mix that was supposed to be empty, and it was ALL of it.
+
+     If a future session wants room tone back, the argument in the original
+     comment still stands and the code is one `git show` away. What it must
+     not do is start unconditionally at init: gate it on the music scheduler
+     actually running, so a quiet screen stays quiet. tools/probe-hiss.js
+     asserts exactly that and will fail the moment anything hums under
+     silence again. */
+
 
   /* --------------------------------------------------------- music buses */
 
@@ -1802,7 +1756,7 @@ const Sound = (() => {
        to build nodes elsewhere. */
     setMusicTap,
     get bus() {
-      return ready ? { master, sfx: sfxBus, music: musicBus, amb: ambBus,
+      return ready ? { master, sfx: sfxBus, music: musicBus,
                        drums: drumBus, bass: bassBus, tuned: tunedBus,
                        out: ceiling, ctx } : null;
     },
