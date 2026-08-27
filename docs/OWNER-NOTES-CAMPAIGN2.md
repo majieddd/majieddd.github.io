@@ -179,7 +179,7 @@ fingerprint-verified.
   only under the per-campaign pin.
 - gate.js full run green at every commit: owner-sweep 61/0/2, MPT 37/0/2.
 
-## G. OPEN DECISION: the first-load weight (Session 37)
+## G. RESOLVED: the first-load weight (Session 37)
 
 The HD tier doubled the bytes players download before they see anything. This
 is flagged rather than absorbed because `docs/HANDOVER-KREA-ART.md` names it an
@@ -220,3 +220,36 @@ path in a follow-up.** Reasoning:
 **If the doubled first load is not acceptable even as an interim state**, say so
 and the plates stay in `cache_krea/` unpushed until on-demand loading lands. The
 art is rendered and cached either way; nothing needs re-rendering.
+
+### Resolved, same session: on-demand loading landed
+
+The owner chose to ship the plates and follow with on-demand loading. It is
+done, and the outcome is better than the recommendation predicted.
+
+`write_pack()` now takes an `ONDEMAND_CLASSES` set. A key whose class is in it
+is written as a real file under `art/<key>.webp` and referenced from the pack
+by URL instead of being base64 inlined. Nothing downstream changed, because
+`art(key)` hands whatever string it finds straight to an `<img src>` and a URL
+works there exactly as a data URI does. The five other ARTPACK readers test
+existence or build a `url()`, and a URL string is truthy and valid in both.
+
+| Path | Before HD | HD inlined | **HD on demand** |
+|---|---|---|---|
+| `js/artpack.js`, FIRST LOAD | 9.43MB | 19.54MB | **6.44MB** |
+| `art/`, fetched per slide | n/a | n/a | 9.83MB across 50 files |
+| `aegis-protocol.html`, a download | 11.48MB | 22.03MB | 22.01MB |
+
+**The first-load path is now 32% smaller than it was BEFORE the HD upgrade**,
+while the plates carry 11.1x the pixels. Two effects compound: the 50 plates
+left the inline path entirely, and what does get fetched is raw bytes rather
+than base64, which drops the 4/3 tax.
+
+The single-file promise is kept. `build.js` inlines `art/` back to data URIs
+for the bundle and only for the bundle, and refuses to write one that still
+references an `art/` URL, because such a bundle would paint the crest fallback
+silently. CI runs `build.js` from a fresh checkout, so a missing plate fails
+the deploy loudly instead of shipping a hole.
+
+`js/cutscenes.js` warms slide N+1 when slide N renders. Typing a slide costs
+90ms per word and no plate approaches that, so the page turn stays instant. The
+line is a no-op when the pack is inlined, as it is in the bundle.

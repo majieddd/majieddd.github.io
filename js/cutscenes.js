@@ -178,6 +178,15 @@ const Cutscenes = {
         }, 90);
       }
       ov.querySelector('#cs-skip').addEventListener('click', ev => { ev.stopPropagation(); close(); });
+      /* The plates are fetched on demand rather than inlined, so the NEXT one
+         is warmed while this one is still being read. Typing a slide takes
+         90ms per word and no plate is close to that, so by the time the page
+         turns the image is in cache and the turn is instant. Costs nothing
+         when the pack inlines data URIs instead, as the single-file bundle
+         does: assigning .src to a data URI decodes it and never hits network. */
+      const nxt = list[i + 1];
+      const nsrc = nxt && typeof ARTPACK !== 'undefined' && ARTPACK[nxt.key];
+      if (nsrc) new Image().src = nsrc;
     };
 
     const advance = () => {

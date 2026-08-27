@@ -11,8 +11,24 @@ const css  = read('css/style.css') + String.fromCharCode(10) + read('css/polish.
 /* `lore` sits early and before `dialogue`, `commanders` and `ui`, which are the
    modules that read it. It is a frozen data object with no dependencies of its
    own, generated from the lore repository (docs/lore/) and never hand-edited. */
+/* The `cut` class ships as real files under art/ so the live site does not put
+   13MB of story plates on the first-load path (see write_pack in
+   artgen/krea_gen.py). A single-file download cannot fetch a sibling file, so
+   inline them back HERE and only here: the bundle carries data URIs, the site
+   carries URLs, and both are read through the same art() accessor. */
+const ONDEMAND_RE = /"art\/([A-Za-z0-9_]+)\.webp"/g;
+const inlineOnDemand = s => s.replace(ONDEMAND_RE, (m, key) => {
+  const file = path.join(here, 'art', key + '.webp');
+  if (!fs.existsSync(file)) {
+    console.error('Bundle needs art/' + key + '.webp and it is missing. Run krea_gen.py --pack.');
+    process.exit(1);
+  }
+  return '"data:image/webp;base64,' + fs.readFileSync(file).toString('base64') + '"';
+});
+
 const js   = ['artpack', 'mapgen', 'lore', 'story', 'cutscenes', 'worldlore', 'missions', 'config', 'factions', 'towers2', 'abilities', 'roster', 'dialogue', 'commanders', 'audio', 'entities', 'entities2', 'ai', 'galaxy', 'game', 'net', 'ui', 'main']
-  .map(n => `/* ── ${n}.js ─────────────────────────────────── */\n` + read(`js/${n}.js`))
+  .map(n => `/* ── ${n}.js ─────────────────────────────────── */\n` +
+            (n === 'artpack' ? inlineOnDemand(read(`js/${n}.js`)) : read(`js/${n}.js`)))
   .join('\n\n');
 
 /* The replacement text is passed as a FUNCTION on purpose. A plain string
@@ -27,6 +43,15 @@ const out = html
 
 if (out.includes('<script src=') || out.includes('stylesheet')) {
   console.error('Bundle still references external files, aborting.');
+  process.exit(1);
+}
+
+/* A single-file download that still points at art/ paints the crest fallback
+   instead of the plate, and does it silently. That is exactly the failure the
+   two-tier pack exists to make impossible, so it is a hard stop. */
+ONDEMAND_RE.lastIndex = 0;
+if (ONDEMAND_RE.test(out)) {
+  console.error('Bundle still references art/ URLs, aborting.');
   process.exit(1);
 }
 

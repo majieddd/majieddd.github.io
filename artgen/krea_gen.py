@@ -34,6 +34,14 @@ def _artpack_out():
 
 
 OUT = _artpack_out()
+# Full-screen story plates are seen at ONE scripted moment each, so inlining
+# them puts 13MB of base64 on the first-load path that most players never
+# decode. Classes listed here ship as real files under art/ and are referenced
+# by URL instead. art() hands whatever string it finds straight to an <img
+# src>, and a URL works there exactly as a data URI does, so nothing
+# downstream changes. build.js inlines them back for the single-file bundle.
+ONDEMAND_CLASSES = {'cut'}
+ART_DIR = os.path.join(os.path.dirname(OUT), '..', 'art')
 CACHE = os.path.join(HERE, 'cache_krea')
 FALLBACK_CACHE = os.path.join(HERE, 'cache')      # the SDXL baseline
 # The weights live in a plain directory rather than the hub cache: on Windows
@@ -186,6 +194,7 @@ def fit(img, out_px, aspect):
 def write_pack(jobs, source_note):
     pack, missing, from_fallback = {}, [], 0
     passed, recoded = 0, 0
+    ondemand, ondemand_bytes = 0, 0
     for key, _prompt, _gen, out_px, aspect in jobs:
         p = os.path.join(CACHE, key + '.webp')
         if not os.path.exists(p):
@@ -222,7 +231,15 @@ def write_pack(jobs, source_note):
                 buf, 'WEBP', quality=quality_for(key), method=6)
             blob = buf.getvalue()
             recoded += 1
-        pack[key] = 'data:image/webp;base64,' + base64.b64encode(blob).decode()
+        if key.split('_')[0] in ONDEMAND_CLASSES:
+            os.makedirs(ART_DIR, exist_ok=True)
+            with open(os.path.join(ART_DIR, key + '.webp'), 'wb') as fh:
+                fh.write(blob)
+            pack[key] = 'art/' + key + '.webp'
+            ondemand += 1
+            ondemand_bytes += len(blob)
+        else:
+            pack[key] = 'data:image/webp;base64,' + base64.b64encode(blob).decode()
 
     total = sum(len(v) for v in pack.values())
     body = (f'/* Generated illustrative art, {source_note}.\n'
@@ -238,6 +255,9 @@ def write_pack(jobs, source_note):
     print(f'WROTE {OUT}  {total//1024}KB across {len(pack)} images '
           f'({passed} passed through, {recoded} re-encoded, '
           f'{from_fallback} from the SDXL fallback)', flush=True)
+    if ondemand:
+        print(f'      {ondemand} on-demand plates written to art/ '
+              f'({ondemand_bytes//1024}KB raw, off the first-load path)', flush=True)
     if missing:
         print(f'  still missing ({len(missing)}): {", ".join(missing[:12])}'
               f'{" ..." if len(missing) > 12 else ""}', flush=True)
