@@ -90,8 +90,22 @@ the served version still works.
 
 ## 3. Working at the same time as other people
 
-- **Branch per change.** `git checkout -b fix/siren-nside`. Never commit to
-  `main` directly, `main` is what <https://majieddd.github.io> serves.
+**Cross-repo protocol, signatures, code-comment conventions and the tooling
+setup live in one place: `CONTRIBUTING.md` at the root of the
+`claude-plugins-custom` repo, checked out as a sibling of this one.** That repo
+is private, so the path is deliberately not a link: if you have commit access
+here but not there, ask and you will be added. Read it first if you are new;
+this section is the game-repo specifics.
+
+- **Branch per change** for anything you want reviewed before it is live:
+  `git checkout -b fix/siren-nside`. `main` is what
+  <https://majieddd.github.io> serves, so a push to `main` IS a deploy.
+
+  Being honest about current practice: the maintainers do commit small, gated
+  changes straight to `main`, and the history shows it. That is workable only
+  because `node tools/gate.js` runs green before every one of those pushes. If
+  you are not running the full gate, branch. If you are, keep the commits small
+  and one item each, because there is no review between you and the live site.
 - **Every change ships to all three surfaces.** A change is not done when it
   works locally: push to `main` (which deploys the site), and republish the
   Artifact. Landing on one surface and not the others is how the live game
@@ -125,7 +139,9 @@ cheap, and it is strict:
   one that catches Windows contributors, and a patch script that rewrites a file
   with the wrong newline setting is how it happens.
 - `js/artpack.js` must exist and carry at least 100 keys. It currently carries
-  **188**.
+  **281** (28 cmd, 106 world, 54 foe, 50 cut, 12 planet, 12 abil, 11 twr, 5 fac,
+  plus title, nebula and blackhole). Count it, do not trust this line:
+  `node -e "const s=require('fs').readFileSync('js/artpack.js','utf8');console.log(Object.keys(new Function(s+';return ARTPACK;')()).length)"`
 
 Run the whole gate locally before you open the PR:
 
