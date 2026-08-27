@@ -43,13 +43,44 @@ const stripVideo = s => s.replace(/const ARTVID = \{[^\n]*?\};/, 'const ARTVID =
    Verified by the two guards at the foot of this file: the bundle must contain
    no `art/` URL at all, so a pcut entry surviving this strip fails the build
    rather than shipping a broken image. */
-const PLANET_ENTRY_RE = /"pcut_[A-Za-z0-9_]+":"art\/pcut_[A-Za-z0-9_]+\.webp",?/g;
+/* THE SEPARATOR IS `": "`, WITH A SPACE, and getting that wrong cost a 66MB
+   bundle. artgen/krea_gen.py writes the pack with json.dumps, whose default
+   item separator is ', ' and key separator ': '. The first version of this
+   regex assumed `":"` with no space, matched NOTHING, and removed NOTHING.
+
+   The failure was silent and it was invisible to the guards at the foot of
+   this file, which is the part worth remembering. Those guards assert the
+   bundle contains no surviving `art/` URL. But inlineOnDemand runs AFTER this
+   and happily inlined all 177 planet plates as base64, which removed every
+   `art/` URL and made both guards pass. A bundle that was 24MB the run before
+   came out at 67MB with 177 of 875 plates rendered, on course for roughly
+   230MB at full coverage, and every check in the repository was green.
+
+   A STRIP THAT MATCHES NOTHING IS INDISTINGUISHABLE FROM A STRIP THAT WORKED
+   UNLESS IT ASSERTS ITS OWN OUTCOME. So it does now: if the pack carries pcut
+   keys and this removes none of them, the build FAILS rather than shipping.
+   The whitespace is tolerated rather than hardcoded, so a future change to
+   json.dumps separators cannot reintroduce the same silence. */
+const PLANET_ENTRY_RE = /"pcut_[A-Za-z0-9_]+"\s*:\s*"art\/pcut_[A-Za-z0-9_]+\.webp"\s*,?/g;
+const PLANET_KEY_RE = /"pcut_[A-Za-z0-9_]+"\s*:/g;
 const stripPlanet = s => {
+  const present = (s.match(PLANET_KEY_RE) || []).length;
   const before = (s.match(PLANET_ENTRY_RE) || []).length;
   let out = s.replace(PLANET_ENTRY_RE, '');
   /* Removing the final entry of the object leaves a dangling comma. Repair it
      rather than trusting key order, which json.dumps does not promise. */
   out = out.replace(/,\s*\}/g, '}').replace(/\{\s*,/g, '{');
+  const left = (out.match(PLANET_KEY_RE) || []).length;
+  if (present && !before) {
+    console.error('build.js: the pack carries ' + present + ' planet plates and stripPlanet ' +
+                  'matched none of them. The key separator has changed; fix PLANET_ENTRY_RE ' +
+                  'rather than shipping a bundle with the whole class inlined.');
+    process.exit(1);
+  }
+  if (left) {
+    console.error('build.js: ' + left + ' planet plates survived the strip.');
+    process.exit(1);
+  }
   if (before) console.log('  dropped ' + before + ' planet plates from the bundle');
   return out;
 };
