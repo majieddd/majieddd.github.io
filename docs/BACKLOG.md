@@ -531,3 +531,33 @@ to a near-run loss with the rival on 2 lives. That is the skews and the fuller
 detachment doing what they were asked to do.
 
 Gates: **sweep 56 pass / 0 fail**, **MPT 37 pass / 0 fail**, NET_PROTOCOL 5.
+
+## Open: one planet plate needs a deliberate re-roll
+
+`pcut_00_robot_1` must be re-rendered:
+
+```bash
+python artgen/krea_gen.py --force pcut_00_robot_1
+python artgen/krea_gen.py --pack
+```
+
+**Why.** Systems 00 and 01 are being re-painted under the section 3 content
+law, so for those ten keys `cache_krea/` is deliberately ahead of `art/` until
+the next pack. On 2026-08-27 I deleted this key's cache entry while cleaning up
+after an `ingest_art.py` test, the fixture I meant to remove shared a name
+with a real plate, and restored it from `art/`, which is the *pre-content-law*
+version. Nothing shipped broke: `art/` is what the live site serves and it is
+unchanged and committed. But this key is now the only member of the re-painted
+set whose cache matches the old pack, so a pack today would give system 00 four
+new plates and one old one.
+
+The GPU was mid-batch with ~13.9GB free against a ~10GB pipeline, and losing a
+multi-hour render to reclaim one 46s plate is the wrong trade, so this is
+written down rather than done. The seed is FNV-1a of the key, so `--force`
+reproduces the intended plate exactly.
+
+**The lesson worth keeping.** A test fixture named `<real_key>.png` is a loaded
+gun: `ingest_art.py` correctly *skipped* it as already-cached, and the damage
+came from the cleanup line that deleted "my" file afterwards. Fixtures for this
+pipeline must use keys that cannot collide with the catalogue, and cleanup must
+delete by path it created, never by key it guessed.

@@ -468,8 +468,30 @@ WORLDS = [
 # for a scenario and a scenario needs somebody in it.
 BEATS = [
     # (suffix, template) -- {fleet} {force} {mark} {sky} {site} {works} {after} {order}
-    ('1', '{fleet} arriving over {sky}. Wide orbital establishing shot, enormous sense of '
-          'scale, no figures in the foreground'),
+    # BEAT 1 WAS LOSING THE FACTION TO THE WORLD, measured by
+    # tools/brand_audit.py once three systems had rendered. In-band rate by
+    # beat: APPROACH 64.2%, GROUND 91.5%, ASSAULT 90.6%, AFTERMATH 94.3%,
+    # NEW ORDER 94.3%. One beat out of five, and the cause is structural.
+    #
+    # This is the only beat whose subject is an ORBITAL ESTABLISHING SHOT, so
+    # the {sky} clause, which describes the WORLD's own colour, fills the
+    # frame. Venus is a sulphur-yellow cloud deck, Electra is a blue giant in
+    # blue nebulosity, Titan is orange haze. Those are astronomically right
+    # and they were beating the fleet: a pirate armada over Electra measured
+    # hue 200 with 0.01 of its colour in the crimson band, and a human fleet
+    # over Venus measured hue 50. ART-BIBLE section 2 is LOCKED on this point
+    # and it is not a preference: a scene must read as its faction in the
+    # first half second, and beat 1 is the FIRST FRAME of every deploy.
+    #
+    # The fix does not repaint the world, because a Venus that is not yellow
+    # is not Venus. It moves the fleet CLOSE and gives it its own light
+    # source, so the faction's hue owns the foreground while the world stays
+    # itself behind. That is already what the plates which pass do: the
+    # MERCURY set reads faction-distinct across all five powers because the
+    # ships are large and near.
+    ('1', '{fleet}, close to the viewer and filling the foreground, lit by its own running '
+          'lights, arriving over {sky} far below and behind. Wide orbital shot, enormous '
+          'sense of scale, the fleet dominating the composition, no figures'),
     ('2', '{force} making landfall at {site}. Wide cinematic composition, the place dwarfing '
           'the figures'),
     # BEAT 3 WAS NOT PRODUCING A BATTLE, measured across six world/faction pairs
