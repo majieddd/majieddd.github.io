@@ -85,6 +85,16 @@ function staticGates() {
   if (/clean/.test(bg.out)) say('bytes: clean');
   else fail('bytegate: ' + bg.out.trim().split('\n')[0]);
 
+  /* A config field nothing reads is a promise the engine does not keep, and
+     this project shipped two of them straight to the owner: scenario.spawn
+     said "there is no far side at all" while every survive board drew a full
+     rival half, and scenario.kind said 'survive' while no code gave a survive
+     board any way to be won. Both read correctly and both were inert. */
+  const df = run(process.execPath, ['tools/deadfields.js']);
+  if (df.code === 0) say('dead config fields: none');
+  else fail('dead config fields: ' + df.out.trim().split('\n').filter(l => /^\s{2}\S/.test(l))
+                                       .map(l => l.trim().split(/\s+/)[0]).join(', '));
+
   const b = run(process.execPath, ['build.js']);
   if (b.code !== 0) fail('build.js: ' + b.out.trim().split('\n')[0]);
   else {

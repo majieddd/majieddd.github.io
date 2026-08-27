@@ -1408,6 +1408,77 @@
        window.innerWidth + 'px wide (<=1 is PASS, a positive margin is scroll required)');
   });
 
+  /* ---- 29.1 a campaign battle actually starts, on every scenario ------
+     THE GAP THIS CLOSES. Sixty-one checks and not one of them started a
+     CAMPAIGN battle: every Game.start above passes `map:` and usually
+     `skirmish: true`, which skips the whole campaign branch. Two defects
+     shipped through that hole in one session, both invisible to a green gate:
+
+       1. `const mapSeed` was reassigned by the campaign-only seed salt, so
+          Game.start threw "Assignment to constant variable" on EVERY campaign
+          battle. A runtime TypeError, so `node --check` could not see it.
+       2. The same line read `opts.world.id` where the campaign passes the
+          world id as a STRING, so `.id` was undefined and every procedural
+          world in a galaxy fell through to the seed 'default'. Measured: 16
+          of 16 same-family worlds were byte-identical boards.
+
+     Both are caught by simply STARTING one, which is what this does: a real
+     campaign deploy on each distinct scenario the galaxy offers, asserting
+     the battle reaches a playable state and that two different worlds of one
+     procedural family do not build the same board. */
+  T('29.1 a campaign battle starts on every scenario, and worlds differ', function () {
+    const id = '29.1 a campaign battle starts on every scenario, and worlds differ';
+    try { localStorage.removeItem(Meta.KEY); } catch (e) {}
+    Meta._root = null; Meta.load();
+    const p0 = Meta.load(); p0.faction = 'human'; Meta.save();
+    Meta.campaignStart('human');
+    const gx = Meta.galaxy();
+    const seen = {}, started = [], failed = [];
+    const fp = {};
+    for (let si = 0; si < gx.systems.length; si++)
+      for (let wi = 0; wi < gx.systems[si].worlds.length; wi++) {
+        const w = gx.systems[si].worlds[wi];
+        const sc = (typeof ownedWorldScenarioOf === 'function' && ownedWorldScenarioOf(w, {})) ||
+                   worldScenarioOf(w);
+        const key = sc ? sc.id : 'none';
+        const m = MAPS.find(function (x) { return x.id === w.map; });
+        const proc = m && m.procedural ? m.family : null;
+        /* one battle per distinct scenario, plus every procedural world so
+           the board-identity comparison below has something to compare */
+        if (seen[key] && !proc) continue;
+        seen[key] = true;
+        try {
+          /* EXACTLY what js/ui.js deploy() passes: the world ID, a string. */
+          Game.start({ world: w.id, map: w.map, faction: 'human',
+                       rivalFaction: w.owner, worldKind: w.kind,
+                       loadout: PIN.slice() });
+          if (Game.state !== 'playing' && Game.state !== 'choosing')
+            failed.push(w.id + ' state=' + Game.state);
+          else started.push(key);
+          if (proc) {
+            const sig = JSON.stringify(FIELD.lanes) + FIELD.cols + 'x' + FIELD.rows;
+            (fp[proc] || (fp[proc] = [])).push(sig);
+          }
+        } catch (e) { failed.push(w.id + ' threw ' + e.message); }
+      }
+    /* Two worlds of one family sharing a board means the seed is not reaching
+       the generator, which is exactly defect 2 above. */
+    let dupFamilies = 0, compared = 0;
+    for (const fam in fp) {
+      const list = fp[fam];
+      for (let i = 0; i < list.length; i++)
+        for (let j = i + 1; j < list.length; j++) {
+          compared++;
+          if (list[i] === list[j]) dupFamilies++;
+        }
+    }
+    ok(id, failed.length === 0 && started.length > 0 && dupFamilies === 0,
+       started.length + ' campaign battles started across ' +
+       Object.keys(seen).length + ' scenarios, ' + failed.length + ' failed' +
+       (failed.length ? ' (' + failed.slice(0, 3).join('; ') + ')' : '') +
+       ', identical same-family boards ' + dupFamilies + '/' + compared);
+  });
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;

@@ -126,7 +126,7 @@ const MAPS = [
     roster: ['sprinter', 'crawler', 'wisp', 'blink', 'aegis', 'jammer', 'herald', 'warden'],
     blurb: 'One long serpentine with generous shoulders. Every tile you own sees the lane at least twice: the cleanest board in the theatre.',
     trait: 'Single lane · open ground',
-    cols: 28, rows: 15, region: { x: 20, y: 64 },
+    cols: 28, rows: 15,
     lanes: [[[13, 7], [10, 7], [10, 2], [5, 2], [5, 12], [2, 12], [2, 7], [-1, 7]]],
     /* Wisps are storm-weak, so the nodes deliberately are not storm: frost and
        void ask you to bring the partner element yourself. */
@@ -138,7 +138,7 @@ const MAPS = [
     roster: ['crawler', 'wisp', 'mender', 'cluster', 'shardling', 'wraith', 'nullifier', 'carrier'],
     blurb: 'Two channels that never share a tile, divided by a silt bank no tower shoots across. Whichever mouth you fortify is the one they leave alone.',
     trait: 'Twin mouths · ground split in two',
-    cols: 28, rows: 17, region: { x: 39, y: 27 },
+    cols: 28, rows: 17,
     lanes: [
       [[13, 3],  [10, 3],  [10, 6],  [6, 6],  [6, 1],  [2, 1],  [2, 8], [-1, 8]],
       [[13, 13], [10, 13], [10, 10], [6, 10], [6, 15], [2, 15], [2, 8], [-1, 8]]
@@ -159,7 +159,7 @@ const MAPS = [
     roster: ['crawler', 'aegis', 'shardling', 'bulwark', 'basalt', 'anchorite', 'bastion', 'juggernaut'],
     blurb: 'Rubble has taken everything but three alcoves. Each one watches a single leg of the corridor, and nothing you build in one can help another.',
     trait: 'Three alcoves · no fallback',
-    cols: 26, rows: 13, region: { x: 58, y: 20 },
+    cols: 26, rows: 13,
     lanes: [[[12, 6], [10, 6], [10, 2], [7, 2], [7, 10], [4, 10], [4, 3], [1, 3], [1, 6], [-1, 6]]],
     /* Sixty buildable tiles a side, in three pockets that do not overlap.
        Anything you want covered twice has to be paid for twice. */
@@ -179,7 +179,7 @@ const MAPS = [
     roster: ['sprinter', 'crawler', 'blink', 'aegis', 'wraith', 'revenant', 'nullifier', 'warden'],
     blurb: 'Four surviving islands, each hanging off one bend of a long fall through the craters. There is no second-best tile and no way to reinforce a mistake.',
     trait: 'Four islands · one long fall',
-    cols: 28, rows: 15, region: { x: 76, y: 38 },
+    cols: 28, rows: 15,
     lanes: [[[13, 7], [11, 7], [11, 2], [7, 2], [7, 12], [4, 12], [4, 5], [1, 5], [1, 9], [-1, 9]]],
     blocks: [[0, 0, 3, 1], [5, 0, 10, 0], [2, 0, 3, 0], [0, 11, 0, 14], [5, 14, 10, 14],
              [9, 4, 10, 6], [9, 8, 10, 10], [0, 2, 1, 3], [5, 4, 6, 5], [5, 9, 6, 10],
@@ -194,7 +194,7 @@ const MAPS = [
     roster: ['crawler', 'wisp', 'aegis', 'jammer', 'herald', 'warchief', 'anchorite', 'bastion'],
     blurb: 'Two lanes that cross each other twice on the way in. Both intersections are lane tiles, so the ground that watches them is the ground beside them: and there is a monument in the way.',
     trait: 'Two lanes · two crossings',
-    cols: 30, rows: 15, region: { x: 30, y: 84 },
+    cols: 30, rows: 15,
     lanes: [
       [[14, 4],  [8, 4],   [8, 11], [3, 11], [3, 7], [-1, 7]],
       [[14, 11], [11, 11], [11, 7], [5, 7],  [5, 13], [2, 13], [2, 7], [-1, 7]]
@@ -213,7 +213,7 @@ const MAPS = [
     roster: ['sprinter', 'crawler', 'blink', 'cluster', 'jammer', 'wraith', 'bulwark', 'warden'],
     blurb: 'The longest march in the theatre: a full inward spiral that then cuts straight back out across every ring it just wound. One good tile is worth four elsewhere.',
     trait: 'Longest lane · crossed by its own exit',
-    cols: 28, rows: 15, region: { x: 66, y: 74 },
+    cols: 28, rows: 15,
     lanes: [[[13, 7], [12, 7], [12, 13], [2, 13], [2, 1], [10, 1], [10, 10], [5, 10], [5, 4], [8, 4], [8, 6], [-1, 6]]],
     blocks: [[0, 0, 1, 1], [0, 14, 1, 14], [11, 2, 11, 5], [11, 8, 11, 10],
              [6, 11, 7, 12], [3, 8, 4, 9]],
@@ -240,7 +240,7 @@ const MAPS = [
     trait: 'Massive field · two long lanes', denizens: ['warden', 'revenant'],
     sigNote: 'Deep space. Ironmarches and Foundry Carriers drift in from the dark.',
     roster: ['crawler', 'wisp', 'cluster', 'shardling', 'revenant', 'warden', 'carrier', 'juggernaut'],
-    cols: 36, rows: 20, region: { x: 78, y: 30 },
+    cols: 36, rows: 20,
     lanes: [
       [[17, 7],  [14, 7],  [14, 3],  [8, 3],  [8, 9],  [4, 9],  [4, 10], [-1, 10]],
       [[17, 13], [14, 13], [14, 17], [8, 17], [8, 11], [4, 11], [4, 10], [-1, 10]]
@@ -261,7 +261,7 @@ const MAPS = [
     trait: 'Twin loops · one throat, taken twice', denizens: ['wraith', 'shardling'],
     sigNote: 'Rift-touched. Ghost Chassis and Shard Sentries bleed through.',
     roster: ['sprinter', 'crawler', 'blink', 'aegis', 'shardling', 'wraith', 'herald', 'bastion'],
-    cols: 26, rows: 17, region: { x: 55, y: 75 },
+    cols: 26, rows: 17,
     lanes: [
       [[12, 8], [10, 8], [10, 3],  [7, 3],  [7, 8], [4, 8], [4, 13], [1, 13], [1, 8], [-1, 8]],
       [[12, 8], [10, 8], [10, 13], [7, 13], [7, 8], [4, 8], [4, 3],  [1, 3],  [1, 8], [-1, 8]]
@@ -278,7 +278,7 @@ const MAPS = [
     trait: 'THREE-WAY WAR · doubled reanimates', denizens: ['revenant', 'warchief'],
     sigNote: 'The confluence draws Reconstructors and pylon columns from every front.',
     roster: ['crawler', 'wisp', 'mender', 'jammer', 'revenant', 'warchief', 'basalt', 'carrier'],
-    cols: 31, rows: 25, region: { x: 50, y: 12 },
+    cols: 31, rows: 25,
     /* An odd column count puts the mirror axis ON a column, so the two flanking
        commanders are exact reflections of each other. The old 30-wide board had
        its bases at x=5 and x=25 -- not a reflection at all, which is why side 0
@@ -2452,7 +2452,7 @@ function blankAchievementStats() {
    different scenario. Same law as the lockstep tables, for the same reason. */
 const SCENARIOS = [
   {
-    id: 'assault', name: 'ASSAULT', kind: 'duel', icon: '⚔',
+    id: 'assault', name: 'ASSAULT', icon: '⚔',
     brief: 'Outlast the rival commander.',
     stars: ['Win the battle',
             'Win holding 55% of your lives',
@@ -2470,8 +2470,8 @@ const SCENARIOS = [
     /* SPAWN 'enemyside': the far base still spawns, but nobody commands it.
        The seat is a breach the swarm pours through, not a rival: no portrait,
        no drafted arsenal, no sends back at you. */
-    id: 'swarm', name: 'THE SWARM', kind: 'survive', icon: '☠',
-    noCommander: true, spawn: 'enemyside', waves: [12, 16, 20],
+    id: 'swarm', name: 'THE SWARM', icon: '☠',
+    noCommander: true,
     /* BOUNDED (owner). Clearing wave 20 with the board empty WINS. Before
        this, `kind: 'survive'` was decoration the engine never read and the
        only exit from a swarm was losing: stars were scored on the wave you
@@ -2493,8 +2493,8 @@ const SCENARIOS = [
        overrun and the wild comes at your line from the open ground. This is
        the other half of the owner's Session 30 note, kept as a separate
        scenario rather than a flag, so the two read as two different battles. */
-    id: 'overrun', name: 'OVERRUN', kind: 'survive', icon: '☣',
-    noCommander: true, spawn: 'neutral', waves: [10, 14, 18],
+    id: 'overrun', name: 'OVERRUN', icon: '☣',
+    noCommander: true,
     surviveWaves: 18,
     brief: 'The world already fell. Hold your line for 18 waves against what took it.',
     stars: ['Survive 10 waves', 'Survive 14 waves', 'Survive 18 waves'],
@@ -2508,8 +2508,8 @@ const SCENARIOS = [
     }
   },
   {
-    id: 'vigil', name: 'THE LONG VIGIL', kind: 'endless', icon: '∞',
-    noCommander: true, spawn: 'neutral', waves: [15, 25, 35],
+    id: 'vigil', name: 'THE LONG VIGIL', icon: '∞',
+    noCommander: true,
     brief: 'No end. Stand as long as you can.',
     stars: ['Reach wave 15', 'Reach wave 25', 'Reach wave 35'],
     flavor: 'Old Weather routines do not stop. They are not deciding anything.',
@@ -2567,8 +2567,8 @@ const RENEGADE_HUNT = {
    sees both rather than always the first. */
 const OWNED_REVISIT_SCENARIOS = [
   {
-    id: 'swarm_defense', name: 'SWARM DEFENSE', kind: 'survive', icon: '🛡',
-    noCommander: true, spawn: 'enemyside', waves: [12, 16, 20],
+    id: 'swarm_defense', name: 'SWARM DEFENSE', icon: '🛡',
+    noCommander: true,
     surviveWaves: 20,
     brief: 'Hold what is already yours for 20 waves. No commander to beat here.',
     stars: ['Survive 12 waves', 'Survive 16 waves', 'Survive 20 waves'],
@@ -2591,8 +2591,8 @@ const OWNED_REVISIT_SCENARIOS = [
        your OWN power's other forces make their weight felt as matériel,
        stated as such in the brief below, not simulated as a second commander
        that is not really there. */
-    id: 'coop_reinforcement', name: 'REINFORCEMENT LINE', kind: 'survive', icon: '🤝',
-    noCommander: true, spawn: 'enemyside', waves: [12, 16, 20],
+    id: 'coop_reinforcement', name: 'REINFORCEMENT LINE', icon: '🤝',
+    noCommander: true,
     reinforce: { every: 3, gold: 40 },
     surviveWaves: 20,
     brief: 'Hold for 20 waves. Every third wave, your own power sends gold, not guns.',
@@ -2881,16 +2881,16 @@ const MINIBOSS_EVERY = 5;             /* waves between miniboss escorts */
    WAVES
 -------------------------------------------------------------------------- */
 const WAVES = [
-  { name:'FIRST CONTACT', reward:70, groups:[ {type:'crawler',count:10,gap:0.85,delay:0} ]},
-  { name:'PROBING RUN',   reward:82, groups:[ {type:'crawler',count:12,gap:0.7,delay:0}, {type:'sprinter',count:6,gap:0.55,delay:9} ]},
-  { name:'ARMOURED PUSH', reward:94, groups:[ {type:'crawler',count:14,gap:0.55,delay:0}, {type:'mite',count:14,gap:0.2,delay:5}, {type:'bulwark',count:2,gap:3,delay:11} ]},
-  { name:'AIRBORNE',      reward:106,groups:[ {type:'wisp',count:8,gap:0.9,delay:0}, {type:'crawler',count:14,gap:0.5,delay:3}, {type:'sprinter',count:8,gap:0.45,delay:12} ]},
-  { name:'DISRUPTION',    reward:120,groups:[ {type:'jammer',count:2,gap:3,delay:0}, {type:'warchief',count:1,gap:1,delay:6}, {type:'aegis',count:4,gap:1.9,delay:3}, {type:'bulwark',count:3,gap:2.4,delay:8}, {type:'sprinter',count:10,gap:0.35,delay:15} ]},
-  { name:'FIELD SURGERY', reward:134,groups:[ {type:'mender',count:3,gap:3,delay:0}, {type:'cluster',count:6,gap:1.3,delay:2}, {type:'blink',count:4,gap:1.6,delay:7}, {type:'mite',count:24,gap:0.16,delay:11}, {type:'wisp',count:8,gap:0.8,delay:17} ]},
-  { name:'HEAVY ARMOUR',  reward:148,groups:[ {type:'juggernaut',count:2,gap:6,delay:0}, {type:'bastion',count:2,gap:3,delay:5}, {type:'anchorite',count:2,gap:3,delay:11}, {type:'warden',count:3,gap:2.2,delay:3}, {type:'bulwark',count:5,gap:1.5,delay:7}, {type:'mender',count:3,gap:2.5,delay:12}, {type:'nullifier',count:3,gap:2,delay:17}, {type:'basalt',count:2,gap:3,delay:20} ]},
-  { name:'DARKENED SKY',  reward:162,groups:[ {type:'wisp',count:20,gap:0.42,delay:0}, {type:'herald',count:2,gap:3,delay:4}, {type:'wraith',count:4,gap:1.8,delay:5}, {type:'aegis',count:6,gap:1.5,delay:9}, {type:'mender',count:4,gap:2.2,delay:13}, {type:'sprinter',count:14,gap:0.28,delay:18} ]},
-  { name:'FULL ASSAULT',  reward:178,groups:[ {type:'juggernaut',count:3,gap:4.5,delay:0}, {type:'warchief',count:2,gap:3,delay:4}, {type:'anchorite',count:2,gap:3,delay:8}, {type:'bastion',count:2,gap:3,delay:14}, {type:'carrier',count:2,gap:5,delay:2}, {type:'cluster',count:8,gap:0.9,delay:5}, {type:'revenant',count:5,gap:1.5,delay:9}, {type:'aegis',count:6,gap:1.1,delay:13}, {type:'wisp',count:14,gap:0.45,delay:18}, {type:'mite',count:28,gap:0.14,delay:23}, {type:'shardling',count:4,gap:1.6,delay:20} ]},
-  { name:'THE HARBINGER', reward:270, boss:true, groups:[ {type:'bulwark',count:6,gap:1.2,delay:0}, {type:'warchief',count:2,gap:2,delay:8}, {type:'bastion',count:3,gap:2,delay:12}, {type:'herald',count:2,gap:2,delay:20}, {type:'harbinger',count:1,gap:1,delay:6}, {type:'juggernaut',count:4,gap:3,delay:10}, {type:'warden',count:4,gap:2,delay:14}, {type:'mender',count:5,gap:1.8,delay:18}, {type:'wisp',count:16,gap:0.4,delay:23}, {type:'cluster',count:10,gap:0.7,delay:28} ]}
+  { name:'FIRST CONTACT', groups:[ {type:'crawler',count:10,gap:0.85,delay:0} ]},
+  { name:'PROBING RUN',   groups:[ {type:'crawler',count:12,gap:0.7,delay:0}, {type:'sprinter',count:6,gap:0.55,delay:9} ]},
+  { name:'ARMOURED PUSH', groups:[ {type:'crawler',count:14,gap:0.55,delay:0}, {type:'mite',count:14,gap:0.2,delay:5}, {type:'bulwark',count:2,gap:3,delay:11} ]},
+  { name:'AIRBORNE',      groups:[ {type:'wisp',count:8,gap:0.9,delay:0}, {type:'crawler',count:14,gap:0.5,delay:3}, {type:'sprinter',count:8,gap:0.45,delay:12} ]},
+  { name:'DISRUPTION',    groups:[ {type:'jammer',count:2,gap:3,delay:0}, {type:'warchief',count:1,gap:1,delay:6}, {type:'aegis',count:4,gap:1.9,delay:3}, {type:'bulwark',count:3,gap:2.4,delay:8}, {type:'sprinter',count:10,gap:0.35,delay:15} ]},
+  { name:'FIELD SURGERY', groups:[ {type:'mender',count:3,gap:3,delay:0}, {type:'cluster',count:6,gap:1.3,delay:2}, {type:'blink',count:4,gap:1.6,delay:7}, {type:'mite',count:24,gap:0.16,delay:11}, {type:'wisp',count:8,gap:0.8,delay:17} ]},
+  { name:'HEAVY ARMOUR',  groups:[ {type:'juggernaut',count:2,gap:6,delay:0}, {type:'bastion',count:2,gap:3,delay:5}, {type:'anchorite',count:2,gap:3,delay:11}, {type:'warden',count:3,gap:2.2,delay:3}, {type:'bulwark',count:5,gap:1.5,delay:7}, {type:'mender',count:3,gap:2.5,delay:12}, {type:'nullifier',count:3,gap:2,delay:17}, {type:'basalt',count:2,gap:3,delay:20} ]},
+  { name:'DARKENED SKY',  groups:[ {type:'wisp',count:20,gap:0.42,delay:0}, {type:'herald',count:2,gap:3,delay:4}, {type:'wraith',count:4,gap:1.8,delay:5}, {type:'aegis',count:6,gap:1.5,delay:9}, {type:'mender',count:4,gap:2.2,delay:13}, {type:'sprinter',count:14,gap:0.28,delay:18} ]},
+  { name:'FULL ASSAULT',  groups:[ {type:'juggernaut',count:3,gap:4.5,delay:0}, {type:'warchief',count:2,gap:3,delay:4}, {type:'anchorite',count:2,gap:3,delay:8}, {type:'bastion',count:2,gap:3,delay:14}, {type:'carrier',count:2,gap:5,delay:2}, {type:'cluster',count:8,gap:0.9,delay:5}, {type:'revenant',count:5,gap:1.5,delay:9}, {type:'aegis',count:6,gap:1.1,delay:13}, {type:'wisp',count:14,gap:0.45,delay:18}, {type:'mite',count:28,gap:0.14,delay:23}, {type:'shardling',count:4,gap:1.6,delay:20} ]},
+  { name:'THE HARBINGER', boss:true, groups:[ {type:'bulwark',count:6,gap:1.2,delay:0}, {type:'warchief',count:2,gap:2,delay:8}, {type:'bastion',count:3,gap:2,delay:12}, {type:'herald',count:2,gap:2,delay:20}, {type:'harbinger',count:1,gap:1,delay:6}, {type:'juggernaut',count:4,gap:3,delay:10}, {type:'warden',count:4,gap:2,delay:14}, {type:'mender',count:5,gap:1.8,delay:18}, {type:'wisp',count:16,gap:0.4,delay:23}, {type:'cluster',count:10,gap:0.7,delay:28} ]}
 ];
 
 /* --------------------------------------------------------------------------
