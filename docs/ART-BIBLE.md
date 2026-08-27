@@ -357,7 +357,27 @@ file mtimes across a full class, not quoted from a previous session:
 | Class | Size | Measured |
 |---|---|---|
 | `cmd` portrait | 1024 gen, 320 out, square | **26.5s each**, 28 in the class |
-| `pcut` plate | 1024 gen, 1920 out, wide | budget ~48s, see the render log |
+| `pcut` plate | 1024 gen, 1920 out, wide | **47.5s each**, 875 in the class, about 11.5h |
+
+Of that 47.5s, **4.50s is the CPU text encode** (bf16; fp32 measures 5.03s, so
+bf16 is already right) and the rest is 8 denoise steps plus a tiled VAE decode
+on the card.
+
+**THE CARD IS ALREADY SATURATED. Do not go looking for a batching win.** Under
+load it reports **174.23W of a 175.00W limit, 2392MHz, 100% utilisation, 80C,
+and "SW Power Cap: Active"**. It is compute-bound against a hard power ceiling,
+so a larger batch buys nothing, and the 10GiB of unused VRAM is not headroom
+that can be spent on speed. The only saving left is overlapping the 4.5s encode
+of plate N+1 with the denoise of plate N, worth about 9%.
+
+**And a measurement trap worth more than the measurement.** Six consecutive
+`nvidia-smi` calls during that same run returned 33% utilisation at 20.6W and
+1005MHz, which reads exactly like a starved GPU and sent this investigation
+down a wrong path for twenty minutes. All six landed inside the same 4.5s
+CPU-encode window between plates: the calls are fast, the phase is periodic,
+and they aliased onto it. **Sample a periodic workload over more than one
+phase, and read `power.draw` and `pstate` before concluding a GPU is idle.**
+`utilization.gpu` alone lies about any pipeline that alternates devices.
 
 Model load is roughly two to three minutes before the first image, which is why
 a class of 28 takes about fifteen minutes rather than twelve. **Time ONE image

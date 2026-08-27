@@ -115,6 +115,17 @@ def load_pipe():
     # of VRAM to the transformer, whose 8 denoising steps are the actual work
     # -- at 11.8/12 GiB the first smoke test sat at 100% for 15 minutes on one
     # image; headroom is the difference between computing and thrashing.
+    #
+    # THAT FIGURE IS FROM A 12 GiB CARD and this one has 24, so the placement
+    # was re-examined in Session 39 rather than inherited. It stays, and the
+    # numbers are in artgen/time_encoder.py: the CPU encode costs 4.50s of a
+    # 47.5s plate (9%), while under load the card already reports 174W of a
+    # 175W limit at 100% utilisation with SW Power Cap active. Moving the
+    # encoder onto a power-capped card buys back part of 9% and spends VRAM
+    # and watts to do it. The saving that IS available is overlapping the
+    # encode of plate N+1 with the denoise of plate N, which costs no VRAM;
+    # it is not done here because it was measured mid-run and is not worth
+    # restarting a class for.
     print('loading text encoder (bf16, cpu) ...', flush=True)
     text_encoder = Qwen3VLModel.from_pretrained(
         REPO, subfolder='text_encoder', dtype=torch.bfloat16, device_map='cpu')
