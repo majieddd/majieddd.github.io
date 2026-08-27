@@ -4029,6 +4029,21 @@ const XENO_INC_SQRT_SEC = 0.55;
 const XENO_INC_FEED_RADIUS = 2.6;
 const XENO_INC_FEED_SEC = 1.5;
 const XENO_INC_CAP = 10;
+/* THE BROOD'S WINDOW (owner, Session 39). A clutch coming due no longer RAISES
+   a body: it refreshes the cooldown on the unit it was gestating and gives you
+   this many seconds to actually send it, paying gold at the current price.
+
+   The owner's reasoning, and it is the whole balance of the rite: "price
+   increases still occur so you have to be smart when to send a massive
+   rushing wave ... trying to find a way to balance them to limit their swarm
+   while still feeling like one."
+
+   That is what a window buys and a free body does not. Kills still come
+   thick, so the openings still come thick and the rite still reads as a
+   swarm; but every body is bought, every buy moves the cost curve, and a
+   window nobody spends is a wave that never existed. The swarm is now a
+   TEMPO the player has to fund rather than a stream they merely receive. */
+const XENO_BROOD_WINDOW_SEC = 5;
 
 /* ── MUSTER DETACHMENT ────────────────────────────────────────────────────
    The fixed three-row table is gone. A commander carries up to

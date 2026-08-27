@@ -296,6 +296,38 @@ MEASURED FIRST (tools/mobile-hud-audit.js), on the build the owner photographed:
 
 ---
 
+## Q. THE BROOD opens a window instead of hatching
+
+Owner, Session 39: "it's still an incubation phase that instead refreshes the
+cooldown to summon the unit and it will summon from there. However, the caveat
+is that price increases still occur so you have to be smart when to send a
+massive rushing wave ... whenever the incubation begins, it selects a unit that
+it will refresh the cooldown on so it can be summoned with gold, however, there
+is a time limit of about 5 seconds to actually summon from the incubation.
+Trying to find a way to balance them to limit their swarm while still feeling
+like one."
+
+- [x] A clutch coming due no longer raises a body. It refreshes the cooldown on
+  the creature it was gestating and opens a 5s window to SEND it, paid in gold.
+- [x] The window opens at MATURITY, not when the clutch is laid, so gestation
+  and the feed-a-clutch-to-hurry-it mechanic keep their meaning: feeding buys
+  the window sooner, not a body sooner.
+- [x] A lapsed window hands back the wait it interrupted (minus the window)
+  rather than charging a fresh cooldown, so it can never punish a detachment
+  that was ready anyway.
+- [x] The price curve is untouched, which is the owner's caveat: spending every
+  opening prices you out of the next rush.
+- [x] owner-sweep 38.1 (window opens, no free body), 38.2 (sendable in the
+  window, lapses, hands the wait back), 38.2b (spending consumes it and the
+  price climbs), 38.14 (the manual no longer says a clutch hatches).
+
+CONSEQUENCE WORTH RECORDING: after this and FIELD DOCTRINE, no rite both
+purchases and raises from kills. THE PROCESSION raises on a clock (needs no
+wire) and THE LATTICE raises from kills but cannot purchase, which is why the
+MPT duel rig now drives THE LATTICE and asserts `built` rather than `bought`.
+
+---
+
 ## Evidence ledger (filled as items close)
 
 | Item | State | Evidence |
@@ -316,3 +348,4 @@ MEASURED FIRST (tools/mobile-hud-audit.js), on the build the owner photographed:
 | N | verified | Per-detachment cooldown replaces MUSTER_PER_WAVE. owner-sweep 38.5 (arms and expires), 38.6 (Marque exempt), 38.9 (the card says recovering, not unaffordable). Fingerprint extended for reqCredit, musterCd and vetRank; MPT 37/37. |
 | O | verified | owner-sweep 62 to 88 checks. newcoverage reports 351 of 351 added executable lines reached, proven by planting a dead branch. Every new check proven by planting the defect it catches. |
 | P | verified | mobile 9/9 at three phone widths, gate carries a 360x800 pass, and the gate was proven to catch the regression (planting the three-pane dock reports board 0% uncovered, chrome 98%). Desktop untouched: owner-sweep 88/0, MPT 37/0. |
+| Q | verified | Brood window replaces hatching. owner-sweep 93/0 with 38.1, 38.2, 38.2b proven by planting (window never consumed, window never lapses: both caught). MPT rig moved to THE LATTICE because no rite buys AND raises from kills any more. Gate clean. |

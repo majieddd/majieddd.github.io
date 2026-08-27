@@ -6078,7 +6078,18 @@ const UI = {
     } else if (doc.onKill === 'incubate') {
       let n = 0, soon = Infinity;
       for (const p of Game.incubators) if (p.side === S.index) { n++; if (p.t < soon) soon = p.t; }
-      state = 'INCUBATING ' + n + '/' + XENO_INC_CAP + (n ? ' · NEXT ' + Math.max(0, Math.ceil(soon)) + 's' : '');
+      /* AN OPEN WINDOW OUTRANKS THE COUNT. A clutch that has come due is a
+         decision the player has about five seconds to make, and burying that
+         behind "INCUBATING 7/10" is the readout failing at the only moment it
+         matters. The countdown is the message. */
+      const open = [];
+      for (const id in (S.broodOpen || {})) {
+        const u = ENEMY_TYPES[id];
+        open.push((u ? u.name.toUpperCase() : id) + ' ' + Math.max(0, Math.ceil(S.broodOpen[id].t)) + 's');
+      }
+      state = open.length
+        ? 'READY TO SEND · ' + open.join(' · ')
+        : 'INCUBATING ' + n + '/' + XENO_INC_CAP + (n ? ' · NEXT ' + Math.max(0, Math.ceil(soon)) + 's' : '');
     } else if (doc.onKill === 'requisition') {
       /* FIELD DOCTRINE has TWO channels and both belong on the tag, because
          neither is visible anywhere else: the banked discount that a kill
@@ -8136,7 +8147,10 @@ const UI = {
         <p>Neutral waves spawn in the centre corridor and march on <b>both</b> bases at once: same composition, same instant.</p>
         <p>What a kill becomes is decided by your commander's <b>rite</b>, not by a single
            universal law. <b>${SUMMON_DOCTRINES.robot.name}</b> returns the body exactly as it
-           fell; <b>${SUMMON_DOCTRINES.xeno.name}</b> leaves it to incubate where it died;
+           fell; <b>${SUMMON_DOCTRINES.xeno.name}</b> leaves it to incubate where it died, and
+           when the clutch comes due it does not hatch: it opens a
+           <b>${XENO_BROOD_WINDOW_SEC}-second</b> window in which that creature is ready to
+           send, bought with gold at the going price;
            <b>${SUMMON_DOCTRINES.human.name}</b> raises nothing at all and instead banks
            <b>requisition</b> against the price of your next send, while any body of yours that
            kills another is promoted on the spot; and under

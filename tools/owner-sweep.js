@@ -1735,33 +1735,73 @@
       return e;
     }
 
-    T('38.1 THE BROOD lays a clutch on a kill, and it hatches into a body', function () {
-      battle('xeno');
+    T('38.1 a clutch comes due and OPENS A WINDOW rather than raising a body', function () {
+      /* THE RITE CHANGED (owner, Session 39). A clutch used to hatch a free
+         body; it now refreshes the cooldown on the creature it was gestating
+         and gives the player about five seconds to SEND it, paying gold at
+         the going price. The owner's reasoning is the balance of the whole
+         faction: "price increases still occur so you have to be smart when to
+         send a massive rushing wave ... limit their swarm while still feeling
+         like one." Openings still arrive as fast as kills do, which is the
+         swarm; every body is now bought, which is the limit. */
+      const S = battle('xeno');
+      const before = Game.pendingSpawns.length;
       killOne(0);
-      const one = Game.incubators.length === 1;
-      const need = one ? Game.incubators[0].need : -1;
-      Game.pendingSpawns.length = 0;
+      const laid = Game.incubators.length === 1;
+      const id = laid ? Game.incubators[0].unitId : null;
       let guard = 0;
       while (Game.incubators.length && guard++ < 4000) Game.tickIncubators(0.05);
-      ok('38.1 THE BROOD lays a clutch on a kill, and it hatches into a body',
-         one && Game.incubators.length === 0 && Game.pendingSpawns.length > 0,
-         'clutch laid ' + one + ', gestation ' + need.toFixed(1) + 's, hatched ' +
-         Game.pendingSpawns.length + ' body/bodies');
+      const win = S.broodOpen && S.broodOpen[id];
+      ok('38.1 a clutch comes due and OPENS A WINDOW rather than raising a body',
+         laid && !!win && Game.pendingSpawns.length === before,
+         'clutch laid ' + laid + ', window open on ' + id + ' ' + (win ? win.t.toFixed(1) + 's' : 'NONE') +
+         ', free bodies raised ' + (Game.pendingSpawns.length - before));
     });
 
-    T('38.2 a hatchling enters with most of the lane still ahead of it', function () {
-      battle('xeno');
+    T('38.2 the window makes it sendable for GOLD, and lapses if unspent', function () {
+      const S = battle('xeno');
       killOne(0);
-      Game.pendingSpawns.length = 0;
+      const id = Game.incubators[0].unitId;
+      const tier = Game.musterTiers(0).find(function (t) { return t.id === id; });
+      /* Put the detachment on cooldown FIRST, so the window has something to
+         refresh and the check cannot pass on a unit that was ready anyway. */
+      S.musterCd[id] = 30;
+      const blockedBefore = !Game.canMuster(0, tier);
       let guard = 0;
       while (Game.incubators.length && guard++ < 4000) Game.tickIncubators(0.05);
-      const b = Game.pendingSpawns[0];
-      const total = b && b.path ? b.path.total : -1;
-      const frac = (b && total > 0) ? b.dist / total : -1;
-      ok('38.2 a hatchling enters with most of the lane still ahead of it',
-         !!b && frac >= 0 && frac < 0.9,
-         b ? ('enters at ' + (frac * 100).toFixed(1) + '% of a ' + total.toFixed(0) + ' lane')
-           : 'no body produced');
+      const readyInWindow = Game.canMuster(0, tier);
+      const costs = Game.musterCost(0, tier) > 0;
+      /* Let it lapse. The wait it interrupted comes back, minus the window. */
+      Game.tickBrood(XENO_BROOD_WINDOW_SEC + 0.2);
+      const closed = !(S.broodOpen && S.broodOpen[id]);
+      const backOnCd = (S.musterCd[id] || 0) > 0 && !Game.canMuster(0, tier);
+      ok('38.2 the window makes it sendable for GOLD, and lapses if unspent',
+         blockedBefore && readyInWindow && costs && closed && backOnCd,
+         'blocked on cooldown ' + blockedBefore + ', sendable in the window ' + readyInWindow +
+         ', still costs gold ' + Game.musterCost(0, tier) + ', window closed ' + closed +
+         ', cooldown handed back ' + (S.musterCd[id] || 0).toFixed(1) + 's');
+    });
+
+    T('38.2b spending the window consumes it, and the price still climbs', function () {
+      const S = battle('xeno');
+      killOne(0);
+      const id = Game.incubators[0].unitId;
+      const tier = Game.musterTiers(0).find(function (t) { return t.id === id; });
+      let guard = 0;
+      while (Game.incubators.length && guard++ < 4000) Game.tickIncubators(0.05);
+      S.gold = 999999;
+      const priceFirst = Game.musterCost(0, tier);
+      const sent = Game.muster(0, tier);
+      const consumed = !(S.broodOpen && S.broodOpen[id]);
+      const onCd = Game.musterCdLeft(0, tier) > 0;
+      const priceAfter = Game.musterCost(0, tier);
+      /* THE CAVEAT THE OWNER NAMED. A window is free tempo, never free mass:
+         the buy walks the same cost curve every other rite walks, so a player
+         who spends every opening prices themselves out of the next rush. */
+      ok('38.2b spending the window consumes it, and the price still climbs',
+         sent && consumed && onCd && priceAfter > priceFirst,
+         'sent ' + sent + ', window consumed ' + consumed + ', back on cooldown ' + onCd +
+         ', price ' + priceFirst + ' -> ' + priceAfter);
     });
 
     T('38.3 FIELD DOCTRINE raises no free body at all', function () {
@@ -1958,10 +1998,16 @@
       const namesRite = txt.indexOf(SUMMON_DOCTRINES.human.name) !== -1;
       const stale = /drafts a different soldier/i.test(txt);
       const cd = /time to recover/i.test(txt);
+      /* And it must not still say a clutch HATCHES, which is the rite the
+         Session 39 change removed. A manual describing a removed mechanic is
+         worse than one that omits it, because a player will trust it. */
+      const staleHatch = /hatch(es|ing)? as something else|it hatches\b/i.test(txt);
+      const window = new RegExp(XENO_BROOD_WINDOW_SEC + '.second window', 'i').test(txt);
       ok('38.14 the manual describes the rite the engine actually runs',
-         namesRite && !stale && cd,
+         namesRite && !stale && cd && !staleHatch && window,
          'names ' + SUMMON_DOCTRINES.human.name + ' ' + namesRite +
-         ', stale conscription copy present ' + stale + ', documents the cooldown ' + cd);
+         ', stale conscription copy ' + stale + ', documents the cooldown ' + cd +
+         ', stale hatch copy ' + staleHatch + ', documents the brood window ' + window);
     });
 
     T('38.15 every commander answers what was actually said to them', function () {

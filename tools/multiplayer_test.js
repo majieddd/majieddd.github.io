@@ -42,7 +42,31 @@ const MPT = (function () {
   /* The rite this rig drives when the subject is reanimation. THE BROOD is
      the choice because it both BUYS and RAISES: the machine rite raises but
      cannot purchase (noPurchase), so `bought > 0` could never hold under it. */
-  const RAISING_RITE = 'xeno';
+  /* THE LATTICE, and the reason is worth writing down because it is a real
+     consequence of two Session 38/39 design changes rather than a preference.
+
+     These checks need a rite whose sends are RAISED FROM KILLS, because the
+     wire check below proves the rival's raised sends vanish when the wire is
+     cut: kills depend on the rival's towers, and those towers exist on this
+     client only because its build packets arrived.
+
+     After FIELD DOCTRINE replaced CONSCRIPTION and the brood window replaced
+     hatching, NO rite both purchases and raises from kills:
+
+       human    buys, raises nothing (banks requisition instead)
+       xeno     buys, raises nothing (opens a window to buy)
+       pirate   buys, raises nothing
+       light    buys, raises on a CLOCK, which needs no wire at all: measured,
+                a deaf seat still sent 10 bodies, so the wire check failed
+                against a rite that was working correctly
+       robot    raises 1:1 from kills, cannot purchase (noPurchase)
+
+     So THE LATTICE it is, and the loop check below drops its `bought > 0`
+     clause accordingly: purchasing over the wire is not what MPT is for, and
+     owner-sweep already covers the muster path in eight checks. What MPT owes
+     is that the RIVAL's activity is carried by the connection, which is what
+     `built` and `raised` show under this rite. */
+  const RAISING_RITE = 'robot';
   /* THE REACHABILITY GRANT, hoisted so the isolation canary can have it too.
      The pvp rig documented why it needs this ("a duel test that cannot afford
      its own opening is a test of poverty"): without it most builds in the log
@@ -1240,8 +1264,11 @@ T('net.rules conceding a duel does not promise a garrison', function () {
         ' | raised ' + r.sides.map(raised).join('/') + ' | kills ' + r.sides.map(kills).join('/');
 
       T('net.pvp the send/muster/reanimate loop closes for both commanders', function () {
+        /* `built`, not `bought`: THE LATTICE does not buy (see RAISING_RITE
+           above), so the thing that proves a seat is ACTING is the towers it
+           put down and the bodies its kills raised. */
         ok('net.pvp the send/muster/reanimate loop closes for both commanders',
-           bought(a.sides[0]) > 0 && bought(a.sides[1]) > 0 &&
+           built(a.sides[0]) > 0 && built(a.sides[1]) > 0 &&
            raised(a.sides[0]) > 0 && raised(a.sides[1]) > 0,
            line(a));
       });
@@ -1259,7 +1286,7 @@ T('net.rules conceding a duel does not promise a garrison', function () {
          0, are wire-carried by construction -- and the proof is to take the
          wire away and watch them go to zero while seat 0's own stay. */
       T('net.pvp the RIVAL\'s reanimation is carried by the connection', function () {
-        const wired = raised(a.sides[1]) > 0 && bought(a.sides[1]) > 0;
+        const wired = raised(a.sides[1]) > 0 && built(a.sides[1]) > 0;
         /* Since Session 26 unit roles, a MUTE seat can still be CREDITED
            kills: the peer's sent infantry dies in melee against the wave
            marching at it, and killEnemy books that death to the seat the

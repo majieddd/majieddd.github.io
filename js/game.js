@@ -96,6 +96,12 @@ class Side {
        replaced MUSTER_PER_WAVE: keyed by tier id, seconds remaining. */
     this.reqCredit = 0;
     this.musterCd = {};
+    /* THE BROOD'S OPEN WINDOWS, keyed by detachment id: { t, prev }. `t` is
+       the seconds left to send; `prev` is what the cooldown had remaining when
+       the window opened, so a lapsed window gives that time back rather than
+       charging a fresh one. Sim state, and fingerprinted: a client that
+       disagrees about an open window disagrees about what the seat may buy. */
+    this.broodOpen = {};
     this.summonPower = 0;
     /* How far a compiling commander has rewritten itself. */
     this.compileLevel = 0;
@@ -2769,6 +2775,10 @@ const Game = {
     const S = this.sides[side];
     if (!S || !tier) return 0;
     if (this.doctrineOf(side).noCooldown) return 0;
+    /* An open BROOD window IS readiness, and it is checked here rather than
+       by writing a zero into musterCd, so the window can hand the remaining
+       wait back when it lapses instead of having thrown it away. */
+    if (S.broodOpen && S.broodOpen[tier.id]) return 0;
     return Math.max(0, (S.musterCd && S.musterCd[tier.id]) || 0);
   },
 
@@ -2844,6 +2854,10 @@ const Game = {
        not just Humanity's, so a doctrine change mid-match cannot leave a stale
        credit behind that musterCost would then read. */
     S.reqCredit = 0;
+    /* A BROOD WINDOW IS SPENT BY THE SEND IT PAID FOR. Left open, the normal
+       cooldown armed below would be cleared again by tickBrood on the very
+       next frame and the detachment would be free for the rest of the window. */
+    if (S.broodOpen) delete S.broodOpen[tier.id];
     /* And this detachment is spent until it recovers. */
     {
       const cd = this.musterCdFor(side, tier);
@@ -3273,48 +3287,57 @@ const Game = {
   },
 
   /** A clutch comes due: it hatches at every live rival, or dies unhatched. */
-  hatchIncubator(pod) {
+  /**
+   * A CLUTCH COMES DUE. It does not raise a body any more (owner, Session 39):
+   * it REFRESHES THE COOLDOWN on the creature it was gestating and opens a
+   * short window in which that creature can be sent, paid for in gold at
+   * whatever the cost curve has reached.
+   *
+   * WHY THIS AND NOT A FREE BODY. A free body per kill made the rite a tide
+   * the player received rather than an army they commanded: kills come thick,
+   * so bodies came thick, and nothing in the loop asked a question. The window
+   * keeps the thickness (openings still arrive as fast as kills do, which is
+   * what makes it read as a swarm) and puts the decision back: every send is
+   * bought, every buy moves the price, and a window nobody funds is a wave
+   * that never happened. The owner's framing, exactly: limit the swarm while
+   * still feeling like one.
+   *
+   * The window opens at MATURITY rather than when the clutch is laid, which is
+   * what keeps the gestation and the feed-a-clutch-to-hurry-it mechanic
+   * meaningful: feeding buys a window sooner, not a body sooner.
+   */
+  openBrood(pod) {
     const S = this.sides[pod.side];
     const base = ENEMY_TYPES[pod.unitId];
     if (!S || !base) return;
-    const vics = this.musterVictims(pod.side);
-    for (const vic of vics) {
-      const path = this.sendPathFor(pod.side, vic, base);
-      if (!path) continue;
-      let copies = 1;
-      if (S.mods.doubleReanim > 0 && Math.random() < S.mods.doubleReanim) copies = 2;
-      /* IT HATCHES WHERE IT INCUBATED. `startDist` is distance ALONG the send
-         path, and this used to pass rand(0,10) -- the path's very beginning --
-         so every hatchling walked out of the base while the pod's burst, its
-         floater and its glyph all played at the kill site. The owner saw
-         exactly that: the clutch appears where the body fell and the creature
-         appears at home.
-         Projecting the pod onto the path with nearestDist is the fix: the
-         hatchling enters the lane at the point closest to its own clutch. A
-         FLYING unit keeps the old behaviour on purpose -- it does not walk the
-         lane, so the path point it would inherit is meaningless and launching
-         from the base is the honest reading (and the owner said as much). */
-      const proj = base.flying ? null : path.nearestDist(pod.x, pod.y);
-      /* `total`, not `length` -- Path has no `length`, and reading it would give
-         undefined, clamp the ceiling to NaN and put every hatchling straight
-         back at the base, which is the exact bug this replaces. */
-      const enterAt = proj ? clamp(proj.dist, 0, Math.max(0, path.total - TILE)) : rand(0, 10);
-      for (let i = 0; i < copies; i++) {
-        this.pendingSpawns.push(new Enemy(base, path, {
-          hpMul: (pod.powerHp / base.hp) * (1 - (this.sides[vic].traits.reanimResist || 0)),
-          bountyMul: 1, speedMul: S.traits.reanimSpeed,
-          armorFlat: pod.armorFlat,
-          hostileTo: vic, owner: pod.side, reanimated: true,
-          startDist: enterAt, offset: rand(-8, 8)
-        }));
-        S.stats.sent++;
-        if (S.traits.reanimGold) this.awardGold(pod.side, S.traits.reanimGold);
-      }
-    }
+    const id = pod.unitId;
+    if (!S.broodOpen) S.broodOpen = {};
+    /* Remember what the cooldown had LEFT, not the full duration. A window
+       that lapses hands back the wait it interrupted; it must never invent a
+       fresh cooldown on a detachment that was ready anyway. */
+    const had = (S.musterCd && S.musterCd[id]) || 0;
+    const already = S.broodOpen[id];
+    S.broodOpen[id] = { t: XENO_BROOD_WINDOW_SEC, prev: already ? already.prev : had };
+    if (S.musterCd) delete S.musterCd[id];
     if (pod.side === this.viewSide) {
       this.spawnBurst(pod.x, pod.y, 14, base.color, 120);
-      this.addFloater(pod.x, pod.y, 'HATCHED · ' + base.name.toUpperCase(), false, base.color, 12);
+      this.addFloater(pod.x, pod.y, 'READY · ' + base.name.toUpperCase(), false, base.color, 12);
       Sound.play('reanimate');
+    }
+  },
+
+  /** Windows close. Ticked from step() beside the other rite clocks. */
+  tickBrood(dt) {
+    for (const S of this.sides) {
+      if (!S.broodOpen) continue;
+      for (const id in S.broodOpen) {
+        const w = S.broodOpen[id];
+        w.t -= dt;
+        if (w.t > 0) continue;
+        const back = Math.max(0, w.prev - XENO_BROOD_WINDOW_SEC);
+        if (back > 0) { if (!S.musterCd) S.musterCd = {}; S.musterCd[id] = back; }
+        delete S.broodOpen[id];
+      }
     }
   },
 
@@ -3510,7 +3533,7 @@ const Game = {
       if (!S || S.defeated || !S.alive) { this.incubators.splice(i, 1); continue; }
       pod.t -= dt;
       if (pod.t > 0) continue;
-      this.hatchIncubator(pod);
+      this.openBrood(pod);
       this.incubators.splice(i, 1);
     }
   },
@@ -4205,6 +4228,7 @@ const Game = {
        would hatch at different moments on two clients running one seed. */
     this.tickProcession(dt);
     this.tickIncubators(dt);
+    this.tickBrood(dt);
     this.tickMusterCooldowns(dt);
     this.tickRelays(dt);
 

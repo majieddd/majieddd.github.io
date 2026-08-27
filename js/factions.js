@@ -526,7 +526,7 @@ const SUMMON_DOCTRINES = {
     id: 'xeno', name: 'THE BROOD', onKill: 'incubate', scheduler: false, noPurchase: false,
     incomeCapPct: MUSTER_INCOME_CAP_PCT, costGrowth: MUSTER_COST_GROWTH, costSteps: MUSTER_COST_STEPS,
     powerPerBuy: POWER_PER_BUY, powerCap: SUMMON_POWER_CAP,
-    desc: 'What you kill does not die. It incubates where it fell and hatches as something else. A kill beside an incubator hurries it along.'
+    desc: 'What you kill does not die. It incubates where it fell, and when it comes due it opens a short window in which that creature is ready to send, bought with gold at the going price. A kill beside a clutch hurries it along. The swarm is a tempo you fund, not a tide you receive.'
   },
   pirate: {
     id: 'pirate', name: 'LETTERS OF MARQUE', onKill: null, scheduler: false, noPurchase: false,

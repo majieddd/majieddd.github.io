@@ -1136,7 +1136,18 @@ const Net = {
          two clients that bought the same set in a different order would then
          hash differently while being in identical states. */
       mix(q(S.reqCredit || 0));
-      for (const t of (S.musterTiers || [])) mix(q((S.musterCd && S.musterCd[t.id]) || 0));
+      /* THE BROOD'S OPEN WINDOWS travel with the cooldowns, and for the same
+         reason: a window is readiness, so a client that disagrees about one
+         disagrees about what this seat may buy on this turn. Walked in
+         musterTiers order like the cooldowns, never by iterating the object,
+         because key insertion order encodes the sequence clutches matured in
+         and two clients in identical states would then hash differently. */
+      for (const t of (S.musterTiers || [])) {
+        mix(q((S.musterCd && S.musterCd[t.id]) || 0));
+        const w = S.broodOpen && S.broodOpen[t.id];
+        mix(w ? q(w.t) : 0);
+        mix(w ? q(w.prev) : 0);
+      }
       /* THE COMPILE and THE BOOTSTRAP. A clone commander rewrites its own
          traits at wave boundaries and the Parallel's towers ramp every wave,
          so both sides' STATS depend on these even though `mods` themselves
