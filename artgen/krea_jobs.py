@@ -91,6 +91,48 @@ TROOP_FRAME = 'Full body, three-quarter view, strong silhouette, flat black.'
 
 CMD_FRAME = 'Facing viewer, centred bust, flat black.'
 
+# --------------------------------------------------------------------------
+# THE ILLUSTRATIVE REGISTER (owner directive, Session 39).
+#
+# The owner's note: the portraits read "too much on the side of realism
+# textures", and should carry "that art illustrative feel that we reclaimed in
+# the intro cutscenes". Diagnosed against the shipped art rather than guessed:
+# the cutscene plates are built from flat interlocking shapes with heavy black
+# shadow masses carrying the drawing, while the commander faces came back with
+# modelled skin, specular highlights on the cheekbones and soft airbrushed
+# volume. Three causes, all in the prompt:
+#
+#   1. the non-robot commander tail asked for 'shallow depth of field', which
+#      is a PHOTOGRAPHIC LENS TERM. It was requesting the exact thing the note
+#      objects to, on all twenty-three of them;
+#   2. the non-robot commanders were the only figure class in the catalogue
+#      that never received an inking register. TROOP_REGISTER gives the troops
+#      and the five machine commanders 'inked cel shading, halftone
+#      screen-print, heavy black shadows'; the other twenty-three got none of
+#      it, and the machine portraits are visibly the most illustrative of the
+#      class for exactly that reason;
+#   3. {STYLE} says 'bold flat expressive brushwork' and nothing else about
+#      construction, which does not survive contact with a human FACE. A face
+#      is the subject diffusion models pull hardest toward photography, so the
+#      counter-pressure has to be explicit and it has to be in front.
+#
+# So the register leads, the way the palette leads everywhere else in this
+# file, and it names the CONSTRUCTION the cutscenes are built from rather than
+# a mood. The anti-photographic clause is stated positively where it can be
+# (flat matte colour) and negatively only for the things that have no positive
+# form (no lens blur), because BRAND.md's measured rule is that you cannot
+# subtract on the SDXL path and can only lead with what you want.
+CMD_REGISTER = ('Painted comic-illustration bust, flat interlocking colour shapes, heavy black '
+                'shadow masses doing the drawing, hard cel edges, bold ink line, screen-print '
+                'halftone grain, graphic poster construction, flat matte colour, never medieval')
+
+# Stated at the very end, where the Krea encoder still reads it and the SDXL
+# window has already closed. On the SDXL fallback this is inert, which is
+# correct: SDXL-Turbo at these settings does not produce the photographic skin
+# this clause exists to refuse, and the Krea path is the shipping path.
+CMD_ANTIPHOTO = ('flat graphic illustration, no photographic rendering, no rendered skin pores, '
+                 'no airbrushed soft shading, no lens blur, no depth of field')
+
 # STYLE's palette clause -- 'vaporwave neon palette of magenta cyan violet and
 # chrome' -- names three hues at once, which is the opposite of a duotone. On
 # the SDXL path it is truncated away and harmless; on the Krea path the encoder
@@ -107,8 +149,8 @@ CMD_STYLE = ('stylised painted game cutscene illustration, bold flat expressive 
 # with the bare word 'armour', which with no material qualifier inside the
 # window resolves to plate. Not one of these says 'armour'.
 FACTION_LOOK = {
-    'human':  ('cyan-lit chrome exosuit with holographic HUD elements, cabled neck seals, '
-               'practical military hardware, disciplined bearing'),
+    'human':  ('cyan-lit sealed pressure suit, practical plate over fabric, holographic '
+               'HUD elements, cabled neck seals, disciplined bearing'),
     'light':  ('golden holographic armour of hard-light panels, luminous circuitry halos, '
                'serene ceremonial bearing, glowing seams'),
     'xeno':   ('deep violet biomechanical carapace fused with neon-lit implants, too many '
@@ -135,41 +177,60 @@ FACTION_LOOK = {
 # wreckage / torn hull plating, trophy bones -> a hooded carapace. The
 # character survives the edit; the armoury does not.
 COMMANDERS = [
-    # BATCH 2 APPENDS. Ashtar and Isa render through the same approved
-    # composition as the rest of the class, so the 28 portraits stay one
-    # visual family. Isa is deliberately human and warm, not haloed: the
-    # canon treats the Issa fragments as a contested record, and the
-    # portrait must read as a man people argue about, not an icon.
-    ('ashtar',  'light',  'a serene supreme commander of luminous bearing, high ornate collar, '
-                          'calm ageless face lit from below, faint corona of light behind the head'),
+    # SESSION 38 CONTENT REWORK (owner directive 2026-08-27, docs/ART-BIBLE.md
+    # section 3). The STYLE is locked; these subject lines change WHAT is
+    # drawn: humans grounded in the restraint of Dune (practical suits, no
+    # medieval plate), the Federation cast from the contact species (species
+    # stated by FORM words, never by colour words, because colour words are
+    # measured to be strong and the class duotone must win), the xeno
+    # sharpened to predatory, the pirates made visibly multi-species. Editing
+    # these re-rolls the class, which is why the class re-renders WHOLESALE
+    # in the same change. One silhouette, one prop, twelve to eighteen tokens.
+    # ASHTAR is the one commander with a REFERENCE OUTSIDE THIS REPO (owner
+    # directive, Session 39): he must read as the Ashtar Sheran of the 1950s
+    # contactee record, which is who a player finds when they search the name.
+    # That record is consistent on the particulars: YOUNG and athletic, not
+    # aged; light silver-blond hair a little past the shoulders; deep blue
+    # eyes; tall; an elegantly tailored high-collared uniform, white and ivory
+    # dominant, carrying decorations. The portrait that shipped before this was
+    # an elderly grey figure in ornate gold plate, wrong on age, hair and dress
+    # at once. Ivory-and-white with gold decoration is ALSO the Federation's
+    # own stated palette (ART-BIBLE 3.2), so the outside reference and the
+    # faction identity ask for the same picture and nothing is traded away.
+    ('ashtar',  'light',  'a young tall athletic supreme commander with a calm noble face, '
+                          'light silver-blond hair falling just past the shoulders, deep blue '
+                          'eyes, an elegantly tailored high-collared ivory and white uniform '
+                          'with gold decorations at the breast, faint corona of light behind '
+                          'the head'),
     ('isa',     'human',  'a gentle long-haired wanderer in a plain hooded travel cloak over '
-                          'simple armour, kind weathered face, quiet knowing smile, olive skin'),
-    ('cadre',   None,     'a stoic unaligned career soldier, plain visored helm, no insignia'),
+                          'a simple worn suit, kind weathered face, quiet knowing smile, '
+                          'olive skin'),
+    ('cadre',   None,     'a stoic unaligned career soldier, plain visored flight helmet, '
+                          'sealed collar, no insignia'),
     ('vanta',   'human',  'a scholarly tactician wearing a data-visor, thin archive filaments '
                           'trailing from the temples, cold analytical stare'),
-    ('korrin',  'human',  'a burly quartermaster hung with supply rigging, ammunition drums and '
-                          'ration crates, weathered and pragmatic'),
-    ('nyx',     'human',  'an overclocker wreathed in crackling energy conduits, coolant vapour, '
-                          'reckless grin, armour glowing at the seams'),
+    ('korrin',  'human',  'a burly quartermaster hung with supply rigging, ammunition drums '
+                          'and strapped crates, weathered and pragmatic'),
+    ('nyx',     'human',  'an overclocker wreathed in crackling energy conduits and coolant '
+                          'vapour, reckless grin, suit glowing at the seams'),
     ('orin',    'human',  'a field engineer with articulated servo-arms over the shoulders, '
                           'welding glare lighting the face from below'),
-    ('vess',    'human',  'a grim marshal in heavy entrenchment armour, immovable stance, '
-                          'trench-worn and mud-streaked'),
-    ('seraph',  'light',  'a radiant winged commander haloed in golden light, six wings of '
-                          'hard light, serene and terrible'),
-    ('aurelia', 'light',  'a serene choral commander mid-song, light pouring from the throat '
-                          'and eyes, robes of woven luminance'),
-    ('lumen',   'light',  'a warden bearing an enormous circular energy shield, calm, '
-                          'immovable, light refracting across the barrier'),
-    ('cantor',  'light',  'a preacher wearing an amplifying vox-horn crown, arms raised, '
-                          'sound made visible as golden rings'),
-    ('halder',  'light',  'a colossal bulwark commander, shield-locked, utterly immovable, '
-                          'armour like a fortress wall'),
-    # THE PARALLEL, Session 22. AXIOM is the original thought; the four -R
-    # commanders are machine redrafts of NYX, LUMEN, MAWLORD and DREGG, so each
-    # prompt deliberately quotes its source's silhouette and then strips the
-    # thing that made the source human -- the grin, the serenity, the hunger,
-    # the swagger. That IS the faction: the same shape, compiled colder.
+    ('vess',    'human',  'a grim marshal in a mud-streaked sealed combat suit, plate over '
+                          'fabric, immovable stance, trench-worn'),
+    ('seraph',  'light',  'a radiant pleiadian commander haloed in golden light, six wings '
+                          'of hard light, serene and terrible'),
+    ('aurelia', 'light',  'a slender arcturian choral commander mid-song, elongated graceful '
+                          'features, light pouring from the throat and eyes'),
+    ('lumen',   'light',  'a poised mantid warden bearing an enormous circular energy shield, '
+                          'calm, immovable, light refracting across the barrier'),
+    ('cantor',  'light',  'a crested avian herald mid-sermon wearing a rig of vox horns, '
+                          'arms raised, sound made visible as golden rings'),
+    ('halder',  'light',  'a colossal reptiloid bulwark commander locked behind interlocking '
+                          'light plates, scaled brow, utterly immovable'),
+    # THE PARALLEL, Session 22, unchanged by the S38 rework: the redraft
+    # language is approved. AXIOM is the original thought; the four -R
+    # commanders are machine redrafts of NYX, LUMEN, MAWLORD and DREGG, each
+    # quoting its source silhouette minus the thing that made it alive.
     ('axiom',     'robot',  'the first self-authored machine mind, a calm featureless chrome '
                             'bust, concentric reasoning rings turning behind the head'),
     ('nyx_r',     'robot',  'a machine redraft of an overclocker, the same conduits and coolant '
@@ -181,26 +242,27 @@ COMMANDERS = [
     ('dregg_r',   'robot',  'a machine redraft of a warlord, the same heavy shoulders in '
                             'seamless chrome, an accountants ledger of light at the wrist'),
     ('sevra',   'xeno',   'a necrotic commander trailing reanimated husks on dark filaments, '
-                          'puppeteer gestures, hollow glowing eyes'),
+                          'puppeteer gestures, hollow glowing eyes, a lipless smile'),
     ('mawlord', 'xeno',   'a bloated devourer with a vast toothed maw splitting the torso, '
-                          'gluttonous, dripping'),
-    ('thrax',   'xeno',   'a hivemind commander, many-eyed, surrounded by a cloud of drone '
-                          'spawn, every eye focused forward'),
-    ('vorn',    'xeno',   'a plague commander leaking luminous spores and creeping rot, '
-                          'chitin cracked and weeping light'),
-    ('ulgrim',  'xeno',   'an apex predator commander with immense jaws and trophy bones '
-                          'lashed to the carapace, coiled to strike'),
-    ('rake',    'pirate', 'a rakish corsair with a plasma cutlass and a insolent grin, '
-                          'long coat, scavenged breastplate'),
-    ('scarlet', 'pirate', 'a savage reaver drenched in war paint, teeth bared, twin blades, '
-                          'braided hair full of trophies'),
-    ('grist',   'pirate', 'a scrapper welded into mismatched salvaged plate, one arm a '
-                          'hydraulic claw, goggles pushed up'),
-    ('cinder',  'pirate', 'an arsonist haloed in flame and heat shimmer, flamethrower rig, '
-                          'delighted expression'),
-    ('dregg',   'pirate', 'a hulking warlord enthroned on a heap of wreckage, crowned with '
-                          'torn hull plating, contemptuous'),
+                          'a cluster of small eyes above it, gluttonous, dripping'),
+    ('thrax',   'xeno',   'a hivemind commander, many-eyed and unblinking, surrounded by a '
+                          'cloud of drone spawn, every eye focused forward'),
+    ('vorn',    'xeno',   'a swollen plague commander leaking luminous spores and creeping '
+                          'rot, chitin cracked and weeping light'),
+    ('ulgrim',  'xeno',   'an apex predator commander with immense jaws and a hooded '
+                          'carapace strung with trophies, coiled to strike'),
+    ('rake',    'pirate', 'a rakish human corsair with a plasma cutter and an insolent grin, '
+                          'long coat, scavenged chest rig'),
+    ('scarlet', 'pirate', 'a savage reptiloid reaver drenched in war paint, scaled crest '
+                          'strung with trophies, teeth bared, twin blades'),
+    ('grist',   'pirate', 'a small grey scrapper welded into mismatched salvaged plate, one '
+                          'arm a hydraulic claw, goggles over large dark eyes'),
+    ('cinder',  'pirate', 'a manic mantid arsonist haloed in flame and heat shimmer, a '
+                          'flamethrower rig strapped across the thorax, delighted'),
+    ('dregg',   'pirate', 'a hulking amorphous warlord in a patched pressure rig, slouched '
+                          'on a heap of wreckage, crowned with torn hull plating'),
 ]
+
 
 # Crests are STRICT MONOCHROME: one faction hue on void black, engraved like a
 # gothic rose window. No second colour is permitted anywhere in the frame.
@@ -593,6 +655,8 @@ CUTSCENE_PLATES = [
     ('cut_robot_sys5',   'robot', 'automata assembled in silent congress under a starfield, one word glyph projected above them'),
 ]
 
+from planet_jobs import planet_jobs   # noqa: E402
+
 CUTSCENE_PALETTE = dict(FACTION_PALETTE)
 CUTSCENE_PALETTE['robot'] = 'painted in chrome and pale teal with cold white light'
 
@@ -622,19 +686,37 @@ def build_jobs():
     for cid, fac, desc in COMMANDERS:
         if fac == 'robot':
             jobs.append((f'cmd_{cid}',
-                         f'{TROOP_DUOTONE[fac]}. {TROOP_REGISTER}. '
+                         f'{TROOP_DUOTONE[fac]}. {CMD_REGISTER}. '
                          f'Head-and-shoulders portrait of a faceless machine, no human face, '
                          f'no hair, no skin: {desc}. Wearing {FACTION_LOOK[fac]}. '
-                         f'{CMD_FRAME} {CMD_STYLE}', 1024, 320, 'square'))
+                         f'{CMD_FRAME} {CMD_STYLE}, {CMD_ANTIPHOTO}', 1024, 320, 'square'))
             continue
         # RESTORED (Session 20). The owner approved these portraits as they
         # were -- only the TROOPS read wrong. This composition is the one that
         # produced the approved art, and the FNV seed means the same prompt
         # renders the same picture, so this is a restore and not a re-roll.
+        # PALETTE POSITION IS MEASURED, NOT CHOSEN. The first pass of this
+        # restyle led with CMD_REGISTER and left the palette to {STYLE}'s
+        # 'vaporwave neon palette of magenta cyan violet and chrome' tail. The
+        # register did its job (flat shapes, no rendered skin) and the colour
+        # law broke: a human commander came back magenta and teal and the
+        # Federation's supreme commander came back framed in violet, against
+        # ART-BIBLE section 2, which puts faction identity ahead of everything
+        # else and names a rainbow as a Never.
+        #
+        # The fix is to copy the composition the 50 cutscene plates already
+        # prove: SUBJECT, then the faction palette clause, then the {STYLE}
+        # tail. Those plates carry the same rainbow tail and still read
+        # blue for humanity and gold for the Federation, because a named
+        # palette sitting directly behind the subject outranks a generic one
+        # sitting behind that. The register keeps its lead, because the lead is
+        # what bought the illustrative construction in the first place.
+        pal = FACTION_PALETTE.get(fac) or ACCENT['none']
         jobs.append((f'cmd_{cid}',
-                     f'Head-and-shoulders portrait of {desc}. Wearing {FACTION_LOOK[fac]}. '
-                     f'Facing the viewer, centered bust composition, shallow depth of field, '
-                     f'dark background. {STYLE}', 1024, 320, 'square'))
+                     f'{CMD_REGISTER}. Head-and-shoulders portrait of {desc}. '
+                     f'Wearing {FACTION_LOOK[fac]}. {pal}. '
+                     f'{CMD_FRAME} {STYLE}, {CMD_ANTIPHOTO}',
+                     1024, 320, 'square'))
     for fid, desc in FACTIONS.items():
         jobs.append((f'fac_{fid}',
                      f'{desc}. A single centered symmetrical heraldic insignia, glowing softly, '
@@ -726,6 +808,12 @@ def build_jobs():
         jobs.append((key, f'{scene}, {CUTSCENE_PALETTE.get(fac, "")}. '
                      f'Wide cinematic composition, dramatic staging, no text anywhere. {STYLE}',
                      1024, 1920, 'wide'))
+    # THE PLANET CUTSCENES (owner directive, Session 39). 875 plates: five
+    # beats for each of 35 worlds for each of 5 factions, every one a distinct
+    # subject. The catalogue lives in its own module because it is larger than
+    # the rest of this file put together, and because the owner's requirement
+    # is precisely that none of it is derived from anything else.
+    jobs.extend(planet_jobs(CUTSCENE_PALETTE, STYLE))
     return jobs
 
 

@@ -1,5 +1,13 @@
 # Cosmic Conquest. Commander Portrait Lookbook
 
+> **Start at docs/ART-BIBLE.md**, which carries the Session 38 content law.
+> The portrait class was reworked under it on 2026-08-27: Federation
+> commanders are now cast from the contact species (stated by FORM words so
+> the class duotone keeps winning), pirates are visibly multi-species, humans
+> wear grounded Dune-restraint dress, the xeno are sharpened. The anatomy,
+> measurements and failure catalogue below still govern HOW a portrait prompt
+> is built.
+
 > **STATUS, read before building against this.** The commander half of note 20.4
 > was **reversed by the owner** mid-Session-20: the commanders keep the approved
 > full-palette look and were restored byte-identical in `4a2974b`. Only the twenty
@@ -9,6 +17,24 @@
 > `TROOP_REGISTER`, and it is troop-only). Read this file as the record of how the
 > troop restyle was measured and won, not as a spec for the commanders. The current
 > direction is in [`BRAND.md`](BRAND.md), see its final amendment.
+
+> **STATUS, Session 39.** The commander class moved again, under the owner's
+> "too much on the side of realism textures" note, and this file is now two
+> revisions behind the prompt rather than one. What is live: `CMD_REGISTER`
+> leads every commander prompt with the flat-shape construction the cutscene
+> plates are built from, `CMD_ANTIPHOTO` closes it, `shallow depth of field`
+> is gone, and the faction palette clause sits directly behind the subject
+> because leading with the register let the vaporwave tail take the frame and
+> broke the colour law on the first pass. ASHTAR additionally answers to an
+> outside reference now. All 28 re-rendered wholesale.
+>
+> The anatomy below is STILL worth reading and is still true of what it
+> measures: the 77-token accounting, the token positions, the failure
+> catalogue and the per-faction reasoning are all unchanged, because they are
+> measurements of what the encoder is shown rather than claims about the
+> current prompt. Read sections 1 to 3 as the standing reference and treat
+> every literal prompt string as historical. `docs/ART-BIBLE.md` section 10 is
+> the live spec.
 
 **Scope:** the `cmd_<id>` class, the twenty-one commander portraits. This is
 the working reference for that class: where the style comes from, what the

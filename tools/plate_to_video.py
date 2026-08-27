@@ -98,6 +98,13 @@ def main():
     ap.add_argument('--cfg', type=float, default=5.0)
     ap.add_argument('--shift', type=float, default=8.0)
     ap.add_argument('--fps', type=int, default=24)
+    # LIVING PORTRAITURE (owner directive 2026-08-27, ART-BIBLE section 7).
+    # A clip that drifts snaps when it loops, and reversing it reads as a
+    # rewind, which the owner rejected. --loop-fade N instead crossfades the
+    # last N frames into the first N, so the loop has no seam at all: the
+    # head of the published clip is the tail of the motion dissolving into
+    # its own beginning. Costs N frames of duration, buys an invisible join.
+    ap.add_argument('--loop-fade', type=int, default=0)
     ap.add_argument('--out', default=None)
     args = ap.parse_args()
 
@@ -138,11 +145,34 @@ def main():
     print('%d frames in %.0fs (%.2fs per frame)'
           % (len(imgs), took, took / max(1, len(imgs))), flush=True)
 
-    stage = os.path.join(HERE, 'frames_' + key)
+    workdir = os.path.dirname(os.path.abspath(args.out)) if args.out else HERE
+    stage = os.path.join(workdir, 'frames_' + key)
     shutil.rmtree(stage, ignore_errors=True)
     os.makedirs(stage)
     for i, p in enumerate(sorted(imgs)):
         shutil.copy(p, os.path.join(stage, 'f%04d.png' % i))
+
+    if args.loop_fade > 0:
+        F = args.loop_fade
+        n = len(imgs)
+        L = n - F
+        if L < F:
+            sys.exit('loop-fade %d needs at least %d frames, have %d' % (F, 2 * F, n))
+        src = [Image.open(os.path.join(stage, 'f%04d.png' % i)).convert('RGB')
+               for i in range(n)]
+        # out[i] for i < F blends the CONTINUATION of the tail (src[L+i],
+        # which follows src[L-1], the published last frame) into the true
+        # head (src[i]). At i=0 it IS the continuation, so the wrap from
+        # frame L-1 to frame 0 is just the motion carrying on; by i=F the
+        # blend has fully arrived at the real opening. No frame repeats, no
+        # reversal, no seam.
+        for i in range(F):
+            a = i / float(F)
+            Image.blend(src[L + i], src[i], a).save(
+                os.path.join(stage, 'f%04d.png' % i))
+        for i in range(L, n):
+            os.remove(os.path.join(stage, 'f%04d.png' % i))
+        print('seamless loop: %d frames -> %d, fade %d' % (n, L, F), flush=True)
 
     out = args.out or os.path.join(HERE, key + '.mp4')
     subprocess.run(['ffmpeg', '-y', '-framerate', str(args.fps),

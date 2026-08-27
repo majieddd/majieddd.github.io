@@ -40,7 +40,11 @@ OUT = _artpack_out()
 # by URL instead. art() hands whatever string it finds straight to an <img
 # src>, and a URL works there exactly as a data URI does, so nothing
 # downstream changes. build.js inlines them back for the single-file bundle.
-ONDEMAND_CLASSES = {'cut'}
+# `pcut` (the 875 planet cutscene plates, artgen/planet_jobs.py) is on-demand
+# for the same reason `cut` is, only harder: at ~200KB a plate the class is
+# roughly 175MB, which is eight times the entire rest of the game. It is
+# also the one class build.js DROPS rather than inlines; see the note there.
+ONDEMAND_CLASSES = {'cut', 'pcut'}
 ART_DIR = os.path.join(os.path.dirname(OUT), '..', 'art')
 CACHE = os.path.join(HERE, 'cache_krea')
 FALLBACK_CACHE = os.path.join(HERE, 'cache')      # the SDXL baseline
@@ -62,7 +66,7 @@ STEPS = 8
 # WebP quality per asset class. Portraits and key art carry the look, so they
 # get the bits; icons and dossier cards are small on screen and compress hard.
 QUALITY = {'cmd': 88, 'title': 88, 'nebula': 86, 'world': 86,
-           'fac': 90, 'foe': 84, 'abil': 88, 'cut': 82}
+           'fac': 90, 'foe': 84, 'abil': 88, 'cut': 82, 'pcut': 82}
 
 
 def quality_for(key):
@@ -111,6 +115,17 @@ def load_pipe():
     # of VRAM to the transformer, whose 8 denoising steps are the actual work
     # -- at 11.8/12 GiB the first smoke test sat at 100% for 15 minutes on one
     # image; headroom is the difference between computing and thrashing.
+    #
+    # THAT FIGURE IS FROM A 12 GiB CARD and this one has 24, so the placement
+    # was re-examined in Session 39 rather than inherited. It stays, and the
+    # numbers are in artgen/time_encoder.py: the CPU encode costs 4.50s of a
+    # 47.5s plate (9%), while under load the card already reports 174W of a
+    # 175W limit at 100% utilisation with SW Power Cap active. Moving the
+    # encoder onto a power-capped card buys back part of 9% and spends VRAM
+    # and watts to do it. The saving that IS available is overlapping the
+    # encode of plate N+1 with the denoise of plate N, which costs no VRAM;
+    # it is not done here because it was measured mid-run and is not worth
+    # restarting a class for.
     print('loading text encoder (bf16, cpu) ...', flush=True)
     text_encoder = Qwen3VLModel.from_pretrained(
         REPO, subfolder='text_encoder', dtype=torch.bfloat16, device_map='cpu')
@@ -149,6 +164,25 @@ def _seed(key):
     for ch in key:
         h = ((h ^ ord(ch)) * 16777619) & 0xffffffff
     return h % (2 ** 31)
+
+
+def _seed_v(key, variant):
+    """The seed for a VARIANT of a key.
+
+    WHY THIS EXISTS. The documented way to fix a plate that misses its scene is
+    `--force <key>`, and it could not work: the seed is a pure function of the
+    key, so deleting the cache and re-rendering reproduced the SAME image
+    exactly. Found while reading all fifty cutscene plates against their slide
+    text (docs/OWNER-NOTES-CAMPAIGN2.md section E): two plates miss, and the
+    only tool for fixing them was a no-op that costs a minute of GPU to prove
+    it.
+
+    Variant 0 is `_seed(key)` unchanged and MUST stay that way: every approved
+    plate in the catalogue is on variant 0, and moving it would re-roll art the
+    owner has already accepted. A variant is still deterministic, so a plate
+    stays reproducible; the number is simply part of what identifies it, and
+    belongs in the commit message beside the key."""
+    return _seed(key) if not variant else _seed(key + '#' + str(variant))
 
 
 def render(pipe, torch, prompt, gen_px, aspect, seed):
@@ -283,6 +317,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--only', default='')
     ap.add_argument('--force', default='')
+    # A variant re-rolls a key to a DIFFERENT image without touching the
+    # prompt, which the class law forbids. Variant 0 is the shipped seed.
+    ap.add_argument('--variant', type=int, default=0)
     ap.add_argument('--pack', action='store_true')
     ap.add_argument('--limit', type=int, default=0)
     a = ap.parse_args()
@@ -329,7 +366,7 @@ def main():
         # unreproducible seed is most expensive. Note the GPU is not bit-
         # deterministic (see commit 4a2974b), so a stable seed buys "recognisably
         # itself", not byte-equality -- which is the whole of what --force needs.
-        seed = _seed(key)
+        seed = _seed_v(key, a.variant)
         img = render(pipe, torch, prompt, gen_px, aspect, seed)
         fit(img, out_px, aspect).save(os.path.join(CACHE, key + '.webp'),
                                       'WEBP', quality=quality_for(key), method=6)

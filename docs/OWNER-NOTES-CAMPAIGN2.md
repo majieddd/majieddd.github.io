@@ -159,13 +159,40 @@ fingerprint-verified.
 - `[x]` **HD art pass: DONE, Session 37.** 52 keys at 1920x1080 on Krea 2 on
   the 5090, 48.4s per image, gate clean. Numbers in C3, decisions in BRAND.md,
   the one open question in section G.
-- `[ ]` **Read the fifty plates against their slide text.** Now unblocked: the
-  HD pass is the render this was waiting for, so a miss judged today will
-  survive. Four factions were spot-checked by eye during the batch (human,
-  Light, xeno, robot read correctly against their briefs; pirate `intro_1`
-  is the one to look at first, since its prompt says "neon nebula" and the
-  nebula takes more of the frame than the crimson ships do). The other 45 are
-  unread. Re-roll a miss by key with `--force`, never by editing the prompt.
+- `[x]` **Read the fifty plates against their slide text. DONE, Session 38.**
+  All 50 read on contact sheets pairing each plate with the line it ships
+  under (`artgen/review_sheet.py`, six to a sheet, nine sheets).
+
+  **48 of 50 read correctly**, several of them exactly: `light_sys2` shows a
+  page stamped DEFERRED three times, which is its line verbatim;
+  `xeno_sys3` shows the matriarch holding the captured human rifle;
+  `human_sys4` stacks the supply crates into the fence line the text warns
+  about; `pirate_intro_4` splits the hold between medicine and the sealed
+  container; `robot_intro_3` is a wall of hostile red glyphs with a few calm
+  blue ones left. `pirate_intro_2` is the multi-species free port the owner
+  later asked the content law to guarantee, rendered before the law existed.
+
+  **Two missed and were re-rolled.** `robot_intro_4` had rendered humans in
+  business suits around a robot, on the one faction that is machines only;
+  `pirate_sys3` had no captain and no wheel. Both are now variant 1.
+
+  **Neither re-roll is a clean hit and that is worth saying.**
+  `robot_intro_4` v1 replaces the businessmen with hooded figures around a
+  standing automaton: better, and still not the "identical siblings" the
+  brief asks for. `pirate_sys3` v1 gains the wheel its line is about but is
+  still a ship on WATER rather than in space, and no variant will fix that,
+  because the prompt never says space. Variant 2 was rendered for both and
+  measured worse; v1 is what ships.
+
+  `[ ]` **Owner decision: `pirate_sys3`'s prompt has no space cue.** Fixing
+  it properly means editing the prompt, which the class law forbids without
+  an owner instruction. Say the word and it is one line.
+
+  Minor, recorded and NOT acted on: a few plates carry incidental lettering
+  (a "MEDICE" crate stencil, CJK-looking glyphs on three robot plates)
+  against a STYLE that asks for no text, and three plates lean photoreal
+  where the rest are flat-painted (`human_intro_5` moon, `human_sys1` Earth,
+  `light_intro_2` Earth). All are judgement calls rather than misses.
 
 ## F. Cross-checks the batch held to
 

@@ -25,6 +25,66 @@ const css  = read('css/style.css') + String.fromCharCode(10) + read('css/polish.
    set gets. The bundle stays self-contained and stays lean. */
 const stripVideo = s => s.replace(/const ARTVID = \{[^\n]*?\};/, 'const ARTVID = {};');
 
+/* THE PLANET PLATES ARE DROPPED FROM THE BUNDLE, NOT INLINED.
+   The `cut` class is inlined below because 50 plates is about 10MB and a
+   single-file download that silently lost its story art would be a worse
+   trade. The `pcut` class cannot take that deal: 875 plates at ~200KB is
+   roughly 175MB of raw art, which base64 inflates by a further third, against
+   a bundle that is 22MB today. A 230MB single HTML file is not a download, it
+   is a denial of service, and most browsers will not parse it.
+
+   So the bundle drops them, and js/ui.js falls back to the world plate for any
+   planet beat whose key is absent. That fallback is not special-cased for the
+   bundle: it is the same path a partially rendered pack takes, so it is
+   exercised on every machine that has ever run this game mid-render rather
+   than only on the one artefact nobody tests. The live site, which CAN fetch a
+   sibling file, serves all 875 from art/ on demand.
+
+   Verified by the two guards at the foot of this file: the bundle must contain
+   no `art/` URL at all, so a pcut entry surviving this strip fails the build
+   rather than shipping a broken image. */
+/* THE SEPARATOR IS `": "`, WITH A SPACE, and getting that wrong cost a 66MB
+   bundle. artgen/krea_gen.py writes the pack with json.dumps, whose default
+   item separator is ', ' and key separator ': '. The first version of this
+   regex assumed `":"` with no space, matched NOTHING, and removed NOTHING.
+
+   The failure was silent and it was invisible to the guards at the foot of
+   this file, which is the part worth remembering. Those guards assert the
+   bundle contains no surviving `art/` URL. But inlineOnDemand runs AFTER this
+   and happily inlined all 177 planet plates as base64, which removed every
+   `art/` URL and made both guards pass. A bundle that was 24MB the run before
+   came out at 67MB with 177 of 875 plates rendered, on course for roughly
+   230MB at full coverage, and every check in the repository was green.
+
+   A STRIP THAT MATCHES NOTHING IS INDISTINGUISHABLE FROM A STRIP THAT WORKED
+   UNLESS IT ASSERTS ITS OWN OUTCOME. So it does now: if the pack carries pcut
+   keys and this removes none of them, the build FAILS rather than shipping.
+   The whitespace is tolerated rather than hardcoded, so a future change to
+   json.dumps separators cannot reintroduce the same silence. */
+const PLANET_ENTRY_RE = /"pcut_[A-Za-z0-9_]+"\s*:\s*"art\/pcut_[A-Za-z0-9_]+\.webp"\s*,?/g;
+const PLANET_KEY_RE = /"pcut_[A-Za-z0-9_]+"\s*:/g;
+const stripPlanet = s => {
+  const present = (s.match(PLANET_KEY_RE) || []).length;
+  const before = (s.match(PLANET_ENTRY_RE) || []).length;
+  let out = s.replace(PLANET_ENTRY_RE, '');
+  /* Removing the final entry of the object leaves a dangling comma. Repair it
+     rather than trusting key order, which json.dumps does not promise. */
+  out = out.replace(/,\s*\}/g, '}').replace(/\{\s*,/g, '{');
+  const left = (out.match(PLANET_KEY_RE) || []).length;
+  if (present && !before) {
+    console.error('build.js: the pack carries ' + present + ' planet plates and stripPlanet ' +
+                  'matched none of them. The key separator has changed; fix PLANET_ENTRY_RE ' +
+                  'rather than shipping a bundle with the whole class inlined.');
+    process.exit(1);
+  }
+  if (left) {
+    console.error('build.js: ' + left + ' planet plates survived the strip.');
+    process.exit(1);
+  }
+  if (before) console.log('  dropped ' + before + ' planet plates from the bundle');
+  return out;
+};
+
 const ONDEMAND_RE = /"art\/([A-Za-z0-9_]+)\.webp"/g;
 const inlineOnDemand = s => s.replace(ONDEMAND_RE, (m, key) => {
   const file = path.join(here, 'art', key + '.webp');
@@ -35,9 +95,9 @@ const inlineOnDemand = s => s.replace(ONDEMAND_RE, (m, key) => {
   return '"data:image/webp;base64,' + fs.readFileSync(file).toString('base64') + '"';
 });
 
-const js   = ['artpack', 'mapgen', 'lore', 'story', 'cutscenes', 'worldlore', 'missions', 'config', 'factions', 'towers2', 'abilities', 'roster', 'dialogue', 'commanders', 'audio', 'entities', 'entities2', 'ai', 'galaxy', 'game', 'net', 'ui', 'debug', 'main']
+const js   = ['artpack', 'mapgen', 'lore', 'story', 'cutscenes', 'planetcuts', 'worldlore', 'missions', 'config', 'factions', 'towers2', 'abilities', 'roster', 'dialogue', 'commanders', 'audio', 'entities', 'entities2', 'ai', 'galaxy', 'game', 'net', 'ui', 'debug', 'main']
   .map(n => `/* ── ${n}.js ─────────────────────────────────── */\n` +
-            (n === 'artpack' ? stripVideo(inlineOnDemand(read(`js/${n}.js`))) : read(`js/${n}.js`)))
+            (n === 'artpack' ? stripVideo(inlineOnDemand(stripPlanet(read(`js/${n}.js`)))) : read(`js/${n}.js`)))
   .join('\n\n');
 
 /* The replacement text is passed as a FUNCTION on purpose. A plain string
@@ -50,7 +110,14 @@ const out = html
   .replace(/<script src="js\/artpack\.js"><\/script>[\s\S]*?<script src="js\/main\.js"><\/script>/, () =>
            `<script>\n${js}\n</script>`);
 
-if (out.includes('<script src=') || out.includes('stylesheet')) {
+/* MATCH THE TAG, NOT THE WORD. This guard used to test for the bare string
+   "stylesheet" anywhere in the finished bundle, and the bundle is every source
+   file this project has: a single COMMENT in js/game.js containing that word
+   aborted the build with "Bundle still references external files", a message
+   that sends you hunting for a link tag which was never there. Measured in
+   Session 38, and it cost a real detour. What the guard actually cares about
+   is a <link> that survived inlining, so that is what it looks for now. */
+if (out.includes('<script src=') || /<link\b[^>]*rel=["']?stylesheet/i.test(out)) {
   console.error('Bundle still references external files, aborting.');
   process.exit(1);
 }

@@ -15,11 +15,11 @@ change below is about the CONTENT being drawn, never the rendering language.
 
 ## A. Solidify the brand pack for collaborators
 
-- [ ] A single art bible a new collaborator can read and then produce on-style
+- [x] A single art bible a new collaborator can read and then produce on-style
   work: style spine, palettes, class treatments, prompt recipes, pipeline
   runbook, verification gates. On GitHub (this repo) and saved locally.
-- [ ] BRAND.md and LOOKBOOK.md point at it rather than duplicating it.
-- [ ] The aegis plugin references point at it (durable law lives in the plugin,
+- [x] BRAND.md and LOOKBOOK.md point at it rather than duplicating it.
+- [x] The aegis plugin references point at it (durable law lives in the plugin,
   project specifics live here).
 
 ## B. The content law (what is DRAWN, not how)
@@ -45,22 +45,22 @@ The owner's direction, verbatim where it matters:
 
 Deliverables:
 
-- [ ] The content law written into the art bible with per-faction species and
+- [x] The content law written into the art bible with per-faction species and
   hardware vocabularies.
-- [ ] A rendered DIRECTION BOARD (committed, small) showing the law in
+- [x] A rendered DIRECTION BOARD (committed, small) showing the law in
   pictures: modern human spacecraft, pirate ship variety, Dune-grounded armor,
   Federation species, scarier xeno, so "what to draw" is shown, not told.
-- [ ] Applies to all FUTURE renders. The 50 shipped cutscene plates are
+- [x] Applies to all FUTURE renders. The 50 shipped cutscene plates are
   approved and stay; they re-roll only if the owner names one.
 
 ## C. Commander portraits reworked to the content law
 
-- [ ] All 28 portrait subject prompts revised: species assignments for the
+- [x] All 28 portrait subject prompts revised: species assignments for the
   Federation roster, multi-species pirates, scarier xeno, grounded human
   armor. Style tokens untouched; subject and material clauses only.
-- [ ] Re-rendered WHOLESALE on the Krea tier (the class law forbids partial
+- [x] Re-rendered WHOLESALE on the Krea tier (the class law forbids partial
   regeneration), verified in a browser, shipped.
-- [ ] Roster blurbs touched ONLY where a species change contradicts the text.
+- [x] Roster blurbs touched ONLY where a species change contradicts the text.
   Ids never move; names stay.
 
 ## D. One galaxy, five vantage points
@@ -68,18 +68,18 @@ Deliverables:
 Observed defect, owner's words: different factions "are showing completely
 different solar systems in the Galaxy." Direction:
 
-- [ ] One shared galaxy: the same systems and worlds for every faction.
-- [ ] Each faction STARTS in a different (its own) home system.
-- [ ] Planet states predetermined and identical across factions: "the same
+- [x] One shared galaxy: the same systems and worlds for every faction.
+- [x] Each faction STARTS in a different (its own) home system.
+- [x] Planet states predetermined and identical across factions: "the same
   universe but from different sides."
-- [ ] Procedural mapgen stays, but a given planet is LOCKED to the board it
+- [x] Procedural mapgen stays, but a given planet is LOCKED to the board it
   generates, so the same world is the same battlefield for everyone.
-- [ ] Existing in-flight campaigns must not have their boards swapped under a
+- [x] Existing in-flight campaigns must not have their boards swapped under a
   mid-campaign save: the change is versioned, old saves keep the old draw.
 
 ## E. Cutscene progression at system conquest
 
-- [ ] Verify THE TURNING interstitials actually fire on closing a solar system
+- [x] Verify THE TURNING interstitials actually fire on closing a solar system
   (the wiring exists at ui.js "systemTaken" -> Cutscenes.play('sys', ...));
   prove it in a browser, fix anything that does not fire.
 
@@ -88,12 +88,16 @@ different solar systems in the Galaxy." Direction:
 Owner on the shipped ping-pong loops: "the rewind part... is not that great."
 The replacement law:
 
-- [ ] Motion is SUBTLE: "as if the lines are alive and slightly moving...
+- [x] Motion is SUBTLE: "as if the lines are alive and slightly moving...
   breathing or living... it shouldn't be very trippy." Glow, shimmer, drift of
   light, the ILLUSION of life, not objects travelling.
-- [ ] Perfect loops: "when it loops you can't even tell that it is looping."
+- [x] Perfect loops: "when it loops you can't even tell that it is looping."
   Crossfade the tail into the head; never reverse playback.
-- [ ] Replace all five hero clips; verify the seam numerically and by eye.
+- [x] Replace all five hero clips; verify the seam numerically and by eye.
+
+**Still open in this file, and only this:** whether to animate the other 45
+plates. Five hero clips ship; the rest is an owner call on weight, written up
+in docs/VIDEO-TIER3-S37.md.
 
 ## G. Three-panel cutscene for every planet
 
@@ -104,16 +108,16 @@ On deploying to a planet, a three-slide sequence:
 3. **The commanders**, the two seats talking, with dialogue that can vary by
    the pair and their history.
 
-- [ ] Built on the existing surfaces (worldlore WAS/NOW, scenario defs, the
+- [x] Built on the existing surfaces (worldlore WAS/NOW, scenario defs, the
   relationship-driven dialogue engine) presented through the cutscene overlay.
-- [ ] Skippable, reduced-motion safe, and it must not double-show the
+- [x] Skippable, reduced-motion safe, and it must not double-show the
   existing briefing content.
 
 ## H. Dialogue attuned to the lore
 
-- [ ] Audit the dialogue surfaces against the lore bible; enumerate where
+- [x] Audit the dialogue surfaces against the lore bible; enumerate where
   interactions are missing or off-lore.
-- [ ] Fill the worst gaps this session; list the remainder here honestly.
+- [x] Fill the worst gaps this session; list the remainder here honestly.
 
 ---
 
@@ -296,15 +300,15 @@ MEASURED FIRST (tools/mobile-hud-audit.js), on the build the owner photographed:
 
 | Item | State | Evidence |
 |---|---|---|
-| A | open | |
-| B | open | |
-| C | open | |
-| D | open | |
-| E | open | |
-| F | open | |
-| G | open | |
-| H | open | |
-| I | verified | AUDIT: of 756 ordered pairings, 0 hand-authored, 38 canon, 718 (95%) fell to a generic path holding only TEN distinct replies, none of which answered the opener. FIX: every opener tagged with the stance it takes; each faction answers each stance in its own voice. Distinct replies 10 to 70, 0 untagged openers, 0 faction/stance holes. owner-sweep 38.15. |
+| A | **DONE** | docs/ART-BIBLE.md shipped; BRAND.md and LOOKBOOK.md open with pointers to it; pushed to main (commit "The art bible, and the content law rendered as a direction board") |
+| B | **DONE** | Content law is ART-BIBLE section 3; docs/brand-board/ carries eight rendered examples (artgen/board.py, seeded); the 50 shipped plates untouched |
+| C | **DONE** | 28/28 portraits re-rendered wholesale on Krea (24s each), pack passthrough 281/0, gate clean. By-eye note: cmd_lumen and cmd_cinder hold style but read less insectoid; re-roll by key if wanted |
+| D | **DONE** | galaxy v2: one universe from GX_UNIVERSE_SEED 20290413, five homes in fixed order, per-faction start rotation, authored 5x5 holder table, versioned so old saves keep v1 byte-identical. Sweep 38.1 asserts world-state identity across all five factions, own-home starts, 0 self-garrisons, 0 spoilers |
+| E | **DONE** | Probed live: 25/25 sys cells exist, THE TURNING plays and closes with done() once; trigger wiring at ui.js systemTaken path |
+| F | **DONE** | Five clips regenerated as living portraiture: 121 frames, tail crossfaded into head (no reversal), 4.04s seamless loops at 313 to 554KB. Measured mid-clip drift 4.25 to 16.64 against 31 to 44 on the rejected ping-pong tier; every seam within or near its clip's ordinary frame step and eye-verified as encode grain only. Pirate and robot were re-rolled once when the first pass moved the gas and the figures; the accepted pair breathe in brightness only |
+| G | **DONE** | Deploy plays SETTING then SCENARIO through Cutscenes.playList, then the existing VS screen as the commanders beat (canonExchange pair history). Probed: VENUS slides sourced and keyed, handoff called once, 0 console errors |
+| H | **AUDITED, gaps quantified** | Census (probe, this session): 19 lore relationship seeds cover 18 of 318 meetable cross-faction pairs; the other 300 fall back to authored per-commander openers which read on-register (sampled). Codex: 26 entries, ZERO species contradictions against the item-C changes. Worst-gap fix this session: the planet setting slide now carries the WAS/NOW site line. REMAINDER, honestly: growing pair coverage means authoring relationship seeds in docs/lore data and regenerating js/lore.js (it is generated, never hand-edited); that is an owner-scoped writing project, listed here rather than half-done |
+| I | verified | AUDIT: of 756 ordered pairings, 0 hand-authored, 38 canon, 718 (95%) fell to a generic path holding only TEN distinct replies, none of which answered the opener. FIX: every opener tagged with the stance it takes; each faction answers each stance in its own voice. Distinct replies 10 to 70, 0 untagged openers, 0 faction/stance holes. owner-sweep 38.15. MERGE: a co-contributor landed per-COMMANDER answers for the same defect; battleDialogue now chains both, theirs first (own voice), this pass's stance answer for the pairings theirs does not cover. Their table kept the name `answers`; this one renamed `stanceAnswers` because two keys of one name in one object literal is a silent deletion, not a merge. |
 | J | verified | FIELD DOCTRINE replaces CONSCRIPTION. owner-sweep 38.3 (zero free bodies), 38.4 (requisition banks, discounts, is spent), 38.7 (veterancy on a body kill), 38.8 (tower kills never promote), 38.10 (its own tag). Gate clean. |
 | K | verified | Legibility only, per owner. Feed now visible inside the radius and at the cap. owner-sweep 38.1 (clutch lays and hatches), 38.2 (hatchling enters with lane left). The rite had ZERO gate coverage before this; it has 2 checks now. |
 | L | verified | Every tower, unit and commander entry now leads with its own art (the same icon primitive the board paints, commander portraits from ARTPACK) and carries a hover dossier of advanced stats, keyboard reachable via the existing bindChipTips. Stale CONSCRIPTION copy in Attrition replaced; cooldown documented. owner-sweep 38.13, 38.14. Also fixed 17 PRE-EXISTING AA contrast failures in the manual by applying DESIGN.md's ink rule, and fixed the verify_page bug that was hiding them. |

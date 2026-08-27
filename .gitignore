@@ -48,3 +48,4 @@ venv/
 /lore/
 !docs/lore/
 !docs/lore/**
+_review/

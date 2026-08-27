@@ -268,6 +268,14 @@
 
   <div id="stage">
     <div id="canvas-wrap"><canvas id="game" width="1064" height="570" aria-label="Battlefield"></canvas></div>
+    <!-- ROTATE HINT (owner, Session 38). The board is 1064x570, a landscape
+         shape. Shown whole on a portrait phone it can only be as wide as the
+         screen, so it occupies 17% of the view against 58% in landscape, both
+         measured. That is geometry rather than a defect, so the answer is to
+         tell the player rather than to change the camera. Pure CSS, driven by
+         the orientation media query: no listener, no save key, no state, and
+         it appears and disappears the instant the device turns. -->
+    <div id="rotate-hint"><b>&#8635;</b><span>Turn sideways for a bigger board</span></div>
     <!-- Its own floating bar, bottom right (Session 35): was bundled into
          #hud-rivals, which made the RIVAL side of the top bar wider than YOU
          and read as lopsided even though the outer #hud was measured dead
@@ -478,6 +486,7 @@
 <script src="js/lore.js"></script>
 <script src="js/story.js"></script>
 <script src="js/cutscenes.js"></script>
+<script src="js/planetcuts.js"></script>
 <script src="js/worldlore.js"></script>
 <script src="js/missions.js"></script>
 <script src="js/config.js"></script>

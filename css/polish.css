@@ -401,7 +401,7 @@ body.immersive #stage::after {
    viewport top become a scrollbar over a full-bleed map. */
 #screen-theatre { overflow: hidden; }
 #screen-theatre .setup-wrap { max-width: none; padding: 0; gap: 0; position: relative;
-  height: 100vh; min-height: 0; }
+  height: 100vh; height: 100dvh; min-height: 0; }
 #screen-theatre .theatre-body { display: block; position: absolute; inset: 0; gap: 0; }
 #worldmap-wrap.gx-viewport { position: absolute; inset: 0; height: auto;
   border: 0; border-radius: 0; padding: 0; background: transparent; }
@@ -424,7 +424,7 @@ body.immersive #stage::after {
    shadows, exactly like single-player's galaxy screen. */
 #screen-multiverse { overflow: hidden; }
 #screen-multiverse .setup-wrap { max-width: none; padding: 0; gap: 0; position: relative;
-                                height: 100vh; }
+                                height: 100vh; height: 100dvh; }
 #multiverse-wrap.worldmap-wrap { flex: 1 1 auto; min-height: 0; border: 0; background: transparent;
                                  margin: 0; }
 #screen-multiverse .setup-head,
@@ -445,7 +445,7 @@ body.immersive #stage::after {
 #screen-theatre .setup-foot { bottom: 0; left: 0; right: 0; padding: 12px 18px;
   background: linear-gradient(0deg, rgba(4,7,13,.92), rgba(4,7,13,0)); margin-top: 0; }
 #screen-theatre #theatre-detail { top: 96px; right: 14px; width: 296px;
-  max-height: calc(100vh - 190px); overflow-y: auto; }
+  max-height: calc(100vh - 190px); max-height: calc(100dvh - 190px); overflow-y: auto; }
 
 /* The map's own overlays keep out from under the floating bars. */
 #worldmap-wrap.gx-viewport > .gx-keys { top: 96px; left: 14px; }
@@ -1367,6 +1367,20 @@ body.has-artpack::before { background-image: var(--art-nebula); background-size:
 /* the battlefield plate that heads a world briefing */
 .br-plate { position: relative; margin: -14px -14px 10px; border-radius: 12px 12px 0 0;
             overflow: hidden; aspect-ratio: 16 / 7; }
+/* A PLATE WITH NO ART MUST NOT RESERVE A PLATE'S WORTH OF SPACE. The `bare`
+   state already sets a min-height (54 to 104px depending on breakpoint), but
+   min-height is a FLOOR and aspect-ratio was still sizing the box: measured on
+   a world briefing at 1000px wide, an empty plate was 968x424, a dark void
+   taller than the card it headed and exactly the blank band the owner
+   photographed above BARNARD d. Releasing the ratio lets the min-height
+   actually govern. Set once here rather than in each of the three breakpoint
+   copies, so a fourth cannot forget it.
+
+   WHY a plate is bare at all is a separate, known item: procedural boards
+   added by the co-contributor have no world_<map> art yet, and this state is
+   what the pack degrading gracefully looks like. It should look deliberate,
+   not broken. */
+.br-plate.bare { aspect-ratio: auto; }
 .br-plate .br-art { width: 100%; height: 100%; object-fit: cover; display: block;
                     filter: saturate(.92) contrast(1.04); }
 /* fade the plate into the card so it reads as one surface, not a pasted photo */
@@ -2312,7 +2326,8 @@ body:not(.arena-field) .arena-ladder { display: none; }
 /* ---- the two detail columns: the calm register ------------------------ */
 .lo-detail-col {
   position: sticky; top: 12px;
-  max-height: calc(100vh - 168px); overflow-y: auto; overscroll-behavior: contain;
+  max-height: calc(100vh - 168px); max-height: calc(100dvh - 168px);
+  overflow-y: auto; overscroll-behavior: contain;
   padding: 13px 14px 16px;
   border-radius: var(--r);
   background: linear-gradient(180deg, rgba(9, 14, 24, .60), rgba(7, 11, 19, .34));
@@ -3552,30 +3567,13 @@ body.rm-user.immersive #battle-controls { transition: none; }
 
    Scoped to #screen-faction: #screen-multiverse and #screen-theatre already
    position their own .setup-foot absolutely and must not be touched. */
+/* The STICKY half of this block moved out and became unconditional: see "THE
+   SETUP FOOTER IS STICKY, AT EVERY WIDTH" below. What is left here is only
+   what genuinely belongs to the phone tier, which is thumbs. */
 @media (max-width: 860px) {
-  #screen-faction .setup-foot {
-    position: sticky; bottom: 0; z-index: 8;
-    margin: 0 -18px 0; padding: 12px 18px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    background: linear-gradient(to top,
-                color-mix(in srgb, var(--bg) 96%, transparent) 62%,
-                transparent);
-    backdrop-filter: blur(9px);
-    border-top: 1px solid var(--line);
-    transition: border-color .22s ease, background .22s ease;
-  }
-  /* The last card must clear the bar rather than hide behind it. */
-  #screen-faction .faction-grid { padding-bottom: 12px; }
   /* Thumbs are not mice: the primary action gets the width it needs. */
   #screen-faction .setup-foot .btn-primary { flex: 1 1 auto; padding: 14px 18px; }
   #screen-faction .setup-foot #btn-faction-back { flex: 0 0 auto; }
-
-  /* A banner is chosen. Lift the bar in that banner's own colour, which is
-     the same signal the chosen card is already showing. */
-  #screen-faction .setup-foot.ready {
-    border-top-color: color-mix(in srgb, var(--fc, var(--acc)) 60%, transparent);
-    box-shadow: 0 -10px 30px -12px color-mix(in srgb, var(--fc, var(--acc)) 45%, transparent);
-  }
   #screen-faction .setup-foot.ready .btn-primary { animation: facGoPulse .42s ease-out 1; }
 }
 @keyframes facGoPulse {
@@ -3606,16 +3604,12 @@ body.rm-user.immersive #battle-controls { transition: none; }
      share a 390px row, so the primary takes its own full-width row and the
      rest wrap above it. Sticky for the same reason as the faction screen:
      a confirm you have to hunt for is a confirm that does not exist. */
+  /* Sticky, the backdrop and the offsets are unconditional now (see "THE
+     SETUP FOOTER IS STICKY, AT EVERY WIDTH" below). Only the WRAP belongs to
+     the phone: four items cannot share a 390px row. */
   #screen-command .setup-foot,
   #screen-loadout .setup-foot {
-    position: sticky; bottom: 0; z-index: 8;
     flex-wrap: wrap; row-gap: 8px; justify-content: flex-start;
-    margin: 0 -18px 0; padding: 12px 18px;
-    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    background: linear-gradient(to top,
-                color-mix(in srgb, var(--bg) 96%, transparent) 62%, transparent);
-    backdrop-filter: blur(9px);
-    border-top: 1px solid var(--line);
   }
   #screen-command .setup-foot .btn-primary,
   #screen-loadout .setup-foot .btn-primary {
@@ -3683,6 +3677,451 @@ body.rm-user.immersive #battle-controls { transition: none; }
   #screen-loadout .lo-card, #screen-loadout .lo-col { overflow-wrap: anywhere; }
 }
 
+/* ═══════ THE SETUP FOOTER IS STICKY, AT EVERY WIDTH (Session 38) ═══════
+   OWNER REPORT, on a Google Fold: "I could barely see the button to go to the
+   next page or deploy... I can't even start a mission because I can't see the
+   deploy button." Reproduced immediately, and the reproduction indicted two
+   earlier fixes in this same file.
+
+   MEASURED, the footer's own primary button, pixels BELOW the fold:
+
+     viewport     faction   command   loadout
+     1000x670        0       463        0
+     1280x600       70       509       71
+     1440x700        0       409       71
+      900x500        0       902      163
+     1600x900        0       209       71     <- the size the gate runs at
+
+   SELECT THEATRE has been 209px below the fold ON DESKTOP. It is reachable,
+   the screens do scroll, but a player sees a sliver of a button at the bottom
+   edge of a screen that looks complete and reasonably concludes it is broken.
+
+   THE TWO EARLIER FIXES WERE KEYED TO WIDTH AND THE CAUSE IS HEIGHT. A footer
+   goes under the fold when the CONTENT IS TALLER THAN THE VIEWPORT, and that
+   happens at any width on a short viewport: a folded phone, a laptop with
+   browser chrome, a small window. Keying to 860px, and then to 1080px, was
+   chasing instances of one bug and finding a new one each time.
+
+   So it is not keyed at all. `position: sticky` costs nothing when the
+   content fits (the footer sits at its natural place and never moves) and
+   holds the CTA on screen the moment it does not. That is correct at every
+   width and every height, which is why this replaces both earlier rules
+   rather than joining them.
+
+   #screen-multiverse and #screen-theatre are excluded on purpose: they
+   position their own footers absolutely over a map, which is a different
+   contract and is already handled above at lines 431 and 445. */
+#screen-faction .setup-foot,
+#screen-command .setup-foot,
+#screen-loadout .setup-foot {
+  position: sticky; bottom: 0; z-index: 8;
+  margin: 0 -18px 0; padding: 12px 18px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top,
+              color-mix(in srgb, var(--bg) 96%, transparent) 62%, transparent);
+  backdrop-filter: blur(9px); -webkit-backdrop-filter: blur(9px);
+  border-top: 1px solid var(--line);
+  transition: border-color .22s ease, background .22s ease;
+}
+/* The last card must clear the bar rather than hide behind it. */
+#screen-faction .faction-grid { padding-bottom: 12px; }
+/* A chosen banner lifts the bar in its own colour. Set by renderFactions. */
+#screen-faction .setup-foot.ready {
+  border-top-color: color-mix(in srgb, var(--fc, var(--acc)) 60%, transparent);
+  box-shadow: 0 -10px 30px -12px color-mix(in srgb, var(--fc, var(--acc)) 45%, transparent);
+}
+
+/* ══════════ THE IN-GAME DOCK ON A PHONE (Session 38, owner-sweep 25.5) ══
+   MEASURED, clipped-element count from 25.5's own selector set:
+
+     390px  7 clipped, worst 55px over, panes 117/108/117
+     480px  5 clipped, worst 44px over, panes 148/136/148
+     600px  5 clipped, worst 23px over, panes 189/174/189
+     768px  0 clipped,                  panes 247/226/247
+
+   The dock is three flex panes authored at 328/300/328 (--dock-side-w), and
+   below roughly 700px they shrink past what their contents need: a tower card
+   is 97px of content given 42px of box, so the card is drawn cut in half. The
+   board and the chrome layering were never the problem here; all three of
+   25.5's other arms pass at 390 and only the clipped arm fails.
+
+   The fix is to stop the panes shrinking below their content and let the
+   CARDS go one-up instead of two-up, which is what actually buys the room: a
+   pane then needs about the width of one card rather than two. Keyed to 767px
+   so the 768 tablet case, which measures clean, is untouched.
+
+   overflow-x on the dock is the safety valve, not the plan: if a future card
+   grows past what three panes can hold, the dock scrolls and the cards stay
+   whole, rather than silently clipping again. */
+@media (max-width: 767px) {
+  #dock {
+    gap: 6px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  #dock::-webkit-scrollbar { display: none; }
+  /* Size to content and refuse to shrink: this is the clause that ends the
+     clipping. flex-shrink was doing the damage, not any width value. */
+  #dock .dock-pane { flex: 0 0 auto; padding: 6px 8px; }
+  /* AND SIZE TO CONTENT. The panes are authored at a fixed 328/300/328
+     (--dock-side-w, and #dock-inspector's own 300px), so refusing to shrink
+     alone left all three at full width and pushed the dock's scroll width to
+     968px inside a 366px window: nothing clipped, but two thirds of the
+     controls were a swipe away mid-wave. With the cards one-up a pane only
+     needs about one card, so releasing the authored width lets all three fit
+     on screen at once. The specificity here (#dock + id) has to match the
+     rules it overrides, which is the trap recorded at polish.css:3140. */
+  #dock .dock-pane { width: auto; min-width: 0; }
+  #dock #dock-inspector { width: auto; }
+  /* CLAIM THE FULL WIDTH. #dock is absolutely positioned with left:50% and no
+     right, so its shrink-to-fit width is computed against the half-width that
+     leaves, and it settled at 267px inside a 366px allowance: the dock was
+     scrolling sooner than it had to. An explicit width fixes that; the
+     existing translateX(-50%) still centres it. */
+  #dock { width: calc(100% - 24px); justify-content: flex-start; }
+  /* Measured: the three panes need 483px of content (118 + 218 + 135 plus
+     gaps) and 366px exists at 390. The inspector column alone is 200px of
+     natural content (econ bar, base level, next-wave line), so all three
+     cannot fit without wrapping text that a player reads mid-wave. The dock
+     therefore scrolls, and snap makes that one deliberate swipe per pane
+     instead of a drift. Nothing is clipped and nothing is unreachable. */
+  #dock { scroll-snap-type: x proximity; }
+  #dock .dock-pane { scroll-snap-align: center; }
+  /* One card per row. Two-up is what made a 117px pane try to hold 2x97px. */
+  .muster-bar, #shop-list { grid-template-columns: minmax(0, 1fr); }
+  .ability-bar:has(.abil + .abil) { grid-template-columns: minmax(0, 1fr); }
+  /* BASE LEVEL is the one control whose label is wider than a card. Let it
+     use the pane's full width and wrap its cost onto a second line rather
+     than be cut, which is the same trade the cards just took. */
+  #btn-baselvl { flex-wrap: wrap; row-gap: 2px; }
+  #btn-baselvl .bb-main { flex: 1 1 100%; }
+}
+
+/* ══════════════════ THE ROTATE HINT (Session 38, owner) ════════════════
+   MEASURED, phone, board content as a fraction of the visible view:
+
+     390x844 portrait   17% of view, dock 76% visible
+     844x390 landscape  58% of view, dock 100% visible
+
+   The board is 1064x570. Shown whole on a portrait screen it can only be as
+   wide as the screen and the rest is empty vertical band, which is owner-sweep
+   25.5's wholeBoard arm working correctly rather than failing. So this is not
+   a layout bug to fix, it is a fact to tell the player, and the hint lives in
+   the empty band that same fact creates.
+
+   PURE CSS ON PURPOSE. The orientation media query means no resize listener,
+   no save key, no state to migrate, and nothing anywhere near the simulation
+   or the PRNG stream. It appears and vanishes the instant the device turns,
+   and re-arms itself by doing so, because leaving portrait unmounts it.
+
+   pointer-events: none is load bearing. This floats over a live battlefield
+   and the band it sits in is measured, not guaranteed: if a future HUD change
+   moves it over something tappable, the worst case must be a cosmetic overlap
+   and never a control the player cannot press. */
+#rotate-hint { display: none; }
+
+@media (max-width: 767px) and (orientation: portrait) {
+  #screen-game #rotate-hint {
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    /* Below the controls, which are themselves below the HUD. 27vh was a
+       guess taken before the battle HUD was compacted and it now lands the
+       chip UNDER #battle-controls: measured, the hint was half hidden behind
+       the speed buttons. Both offsets read the same published --hud-b, so
+       the stack stays in order whatever the HUD does. */
+    position: absolute; left: 50%; top: calc(var(--hud-b, 214px) + 66px);
+    transform: translateX(-50%);
+    z-index: 15;                    /* under #hud and #dock (both z20) */
+    pointer-events: none;
+    max-width: min(300px, 82vw); padding: 7px 13px;
+    background: rgba(10, 16, 26, .82);
+    backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+    border: 1px solid color-mix(in srgb, var(--cyan) 34%, transparent);
+    border-radius: 999px;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, .45);
+    /* Says its piece, then gets out of the way. A permanent chip over a live
+       board is clutter, and rotating re-arms it anyway. */
+    animation: rotHintIn .3s ease-out both, rotHintOut .5s ease-in 6s both;
+  }
+  #screen-game #rotate-hint b {
+    font-size: 15px; line-height: 1; color: var(--cyan);
+    animation: rotHintTurn 2.4s ease-in-out 3;
+  }
+  #screen-game #rotate-hint span {
+    font-family: var(--display); font-size: 10px; letter-spacing: .14em;
+    color: var(--text-dim); white-space: nowrap;
+  }
+}
+@keyframes rotHintIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rotHintOut { to { opacity: 0; } }
+@keyframes rotHintTurn { 0%, 60% { transform: rotate(0deg); }
+                         80%, 100% { transform: rotate(90deg); } }
+
+/* Reduced motion keeps the hint and drops the movement: the glyph does not
+   turn and the chip does not fade out, so it simply stays legible. A reader
+   who has asked for less motion is exactly the reader who should not have
+   information animate away from them. */
+@media (max-width: 767px) and (orientation: portrait) and (prefers-reduced-motion: reduce) {
+  #screen-game #rotate-hint, #screen-game #rotate-hint b { animation: none; }
+}
+body.rm-user #screen-game #rotate-hint,
+body.rm-user #screen-game #rotate-hint b { animation: none; }
+
+/* ── THE ART GALLERY (Session 39) ──────────────────────────────────────────
+   The field manual's grading surface: every generated plate in the pack, so a
+   world's art can be judged without winning that world. Grids are filled on
+   first expand by UI.wireGallery, so a closed gallery costs one element per
+   class and an open one lazy-loads only what scrolls into view. */
+.gal-class, .gal-world { border:1px solid rgba(148,163,184,.22); border-radius:8px;
+  margin:10px 0; background:rgba(10,14,23,.55); }
+.gal-class > summary, .gal-world > summary { cursor:pointer; padding:10px 14px;
+  font-weight:700; letter-spacing:.04em; display:flex; align-items:center; gap:10px;
+  list-style:none; }
+.gal-class > summary::-webkit-details-marker, .gal-world > summary::-webkit-details-marker { display:none; }
+.gal-class > summary::before, .gal-world > summary::before { content:'▸'; opacity:.6; }
+.gal-class[open] > summary::before, .gal-world[open] > summary::before { content:'▾'; }
+.gal-count { margin-left:auto; font-weight:500; opacity:.65; font-variant-numeric:tabular-nums;
+  font-size:.85em; }
+.gal-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:10px; padding:4px 14px 14px; }
+.gal-tile { margin:0; display:flex; flex-direction:column; gap:4px; }
+.gal-tile img { width:100%; height:auto; border-radius:6px; display:block;
+  background:#0a0e17; border:1px solid rgba(148,163,184,.18); }
+.gal-tile figcaption { font-size:11px; opacity:.6; word-break:break-all; line-height:1.3; }
+.gal-vid { color:#38e8ff; font-size:9px; letter-spacing:.08em; }
+.gal-hole { aspect-ratio:16/9; border:1px dashed rgba(148,163,184,.28); border-radius:6px;
+  display:grid; place-items:center; }
+.gal-hole span { font-size:10px; opacity:.4; letter-spacing:.06em; }
+.gal-missing figcaption { opacity:.35; }
+.gal-blurb { padding:0 14px; margin:2px 0 8px; font-size:12px; opacity:.7; font-style:italic; }
+.gal-facrow { padding:0 14px 6px; }
+.gal-facrow h5 { margin:8px 0 4px; font-size:12px; letter-spacing:.08em; color:var(--fc,#7dd3fc); }
+.gal-beats { grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); padding:0; }
+.gal-beat { display:flex; flex-direction:column; gap:3px; }
+.gal-beatname { font-size:10px; letter-spacing:.07em; opacity:.55; }
+.gal-world { margin:8px 14px; }
+/* Phones: the codex is already a narrow column, so two plates per row at most
+   or every caption wraps to four lines and the grid stops being scannable. */
+@media (max-width:560px){
+  .gal-grid { grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); }
+  .gal-beats { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); }
+}
+
+/* ═══════════ THE SOUL SHOP BUYS ONLY WHEN ASKED (Session 38) ═══════════
+   Owner: "create a Purchase button when you're in the souls shop so you don't
+   accidentally buy something you're just trying to preview when you click on
+   it." Every card used to spend on its first click, and a card is also the
+   only place the item is described, so previewing and buying were one
+   gesture. With no hover on a touch screen that is not an edge case, it is
+   how the screen is normally used.
+
+   The bar sticks to the top of the scrolling modal so the price and the
+   commit stay in sight while the grids scroll under it. */
+.soul-buy-bar {
+  position: sticky; top: 0; z-index: 6;
+  display: flex; align-items: center; gap: 12px;
+  margin: 0 0 14px; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  transition: border-color .2s ease;
+}
+.soul-buy-bar.armed { border-color: color-mix(in srgb, var(--cyan) 55%, transparent); }
+.sbb-what { flex: 1 1 auto; min-width: 0; font-size: 12px; line-height: 1.45;
+            color: var(--text-dim); overflow-wrap: anywhere; }
+.soul-buy-bar.armed .sbb-what { color: var(--text); }
+.soul-buy-bar .btn { flex: 0 0 auto; }
+.soul-buy-bar .btn:disabled { opacity: .45; }
+/* The chosen card, so the bar and the grid never disagree about the subject. */
+.soul-item.picked { border-color: var(--cyan);
+  box-shadow: 0 0 0 1px var(--cyan), 0 10px 30px -12px rgba(56,232,255,.5); }
+@media (max-width: 700px) {
+  /* Thumb reach: the commit goes full width under the description. */
+  .soul-buy-bar { flex-wrap: wrap; row-gap: 8px; }
+  .soul-buy-bar .btn { flex: 1 0 100%; padding: 12px 16px; }
+}
+
+/* ═════════════ THE BATTLE HUD ON A PHONE (Session 38, owner) ═══════════
+   Owner: "it is currently difficult to navigate during a battle and actually
+   try to do the battle because the screen is so cluttered with information
+   and doesn't really fit."
+
+   MEASURED at 412x800 before this block, and the numbers are the argument:
+
+     chrome (hud + dock + controls)   65% of the viewport
+     the same in landscape 844x390    93% of the viewport
+     #hud                             204px tall, of which .hud-centre is 194
+     .hud-side                        22px WIDE holding a 190px commander card
+     #hud x #battle-controls          12236px2 of overlap, at every phone size
+
+   Three separate faults, one screen.
+
+   1. THE CONTROLS SAT ON THE HUD. Below 1550px #battle-controls moves to the
+      top to clear the dock, and the top is where #hud lives. It now sits
+      under the HUD, offset by the HUD's OWN measured height, published as
+      --hud-h by Game.resize because CSS cannot ask a sibling how tall it is
+      and a hardcoded number would drift.
+
+   2. THE COMMANDER CARDS OVERFLOWED THEIR COLUMNS. .cmdr carries min-width
+      190px inside a flex column that a 412px screen can only give 22px. The
+      card did not shrink, it spilled, which is what cut "YOU" in half in the
+      owner's screenshot. min-width:0 lets the column win.
+
+   3. THE CENTRE COLUMN WAS ALMOST THE WHOLE HUD. 194 of 204px, and 63 of
+      those were three chip rows, two of which usually say "no doctrine" and
+      "no escalations": empty states earning full rows on the smallest screen
+      there is. They are hidden here, and reappear the moment they carry a
+      real chip, because .chip-row:empty is not the same as a row holding an
+      "empty" chip. */
+@media (max-width: 860px) {
+  #battle-controls {
+    top: calc(var(--hud-b, 214px) + 8px); bottom: auto;
+    right: 8px; padding: 4px 6px; gap: 4px;
+  }
+  #battle-controls .icon-btn, #battle-controls .speed-btn {
+    min-width: 34px; min-height: 34px; padding: 4px 6px; font-size: 11px;
+  }
+
+  /* TWO ROWS, NOT ONE. READ THE BINDING SITE FIRST, which this did not.
+
+     #hud is authored as a GRID (style.css:509) and three tuning passes were
+     spent on grid-template-columns before the computed style was actually
+     read: in immersive mode, which is what a battle runs in,
+     `body.immersive #hud` (polish.css:353) sets display:flex, so every
+     grid rule written here was inert. The measurements never moved because
+     nothing was being applied. That is section 4 of session-hygiene, and it
+     cost three rounds.
+
+     The real layout is a nowrap flex row, and 412px cannot hold two commander
+     cards and a 300px centre: measured, each card got 95px of box holding
+     123px of stats, so the cards did not shrink, they OVERFLOWED, which is
+     the text running across WAVE in the owner's screenshot. Wrapping the
+     stats was tried and measured WORSE (159px of HUD became 223px and it
+     still clipped, because wrapping cannot help an item with no room on any
+     line).
+
+     So: let the ROW wrap, give the two cards a share each, and send the
+     centre to a line of its own. Selectors carry body.immersive so they meet
+     the rule they are correcting rather than losing to it silently. */
+  body.immersive #hud, #hud { gap: 4px 6px; padding: 4px 8px; position: relative; }
+  body.immersive #hud > .hud-side, #hud > .hud-side {
+    flex: 1 1 0; min-width: 0; padding: 4px 8px;
+  }
+  body.immersive #hud > .hud-centre, #hud > .hud-centre {
+    min-width: 0; padding: 4px 8px;
+  }
+  .hud-centre .btn-wave { width: 100%; }
+  .cmdr { min-width: 0; padding: 2px 4px; gap: 1px; }
+  .cmdr-stats { min-width: 0; gap: 8px; }
+  .cmdr-stats b { font-size: 13px; }
+  .cmdr-tag { font-size: 7.5px; }
+  .wave-badge { font-size: 11px; padding: 2px 8px; }
+
+  /* Abandoning a match is the rarest control here and it was taking 32px out
+     of a column the card needed. It goes to the corner. */
+  #hud .hud-side #btn-quit {
+    position: absolute; left: 5px; top: 5px; z-index: 2;
+    width: 24px; height: 24px; min-width: 0; min-height: 0;
+    padding: 0; font-size: 12px; line-height: 1; opacity: .7;
+  }
+  #hud .hud-side:first-child { padding-left: 24px; }
+}
+
+/* THE SECOND ROW IS FOR PORTRAIT ONLY. Wrapping was applied at 860px first
+   and measured a REGRESSION on a landscape phone: 844x390 has plenty of width
+   for one row, so wrapping it pushed the HUD from 159px to 213px, drove chrome
+   from 82% of the viewport to 97%, and put the controls back on top of the
+   dock (11968px2). The cards need about 190px each and the centre about 300,
+   so one row stops fitting below roughly 700px. That, not the phone tier, is
+   where the wrap belongs. */
+@media (max-width: 700px) {
+  body.immersive #hud, #hud { flex-wrap: wrap; }
+  body.immersive #hud > .hud-centre, #hud > .hud-centre { flex: 1 0 100%; order: 3; }
+  /* The dock's panes cap at 42vh, which on an 800px phone is 336px, and with
+     a two-row HUD above it that left the board a 260px band. The panes scroll
+     internally, so a tighter cap costs reach rather than content, and tower
+     placement no longer depends on the shop pane at all now that a tap on the
+     board opens the ring. */
+  #dock .dock-pane { max-height: 32vh; }
+  #btn-rush.btn { padding: 8px 10px; }
+  /* An empty state does not earn a row on a phone. The chip carries the class,
+     so the ROW is hidden by having only empty chips in it. */
+  .chip-rows { gap: 3px; }
+  .chip-row:has(> .chip.empty:only-child) { display: none; }
+}
+
+/* ═══════ A SHORT VIEWPORT IS ITS OWN PROBLEM (Session 38, owner) ═══════
+   A landscape phone is 390px TALL. Measured there before this block: the HUD
+   and the dock together took 352 of those 390 pixels, chrome reached 93% of
+   the viewport, and the controls sat on the dock by 9248px2. Width was never
+   the constraint; height was, and every rule above is keyed to width.
+
+   What goes first is what a player is not reading mid-wave. The chip rows are
+   a status readout (doctrine, escalations, the three modifiers) and they cost
+   a third of the HUD; the wave badge and the RUSH button are the two things
+   that are actually operated. The dock keeps every pane and every card, it
+   just stops being allowed to claim nearly half the screen. */
+@media (max-height: 460px) {
+  .chip-rows { display: none; }
+  #phase-label.phase { font-size: 9px; }
+  .hud-centre { gap: 2px; }
+  .wave-badge { font-size: 10px; padding: 1px 6px; }
+  #btn-rush.btn { padding: 6px 10px; font-size: 12px; }
+  .cmdr { padding: 2px 5px; }
+  .cmdr-stats b { font-size: 12px; }
+  /* The dock scrolls internally already, so a cap costs reach, not content. */
+  #dock .dock-pane { max-height: 30vh; }
+  #battle-controls { padding: 3px 5px; }
+  #battle-controls .icon-btn, #battle-controls .speed-btn {
+    min-width: 30px; min-height: 30px; font-size: 10px;
+  }
+}
+
+/* ════════ THE LAST TWO MOBILE AUDIT ITEMS (Session 38) ════════════════
+   Both were listed as open in docs/MOBILE-AUDIT-S37.md and both are measured.
+
+   1. EQUIP SAT 177px BELOW THE FOLD at 390x844. It is the action the screen
+      itself instructs ("No standing order: press EQUIP on a commander"), and
+      the commander screen cannot be completed without it, so it was the same
+      class of defect as the setup footers: reachable, invisible, and read as
+      broken. It is not a footer though, it is an inline verb belonging to the
+      card being read, so it does not get a sticky bar of its own; a second
+      pinned bar above the existing one is how a phone screen ends up all
+      chrome. Instead the detail panel becomes a column and the verb is
+      ordered to sit directly under the commander's own header, which is where
+      it belongs on any screen and merely matters more on this one.
+
+   2. FOUR CONTROLS AT 22px WIDE. The 44px touch floor is both dimensions, and
+      these passed on height and failed on width: the drawer close and reset
+      icons on the loadout screen were 22x44. */
+@media (max-width: 860px) {
+  #commander-detail { display: flex; flex-direction: column; }
+  #commander-detail > .cd-head { order: -2; }
+  #commander-detail > .cd-equip,
+  #commander-detail > .cd-equipped { order: -1; margin-bottom: 10px; }
+
+  .icon-btn.sm { min-width: 44px; }
+
+/* ==========================================================================
+   MERGE NOTE, Session 39. Two phone passes landed on the same surface on the
+   same day, from opposite directions.
+
+   The co-contributor's block is FIRST and keeps everything of theirs that
+   this pass does not touch: the portrait rotate hint, the ability bar and
+   base-level button sizing, the galaxy gallery, the setup-foot fixes.
+
+   This pass's block is SECOND and therefore wins on the three selectors that
+   genuinely compete (#dock, #dock .dock-pane, #dock #dock-inspector). Their
+   approach kept three panes and let the dock scroll horizontally; this one
+   shows ONE pane behind a tab strip with a fold. They are not combinable:
+   a scrolling row of three panes and a single-pane sheet are different
+   answers, and running both leaves the sheet scrolling sideways over panes it
+   is already hiding.
+
+   The choice is not taste, it is the measurement: tools/mobile-hud-audit.js
+   at 360x800, 390x844 and 412x915 is what decides, and tools/gate.js now runs
+   it at 360x800 on every run. If a later pass prefers the scrolling row, move
+   that block after this one and re-run the audit rather than deleting either. */
 /* ==========================================================================
    THE DEBUG BAR, Session 38.
 
@@ -3893,7 +4332,17 @@ body.rm-user.immersive #battle-controls { transition: none; }
 
      `order` rather than a DOM move: the markup is YOU, centre, RIVAL, and
      desktop wants exactly that. */
-  #hud {
+  /* NEUTRALISE THE IMMERSIVE OFFSET. `body.immersive #hud` sets
+     `left: 12px; right: 12px`, which insets an ABSOLUTE element and merely
+     SHIFTS a relative one. The co-contributor's pass moved #hud to
+     `position: relative` at phone width, correctly, and the offsets came
+     along: measured at 360px the header sat at 12..372, overflowing the
+     screen by exactly its own left offset. Caught by the phone pass added to
+     tools/gate.js in this same release, which is the first time any gate ran
+     at a width where these rules exist. */
+  body.immersive #hud, #hud {
+    left: 0;
+    right: auto;
     padding: 4px 8px;
     gap: 4px 6px;
     align-items: start;
@@ -4101,7 +4550,30 @@ body.rm-user.immersive #battle-controls { transition: none; }
   body.dock-folded #dock #dock-shop { display: none; }
 
   /* The quit button is a real target, not a 32px corner. */
-  #hud #btn-quit { min-width: 44px; min-height: 44px; }
+  /* THE QUIT BUTTON, reconciling two correct arguments. The co-contributor
+     shrank it to 24x24 in the corner because "abandoning a match is the
+     rarest control here and it was taking 32px out of a column the card
+     needed", which is true. 24x24 is also well under the thumb floor, which
+     is also true.
+     Both hold: it is ABSOLUTE, so its box costs the card nothing, and the box
+     grows to 44x44 while the GLYPH stays small. The extra area extends up and
+     left into the header's own padding, which is empty, rather than over the
+     card. Specificity matches theirs (#hud .hud-side #btn-quit) and comes
+     later, because a 2-0-0 rule loses to it however late it is: measured, the
+     first attempt at this stayed 24x24 for exactly that reason. */
+  #hud .hud-side #btn-quit {
+    left: -8px; top: -8px;
+    width: 44px; height: 44px;
+    min-width: 44px; min-height: 44px;
+    display: grid; place-items: center;
+    font-size: 12px;
+  }
+
+  /* TWO COLUMNS OF TOWER CARDS. Their pass set `.muster-bar, #shop-list` to a
+     single column, which is right for a dock that scrolls sideways and wrong
+     for a sheet that does not: four towers became four rows and the pane went
+     from 144px to 240px, taking it straight to this block's own 30vh clamp. */
+  #dock .muster-bar, #dock #shop-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 760px) and (prefers-reduced-motion: reduce) {

@@ -160,6 +160,67 @@ const RUN = `
                        return o.call(this, opts); };
                      return () => { Game.start = o; }; } },
 
+    { id: 'universe-splits-by-faction',
+      why: 'the one universe: each faction gets a different galaxy again, which is ' +
+           'the exact defect the owner reported in Session 38 ("completely different ' +
+           'solar systems"). Salting the v2 seed with the player faction is the ' +
+           'smallest change that reintroduces it',
+      expect: '38.1',
+      /* generateGalaxy is a top-level FUNCTION DECLARATION, so the binding is
+         reassignable and every caller resolves it at call time. (Contrast the
+         equivalent-mutant trap in the header: a top-level const cannot be
+         patched this way.) Salting only the v2 path leaves every v1 caller
+         alone, so this mutant targets 38.1 and cannot make 38.2 fail for a
+         reason that has nothing to do with the save contract. */
+      plant: () => { const o = generateGalaxy;
+                     generateGalaxy = function (seed, fac, mapPool, kindsW, gxv) {
+                       if (gxv >= 2) seed = String(seed) + ':' + fac;
+                       return o.call(this, seed, fac, mapPool, kindsW, gxv); };
+                     return () => { generateGalaxy = o; }; } },
+
+    { id: 'v1-galaxy-unfrozen',
+      why: 'the save contract: an absent gxv silently generates the v2 galaxy, so ' +
+           'every in-flight campaign regenerates onto different boards, arenas and ' +
+           'boons mid-run. A campaign stores only its seed, so this is the shape ' +
+           'that moves a saved galaxy underneath its owner',
+      expect: '38.2',
+      plant: () => { const o = generateGalaxy;
+                     generateGalaxy = function (seed, fac, mapPool, kindsW, gxv) {
+                       return o.call(this, seed, fac, mapPool, kindsW,
+                                     gxv === undefined ? 2 : gxv); };
+                     return () => { generateGalaxy = o; }; } },
+
+    { id: 'setup-footer-unsticks',
+      why: 'the owner-reported defect: the setup footers stop being sticky, so the ' +
+           'button that advances the game falls below the fold. Measured before the ' +
+           'fix: command 209px under at 1600x900, 463px at the reporter 1000x670',
+      expect: '38.3',
+      /* A stylesheet rule, because that is what the defect WAS. Planting it
+         through CSS rather than by moving an element means the mutant exercises
+         the same path the regression would take if someone edited polish.css. */
+      plant: () => { const s = document.createElement('style');
+                     s.id = 'mutant-unstick';
+                     s.textContent = '#screen-faction .setup-foot,' +
+                                     '#screen-command .setup-foot,' +
+                                     '#screen-loadout .setup-foot' +
+                                     '{ position: static !important; }';
+                     document.head.appendChild(s);
+                     return () => { const n = document.getElementById('mutant-unstick');
+                                    if (n) n.remove(); }; } },
+
+    { id: 'screen-height-reverts-to-vh',
+      why: 'the phone defect no geometry probe here can see: a full-screen box sized ' +
+           'in bare 100vh is TALLER than a phone viewport while the URL bar shows, so ' +
+           'whatever is pinned to its bottom edge sits off screen. Headless has no URL ' +
+           'bar, so 100vh equals innerHeight and only a CSSOM check can catch it',
+      expect: '38.4',
+      plant: () => { const s = document.createElement('style');
+                     s.id = 'mutant-vh';
+                     s.textContent = '.screen { height: 100vh; }';
+                     document.head.appendChild(s);
+                     return () => { const n = document.getElementById('mutant-vh');
+                                    if (n) n.remove(); }; } },
+
     { id: 'CONTROL-clean',
       why: 'the clean control: nothing is planted, the suite must stay green',
       expect: 'none',

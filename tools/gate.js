@@ -154,6 +154,15 @@ function browserHarness(label, harnessPath, expression, size) {
 staticGates();
 if (!STATIC_ONLY) {
   browserHarness('owner-sweep', '/tools/owner-sweep.js', null);
+  /* THE SESSION 39 PROBE, run against the BUNDLE like everything else here.
+     That is deliberately the harder target: the bundle DROPS the 875 planet
+     plates (build.js), so this run exercises the degrade path every time,
+     which is the path a partial render and the single-file download both take
+     and which nothing else was covering. Its detection rate is measured by
+     tools/probe-s39-mutants.js: 10 planted defects, 10 caught by the
+     predicted check. Placed after owner-sweep and before MPT because it reads
+     source-level state and MPT installs wrappers (invariant 3). */
+  browserHarness('planet-cutscenes', '/tools/probe-s39.js', null);
   if (!QUICK) browserHarness('mpt', '/tools/multiplayer_test.js', ';MPT.all()');
   /* THE PHONE. Its own run at a real phone size, because every check above
      runs at 1600x900 where none of the phone rules exist. The owner's report

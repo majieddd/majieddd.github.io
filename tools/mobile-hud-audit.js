@@ -66,7 +66,12 @@
   const floaters = hud
     ? [...hud.querySelectorAll('*')].filter(el => {
         const pos = getComputedStyle(el).position;
-        return (pos === 'fixed' || pos === 'absolute') && vis(el);
+        /* FIXED ONLY. `absolute` children of #hud are positioned INSIDE it by
+           design (the quit button sits in the card corner), so counting them
+           as separate layers reports #hud overlapping its own child and
+           double-counts their height as chrome. What this is looking for is
+           an element that left the header entirely, which is `fixed`. */
+        return pos === 'fixed' && vis(el);
       })
     : [];
   const chromeEls = [hud, dock, ctl].filter(vis).concat(floaters);

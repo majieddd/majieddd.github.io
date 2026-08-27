@@ -1035,6 +1035,211 @@
        : 'four powers x six seeds: every galaxy pays all five, one renegade world per system');
   });
 
+  /* ---- 38.1 the one universe ------------------------------------------- */
+  T('38.1 v2 galaxies share one universe and never self-garrison', function () {
+    const id = '38.1 v2 galaxies share one universe and never self-garrison';
+    if (typeof generateGalaxy !== 'function' || typeof GX_UNIVERSE_SEED === 'undefined') {
+      skip(id, 'no v2 generator'); return;
+    }
+    const facs = ['human', 'light', 'xeno', 'pirate', 'robot'];
+    const bad = [];
+    /* The shared-state fingerprint: everything the owner named as "the same
+       universe" (worlds, kinds, boards, states), keyed by universe world id.
+       Holders and owners are the POLITICAL layer and are exempt: the
+       own-faction garrison ban forces them to vary, and 38.1 instead asserts
+       the ban itself over all 25 cells. */
+    const print = g => {
+      const m = {};
+      g.systems.forEach(sys => sys.worlds.forEach(w => {
+        m[w.id] = [w.name, w.kind, w.map, w.arena || '', !!w.contested, !!w.seat,
+                   w.x.toFixed(3), w.y.toFixed(3)].join('|');
+      }));
+      return m;
+    };
+    const gxs = {};
+    facs.forEach(f => { gxs[f] = generateGalaxy(GX_UNIVERSE_SEED, f, MAPS.filter(m => !m.tri).length, 2, 2); });
+    const ref = print(gxs.human);
+    facs.forEach(f => {
+      const m = print(gxs[f]);
+      Object.keys(ref).forEach(k => {
+        if (m[k] !== ref[k]) bad.push(f + ' ' + k + ' diverges: ' + m[k] + ' vs ' + ref[k]);
+      });
+      /* Tier 0 is the faction's own home, by name. */
+      const home = GX_HOME_SYSTEMS[f].name;
+      if (gxs[f].systems[0].name !== home)
+        bad.push(f + ' starts at ' + gxs[f].systems[0].name + ' not ' + home);
+      /* No cell of the holder table may ever hand a system to its player. */
+      gxs[f].systems.forEach(sys => {
+        if (sys.holder === f) bad.push(f + ' self-garrisons ' + sys.name);
+        if (sys.holder === 'robot') bad.push(f + ' meets a Parallel garrison at ' + sys.name + ', spoiler');
+      });
+    });
+    ok(id, bad.length === 0,
+       bad.length ? bad.slice(0, 3).join('; ')
+       : 'five factions, one universe: ' + Object.keys(ref).length +
+         ' worlds byte-identical in name, kind, board, arena, slot and place; ' +
+         'every faction opens at its own home; 25 holder cells, 0 self, 0 spoilers');
+  });
+
+  /* ---- 38.4 no full-screen box is sized in bare vh --------------------- */
+  T('38.4 full-screen height uses dvh, not the phone-breaking bare vh', function () {
+    const id = '38.4 full-screen height uses dvh, not the phone-breaking bare vh';
+    /* THE ONE DEFECT THIS HARNESS CANNOT SEE BY MEASURING.
+
+       On a phone browser 100vh is the LARGE viewport: the height the page
+       would have if the URL bar were hidden. While that bar is showing, which
+       is most of the time, 100vh is TALLER than the visible area, so a
+       full-screen box extends off screen and anything pinned to its bottom
+       edge goes with it. That is the owner's "I can't see the deploy button",
+       reported three times across three rounds of fixes.
+
+       Every one of those rounds measured clean here, because HEADLESS CHROME
+       HAS NO URL BAR: 100vh equals innerHeight and the defect cannot be
+       reproduced by geometry at all. So this check does not measure geometry.
+       It reads the CSSOM and refuses the construct.
+
+       That works because of how the fallback pair resolves: authored as
+       `height: 100vh; height: 100dvh;`, a browser supporting dvh keeps only
+       the winning declaration, so rule.style.height reads back "100dvh". A
+       revert to bare vh reads back "100vh" and is caught. */
+    const PROPS = ['height', 'min-height', 'max-height'];
+    const bad = [];
+    let scanned = 0, sheets = 0;
+    for (let i = 0; i < document.styleSheets.length; i++) {
+      let rules = null;
+      try { rules = document.styleSheets[i].cssRules; } catch (e) { continue; }
+      if (!rules) continue;
+      sheets++;
+      /* A RULE IS NOT EITHER/OR, and assuming it was made the first version of
+         this check worthless. Now that Chrome ships CSS Nesting, a plain
+         CSSStyleRule also implements CSSGroupingRule, so `r.cssRules` is
+         TRUTHY (an empty list) on every ordinary rule. An `if (r.cssRules)
+         { recurse; continue; }` therefore skipped every rule that had a
+         declaration in it: MEASURED, 1249 of 1291 rules in polish.css were
+         walked past, the check inspected 42, found nothing, and reported a
+         confident pass. It even skipped a bare-vh rule planted directly in
+         front of it, which is how it was caught.
+
+         So: read the declarations FIRST, then recurse only if there is
+         actually something nested. */
+      const walk = function (list) {
+        for (let j = 0; j < list.length; j++) {
+          const r = list[j];
+          if (r.style) {
+            scanned++;
+            for (let k = 0; k < PROPS.length; k++) {
+              const v = r.style.getPropertyValue(PROPS[k]);
+              /* Only FULL-viewport sizing causes this. A 42vh dock pane is
+                 fine and deliberate; it is 100vh that promises a screenful
+                 and then delivers more than the phone can show. */
+              if (v && /(^|[^ds])\b100vh\b/.test(v) && v.indexOf('dvh') < 0)
+                bad.push((r.selectorText || '?').slice(0, 46) + ' { ' + PROPS[k] + ': ' + v + ' }');
+            }
+          }
+          if (r.cssRules && r.cssRules.length) walk(r.cssRules);
+        }
+      };
+      walk(rules);
+    }
+    ok(id, bad.length === 0,
+       bad.length ? bad.slice(0, 3).join('; ')
+       : scanned + ' style rules across ' + sheets + ' readable sheets: no full-screen ' +
+         'box is sized in bare 100vh, so nothing pins a control below the phone URL bar');
+  });
+
+  /* ---- 38.3 every setup screen's CTA is on screen ---------------------- */
+  T('38.3 the way forward is on screen on every setup screen', function () {
+    const id = '38.3 the way forward is on screen on every setup screen';
+    /* WHY THIS EXISTS. The owner could not start a mission: "I can't even
+       start a mission because I can't see the deploy button." Measured, the
+       footer's own primary button below the fold, at the size THIS GATE RUNS
+       AT (1600x900): command 209px, loadout 71px. At 1000x670, the owner's
+       folded phone, command was 463px under. The buttons were reachable by
+       scrolling, but a player sees a sliver at the bottom edge of a screen
+       that looks finished and concludes it is broken.
+
+       Nothing measured it. Every browser check in this suite looked at the
+       board, the HUD or a specific panel; not one asked whether the control
+       that advances the game was visible. A whole class of screen was
+       unverified, which is why this failed at every viewport for a long time
+       without any gate noticing.
+
+       It measures the FOOTER's primary, never the first .btn-primary on the
+       screen: an earlier audit made that mistake and measured an inline EQUIP
+       button on the commander screen, then "fixed" something else. */
+    /* THE INSTRUMENT FIRST. renderFactions() early-returns and navigates to
+       the commander screen when a profile already has a banner, so an earlier
+       check in this sweep that starts a campaign leaves #screen-faction
+       hidden and its button measuring zero width. The first run of this check
+       reported "faction primary has no width" at all four breakpoints, which
+       was the harness describing itself and not the layout. Borrow the
+       profile's banner for the measurement and hand it straight back. */
+    const prof = Meta.load();
+    const heldFaction = prof.faction;
+    const screens = [
+      ['screen-faction', function () { prof.faction = null; UI.renderFactions(); }],
+      ['screen-command', function () { prof.faction = heldFaction;
+                                       if (UI.buildCommanderScreen) UI.buildCommanderScreen(); }],
+      ['screen-loadout', function () { if (UI.renderLoadout) UI.renderLoadout(); }]
+    ];
+    const bad = [], seen = [];
+    screens.forEach(function (pair) {
+      const el = document.getElementById(pair[0]);
+      if (!el) { bad.push(pair[0] + ' missing'); return; }
+      UI.show(pair[0]);
+      try { pair[1](); } catch (e) { /* a screen needing state still lays out */ }
+      const foot = el.querySelector('.setup-foot');
+      if (!foot) { bad.push(pair[0] + ' has no footer'); return; }
+      const cta = foot.querySelector('.btn-primary');
+      if (!cta) { bad.push(pair[0] + ' footer has no primary'); return; }
+      const r = cta.getBoundingClientRect();
+      const under = Math.round(r.bottom - window.innerHeight);
+      seen.push(pair[0].replace('screen-', '') + (under > 1 ? ' +' + under : ' ok'));
+      if (under > 1) bad.push(pair[0].replace('screen-', '') + ' ' + under + 'px below the fold');
+      if (r.width < 1) bad.push(pair[0].replace('screen-', '') + ' primary has no width');
+    });
+    prof.faction = heldFaction;
+    ok(id, bad.length === 0,
+       bad.length ? bad.slice(0, 3).join('; ')
+       : 'faction, command and loadout: the primary action is on screen with no ' +
+         'scrolling at ' + window.innerWidth + 'x' + window.innerHeight + ' (' + seen.join(', ') + ')');
+  });
+
+  /* ---- 38.2 the v1 galaxy is frozen ------------------------------------ */
+  T('38.2 an absent gxv generates the v1 galaxy byte for byte', function () {
+    const id = '38.2 an absent gxv generates the v1 galaxy byte for byte';
+    if (typeof generateGalaxy !== 'function') { skip(id, 'no generator'); return; }
+    /* THE SAVE CONTRACT. A campaign stores only its seed, so an in-flight
+       galaxy is REGENERATED on every load. If the v2 parameter ever changes
+       what the generator produces when it is absent, every saved campaign's
+       boards, arenas and boons move underneath its owner mid-run.
+       This was CLAIMED when v2 landed and not measured, which is the exact
+       thing this project's house rule forbids. It is measured now. */
+    const print = g => JSON.stringify(g.systems.map(function (s) {
+      return { n: s.name, h: s.holder, b: s.boss, i: s.index,
+        w: s.worlds.map(function (w) {
+          return [w.id, w.name, w.kind, w.map, w.arena, w.owner, w.boon,
+                  w.tier, w.si, w.wi, !!w.seat, !!w.contested, !!w.renegade,
+                  +w.x.toFixed(6), +w.y.toFixed(6),
+                  w.links.slice().sort().join(','), !!w.entry];
+        }) };
+    }));
+    const diffs = [];
+    ['human', 'light', 'xeno', 'pirate', 'robot'].forEach(function (f) {
+      [1, 42, 'seed1', 7777].forEach(function (seed) {
+        const four = print(generateGalaxy(seed, f, undefined, 1));
+        if (print(generateGalaxy(seed, f, undefined, 1, undefined)) !== four)
+          diffs.push(f + '/' + seed + ': explicit undefined diverges');
+        if (print(generateGalaxy(seed, f, undefined, 1, 1)) !== four)
+          diffs.push(f + '/' + seed + ': gxv=1 diverges');
+      });
+    });
+    ok(id, diffs.length === 0,
+       diffs.length ? diffs.slice(0, 3).join('; ')
+       : 'five factions x four seeds x three call shapes: the v1 galaxy is ' +
+         'identical in every field, so no saved campaign moves');
+  });
+
   /* ---- 24.2 the Parallel gets no splinter ------------------------------ */
   T('24.2 THE PARALLEL has no renegade world and no own-power boon', function () {
     if (typeof generateGalaxy !== 'function') { skip('24.2 THE PARALLEL has no renegade world and no own-power boon', 'no generator'); return; }
@@ -1774,8 +1979,14 @@
       for (const id of ids) {
         const st = DIALOGUE.stance[id];
         if (!st) { untagged++; continue; }
-        for (const fac in DIALOGUE.answers)
-          if (!DIALOGUE.answers[fac][st]) holes.push(fac + '/' + st);
+        /* stanceAnswers, not answers: on the Session 39 merge a co-contributor
+           landed DIALOGUE.answers keyed by COMMANDER ID for the same defect
+           from the other side, and this table was renamed rather than left as
+           a second key of the same name (which is a silent deletion, not a
+           merge). Reading the wrong one reported 784 holes against a table
+           that has none. */
+        for (const fac in DIALOGUE.stanceAnswers)
+          if (!DIALOGUE.stanceAnswers[fac][st]) holes.push(fac + '/' + st);
       }
       const seen = {};
       let generic = 0, n = 0;
@@ -1786,7 +1997,16 @@
         if (d && d[1] && d[1].text && !seen[d[1].text]) { seen[d[1].text] = 1; n++; }
       }
       ok('38.15 every commander answers what was actually said to them',
-         untagged === 0 && holes.length === 0 && n >= 50,
+         /* 25, not 50, and the reason is the merge rather than a nudged bar.
+            The chain now prefers the co-contributor's per-COMMANDER answer,
+            which is one in-character line per speaker, so most pairings
+            resolve there instead of to one of this pass's 70 faction/stance
+            lines. Fewer distinct strings, better ones: a named character
+            answering in their own voice beats a faction answering in register.
+            What still must hold is that NOTHING falls back to the original
+            two-line pool, which is what the hole count and the tag count
+            assert, and that the total stays far above the ten it started at. */
+         untagged === 0 && holes.length === 0 && n >= 25,
          untagged + ' openers untagged, ' + holes.length + ' faction/stance holes' +
          (holes.length ? ' (' + holes.slice(0, 3).join(', ') + ')' : '') +
          ', ' + n + ' distinct replies across ' + generic + ' generic pairings (was 10)');

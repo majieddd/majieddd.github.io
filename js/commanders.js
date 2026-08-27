@@ -511,11 +511,21 @@ const Meta = {
       const shelf = this.cmdShelf();
       if (base && !shelf.includes(base)) shelf.push(base);
     }
-    const seed = (p.runs * 7919 + 104729 + Math.floor(Math.random() * 1e6)) | 0;
+    /* THE ONE UNIVERSE (v2, Session 38). A first galaxy is not rolled: every
+       faction's tier-0 campaign opens the same five home systems from the
+       same fixed seed (GX_UNIVERSE_SEED, the intercept date), so a human
+       player and a light player argue about the same MARS. Higher galaxy
+       tiers are the multiverse and keep their rolled variety. gxv is absent
+       on old saves, and an absent gxv is the v1 generator byte-for-byte, so
+       no in-flight campaign's boards move underneath it. */
+    const v2 = (p.galaxyTier || 0) === 0 && typeof GX_UNIVERSE_SEED !== 'undefined';
+    const seed = v2 ? GX_UNIVERSE_SEED
+                    : (p.runs * 7919 + 104729 + Math.floor(Math.random() * 1e6)) | 0;
     /* A campaign is a galaxy. Only the seed and the star progress are stored;
        the galaxy itself is regenerated from the seed, so a save stays tiny and
        a given campaign is always the same campaign. */
-    p.campaign = { seed, depth: 0, boons: [], totalWaves: 0, options: null,
+    p.campaign = { seed, gxv: v2 ? 2 : undefined,
+                   depth: 0, boons: [], totalWaves: 0, options: null,
                    /* Kind-weight generation, pinned for this campaign's whole
                       life. v2 raises the Vigil nest share (owner, batch 2);
                       campaigns started before the pin existed read as v1. */
@@ -540,9 +550,9 @@ const Meta = {
   galaxy() {
     const c = this.campaign();
     if (!c) return null;
-    if (!this._gx || this._gxSeed !== (c.seed + ':' + (c.mapPool || 0))) {
-      this._gx = generateGalaxy(c.seed, c.faction || 'human', c.mapPool, c.kindsW || 1);
-      this._gxSeed = c.seed + ':' + (c.mapPool || 0);
+    if (!this._gx || this._gxSeed !== (c.seed + ':' + (c.mapPool || 0) + ':g' + (c.gxv || 1))) {
+      this._gx = generateGalaxy(c.seed, c.faction || 'human', c.mapPool, c.kindsW || 1, c.gxv);
+      this._gxSeed = c.seed + ':' + (c.mapPool || 0) + ':g' + (c.gxv || 1);
       /* Generation is PURE: it derives every world's owner from the seed, so
          it always hands back the galaxy as it stood on day one. advanceRivals
          moves owners on the live object only, which meant every world the

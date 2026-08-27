@@ -631,9 +631,123 @@ const UI = {
        screen was staging a conversation between the player and empty air.
        Skirmish already skips this call with no substitute; a solo board
        follows the same precedent rather than inventing a new screen. */
-    if (!Game._skirmish && !Game.soloSurvive) this.showBattleIntro();
+    if (!Game._skirmish && !Game.soloSurvive) {
+      /* THE THREE-PANEL PLANET SEQUENCE (owner directive 2026-08-27, tracker
+         item G). Beat one is the SETTING, the same for every faction because
+         it is derived from fields the world itself carries. Beat two is the
+         SCENARIO, which is allowed to depend on who you are and who holds
+         the ground. Beat three is the COMMANDERS talking, which is the
+         existing VS screen: it already draws both portraits and speaks
+         canonExchange lines seeded by the pair's own history, so growing a
+         third surface for it would only create a second opinion. The game is
+         paused for the slides exactly the way the VS screen pauses for
+         itself, and every beat is one click to advance, SKIP to drop. */
+      const slides = this.worldSlides(seatWorld ||
+        (Meta.galaxy() && this.worldById(Meta.galaxy(), node.world)));
+      if (slides.length && typeof Cutscenes !== 'undefined' && Cutscenes.playList) {
+        Game.paused = true;
+        this.syncSpeed();
+        Cutscenes.playList(Meta.faction() || 'human', slides,
+                           () => this.showBattleIntro());
+      } else {
+        this.showBattleIntro();
+      }
+    }
     this.startFirstRunCoach();
     this.syncAll();
+  },
+
+  /** The two authored slides that open a planet battle: the setting, then the
+      scenario. Every sentence is sourced from fields the world already
+      carries (WorldLore and the scenario resolver), so the same world says
+      the same thing in every campaign, and the setting slide is identical
+      whichever faction is reading it. Returns [] whenever anything it needs
+      is missing, and [] means the deploy flow goes straight to the VS
+      screen, which is exactly what shipped before this existed. */
+  worldSlides(w) {
+    if (!w) return [];
+    const gx = Meta.galaxy();
+    const sys = gx && gx.systems[w.si];
+    const fac = Meta.faction() || 'human';
+    /* WHO HOLDS THE GROUND is read here, off the live world, and never baked
+       into the authored copy: `owner` is a per-seed roll for any world that is
+       not a seat (js/galaxy.js), so a sentence written into planetcuts.js
+       naming the defender would be wrong on roughly a fifth of ordinary
+       worlds. Same resolver pair the briefing card and Game.start read, so the
+       slide cannot promise a scenario the battle refuses. */
+    const sc = ((typeof ownedWorldScenarioOf === 'function' &&
+                 ownedWorldScenarioOf(w, Meta.campaign())) ||
+                (typeof worldScenarioOf === 'function' && worldScenarioOf(w))) || null;
+    const holder = w.owner && typeof FACTIONS !== 'undefined' && FACTIONS[w.owner];
+    const holdLine = w.renegade ? 'Your own banner holds this ground, and will not stand down.'
+      : w.contested ? 'Two rival claims already stand on this ground. Yours makes three.'
+      : holder ? holder.name + ' hold this ground.' : '';
+    const scLine = sc ? sc.name + ': ' + sc.brief + (sc.flavor ? ' ' + sc.flavor : '') : '';
+    const where = w.name.toUpperCase() + (sys ? ', ' + sys.name : '') + '.';
+    /* Every planet beat falls back to the world plate rather than to the
+       crest: a picture of the same world is a better wrong answer than a
+       logo. See the `alt` note in js/cutscenes.js. */
+    const alt = 'world_' + w.map;
+
+    /* THE AUTHORED PATH (owner directive, Session 39). Three beats, three
+       separately generated plates, nothing tinted and nothing re-used.
+       Beat 2 and beat 3 describe the PLACE and are written once per world;
+       beats 1, 4 and 5 are written per world per faction. */
+    const pc = (typeof PlanetCuts !== 'undefined') ? PlanetCuts.entry(w) : null;
+    const lines = pc && typeof PlanetCuts !== 'undefined' ? PlanetCuts.lines(w, fac) : null;
+    if (pc && lines) {
+      const k = b => PlanetCuts.plate(w, fac, b);
+      return [
+        /* APPROACH. Where you are, then your own power's voice on arriving. */
+        { key: k(1), alt: alt, text: where + ' ' + lines[0] },
+        /* THE GROUND. What this place is, then who is standing on it. */
+        { key: k(2), alt: alt, text: (pc.ground + ' ' + holdLine).trim() },
+        /* THE ASSAULT. What defends it, then what winning here means. The
+           scenario clause is the same one the briefing card shows. */
+        { key: k(3), alt: alt, text: (pc.works + ' ' + scLine).trim() },
+      ];
+    }
+
+    /* THE DERIVED PATH, unchanged. Any world with no authored entry (every
+       v1 saved galaxy, whose worlds carry no si/wi) keeps the WorldLore
+       briefing it has always had, and [] still means straight to the VS
+       screen, which is exactly what shipped before any of this existed. */
+    let d = null;
+    try { d = (typeof WorldLore !== 'undefined' && WorldLore.world) ? WorldLore.world(w, sys) : null; }
+    catch (e) { d = null; }
+    const headline = (d && d.headline) ? ' ' + d.headline : '';
+    const site = (d && d.line) ? ' ' + d.line : '';
+    const setting = { key: alt, text: where + headline + site };
+    const tinted = 'world_' + w.map + '_' + (w.owner || '');
+    const hasTint = typeof ARTPACK !== 'undefined' && !!ARTPACK[tinted];
+    const scenario = { key: hasTint ? tinted : alt,
+                       text: (holdLine + (scLine ? ' ' + scLine : '')).trim() };
+    return scenario.text ? [setting, scenario] : [setting];
+  },
+
+  /** THE VICTORY OUTRO (owner directive, Session 39). Two more authored
+      beats, shown only on a win of at least one star: what your banner did to
+      this specific world, and what the world becomes now. The commander
+      interaction the owner asked for is the exchange already on the result
+      screen (victoryExchangeHtml, seeded from the pair's own canon), so this
+      adds the two pictures and does not grow a second commander surface.
+
+      Returns [] whenever anything it needs is missing, and [] means the
+      result screen opens immediately, which is the pre-existing flow. */
+  outroSlides(w, won, stars) {
+    if (!won || !(stars >= 1) || !w) return [];
+    if (Game._skirmish) return [];
+    if (typeof Net !== 'undefined' && Net.live) return [];
+    if (typeof PlanetCuts === 'undefined') return [];
+    const fac = Meta.faction() || 'human';
+    const pc = PlanetCuts.entry(w);
+    const lines = PlanetCuts.lines(w, fac);
+    if (!pc || !lines) return [];
+    const alt = 'world_' + w.map;
+    return [
+      { key: PlanetCuts.plate(w, fac, 4), alt: alt, text: lines[1] },
+      { key: PlanetCuts.plate(w, fac, 5), alt: alt, text: lines[2] },
+    ];
   },
 
   /* ═══════════════════════════════════ THE FIRST-RUN COACH (A1) ═══ */
@@ -890,6 +1004,33 @@ const UI = {
 
   bindChipTips(root) {
     if (!root) return;
+    /* TAPPING ELSEWHERE DISMISSES IT, which the per-element handler below has
+       promised in a comment since it was written and never implemented.
+
+       MEASURED on the owner's device: a tooltip opened by tapping a faction
+       card stayed on screen permanently, covering the cards beside it. Two
+       things combine to make it unrecoverable rather than merely annoying.
+       There was no outside-tap handler at all, so only a second tap on the
+       SAME element could close it; and on the faction screen the chips ARE
+       the cards, so selecting one re-renders the grid and destroys the very
+       element `_ttFor` is holding. After that the `_ttFor === el` test can
+       never match again and nothing in the game can close the tooltip.
+
+       Bound ONCE on the document rather than per chip: this is a screen-level
+       behaviour, and binding it per element would add a listener for every
+       chip on every re-render. Capture phase, so it runs before a re-render
+       can remove the element under the pointer. */
+    if (!this._ttDismissBound) {
+      this._ttDismissBound = true;
+      document.addEventListener('pointerdown', ev => {
+        if (!this._ttFor) return;
+        /* A tap on the chip that owns the tooltip is the per-element
+           handler's business (it toggles); anything else closes. */
+        if (this._ttFor.contains && this._ttFor.contains(ev.target)) return;
+        this.hideTooltip();
+        this._ttFor = null;
+      }, true);
+    }
     $$('[data-tt]', root).forEach(el => {
       if (el._ttBound) return;
       el._ttBound = true;
@@ -935,8 +1076,16 @@ const UI = {
   /** The soul shop: permanent starting levels bought with campaign souls. */
   renderSoulShop() {
     const body = $('#souls-body');
+    /* A redraw invalidates the pick: the cards are rebuilt, and a selection
+       pointing at a card that no longer exists is the same orphan class the
+       faction tooltip hit. */
+    this._soulPick = null;
     body.innerHTML = `
       <div class="soul-bank">◉ <b>${Meta.souls()}</b> souls banked</div>
+      <div id="soul-buy-bar" class="soul-buy-bar">
+        <span id="soul-buy-what" class="sbb-what"></span>
+        <button id="soul-buy" class="btn btn-primary" disabled>PURCHASE</button>
+      </div>
       <h3 class="section-label">COMMANDERS: recruit permanently</h3>
       <p class="hint">Each commander answers the Concord only once it has proven itself:
         every successive recruit asks one more conquered solar system of this profile
@@ -1064,35 +1213,79 @@ const UI = {
 
     this.paintTowerIcons(body);
     this.bindChipTips(body);
-    /* Every buyer redraws the SHOP (prices just went up for everything else on
-       this banner) and then republishes to the screens underneath. */
-    $$('[data-unlock-cmd]', body).forEach(b => b.addEventListener('click', () => {
-      if (Meta.unlockCommander(b.dataset.unlockCmd))
-        { Sound.play('branch'); this.renderSoulShop(); this.refreshArsenalViews(); }
-      else Sound.play('denied');
-    }));
-    $$('[data-unlock-abil]', body).forEach(b => b.addEventListener('click', () => {
-      if (Meta.unlockAbility(b.dataset.unlockAbil))
-        { Sound.play('branch'); this.renderSoulShop(); this.refreshArsenalViews(); }
-      else Sound.play('denied');
-    }));
-    this.bindTowerPreviews(body);
-    $$('[data-unlock]', body).forEach(b => b.addEventListener('click', () => {
+    /* SELECT, THEN CONFIRM (owner, Session 38). Every card here used to BUY
+       ON ITS FIRST CLICK, and a card is also the only way to read what a
+       thing does, so previewing an item and spending souls on it were the
+       same gesture. On a touch screen, where there is no hover to preview
+       with, that is not a risk, it is the normal way to use the screen: the
+       owner asked for a purchase button so that looking is free.
+
+       One selection model for all four grids rather than four confirm
+       dialogs. A tap SELECTS (and the tower grid keeps its firing preview,
+       which is the other reason to tap a card). Nothing is spent until the
+       bar's own button is pressed, and the bar names the thing and its price
+       so the commit is never ambiguous. */
+    const commit = {
+      cmd:  id => Meta.unlockCommander(id),
+      abil: id => Meta.unlockAbility(id),
+      twr:  id => Meta.unlockTower(id),
+      unit: id => Meta.unlockUnit(id)
+    };
+    const pick = (kind, el) => {
       /* aria-disabled, not disabled: a DISABLED button receives no mouse
          events at all in Chromium or Firefox, which silently killed the
-         firing preview on every card a player had not yet bought -- which is
-         every card this grid shows. The refusal moved here instead. */
-      if (b.getAttribute('aria-disabled') === 'true') { Sound.play('denied'); return; }
-      if (Meta.unlockTower(b.dataset.unlock))
-        { Sound.play('branch'); this.renderSoulShop(); this.refreshArsenalViews(); }
-      else Sound.play('denied');
-    }));
-    $$('[data-unlock-unit]', body).forEach(b => b.addEventListener('click', () => {
-      if (b.getAttribute('aria-disabled') === 'true') { Sound.play('denied'); return; }
-      if (Meta.unlockUnit(b.dataset.unlockUnit))
-        { Sound.play('branch'); this.renderSoulShop(); this.refreshArsenalViews(); }
-      else Sound.play('denied');
-    }));
+         firing preview on every card a player had not yet bought. The
+         refusal lives here instead, and now refuses the SELECTION rather
+         than a purchase, so an unaffordable card still previews. */
+      const locked = el.getAttribute('aria-disabled') === 'true';
+      $$('.soul-item.picked', body).forEach(o => o.classList.remove('picked'));
+      el.classList.add('picked');
+      this._soulPick = { kind: kind, id: el.dataset[({ cmd: 'unlockCmd', abil: 'unlockAbil',
+                                                       twr: 'unlock', unit: 'unlockUnit' })[kind]],
+                         name: (el.querySelector('.si-name') || el).textContent.trim().slice(0, 30),
+                         locked: locked };
+      Sound.play('click');
+      this.syncSoulBar();
+    };
+    $$('[data-unlock-cmd]', body).forEach(b => b.addEventListener('click', () => pick('cmd', b)));
+    $$('[data-unlock-abil]', body).forEach(b => b.addEventListener('click', () => pick('abil', b)));
+    this.bindTowerPreviews(body);
+    $$('[data-unlock]', body).forEach(b => b.addEventListener('click', () => pick('twr', b)));
+    $$('[data-unlock-unit]', body).forEach(b => b.addEventListener('click', () => pick('unit', b)));
+
+    const go = $('#soul-buy', body);
+    if (go) go.addEventListener('click', () => {
+      const p = this._soulPick;
+      if (!p || p.locked) { Sound.play('denied'); return; }
+      if (commit[p.kind] && commit[p.kind](p.id)) {
+        Sound.play('branch');
+        this._soulPick = null;
+        /* Prices just went up for everything else on this banner, so the shop
+           redraws and the screens underneath republish. */
+        this.renderSoulShop();
+        this.refreshArsenalViews();
+      } else Sound.play('denied');
+    });
+    this.syncSoulBar();
+  },
+
+  /** The purchase bar's readout. Split out because both the render and every
+      selection need it, and two copies would eventually disagree about when a
+      thing is affordable. */
+  syncSoulBar() {
+    const bar = $('#soul-buy-bar');
+    if (!bar) return;
+    const p = this._soulPick;
+    const label = $('#soul-buy-what', bar), go = $('#soul-buy', bar);
+    if (!p) {
+      bar.classList.remove('armed');
+      if (label) label.textContent = 'Select something to see what it costs. Nothing is spent until you press purchase.';
+      if (go) { go.disabled = true; go.textContent = 'PURCHASE'; }
+      return;
+    }
+    bar.classList.add('armed');
+    if (label) label.textContent = p.locked ? p.name + ' is not available yet' : p.name;
+    if (go) { go.disabled = !!p.locked; go.textContent = 'PURCHASE'; }
   },
 
   buildCommanderScreen() {
@@ -1578,6 +1771,12 @@ const UI = {
     $$('[data-fac]').forEach(b => b.addEventListener('click', () => {
       this.sel.faction = b.dataset.fac; Sound.play('click'); this.renderFactions();
     }));
+    /* This render just destroyed every card, including whichever one a tap
+       had opened a tooltip against. Leaving it up orphans it: the owner is
+       detached, so the per-element toggle can never match it again. The
+       document dismiss in bindChipTips recovers it on the next tap anywhere,
+       but the tooltip should not outlive its own subject even for that long. */
+    if (this._ttFor) { this.hideTooltip(); this._ttFor = null; }
     this.bindChipTips($('#faction-grid'));
     const picked = this.sel.faction || Meta.faction();
     $('#btn-faction-go').disabled = !picked;
@@ -7382,7 +7581,28 @@ const UI = {
    * onto the total. Everything is driven off one timeline so it can be skipped
    * with a click and never blocks the player.
    */
+  /** THE END OF A BATTLE. On a win of at least one star this plays the two
+      authored outro beats first and opens the result screen after them; on a
+      defeat, a zero-star win, a skirmish or a duel it opens the result screen
+      immediately, which is exactly what shipped before the outro existed.
+
+      The game is already stopped by the time endMatch calls this, so there is
+      nothing to pause: unlike the deploy sequence, the outro cannot hold a
+      running simulation open. `Game.worldRecord` is resolved by endMatch a few
+      lines before this call (js/game.js) and is the live world object, which
+      is what carries si and wi. */
   showEnd(won) {
+    const st = Game.lastStars;
+    const slides = this.outroSlides(Game.worldRecord, won, st ? st.stars : 0);
+    if (slides.length && typeof Cutscenes !== 'undefined' && Cutscenes.playList) {
+      Cutscenes.playList(Meta.faction() || 'human', slides,
+                         () => this.showEndScreen(won));
+      return;
+    }
+    this.showEndScreen(won);
+  },
+
+  showEndScreen(won) {
     /* "The rival" is seat 1 only on a two-sided board. On a tri board or in
        the arena seat 1 is very often the seat that fell FIRST, so the loss
        line reported a rout as a close-run thing -- "They held with 0." with
@@ -8049,12 +8269,154 @@ const UI = {
       <section><h3>Towers</h3><div class="codex-grid">${towers}</div></section>
       <section><h3>Command upgrades</h3><div class="codex-grid">${mods}</div></section>
       <section><h3>Enemy escalations</h3><div class="codex-grid">${esc}</div></section>
-      <section><h3>Enemies</h3><div class="codex-grid">${enemies}</div></section>`;
+      <section><h3>Enemies</h3><div class="codex-grid">${enemies}</div></section>
+      ${this.galleryHtml()}`;
+    this.wireGallery();
     /* THE MANUAL HAD NO HOVER AT ALL. bindChipTips is the same binder the
        shop cards and the galaxy chips use, so the manual gets the identical
-       popup rather than a second tooltip implementation that drifts. */
+       popup rather than a second tooltip implementation that drifts.
+       AFTER wireGallery on the merge, so the gallery the co-contributor added
+       in the same release is bound by it too rather than being the one
+       section of the manual with no hover. */
     this.bindChipTips(this.el.codexBody);
   },
+
+  /* ============================================ THE ART GALLERY (S39) ===
+     Owner directive: "add to the field manual section all of the generated
+     assets that we've been working on so that I can go through and grade each
+     one of them without having to complete each and every single one of the
+     campaign missions."
+
+     So this enumerates the PACK, not a hand-written list. Every tile is a key
+     that is actually in ARTPACK, which means the gallery cannot claim art that
+     does not exist and cannot go stale when a class is re-rendered. The one
+     place it looks the other way round is the planet class, where it walks the
+     EXPECTED 875 keys from js/planetcuts.js and marks the ones the pack does
+     not have yet: during an eleven-hour render that view is the only honest
+     picture of progress, and a gallery that silently omitted them would read
+     as "finished" the entire time.
+
+     BUILT ON DEMAND. 875 plates is far too many nodes to put in the codex on
+     every open, so each class is a <details> and its grid is materialised the
+     first time it is expanded. Images carry loading="lazy", so an expanded
+     class still fetches only what scrolls into view. Measured cost of the
+     closed gallery: one <details> element per class.
+  */
+
+  /** The classes, in the order a person would want to grade them. `label` is
+      what the section calls itself; `pre` is the ARTPACK key prefix. */
+  galleryClasses() {
+    return [
+      { pre: 'cmd',    label: 'Commander portraits' },
+      { pre: 'fac',    label: 'Faction crests' },
+      { pre: 'foe',    label: 'Enemy dossiers and troops' },
+      { pre: 'twr',    label: 'Tower plates' },
+      { pre: 'abil',   label: 'Ability emblems' },
+      { pre: 'world',  label: 'World plates' },
+      { pre: 'planet', label: 'Planet spheres' },
+      { pre: 'cut',    label: 'Story cutscenes: the oath and the turning' },
+    ];
+  },
+
+  /** One tile. `have` false renders the frame and the key with no image, which
+      is what an unrendered plate looks like. */
+  galleryTile(key, have) {
+    const src = (typeof ARTPACK !== 'undefined' && ARTPACK[key]) || '';
+    const vid = (typeof ARTVID !== 'undefined' && ARTVID[key]) ? ' <b class="gal-vid">MOTION</b>' : '';
+    return `<figure class="gal-tile${have ? '' : ' gal-missing'}">
+      ${have && src ? `<img src="${src}" alt="${key}" loading="lazy" decoding="async">`
+                    : `<div class="gal-hole"><span>not rendered</span></div>`}
+      <figcaption>${key}${vid}</figcaption></figure>`;
+  },
+
+  /** The expected planet keys, walked from the authored table rather than from
+      the pack, so unrendered plates are visible as gaps. */
+  galleryPlanetHtml() {
+    if (typeof PLANET_CUTS === 'undefined') return '<p class="codex-note">No planet cutscenes are authored.</p>';
+    const BEATS = ['APPROACH', 'THE GROUND', 'THE ASSAULT', 'AFTERMATH', 'NEW ORDER'];
+    const facs = ['human', 'light', 'xeno', 'pirate', 'robot'];
+    let out = '';
+    Object.keys(PLANET_CUTS).sort().forEach(wk => {
+      const w = PLANET_CUTS[wk];
+      let have = 0, want = 0, body = '';
+      facs.forEach(fid => {
+        const f = (typeof FACTIONS !== 'undefined' && FACTIONS[fid]) || { name: fid, color: '#7dd3fc' };
+        let row = '';
+        for (let b = 1; b <= 5; b++) {
+          const key = 'pcut_' + wk + '_' + fid + '_' + b;
+          const ok = typeof ARTPACK !== 'undefined' && !!ARTPACK[key];
+          want++; if (ok) have++;
+          row += `<div class="gal-beat"><span class="gal-beatname">${b}. ${BEATS[b - 1]}</span>${this.galleryTile(key, ok)}</div>`;
+        }
+        body += `<div class="gal-facrow" style="--fc:${f.color}">
+                   <h5>${f.name || fid}</h5><div class="gal-grid gal-beats">${row}</div></div>`;
+      });
+      out += `<details class="gal-world"><summary>${w.name}
+                <span class="gal-count">${have} / ${want}</span></summary>
+              <p class="gal-blurb">${w.ground}</p>${body}</details>`;
+    });
+    return out;
+  },
+
+  /** The whole gallery. Grids are filled on first expand, see buildCodex. */
+  galleryHtml() {
+    const packKeys = (typeof ARTPACK !== 'undefined') ? Object.keys(ARTPACK) : [];
+    const claimed = {};
+    const secs = this.galleryClasses().map(c => {
+      const keys = packKeys.filter(k => k.split('_')[0] === c.pre).sort();
+      keys.forEach(k => { claimed[k] = 1; });
+      return `<details class="gal-class" data-pre="${c.pre}">
+        <summary>${c.label}<span class="gal-count">${keys.length}</span></summary>
+        <div class="gal-grid" data-keys="${keys.join(' ')}"></div></details>`;
+    }).join('');
+    /* Anything in the pack that no class above claimed, and that is not a
+       planet plate: key art, the black hole, and whatever a future session
+       adds without remembering to update galleryClasses(). Listing the
+       remainder is what stops this gallery from quietly under-reporting. */
+    const rest = packKeys.filter(k => !claimed[k] && k.split('_')[0] !== 'pcut').sort();
+    const planet = (typeof PLANET_CUTS !== 'undefined')
+      ? Object.keys(PLANET_CUTS).length * 25 : 0;
+    const planetHave = packKeys.filter(k => k.split('_')[0] === 'pcut').length;
+    return `
+      <section><h3>Art gallery</h3>
+        <div class="codex-note">
+          <p>Every generated asset in the pack, so a plate can be graded without
+             reaching the world that shows it. Counts are read from the pack itself:
+             what is listed here is what actually ships.</p>
+          <p><b>${packKeys.length}</b> images in the pack. The planet cutscenes are
+             <b>${planetHave} of ${planet}</b> rendered.</p>
+        </div>
+        ${secs}
+        ${rest.length ? `<details class="gal-class" data-pre="*">
+          <summary>Key art and everything else<span class="gal-count">${rest.length}</span></summary>
+          <div class="gal-grid" data-keys="${rest.join(' ')}"></div></details>` : ''}
+        <details class="gal-class gal-planetclass">
+          <summary>Planet cutscenes, five beats per world per power
+            <span class="gal-count">${planetHave} / ${planet}</span></summary>
+          <div class="gal-planets"></div></details>
+      </section>`;
+  },
+
+  /** Fill a class grid the first time it opens, and never again. */
+  wireGallery() {
+    const body = this.el.codexBody;
+    if (!body) return;
+    body.querySelectorAll('details.gal-class').forEach(d => {
+      d.addEventListener('toggle', () => {
+        if (!d.open || d.dataset.filled) return;
+        d.dataset.filled = '1';
+        const grid = d.querySelector('.gal-grid[data-keys]');
+        if (grid) {
+          grid.innerHTML = (grid.dataset.keys ? grid.dataset.keys.split(' ') : [])
+            .map(k => this.galleryTile(k, true)).join('');
+          return;
+        }
+        const planets = d.querySelector('.gal-planets');
+        if (planets) planets.innerHTML = this.galleryPlanetHtml();
+      });
+    });
+  },
+
 
   /* =========================================================== SETTINGS */
 

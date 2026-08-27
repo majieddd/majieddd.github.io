@@ -1,5 +1,12 @@
 # Cosmic Conquest. Brand & Art Kit
 
+> **Start at docs/ART-BIBLE.md.** Session 38 consolidated the style law, the
+> owner's content law (Dune-grounded tech, modern humans, contact-species
+> Federation, multi-species pirates, scarier xeno), the prompt anatomy and the
+> pipeline runbook into that one file, with rendered examples under
+> docs/brand-board/. This file remains the measured evidence record (token
+> cliffs, colour-word measurements, amendments); the bible is the entry point.
+
 The single source of truth for every generated or authored visual. Locked by the owner
 in Session 15. Any future generation, regeneration, or new asset class starts here.
 
@@ -367,3 +374,118 @@ class, on art direction rather than on memory:
 Linework that sits under a text scrim is worth less than a plate that reads as
 its faction in the first half second. The rule for this class is therefore
 **render in band**, and it is recorded at `artgen/krea_gen.py` in `render()`.
+
+---
+
+## Amendment (Session 39, owner): the figure classes take an illustrative register, and the planet class is born
+
+Owner directive of 2026-08-27, second pass. Three separate instructions, and
+one measured lesson that turned out to matter more than any of them.
+
+### 1. The commanders read as photographs, and the prompt was asking them to
+
+The owner's note: the portraits sit "too much on the side of realism textures"
+and should carry "that art illustrative feel that we reclaimed in the intro
+cutscenes."
+
+Diagnosed by putting a cutscene plate beside a commander bust rather than by
+taste. The plates are built from flat interlocking shapes with heavy black
+shadow masses doing the drawing. The busts came back with modelled skin,
+specular highlights on the cheekbones and soft airbrushed volume. Three causes,
+all of them in the prompt and all of them fixable:
+
+1. the non-robot commander tail asked for **`shallow depth of field`**, a
+   photographic lens term, on 23 of the 28. It was requesting the exact quality
+   the note objects to;
+2. the non-robot commanders were the **only figure class in this catalogue with
+   no inking register at all**. `TROOP_REGISTER` gives the troops and the five
+   machine commanders "inked cel shading, halftone screen-print, heavy black
+   shadows"; the other 23 got none of it. That is why the machine portraits
+   were already the most illustrative of the class, which is the clue that
+   found the cause;
+3. `{STYLE}` says "bold flat expressive brushwork" and nothing else about
+   CONSTRUCTION, and that does not survive contact with a human FACE. A face is
+   the subject a diffusion model pulls hardest toward photography, so the
+   counter-pressure has to be explicit and it has to be in front.
+
+`CMD_REGISTER` now leads every commander prompt and names construction rather
+than mood. `CMD_ANTIPHOTO` closes it.
+
+### 2. THE LESSON: a register change is not a licence to move colour
+
+Worth more than the fix above, because it nearly shipped.
+
+The first pass led with `CMD_REGISTER` and left colour to the `{STYLE}` tail,
+which names a vaporwave neon palette of magenta, cyan, violet and chrome. The
+register worked perfectly and the Palette section of this file broke: **a human
+commander came back magenta and teal, and the Federation's supreme commander
+came back framed in violet.** That is a rainbow where a faction owns the frame,
+which the style section lists as a Never, and it is the same failure the
+Session 37 supersample produced by a completely different route.
+
+The fix was to stop inventing and copy the composition the 50 cutscene plates
+already prove: **SUBJECT, then the faction palette clause, then the `{STYLE}`
+tail.** Those plates carry the same rainbow tail and still read blue for
+humanity and gold for the Federation, because a NAMED palette sitting directly
+behind the subject outranks a generic one sitting behind that.
+
+All 28 were re-rendered wholesale twice: once for the register, once for the
+palette. If a restyle costs faction identity, the restyle is wrong, however
+good the linework got.
+
+### 3. ASHTAR is answerable to a reference outside this repository
+
+He must read as the **Ashtar Sheran of the 1950s contactee record**, because
+that is what a player finds when they search the name. The record is consistent
+on the particulars: young and athletic rather than aged, light silver-blond
+hair a little past the shoulders, deep blue eyes, tall, and an elegantly
+tailored high-collared uniform, white and ivory dominant, carrying decorations.
+What shipped before this was an elderly grey figure in ornate gold plate, wrong
+on age, hair and dress at once.
+
+Ivory and white with gold decoration is ALSO the Federation's stated palette,
+so the outside reference and the faction identity ask for the same picture. No
+trade was needed and none was made.
+
+### 4. The planet class, `pcut_<si><wi>_<faction>_<beat>`
+
+875 plates: five beats for each of 35 worlds for each of 5 powers. It exists
+because deploying to a world used to open on three beats whose middle beat was
+the world plate **with a hue applied in code**, and the owner's note is exact
+about that: not one picture with the hue changed.
+
+Full treatment, the defence-works rule, the writing split and the bundle-strip
+are in `docs/ART-BIBLE.md` section 11. What belongs in THIS file is the
+measurement: 1920x1080 native like the `cut_` class, WebP q82, **47.5s per
+plate** on the RTX 5090 Laptop, of which 4.50s is the CPU text encode. The card
+runs at 174W of a 175W limit at 100% utilisation, so it is compute-bound
+against a power ceiling and there is no batching win to find. See ART-BIBLE
+section 12, which also records the sampling trap that made it look otherwise.
+
+### 5. MEASURED: you cannot forbid lettering, you can only describe a blank surface
+
+The single most useful thing this session learned about prompting, and it cost
+five plates to find.
+
+`pcut_00_human_5` came back with **HUMAN MISSION FARM set across the banner in
+legible type**. The plate had asked for the absence of text three separate
+times: the shared class tail ended in "no text anywhere", `{STYLE}` carries "no
+text, no watermark, no signature", and no plate in the `cut_` class had ever
+produced lettering.
+
+Three negations lost to two nouns. The prompt said "a human **mission-patch
+banner**", and `banner` and `mission-patch` are both strong lettering priors.
+This file already records that the negative prompt is inert on the SDXL path at
+guidance 0; the Krea path is worse, because `krea_gen.py` passes no negative
+prompt at all. **A negation in a prompt is a request for the model to think
+about the thing.**
+
+So every flag in the planet catalogue is now described POSITIVELY as blank:
+"one plain flag of solid unbroken colour with no writing and no emblem on it",
+and the same treatment for the Federation's ivory hangings. `FORCE['human']`
+lost "mission patches" for the same reason one scale down. Re-rendered and
+confirmed: the flag is now a plain field of colour.
+
+**Generalise it.** If a render keeps producing something you have forbidden,
+stop adding forbidding words and find the noun that is asking for it. Then
+describe what you want that surface to BE.
