@@ -472,8 +472,35 @@ BEATS = [
           'scale, no figures in the foreground'),
     ('2', '{force} making landfall at {site}. Wide cinematic composition, the place dwarfing '
           'the figures'),
-    ('3', '{force} assaulting {works}, at {site}. Wide cinematic composition, the moment of '
-          'the attack'),
+    # BEAT 3 WAS NOT PRODUCING A BATTLE, measured across six world/faction pairs
+    # once SOL had rendered: only one of the six (CERES/pirate) showed combat.
+    # The others showed troopers WALKING past solar arrays, a Federation
+    # PROCESSION down a canyon, automata MARCHING in formation, and a xeno
+    # walker STANDING on a beach. The beat's whole job is the moment of the
+    # attack and it was delivering a second establishing shot.
+    #
+    # Three causes, all in the old template
+    # ('{force} assaulting {works}, at {site}. Wide cinematic composition, the
+    # moment of the attack'):
+    #
+    #   1. `assaulting` is ONE weak participle buried between two long noun
+    #      phrases, and the noun phrases win;
+    #   2. it repeated the FULL {site} clause that beat 2 already carries, so
+    #      the model had a strong establishing-shot prior and two nearly
+    #      identical prompts. On VENUS beats 2 and 3 came back as almost the
+    #      same picture, which is the uniqueness failure this whole feature
+    #      exists to prevent;
+    #   3. `Wide cinematic composition` asks for the static wide shot it got.
+    #      The words fighting for action were outnumbered and outweighted.
+    #
+    # The rewrite leads with the action, names combat with concrete nouns
+    # rather than a verb (BRAND.md: you can only lead with what you want),
+    # puts the location AFTER the fight rather than in front of it, and asks
+    # for a close dynamic angle instead of a wide one. {site} is kept so the
+    # battle is still ON this world, but it no longer opens the sentence.
+    ('3', '{force} storming {works} in a frontal assault. Muzzle flashes, blasts and smoke, '
+          'debris thrown through the air, figures in violent motion close to the viewer, '
+          'the peak moment of a battle. Fought at {site}. Dynamic low angle, chaotic'),
     ('4', '{after}, with {mark} standing among the wreckage. Wide cinematic composition, the '
           'battle over and the ground quiet'),
     ('5', '{order}, under {mark}. Wide cinematic composition, the world working again under a '

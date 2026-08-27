@@ -330,6 +330,48 @@ commander surface, for the same reason the deploy sequence hands beat four to
 the existing VS screen: a second opinion about what two commanders say to each
 other is a bug waiting to be found.
 
+### 11.1 A beat that must show ACTION needs action nouns, not an action verb
+
+Measured once SOL had rendered, by building `tools/review_sheet.py` and looking
+at beat 3 across six world/faction pairs. **Only one of the six showed combat.**
+The rest showed troopers WALKING past solar arrays, a Federation PROCESSION
+down a canyon, automata MARCHING in formation, and a xeno walker STANDING on a
+beach. The beat whose entire job is the moment of the attack was delivering a
+second establishing shot, and on VENUS beats 2 and 3 came back as nearly the
+same picture, which is the uniqueness failure this feature exists to prevent.
+
+The template was `{force} assaulting {works}, at {site}. Wide cinematic
+composition, the moment of the attack`. Three faults, and they compound:
+
+1. **`assaulting` is one weak participle between two long noun phrases**, and
+   the noun phrases win. This is the same law as the lettering fix in BRAND.md
+   section 5 of the Session 39 amendment: the model weighs NOUNS. A verb asking
+   for violence loses to forty tokens of scenery describing calm.
+2. **It repeated the full `{site}` clause that beat 2 already carries**, giving
+   the model a strong establishing-shot prior and two near-identical prompts.
+3. **`Wide cinematic composition` asks for the static wide shot it produced.**
+   The words fighting for action were outnumbered and outweighted.
+
+The rewrite leads with the action, names combat with CONCRETE NOUNS (muzzle
+flashes, blasts, smoke, debris thrown through the air, figures in violent
+motion), moves the location AFTER the fight, and asks for a close dynamic low
+angle instead of a wide one. Re-rendered and confirmed on both a human and a
+Federation plate: charging troopers with weapons firing, and wardens in close
+melee, both still legibly on their own world and in their own palette.
+
+**The general rule.** If a beat must depict an EVENT rather than a PLACE, the
+prompt has to be built out of the event's nouns and has to ask for a camera
+that implies motion. Naming the event once as a verb and then describing the
+scenery is a request for the scenery.
+
+**And the instrument matters as much as the fix.** This was invisible on a bare
+contact sheet, where every plate looks like competent art. It only became
+obvious with `tools/review_sheet.py`, which puts the plate, the prompt subject
+it was ASKED for, and the sentence the player READS side by side. Three failure
+modes that need three different responses: the render missed the prompt (a
+re-roll), the prompt missed the writing (a catalogue edit), or the writing is
+wrong for the beat (a rewrite). Tell them apart before acting.
+
 ## 12. What the tooling can and cannot do (measured, Session 39)
 
 **Adobe Firefly is not reachable from the Claude connector.** Checked
