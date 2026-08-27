@@ -1,5 +1,12 @@
 """Cosmic Conquest: art generation on Adobe Firefly Services.
 
+STATUS 2026-08-27: CANNOT RUN. Firefly *Services* API access is an
+Enterprise entitlement, separate from a Firefly subscription, and this
+account does not have it -- the OAuth credentials below cannot be created
+at all. The plumbing is written and verified; only the licence is missing,
+so this is kept rather than deleted. For the unlimited generation the
+account DOES have (the web app, which has no API), use ingest_art.py.
+
 ONE CATALOGUE, THREE PAINTERS. `krea_jobs.build_jobs()` stays the single source
 of truth for every key, prompt and size; this is a third renderer consuming it,
 beside `sdxl_all.py` (fast local baseline) and `krea_gen.py` (local quality

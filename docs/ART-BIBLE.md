@@ -161,6 +161,7 @@ is the single source of truth: `(key, prompt, gen_px, out_px, aspect)`.
 | Baseline render (fast, CPU-poor cards) | `python artgen/sdxl_all.py` | SDXL-Turbo into `artgen/cache/`, ~seconds per image |
 | Quality render | `python artgen/krea_gen.py --only <prefix>` | Krea 2 Turbo into `artgen/cache_krea/`, preferred per key. 48s per 1920x1080 wide plate, 24s per portrait on the 5090 |
 | Restore caches on a fresh clone | `python artgen/unpack.py` | Rebuilds `cache/` from the shipped pack, byte-lossless |
+| Ingest art painted elsewhere | `python artgen/ingest_art.py --todo <prefix>` then `--from <folder>` | Web-app or hand-made plates into `cache_krea/`, same `fit()`+quality as any painter. Refuses to upscale. Section 14 |
 | Pack | `python artgen/krea_gen.py --pack` | Writes `js/artpack.js` (inline) + `art/` (on-demand `cut` class) + `ARTVID` map for clips found beside stills |
 | Bundle | `node build.js` | Inlines on-demand art back into the single-file download |
 | Verify | `node tools/gate.js <url>` | GATE CLEAN or it does not ship |
@@ -535,7 +536,7 @@ art-direction call rather than an optimisation.
 > cannot be created without it. `firefly_gen.py` therefore cannot run today.
 > It is kept, not deleted, because the day the entitlement exists it is one
 > `--check` away from working. **The unlimited generation the owner DOES have
-> is in the Firefly web app, which has no API at all** — section 14 is the
+> is in the Firefly web app, which has no API at all**, section 14 is the
 > bridge that makes those generations usable by this pipeline.
 
 
@@ -621,14 +622,14 @@ tier is for classes where it does not matter, or it is not for this project.
 
 **The gap this closes.** Section 13's REST API needs an entitlement the owner
 does not have. The unlimited generation the owner *does* have lives in the
-Firefly **web app**, which offers no API — so those generations were
+Firefly **web app**, which offers no API, so those generations were
 unreachable from here, not because of a technical limit but because a
 downloaded PNG is not a cache entry. The cache wants a specific size, a
 specific quality per class, and a specific filename.
 
 `artgen/ingest_art.py` is that last mile and nothing more. It runs the same
-three steps every painter in this project runs — `fit()`, then
-`quality_for()`, then `cache_krea/<key>.webp` — against images produced
+three steps every painter in this project runs, `fit()`, then
+`quality_for()`, then `cache_krea/<key>.webp`, against images produced
 elsewhere, so `krea_gen.py --pack` cannot tell the difference and does not
 need to. It is deliberately **generator-agnostic**: Firefly today, anything
 tomorrow, including a phone photo if a plate ever wants one.
@@ -657,7 +658,7 @@ the result costs full bytes for detail that was never there. A source smaller
 than its target is REFUSED and named, not silently inflated. This is the same
 law the render tiers follow (plugin image law, section 13); the only
 difference is that here the source came from somebody else. **Generate wider
-than the target wherever the generator allows it** — downsampling is free
+than the target wherever the generator allows it**, downsampling is free
 antialiasing.
 
 **A filename is a key, not a label.** A file whose stem is not in
@@ -666,7 +667,7 @@ fuzzy matching, because a plate silently landing on the wrong key is a defect
 that surfaces months later in a cutscene nobody was looking at.
 
 **A cached key is left alone** unless `--overwrite` says otherwise, and every
-write goes through a temp file plus an atomic rename — the same discipline the
+write goes through a temp file plus an atomic rename, the same discipline the
 other painters use, because a local render may be working the same cache at
 the same time and a half-written file is indistinguishable from a finished one
 to whoever looks next.
@@ -675,7 +676,7 @@ to whoever looks next.
 
 The same caveat section 13 ends on applies, and for the same reason: **nobody
 has yet put a Firefly-painted plate beside its local sibling and judged
-whether the house style holds.** The mechanism is verified end to end — a
+whether the house style holds.** The mechanism is verified end to end, a
 2688x1536 source lands as a 1920x1080 RGB WEBP that `--pack` passes through
 untouched, a 1280x720 source is refused, a non-key filename is reported. The
 *art* is not verified. Render two, compare, then decide.
