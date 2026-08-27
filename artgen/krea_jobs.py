@@ -107,8 +107,8 @@ CMD_STYLE = ('stylised painted game cutscene illustration, bold flat expressive 
 # with the bare word 'armour', which with no material qualifier inside the
 # window resolves to plate. Not one of these says 'armour'.
 FACTION_LOOK = {
-    'human':  ('cyan-lit chrome exosuit with holographic HUD elements, cabled neck seals, '
-               'practical military hardware, disciplined bearing'),
+    'human':  ('cyan-lit sealed pressure suit, practical plate over fabric, holographic '
+               'HUD elements, cabled neck seals, disciplined bearing'),
     'light':  ('golden holographic armour of hard-light panels, luminous circuitry halos, '
                'serene ceremonial bearing, glowing seams'),
     'xeno':   ('deep violet biomechanical carapace fused with neon-lit implants, too many '
@@ -135,41 +135,47 @@ FACTION_LOOK = {
 # wreckage / torn hull plating, trophy bones -> a hooded carapace. The
 # character survives the edit; the armoury does not.
 COMMANDERS = [
-    # BATCH 2 APPENDS. Ashtar and Isa render through the same approved
-    # composition as the rest of the class, so the 28 portraits stay one
-    # visual family. Isa is deliberately human and warm, not haloed: the
-    # canon treats the Issa fragments as a contested record, and the
-    # portrait must read as a man people argue about, not an icon.
-    ('ashtar',  'light',  'a serene supreme commander of luminous bearing, high ornate collar, '
-                          'calm ageless face lit from below, faint corona of light behind the head'),
+    # SESSION 38 CONTENT REWORK (owner directive 2026-08-27, docs/ART-BIBLE.md
+    # section 3). The STYLE is locked; these subject lines change WHAT is
+    # drawn: humans grounded in the restraint of Dune (practical suits, no
+    # medieval plate), the Federation cast from the contact species (species
+    # stated by FORM words, never by colour words, because colour words are
+    # measured to be strong and the class duotone must win), the xeno
+    # sharpened to predatory, the pirates made visibly multi-species. Editing
+    # these re-rolls the class, which is why the class re-renders WHOLESALE
+    # in the same change. One silhouette, one prop, twelve to eighteen tokens.
+    ('ashtar',  'light',  'a serene ageless nordic supreme commander of luminous bearing, '
+                          'tall and calm, high ornate collar, face lit from below, faint '
+                          'corona of light behind the head'),
     ('isa',     'human',  'a gentle long-haired wanderer in a plain hooded travel cloak over '
-                          'simple armour, kind weathered face, quiet knowing smile, olive skin'),
-    ('cadre',   None,     'a stoic unaligned career soldier, plain visored helm, no insignia'),
+                          'a simple worn suit, kind weathered face, quiet knowing smile, '
+                          'olive skin'),
+    ('cadre',   None,     'a stoic unaligned career soldier, plain visored flight helmet, '
+                          'sealed collar, no insignia'),
     ('vanta',   'human',  'a scholarly tactician wearing a data-visor, thin archive filaments '
                           'trailing from the temples, cold analytical stare'),
-    ('korrin',  'human',  'a burly quartermaster hung with supply rigging, ammunition drums and '
-                          'ration crates, weathered and pragmatic'),
-    ('nyx',     'human',  'an overclocker wreathed in crackling energy conduits, coolant vapour, '
-                          'reckless grin, armour glowing at the seams'),
+    ('korrin',  'human',  'a burly quartermaster hung with supply rigging, ammunition drums '
+                          'and strapped crates, weathered and pragmatic'),
+    ('nyx',     'human',  'an overclocker wreathed in crackling energy conduits and coolant '
+                          'vapour, reckless grin, suit glowing at the seams'),
     ('orin',    'human',  'a field engineer with articulated servo-arms over the shoulders, '
                           'welding glare lighting the face from below'),
-    ('vess',    'human',  'a grim marshal in heavy entrenchment armour, immovable stance, '
-                          'trench-worn and mud-streaked'),
-    ('seraph',  'light',  'a radiant winged commander haloed in golden light, six wings of '
-                          'hard light, serene and terrible'),
-    ('aurelia', 'light',  'a serene choral commander mid-song, light pouring from the throat '
-                          'and eyes, robes of woven luminance'),
-    ('lumen',   'light',  'a warden bearing an enormous circular energy shield, calm, '
-                          'immovable, light refracting across the barrier'),
-    ('cantor',  'light',  'a preacher wearing an amplifying vox-horn crown, arms raised, '
-                          'sound made visible as golden rings'),
-    ('halder',  'light',  'a colossal bulwark commander, shield-locked, utterly immovable, '
-                          'armour like a fortress wall'),
-    # THE PARALLEL, Session 22. AXIOM is the original thought; the four -R
-    # commanders are machine redrafts of NYX, LUMEN, MAWLORD and DREGG, so each
-    # prompt deliberately quotes its source's silhouette and then strips the
-    # thing that made the source human -- the grin, the serenity, the hunger,
-    # the swagger. That IS the faction: the same shape, compiled colder.
+    ('vess',    'human',  'a grim marshal in a mud-streaked sealed combat suit, plate over '
+                          'fabric, immovable stance, trench-worn'),
+    ('seraph',  'light',  'a radiant pleiadian commander haloed in golden light, six wings '
+                          'of hard light, serene and terrible'),
+    ('aurelia', 'light',  'a slender arcturian choral commander mid-song, elongated graceful '
+                          'features, light pouring from the throat and eyes'),
+    ('lumen',   'light',  'a poised mantid warden bearing an enormous circular energy shield, '
+                          'calm, immovable, light refracting across the barrier'),
+    ('cantor',  'light',  'a crested avian herald mid-sermon wearing a rig of vox horns, '
+                          'arms raised, sound made visible as golden rings'),
+    ('halder',  'light',  'a colossal reptiloid bulwark commander locked behind interlocking '
+                          'light plates, scaled brow, utterly immovable'),
+    # THE PARALLEL, Session 22, unchanged by the S38 rework: the redraft
+    # language is approved. AXIOM is the original thought; the four -R
+    # commanders are machine redrafts of NYX, LUMEN, MAWLORD and DREGG, each
+    # quoting its source silhouette minus the thing that made it alive.
     ('axiom',     'robot',  'the first self-authored machine mind, a calm featureless chrome '
                             'bust, concentric reasoning rings turning behind the head'),
     ('nyx_r',     'robot',  'a machine redraft of an overclocker, the same conduits and coolant '
@@ -181,26 +187,27 @@ COMMANDERS = [
     ('dregg_r',   'robot',  'a machine redraft of a warlord, the same heavy shoulders in '
                             'seamless chrome, an accountants ledger of light at the wrist'),
     ('sevra',   'xeno',   'a necrotic commander trailing reanimated husks on dark filaments, '
-                          'puppeteer gestures, hollow glowing eyes'),
+                          'puppeteer gestures, hollow glowing eyes, a lipless smile'),
     ('mawlord', 'xeno',   'a bloated devourer with a vast toothed maw splitting the torso, '
-                          'gluttonous, dripping'),
-    ('thrax',   'xeno',   'a hivemind commander, many-eyed, surrounded by a cloud of drone '
-                          'spawn, every eye focused forward'),
-    ('vorn',    'xeno',   'a plague commander leaking luminous spores and creeping rot, '
-                          'chitin cracked and weeping light'),
-    ('ulgrim',  'xeno',   'an apex predator commander with immense jaws and trophy bones '
-                          'lashed to the carapace, coiled to strike'),
-    ('rake',    'pirate', 'a rakish corsair with a plasma cutlass and a insolent grin, '
-                          'long coat, scavenged breastplate'),
-    ('scarlet', 'pirate', 'a savage reaver drenched in war paint, teeth bared, twin blades, '
-                          'braided hair full of trophies'),
-    ('grist',   'pirate', 'a scrapper welded into mismatched salvaged plate, one arm a '
-                          'hydraulic claw, goggles pushed up'),
-    ('cinder',  'pirate', 'an arsonist haloed in flame and heat shimmer, flamethrower rig, '
-                          'delighted expression'),
-    ('dregg',   'pirate', 'a hulking warlord enthroned on a heap of wreckage, crowned with '
-                          'torn hull plating, contemptuous'),
+                          'a cluster of small eyes above it, gluttonous, dripping'),
+    ('thrax',   'xeno',   'a hivemind commander, many-eyed and unblinking, surrounded by a '
+                          'cloud of drone spawn, every eye focused forward'),
+    ('vorn',    'xeno',   'a swollen plague commander leaking luminous spores and creeping '
+                          'rot, chitin cracked and weeping light'),
+    ('ulgrim',  'xeno',   'an apex predator commander with immense jaws and a hooded '
+                          'carapace strung with trophies, coiled to strike'),
+    ('rake',    'pirate', 'a rakish human corsair with a plasma cutter and an insolent grin, '
+                          'long coat, scavenged chest rig'),
+    ('scarlet', 'pirate', 'a savage reptiloid reaver drenched in war paint, scaled crest '
+                          'strung with trophies, teeth bared, twin blades'),
+    ('grist',   'pirate', 'a small grey scrapper welded into mismatched salvaged plate, one '
+                          'arm a hydraulic claw, goggles over large dark eyes'),
+    ('cinder',  'pirate', 'a manic mantid arsonist haloed in flame and heat shimmer, a '
+                          'flamethrower rig strapped across the thorax, delighted'),
+    ('dregg',   'pirate', 'a hulking amorphous warlord in a patched pressure rig, slouched '
+                          'on a heap of wreckage, crowned with torn hull plating'),
 ]
+
 
 # Crests are STRICT MONOCHROME: one faction hue on void black, engraved like a
 # gothic rose window. No second colour is permitted anywhere in the frame.
