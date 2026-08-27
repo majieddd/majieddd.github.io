@@ -392,6 +392,29 @@ can call. **Do not re-investigate this without first re-reading the tool list;
 if a Firefly image-generation tool ever appears there, that is the signal, not
 a hunch.**
 
+**And re-reading the tool list needs the connector AUTHENTICATED, which a
+non-interactive session cannot do.** Checked again on owner request, Session
+39. The Adobe connector is real and has connected before: it is listed under
+`claudeAiMcpEverConnected` in `~/.claude.json` as "claude.ai Adobe for
+creativity". But it is a claude.ai ACCOUNT connector, not a local MCP server
+entry, and in a non-interactive session it arrives unauthenticated: the
+session reports that it needs authorization, no OAuth flow can run, and its
+tools therefore never load at all. A tool search for adobe, firefly, image
+generation and photoshop returns nothing.
+
+So this session could not confirm OR refute the editing-only finding above,
+and said so rather than repeating it as though it had been re-checked. To
+actually re-read the list: authorize the connector in an INTERACTIVE session
+(claude.ai connector settings, or `/mcp`), then search the tool list there.
+
+**Even authorized, the connector is the wrong shape for this pipeline.** A
+chat connector returns an image into a conversation. This pipeline needs a
+1920x1080 RGB WEBP written into `artgen/cache_krea/<key>.webp` at a specific
+quality, seeded by key, 875 of them for the planet class alone. Hand-saving
+attachments does not scale to a class and cannot be reproduced from a seed.
+That is what section 13's REST API path is for, and it is why the connector
+would be a convenience even in the best case, never the pipeline.
+
 The Adobe tools that ARE worth reaching for, all of them operating on art this
 pipeline has already produced: `image_remove_background`, `image_vectorize`
 (crest and emblem work), `image_generative_expand` (widening a plate to a new
