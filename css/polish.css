@@ -3749,3 +3749,66 @@ body.rm-user.immersive #battle-controls { transition: none; }
   #btn-baselvl { flex-wrap: wrap; row-gap: 2px; }
   #btn-baselvl .bb-main { flex: 1 1 100%; }
 }
+
+/* ══════════════════ THE ROTATE HINT (Session 38, owner) ════════════════
+   MEASURED, phone, board content as a fraction of the visible view:
+
+     390x844 portrait   17% of view, dock 76% visible
+     844x390 landscape  58% of view, dock 100% visible
+
+   The board is 1064x570. Shown whole on a portrait screen it can only be as
+   wide as the screen and the rest is empty vertical band, which is owner-sweep
+   25.5's wholeBoard arm working correctly rather than failing. So this is not
+   a layout bug to fix, it is a fact to tell the player, and the hint lives in
+   the empty band that same fact creates.
+
+   PURE CSS ON PURPOSE. The orientation media query means no resize listener,
+   no save key, no state to migrate, and nothing anywhere near the simulation
+   or the PRNG stream. It appears and vanishes the instant the device turns,
+   and re-arms itself by doing so, because leaving portrait unmounts it.
+
+   pointer-events: none is load bearing. This floats over a live battlefield
+   and the band it sits in is measured, not guaranteed: if a future HUD change
+   moves it over something tappable, the worst case must be a cosmetic overlap
+   and never a control the player cannot press. */
+#rotate-hint { display: none; }
+
+@media (max-width: 767px) and (orientation: portrait) {
+  #screen-game #rotate-hint {
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    position: absolute; left: 50%; top: 27vh; transform: translateX(-50%);
+    z-index: 15;                    /* under #hud and #dock (both z20) */
+    pointer-events: none;
+    max-width: min(300px, 82vw); padding: 7px 13px;
+    background: rgba(10, 16, 26, .82);
+    backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+    border: 1px solid color-mix(in srgb, var(--cyan) 34%, transparent);
+    border-radius: 999px;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, .45);
+    /* Says its piece, then gets out of the way. A permanent chip over a live
+       board is clutter, and rotating re-arms it anyway. */
+    animation: rotHintIn .3s ease-out both, rotHintOut .5s ease-in 6s both;
+  }
+  #screen-game #rotate-hint b {
+    font-size: 15px; line-height: 1; color: var(--cyan);
+    animation: rotHintTurn 2.4s ease-in-out 3;
+  }
+  #screen-game #rotate-hint span {
+    font-family: var(--display); font-size: 10px; letter-spacing: .14em;
+    color: var(--text-dim); white-space: nowrap;
+  }
+}
+@keyframes rotHintIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rotHintOut { to { opacity: 0; } }
+@keyframes rotHintTurn { 0%, 60% { transform: rotate(0deg); }
+                         80%, 100% { transform: rotate(90deg); } }
+
+/* Reduced motion keeps the hint and drops the movement: the glyph does not
+   turn and the chip does not fade out, so it simply stays legible. A reader
+   who has asked for less motion is exactly the reader who should not have
+   information animate away from them. */
+@media (max-width: 767px) and (orientation: portrait) and (prefers-reduced-motion: reduce) {
+  #screen-game #rotate-hint, #screen-game #rotate-hint b { animation: none; }
+}
+body.rm-user #screen-game #rotate-hint,
+body.rm-user #screen-game #rotate-hint b { animation: none; }
