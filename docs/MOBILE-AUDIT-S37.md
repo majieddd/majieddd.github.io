@@ -187,3 +187,68 @@ fingers.
 Also measured on the same pass and passing at every width: the primary label
 fits one line, zero labels clip, zero buttons fall under the 44px touch floor,
 and the CTA's contrast is 18.97 against a WCAG AA requirement of 4.5.
+
+## Session 38: owner-sweep 25.5 fixed. The in-game board at phone width
+
+The last width-specific defect standing. Diagnosed by arm rather than by
+guess: of 25.5's four assertions, `fills`, `onTop` and `wholeBoard` all
+PASSED at 390x844 and only `clipped` failed. The board and the chrome
+layering were never the problem.
+
+**The cause.** `#dock` is three flex panes authored at 328/300/328
+(`--dock-side-w`, and `#dock-inspector`'s own 300px). They shrink, and below
+roughly 700px they shrink past what their contents need. Measured, clipped
+count from 25.5's own selector set:
+
+| Width | clipped | worst overflow | pane widths |
+|---|---|---|---|
+| 390 | **7** | 55px | 117 / 108 / 117 |
+| 480 | 5 | 44px | 148 / 136 / 148 |
+| 600 | 5 | 23px | 189 / 174 / 189 |
+| 768 | 0 | 0 | 247 / 226 / 247 |
+
+A tower card is 97px of content and was being given a 42px box, so it was
+drawn cut in half. `flex-shrink` was doing the damage; no width value was
+wrong.
+
+**The fix**, keyed to 767px so the 768 tablet case that measures clean is
+untouched: panes stop shrinking and size to their content, the card grids go
+one-up instead of two-up (which is what actually buys the room, since a pane
+then needs one card's width rather than two), `BASE LEVEL` wraps its cost
+rather than being cut, and `#dock` claims an explicit width because an
+absolutely positioned `left:50%` box was shrink-to-fitting to 267px inside a
+366px allowance.
+
+**Three panes genuinely do not fit a 390px phone**, and that is geometry, not
+a defect: the inspector column alone is 200px of natural content (econ bar,
+base level, next-wave line), and the three together need 483px. So the dock
+scrolls, with snap, showing 76% at 390 and 100% from 600 up. Nothing is
+clipped and nothing is unreachable: one deliberate swipe brings the loadout
+cards in whole, verified by screenshot.
+
+**Result: the breakpoint sweep is fully clean for the first time.**
+
+```
+1600x900: pass 64 fail 0 info 2
+1024x900: pass 65 fail 0 info 1
+768x1024: pass 65 fail 0 info 1
+390x844:  pass 65 fail 0 info 1
+PASS: 4 breakpoints swept
+```
+
+### Measured, and NOT a defect: portrait is a small board
+
+| Viewport | clipped | dock visible | board occupies |
+|---|---|---|---|
+| 390x844 portrait | 0 | 76% | **17% of view** |
+| 844x390 landscape | 0 | **100%** | **58% of view** |
+
+The board is 1064x570, a landscape shape. Shown whole on a portrait phone it
+can only be as wide as the screen, and the rest is empty vertical space. That
+is the `wholeBoard` arm working correctly, not failing. In landscape, the
+orientation this board's aspect actually wants, everything is clean at once:
+no clipping, the whole dock on screen, and the board at 58% of the view.
+
+`[ ]` **Optional, not done:** a rotate-to-landscape hint on a portrait phone.
+It would be a new UI affordance rather than a fix, so it is offered rather
+than assumed.

@@ -3682,3 +3682,70 @@ body.rm-user.immersive #battle-controls { transition: none; }
     box-shadow: 0 -10px 30px -12px color-mix(in srgb, var(--fc, var(--acc)) 45%, transparent);
   }
 }
+
+/* ══════════ THE IN-GAME DOCK ON A PHONE (Session 38, owner-sweep 25.5) ══
+   MEASURED, clipped-element count from 25.5's own selector set:
+
+     390px  7 clipped, worst 55px over, panes 117/108/117
+     480px  5 clipped, worst 44px over, panes 148/136/148
+     600px  5 clipped, worst 23px over, panes 189/174/189
+     768px  0 clipped,                  panes 247/226/247
+
+   The dock is three flex panes authored at 328/300/328 (--dock-side-w), and
+   below roughly 700px they shrink past what their contents need: a tower card
+   is 97px of content given 42px of box, so the card is drawn cut in half. The
+   board and the chrome layering were never the problem here; all three of
+   25.5's other arms pass at 390 and only the clipped arm fails.
+
+   The fix is to stop the panes shrinking below their content and let the
+   CARDS go one-up instead of two-up, which is what actually buys the room: a
+   pane then needs about the width of one card rather than two. Keyed to 767px
+   so the 768 tablet case, which measures clean, is untouched.
+
+   overflow-x on the dock is the safety valve, not the plan: if a future card
+   grows past what three panes can hold, the dock scrolls and the cards stay
+   whole, rather than silently clipping again. */
+@media (max-width: 767px) {
+  #dock {
+    gap: 6px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  #dock::-webkit-scrollbar { display: none; }
+  /* Size to content and refuse to shrink: this is the clause that ends the
+     clipping. flex-shrink was doing the damage, not any width value. */
+  #dock .dock-pane { flex: 0 0 auto; padding: 6px 8px; }
+  /* AND SIZE TO CONTENT. The panes are authored at a fixed 328/300/328
+     (--dock-side-w, and #dock-inspector's own 300px), so refusing to shrink
+     alone left all three at full width and pushed the dock's scroll width to
+     968px inside a 366px window: nothing clipped, but two thirds of the
+     controls were a swipe away mid-wave. With the cards one-up a pane only
+     needs about one card, so releasing the authored width lets all three fit
+     on screen at once. The specificity here (#dock + id) has to match the
+     rules it overrides, which is the trap recorded at polish.css:3140. */
+  #dock .dock-pane { width: auto; min-width: 0; }
+  #dock #dock-inspector { width: auto; }
+  /* CLAIM THE FULL WIDTH. #dock is absolutely positioned with left:50% and no
+     right, so its shrink-to-fit width is computed against the half-width that
+     leaves, and it settled at 267px inside a 366px allowance: the dock was
+     scrolling sooner than it had to. An explicit width fixes that; the
+     existing translateX(-50%) still centres it. */
+  #dock { width: calc(100% - 24px); justify-content: flex-start; }
+  /* Measured: the three panes need 483px of content (118 + 218 + 135 plus
+     gaps) and 366px exists at 390. The inspector column alone is 200px of
+     natural content (econ bar, base level, next-wave line), so all three
+     cannot fit without wrapping text that a player reads mid-wave. The dock
+     therefore scrolls, and snap makes that one deliberate swipe per pane
+     instead of a drift. Nothing is clipped and nothing is unreachable. */
+  #dock { scroll-snap-type: x proximity; }
+  #dock .dock-pane { scroll-snap-align: center; }
+  /* One card per row. Two-up is what made a 117px pane try to hold 2x97px. */
+  .muster-bar, #shop-list { grid-template-columns: minmax(0, 1fr); }
+  .ability-bar:has(.abil + .abil) { grid-template-columns: minmax(0, 1fr); }
+  /* BASE LEVEL is the one control whose label is wider than a card. Let it
+     use the pane's full width and wrap its cost onto a second line rather
+     than be cut, which is the same trade the cards just took. */
+  #btn-baselvl { flex-wrap: wrap; row-gap: 2px; }
+  #btn-baselvl .bb-main { flex: 1 1 100%; }
+}
