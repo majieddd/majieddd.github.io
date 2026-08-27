@@ -410,8 +410,50 @@ world will not win the pixel count and is not meant to. Forcing it would mean
 repainting Venus, which trades a real identity for a measured one. **Do not
 "fix" these by re-rolling; check the silhouette instead.**
 
-Standing at the last full run: 92.6% of plates read as their own power, all at
-1920x1080, no dimension drift across painters.
+**THE METRIC WAS RE-CALIBRATED THREE TIMES AND THE SCORE ROSE EVERY TIME**, from
+86.9% to 92.6% to 97.8% to 98.2%. That is exactly what tuning a number to
+flatter yourself looks like from outside, so here is the full account and the
+proof.
+
+Each change was made after LOOKING at a plate and finding the metric wrong, not
+the art:
+
+1. **beat 1 scores on presence, not dominance**, because VENUS/pirate reads as
+   a pirate armada instantly while the sulphur-yellow cloud deck wins the pixel
+   count;
+2. **concentration replaced the dominant hue bin**, because 16 of 19 xeno
+   failures sat ONE 10-degree bin below a floor drawn exactly on the brand
+   token (`#7c3aed` is hue 262), while carrying 47 to 70 per cent of their
+   colour inside the band. They were violet plates being misreported;
+3. **the Parallel moved from a saturation ceiling to CHROME MASS**, because
+   TITAN/robot and MARS/robot were flagged for standing on an orange sky and a
+   red regolith while the automata themselves were correctly colourless. A
+   whole-frame ceiling punishes the one power with no colour for campaigning
+   across coloured worlds, which it must do.
+
+Concentration is `share of colour inside the band / (band width / 360)`, so it
+self-corrects for band width: the Federation owns 30 degrees and the pirates
+45, and the same raw purity means very different things to them. The gate is
+twice chance.
+
+**And the loosened gates are PROVEN to still bite.**
+`tools/brand_audit_mutants.py` takes four plates that pass, breaks each one
+deliberately, and requires the audit to reject all four. Federation gold
+rotated to blue goes 11.21 to 0.13, human cyan rotated to red 5.05 to 0.99,
+pirate crimson rotated to teal 2.49 to 0.03, Parallel chrome saturated into
+colour 0.32 to 0.00. **4 caught, 0 missed.** Run it whenever a threshold in
+brand_audit.py moves; a gate that only ever passes has demonstrated nothing.
+
+Note what was NOT solved by moving a threshold: the two real faults this audit
+found, the assault beat not showing assaults and the approach beat losing the
+faction to the world, were both fixed IN THE ART and re-rendered.
+
+Standing at the last full run, 455 plates: **98.2% read as their own power**,
+human and Federation at 100%, all at 1920x1080 with no dimension drift across
+painters. The eight remaining outliers are three world-colour trades (Venus,
+Titan), three sitting just under the gate at 1.59 to 1.69, one magenta drift
+and one marginal chrome mass. None is a gross violation and none should be
+re-rolled without looking first.
 
 ## 12. What the tooling can and cannot do (measured, Session 39)
 

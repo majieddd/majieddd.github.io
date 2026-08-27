@@ -52,7 +52,29 @@ BANDS = {
     'pirate': [(335, 360), (0, 20)],        # raider crimson and rust
 }
 ACHROMATIC = {'robot'}                      # chrome and pale teal, no hue owned
-ACHROMATIC_SAT_CEIL = 0.42
+
+# THE PARALLEL IS MEASURED BY HOW MUCH CHROME IS IN THE FRAME, not by how
+# little colour is.
+#
+# The first version used a whole-frame saturation CEILING, and it failed the
+# same way the dominant-bin test did: it measured the frame when the rule is
+# about the SUBJECT. TITAN/robot was flagged at sat 0.43 and MARS/robot at
+# 0.50, and both plates are correct. The automata on Titan are pale chrome and
+# the Mars scaffolds are pure white; what is orange is Titan's sky and what is
+# red is Mars's regolith. The Parallel campaigns across the same 35 worlds as
+# everyone else, so a ceiling over the whole frame punishes it for standing
+# anywhere colourful, which is everywhere.
+#
+# Chrome mass asks the right question instead: is there a meaningful block of
+# desaturated mid-light material in this picture? That IS the Parallel, because
+# on a coloured world the chrome is the only achromatic thing that is not the
+# void-black ground, which the luminance floor excludes. Calibrated over 90
+# plates: median 0.355, mean 0.356, lowest 0.097. The gate at 0.15 flags one
+# plate, and the beat-1 gate is lower for the same reason every beat-1 gate is.
+CHROME_SAT_CEIL = 0.20          # below this a pixel has no hue worth reading
+CHROME_LUMA = (0.30, 0.92)      # above the void black ground, below blown white
+CHROME_GATE = 0.15
+CHROME_GATE_APPROACH = 0.08
 
 # Magenta is the brand's key light and is allowed as an ACCENT in any frame
 # (ART-BIBLE section 2 lists it as vaporwave key light, skies, accents). It is
@@ -92,9 +114,12 @@ def measure(path):
     sat_sum = n_col = 0
     luma_sum = 0
     px = list(small.getdata())
+    chrome = 0
     for r, g, b in px:
         luma_sum += 0.2126 * r + 0.7152 * g + 0.0722 * b
         hh, ll, ss = colorsys.rgb_to_hls(r / 255, g / 255, b / 255)
+        if ss < CHROME_SAT_CEIL and CHROME_LUMA[0] <= ll <= CHROME_LUMA[1]:
+            chrome += 1
         # saturation in HLS collapses near black and white; require some light
         if ss < SAT_FLOOR or ll < 0.08 or ll > 0.96:
             continue
@@ -104,16 +129,52 @@ def measure(path):
         n_col += 1
     if not hist:
         return dict(size=(w, h), hue=None, purity=0.0, sat=0.0,
-                    luma=luma_sum / len(px) / 255, colored=0.0)
+                    luma=luma_sum / len(px) / 255, colored=0.0,
+                    chrome=chrome / len(px))
     total = sum(hist.values())
     hue = max(hist.items(), key=lambda kv: kv[1])[0]
     return dict(size=(w, h), hue=hue, hist=hist, total=total,
                 sat=sat_sum / n_col, luma=luma_sum / len(px) / 255,
-                colored=n_col / len(px))
+                colored=n_col / len(px), chrome=chrome / len(px))
 
 
 def in_band(hue, bands):
     return any(lo <= hue <= hi for lo, hi in bands)
+
+
+def band_width(bands):
+    return sum(hi - lo for lo, hi in bands)
+
+
+def concentration(hist, total, bands):
+    """How many times more of this plate's colour sits in the faction's band
+    than chance would put there.
+
+    WHY NOT THE DOMINANT BIN. The first version passed a plate when its single
+    heaviest 10-degree hue bin fell inside the band, and that misreported a
+    whole faction. 16 of 19 xeno failures measured hue 250, ONE BIN below a
+    floor of 260, while carrying 47 to 70 per cent of their colour INSIDE the
+    violet band. They are violet plates. The floor was drawn exactly on the
+    brand token (#7c3aed is hue 262), which left no tolerance on the blue side
+    and 68 degrees of it on the magenta side.
+
+    Concentration has no edge to fall off. It also self-corrects for band
+    width, which a flat purity threshold cannot: the Federation owns 30 degrees
+    and the pirates 45, so the same purity means very different things to them.
+    Chance is band_width/360, and the gate is TWICE chance, which is a real
+    signal rather than a tuned number.
+
+    This is a re-calibration with evidence, not a goalpost moved to flatter a
+    score. The pirate misses at hue 200 and 50 carry 0.01 to 0.18 purity and
+    still fail; they were never band-edge arguments."""
+    if not total:
+        return 0.0
+    inside = sum(v for k, v in hist.items() if in_band(k, bands)) / total
+    chance = band_width(bands) / 360.0
+    return inside / chance if chance else 0.0
+
+
+CONCENTRATION_GATE = 2.0        # twice what chance would put in the band
 
 
 def purity(hist, total, bands):
@@ -158,16 +219,15 @@ def main():
             continue
         beat = beat_of(key)
         if fac in ACHROMATIC:
-            ok = m['sat'] <= ACHROMATIC_SAT_CEIL
-            score = m['sat']
+            score = m['chrome']
+            ok = score >= (CHROME_GATE_APPROACH if beat == '1' else CHROME_GATE)
         else:
             bands = BANDS[fac]
-            p = purity(m.get('hist', {}), m.get('total', 0), bands)
-            score = p
-            if beat == '1':
-                ok = p >= APPROACH_PRESENCE_FLOOR      # presence, see the note above
-            else:
-                ok = in_band(m['hue'], bands) if m['hue'] is not None else False
+            c = concentration(m.get('hist', {}), m.get('total', 0), bands)
+            score = c
+            # Beat 1 is an orbital shot where the planet owns the frame, so it
+            # only has to be PRESENT against the world. See the note above.
+            ok = c >= (1.0 if beat == '1' else CONCENTRATION_GATE)
         per_fac[fac].append((ok, score, m))
         per_beat[beat][0] += 1
         per_beat[beat][1] += 1 if ok else 0
@@ -182,7 +242,7 @@ def main():
                                    'ok' if s == (1920, 1080) else 'OFF SPEC'))
     print()
     print('FACTION COLOUR, ART-BIBLE section 2')
-    print('  %-8s %6s %8s %8s %8s %8s' % ('power', 'plates', 'in band', 'purity', 'sat', 'luma'))
+    print('  %-8s %6s %8s %8s %8s %8s' % ('power', 'plates', 'reads', 'conc', 'sat', 'luma'))
     for fac in ('human', 'light', 'xeno', 'pirate', 'robot'):
         rows = per_fac.get(fac)
         if not rows:
@@ -191,13 +251,14 @@ def main():
         avg_p = sum(r[1] for r in rows) / len(rows)
         avg_s = sum(r[2]['sat'] for r in rows) / len(rows)
         avg_l = sum(r[2]['luma'] for r in rows) / len(rows)
-        label = 'sat<=%.2f' % ACHROMATIC_SAT_CEIL if fac in ACHROMATIC else 'hue'
+        label = ('chrome>=%.2f' % CHROME_GATE if fac in ACHROMATIC
+                 else 'x%.1f chance, band %ddeg' % (CONCENTRATION_GATE, band_width(BANDS[fac])))
         print('  %-8s %6d %7d/%-4d %7.2f %8.2f %8.2f   (%s)' %
               (fac, len(rows), ok, len(rows), avg_p, avg_s, avg_l, label))
 
     print()
-    print('BY BEAT   (beat 1 on presence >= %.2f, beats 2 to 5 on hue dominance)'
-          % APPROACH_PRESENCE_FLOOR)
+    print('BY BEAT   (beat 1 needs x1.0 chance, beats 2 to 5 need x%.1f)'
+          % CONCENTRATION_GATE)
     labels = {'1': 'APPROACH', '2': 'THE GROUND', '3': 'THE ASSAULT',
               '4': 'AFTERMATH', '5': 'NEW ORDER'}
     for b in sorted(per_beat):
@@ -214,7 +275,7 @@ def main():
         print()
         print('OFF BAND, worst first')
         for score, key, fac, m in sorted(flags)[:worst_n]:
-            print('  %-26s %-7s hue %-4s purity %.2f sat %.2f luma %.2f' %
+            print('  %-26s %-7s hue %-4s conc x%.2f sat %.2f luma %.2f' %
                   (key, fac, m['hue'], score, m['sat'], m['luma']))
 
 
