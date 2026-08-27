@@ -16,6 +16,9 @@
    moved from 1600x900 to 1024x900: the check it targets (28.1, the mobile
    fold regression) can only fail at a width the old viewport never reached,
    and the other seven were confirmed viewport-independent by this same run.
+   Session 37 added the two campaign mutants (Game.start is a patchable
+   method, so both of that session's shipped defects replant at runtime) and
+   measured 10 of 10, all by predicted check, control green.
 
    TWO EQUIVALENT MUTANTS were found on the way, and they are the reason the
    `plant` functions look the way they do:
@@ -123,6 +126,39 @@ const RUN = `
         return () => { const e2 = document.getElementById('planted-fold-regression');
                         if (e2) e2.remove(); };
       } },
+
+    { id: 'campaign-start-throws',
+      why: 'lifecycle: Game.start throws on the campaign path only, the Session 37 ' +
+           'const-reassignment. A runtime TypeError, so node --check is blind to it, ' +
+           'and every skirmish-path check stays green while the campaign is unstartable',
+      expect: '29.1',
+      /* Game.start is a plain method on the Game object, so unlike the
+         top-level consts that made two earlier mutants equivalent (see the
+         header), wrapping it genuinely changes the path 29.1 drives. Scoped
+         to opts.world so only campaign-shaped calls throw, exactly as the
+         original defect was: every other check passes map: and never
+         reaches the campaign branch, which is the hole 29.1 exists to close. */
+      plant: () => { const o = Game.start;
+                     Game.start = function (opts) {
+                       if (opts && opts.world) throw new TypeError('Assignment to constant variable.');
+                       return o.call(this, opts); };
+                     return () => { Game.start = o; }; } },
+
+    { id: 'campaign-seed-collapse',
+      why: 'determinism: every campaign battle builds from the seed "default", the ' +
+           'Session 37 world-id-on-a-string defect. Measured then: 16 of 16 ' +
+           'same-family worlds byte-identical, a galaxy of one map wearing many names',
+      expect: '29.1',
+      /* worldId wins the seed fallback chain (worldId || world || 'default'),
+         so forcing it collapses the seed while opts.world still resolves the
+         scenario: battles START normally and only the geometry repeats, which
+         is precisely the shape that made the original invisible to every
+         does-it-run check. 29.1's same-family fingerprint arm is the catcher. */
+      plant: () => { const o = Game.start;
+                     Game.start = function (opts) {
+                       if (opts && opts.world) opts = Object.assign({}, opts, { worldId: 'default' });
+                       return o.call(this, opts); };
+                     return () => { Game.start = o; }; } },
 
     { id: 'CONTROL-clean',
       why: 'the clean control: nothing is planted, the suite must stay green',
