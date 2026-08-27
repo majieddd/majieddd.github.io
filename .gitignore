@@ -13,6 +13,8 @@ aegis-artifact.html
 # krea2-turbo/ is a ~34GB model checkout (fetch with artgen/dl_krea.py) — never commit it.
 artgen/cache/
 artgen/cache_krea/
+# Local ComfyUI bridge outputs are review-only and must never enter the pack.
+artgen/preflight/
 artgen/krea2-turbo/
 artgen/*.safetensors
 artgen/*.bin
