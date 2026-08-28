@@ -95,6 +95,22 @@ for (const f of files) {
     if (b === 0x09 || b === 0x0a || b === 0x0d) continue;
     if (b < 0x20 || b === 0x7f)
       found.push({ off: i, what: 'control byte 0x' + b.toString(16).padStart(2, '0') });
+    /* C1 CONTROLS TOO, U+0080 to U+009F, which arrive as the two bytes
+       0xC2 0x80..0x9F and so slipped straight past the C0 scan above.
+
+       This is not hypothetical, and this comment deliberately NAMES the
+       character rather than containing one: Session 40 shipped U+0098
+       followed by the digit 2 into a `content:` rule in css/polish.css,
+       because a Python one-liner read a backslash-230 sequence as an
+       OCTAL escape instead of as the CSS hex escape for U+2302, and this
+       gate called the file clean. It reached the owner's phone as a tofu box
+       in the base upgrade button, which is exactly the class of defect the
+       header of this file says it exists to prevent: "nobody types them; they
+       mean an escape was eaten". An eaten escape that lands in the C1 range is
+       still an eaten escape. */
+    if (b === 0xc2 && i + 1 < buf.length && buf[i + 1] >= 0x80 && buf[i + 1] <= 0x9f)
+      found.push({ off: i, what: 'C1 control U+00' + buf[i + 1].toString(16).toUpperCase() +
+                                 ' (bytes c2 ' + buf[i + 1].toString(16) + ')' });
   }
 
   /* Decode strictly: Buffer.toString is lossy and would hide the very thing

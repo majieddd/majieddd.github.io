@@ -13,23 +13,42 @@
    standing instruction: "really trying to declutter the ui and replace with
    smart inferred actions or condensing choices".
 
-   THE SHAPE THAT ANSWERS ALL OF IT
+   THE SHAPE, after the owner played the build and corrected two of the calls
+   below. Both corrections are kept visible rather than tidied away, because
+   the reasoning that produced them was sound and still wrong.
 
        top strip     your lives and gold, the wave, the rival's gold and lives
        the board     everything between, which is most of the screen
-       bottom bar    BASE, your skills, your sendable units, always
+       bottom bar    BASE, your skills, your sendable units, and RUSH at the
+                     right edge, always
+       above the bar a 44px dot at the bottom right that opens pause and the
+                     three speeds
        on the board  tap empty ground to place, tap a tower for its radial
 
-   FOUR CONTROLS WERE REMOVED RATHER THAN RE-HOMED, which is the decluttering
-   the owner asked for:
+   WHAT WAS REMOVED, AND THE TWO THAT CAME BACK:
 
-     RUSH        folded into the wave chip. The chip already says WAVE 3 and
-                 the seconds left, and the only thing a player wants to do to
-                 a countdown is skip it, so the readout IS the button.
-     TARGETING   folded into the radial as one cycling control. It was a row
-                 of four buttons in a panel nobody opened mid-wave.
-     PAUSE       gone on a phone, per the owner.
-     SPEED       gone on a phone, per the owner.
+     RUSH        was folded into the wave chip, on the reasoning that a
+                 countdown has exactly one thing anyone wants to do to it, so
+                 the readout could BE the button. The owner played it and asked
+                 for rush "on the right side of some sort". A readout that is
+                 secretly a button is only obvious to whoever wrote it. It is a
+                 real button pinned to the right of the bottom bar now, and the
+                 chip is a plain readout again.
+     PAUSE and
+     SPEED       were removed outright, then asked for back "as a collapsible
+                 icon in the bottom right above the bar of some sort, just so
+                 it's super subtle that you could still access it". That is the
+                 dot: 45% opacity, one tap to open, four 44px controls.
+     TARGETING   folded into the radial as one cycling control, and stayed
+                 there. It was a row of four buttons in a panel nobody opened
+                 mid-wave.
+
+   NO CONTROL ON THIS SCREEN CARRIES A DECORATIVE CODEPOINT. The base chip
+   used U+2302 HOUSE and reached the owner's phone as a tofu box, twice over: a
+   Python one-liner ate the escape and shipped a C1 control character, and the
+   character it was meant to be is not in the default Android font stack
+   anyway. The dot and the pause icon are drawn in CSS; the base chip says the
+   word BASE.
 
    NOTHING HERE RE-IMPLEMENTS A READOUT. #muster-bar and #btn-baselvl are
    rendered and kept current by js/ui.js, so this MOVES those elements into
@@ -133,10 +152,13 @@ const Phone = {
         '<i class="pt-ic hp">&#9829;</i><b id="pb-my-hp">20</b>' +
         '<i class="pt-ic gold">&#9670;</i><b id="pb-my-gold">0</b>' +
       '</span>' +
-      /* THE READOUT IS THE BUTTON. A countdown has exactly one thing a player
-         wants to do to it, so RUSH is not a separate control any more. */
-      '<button id="pb-wave" class="pt-wave" type="button">' +
-        '<b id="pb-wave-n">WAVE 1</b><em id="pb-phase"></em></button>' +
+      /* A READOUT, not a button. Session 40 folded RUSH into this chip on the
+         reasoning that a countdown has one thing anyone wants to do to it. The
+         owner played it and asked for rush "on the right side of some sort",
+         so the control moved to the bottom bar where a thumb rests and this
+         went back to being what it looks like. */
+      '<span id="pb-wave" class="pt-wave">' +
+        '<b id="pb-wave-n">WAVE 1</b><em id="pb-phase"></em></span>' +
       '<span class="pt-side rival">' +
         '<i class="pt-ic gold">&#9670;</i><b id="pb-ai-gold">0</b>' +
         '<i class="pt-ic hp">&#9829;</i><b id="pb-ai-hp">20</b>' +
@@ -148,8 +170,50 @@ const Phone = {
     bar.innerHTML =
       '<span id="pb-base-slot" class="pb-slot base"></span>' +
       '<span id="pb-abils" class="pb-abils"></span>' +
-      '<span id="pb-units-slot" class="pb-slot units"></span>';
+      '<span id="pb-units-slot" class="pb-slot units"></span>' +
+      /* PINNED RIGHT and never shrinking, so it is in the same place every
+         wave. The units scroll in the middle instead. */
+      '<button id="pb-rush" class="pb-btn rush" type="button">' +
+        '<b>&#9654;</b><em>RUSH</em></button>';
     document.body.appendChild(bar);
+
+    /* PAUSE AND SPEED, collapsed. The owner asked for them back "as a
+       collapsible icon in the bottom right above the bar of some sort, just so
+       it's super subtle that you could still access it". Collapsed it is one
+       40px dot stack; open it is pause plus the three speeds.
+
+       Every glyph here is DRAWN IN CSS rather than typed, because the only
+       font-dependent icon on this screen (U+2302 in the base chip) reached the
+       owner's phone as a tofu box. A control that has to survive an unknown
+       Android font stack does not get a codepoint. */
+    const ctl = document.createElement('div');
+    ctl.id = 'phone-ctl';
+    ctl.innerHTML =
+      '<button id="pc-toggle" class="pc-dot" type="button" aria-expanded="false" ' +
+        'aria-label="Match controls"><i></i><i></i><i></i></button>' +
+      '<div class="pc-tray" role="group" aria-label="Pause and speed">' +
+        '<button id="pc-pause" class="pc-btn" type="button" aria-label="Pause"><span class="pc-ic pause"></span></button>' +
+        '<button class="pc-btn spd" type="button" data-pspeed="1">1&#215;</button>' +
+        '<button class="pc-btn spd" type="button" data-pspeed="2">2&#215;</button>' +
+        '<button class="pc-btn spd" type="button" data-pspeed="3">3&#215;</button>' +
+      '</div>';
+    document.body.appendChild(ctl);
+
+    ctl.querySelector('#pc-toggle').addEventListener('click', () => {
+      const open = ctl.classList.toggle('open');
+      ctl.querySelector('#pc-toggle').setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (typeof Sound !== 'undefined') Sound.play('click');
+    });
+    ctl.querySelector('#pc-pause').addEventListener('click', () => {
+      if (typeof UI !== 'undefined' && UI.togglePause) UI.togglePause();
+      this.syncCtl();
+    });
+    ctl.querySelectorAll('[data-pspeed]').forEach(b => b.addEventListener('click', () => {
+      Game.speed = Number(b.dataset.pspeed);
+      if (typeof Sound !== 'undefined') Sound.play('click');
+      if (typeof UI !== 'undefined' && UI.syncSpeed) UI.syncSpeed();
+      this.syncCtl();
+    }));
 
     const radial = document.createElement('div');
     radial.id = 'phone-radial';
@@ -172,7 +236,7 @@ const Phone = {
     sheet.querySelector('.ps-scrim').addEventListener('pointerdown', () => this.closeSheet());
     sheet.querySelector('.ps-close').addEventListener('click', () => this.closeSheet());
 
-    top.querySelector('#pb-wave').addEventListener('click', () => {
+    bar.querySelector('#pb-rush').addEventListener('click', () => {
       if (typeof Sound !== 'undefined') Sound.resume();
       if (Game.canRush()) { Game.rushWave(); this.sync(); }
       else if (typeof Sound !== 'undefined') Sound.play('denied');
@@ -419,23 +483,48 @@ const Phone = {
     set('pb-wave-n', 'WAVE ' + (Game.wave || 1));
 
     const phase = document.getElementById('pb-phase');
-    const chip = document.getElementById('pb-wave');
-    if (phase && chip) {
-      const can = Game.canRush();
+    if (phase) {
       const prep = Game.prepTimer > 0 ? Math.ceil(Game.prepTimer) : 0;
-      const txt = Game.waveRunning ? 'INCOMING' : (can ? prep + 's · SEND IT' : (prep > 0 ? prep + 's' : 'READY'));
+      const txt = Game.waveRunning ? 'INCOMING' : (prep > 0 ? prep + 's' : 'READY');
       if (phase.textContent !== txt) phase.textContent = txt;
-      chip.classList.toggle('canrush', can);
-      chip.disabled = !can;
+    }
+
+    const rush = document.getElementById('pb-rush');
+    if (rush) {
+      /* Game.canRush() is the engine's own answer, not a copy of its rule. */
+      const can = Game.canRush();
+      rush.disabled = !can;
+      rush.classList.toggle('ready', can);
     }
 
     this.syncAbilities();
+    this.syncCtl();
     /* The radial is anchored to a world position, so it follows a board that
        moved under it for any reason other than a gesture (a resize, a rush). */
     if (this.radialTower) {
       if (this.radialTower.dead) this.closeRadial();
       else this.placeRadial(this.radialTower,
         document.querySelectorAll('#phone-radial .pr-btn').length || 1);
+    }
+  },
+
+  /** Mark the live speed and whether the match is paused. Cheap and idempotent,
+      and it runs on every sync because Game.speed can also be changed by a
+      keyboard shortcut that knows nothing about this tray. */
+  syncCtl() {
+    const ctl = document.getElementById('phone-ctl');
+    if (!ctl) return;
+    const spd = Number(Game.speed) || 1;
+    ctl.querySelectorAll('[data-pspeed]').forEach(b =>
+      b.classList.toggle('on', Number(b.dataset.pspeed) === spd));
+    /* Game.paused is the flag UI.togglePause actually flips; Game.state stays
+       'playing' throughout. Checking state alone would have reported the
+       control dead while it worked. */
+    const paused = !!Game.paused;
+    const p = ctl.querySelector('#pc-pause');
+    if (p) {
+      p.classList.toggle('on', paused);
+      p.setAttribute('aria-label', paused ? 'Resume' : 'Pause');
     }
   },
 

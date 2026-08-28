@@ -4866,11 +4866,8 @@ body.phone-battle #phone-top {
            background: none; border: 0; border-radius: 8px; color: inherit; font: inherit; cursor: default; }
 .pt-wave b  { font: 700 11px/1 var(--display); letter-spacing: .12em; color: var(--text-dim); white-space: nowrap; }
 .pt-wave em { font: 600 10px/1 var(--num); font-style: normal; color: var(--text-mute); white-space: nowrap; }
-.pt-wave.canrush { cursor: pointer; }
-.pt-wave.canrush b  { color: var(--text); }
-.pt-wave.canrush em { color: var(--cyan); }
-.pt-wave.canrush:active { transform: scale(.97); }
-.pt-wave:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+/* A readout now. RUSH moved to the bottom bar, so nothing here is tappable
+   and nothing here should look tappable. */
 
 /* ---- the bottom bar: base, skills, units, always ---- */
 #phone-bar { display: none; }
@@ -4912,6 +4909,14 @@ body.phone-battle #phone-bar {
          transition: transform .18s linear; pointer-events: none; }
 .pb-btn.abil:not(.ready) .pb-cd { background: var(--text-mute); }
 
+/* RUSH sits hard right and never shrinks, so it is in the same place every
+   wave while the units scroll in the middle. It was the wave chip in the top
+   strip until the owner played it: a readout that is secretly a button is
+   only obvious to whoever wrote it. */
+.pb-btn.rush { margin-left: auto; min-width: 60px; }
+.pb-btn.rush.ready { border-color: var(--cyan); color: var(--cyan); }
+.pb-btn.rush.ready b { color: var(--cyan); }
+
 /* THE TWO BORROWED CONTROLS. #btn-baselvl and #muster-bar are rendered and
    kept current by js/ui.js and are simply moved in here, so their numbers can
    never drift from the desktop ones. Only their SHAPE is restated: both are
@@ -4930,9 +4935,23 @@ body.phone-hud #phone-bar #btn-baselvl .bb-main { display: flex; flex-direction:
    re-worded from here without a second copy of it. */
 body.phone-hud #phone-bar #btn-baselvl .bb-main b { font-size: 0; letter-spacing: 0; color: var(--text); }
 body.phone-hud #phone-bar #btn-baselvl .bb-main b::before {
-  content: '2'; font: 700 15px/1 var(--display); letter-spacing: 0; }
+  /* THE WORD, not a codepoint. This said U+2302 HOUSE and reached the owner's
+     phone as a tofu box, for two independent reasons and both are worth
+     keeping written down.
+
+     First, the escape was eaten: a Python one-liner wrote `content: '\2302'`
+     where \230 is a valid OCTAL escape, so the file shipped a C1 control
+     character (bytes c2 98) followed by the digit 2. tools/bytegate.js scanned
+     only C0 controls and called it clean; it scans C1 now and catches exactly
+     this.
+
+     Second, even spelled correctly U+2302 is not in the default Android font
+     stack, so the fix would have been a different tofu. A label on a control
+     that must survive an unknown font does not get a glyph. */
+  content: 'BASE'; font: 700 9px/1 var(--display); letter-spacing: .1em;
+  color: var(--text-dim); }
 body.phone-hud #phone-bar #btn-baselvl .bb-main b #bb-lvl {
-  font: 700 11px/1 var(--num); font-style: normal; margin-left: 3px; }
+  font: 700 13px/1 var(--num); font-style: normal; margin-left: 4px; color: var(--text); }
 body.phone-hud #phone-bar #btn-baselvl .bb-main em,
 body.phone-hud #phone-bar #btn-baselvl .bb-next { display: none; }
 body.phone-hud #phone-bar #btn-baselvl .bb-cost { font: 600 9px/1 var(--num); color: var(--gold); }
@@ -4956,6 +4975,64 @@ body.phone-hud #phone-bar #muster-bar .muster-btn {
 body.phone-hud #phone-bar #muster-bar .muster-btn.poor,
 body.phone-hud #phone-bar #muster-bar .muster-btn:disabled { opacity: .42; }
 body.phone-hud #phone-bar #muster-bar .muster-btn.cooling { border-color: var(--text-mute); }
+
+/* ---- pause and speed, collapsed, above the bar on the right ----
+   Owner: "as a collapsible icon in the bottom right above the bar of some
+   sort, just so it's super subtle that you could still access it". Collapsed
+   it is a 44px dot stack at 45% opacity; open it is pause plus three speeds.
+
+   EVERY GLYPH IS DRAWN, not typed. The one font-dependent icon on this screen
+   reached the owner's phone as a tofu box, and a control that has to survive
+   an unknown Android font stack does not get a codepoint. The speeds are
+   ASCII digits with a multiplication sign, which every font has. */
+#phone-ctl { display: none; }
+body.phone-battle #phone-ctl {
+  display: block; position: fixed; right: var(--s2); z-index: 41;
+  bottom: calc(var(--pb-h) + 8px);
+}
+.pc-dot { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+          width: 44px; height: 44px; padding: 0; border-radius: 50%;
+          background: linear-gradient(var(--panel-2), var(--panel-2)), var(--bg);
+          border: 1px solid var(--line); cursor: pointer; opacity: .45;
+          transition: opacity .15s var(--e-tap); }
+.pc-dot i { width: 3px; height: 3px; border-radius: 50%; background: var(--text-dim); }
+#phone-ctl.open .pc-dot { opacity: 1; border-color: var(--line-2); }
+.pc-dot:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; opacity: 1; }
+
+/* ABSOLUTE, and animated on transform and opacity only.
+   The first cut laid the tray out in the flex row and transitioned `max-width`
+   from 0, which breaks the motion law this project already holds ("animate
+   transform and opacity only, never width, height, margin, padding, top,
+   left") and broke the control with it: a transition on a layout property does
+   not advance in a pane that is not compositing, so max-width stayed 0, the
+   flex children shrank from 44px to 14px, and one of them left the screen.
+   Taking the tray out of flow means the buttons are always their real size and
+   the dot never moves. */
+.pc-tray { position: absolute; right: 50px; bottom: 0;
+           display: flex; align-items: center; gap: 6px;
+           opacity: 0; pointer-events: none; transform: translateX(10px);
+           transition: opacity .18s var(--e-tap), transform .18s var(--e-tap); }
+#phone-ctl.open .pc-tray { opacity: 1; pointer-events: auto; transform: none; }
+.pc-btn { flex: 0 0 44px; display: flex; align-items: center; justify-content: center;
+          width: 44px; height: 44px; padding: 0; border-radius: var(--r);
+          background: linear-gradient(var(--panel-2), var(--panel-2)), var(--bg);
+          border: 1px solid var(--line-2); color: var(--text-dim);
+          font: 700 11px/1 var(--num); cursor: pointer; }
+.pc-btn.on { border-color: var(--cyan); color: var(--cyan); }
+.pc-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+/* Two bars for pause, drawn. Becomes a single triangle when the match is
+   already paused, so the control says what it will DO, not what is true. */
+.pc-ic.pause { display: block; width: 12px; height: 13px; position: relative; }
+.pc-ic.pause::before, .pc-ic.pause::after {
+  content: ''; position: absolute; top: 0; width: 4px; height: 13px;
+  background: currentColor; border-radius: 1px; }
+.pc-ic.pause::before { left: 0; }
+.pc-ic.pause::after { right: 0; }
+.pc-btn.on .pc-ic.pause::before {
+  left: 1px; width: 0; height: 0; background: none; border-radius: 0;
+  border-left: 11px solid currentColor; border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent; }
+.pc-btn.on .pc-ic.pause::after { display: none; }
 
 /* ---- the radial: the tower's whole decision, on the tower ---- */
 #phone-radial { display: none; }
@@ -5020,5 +5097,6 @@ body.phone-hud #phone-sheet { display: block; position: fixed; inset: 0; z-index
 body.phone-hud .ps-body > #shop-list { display: grid; grid-template-columns: 1fr; gap: var(--s2); width: 100%; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pb-btn, .pt-wave, .ps-scrim, .ps-panel, .pb-cd, .pr-btn, .pr-scrim { transition: none; }
+  .pb-btn, .ps-scrim, .ps-panel, .pb-cd, .pr-btn, .pr-scrim,
+  .pc-dot, .pc-tray { transition: none; }
 }

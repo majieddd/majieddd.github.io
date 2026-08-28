@@ -395,8 +395,19 @@
     if (!inBar('btn-baselvl')) missing.push('base upgrade not on the bar');
     if (!inBar('muster-bar')) missing.push('sendable units not on the bar');
     if (!inBar('pb-abils')) missing.push('commander skill not on the bar');
+    if (!inBar('pb-rush')) missing.push('rush not on the bar');
 
-    /* Pause and speed are gone on a phone, per the owner. */
+    /* RUSH ON THE RIGHT. The owner asked for it "on the right side of some
+       sort" after playing a build where it was folded into the wave chip, so
+       its POSITION is part of the contract, not just its existence. */
+    var rushEl = document.getElementById('pb-rush');
+    if (rushEl && pbar) {
+      var rr = rushEl.getBoundingClientRect(), br = pbar.getBoundingClientRect();
+      if (br.right - rr.right > 14) missing.push('rush is not pinned to the right of the bar');
+    }
+
+    /* The DESKTOP pause and speed row stays gone on a phone; the collapsible
+       tray is the only way to reach them. */
     var gone = [];
     ['btn-pause', 'battle-controls'].forEach(function (id) {
       var e = document.getElementById(id);
@@ -461,6 +472,45 @@
          seeThrough.length ? seeThrough.join('; ')
            : 'both bars composite identically over white and black, so text contrast is fixed');
     }
+
+    /* ---- M13 pause and speed are reachable, collapsed, above the bar ---- */
+    /* Owner: "re-add the pause button and the speed options as a collapsible
+       icon in the bottom right above the bar of some sort, just so it's super
+       subtle that you could still access it". Subtle is not the same as
+       missing, so this checks it is genuinely reachable: the toggle clears the
+       thumb floor, opening it makes four real 44px controls that are all on
+       screen, and closed the tray cannot be tapped by accident. */
+    var ctlWhy = 'not attempted';
+    var pctl = document.getElementById('phone-ctl');
+    if (!pctl || !vis(pctl)) ctlWhy = 'no #phone-ctl visible during a battle';
+    else {
+      var dot = document.getElementById('pc-toggle');
+      var tray = pctl.querySelector('.pc-tray');
+      var dotR = dot.getBoundingClientRect();
+      var barTop = pbar ? pbar.getBoundingClientRect().top : window.innerHeight;
+      var closedPE = getComputedStyle(tray).pointerEvents;
+      dot.click();
+      var btns = [].slice.call(pctl.querySelectorAll('.pc-btn'));
+      var badBtn = btns.filter(function (b) {
+        var r = b.getBoundingClientRect();
+        return r.width < 44 || r.height < 44 || r.left < 0 || r.right > window.innerWidth;
+      });
+      var openPE = getComputedStyle(tray).pointerEvents;
+      dot.click();
+      ctlWhy = (dotR.width < 44 || dotR.height < 44)
+          ? 'the toggle is ' + Math.round(dotR.width) + 'x' + Math.round(dotR.height) + ', under the thumb floor'
+        : (dotR.bottom > barTop + 1) ? 'the toggle overlaps the bottom bar'
+        : closedPE !== 'none' ? 'the closed tray still accepts taps'
+        : btns.length < 4 ? 'only ' + btns.length + ' controls in the tray, expected pause and three speeds'
+        : badBtn.length ? badBtn.length + ' tray controls are undersized or off screen'
+        : openPE === 'none' ? 'the open tray does not accept taps'
+        : 'ok';
+    }
+    ok('M13 pause and speed are reachable from a collapsed control above the bar',
+       ctlWhy === 'ok',
+       ctlWhy === 'ok'
+         ? 'a 44px toggle above the bar opens pause and three speeds, all 44px and on screen, inert when closed'
+         : ctlWhy);
 
     /* ---- M12 the battle bars only exist during a battle ----------------- */
     /* FOUND BY PLAYING THE DEPLOYED BUILD rather than jumping straight to
