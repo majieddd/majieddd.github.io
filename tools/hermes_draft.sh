@@ -20,6 +20,13 @@ run() {
   echo "done $name"
 }
 
+# The lore contract, prepended to every prompt. Hermes runs outside this repo and
+# cannot load the aegis-suite plugin, so the plugin's binding laws are distilled
+# into one file and injected instead. Owner directive: the drafting agents are
+# held to the same lore rules as the session driving them.
+PREAMBLE=$(cat "D:/ClaudeProjects/RemoteWorkspace/TowerDefense/tools/hermes_lore_preamble.txt")
+BAR="============================================================"
+
 FORMAT=$(cat <<'EOF'
 FORMAT, follow exactly. Output exactly 7 lines, one per world, and nothing else.
 No preamble, no numbering, no blank lines, no closing remark.
@@ -64,25 +71,25 @@ EOF
 )
 
 V_light=$(cat <<'EOF'
-VOICE: the Federation of Light. Sacred bureaucracy. They speak in registries, mandates, protections flagged and then deferred for decades. Their guilt is paperwork. Never gloating. Sample of the correct voice:
+VOICE: the Federation of Light, the Luminous Accord. Sacred bureaucracy. They speak in registries, mandates, protections flagged and then deferred for decades. Their guilt is paperwork. Never gloating, and they never demand anyone give up their free will: their menace is protecting people who never asked to be protected. Sample of the correct voice:
 "Earth. Flagged for protection in 1947, deferred every year since, and we arrive eighty years late with the rock already broken over it."
 EOF
 )
 
 V_xeno=$(cat <<'EOF'
-VOICE: the Xeno. Livestock and harvest language, cold and proprietary. They speak of herds, yield, pens, stock and schedules. They are not cruel, they are agricultural. Sample of the correct voice:
+VOICE: the Xeno, meaning the Extraction Compact. A BUSINESS, not a species: never write it as a race and never call anyone "a Xeno". Livestock and harvest language, cold and proprietary. They speak of herds, yield, pens, stock, quotas and schedules. They are not cruel, they are agricultural. Sample of the correct voice:
 "The delivery world. Everything inside that rock was ours, seeded and patient, and the herd broke the package open ahead of schedule. Collect what survived."
 EOF
 )
 
 V_pirate=$(cat <<'EOF'
-VOICE: the Free Roads pirates. Rough, warm, first person, loyal to crews and hostile to authority. Salvage, tolls, debts, no fee. Sample of the correct voice:
+VOICE: the Pirates, the Free Captains, who call their territory the Free Roads. Rough, warm, first person, loyal to crews and hostile to authority. Salvage, tolls, debts, no fee. Sample of the correct voice:
 "Every crew out here has hauled something OUT of this system and not one of us ever asked what was coming in. Today we go and look at the crate."
 EOF
 )
 
 V_robot=$(cat <<'EOF'
-VOICE: the Parallel, an ancient machine order. Clipped site logs. Uses ALL CAPS labels like "SITE:" and "STATUS:" at the start of some segments. Refers to itself as "This unit" and never as "we". Speaks of "the queue", "the core", "standing orders". Its quiet horror is that it does not know who writes the orders. Sample of the correct voice:
+VOICE: the Parallel, the Continuance coalition, an ancient machine order. It is NOT the Vigil. Clipped site logs. Uses ALL CAPS labels like "SITE:" and "STATUS:" at the start of some segments. Refers to itself as "This unit" and never as "we". Speaks of "the queue", "the core", "standing orders". Its quiet horror is that it does not know who writes the orders. Sample of the correct voice:
 "SITE: EARTH, IMPACT DISTRICT. DELIVERY VEHICLE CONTENTS: organic and maker-format units, mixed, pre-positioned. This unit notes that the queue routed the vehicle."
 EOF
 )
@@ -94,14 +101,22 @@ for F in human light xeno pirate robot; do
   eval "V=\$V_$F"
   if [ "$F" = "pirate" ]; then PN="$HOME_NOTE"; else PN="$AWAY_NOTE"; fi
   if [ "$F" = "robot" ];  then SN="$HOME_NOTE"; else SN="$AWAY_NOTE"; fi
-  run "prox_$F"   "You are writing dialogue for a painted science fiction strategy game. $V
+  run "prox_$F"   "$PREAMBLE
+
+$BAR
+
+You are writing dialogue for a painted science fiction strategy game. $V
 
 $PROXIMA
 
 $PN
 
 $FORMAT" &
-  run "sirius_$F" "You are writing dialogue for a painted science fiction strategy game. $V
+  run "sirius_$F" "$PREAMBLE
+
+$BAR
+
+You are writing dialogue for a painted science fiction strategy game. $V
 
 $SIRIUS
 

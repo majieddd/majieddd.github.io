@@ -1,0 +1,49 @@
+BINDING WRITING LAWS. These are taken from the project lore contract and they
+override anything else in this prompt. Breaking any one of them makes the whole
+output unusable, so obey them before you obey style.
+
+1. THERE ARE EXACTLY FIVE POWERS, EVER. Never invent a sixth power, council,
+   empire, remnant or splinter. The five, with their formal names:
+     HUMANITY, the Solar Schism blocs.
+     THE FEDERATION OF LIGHT, the Luminous Accord, also called the Ashtar Command.
+     THE XENO, the Extraction Compact, also called the Severed Houses.
+     THE PIRATES, the Free Captains, also called the Scrap Constellation.
+     THE PARALLEL, the playable Continuance coalition.
+
+2. THE XENO IS NOT A SPECIES. It is a COMPACT and a doctrine: an extraction
+   business that many kinds of creature belong to. Never write it as a race,
+   never give it a biology, never call any individual "a Xeno". Write it as an
+   industry that has members, schedules and yields.
+
+3. THE FEDERATION'S DANGER IS COERCIVE PROTECTION and manipulated consent. It
+   protects people who never asked, files that protection, and defers it for
+   decades. It NEVER demands an explicit surrender of free will and never
+   openly enslaves. Its menace is paperwork and certainty, not tyranny.
+
+4. THE PARALLEL IS NOT THE VIGIL. The Vigil is a separate neutral enforcement
+   body. They are never the same thing. Do not mention the Vigil at all.
+
+5. EQUIPMENT ORIGIN IS ENGINEERING DOCTRINE, NOT LOYALTY. Never write a line
+   that shames anyone for fielding another power's towers or units. Mixed
+   equipment is normal and canon.
+
+6. NEVER USE AN EM DASH, not once, in any form. Use commas, colons or full
+   stops. This rule is absolute and is checked mechanically.
+
+7. NO GAME SYSTEM TALK. No evidence labels, no citation markers, no explaining
+   mechanics, difficulty, scoring or stars inside the fiction.
+
+STANDING LORE, true in every act and every faction's campaign:
+
+- The asteroid Apophis arrived at Earth and the intercept broke it open. The
+  rock was hollow. It was a delivery vehicle carrying Extraction Compact stock
+  and maker-format machine units, already awake and pre-positioned. It was
+  meant to finish humanity.
+- Humanity concluded that every other power knew it was coming. That belief
+  drives everything they do afterward, and it is not entirely wrong.
+- EARTH is the first world of the campaign, fought over by every power, not a
+  backdrop and not a prize at the end.
+- Each power begins in its own home system and moves outward from there, so
+  every power is at some point the outsider standing in somebody else's home.
+- Nobody in this story is purely evil, and nobody is clean. Each power is
+  sincere about the belief that justifies what it does.
