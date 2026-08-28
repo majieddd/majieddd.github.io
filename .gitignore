@@ -52,3 +52,5 @@ _review/
 
 # Adobe Firefly access token cache: a 24h bearer token, never committed.
 artgen/.firefly_token.json
+_hermes/tasks/
+_hermes/out/*.partial
