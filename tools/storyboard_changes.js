@@ -181,13 +181,26 @@ w('<p class="sub">These are the current Barnard\'s Star and Tabby\'s Star worlds
   'replaced, not deleted. If a line here is better than its replacement, say so and it ' +
   'moves across.</p>');
 
+/* Read the parked worlds from the SNAPSHOT, not from live PLANET_CUTS. Once the
+   new worlds landed in js/planetcuts.js, those keys hold Proxima and Sirius, so
+   reading live data here would have shown the replacements labelled as the
+   things they replaced. The snapshot is the record the owner asked to keep. */
+let PARKED = {};
+try {
+  const src = fs.readFileSync(
+    path.join(ROOT, 'docs', 'parked', 'planetcuts-si3-si4-preS42.js'), 'utf8');
+  const pctx = { }; vm.createContext(pctx);
+  vm.runInContext(src, pctx, { filename: 'parked.js' });
+  PARKED = vm.runInContext('PARKED_PRE_S42', pctx);
+} catch (e) { console.log('  (parked snapshot unreadable: ' + e.message.split('\n')[0] + ')'); }
+
 let parkedWorlds = 0, parkedLines = 0;
 [3, 4].forEach(si => {
   const oldSys = NEW_CORE[si].was;
   w('<h3>' + esc(oldSys) + ' <span class="tag parked">PARKED</span></h3>');
   for (let wi = 0; wi < 7; wi++) {
     const key = String(si) + String(wi);
-    const e = G.PLANET_CUTS[key];
+    const e = PARKED[key];
     if (!e) continue;
     parkedWorlds++;
     w('<div class="card p">');
@@ -221,9 +234,27 @@ w('<p class="sub">The art driving strings are authored. The faction dialogue for
     w('<div class="fld"><b>WORLD</b> <b style="color:#fff">' + esc(name) + '</b>, ' + esc(fn) + '</div>');
     w('<div class="fld"><b>SKY</b> ' + esc(sky) + '</div>');
     w('<div class="fld"><b>REAL</b> <span style="color:#7f93a8">' + esc(ground) + '</span></div>');
+    /* The written dialogue, read live, so this page cannot claim a line that is
+       not actually in the game. */
+    const live = G.PLANET_CUTS[String(si) + String(wi)];
+    if (live) {
+      if (live.ground) w('<div class="fld"><b>GROUND</b> ' + esc(live.ground) + '</div>');
+      if (live.works) w('<div class="fld"><b>WORKS</b> ' + esc(live.works) + '</div>');
+      FACS.forEach(f => {
+        const lines = (live.f && live.f[f]) || [];
+        if (!lines.length) {
+          w('<div class="fac" style="color:' + facColor(f) + '">' + esc(facName(f)) +
+            ' <span class="tag gap">NO LINES</span></div>');
+          return;
+        }
+        w('<div class="fac" style="color:' + facColor(f) + '">' + esc(facName(f)) + '</div>');
+        lines.forEach(l => w('<div class="line">' + esc(l) + '</div>'));
+      });
+    } else {
+      w('<div class="fld"><span class="tag gap">NOT YET WRITTEN</span></div>');
+    }
     const s = draft('scen_' + si + wi);
-    if (s) w('<div class="fld"><b>SCENARIO</b></div><pre>' + esc(s) + '</pre>');
-    else w('<div class="fld"><span class="tag gap">SCENARIO PENDING</span></div>');
+    if (s) w('<div class="fld"><b>SCENARIO NOTE</b></div><pre>' + esc(s) + '</pre>');
     w('</div>');
   });
 });

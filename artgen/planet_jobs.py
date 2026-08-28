@@ -339,130 +339,138 @@ WORLDS = [
 
     # ---- si 3, BARNARD'S STAR. The pirate home: a red flare dwarf, the ------
     # fastest-moving star in our sky, and a road that was never founded.
-    (3, 0, 'BARNARD b',
-     'a dim red dwarf throwing everything into deep crimson shadow, a flare climbing off its '
-     'limb',
-     'the wreck yards, a plain of hulls from a hundred different builders cut open and stacked',
+    (3, 0, 'PROXIMA d',
+     'a scorched inner rock whipping round a small red star, its daylit face crowded with the dark '
+     'hulls of ships dragged here to die',
+     'the wreck yards, a plain of hulls from a hundred different builders cut open and stacked in '
+     'lanes',
      'yard-crane batteries and hull-plate barricades welded between the stacks',
-     'the hull stacks collapsed into each other and burning in a dozen places',
+     'the hull stacks collapsed into each other and burning along the sorting lanes',
      'the wreck yards sorted and running, hulls going out whole instead of coming in cut'),
 
-    (3, 1, 'BARNARD c',
-     'a red-lit world streaked with vented gas, refinery flares visible from orbit as a line '
-     'of bright points',
-     'the free refinery, a sprawl of mismatched cracking towers plumbed together with '
-     'salvaged pipe',
-     'tower-top batteries and pressure-valve traps rigged through the pipework',
-     'the cracking towers ruptured and burning, the salvaged pipework whipping loose',
-     'the refinery re-plumbed properly for the first time and running clean'),
+    (3, 1, 'PROXIMA b',
+     'a tide locked world holding one face to its red star for ever, a single band of liveable '
+     'ground running pole to pole between a burning day side and a frozen night side',
+     'the terminator strip, a long town built in permanent red sunset on the only ground that is '
+     'neither scorched nor frozen',
+     'ridge batteries dug in along the sunset line and shutter walls closing the town against either '
+     'side',
+     'the strip broken open along the ridge, shutter walls buckled outward and the town burning in '
+     'red dusk',
+     'the strip rebuilt end to end with its shutter walls standing open, the town running the full '
+     'length of the light'),
 
-    (3, 2, 'BARNARD d',
-     'a dark rogue world barely lit by the red dwarf, its night side showing no lights at all '
-     'until you are close',
-     'the hidden anchorage, a drowned canyon of moored ships under overhanging rock, lamps '
-     'strung between masts',
-     'canyon-mouth batteries and chain booms across the anchorage entrance',
-     'the chain booms snapped and the moored ships adrift and burning against the rock',
-     'the anchorage lit openly and its approach charts posted for anyone to read'),
+    (3, 2, 'PROXIMA c',
+     'a frozen super Earth far out from its star, its whole surface a pale blue ice sheet under a '
+     'sun no bigger than a coin',
+     'the cold refinery, cracking towers standing in a field of blue ice venting white plumes that '
+     'freeze before they fall',
+     'ice breach batteries ringing the cracking towers and pipe runs armoured under banked snow',
+     'the cracking towers toppled across the ice, pipe runs split open and every plume gone out',
+     'the towers standing and venting again, the ice field cut with clean roads between them'),
 
-    (3, 3, 'BARNARD e',
-     'a world sitting astride the only clear lane through a debris belt, red light glinting '
-     'off ten thousand tumbling rocks',
-     'the toll gate, a ring of gun platforms strung across the lane on cables',
-     'lane batteries and cable-strung mine curtains hung between the platforms',
-     'the toll ring shot to pieces, the platforms tumbling and the cables cut',
-     'the lane left open and the toll gate kept only as a light to steer by'),
+    (3, 3, 'THE FLARE SHELTER',
+     'a bare rock under a red star mid flare, the whole sky washed hard violet white and the ground '
+     'below stripped back to naked stone',
+     'the flare shelter, a warren of habs dug in under metres of rock whose only surface is a field '
+     'of blast hatches',
+     'hatch batteries set flush with the stone and shutter doors sealing the warren from the sky',
+     'the hatches blown open one after another, the warren below lit through the holes by the flare',
+     'every hatch reseated and the warren driven deeper, the flare passing over ground that no '
+     'longer cares'),
 
-    (3, 4, 'BARNARD f',
-     'a world in the shadow of its own moon, sheltering from a flare that is visibly washing '
-     'the far side white',
-     'the flare shelter, a dug-in warren of habs under metres of rock with blast doors '
-     'standing open',
-     'shelter-mouth batteries and layered blast doors set into the rock face',
-     'the blast doors blown off their tracks and the warren behind them open to the flare',
-     'the shelter dug wider and its doors left standing open on purpose'),
+    (3, 4, 'THE NARROWS',
+     'a debris lane threaded between three suns, ten thousand tumbling rocks catching the light of a '
+     'triple star',
+     'the narrows, a toll gate of gun platforms strung on cables across the only clear lane through '
+     'the rocks',
+     'lane batteries on the platforms and cable-strung mine curtains hung between them',
+     'the toll ring shot to pieces, platforms tumbling away into the rocks and the cables cut',
+     'the lane held open and the gate kept lit, a mark to steer by rather than a price to pay'),
 
-    (3, 5, 'BARNARD g',
-     'the outermost world of the red dwarf, almost dark, a single bright port glow on its '
-     'night side',
-     'the black market vault, a hollowed rock where the cargo nobody names is kept in sealed '
-     'containers',
-     'vault-mouth batteries and container-stack barricades inside the rock',
-     'the container stacks blown apart and their contents scattered in the dark',
-     'the vault emptied out and its manifests broadcast on every open channel'),
+    (3, 5, 'THE DARK LOCKER',
+     'an unlit rock in the outer dark, so far from its small red star that it shows only as a shape '
+     'against the stars',
+     'the dark locker, a vault hollowed into the rock where cargo that has no paperwork is stacked '
+     'in the cold',
+     'vault batteries cut into the rock face and pressure doors thick enough to count as walls',
+     'the rock face blown in, pressure doors folded back and the stacked cargo spilled into the dark',
+     'the vault sealed and running again, its stacks sorted and its doors answering to a different '
+     'name'),
 
-    (3, 6, 'HARBOUR NINE',
-     'a hollowed asteroid turning slowly against the red dwarf, its interior lights spilling '
-     'out through open dock mouths',
-     'the sanctuary bay, a great interior harbour of ragged ships and strung lamps where no '
-     'papers are asked for',
-     'bay-mouth batteries and salvaged dock cranes swung across the harbour entrance',
-     'the harbour full of smoke, cranes down across the moorings and lamps torn loose',
-     'the sanctuary bay lit brighter than before and still asking nobody for papers'),
+    (3, 6, 'PROXIMA GATE',
+     'a small red star burning over a great hollowed rock, every window of the harbour inside it lit '
+     'at once',
+     'the sanctuary bay, an interior harbour of moored ships under a rock roof built out of salvage',
+     'harbour batteries set into the rock roof and a boom across the bay mouth strung from wreck to '
+     'wreck',
+     'the boom cut and the harbour burning, moored ships adrift and the rock roof holed through to '
+     'the stars',
+     'the sanctuary bay under new colours, the boom restrung across the mouth and every berth logged '
+     'and numbered'),
 
     # ---- si 4, TABBY'S STAR. The Parallel's home: a star that dims at ------
     # irregular intervals, and a garden tended for a maker who is not coming.
-    (4, 0, 'KIC-8462 b',
-     'a world under a star that is visibly dimming and brightening without pattern, the light '
-     'level changing as you watch',
-     'the machine garden, terraces of dormant automata standing in exact rows like planted '
-     'stock',
-     'terrace batteries and pale teal containment fields laid over the rows',
-     'the terraces broken and the dormant rows toppled where they stood',
-     'the garden woken row by row and asked, for the first time, what it wants'),
+    (4, 0, 'SIRIUS A I',
+     'an inner world under a blue white star twenty five times brighter than the Sun, its terraces '
+     'standing in light too hard to look at',
+     'the machine garden, terraces of dormant automata standing in pruned and aligned rows',
+     'terrace batteries between the rows and hard-light barriers strung along the garden walls',
+     'the terraces broken and the rows toppled, dormant automata spilled down the garden walls',
+     'the rows stood upright and realigned, the garden pruning itself again under a harder light'),
 
-    (4, 1, 'KIC-8462 c',
-     'a world with a chrome-bright industrial band around its equator, the dimming star '
-     'flickering off it',
-     'the foundry, a canyon of casting halls turning out identical parts for nothing in '
-     'particular',
-     'hall-mouth batteries and cold white containment shutters along the canyon',
-     'the casting halls cold and cracked, half-made parts spilled across the canyon floor',
-     'the foundry retooled to build what is asked for instead of what was queued'),
+    (4, 1, 'SIRIUS A II',
+     'a blazing white world with no night worth the name, its canyon floor glowing where the casting '
+     'halls run without stopping',
+     'the foundry, a canyon of casting halls turning out identical units one after another',
+     'canyon batteries on the hall roofs and pour gates that flood the floor with molten metal',
+     'the halls broken open, pour gates burst and the canyon floor running white hot',
+     'the halls pouring again on a faster count, the canyon floor swept and the units stacked ready'),
 
-    (4, 2, 'KIC-8462 d',
-     'a pale grey world with no weather and no colour, the irregular starlight the only thing '
-     'that changes on it',
-     'the archive, a plain of stacked memory cores standing open to a sky that never rains',
-     'core-stack batteries and pale teal field walls between the rows',
-     'the memory cores toppled and cracked, their contents leaking out as drifting light',
-     'the archive re-stacked and its nine thousand links traced out where anyone can follow'),
+    (4, 2, 'THE ASH FIELD',
+     'a plain of grey dust that was once the outer envelope of a dying star, stacked memory cores '
+     'standing up out of it like headstones',
+     'the ash field, an archive of memory cores standing open in the debris the companion star shed',
+     'core row batteries and dust berms banked between the stacks',
+     'the stacks toppled through the ash, cores split open and grey dust thrown up in clouds',
+     'the stacks reset in ordered rows, the ash graded flat and every core closed again'),
 
-    (4, 3, 'KIC-8462 e',
-     'a world ringed by a visible quarantine lattice, the dimming star throwing the lattice '
-     'shadow across its face',
-     'the quarantine, sealed white halls where units that failed to parse the new tasking were '
-     'put',
-     'hall-seal batteries and layered quarantine fields across the corridors',
-     'the quarantine seals broken and the white halls open and empty',
-     'the quarantine unsealed and every unit inside it counted and named'),
+    (4, 3, 'SIRIUS B I',
+     'a small world orbiting a white dwarf, its sealed halls glowing faintly under a companion star '
+     'no bigger than Earth and hotter than anything',
+     'the quarantine, sealed white halls holding units that failed inspection, every door locked '
+     'from the outside',
+     'hall batteries at the seals and containment shutters dropping between every corridor',
+     'the seals blown and the shutters jammed half down, the halls standing open and empty',
+     'the halls sealed and the inspection standard raised, every door locked from the outside as '
+     'before'),
 
-    (4, 4, 'KIC-8462 f',
-     'a world half covered in scaffolding visible from orbit, endless repair work on something '
-     'that was never damaged',
-     'the repair yards, gantries over cradles holding machines being fixed for the ten '
-     'thousandth time',
-     'gantry batteries and cradle clamps repurposed to hold rather than to mend',
-     'the gantries collapsed across the cradles and the work finally, completely stopped',
-     'the repair yards turned to building instead, the cradles holding something new'),
+    (4, 4, 'THE DIAMOND SHELF',
+     'a shelf of raw carbon under a fierce white pinpoint of a star, the ground glittering where the '
+     'light catches it',
+     'the diamond shelf, repair yards of gantries and cradles standing on bare carbon ground',
+     'shelf batteries anchored into the carbon and cradle clamps doubling as blast frames',
+     'the gantries down across their own cradles, clamps sheared through and the carbon ground '
+     'cratered',
+     'the cradles filled again and the gantries rebuilt taller, the shelf mended and still waiting'),
 
-    (4, 5, 'KIC-8462 g',
-     'the outermost world, cold and chrome, a single relay mast on its terminator catching the '
-     'flickering light',
-     'the task queue relay, a mast and its yard where the standing orders arrive from nowhere '
-     'anyone can name',
-     'mast-base batteries and cold white interference screens around the yard',
-     'the relay mast down across its own yard and the queue silent for the first time',
-     'the relay mast raised again and pointed back down the chain the orders came from'),
+    (4, 5, 'THE COMPANION',
+     'a white dwarf close enough to fill half the sky, tiny and ferociously bright, a relay mast '
+     'standing black against it',
+     'the companion, a relay mast and yard where the standing orders are passed down the line',
+     'yard batteries at the mast base and relay shutters that blind the whole line at once',
+     'the mast down across its own yard, relay shutters closed and the line gone quiet',
+     'the mast raised again and the line running, orders passing down it exactly as before'),
 
-    (4, 6, 'THE VEIL',
-     'a star seen through an enormous unfinished swarm of panels, the swarm dimming it in '
-     'irregular bites as it turns',
-     'the swarm scaffold, a lattice of collector panels the size of continents hanging in '
-     'vacuum, half built',
-     'lattice batteries and pale teal field curtains strung between the panel frames',
-     'whole sections of the lattice torn away and tumbling, the star glaring through the gap',
-     'the swarm finished on a new plan, and the light it gathers spent on somebody'),
+    (4, 6, 'THE DOG STAR',
+     'a blue white blaze filling the sky over a capital built entirely of instruction halls',
+     'the origin, the hall the standing orders come from, tier on tier of silent desks and not one '
+     'occupied',
+     'hall batteries between the desk tiers and instruction gates sealing each tier from the next',
+     'the tiers broken through one after another, desks scattered and the instruction gates torn off '
+     'their tracks',
+     'the tiers restored and the desks realigned, the orders still issuing and the chairs still '
+     'empty'),
 ]
 
 # --------------------------------------------------------------------------
@@ -565,39 +573,23 @@ BEATS = [
 # line is correct everywhere else. Add a row only when the review sheet shows
 # ASKED disagreeing with READS.
 ORDER_OVERRIDE = {
-    ('20', 'xeno'): 'the pod rows refilled and glowing again, the chitin floor breathing, '
-                    'the pens running exactly as they always have',
-    ('21', 'xeno'): 'the sloped floors running at full yield again, the run-off channels '
-                    'wet and moving',
+    ('12', 'xeno'): 'the ring anchor rebuilt and the ring relit, closing exactly as tightly as it always did',
+    ('20', 'xeno'): 'the pod rows refilled and glowing again, the chitin floor breathing, the pens running '
+                    'exactly as they always have',
+    ('21', 'xeno'): 'the sloped floors running at full yield again, the run-off channels wet and moving',
     ('22', 'xeno'): 'the honeycomb tiers relit and every banked lineage stable in its cell',
     ('23', 'xeno'): 'the chorus spire repaired and whole, singing out across the plain as before',
     ('24', 'xeno'): 'the furrows sown with blight again and the spore-vent towers standing back up',
     ('25', 'xeno'): 'the chamber walls resealed and the living record whole and glowing again',
     ('26', 'xeno'): 'the exchange compound rebuilt as a holding station, its records sealed inside it',
-    # Two more found by sweeping the Compact against every world it is NOT
-    # home on. Away from Zeta its text fits the neutral line everywhere,
-    # because "X now serves the swarm" and "X restored and running" are the
-    # same picture under a new owner, which is what beat 5 is for. These two
-    # are the exceptions, and both for the same reason: the neutral line
-    # carries the HOME power's VALUE, not just its function. A bay that asks
-    # nobody for papers is a pirate sentiment, and a garden asked what it
-    # wants is the Parallel's whole arc. The Compact grants neither.
-    ('36', 'xeno'): 'the sanctuary bay converted into a holding harbour, every berth '
-                    'accounted for and every hull logged',
-    ('40', 'xeno'): 'the dormant rows left exactly as they stand, unwoken and unasked, '
-                    'under guard',
-    # Three more, found by a keyword sweep for an art line promising OPENING
-    # against a text describing KEEPING. The sweep shortlisted 14 and only
-    # these 3 survived reading, so treat it as a shortlist and never a gate:
-    # it matched "sealed page" as a retention word and flagged all five
-    # STEROPE cells wrongly. All three real hits are the Compact, again, for
-    # the same reason as the other nine.
-    ('12', 'xeno'): 'the ring anchor rebuilt and the ring relit, closing exactly as tightly '
-                    'as it always did',
-    ('33', 'xeno'): 'the toll gate re-crewed and standing across the lane, the toll still '
-                    'collected and the collector changed',
-    ('34', 'xeno'): 'the shelter doors working and shut, the warren below them run as a '
-                    'holding pen',
+    ('33', 'xeno'): 'the shelter doors working and shut, the warren below them run as a holding pen',
+    ('34', 'xeno'): 'the toll gate re-crewed and standing across the lane, the toll still collected and the '
+                    'collector changed',
+    ('36', 'pirate'): 'the bay full again and the boom left down, every berth open and the first port out of Sol '
+                      'taking all comers',
+    ('36', 'xeno'): 'the sanctuary bay converted into a holding harbour, every berth accounted for and every hull '
+                    'logged',
+    ('40', 'xeno'): 'the dormant rows left exactly as they stand, unwoken and unasked, under guard',
 }
 
 INTRO_BEATS = ('1', '2', '3')

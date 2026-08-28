@@ -106,10 +106,29 @@ const GX_HOME_SYSTEMS = {
             worlds: ['MAIA', 'ELECTRA', 'TAYGETA', 'MEROPE', 'CELAENO', 'STEROPE', 'ALCYONE'] },
   xeno:   { name: 'ZETA RETICULI',
             worlds: ['ZETA-1 b', 'ZETA-1 c', 'ZETA-1 d', 'ZETA-2 b', 'ZETA-2 c', 'ZETA-2 d', 'SERPO'] },
-  pirate: { name: "BARNARD'S STAR",
-            worlds: ['BARNARD b', 'BARNARD c', 'BARNARD d', 'BARNARD e', 'BARNARD f', 'BARNARD g', 'HARBOUR NINE'] },
-  robot:  { name: "TABBY'S STAR",
-            worlds: ['KIC-8462 b', 'KIC-8462 c', 'KIC-8462 d', 'KIC-8462 e', 'KIC-8462 f', 'KIC-8462 g', 'THE VEIL'] },
+  /* TWO CORE SYSTEMS MOVED (owner directive, Session 42). The core five are
+     Earth, the Pleiades, Zeta Reticuli, Proxima Centauri and Sirius. Barnard's
+     Star and Tabby's Star are demoted to bonus systems, so no image is lost:
+     THE VEIL survives there as somebody else's unexplained work and HARBOUR
+     NINE as the port the Free Captains used before Proxima.
+
+     Same invariant as Earth above: world names are index-derived and consume no
+     rnd() call, so every seed's kinds, maps, arenas, owners, seats and boons are
+     byte-identical after this change. Only the labels move.
+
+     Proxima for the pirates because it is also a red flare dwarf, so all seven
+     world functions transfer and the flare shelter stays literally correct, and
+     because it is the closest star to Earth, which makes the Free Captains'
+     capital the first port out of Sol.
+
+     Sirius for the Parallel because Sirius B is a white dwarf: a star once
+     larger than Sirius A that burned through, shed most of itself and collapsed.
+     The makers' own star gave up its form, which is a better home for a power
+     that outlived its bodies than an irregularly dimming star was. */
+  pirate: { name: 'PROXIMA CENTAURI',
+            worlds: ['PROXIMA d', 'PROXIMA b', 'PROXIMA c', 'THE FLARE SHELTER', 'THE NARROWS', 'THE DARK LOCKER', 'PROXIMA GATE'] },
+  robot:  { name: 'SIRIUS',
+            worlds: ['SIRIUS A I', 'SIRIUS A II', 'THE ASH FIELD', 'SIRIUS B I', 'THE DIAMOND SHELF', 'THE COMPANION', 'THE DOG STAR'] },
 };
 
 /* The travelling pool: real nearby systems, worlds in real exoplanet letter
