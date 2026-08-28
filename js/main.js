@@ -14,6 +14,9 @@
   function start() {
     Sound.init();
     UI.init();
+    /* AFTER UI.init, because Phone borrows elements UI owns (#shop-list,
+       #muster-bar, #dock-inspector) and moves them into its sheet. */
+    if (typeof Phone !== 'undefined') Phone.init();
     Game.init(document.getElementById('game'));
     bindKeys();
     const wake = () => { Sound.resume(); window.removeEventListener('pointerdown', wake); };

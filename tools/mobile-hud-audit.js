@@ -344,44 +344,124 @@
        is measured: most of the board uncovered, and a real reduction against
        the open state rather than a token one. */
     const gaveBack = chrome > 0 ? (chrome - chromeFolded) / chrome : 0;
-    ok('M7 folding the sheet gives the board back',
-       openShare2 >= 0.7 && gaveBack >= 0.25,
-       'folded chrome ' + Math.round(chromeFolded) + 'px of ' + H + ' (' +
-       Math.round(chromeFolded / H * 100) + '%), board uncovered ' +
-       Math.round(openShare2 * 100) + '%, folding returned ' +
-       Math.round(gaveBack * 100) + '% of the chrome');
-  }
 
-  /* ---- 8. the sheet is only useful if the tabs actually switch ----------
-     Driven by CLICKING the real controls, not by setting data-pane, because
-     the wiring between the two is the thing that can break. */
-  if (PHONE) {
-    const tabOf = n => document.querySelector('#dock-tabs .dock-tab[data-pane="' + n + '"]');
-    const shown = () => [...document.querySelectorAll('#dock .dock-pane')]
-      .filter(vis).map(e => e.id).join(',');
-    document.body.classList.remove('dock-folded');
-    dock.dataset.pane = 'shop'; UI.syncDockTabs();
-    tabOf('muster').click();
-    const paneAttr = dock.dataset.pane;
-    const mDisp = getComputedStyle(document.getElementById('dock-muster')).display;
-    const toMuster = shown() === 'dock-muster';
-    tabOf('inspector').click();
-    const toInspector = shown() === 'dock-inspector';
-    const ariaOk = tabOf('inspector').getAttribute('aria-selected') === 'true' &&
-                   tabOf('muster').getAttribute('aria-selected') === 'false';
-    /* Tapping the tab you are already on folds the sheet away, which is the
-       gesture a player reaches for when they want the board. */
-    tabOf('inspector').click();
-    const foldedByRetap = document.body.classList.contains('dock-folded') && shown() === '';
-    document.getElementById('dock-collapse').click();
-    const unfolded = !document.body.classList.contains('dock-folded') && shown() === 'dock-inspector';
-    dock.dataset.pane = 'shop'; UI.syncDockTabs();
-    ok('M8 the dock tabs switch panes, and re-tapping folds the sheet',
-       toMuster && toInspector && ariaOk && foldedByRetap && unfolded,
-       'to UNITS ' + toMuster + ' (attr=' + paneAttr + ', muster display=' + mDisp +
-       ', showed "' + shown() + '"), to COMMAND ' + toInspector +
-       ', aria tracks ' + ariaOk +
-       ', re-tap folds ' + foldedByRetap + ', caret unfolds ' + unfolded);
+    /* M7 AND M8 WERE REWRITTEN IN SESSION 39, not deleted, because the design
+       they tested no longer exists. They asked whether the DOCK folded and
+       whether its TABS switched panes. On a phone there is no dock: the owner
+       asked for "just giving the information of your econ, the upcoming wave
+       and the HP of yourself and your opponent, as well as the ability to
+       rush wave and do your skill", a tap on a tile to place a tower, and
+       sending on the bottom. js/phone.js is that, and the two checks now ask
+       the questions the new shape can actually fail.
+
+       Deleting them would have been the wrong move twice over: it removes
+       coverage, and it hides the fact that the surface changed. */
+
+    /* ---- M7 the board is not underneath the chrome at all --------------- */
+    /* The old dock sat ON the board and folding was the mitigation. The phone
+       bar sits BELOW it, so the honest bar is much stricter than the 70% the
+       fold was held to: essentially none of the board may be covered. */
+    ok('M7 the board is never underneath the chrome',
+       openShare >= 0.98,
+       Math.round(openShare * 100) + '% of the board is uncovered with the bar up (needs 98%), ' +
+       'chrome ' + Math.round(chrome) + 'px of ' + H +
+       ' (' + Math.round(chrome / H * 100) + '%)');
+
+    /* ---- M8 the phone bar carries what the owner asked for -------------- */
+    var bar = document.getElementById('phone-bar');
+    var need = ['pb-my-hp', 'pb-my-gold', 'pb-ai-hp', 'pb-wave', 'pb-rush', 'pb-send', 'pb-abils'];
+    var missing = need.filter(function (id) {
+      var e = document.getElementById(id);
+      return !e || !e.getBoundingClientRect().width;
+    });
+    /* Every control on the action row has to clear the thumb floor. The
+       readouts on the status row are not targets and are not measured here;
+       M5 already sweeps everything that IS one. */
+    var tooSmall = [];
+    (bar ? [].slice.call(bar.querySelectorAll('.pb-btn')) : []).forEach(function (b) {
+      var r = b.getBoundingClientRect();
+      if (r.height < 44 || r.width < 44) tooSmall.push((b.id || b.className) + ' ' +
+        Math.round(r.width) + 'x' + Math.round(r.height));
+    });
+    ok('M8 the phone bar shows econ, wave, both HP, rush, skill and send',
+       !!bar && missing.length === 0 && tooSmall.length === 0,
+       !bar ? 'no #phone-bar on a phone-width viewport'
+            : (missing.length ? 'missing or zero-size: ' + missing.join(', ') : '') +
+              (tooSmall.length ? ' under the 44px thumb floor: ' + tooSmall.join(', ') : '') ||
+              (bar.querySelectorAll('.pb-btn').length + ' controls, all at least 44px, every readout present'));
+
+    /* ---- M10 the bar is opaque, so its contrast does not depend on the
+       board behind it ---------------------------------------------------- */
+    /* --panel-2 resolves to rgba(19, 27, 45, 0.82) at this breakpoint, so a
+       bare `background: var(--panel-2)` left the bar 82% over a LIVE BOARD:
+       every contrast figure then depended on what the board happened to be
+       drawing underneath, and the measurement that said it passed had
+       composited it over black, which is the best case rather than the worst.
+       Painting the panel over the opaque ground token fixed it. This asserts
+       the property rather than the fix: composite the bar over white and over
+       black and require the same pixel. */
+    var pbar = document.getElementById('phone-bar');
+    if (pbar) {
+      var pcx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+      var over = function (under, top) {
+        pcx.clearRect(0, 0, 1, 1);
+        pcx.fillStyle = under; pcx.fillRect(0, 0, 1, 1);
+        pcx.fillStyle = top;   pcx.fillRect(0, 0, 1, 1);
+        var d = pcx.getImageData(0, 0, 1, 1).data;
+        return d[0] + ',' + d[1] + ',' + d[2];
+      };
+      var pcs = getComputedStyle(pbar);
+      var onWhite = over('#ffffff', pcs.backgroundColor);
+      var onBlack = over('#000000', pcs.backgroundColor);
+      /* backgroundColor alone can be transparent when the opacity comes from a
+         background-image layer, which is exactly how this is built, so an
+         image layer counts as opaque cover too. */
+      var hasLayer = pcs.backgroundImage && pcs.backgroundImage !== 'none';
+      ok('M10 the phone bar does not let the board show through its text',
+         onWhite === onBlack || hasLayer,
+         onWhite === onBlack
+           ? 'the bar composites identically over white and black, so text contrast is fixed'
+           : (hasLayer ? 'opaque via a background layer over the ground token'
+                       : 'translucent: ' + onWhite + ' over white vs ' + onBlack + ' over black'));
+    }
+
+    /* ---- M9 a tap on a tile places a tower, which is the whole point ---- */
+    var placed = 'not attempted';
+    if (typeof Phone !== 'undefined' && Phone.on && typeof Game !== 'undefined' && Game.canBuild) {
+      var spot = null;
+      for (var gy2 = 0; gy2 < FIELD.rows && !spot; gy2++)
+        for (var gx2 = 0; gx2 < FIELD.cols && !spot; gx2++)
+          if (Game.canBuild(0, gx2, gy2, 1) && !Game.towerAt(gx2, gy2)) spot = { gx: gx2, gy: gy2 };
+      if (!spot) placed = 'no buildable tile to test with';
+      else {
+        Game.sides[0].gold = 9999;
+        Phone.openBuildAt(spot.gx, spot.gy);
+        var sheet = document.getElementById('phone-sheet');
+        var card = sheet && sheet.querySelector('#shop-list [data-tower]');
+        if (!Phone.pendingTile || Phone.pendingTile.gx !== spot.gx || Phone.pendingTile.gy !== spot.gy)
+          placed = 'openBuildAt did not arm the tile it was given';
+        else if (!card) placed = 'the sheet opened with no tower cards in it';
+        else {
+          /* THE REAL PATH. card.click() runs js/ui.js's own shop handler, which
+             is what sets Game.selectedType, and commitPendingBuild is the exact
+             method the sheet's listener defers to. The first cut of this check
+             called Game.build directly and therefore passed against a planted
+             defect that had broken tap-to-place outright. */
+          var before = Game.sides[0].towers.length;
+          card.click();
+          var landed = Phone.commitPendingBuild();
+          placed = (landed && Game.sides[0].towers.length === before + 1 &&
+                    !!Game.towerAt(spot.gx, spot.gy))
+            ? 'ok'
+            : 'the sheet opened but the chosen tower did not land on the tapped tile';
+        }
+      }
+    } else placed = 'Phone is not active at this width';
+    ok('M9 tapping a tile opens the tower sheet and the choice lands on that tile',
+       placed === 'ok',
+       placed === 'ok'
+         ? 'a tile tap armed the sheet and the tower chosen was built on that exact tile'
+         : placed);
   }
 
   const pass = C.filter(c => c.verdict === 'PASS').length;

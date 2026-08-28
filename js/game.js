@@ -5808,6 +5808,16 @@ const Game = {
       this.selectedNode = (!existing && !this.selectedRubble && nodeAt(p.gx, p.gy)) ? [p.gx, p.gy] : null;
       if (existing || this.selectedRubble || this.selectedNode) Sound.play('click');
       UI.syncAll();
+      /* ON A PHONE THE TAP IS THE WHOLE INTERACTION (owner, Session 39: "you
+         should be able to just click on a tile and you could place a tower").
+         Desktop keeps arming a tower in the shop and then clicking the ground,
+         which is faster with a mouse and is what every existing check drives.
+         This runs last so it changes nothing about the selection above: it
+         only opens the sheet that acts on it. */
+      if (typeof Phone !== 'undefined' && Phone.on) {
+        if (existing) Phone.openInspector();
+        else if (this.canBuild(0, p.gx, p.gy, 1)) Phone.openBuildAt(p.gx, p.gy);
+      }
     });
     cv.addEventListener('contextmenu', e => {
       e.preventDefault();

@@ -4771,3 +4771,149 @@ body.rm-user #screen-game #rotate-hint b { animation: none; }
   .cd-sig { padding: 10px 12px; }
   .sig-note { font-size: 11.5px; }
 }
+
+/* ── THE PHONE BATTLE HUD ─────────────────────────────────────────────────
+   Owner, Session 39: the phone build wanted "just giving the information of
+   your econ, the upcoming wave and the HP of yourself and your opponent, as
+   well as the ability to rush wave and do your skill", tap a tile to place a
+   tower, and unit sending on the bottom too.
+
+   WHAT THIS REPLACES, measured at 375x812 on the previous build: four bars
+   totalling 384px of an 812px screen (#dock 188, #hud 96, #btn-rush 48,
+   #battle-controls 52), with the dock parked on top of the bottom 141px of
+   the board. One bar of 92px now, and a sheet that is only on screen while
+   you are choosing something.
+
+   Scoped to `body.phone-hud`, a class js/phone.js sets from the same
+   `(max-width: 760px)` query, so these rules cannot reach a desktop even by
+   accident and the block above stays the layout for anything that is not a
+   battle. Appended after that block deliberately: `body.phone-hud #canvas-wrap`
+   and `body.immersive #canvas-wrap` have identical specificity, so source
+   order is what decides, and this has to win.
+
+   ONE ACCENT. --cyan carries every interactive edge. --gold appears only on
+   the gold figure and --rose only on the rival side, which are semantic jobs
+   (whose resource is this), not decoration. */
+:root { --pb-stat-h: 34px; --pb-act-h: 58px;
+        --pb-h: calc(var(--pb-stat-h) + var(--pb-act-h) + env(safe-area-inset-bottom, 0px)); }
+
+/* The four bars this replaces. Hidden, not removed: js/ui.js still writes to
+   the children of #hud every sync and a missing node would throw. */
+body.phone-hud #hud,
+body.phone-hud #btn-rush,
+body.phone-hud #battle-controls,
+body.phone-hud #dock,
+body.phone-hud #rotate-hint { display: none !important; }
+
+/* The board takes everything the bar does not. */
+body.phone-hud #canvas-wrap,
+body.phone-hud.immersive #canvas-wrap { inset: 0 0 var(--pb-h) 0; padding: 0; }
+
+#phone-bar { display: none; }
+body.phone-hud #phone-bar {
+  display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  height: var(--pb-h); padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* OPAQUE, and deliberately not a bare var(--panel-2). That token resolves to
+     rgba(19, 27, 45, 0.82) at this breakpoint, so the bar was 82% over a live
+     board and every contrast figure depended on what the board happened to be
+     drawing underneath. Painting the same panel colour ON TOP of the opaque
+     ground token keeps the panel look and makes the worst case equal to the
+     best case. Same reason the sheet below does it. */
+  background: linear-gradient(var(--panel-2), var(--panel-2)), var(--bg);
+  border-top: 1px solid var(--line-2);
+}
+
+/* ---- row 1: the four numbers, and nothing else ---- */
+.pb-stat { display: flex; align-items: center; justify-content: space-between;
+           gap: var(--s2); height: var(--pb-stat-h); padding: 0 var(--s3); }
+.pb-side { display: flex; align-items: center; gap: 5px; font: 600 14px/1 var(--num); color: var(--text); }
+.pb-side .pb-ic { font-style: normal; font-size: 11px; color: var(--text-mute); }
+.pb-side .pb-ic.gold { color: var(--gold); }
+.pb-side.rival { color: var(--text-dim); }
+.pb-wave { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.pb-wave b { font: 700 11px/1 var(--display); letter-spacing: .12em; color: var(--text-dim); white-space: nowrap; }
+.pb-wave em { font: 600 11px/1 var(--num); font-style: normal; color: var(--cyan); white-space: nowrap; }
+
+/* ---- row 2: the four things you can do ---- */
+.pb-act { display: flex; align-items: stretch; gap: 6px; height: var(--pb-act-h); padding: 0 var(--s2) 6px; }
+.pb-abils { display: flex; gap: 6px; flex: 1 1 auto; min-width: 0; }
+
+/* 52px tall inside a 58px row clears the 44px thumb floor with margin, and
+   `flex: 1` keeps every button the same width at any phone size rather than
+   letting the longest label decide. */
+.pb-btn {
+  flex: 1 1 0; min-width: 0; position: relative; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: 52px; padding: 4px 6px; border-radius: var(--r);
+  background: var(--panel); border: 1px solid var(--line-2); color: var(--text);
+  font: inherit; cursor: pointer;
+  transition: transform .12s var(--e-tap), opacity .12s var(--e-tap);
+}
+.pb-btn b  { font: 700 15px/1 var(--display); letter-spacing: .06em; }
+.pb-btn em { font: 600 9px/1 var(--display); font-style: normal; letter-spacing: .1em;
+             color: var(--text-mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.pb-btn.wide { flex: 1.4 1 0; }
+.pb-btn:active:not(:disabled) { transform: scale(.97); }
+.pb-btn:disabled { opacity: .42; cursor: default; }
+.pb-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+/* A ready ability is the only lit thing on the row, so "can I use it" is
+   answered by looking rather than by reading. */
+.pb-btn.abil.ready { border-color: var(--cyan); color: var(--cyan); }
+.pb-btn.abil.live  { border-color: var(--green); color: var(--green); }
+.pb-btn.abil.aiming { background: color-mix(in srgb, var(--cyan) 18%, var(--panel)); }
+/* Cooldown fills from the left along the bottom edge. transform only, so it
+   costs no layout on a frame loop that is already drawing a board. */
+.pb-cd { position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+         background: var(--cyan); transform-origin: left center; transform: scaleX(1);
+         transition: transform .18s linear; pointer-events: none; }
+.pb-btn.abil.ready .pb-cd { background: var(--cyan); }
+.pb-btn.abil:not(.ready) .pb-cd { background: var(--text-mute); }
+
+/* ---- the sheet: on screen only while you are choosing ---- */
+#phone-sheet { display: none; }
+body.phone-hud #phone-sheet[hidden] { display: none; }
+body.phone-hud #phone-sheet { display: block; position: fixed; inset: 0; z-index: 60; }
+.ps-scrim { position: absolute; inset: 0; background: rgba(3, 6, 12, .58);
+            opacity: 0; transition: opacity .18s var(--e-tap); }
+#phone-sheet.open .ps-scrim { opacity: 1; }
+.ps-panel {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  max-height: 62vh; display: flex; flex-direction: column;
+  background: linear-gradient(var(--panel-2), var(--panel-2)), var(--bg);
+  border-top: 1px solid var(--line-2);
+  border-radius: 14px 14px 0 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  transform: translateY(100%); transition: transform .2s var(--e-tap);
+}
+#phone-sheet.open .ps-panel { transform: translateY(0); }
+.ps-head { display: flex; align-items: center; justify-content: space-between;
+           padding: var(--s3) var(--s3) var(--s2); border-bottom: 1px solid var(--line); }
+.ps-head h2 { margin: 0; font: 700 12px/1 var(--display); letter-spacing: .16em; color: var(--text-dim); }
+.ps-close { width: 44px; height: 44px; margin: -10px -8px -10px 0; border: 0; background: none;
+            color: var(--text-dim); font-size: 16px; cursor: pointer; border-radius: var(--r); }
+.ps-close:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.ps-body { overflow-y: auto; -webkit-overflow-scrolling: touch; padding: var(--s3); }
+.ps-note { margin: 0 0 var(--s3); font: 500 12px/1.4 var(--mono); color: var(--text-dim); }
+
+/* The borrowed panels are desktop-shaped inside their own dock. Inside the
+   sheet they are a single column at full width, which is the only change
+   they need: the CARDS keep their own styling, so a tower reads the same
+   here as it does anywhere else in the game. */
+body.phone-hud .ps-body > #shop-list,
+body.phone-hud .ps-body > #muster-bar { display: grid; grid-template-columns: 1fr; gap: var(--s2); width: 100%; }
+body.phone-hud .ps-body > #dock-inspector { display: block; width: 100%; }
+body.phone-hud .ps-body > #dock-inspector > * { margin-bottom: var(--s2); }
+
+/* The abilities live on the BAR now, so the copy the inspector pane carries
+   is a second control for the same thing one swipe apart. Hidden rather than
+   moved, because js/ui.js keeps syncing #ability-bar wherever it is and a
+   detached node would stop receiving cooldowns. */
+body.phone-hud .ps-body #ability-bar { display: none; }
+
+/* The armed tile is worth saying out loud while the sheet covers the board. */
+body.pb-placing .pb-wave em { color: var(--gold); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pb-btn, .ps-scrim, .ps-panel, .pb-cd { transition: none; }
+}

@@ -6224,7 +6224,12 @@ const UI = {
 
   /* ============================================================== SYNC */
 
-  syncAll() { this.syncLive(); this.syncShop(); this.renderInspector(true); this.syncSpeed(); this.syncMods(); },
+  /* Phone.sync rides along on syncAll rather than running a timer of its
+     own: the phone bar shows the same numbers as the desktop hud, so it
+     must refresh at exactly the same moments or the two disagree. It is a
+     no-op above the phone breakpoint. */
+  syncAll() { this.syncLive(); this.syncShop(); this.renderInspector(true); this.syncSpeed(); this.syncMods();
+              if (typeof Phone !== 'undefined') Phone.sync(); },
 
   syncLive() {
     const e = this.el;
