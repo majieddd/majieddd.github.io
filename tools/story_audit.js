@@ -39,7 +39,25 @@ for (const si of [0, 1, 2, 3, 4]) for (let wi = 0; wi < 7; wi++) {
    Heuristic: take the first clause (up to the first comma or full stop) and ask
    whether it contains a finite verb. A bare noun phrase has none. This is a
    heuristic and it is reported as a flag to read, never as an automatic verdict. */
-const FINITE = /\b(is|are|was|were|has|have|had|does|do|did|will|would|can|could|should|must|came|come|comes|stands?|stood|runs?|ran|holds?|held|sits?|sat|lies?|lay|keeps?|kept|goes|go|went|makes?|made|took|takes?|turns?|turned|burns?|burned|hangs?|hung|locks?|locked|opens?|opened|never|walks?|walked|left|leaves?|gave|gives?|threw|throws?|says?|said|knows?|knew|built|builds?|drove|drives?|dug|digs?)\b/i;
+/* The finite-verb list is the instrument, and it was WRONG before it was right.
+   First pass flagged five lines that are perfectly good narration, because the
+   list did not contain floats, cut, climbs, rises or strips. A detector with a
+   hand-written vocabulary will always under-report; it is kept because the
+   defect it looks for (an opening clause that is a bare noun phrase) has no
+   cheaper test, and every flag is read by eye before anything is rewritten.
+   Suspect the instrument before the system. */
+const FINITE = new RegExp('\\b(' + [
+  'is|are|was|were|be|been|has|have|had|does|do|did',
+  'will|would|can|could|should|must|may|might',
+  'came|come|comes|stands?|stood|runs?|ran|holds?|held|sits?|sat|lies?|lay',
+  'keeps?|kept|goes|go|went|makes?|made|took|takes?|turns?|turned',
+  'burns?|burned|hangs?|hung|locks?|locked|opens?|opened|closes?|closed',
+  'walks?|walked|left|leaves?|gave|gives?|threw|throws?|says?|said',
+  'knows?|knew|built|builds?|drove|drives?|dug|digs?|floats?|floated',
+  'cut|cuts|climbs?|climbed|rises?|rose|strips?|stripped|banks?|banked',
+  'tries|tried|moors?|moored|spins?|spun|feeds?|fed|fires?|fired',
+  'covers?|covered|seals?|sealed|guards?|guarded|never',
+].join('|') + ')\\b', 'i');
 
 function firstClause(s) {
   const m = String(s).split(/[,.;:]/)[0] || '';

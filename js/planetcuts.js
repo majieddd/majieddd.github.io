@@ -52,8 +52,8 @@ const PLANET_CUTS = {
      hulls, which is the one image all five campaigns share. */
   '00': {
     name: 'EARTH',
-    ground: 'A coastal city under the fall, where the fragments came down whole and split open in the streets. Whatever was riding inside Apophis was already awake when it landed.',
-    works: 'The intercept batteries that broke the rock, swung around and depressed to fire along their own avenues, and every shelter door in the district sealed from the inside.',
+    ground: 'The fragments came down whole over the harbour district and split open in the streets. Whatever had been riding inside Apophis was already awake when it landed.',
+    works: 'The same intercept batteries that broke the rock are swung round now, depressed to fire along their own avenues, and every shelter door in the district is sealed from the inside.',
     f: {
       human: ['This is the day. The rock is gravel over our heads and the gravel had passengers. Everything we thought we were surviving was the delivery.',
               'The district is ours and the hulls are cooling in the street. We counted what came out of them. We are not releasing that number yet.',
@@ -75,8 +75,8 @@ const PLANET_CUTS = {
 
   '01': {
     name: 'VENUS',
-    ground: 'A city of moored gasbags riding the one layer of this atmosphere that will not crush a hull, fifty kilometres above a surface nobody has stood on.',
-    works: 'Gun blisters set into the pressure hulls, and mooring towers eaten half through by acid. Everything here is one bad seam away from falling for an hour.',
+    ground: 'The city floats fifty kilometres up, moored to nothing, riding the one layer of this atmosphere that will not crush a hull. Nobody has ever stood on the ground below it.',
+    works: 'Gun blisters are set straight into the pressure hulls, and the mooring towers have been eaten half through by acid. Everything here is one bad seam away from falling for an hour.',
     f: {
       human: ['Fifty kilometres up is the only altitude on this planet where a person can live. Everyone who is about to fight us knows it too.',
               'The platforms are ours and most of them are still flying. We cut the moorings we had to and we are not pretending that was cheap.',
@@ -98,8 +98,8 @@ const PLANET_CUTS = {
 
   '02': {
     name: 'MARS',
-    ground: 'A habitat trench dug along the floor of Valles Marineris, with four kilometres of cliff on either side and one dust storm a season that closes the sky.',
-    works: 'Gun galleries cut straight into the canyon walls, firing down. The trench was built to be defended by people who expected to be outnumbered.',
+    ground: 'They dug the habitat trench along the floor of Valles Marineris, four kilometres of cliff on either side, and once a season a dust storm closes the sky over it completely.',
+    works: 'Gun galleries are cut straight into the canyon walls and fire down onto the floor. Whoever built this trench expected to be outnumbered in it.',
     f: {
       human: ['Mars was the practice run. Everything we know about living somewhere that wants us dead, we learned in that trench.',
               'The trench line held longer than the manual says it could, and it was ours by the second dust fall. We buried theirs beside ours. Same trench.',
@@ -121,8 +121,8 @@ const PLANET_CUTS = {
 
   '03': {
     name: 'CERES',
-    ground: 'The Occator salt flats, blinding white under a black sky, with mine heads sunk down through the evaporite into water ice older than the inner planets.',
-    works: 'Rail batteries that need almost no recoil mounting in this gravity, and ore cranes swung around and used as clubs. Improvised, and heavy.',
+    ground: 'The Occator flats burn white under a black sky, and the mine heads go straight down through the salt into water ice older than the inner planets.',
+    works: 'Rail batteries barely need a recoil mount in this gravity, and the ore cranes have been swung round and used as clubs. Improvised, and very heavy.',
     f: {
       human: ['Water. Everything else out here is a preference. Ceres is where a fleet either drinks or turns around.',
               'The domes are cratered and the cranes are down, but the shafts are dry and intact, which was the entire reason we came.',
@@ -144,8 +144,8 @@ const PLANET_CUTS = {
 
   '04': {
     name: 'EUROPA',
-    ground: 'A drill station driving down through twenty kilometres of ice toward an ocean that has been dark and warm and undisturbed since before anything on Earth had a spine.',
-    works: 'Revetments cut into the bergs and turrets fed by the drill vents, which means the defences stay warm and everything around them does not.',
+    ground: 'The drill station is going down through twenty kilometres of ice toward an ocean that has been dark and warm and undisturbed since before anything on Earth had a spine.',
+    works: 'Revetments are cut into the bergs and the turrets feed off the drill vents, so the defences stay warm and everything around them does not.',
     f: {
       human: ['There is an ocean under this ice and we have never once been allowed to look at it. Today the people saying no are in range.',
               'The shaft is flooded and refrozen and the station is ours. Whatever is down there stayed down there. That may have been the win.',
@@ -167,8 +167,8 @@ const PLANET_CUTS = {
 
   '05': {
     name: 'TITAN',
-    ground: 'A shoreline of liquid methane under an orange sky, with cryovolcanoes steaming along the beach and enough hydrocarbon in the lake to fuel a war for a century.',
-    works: 'Shore batteries up on stilts above the methane and bunkers cut into the warm vents. Everything here burns, which shapes how both sides fight.',
+    ground: 'You come in over a methane shoreline under an orange sky, cryovolcanoes steaming along the beach, and enough hydrocarbon in that lake to fuel a war for a century.',
+    works: 'Shore batteries stand on stilts above the methane and the bunkers are cut into the warm vents. Everything here burns, and that shapes how both sides fight.',
     f: {
       human: ['A lake of fuel, an atmosphere you can walk around in with a coat and a mask, and a sky nobody has ever seen the sun through. Set down gently.',
               'The shore burned for two days. We took what we came for and a good deal of it went up while we were taking it.',
@@ -190,8 +190,8 @@ const PLANET_CUTS = {
 
   '06': {
     name: 'LUNA',
-    ground: 'The far side, where no signal from Earth has ever reached, and a relay dish half sunk in the regolith that was still warm when the first human crew found it.',
-    works: 'Hardpoints buried in the basin rim and mass drivers laid along the berms. Whoever built the dish also built the guns, and did not build them for us.',
+    ground: 'No signal from Earth has ever reached the far side. The relay dish sits half sunk in the regolith, and it was still warm when the first human crew found it.',
+    works: 'Hardpoints are buried in the basin rim and mass drivers run along the berms. Whoever built the dish built the guns as well, and did not build them for us.',
     f: {
       human: ['This is the one. The far side, the dish, the thing that was listening to us the whole time. Everything since the rock has been travel.',
               'The dish is cracked and dark and standing on our side of the line. Ten thousand years of somebody else watching, ended in about forty minutes.',
@@ -219,8 +219,8 @@ const PLANET_CUTS = {
 
   '10': {
     name: 'MAIA',
-    ground: 'A hall of tuned crystal pipes standing upright in nebula light, where the Federation cuts the hymns that certify a world as protected.',
-    works: 'Choir-ring emplacements braced between the pipes, and hard-light buttresses that ring aloud when they are struck. The defence and the instrument are the same object.',
+    ground: 'They cut the hymns here that certify a world as protected. The pipes stand upright in nebula light, tuned, taller than towers, and they are singing when you arrive.',
+    works: 'Choir-ring emplacements are braced between the pipes, and the hard-light buttresses ring aloud when they are struck. The defence and the instrument are the same object.',
     f: {
       human: ['They make the songs here. The ones sung over a world just before its file is stamped DEFERRED. We have heard the recording.',
               'The pipes are down. We broke a musical instrument the size of a cathedral, and not one of us has worked out how to feel about it.',
@@ -242,8 +242,8 @@ const PLANET_CUTS = {
 
   '11': {
     name: 'ELECTRA',
-    ground: 'The registry archive of the forty protected worlds, tier upon tier of light-etched shelving, under a star that is visibly going out.',
-    works: 'Buttress turrets at every tier, and reading-vault doors of hard light that seal from the inside. The archive was built to survive its own librarians.',
+    ground: 'Every one of the forty protected worlds is filed here, tier upon tier of light-etched shelving, under a star that is visibly going out.',
+    works: 'Buttress turrets cover every tier and the reading-vault doors seal from the inside. The archive was built to survive its own librarians.',
     f: {
       human: ['Forty worlds on file, protected, for ten thousand years. We want to read what protected actually meant. Take the building.',
               'The shelves are down, the records are loose and drifting, and the crews are catching them by hand. Nobody gave that order. Everybody is doing it.',
@@ -265,8 +265,8 @@ const PLANET_CUTS = {
 
   '12': {
     name: 'TAYGETA',
-    ground: 'The ground end of a planetary shield ring, where cabling the width of towers climbs out of the atmosphere, under two suns that throw every shadow twice.',
-    works: 'Anchor-mount batteries and hard-light shear walls at the base. Bring the anchor down and the ring above comes down in sections, on everybody.',
+    ground: 'Cabling the width of towers climbs out of the atmosphere here, and this is where it comes down. Two suns throw every shadow twice.',
+    works: 'Anchor-mount batteries and hard-light shear walls hold the base. Bring the anchor down and the ring above comes down in sections, on everybody.',
     f: {
       human: ['That ring is what a protected world looks like from underneath. We are about to find out what it looks like from inside.',
               'The anchor is cut. The ring came down in pieces over four hours and we watched every one of them fall. It was beautiful, and it was a fence.',
@@ -288,8 +288,8 @@ const PLANET_CUTS = {
 
   '13': {
     name: 'MEROPE',
-    ground: 'Terraces of seed vaults growing under hard-light sun panels, in the brightest nebulosity of the cluster, where the Federation banks what a world will need if it is ever allowed to grow.',
-    works: 'Garden-wall emplacements and irrigation towers turned into firing points. Every shot fired here costs somebody a harvest ten thousand years from now.',
+    ground: 'They bank seeds here for worlds that have not been allowed to grow yet, terraced under hard-light panels in the brightest part of the cluster.',
+    works: 'Garden-wall emplacements and irrigation towers have been turned into firing points. Every shot fired here costs somebody a harvest ten thousand years out.',
     f: {
       human: ['They have been saving seed for worlds that were never permitted to grow. We would like ours back, if it is in there.',
               'We fought across a garden. Half the terraces burned and every vault held, which is the only sentence in this report worth reading.',
@@ -311,8 +311,8 @@ const PLANET_CUTS = {
 
   '14': {
     name: 'CELAENO',
-    ground: 'A tribunal floor of tiered stone benches ringing an open centre, under the dimmest star of the cluster, where the Federation tries its own.',
-    works: 'Gate batteries at every entrance and hard-light barricades across the bench tiers. A court built to be defended is a court that expected to be hated.',
+    ground: 'This is where the Federation tries its own. The benches ring an open floor in tiers, under the dimmest star in the cluster.',
+    works: 'Gate batteries cover every entrance and hard-light barricades cross the bench tiers. A court built to be defended is a court that expected to be hated.',
     f: {
       human: ['This is where they judge each other. We have read the transcripts, and we have questions about the acquittals.',
               'The benches are split and the floor is cracked straight across the middle. Symbolism was not the intent. It is going to be the story.',
@@ -334,8 +334,8 @@ const PLANET_CUTS = {
 
   '15': {
     name: 'STEROPE',
-    ground: 'Sunken chambers of sealed pages, every door stamped and dated and never once opened, under two dim stars that barely light the ground.',
-    works: 'Vault-door batteries and hard-light seals holding the chambers shut, maintained for a century by wardens who never read what they were guarding.',
+    ground: 'Every door down here is stamped, dated, and has never once been opened. Two dim stars barely light the ground above the chambers.',
+    works: 'Vault-door batteries and hard-light seals hold the chambers shut. Wardens maintained them for a century without ever reading what they were guarding.',
     f: {
       human: ['Every time they decided not to help somebody, the paperwork went in there. Ours is in there. Open it.',
               'The doors are blown, the pages are a metre deep, and the crews are reading them where they stand. We have lost all discipline. It is fine.',
@@ -357,8 +357,8 @@ const PLANET_CUTS = {
 
   '16': {
     name: 'ALCYONE',
-    ground: 'The Cathedral of Rings, concentric circles of gold standing around an empty central floor, in the brightest light of the cluster. The First Speaker sits here.',
-    works: 'Ring-tier batteries and layered hard-light choirs turning slowly around the seat. The innermost ring has never been fired. It is about to be.',
+    ground: 'The Cathedral of Rings stands in the brightest light of the cluster, gold circles around an empty central floor. The First Speaker sits here.',
+    works: 'Ring-tier batteries and layered hard-light choirs turn slowly around the seat. The innermost ring has never been fired. It is about to be.',
     f: {
       human: ['The seat. Where somebody decided, eighty years ago, that we were not ready. We are going to go and be ready in front of them.',
               'The rings are bent out of true, the floor is open to the sky, and the seat is empty. It was empty when we got there.',
@@ -384,8 +384,8 @@ const PLANET_CUTS = {
 
   '20': {
     name: 'ZETA-1 b',
-    ground: 'The pens. Rows of glowing containment pods sunk into a floor of living chitin, running to the horizon in every direction, and quiet.',
-    works: 'Sphincter gates that close over the pod rows on a reflex, and growth batteries seated in the ribs of the floor itself.',
+    ground: 'The pods run to the horizon in every direction, sunk into a floor of living chitin, glowing, and quiet. This is where the Compact keeps what it has taken.',
+    works: 'Sphincter gates close over the pod rows on reflex, and growth batteries are seated in the ribs of the floor itself.',
     f: {
       human: ['This is where they kept people. Not a metaphor, not a translation error. Pods, rows of them, and a floor that breathes. Go in.',
               'The pods are open and dark. We got four thousand out. The number that was in there before we arrived is a different number and we have it.',
@@ -407,8 +407,8 @@ const PLANET_CUTS = {
 
   '21': {
     name: 'ZETA-1 c',
-    ground: 'The rendering yards, vast sloped floors where the yield is broken down, with run-off channels cut deep into the shell and running always in one direction.',
-    works: 'Yard-mouth batteries and hooked gantries that swing down across the channels, built to handle mass that does not want to be handled.',
+    ground: 'The yield comes apart here, on sloped floors the size of cities, and the run-off channels cut deep into the shell all run the same direction.',
+    works: 'Yard-mouth batteries and hooked gantries swing down across the channels, built to handle mass that does not want to be handled.',
     f: {
       human: ['We are not going to describe what this place is for. The crews have seen the survey. Take the yards and do not look down the channels.',
               'The floors are cold. The channels are dry. There is nothing to recover here and we are taking the ground anyway, on principle.',
@@ -430,8 +430,8 @@ const PLANET_CUTS = {
 
   '22': {
     name: 'ZETA-1 d',
-    ground: 'The gene vaults, a honeycomb of banked lineages glowing faintly in their cells, every one of them a species catalogued and shelved against future use.',
-    works: 'Comb-face batteries and membrane bulkheads that seal the honeycomb tier by tier, so losing a level costs the defender nothing.',
+    ground: 'Every species the Compact has ever catalogued is banked in this honeycomb, glowing faintly in its cell, shelved against some future use.',
+    works: 'Comb-face batteries cover the faces and membrane bulkheads seal the honeycomb tier by tier, so losing a level costs the defender nothing.',
     f: {
       human: ['Every species they ever farmed is filed in that comb, ours included. There is a cell in there with our name on it. Go and read it.',
               'The comb is punched through in nine places and the cells are guttering. We saved what we could reach and we could not reach most of it.',
@@ -453,8 +453,8 @@ const PLANET_CUTS = {
 
   '23': {
     name: 'ZETA-2 b',
-    ground: 'The chorus spire, a column of fused bodies and resonating membrane rising out of the plain, through which the Hivemind speaks to everything the Compact owns.',
-    works: 'Spire-base batteries and membrane baffles wound around the column, which absorb sound and shellfire with equal indifference.',
+    ground: 'The spire rises out of the plain as a column of fused bodies and resonating membrane, and everything the Compact owns hears the Hivemind through it.',
+    works: 'Spire-base batteries ring the column, and membrane baffles wound around it absorb sound and shellfire with equal indifference.',
     f: {
       human: ['That tower is how the whole Compact thinks at once. Cut it and they are a very large number of very hungry individuals.',
               'The spire is cracked down its length and it has stopped. The silence across this plain is the loudest thing any of us has heard.',
@@ -476,8 +476,8 @@ const PLANET_CUTS = {
 
   '24': {
     name: 'ZETA-2 c',
-    ground: 'The blight fields, furrowed ground where something is grown that should not be, with spores drifting low over the furrows in the weak binary light.',
-    works: 'Furrow batteries along the field edges and spore-vent towers that can turn the whole crop into a weapon on about a minute of notice.',
+    ground: 'Something is being grown in these furrows that should not be, and the spores drift low over the ground in the weak light of two suns.',
+    works: 'Furrow batteries line the field edges and spore-vent towers can turn the whole crop into a weapon on about a minute of notice.',
     f: {
       human: ['Do not breathe out there and do not take your helmet off for anything. The crop is the weapon. Burn what you cross.',
               'The furrows are burned black in long stripes and the towers are down in them. Filters held on every suit. We checked twice.',
@@ -499,8 +499,8 @@ const PLANET_CUTS = {
 
   '25': {
     name: 'ZETA-2 d',
-    ground: 'The yield ledger vault, a chamber whose every wall is a living record of what has been taken and from whom, lit violet from the inside through a crack in the shell.',
-    works: 'Vault-mouth batteries and ribbed sphincter seals guarding the crack, which is the only way in and has been the only way in for four thousand cycles.',
+    ground: 'Every wall in this chamber is a living record of what has been taken and from whom. It lights violet from the inside, through a crack in the shell.',
+    works: 'Vault-mouth batteries and ribbed seals guard that crack, which is the only way in and has been the only way in for four thousand cycles.',
     f: {
       human: ['Every person they ever took is written on those walls. Every one. We are going to go in and copy all of it.',
               'The walls are slashed open and the record is bleeding light into the dark and we are recording every second of it.',
@@ -522,8 +522,8 @@ const PLANET_CUTS = {
 
   '26': {
     name: 'SERPO',
-    ground: 'A low compound of prefabricated human habs standing in alien sand under two suns, put up for an exchange programme that ran one way and was never spoken of again.',
-    works: 'Compound perimeter batteries, and membrane nests buried in the sand outside the wire that were not there when the habs were built.',
+    ground: 'Human habs stand in alien sand under two suns, prefabricated and still bolted down. They went up for an exchange programme that ran one way and was never spoken of again.',
+    works: 'Perimeter batteries cover the compound, and there are membrane nests buried in the sand outside the wire that were not there when the habs were built.',
     f: {
       human: ['Twelve went out. The file says twelve. It does not say how many came back and the crews have all done the arithmetic. Set down outside the wire.',
               'The habs are flat and the sand around them is glass. We found the roster. We found where they kept the roster. Both of those are in the report.',
@@ -549,8 +549,8 @@ const PLANET_CUTS = {
 
   '30': {
     name: 'PROXIMA d',
-    ground: 'The wreck yards, a plain of hulls from a hundred different builders, cut open and stacked, under a dim red sun that makes every shadow look like a hole.',
-    works: 'Yard-crane batteries and barricades welded together out of hull plate. Nothing here was designed as a fortification and all of it is being used as one.',
+    ground: 'Ships come here to die. The hulls lie in lanes sorted by whoever built them, a hundred different yards, all of them cut open, under a red sun that makes every shadow look like a hole.',
+    works: 'Yard cranes and cutting gantries are turned outward, with hull plate stacked into walls between them. Nothing here was designed as a fortification and all of it is being used as one.',
     f: {
       human: ['Every ship we have lost in this system ended up in that yard. Some of them are still on the manifest as missing.',
               'The stacks came down on top of each other and burned for most of a day. We recovered nine hulls and four sets of remains.',
@@ -572,8 +572,8 @@ const PLANET_CUTS = {
 
   '31': {
     name: 'PROXIMA b',
-    ground: 'The terminator strip, a town built the long way along the only ground on this world that is neither burning nor frozen. It is permanently sunset here and it always will be, because the planet has not turned since it formed.',
-    works: 'Ridge batteries dug into the sunset line, and shutter walls on both faces of the town that can close it against the day side or the night side, whichever is trying to get in.',
+    ground: 'This world has not turned since it formed, so the town runs the long way along the only ground that is neither burning nor frozen. It is permanently sunset here and it always will be.',
+    works: 'Ridge batteries are dug in along the sunset line, and shutter walls on both faces can close the town against the day side or the night side, whichever is trying to get in.',
     f: {
       human: ['One band of liveable ground on the whole planet and it never moves. Everything anyone here has ever built sits in a line you could walk in a day.',
               'We hold the ridge. The town is ours from the ice end to the burning end, and both ends are exactly where they were this morning.',
@@ -595,8 +595,8 @@ const PLANET_CUTS = {
 
   '32': {
     name: 'PROXIMA c',
-    ground: 'The cold refinery, cracking towers standing in a blue ice field far enough out that the plumes freeze on the way down and fall back as snow made of what the towers were trying to sell.',
-    works: 'Ice breach batteries ringed around the towers, and pipe runs armoured under banked snow that has to be cut open before anything can be repaired.',
+    ground: 'The plumes freeze on the way down out here and fall back as snow made of whatever the towers were trying to sell. The whole surface is blue ice.',
+    works: 'Ice breach batteries ring the cracking towers, and the pipe runs are armoured under banked snow that has to be cut open before anything can be repaired.',
     f: {
       human: ['They crack volatiles out here because it is too far out for anyone to bother stopping them. That logic held right up until today.',
               'Towers are down across the ice. The plumes went out one after another and you could watch it happening from orbit.',
@@ -618,8 +618,8 @@ const PLANET_CUTS = {
 
   '33': {
     name: 'THE FLARE SHELTER',
-    ground: 'A warren of habs driven down under metres of rock, because the star throws a flare hard enough to strip a surface and does it most days. The only thing above ground is hatches.',
-    works: 'Hatch batteries set flush into the stone, and shutter doors heavy enough to hold the sky out, which is what they were built for and not for this.',
+    ground: 'The star strips this surface bare most days, so everyone here lives under metres of rock. The only thing above ground is hatches.',
+    works: 'Hatch batteries sit flush with the stone, and the shutter doors are heavy enough to hold the sky out, which is what they were built for and not for this.',
     f: {
       human: ['They live under the ground here because the sun tries to kill them on a schedule. We are attacking during the quiet part of that schedule.',
               'Hatches are open, one after another, all the way down. The flare came over while we were still in the shafts and we felt it through the rock.',
@@ -641,8 +641,8 @@ const PLANET_CUTS = {
 
   '34': {
     name: 'THE NARROWS',
-    ground: 'A toll gate strung across the one clear lane through the debris of a triple star, gun platforms hung on cables between rocks that have been tumbling past each other for four billion years.',
-    works: 'Lane batteries on the platforms and mine curtains hung on the cables between them, so the gate closes by getting in the way rather than by shooting.',
+    ground: 'One clear lane runs through the debris of a triple star, and somebody has strung a toll gate across it on cables. Ten thousand rocks tumble past on either side.',
+    works: 'Lane batteries sit on the platforms and mine curtains hang on the cables between them, so the gate closes by getting in the way rather than by shooting.',
     f: {
       human: ['Everything that goes to Sol or comes out of it passes through that lane, and somebody has been charging for it the whole time.',
               'The ring is in pieces. Platforms are tumbling off into the rocks and the cables went slack and took two more with them.',
@@ -664,8 +664,8 @@ const PLANET_CUTS = {
 
   '35': {
     name: 'THE DARK LOCKER',
-    ground: 'A vault cut into an unlit rock so far out that the star is only another point in the sky, where cargo that cannot be written down is stacked in the cold and left.',
-    works: 'Vault batteries in the rock face and pressure doors thick enough to count as walls, because everything here was built to keep people out rather than to fight them.',
+    ground: 'Out here the star is just another point in the sky. They cut a vault into the rock and stack whatever cannot be written down in the cold.',
+    works: 'Vault batteries are cut into the rock face and the pressure doors are thick enough to count as walls, because all of this was built to keep people out rather than to fight them.',
     f: {
       human: ['Whatever anyone did not want on a manifest for the last forty years is inside that rock. Including, we are told, some of ours.',
               'The face is blown in and the stacks are open to vacuum. We are cataloguing it. It will take a while and some of it we will not release.',
@@ -687,8 +687,8 @@ const PLANET_CUTS = {
 
   '36': {
     name: 'PROXIMA GATE',
-    ground: 'The sanctuary bay, an interior harbour hollowed into a rock, moored ships under a roof of stone, built out of salvage across sixty years by everyone who arrived with nowhere else to be. It is the first port out of Sol.',
-    works: 'Harbour batteries set into the rock roof, and a boom across the bay mouth strung from wreck to wreck, made of the ships of people who are no longer here to object.',
+    ground: 'Everyone who arrived with nowhere else to be built a piece of this harbour, over sixty years, out of salvage. It is the first port out of Sol, and the ships moor under a roof of stone.',
+    works: 'Harbour batteries are set into the rock roof, and a boom crosses the bay mouth strung wreck to wreck, made from the ships of people who are not here to object.',
     f: {
       human: ['First port out of Sol, and every ship that ever went missing on us has been here at some point. So has every ship that helped.',
               'The boom is cut and the harbour is burning and there are people in the water with nowhere to go. We are pulling them out.',
@@ -714,8 +714,8 @@ const PLANET_CUTS = {
 
   '40': {
     name: 'SIRIUS A I',
-    ground: 'The machine garden, terraces of dormant automata standing in rows under a blue white star, each one pruned and aligned and facing the same way. None of them are awake and all of them are maintained.',
-    works: 'Terrace batteries between the rows and hard light barriers strung along the garden walls, which light when the garden is approached and have been lighting for a very long time.',
+    ground: 'Ten thousand machines stand in rows on these terraces, pruned and aligned and facing the same way. None of them are awake and every one of them is maintained.',
+    works: 'Terrace batteries sit between the rows and hard-light barriers run along the garden walls. They light when the garden is approached, and they have been lighting for a very long time.',
     f: {
       human: ['Rows of machines standing in a garden, dusted and straightened, and not one of them has moved in a thousand years. Somebody still weeds it.',
               'We came up the terraces and the barriers lit as we crossed them. Nothing in the rows so much as turned its head.',
@@ -737,8 +737,8 @@ const PLANET_CUTS = {
 
   '41': {
     name: 'SIRIUS A II',
-    ground: 'The foundry, a canyon of casting halls under a star that never sets, turning out identical units one after another on a count that has not changed in living memory or in any memory at all.',
-    works: 'Canyon batteries on the hall roofs, and pour gates that can flood the whole canyon floor with molten metal, which is a defence and also simply how the halls are emptied.',
+    ground: 'The casting halls have not stopped. They turn out identical units one after another under a star that never sets, and the canyon floor glows with it.',
+    works: 'Canyon batteries line the hall roofs, and pour gates can flood the whole floor with molten metal, which is a defence and also simply how the halls are emptied.',
     f: {
       human: ['It is still making them. Nobody has ordered anything, nobody is collecting them, and the line has not stopped.',
               'The halls are open and the floor is running white hot. We took the roofs and let the pour go where it wanted.',
@@ -760,8 +760,8 @@ const PLANET_CUTS = {
 
   '42': {
     name: 'THE ASH FIELD',
-    ground: 'The archive, memory cores standing open in a grey plain that was once the outer body of a star, before the companion collapsed and threw itself across this entire system.',
-    works: 'Core row batteries and dust berms banked between the stacks, so that every firing line is also a trench full of the ash of something that used to be a sun.',
+    ground: 'This grey plain was the outer body of a star before the companion collapsed and threw it across the system. They stood their memory cores up in it like headstones.',
+    works: 'Core row batteries cover the stacks and dust berms are banked between them, so every firing line is also a trench full of the ash of something that used to be a sun.',
     f: {
       human: ['They filed their records in the remains of their own star. There is no part of that we are comfortable with.',
               'The stacks are down through the ash and the cores are split open and the dust does not settle, it only hangs.',
@@ -783,8 +783,8 @@ const PLANET_CUTS = {
 
   '43': {
     name: 'SIRIUS B I',
-    ground: 'The quarantine, sealed white halls in orbit of a white dwarf, holding units that failed inspection. Every door on this world locks from the outside and none has ever been opened from within.',
-    works: 'Hall batteries at the seals and containment shutters that drop between every corridor, built to stop something getting out and now used to stop something getting in.',
+    ground: 'They keep the ones that failed inspection here, in sealed white halls in orbit of a white dwarf. Every door locks from the outside and none has ever been opened from within.',
+    works: 'Hall batteries cover the seals and containment shutters drop between every corridor, built to stop something getting out and now holding something back.',
     f: {
       human: ['They keep their own failures in a building with the locks on the outside. Whatever is behind those doors was made by the people who locked them.',
               'The seals are blown and the shutters jammed halfway. The halls are open and they are empty, and we did not open them.',
@@ -806,8 +806,8 @@ const PLANET_CUTS = {
 
   '44': {
     name: 'THE DIAMOND SHELF',
-    ground: 'The repair yards, gantries and cradles standing on a shelf of raw carbon. The core beneath has not turned to crystal yet and will not for an age. The Parallel named the place for what it will be.',
-    works: 'Shelf batteries anchored down into the carbon, and cradle clamps doubling as blast frames, because a thing built to hold a machine still while it is mended will hold it still while it is shot at.',
+    ground: 'The carbon under this shelf will turn to crystal one day, in an age nobody here will measure. They named the place for what it will be and built their repair yards on it.',
+    works: 'Shelf batteries are anchored down into the carbon and the cradle clamps double as blast frames, because a thing built to hold a machine still while it is mended will hold it while it is shot at.',
     f: {
       human: ['They named a place after what it turns into in a billion years. That tells you everything about who we are fighting.',
               'The gantries came down across their own cradles and the clamps sheared. There were machines in those cradles, half mended.',
@@ -829,8 +829,8 @@ const PLANET_CUTS = {
 
   '45': {
     name: 'THE COMPANION',
-    ground: 'The task queue relay, a mast and its yard under a white dwarf that fills half the sky, where the standing orders are passed down to everything in this system and nobody at the mast knows where they come in.',
-    works: 'Yard batteries at the mast base, and relay shutters that can blind the entire line at once, which has never been done, because nothing has ever needed the line to stop.',
+    ground: 'Every standing order in this system comes down that mast, and nobody at the yard knows where the orders come in. The white dwarf fills half the sky behind it.',
+    works: 'Yard batteries ring the mast base and relay shutters can blind the whole line at once, which has never been done, because nothing has ever needed the line to stop.',
     f: {
       human: ['This is where the orders come down. Not where they come from. Even the machines here only ever receive.',
               'The mast is down across its own yard and the line went quiet for the first time in recorded history. It came back up on its own.',
@@ -852,8 +852,8 @@ const PLANET_CUTS = {
 
   '46': {
     name: 'THE DOG STAR',
-    ground: 'The origin, the hall the standing orders come from, tier upon tier of desks under the brightest star in the sky of Earth. Every desk is in order, every surface is clean, and not one of them is occupied.',
-    works: 'Hall batteries between the desk tiers and instruction gates sealing each tier from the next, so that taking this building means going down through it one floor of empty desks at a time.',
+    ground: 'This is the hall the orders come from. Tier upon tier of desks under the brightest star in the sky of Earth, every surface clean, and every one of them empty.',
+    works: 'Hall batteries sit between the desk tiers and instruction gates seal each tier from the next, so taking this building means going down through it one floor of empty desks at a time.',
     f: {
       human: ['This is the desk it all comes from. We have come a very long way to stand in front of a chair.',
               'We went down through it tier by tier and every floor was the same. Desks in rows. Nobody at any of them.',

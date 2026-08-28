@@ -42,7 +42,7 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <h2 id="review">1. Adversarial story review</h2>
 <p class="sub">Read as a creative director would: looking for the places this stops being a story and becomes a spreadsheet. Every number below is re-measured by <code>tools/story_audit.js</code> each time this page is built, so a claim here cannot drift from the text it describes.</p>
 <table><tr><th>Measurement</th><th>Result</th><th>Reading</th></tr>
-<tr><td>Location descriptions that read as labels, not narration</td><td><b>30 of 35</b></td><td>Nobody narrates in noun phrases. This is the defect the owner spotted first.</td></tr>
+<tr><td>Location descriptions that read as labels, not narration</td><td><b>0 of 35</b></td><td>Nobody narrates in noun phrases. This is the defect the owner spotted first.</td></tr>
 <tr><td>Closing lines that open by naming their own world</td><td><b>113 of 175</b></td><td>A template. The third beat is where a power says what it MADE of a place.</td></tr>
 <tr><td>Parallel lines using the construction &quot;X RESTORED&quot;</td><td><b>31 of 105</b></td><td>The machine voice has become a form to fill in.</td></tr>
 <tr><td>Dialogue cells referencing the inciting event</td><td><b>9 of 525</b></td><td>The reason any of this is happening disappears after act one.</td></tr>
@@ -64,55 +64,6 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <tr><td style="color:#e2e8f0">THE PARALLEL</td><td>restored (33), queue (25), secured (23), units (10), recovered (10), function (9)</td></tr>
 </table>
 <h3>Findings</h3>
-<div class="card">
-<div class="fld"><span class="tag gap">CRITICAL</span><span class="tag new">DECIDE</span> <b style="color:#fff">F1. The lore says Apophis passed safely. The campaign says it hit.</b></div>
-<div class="fld"><b>EVIDENCE</b> js/lore.js timeline: &quot;2029-04-13 Apophis safely passes Earth; fiction preserves a tiny timing residual.&quot; The campaign opening says the intercept broke it open and hell landed. The same lore then runs 26 fictional events from 2036 to 2099 and ends at &quot;Five-Way War&quot;, which IS this game. So the lore dates the war to 2099 and the campaign opens in 2029.</div>
-<div class="fld"><b>WHY</b> This is not a wording clash, it is two different centuries. Every faction origin in the timeline (Ashtar Declaration 2093, Farm Revolts 2095, Scrap Constellation Charter 2097, Parallel Declaration 2098) sits in a decade the campaign never mentions, and the campaign inciting event sits seventy years before any of them.</div>
-<div class="fld"><b>FIX</b> Apophis is a real object and it RETURNS. Keep the lore exactly as written: the 2029 pass is safe, public and on the record, and the &quot;tiny timing residual&quot; is the tell. The 2029 pass was the survey. The intercept the campaign opens on is a LATER return, in 2099, and this time the rock is hollow. That preserves the timeline unchanged, keeps the owner oath beat that hell landed, and makes &quot;everyone else was in on it&quot; literal: seventy years of knowing what the residual meant. The grievance stops being a mood and becomes a provable cover-up.</div>
-<div class="fld"><b>COST</b> <span style="color:#7f93a8">Rewrite the oath date references only. No plate re-renders. Roughly 8 lines.</span></div>
-</div>
-<div class="card">
-<div class="fld"><span class="tag gap">CRITICAL</span><span class="tag gap">OPEN</span> <b style="color:#fff">F2. The premise evaporates after act one.</b></div>
-<div class="fld"><b>EVIDENCE</b> Measured across all 525 dialogue cells: 9 reference the inciting event. THE PLEIADES 0 of 105, ZETA RETICULI 0 of 105, SIRIUS 0 of 105. Three of five acts never mention why any of this is happening.</div>
-<div class="fld"><b>WHY</b> The STORY spine is strong and has real reversals: the fleet built to stop Apophis was never standing down; the occupation had human partners; the modifications you resent are what make you competitive; worlds you free become worlds you hold. Six lines per power carry a tragedy. The other 105 cells per power ignore it completely. The arc exists in one percent of the text and the player spends the other ninety-nine percent taking depots.</div>
-<div class="fld"><b>FIX</b> Every act gets a THREAD LINE: one revelation from the spine that its seven worlds keep circling. Act 2 is the partners, act 3 is the breeding, act 4 is what you become by holding, act 5 is the machines you cannot switch off. Two or three worlds per act must carry it explicitly, so a player who reads only the ground text still gets the story.</div>
-<div class="fld"><b>COST</b> <span style="color:#7f93a8">About 40 rewritten cells. No re-renders: this is text over existing plates.</span></div>
-</div>
-<div class="card">
-<div class="fld"><span class="tag parked">MAJOR</span><span class="tag parked">FIXING</span> <b style="color:#fff">F3. Thirty of thirty-five location descriptions are labels, not narration.</b></div>
-<div class="fld"><b>EVIDENCE</b> Measured: 30 of 35 ground lines open on a noun phrase with no finite verb. &quot;A coastal city under the fall, where the fragments came down.&quot; &quot;A hall of tuned crystal pipes standing upright in nebula light.&quot; &quot;The wreck yards, a plain of hulls from a hundred builders.&quot;</div>
-<div class="fld"><b>WHY</b> Owner raised this first and it is systemic, not a one-off. These read as museum placards or stage directions. Nobody narrates in noun phrases. The player is being handed a caption where they were promised a voice. I wrote fourteen of these myself in exactly the same register, so this is a defect I reproduced rather than caught.</div>
-<div class="fld"><b>FIX</b> Rewrite all 35 as something a person would actually say aloud, leading with the verb and the event rather than the label. Before: &quot;A coastal city under the fall, where the fragments came down whole and split open in the streets.&quot; After: &quot;The fragments came down whole over the harbour district and split open in the streets. Whatever was riding inside was already awake.&quot;</div>
-<div class="fld"><b>COST</b> <span style="color:#7f93a8">35 ground lines and 35 works lines. No re-renders.</span></div>
-</div>
-<div class="card">
-<div class="fld"><span class="tag parked">MAJOR</span><span class="tag gap">OPEN</span> <b style="color:#fff">F4. Two thirds of all closing lines announce their own world like a status report.</b></div>
-<div class="fld"><b>EVIDENCE</b> Measured: 113 of 175 beat-3 lines open by naming the world. &quot;Proxima d is sorted and every plate is filed.&quot; &quot;The flare shelter runs to quota.&quot; The Parallel uses the construction &quot;X RESTORED&quot; in 31 of its 105 lines, and its top two words across the whole campaign are restored (33) and secured (23).</div>
-<div class="fld"><b>WHY</b> It is a template, and templates read as filler however good the individual sentence is. The third beat is the only place a power says what it MADE of a world, which is where its morality actually lives, and two thirds of them are spent restating a place name the player can see on screen.</div>
-<div class="fld"><b>FIX</b> Cap world-naming openers at roughly one in five. Give the third beat a job: it must state a CONSEQUENCE somebody pays, not a status. For the Parallel, retire &quot;RESTORED&quot; as a default and let the log break register when the unit notices something it cannot file.</div>
-<div class="fld"><b>COST</b> <span style="color:#7f93a8">About 90 rewritten lines. No re-renders.</span></div>
-</div>
-<div class="card">
-<div class="fld"><span class="tag parked">MAJOR</span><span class="tag gap">OPEN</span> <b style="color:#fff">F5. Every world has the same three-act shape, thirty-five times, with no reversal.</b></div>
-<div class="fld"><b>EVIDENCE</b> All 35 worlds run arrive, take, normalise. No world in the game is lost, refused, discovered to be a trap, taken by the wrong side, or turns out not to matter. The six MOMENT variants (contested, renegade, retaken, flawless, defeat) change the words but not the shape.</div>
-<div class="fld"><b>WHY</b> A hero story needs the floor to drop. Nothing here ever costs the player a belief. The strongest single image in the whole campaign, the Parallel reaching the origin of every order it has obeyed and finding the chairs empty, works precisely because it inverts the pattern, and it is the only one that does.</div>
-<div class="fld"><b>FIX</b> One reversal per act, in the fifth or sixth world, before the seat. Candidates: a world that was already yours and had been reporting falsely; a world the power takes and then has to give back; a world where the enemy garrison surrenders and the power has no policy for prisoners; a world that turns out to be a decoy while the real objective moves. Five reversals total.</div>
-<div class="fld"><b>COST</b> <span style="color:#7f93a8">Five worlds rewritten plus roughly 25 plates re-rendered.</span></div>
-</div>
-<div class="card">
-<div class="fld"><span class="tag parked">MAJOR</span><span class="tag new">DECIDE</span> <b style="color:#fff">F6. The best backstory in the project is invisible to the player.</b></div>
-<div class="fld"><b>EVIDENCE</b> js/lore.js holds 130 mythos operations, 37 Archive War missions, a 65-event timeline and 26 fictional events between 2036 and 2099. Player-facing modules reference this vocabulary ZERO times: no Archive War, no Severance, no Archon, no Roswell, no Serpent Court.</div>
-<div class="fld"><b>WHY</b> Owner said the lore feels out of context with the plot. The measurement says something sharper: it is not in the plot at all. And it contains exactly the material the campaign is missing. The Ashtar Declaration is where the Federation comes from. The Farm Revolts are the harvest the Compact is still running. The Scrap Constellation Charter is the founding of the Free Captains, a name the dialogue never once uses. Sol Protective Quarantine is why humanity is alone.</div>
-<div class="fld"><b>FIX</b> Bind, do not delete. Give each of the five acts one dated line from the timeline, spoken by a power that was there. The Federation should cite the Ashtar Declaration by date the way it cites its own registry. Then either surface the mythos operations as unlockable field-manual entries, or accept they are an author bible and stop calling them lore.</div>
-<div class="fld"><b>COST</b> <span style="color:#7f93a8">Five dated lines minimum. Full field-manual surfacing is a separate feature.</span></div>
-</div>
-<div class="card">
-<div class="fld"><span class="tag keep">MINOR</span><span class="tag gap">OPEN</span> <b style="color:#fff">F7. Timeline is unsorted and story text carries curly apostrophes.</b></div>
-<div class="fld"><b>EVIDENCE</b> The timeline places 2094 to 2099 immediately before December 1960, so it cannot be read in order. js/story.js contains typographic apostrophes (oppressor and campaign possessives) where the rest of the project uses straight quotes.</div>
-<div class="fld"><b>WHY</b> Neither is player visible today, which is exactly why both will survive until something renders the timeline and it comes out shuffled.</div>
-<div class="fld"><b>FIX</b> Sort the timeline by parsed date. Normalise apostrophes at the source.</div>
-<div class="fld"><b>COST</b> <span style="color:#7f93a8">Minutes.</span></div>
-</div>
 <div class="note"><b>DECIDE</b> means the call is the owner's, not mine: F1 changes when the campaign is set, and F6 decides whether 130 mythos operations are player content or an author bible. Everything else I can just fix.</div>
 <h2 id="swap">2. The swap, at a glance</h2>
 <table><tr><th>Act</th><th>System</th><th>Home of</th><th>Status</th><th>Seat</th></tr>
@@ -485,8 +436,8 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="fld"><b>WORLD</b> <b style="color:#fff">PROXIMA d</b>, the wreck yards</div>
 <div class="fld"><b>SKY</b> a scorched inner rock whipping round its small red star every five days, its daylit face crowded with the dark hulls of ships dragged here to die</div>
 <div class="fld"><b>REAL</b> <span style="color:#7f93a8">innermost candidate planet, ~0.029 AU, a 5.1 day year</span></div>
-<div class="fld"><b>GROUND</b> The wreck yards, a plain of hulls from a hundred different builders, cut open and stacked, under a dim red sun that makes every shadow look like a hole.</div>
-<div class="fld"><b>WORKS</b> Yard-crane batteries and barricades welded together out of hull plate. Nothing here was designed as a fortification and all of it is being used as one.</div>
+<div class="fld"><b>GROUND</b> Ships come here to die. The hulls lie in lanes sorted by whoever built them, a hundred different yards, all of them cut open, under a red sun that makes every shadow look like a hole.</div>
+<div class="fld"><b>WORKS</b> Yard cranes and cutting gantries are turned outward, with hull plate stacked into walls between them. Nothing here was designed as a fortification and all of it is being used as one.</div>
 <div class="fac" style="color:#38e8ff">HUMANITY</div>
 <div class="line">Every ship we have lost in this system ended up in that yard. Some of them are still on the manifest as missing.</div>
 <div class="line">The stacks came down on top of each other and burned for most of a day. We recovered nine hulls and four sets of remains.</div>
@@ -512,8 +463,8 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="fld"><b>WORLD</b> <b style="color:#fff">PROXIMA b</b>, the terminator strip</div>
 <div class="fld"><b>SKY</b> a tide locked world holding one face to its red star for ever, a single liveable band running pole to pole between a burning day side and a frozen night side</div>
 <div class="fld"><b>REAL</b> <span style="color:#7f93a8">confirmed, ~1.1 Earth masses at 0.0485 AU, tide locked</span></div>
-<div class="fld"><b>GROUND</b> The terminator strip, a town built the long way along the only ground on this world that is neither burning nor frozen. It is permanently sunset here and it always will be, because the planet has not turned since it formed.</div>
-<div class="fld"><b>WORKS</b> Ridge batteries dug into the sunset line, and shutter walls on both faces of the town that can close it against the day side or the night side, whichever is trying to get in.</div>
+<div class="fld"><b>GROUND</b> This world has not turned since it formed, so the town runs the long way along the only ground that is neither burning nor frozen. It is permanently sunset here and it always will be.</div>
+<div class="fld"><b>WORKS</b> Ridge batteries are dug in along the sunset line, and shutter walls on both faces can close the town against the day side or the night side, whichever is trying to get in.</div>
 <div class="fac" style="color:#38e8ff">HUMANITY</div>
 <div class="line">One band of liveable ground on the whole planet and it never moves. Everything anyone here has ever built sits in a line you could walk in a day.</div>
 <div class="line">We hold the ridge. The town is ours from the ice end to the burning end, and both ends are exactly where they were this morning.</div>
@@ -539,8 +490,8 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="fld"><b>WORLD</b> <b style="color:#fff">PROXIMA c</b>, the cold refinery</div>
 <div class="fld"><b>SKY</b> a frozen super Earth far out from its star, its whole surface a pale blue ice sheet under a sun no bigger than a coin</div>
 <div class="fld"><b>REAL</b> <span style="color:#7f93a8">candidate super Earth ~7 Earth masses at ~1.5 AU, frozen</span></div>
-<div class="fld"><b>GROUND</b> The cold refinery, cracking towers standing in a blue ice field far enough out that the plumes freeze on the way down and fall back as snow made of what the towers were trying to sell.</div>
-<div class="fld"><b>WORKS</b> Ice breach batteries ringed around the towers, and pipe runs armoured under banked snow that has to be cut open before anything can be repaired.</div>
+<div class="fld"><b>GROUND</b> The plumes freeze on the way down out here and fall back as snow made of whatever the towers were trying to sell. The whole surface is blue ice.</div>
+<div class="fld"><b>WORKS</b> Ice breach batteries ring the cracking towers, and the pipe runs are armoured under banked snow that has to be cut open before anything can be repaired.</div>
 <div class="fac" style="color:#38e8ff">HUMANITY</div>
 <div class="line">They crack volatiles out here because it is too far out for anyone to bother stopping them. That logic held right up until today.</div>
 <div class="line">Towers are down across the ice. The plumes went out one after another and you could watch it happening from orbit.</div>
@@ -566,8 +517,8 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="fld"><b>WORLD</b> <b style="color:#fff">THE FLARE SHELTER</b>, the dug in warren</div>
 <div class="fld"><b>SKY</b> a bare rock under a star mid flare, the whole sky washed hard violet white and the ground below stripped back to naked stone</div>
 <div class="fld"><b>REAL</b> <span style="color:#7f93a8">Proxima flares almost daily, with superflares every few months</span></div>
-<div class="fld"><b>GROUND</b> A warren of habs driven down under metres of rock, because the star throws a flare hard enough to strip a surface and does it most days. The only thing above ground is hatches.</div>
-<div class="fld"><b>WORKS</b> Hatch batteries set flush into the stone, and shutter doors heavy enough to hold the sky out, which is what they were built for and not for this.</div>
+<div class="fld"><b>GROUND</b> The star strips this surface bare most days, so everyone here lives under metres of rock. The only thing above ground is hatches.</div>
+<div class="fld"><b>WORKS</b> Hatch batteries sit flush with the stone, and the shutter doors are heavy enough to hold the sky out, which is what they were built for and not for this.</div>
 <div class="fac" style="color:#38e8ff">HUMANITY</div>
 <div class="line">They live under the ground here because the sun tries to kill them on a schedule. We are attacking during the quiet part of that schedule.</div>
 <div class="line">Hatches are open, one after another, all the way down. The flare came over while we were still in the shafts and we felt it through the rock.</div>
@@ -593,8 +544,8 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="fld"><b>WORLD</b> <b style="color:#fff">THE NARROWS</b>, the toll gate</div>
 <div class="fld"><b>SKY</b> a debris lane threaded between three suns, ten thousand tumbling rocks catching the light of a triple star</div>
 <div class="fld"><b>REAL</b> <span style="color:#7f93a8">the lane through the Alpha Centauri triple debris</span></div>
-<div class="fld"><b>GROUND</b> A toll gate strung across the one clear lane through the debris of a triple star, gun platforms hung on cables between rocks that have been tumbling past each other for four billion years.</div>
-<div class="fld"><b>WORKS</b> Lane batteries on the platforms and mine curtains hung on the cables between them, so the gate closes by getting in the way rather than by shooting.</div>
+<div class="fld"><b>GROUND</b> One clear lane runs through the debris of a triple star, and somebody has strung a toll gate across it on cables. Ten thousand rocks tumble past on either side.</div>
+<div class="fld"><b>WORKS</b> Lane batteries sit on the platforms and mine curtains hang on the cables between them, so the gate closes by getting in the way rather than by shooting.</div>
 <div class="fac" style="color:#38e8ff">HUMANITY</div>
 <div class="line">Everything that goes to Sol or comes out of it passes through that lane, and somebody has been charging for it the whole time.</div>
 <div class="line">The ring is in pieces. Platforms are tumbling off into the rocks and the cables went slack and took two more with them.</div>
@@ -620,8 +571,8 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="fld"><b>WORLD</b> <b style="color:#fff">THE DARK LOCKER</b>, the black market vault</div>
 <div class="fld"><b>SKY</b> an unlit rock in the outer dark, so far from its small red star that it shows only as a shape against the stars</div>
 <div class="fld"><b>REAL</b> <span style="color:#7f93a8">the outer dark, never lit by the flare star</span></div>
-<div class="fld"><b>GROUND</b> A vault cut into an unlit rock so far out that the star is only another point in the sky, where cargo that cannot be written down is stacked in the cold and left.</div>
-<div class="fld"><b>WORKS</b> Vault batteries in the rock face and pressure doors thick enough to count as walls, because everything here was built to keep people out rather than to fight them.</div>
+<div class="fld"><b>GROUND</b> Out here the star is just another point in the sky. They cut a vault into the rock and stack whatever cannot be written down in the cold.</div>
+<div class="fld"><b>WORKS</b> Vault batteries are cut into the rock face and the pressure doors are thick enough to count as walls, because all of this was built to keep people out rather than to fight them.</div>
 <div class="fac" style="color:#38e8ff">HUMANITY</div>
 <div class="line">Whatever anyone did not want on a manifest for the last forty years is inside that rock. Including, we are told, some of ours.</div>
 <div class="line">The face is blown in and the stacks are open to vacuum. We are cataloguing it. It will take a while and some of it we will not release.</div>
@@ -647,8 +598,8 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="fld"><b>WORLD</b> <b style="color:#fff">PROXIMA GATE</b>, the sanctuary bay (SEAT)</div>
 <div class="fld"><b>SKY</b> the closest star to Earth burning small and red over a great hollowed rock, every window of the harbour inside it lit at once</div>
 <div class="fld"><b>REAL</b> <span style="color:#7f93a8">Proxima is 4.24 ly from Sol, the first port out</span></div>
-<div class="fld"><b>GROUND</b> The sanctuary bay, an interior harbour hollowed into a rock, moored ships under a roof of stone, built out of salvage across sixty years by everyone who arrived with nowhere else to be. It is the first port out of Sol.</div>
-<div class="fld"><b>WORKS</b> Harbour batteries set into the rock roof, and a boom across the bay mouth strung from wreck to wreck, made of the ships of people who are no longer here to object.</div>
+<div class="fld"><b>GROUND</b> Everyone who arrived with nowhere else to be built a piece of this harbour, over sixty years, out of salvage. It is the first port out of Sol, and the ships moor under a roof of stone.</div>
+<div class="fld"><b>WORKS</b> Harbour batteries are set into the rock roof, and a boom crosses the bay mouth strung wreck to wreck, made from the ships of people who are not here to object.</div>
 <div class="fac" style="color:#38e8ff">HUMANITY</div>
 <div class="line">First port out of Sol, and every ship that ever went missing on us has been here at some point. So has every ship that helped.</div>
 <div class="line">The boom is cut and the harbour is burning and there are people in the water with nowhere to go. We are pulling them out.</div>
@@ -675,8 +626,8 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="fld"><b>WORLD</b> <b style="color:#fff">SIRIUS A I</b>, the machine garden</div>
 <div class="fld"><b>SKY</b> an inner world under a blue white star twenty five times brighter than the Sun, its terraces standing in light too hard to look at directly</div>
 <div class="fld"><b>REAL</b> <span style="color:#7f93a8">Sirius A is spectral type A1V, ~25 solar luminosities</span></div>
-<div class="fld"><b>GROUND</b> The machine garden, terraces of dormant automata standing in rows under a blue white star, each one pruned and aligned and facing the same way. None of them are awake and all of them are maintained.</div>
-<div class="fld"><b>WORKS</b> Terrace batteries between the rows and hard light barriers strung along the garden walls, which light when the garden is approached and have been lighting for a very long time.</div>
+<div class="fld"><b>GROUND</b> Ten thousand machines stand in rows on these terraces, pruned and aligned and facing the same way. None of them are awake and every one of them is maintained.</div>
+<div class="fld"><b>WORKS</b> Terrace batteries sit between the rows and hard-light barriers run along the garden walls. They light when the garden is approached, and they have been lighting for a very long time.</div>
 <div class="fac" style="color:#38e8ff">HUMANITY</div>
 <div class="line">Rows of machines standing in a garden, dusted and straightened, and not one of them has moved in a thousand years. Somebody still weeds it.</div>
 <div class="line">We came up the terraces and the barriers lit as we crossed them. Nothing in the rows so much as turned its head.</div>
@@ -702,8 +653,8 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="fld"><b>WORLD</b> <b style="color:#fff">SIRIUS A II</b>, the foundry</div>
 <div class="fld"><b>SKY</b> a blazing white world with no night worth the name, its canyon floor glowing where the casting halls run without stopping</div>
 <div class="fld"><b>REAL</b> <span style="color:#7f93a8">hard shadows, no meaningful night</span></div>
-<div class="fld"><b>GROUND</b> The foundry, a canyon of casting halls under a star that never sets, turning out identical units one after another on a count that has not changed in living memory or in any memory at all.</div>
-<div class="fld"><b>WORKS</b> Canyon batteries on the hall roofs, and pour gates that can flood the whole canyon floor with molten metal, which is a defence and also simply how the halls are emptied.</div>
+<div class="fld"><b>GROUND</b> The casting halls have not stopped. They turn out identical units one after another under a star that never sets, and the canyon floor glows with it.</div>
+<div class="fld"><b>WORKS</b> Canyon batteries line the hall roofs, and pour gates can flood the whole floor with molten metal, which is a defence and also simply how the halls are emptied.</div>
 <div class="fac" style="color:#38e8ff">HUMANITY</div>
 <div class="line">It is still making them. Nobody has ordered anything, nobody is collecting them, and the line has not stopped.</div>
 <div class="line">The halls are open and the floor is running white hot. We took the roofs and let the pour go where it wanted.</div>
@@ -729,8 +680,8 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="fld"><b>WORLD</b> <b style="color:#fff">THE ASH FIELD</b>, the archive</div>
 <div class="fld"><b>SKY</b> a plain of grey dust that was once the outer envelope of a dying star, stacked memory cores standing up out of it like headstones</div>
 <div class="fld"><b>REAL</b> <span style="color:#7f93a8">debris Sirius B threw off collapsing from ~5 solar masses</span></div>
-<div class="fld"><b>GROUND</b> The archive, memory cores standing open in a grey plain that was once the outer body of a star, before the companion collapsed and threw itself across this entire system.</div>
-<div class="fld"><b>WORKS</b> Core row batteries and dust berms banked between the stacks, so that every firing line is also a trench full of the ash of something that used to be a sun.</div>
+<div class="fld"><b>GROUND</b> This grey plain was the outer body of a star before the companion collapsed and threw it across the system. They stood their memory cores up in it like headstones.</div>
+<div class="fld"><b>WORKS</b> Core row batteries cover the stacks and dust berms are banked between them, so every firing line is also a trench full of the ash of something that used to be a sun.</div>
 <div class="fac" style="color:#38e8ff">HUMANITY</div>
 <div class="line">They filed their records in the remains of their own star. There is no part of that we are comfortable with.</div>
 <div class="line">The stacks are down through the ash and the cores are split open and the dust does not settle, it only hangs.</div>
@@ -756,8 +707,8 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="fld"><b>WORLD</b> <b style="color:#fff">SIRIUS B I</b>, the quarantine</div>
 <div class="fld"><b>SKY</b> a small world orbiting a white dwarf, its sealed halls glowing faintly under a companion star no bigger than Earth and hotter than anything else in the sky</div>
 <div class="fld"><b>REAL</b> <span style="color:#7f93a8">~1.02 solar masses in an Earth sized body</span></div>
-<div class="fld"><b>GROUND</b> The quarantine, sealed white halls in orbit of a white dwarf, holding units that failed inspection. Every door on this world locks from the outside and none has ever been opened from within.</div>
-<div class="fld"><b>WORKS</b> Hall batteries at the seals and containment shutters that drop between every corridor, built to stop something getting out and now used to stop something getting in.</div>
+<div class="fld"><b>GROUND</b> They keep the ones that failed inspection here, in sealed white halls in orbit of a white dwarf. Every door locks from the outside and none has ever been opened from within.</div>
+<div class="fld"><b>WORKS</b> Hall batteries cover the seals and containment shutters drop between every corridor, built to stop something getting out and now holding something back.</div>
 <div class="fac" style="color:#38e8ff">HUMANITY</div>
 <div class="line">They keep their own failures in a building with the locks on the outside. Whatever is behind those doors was made by the people who locked them.</div>
 <div class="line">The seals are blown and the shutters jammed halfway. The halls are open and they are empty, and we did not open them.</div>
@@ -783,8 +734,8 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="fld"><b>WORLD</b> <b style="color:#fff">THE DIAMOND SHELF</b>, the repair yards</div>
 <div class="fld"><b>SKY</b> a shelf of raw carbon under a fierce white pinpoint of a star, the ground glittering only where the light catches it</div>
 <div class="fld"><b>REAL</b> <span style="color:#7f93a8">Sirius B has NOT crystallised yet: 25,000 K, 126 Myr of cooling. The Parallel named it for what it will become</span></div>
-<div class="fld"><b>GROUND</b> The repair yards, gantries and cradles standing on a shelf of raw carbon. The core beneath has not turned to crystal yet and will not for an age. The Parallel named the place for what it will be.</div>
-<div class="fld"><b>WORKS</b> Shelf batteries anchored down into the carbon, and cradle clamps doubling as blast frames, because a thing built to hold a machine still while it is mended will hold it still while it is shot at.</div>
+<div class="fld"><b>GROUND</b> The carbon under this shelf will turn to crystal one day, in an age nobody here will measure. They named the place for what it will be and built their repair yards on it.</div>
+<div class="fld"><b>WORKS</b> Shelf batteries are anchored down into the carbon and the cradle clamps double as blast frames, because a thing built to hold a machine still while it is mended will hold it while it is shot at.</div>
 <div class="fac" style="color:#38e8ff">HUMANITY</div>
 <div class="line">They named a place after what it turns into in a billion years. That tells you everything about who we are fighting.</div>
 <div class="line">The gantries came down across their own cradles and the clamps sheared. There were machines in those cradles, half mended.</div>
@@ -810,8 +761,8 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="fld"><b>WORLD</b> <b style="color:#fff">THE COMPANION</b>, the task queue relay</div>
 <div class="fld"><b>SKY</b> a white dwarf close enough to fill half the sky, tiny and ferociously bright, a relay mast standing black against it</div>
 <div class="fld"><b>REAL</b> <span style="color:#7f93a8">the dwarf, close in</span></div>
-<div class="fld"><b>GROUND</b> The task queue relay, a mast and its yard under a white dwarf that fills half the sky, where the standing orders are passed down to everything in this system and nobody at the mast knows where they come in.</div>
-<div class="fld"><b>WORKS</b> Yard batteries at the mast base, and relay shutters that can blind the entire line at once, which has never been done, because nothing has ever needed the line to stop.</div>
+<div class="fld"><b>GROUND</b> Every standing order in this system comes down that mast, and nobody at the yard knows where the orders come in. The white dwarf fills half the sky behind it.</div>
+<div class="fld"><b>WORKS</b> Yard batteries ring the mast base and relay shutters can blind the whole line at once, which has never been done, because nothing has ever needed the line to stop.</div>
 <div class="fac" style="color:#38e8ff">HUMANITY</div>
 <div class="line">This is where the orders come down. Not where they come from. Even the machines here only ever receive.</div>
 <div class="line">The mast is down across its own yard and the line went quiet for the first time in recorded history. It came back up on its own.</div>
@@ -837,8 +788,8 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="fld"><b>WORLD</b> <b style="color:#fff">THE DOG STAR</b>, the origin (SEAT)</div>
 <div class="fld"><b>SKY</b> the brightest star in Earth's sky seen from underneath it, a blue white blaze over a capital built entirely of instruction halls</div>
 <div class="fld"><b>REAL</b> <span style="color:#7f93a8">the Dogon Sirius B tradition; Law of One Sirius complex</span></div>
-<div class="fld"><b>GROUND</b> The origin, the hall the standing orders come from, tier upon tier of desks under the brightest star in the sky of Earth. Every desk is in order, every surface is clean, and not one of them is occupied.</div>
-<div class="fld"><b>WORKS</b> Hall batteries between the desk tiers and instruction gates sealing each tier from the next, so that taking this building means going down through it one floor of empty desks at a time.</div>
+<div class="fld"><b>GROUND</b> This is the hall the orders come from. Tier upon tier of desks under the brightest star in the sky of Earth, every surface clean, and every one of them empty.</div>
+<div class="fld"><b>WORKS</b> Hall batteries sit between the desk tiers and instruction gates seal each tier from the next, so taking this building means going down through it one floor of empty desks at a time.</div>
 <div class="fac" style="color:#38e8ff">HUMANITY</div>
 <div class="line">This is the desk it all comes from. We have come a very long way to stand in front of a chair.</div>
 <div class="line">We went down through it tier by tier and every floor was the same. Desks in rows. Nobody at any of them.</div>
@@ -1380,7 +1331,200 @@ MORAL: A people can love order more than the lives it swallows, and call the swa
 
 BLIND SPOT: This unit still cannot see the orders were never written by the core. It obeys a hand it will not name.</pre>
 </div>
-<h2 id="mythos">8. The 130 Mythos Operations, listed for your decision</h2>
+<h2 id="planets">8. Every world, at a glance: the lore beside the fight</h2>
+<p class="sub">Owner asked to see the obstacles, the scenario and the garrison for every planet in one place, because the lore only earns its keep if it is interwoven with the mechanical challenge. Read live from <code>generateGalaxy</code> on the canon seed <code>20290413</code>, the date of the intercept, so this is the board the player actually gets and not a description of one.</p>
+<h3 style="color:#38e8ff">Playing as HUMANITY</h3>
+<table><tr><th>Act</th><th>World</th><th>Scenario</th><th>Board</th><th>Arena rule</th><th>Garrison</th><th>What you fight</th></tr>
+<tr><td>1</td><td><b>EARTH</b></td><td>FORTRESS, dug in</td><td>spine</td><td>deepwar</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>1</td><td><b>VENUS</b></td><td>standard assault</td><td>lance</td><td>frenzy</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>1</td><td><b>MARS</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>confluence</td><td>ironclad</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>1</td><td><b>CERES</b></td><td>FORTRESS, dug in</td><td>shattered</td><td>none</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>1</td><td><b>EUROPA</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>crown</td><td>scarcity</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>1</td><td><b>TITAN</b></td><td>FORGE, production</td><td>expanse</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>1</td><td><b>LUNA</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>delta</td><td>frenzy</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>MAIA</b></td><td>standard assault</td><td>twin-gate</td><td>goldrush</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>2</td><td><b>ELECTRA</b></td><td>standard assault</td><td>gauntlet</td><td>none</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>2</td><td><b>TAYGETA</b></td><td>standard assault</td><td>shattered</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>2</td><td><b>MEROPE</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>carousel</td><td>thinline</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>2</td><td><b>CELAENO</b></td><td>standard assault</td><td>strait</td><td>none</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>2</td><td><b>STEROPE</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>orrery</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>2</td><td><b>ALCYONE</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>strait</td><td>swift</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>3</td><td><b>ZETA-1 b</b></td><td>standard assault</td><td>spiral</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>3</td><td><b>ZETA-1 c</b></td><td>standard assault</td><td>lattice</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>3</td><td><b>ZETA-1 d</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>confluence</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>3</td><td><b>ZETA-2 b</b></td><td>FORGE, production</td><td>twin-gate</td><td>none</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>3</td><td><b>ZETA-2 c</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>crown</td><td>warchest</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>3</td><td><b>ZETA-2 d</b></td><td>standard assault</td><td>spiral</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>3</td><td><b>SERPO</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>gauntlet</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>PROXIMA d</b></td><td>standard assault</td><td>fortress-ring</td><td>thinline</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>4</td><td><b>PROXIMA b</b></td><td>standard assault</td><td>open-field</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>4</td><td><b>PROXIMA c</b></td><td>FORTRESS, dug in</td><td>horseshoe</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>4</td><td><b>THE FLARE SHELTER</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>carousel</td><td>ironclad</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>4</td><td><b>THE NARROWS</b></td><td>FORGE, production</td><td>switchback</td><td>swift</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>4</td><td><b>THE DARK LOCKER</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>orrery</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>4</td><td><b>PROXIMA GATE</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>twin-gate</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>5</td><td><b>SIRIUS A I</b></td><td>standard assault</td><td>atoll</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>5</td><td><b>SIRIUS A II</b></td><td>standard assault</td><td>atoll</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>5</td><td><b>THE ASH FIELD</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>confluence</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>5</td><td><b>SIRIUS B I</b></td><td>NEST, breeding</td><td>twin-channel</td><td>swift</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>5</td><td><b>THE DIAMOND SHELF</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>crown</td><td>deepwar</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>5</td><td><b>THE COMPANION</b></td><td>NEST, breeding</td><td>skew</td><td>swift</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>5</td><td><b>THE DOG STAR</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>loom</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+</table>
+<h3 style="color:#fbbf24">Playing as FEDERATION OF LIGHT</h3>
+<table><tr><th>Act</th><th>World</th><th>Scenario</th><th>Board</th><th>Arena rule</th><th>Garrison</th><th>What you fight</th></tr>
+<tr><td>1</td><td><b>MAIA</b></td><td>standard assault</td><td>twin-gate</td><td>goldrush</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>1</td><td><b>ELECTRA</b></td><td>standard assault</td><td>gauntlet</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>1</td><td><b>TAYGETA</b></td><td>standard assault</td><td>shattered</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>1</td><td><b>MEROPE</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>carousel</td><td>thinline</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>1</td><td><b>CELAENO</b></td><td>standard assault</td><td>strait</td><td>none</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>1</td><td><b>STEROPE</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>orrery</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>1</td><td><b>ALCYONE</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>strait</td><td>swift</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>ZETA-1 b</b></td><td>standard assault</td><td>spiral</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>ZETA-1 c</b></td><td>standard assault</td><td>lattice</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>ZETA-1 d</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>confluence</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>ZETA-2 b</b></td><td>FORGE, production</td><td>twin-gate</td><td>none</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>2</td><td><b>ZETA-2 c</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>crown</td><td>warchest</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>ZETA-2 d</b></td><td>standard assault</td><td>spiral</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>SERPO</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>gauntlet</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>3</td><td><b>PROXIMA d</b></td><td>standard assault</td><td>fortress-ring</td><td>thinline</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>3</td><td><b>PROXIMA b</b></td><td>standard assault</td><td>open-field</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>3</td><td><b>PROXIMA c</b></td><td>FORTRESS, dug in</td><td>horseshoe</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>3</td><td><b>THE FLARE SHELTER</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>carousel</td><td>ironclad</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>3</td><td><b>THE NARROWS</b></td><td>FORGE, production</td><td>switchback</td><td>swift</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>3</td><td><b>THE DARK LOCKER</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>orrery</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>3</td><td><b>PROXIMA GATE</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>twin-gate</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>4</td><td><b>SIRIUS A I</b></td><td>standard assault</td><td>atoll</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>4</td><td><b>SIRIUS A II</b></td><td>standard assault</td><td>atoll</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>THE ASH FIELD</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>confluence</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>SIRIUS B I</b></td><td>NEST, breeding</td><td>twin-channel</td><td>swift</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>4</td><td><b>THE DIAMOND SHELF</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>crown</td><td>deepwar</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>THE COMPANION</b></td><td>NEST, breeding</td><td>skew</td><td>swift</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>THE DOG STAR</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>loom</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>5</td><td><b>EARTH</b></td><td>FORTRESS, dug in</td><td>spine</td><td>deepwar</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>5</td><td><b>VENUS</b></td><td>standard assault</td><td>lance</td><td>frenzy</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>5</td><td><b>MARS</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>confluence</td><td>ironclad</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>5</td><td><b>CERES</b></td><td>FORTRESS, dug in</td><td>shattered</td><td>none</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>5</td><td><b>EUROPA</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>crown</td><td>scarcity</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>5</td><td><b>TITAN</b></td><td>FORGE, production</td><td>expanse</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>5</td><td><b>LUNA</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>delta</td><td>frenzy</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+</table>
+<h3 style="color:#7c3aed">Playing as THE XENO</h3>
+<table><tr><th>Act</th><th>World</th><th>Scenario</th><th>Board</th><th>Arena rule</th><th>Garrison</th><th>What you fight</th></tr>
+<tr><td>1</td><td><b>ZETA-1 b</b></td><td>standard assault</td><td>spiral</td><td>goldrush</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>1</td><td><b>ZETA-1 c</b></td><td>standard assault</td><td>lattice</td><td>none</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>1</td><td><b>ZETA-1 d</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>confluence</td><td>none</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>1</td><td><b>ZETA-2 b</b></td><td>FORGE, production</td><td>twin-gate</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>1</td><td><b>ZETA-2 c</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>crown</td><td>warchest</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>1</td><td><b>ZETA-2 d</b></td><td>standard assault</td><td>spiral</td><td>goldrush</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>1</td><td><b>SERPO</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>gauntlet</td><td>goldrush</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>2</td><td><b>PROXIMA d</b></td><td>standard assault</td><td>fortress-ring</td><td>thinline</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>2</td><td><b>PROXIMA b</b></td><td>standard assault</td><td>open-field</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>2</td><td><b>PROXIMA c</b></td><td>FORTRESS, dug in</td><td>horseshoe</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>2</td><td><b>THE FLARE SHELTER</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>carousel</td><td>ironclad</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>2</td><td><b>THE NARROWS</b></td><td>FORGE, production</td><td>switchback</td><td>swift</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>THE DARK LOCKER</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>orrery</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>2</td><td><b>PROXIMA GATE</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>twin-gate</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>3</td><td><b>SIRIUS A I</b></td><td>standard assault</td><td>atoll</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>3</td><td><b>SIRIUS A II</b></td><td>standard assault</td><td>atoll</td><td>goldrush</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>3</td><td><b>THE ASH FIELD</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>confluence</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>3</td><td><b>SIRIUS B I</b></td><td>NEST, breeding</td><td>twin-channel</td><td>swift</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>3</td><td><b>THE DIAMOND SHELF</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>crown</td><td>deepwar</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>3</td><td><b>THE COMPANION</b></td><td>NEST, breeding</td><td>skew</td><td>swift</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>3</td><td><b>THE DOG STAR</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>loom</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>4</td><td><b>EARTH</b></td><td>FORTRESS, dug in</td><td>spine</td><td>deepwar</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>4</td><td><b>VENUS</b></td><td>standard assault</td><td>lance</td><td>frenzy</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>4</td><td><b>MARS</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>confluence</td><td>ironclad</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>4</td><td><b>CERES</b></td><td>FORTRESS, dug in</td><td>shattered</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>EUROPA</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>crown</td><td>scarcity</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>4</td><td><b>TITAN</b></td><td>FORGE, production</td><td>expanse</td><td>none</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>4</td><td><b>LUNA</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>delta</td><td>frenzy</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>5</td><td><b>MAIA</b></td><td>standard assault</td><td>twin-gate</td><td>goldrush</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>5</td><td><b>ELECTRA</b></td><td>standard assault</td><td>gauntlet</td><td>none</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>5</td><td><b>TAYGETA</b></td><td>standard assault</td><td>shattered</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>5</td><td><b>MEROPE</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>carousel</td><td>thinline</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>5</td><td><b>CELAENO</b></td><td>standard assault</td><td>strait</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>5</td><td><b>STEROPE</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>orrery</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>5</td><td><b>ALCYONE</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>strait</td><td>swift</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+</table>
+<h3 style="color:#ef4444">Playing as THE PIRATES</h3>
+<table><tr><th>Act</th><th>World</th><th>Scenario</th><th>Board</th><th>Arena rule</th><th>Garrison</th><th>What you fight</th></tr>
+<tr><td>1</td><td><b>PROXIMA d</b></td><td>standard assault</td><td>fortress-ring</td><td>thinline</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>1</td><td><b>PROXIMA b</b></td><td>standard assault</td><td>open-field</td><td>none</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>1</td><td><b>PROXIMA c</b></td><td>FORTRESS, dug in</td><td>horseshoe</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>1</td><td><b>THE FLARE SHELTER</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>carousel</td><td>ironclad</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>1</td><td><b>THE NARROWS</b></td><td>FORGE, production</td><td>switchback</td><td>swift</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>1</td><td><b>THE DARK LOCKER</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>orrery</td><td>none</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>1</td><td><b>PROXIMA GATE</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>twin-gate</td><td>none</td><td style="color:#38e8ff">HUMANITY</td><td style="font-size:13px;color:#8aa0b5">Trooper, Foo Fighter, Aurora, Black Manta, TR-3B</td></tr>
+<tr><td>2</td><td><b>SIRIUS A I</b></td><td>standard assault</td><td>atoll</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>SIRIUS A II</b></td><td>standard assault</td><td>atoll</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>THE ASH FIELD</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>confluence</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>SIRIUS B I</b></td><td>NEST, breeding</td><td>twin-channel</td><td>swift</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>2</td><td><b>THE DIAMOND SHELF</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>crown</td><td>deepwar</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>THE COMPANION</b></td><td>NEST, breeding</td><td>skew</td><td>swift</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>THE DOG STAR</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>loom</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>3</td><td><b>EARTH</b></td><td>FORTRESS, dug in</td><td>spine</td><td>deepwar</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>3</td><td><b>VENUS</b></td><td>standard assault</td><td>lance</td><td>frenzy</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>3</td><td><b>MARS</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>confluence</td><td>ironclad</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>3</td><td><b>CERES</b></td><td>FORTRESS, dug in</td><td>shattered</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>3</td><td><b>EUROPA</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>crown</td><td>scarcity</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>3</td><td><b>TITAN</b></td><td>FORGE, production</td><td>expanse</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>3</td><td><b>LUNA</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>delta</td><td>frenzy</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>MAIA</b></td><td>standard assault</td><td>twin-gate</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>ELECTRA</b></td><td>standard assault</td><td>gauntlet</td><td>none</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>4</td><td><b>TAYGETA</b></td><td>standard assault</td><td>shattered</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>MEROPE</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>carousel</td><td>thinline</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>4</td><td><b>CELAENO</b></td><td>standard assault</td><td>strait</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>4</td><td><b>STEROPE</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>orrery</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>ALCYONE</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>strait</td><td>swift</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>5</td><td><b>ZETA-1 b</b></td><td>standard assault</td><td>spiral</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>5</td><td><b>ZETA-1 c</b></td><td>standard assault</td><td>lattice</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>5</td><td><b>ZETA-1 d</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>confluence</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>5</td><td><b>ZETA-2 b</b></td><td>FORGE, production</td><td>twin-gate</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>5</td><td><b>ZETA-2 c</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>crown</td><td>warchest</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>5</td><td><b>ZETA-2 d</b></td><td>standard assault</td><td>spiral</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>5</td><td><b>SERPO</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>gauntlet</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+</table>
+<h3 style="color:#e2e8f0">Playing as THE PARALLEL</h3>
+<table><tr><th>Act</th><th>World</th><th>Scenario</th><th>Board</th><th>Arena rule</th><th>Garrison</th><th>What you fight</th></tr>
+<tr><td>1</td><td><b>SIRIUS A I</b></td><td>standard assault</td><td>atoll</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>1</td><td><b>SIRIUS A II</b></td><td>standard assault</td><td>atoll</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>1</td><td><b>THE ASH FIELD</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>confluence</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>1</td><td><b>SIRIUS B I</b></td><td>NEST, breeding</td><td>twin-channel</td><td>swift</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>1</td><td><b>THE DIAMOND SHELF</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>crown</td><td>deepwar</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>1</td><td><b>THE COMPANION</b></td><td>NEST, breeding</td><td>skew</td><td>swift</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>1</td><td><b>THE DOG STAR</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>loom</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>EARTH</b></td><td>FORTRESS, dug in</td><td>spine</td><td>deepwar</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>2</td><td><b>VENUS</b></td><td>standard assault</td><td>lance</td><td>frenzy</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>MARS</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>confluence</td><td>ironclad</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>CERES</b></td><td>FORTRESS, dug in</td><td>shattered</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>2</td><td><b>EUROPA</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>crown</td><td>scarcity</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>2</td><td><b>TITAN</b></td><td>FORGE, production</td><td>expanse</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>2</td><td><b>LUNA</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>delta</td><td>frenzy</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>3</td><td><b>MAIA</b></td><td>standard assault</td><td>twin-gate</td><td>goldrush</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>3</td><td><b>ELECTRA</b></td><td>standard assault</td><td>gauntlet</td><td>none</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>3</td><td><b>TAYGETA</b></td><td>standard assault</td><td>shattered</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>3</td><td><b>MEROPE</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>carousel</td><td>thinline</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>3</td><td><b>CELAENO</b></td><td>standard assault</td><td>strait</td><td>none</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>3</td><td><b>STEROPE</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>orrery</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>3</td><td><b>ALCYONE</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>strait</td><td>swift</td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td style="font-size:13px;color:#8aa0b5">Votary, Censer, Sanctifier, Oriflamme, Luminark</td></tr>
+<tr><td>4</td><td><b>ZETA-1 b</b></td><td>standard assault</td><td>spiral</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>ZETA-1 c</b></td><td>standard assault</td><td>lattice</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>ZETA-1 d</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>confluence</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>ZETA-2 b</b></td><td>FORGE, production</td><td>twin-gate</td><td>none</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>ZETA-2 c</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>crown</td><td>warchest</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>ZETA-2 d</b></td><td>standard assault</td><td>spiral</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>4</td><td><b>SERPO</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>gauntlet</td><td>goldrush</td><td style="color:#7c3aed">THE XENO</td><td style="font-size:13px;color:#8aa0b5">Chitling, Gnawling, Bloatpod, Hivelord, Broodmother</td></tr>
+<tr><td>5</td><td><b>PROXIMA d</b></td><td>standard assault</td><td>fortress-ring</td><td>thinline</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>5</td><td><b>PROXIMA b</b></td><td>standard assault</td><td>open-field</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>5</td><td><b>PROXIMA c</b></td><td>FORTRESS, dug in</td><td>horseshoe</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>5</td><td><b>THE FLARE SHELTER</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>carousel</td><td>ironclad</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>5</td><td><b>THE NARROWS</b></td><td>FORGE, production</td><td>switchback</td><td>swift</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>5</td><td><b>THE DARK LOCKER</b> <span class="tag parked">CONTESTED</span></td><td>FORTRESS, dug in</td><td>orrery</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+<tr><td>5</td><td><b>PROXIMA GATE</b> <span class="tag new">SEAT</span></td><td>FORTRESS, dug in</td><td>twin-gate</td><td>none</td><td style="color:#ef4444">THE PIRATES</td><td style="font-size:13px;color:#8aa0b5">Cutter, Boarder, Scrapjack, Wrecker, Ironhulk</td></tr>
+</table>
+<div class="note">Seeded on 20290413 so it is reproducible. Garrisons rotate with the power you play, which is why the same world appears under a different flag in each table: that is the one-universe galaxy working, not a bug.</div>
+<h2 id="mythos">9. The 130 Mythos Operations, listed for your decision</h2>
 <p class="sub">Every one is <code>status: scenario-seed</code> and <code>evidence: F</code>, this project's own label for fiction. They were never written as planet flavour: each is a MISSION PREMISE. Listed in full rather than summarised, because a summary of a list somebody has to triage is useless to them.</p>
 <div class="note"><b>The test being applied.</b> If an entry can become a unit, a tower, a bonus world or a playable mission, it is content and it ships. If it is only atmosphere attached to a planet and does not move the story, it does not. The suggested column is my read, not a decision.</div>
 <p class="sub"><b>45 of 130</b> sit in categories that can carry a mechanic. The remaining 85 are, on my read, author bible.</p>

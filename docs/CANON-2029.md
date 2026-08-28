@@ -10,6 +10,29 @@ balance number, a save key, the galaxy PRNG stream, or `NET_PROTOCOL`.
 
 ---
 
+## Apophis was never going to hit us
+
+This is the load-bearing fact and it is REAL. 99942 Apophis was rated the most
+dangerous object ever catalogued in 2004, then cleared. It passes Earth on
+**Friday 13 April 2029** at roughly **20,000 miles**, about **a tenth of the
+Moon's distance**, closer in than the geostationary satellites. It will be
+visible to the naked eye across Europe, Africa and western Asia, moving,
+brighter than most stars.
+
+So the world did not brace. **The world booked the day off.** A rock the size of
+a stadium was going to hang in the sky like a second moon, for free, for
+everyone, at the same time, and every nation on Earth would look up at the same
+object on the same night. It was going to be the first thing our whole species
+ever watched together.
+
+**Then it changed course.**
+
+Not by much and not all at once. It changed as it got closer, and it kept
+changing, and every correction pointed it further in. Rocks do not do that. That
+single fact is the whole conspiracy: somebody had to explain a solar-system
+object under power, and the explanation the public got was that the early
+observations had simply been wrong.
+
 ## The timeline
 
 **September 11, 2028. The Disclosure.** The world is told two things in one
@@ -70,6 +93,58 @@ summarise it out loud.
 always beings who call themselves gods, and now humanity knows what their
 principles are worth. The fleet built to save the planet departs. The
 campaign begins on this day, from Earth.
+
+## The human opening, as a shot list
+
+Owner-specified, Session 42. The human campaign opens on a longer sequence than
+the other four, because it carries the canon everybody needs and no other act
+has to re-explain. Panels marked SILENT carry no caption at all: the images do
+the work, and a caption would tell the player what they are already watching.
+
+| # | Beat | Caption |
+|---|---|---|
+| 1 | The announcement | Apophis returns on the thirteenth of April, and it will pass at twenty thousand miles. A tenth of the way to the Moon. Close enough to see. |
+| 2 | The reaction | For about a week, nobody slept. |
+| 3 | The solution | Then every good mind on the planet was put in one room, and the room said it could be done. |
+| 4 | The holiday | So the leaders of the world declared a holiday. Friday the thirteenth of April, the first day the whole species ever agreed to celebrate at once. |
+| 5 | The day | And when it came, the world went outside to watch humanity beat the biggest thing that had ever come for it. |
+| 6 | **SILENT** | *(no caption: a city square at night, every face turned up, the flash of the intercept, celebration)* |
+| 7 | **SILENT** | *(no caption: the same crowd, the same faces, as the sky above them fills with descending shapes. Cheering that has not stopped yet, on people who have started to understand)* |
+| 8 | **SILENT** | *(no caption: the square at ground level. It is among them now)* |
+| 9 | The turn | And the biggest thing that ever came for us was never the rock. |
+| 10 | The square arms | *(the same square, seen again: emplacements rising out of the plaza, batteries unshuttering on the rooftops, fire lanes opening down the avenues. The town square becoming a board)* |
+| 11 | Roswell | We have known since 1947 that we were not alone. We learned quickly that being not alone is not the same as being among friends. Everything out there wants something, and the wants do not agree. |
+| 12 | Reverse engineering | So we took the wreckage apart and we learned. Quietly, badly at first, for decades. |
+| 13 | 1959 | In 1959 it stopped being one country's secret. The Global Research Center for Weapons of Planetary Annihilation opened for the Defence of the Species, and the Antarctic Treaty signed that same year was the paperwork that made it legal. Nobody owns that continent. That was the point. |
+| 14 | **TWO PANEL** | For eighty years we have been building the arsenal. Not for a rock. *(panel A: a battery firing on the descending fragment. Panel B: the same battery, same gunner, firing on what came out of it)* |
+| 15 | Hand off | For anything. |
+
+Beat 15 hands straight into the first battle, in that square, with the player
+already commanding. See the next section.
+
+## The first battle is the tutorial, and there is no menu before it
+
+Owner directive. The player does not choose a world, does not pick towers, and
+does not meet a loadout screen. The cutscene ends and the same square the player
+has just watched fill with Xeno is the board they are standing on, already
+equipped, already a commander. Everything the game normally asks up front is
+introduced later, in place, as hover hints during play, and on mobile as a
+guided first match.
+
+The reasoning is that the opening is the strongest thing the campaign has and a
+menu between the panic and the fight throws it away.
+
+## The other four powers are locked until Earth is finished
+
+Owner directive. The Federation, the Compact, the Free Captains and the Parallel
+cannot be selected until the player has cleared **the whole Earth System**, all
+seven worlds of act one.
+
+Two reasons, both good. It guarantees every player receives the canon in the
+order it was written, so nobody meets the harvest before they have seen what it
+did to Earth. And it converts faction curiosity into a reason to finish an act
+rather than a reason to abandon one, which is the failure mode of every game
+that opens with five playable armies.
 
 ## The five powers
 

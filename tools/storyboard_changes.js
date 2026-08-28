@@ -392,8 +392,63 @@ let mhave = 0, mwant = 0;
   });
 });
 
+/* ---------------- section: every world, lore beside mechanics ---------------- */
+w('<h2 id="planets">8. Every world, at a glance: the lore beside the fight</h2>');
+w('<p class="sub">Owner asked to see the obstacles, the scenario and the garrison for every ' +
+  'planet in one place, because the lore only earns its keep if it is interwoven with the ' +
+  'mechanical challenge. Read live from <code>generateGalaxy</code> on the canon seed ' +
+  '<code>20290413</code>, the date of the intercept, so this is the board the player actually ' +
+  'gets and not a description of one.</p>');
+
+let GAL = null;
+try {
+  const gctx = { console, window: {}, document: undefined };
+  vm.createContext(gctx);
+  for (const f of ['config', 'lore', 'factions', 'towers2', 'roster', 'story'])
+    try { vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', f + '.js'), 'utf8'), gctx, { filename: f }); }
+    catch (e) { }
+  vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', 'galaxy.js'), 'utf8'), gctx, { filename: 'galaxy.js' });
+  GAL = { ctx: gctx, gen: fac => vm.runInContext('generateGalaxy(20290413,"' + fac + '",0,1,2)', gctx) };
+} catch (e) { console.log('  (galaxy unavailable: ' + e.message.split('\n')[0] + ')'); }
+
+if (GAL) {
+  const UN = vm.runInContext('UNIT_TYPES || FACTION_UNITS || null', GAL.ctx) ||
+             vm.runInContext('(typeof UNITS !== "undefined") ? UNITS : null', GAL.ctx);
+  const unitsOf = f => {
+    if (!UN) return '';
+    return Object.values(UN).filter(u => u.faction === f).map(u => u.name).join(', ');
+  };
+  const KIND = { fortress: 'FORTRESS, dug in', standard: 'standard assault',
+                 forge: 'FORGE, production', nest: 'NEST, breeding' };
+
+  FACS.forEach(pf => {
+    let g;
+    try { g = GAL.gen(pf); } catch (e) { return; }
+    w('<h3 style="color:' + facColor(pf) + '">Playing as ' + esc(facName(pf)) + '</h3>');
+    w('<table><tr><th>Act</th><th>World</th><th>Scenario</th><th>Board</th>' +
+      '<th>Arena rule</th><th>Garrison</th><th>What you fight</th></tr>');
+    g.systems.forEach((sys, si) => {
+      const worlds = sys.worlds || sys;
+      worlds.forEach(wd => {
+        const seat = wd.seat ? ' <span class="tag new">SEAT</span>' : '';
+        const cont = wd.contested ? ' <span class="tag parked">CONTESTED</span>' : '';
+        w('<tr><td>' + (si + 1) + '</td><td><b>' + esc(wd.name) + '</b>' + seat + cont + '</td>' +
+          '<td>' + esc(KIND[wd.kind] || wd.kind) + '</td>' +
+          '<td>' + esc(wd.map) + '</td>' +
+          '<td>' + esc(wd.arena || 'none') + '</td>' +
+          '<td style="color:' + facColor(wd.owner) + '">' + esc(facName(wd.owner)) + '</td>' +
+          '<td style="font-size:13px;color:#8aa0b5">' + esc(unitsOf(wd.owner)) + '</td></tr>');
+      });
+    });
+    w('</table>');
+  });
+  w('<div class="note">Seeded on 20290413 so it is reproducible. Garrisons rotate with the power ' +
+    'you play, which is why the same world appears under a different flag in each table: that is ' +
+    'the one-universe galaxy working, not a bug.</div>');
+}
+
 /* ---------------- section: mythos operations, for owner triage ---------------- */
-w('<h2 id="mythos">8. The 130 Mythos Operations, listed for your decision</h2>');
+w('<h2 id="mythos">9. The 130 Mythos Operations, listed for your decision</h2>');
 w('<p class="sub">Every one is <code>status: scenario-seed</code> and <code>evidence: F</code>, ' +
   'this project\'s own label for fiction. They were never written as planet flavour: each is a ' +
   'MISSION PREMISE. Listed in full rather than summarised, because a summary of a list somebody ' +

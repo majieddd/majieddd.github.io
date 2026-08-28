@@ -10,7 +10,7 @@
 
 const FINDINGS = [
 
-{ id: 'F1', severity: 'CRITICAL', kind: 'plot hole', status: 'DECIDE',
+{ id: 'F1', severity: 'CRITICAL', kind: 'plot hole', status: 'FIXED',
   title: 'The lore says Apophis passed safely. The campaign says it hit.',
   evidence:
     'js/lore.js timeline: "2029-04-13 Apophis safely passes Earth; fiction preserves a tiny ' +
@@ -29,7 +29,16 @@ const FINDINGS = [
     'time the rock is hollow. That preserves the timeline unchanged, keeps the owner oath beat ' +
     'that hell landed, and makes "everyone else was in on it" literal: seventy years of knowing ' +
     'what the residual meant. The grievance stops being a mood and becomes a provable cover-up.',
-  cost: 'Rewrite the oath date references only. No plate re-renders. Roughly 8 lines.' },
+  cost: 'Rewrite the oath date references only. No plate re-renders. Roughly 8 lines.',
+  outcome:
+    'DONE, and the owner improved the fix. The campaign is set in 2029, so the 27 fictional '
+    'events from 2030 to 2099 were rebased into 1947 to 2029 and became the HIDDEN history '
+    'rather than the future: Ashtar Declaration 2022, Farm Revolts 2024, Scrap Constellation '
+    'Charter 2027, Parallel Declaration 2028, Five-Way War 2029. The timeline was also unsorted '
+    'and is now ordered. The owner then supplied the real hook: Apophis was NEVER going to hit. '
+    'It was cleared after 2004, it passes at twenty thousand miles, a tenth of the Moon distance, '
+    'naked-eye visible, and the world had declared a holiday to watch it. THEN IT CHANGED COURSE. '
+    'Rocks do not do that, and that single fact is the whole conspiracy.' },
 
 { id: 'F2', severity: 'CRITICAL', kind: 'arc', status: 'OPEN',
   title: 'The premise evaporates after act one.',
@@ -50,7 +59,7 @@ const FINDINGS = [
     'explicitly, so a player who reads only the ground text still gets the story.',
   cost: 'About 40 rewritten cells. No re-renders: this is text over existing plates.' },
 
-{ id: 'F3', severity: 'MAJOR', kind: 'voice', status: 'FIXING',
+{ id: 'F3', severity: 'MAJOR', kind: 'voice', status: 'FIXED',
   title: 'Thirty of thirty-five location descriptions are labels, not narration.',
   evidence:
     'Measured: 30 of 35 ground lines open on a noun phrase with no finite verb. "A coastal city ' +
@@ -66,7 +75,12 @@ const FINDINGS = [
     'event rather than the label. Before: "A coastal city under the fall, where the fragments came ' +
     'down whole and split open in the streets." After: "The fragments came down whole over the ' +
     'harbour district and split open in the streets. Whatever was riding inside was already awake."',
-  cost: '35 ground lines and 35 works lines. No re-renders.' },
+  cost: '35 ground lines and 35 works lines. No re-renders.',
+  outcome:
+    'DONE. All 35 rewritten. Re-measured after: 0 of 35 still read as labels, down from 30. The '
+    'detector itself was wrong on the first pass and flagged five good lines because its verb list '
+    'lacked floats, cut, climbs, rises and strips; it was widened and then proved both ways, that '
+    'it still flags the original label opening and no longer flags the replacement.' },
 
 { id: 'F4', severity: 'MAJOR', kind: 'formula', status: 'OPEN',
   title: 'Two thirds of all closing lines announce their own world like a status report.',
