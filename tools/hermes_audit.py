@@ -42,8 +42,12 @@ ERRORS = re.compile(
     r'No usable credentials|agent failed:', re.I)
 
 VIOLATIONS = [
+    # Written as an escape, not the literal character. tools/emdash.js scans
+    # SOURCES, so a detector that spells out what it detects trips the very
+    # gate it serves. Same reason the VENDORED exemption exists, solved without
+    # needing an exemption.
     ('em-dash',
-     re.compile(r'[—]'),
+     re.compile('[' + chr(0x2014) + chr(0x2015) + ']'),
      'contains an em dash, which is absolute in this project'),
     ('vigil',
      re.compile(r'\bvigil\b', re.I),

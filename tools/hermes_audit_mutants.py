@@ -22,8 +22,10 @@ CLEAN_SCEN = ('SCENARIO: The lane is swept by rocks on a five hour cycle.\n'
               'TACTICAL: Firing lanes close and reopen on a timer.\n')
 
 MUTANTS = [
+    # Built from an escape so this file does not itself carry the character
+    # tools/emdash.js forbids in sources.
     ('m1_emdash', 'scen_99.md',
-     CLEAN_SCEN.replace('cycle.', 'cycle — without warning.'),
+     CLEAN_SCEN.replace('cycle.', 'cycle ' + chr(0x2014) + ' without warning.'),
      'em-dash'),
     ('m2_vigil', 'scen_98.md',
      CLEAN_SCEN + 'The Vigil patrols this lane.\n',
