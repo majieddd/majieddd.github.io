@@ -302,6 +302,16 @@ body.rm-user .bi-line { opacity: 1; }
               border: 1px solid rgba(148,163,184,.5); border-radius: 3px;
               padding: 2px 7px; margin-bottom: 6px; }
 
+/* THE FOUR LOCKED BANNERS (owner, Session 42). Legible but clearly out of
+   reach: readable enough that the player can see what they are working toward,
+   dimmed enough that it never reads as a card they failed to click. The crest
+   desaturates rather than the whole card, so faction colour still identifies
+   which banner is which and the row does not turn into five grey rectangles. */
+.fac-card.locked { opacity: .52; cursor: not-allowed; filter: grayscale(.35); }
+.fac-card.locked .fac-crest { filter: grayscale(1) brightness(.8); }
+.fac-card.locked .fac-secret { color: #fbbf24; border-color: rgba(251,191,36,.55); }
+.fac-card.locked:hover { transform: none; }
+
 /* ═════════════ THE BATTLEFIELD, FULL BLEED ══════════════════════════════ */
 /* Measured at 1280x720 before this existed: the board rendered at viewScale
    0.623 into 663x355 -- twenty-six percent of the window -- because a 150px

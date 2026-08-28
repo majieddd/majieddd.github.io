@@ -100,6 +100,19 @@ function staticGates() {
   else fail('dead config fields: ' + df.out.trim().split('\n').filter(l => /^\s{2}\S/.test(l))
                                        .map(l => l.trim().split(/\s+/)[0]).join(', '));
 
+  /* THE EARTH-SYSTEM FACTION LOCK (owner, Session 42). An unlock gate is the
+     kind of code that only ever runs on a save nobody in development has: a
+     fresh account. It is also the kind that fails SILENTLY in the generous
+     direction, handing the player everything, which no playtest reports as a
+     bug. Mutation-tested: three planted defects, and the third (dropping the
+     "faction is human" condition) escaped the first five checks and forced a
+     sixth. See tools/probe-factionlock.js. */
+  const fl = run(process.execPath, ['tools/probe-factionlock.js']);
+  if (fl.code === 0) say('faction lock: ' + (fl.out.trim().split('\n').pop() || '').trim());
+  else fail('faction lock: ' + fl.out.trim().split('\n')
+                                 .filter(l => l.indexOf('[FAIL]') >= 0)
+                                 .map(l => l.replace(/^\s*\[FAIL\]\s*/, '')).join('; '));
+
   /* AN UNCLOSED CSS BLOCK CANNOT THROW, so it needs a counter. css/polish.css
      shipped with an `@media (max-width: 860px)` opened and never closed, which
      silently scoped the debug bar and the entire field-manual figure layout to

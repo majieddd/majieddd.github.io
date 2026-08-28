@@ -1863,15 +1863,27 @@ const UI = {
        until then there is no card at all -- not a locked one. A locked card is
        an advertisement, and a secret that advertises itself is a menu item. */
     const secret = Meta.gameBeaten() ? SECRET_FACTIONS : [];
+    /* THE OTHER FOUR ARE LOCKED UNTIL EARTH IS CLEARED (owner, Session 42).
+       Unlike SECRET_FACTIONS above, these cards ARE shown while locked, and the
+       distinction is deliberate. A secret that advertises itself is a menu
+       item, so the fifth banner stays absent; but this lock exists precisely to
+       give the player a reason to finish act one, and a reason you cannot see
+       is not a reason. It says what it wants and what it costs. */
+    const earthDone = typeof Meta.earthCleared === 'function' ? Meta.earthCleared() : true;
     $('#faction-grid').innerHTML = FACTION_ORDER.concat(secret).map(id => {
       const f = FACTIONS[id];
       const isSecret = secret.indexOf(id) >= 0;
+      const locked = !earthDone && id !== 'human';
       const cmd = COMMANDER_ROSTER.find(c => c.id === freeCommanderOf(id)) || COMMANDER_ROSTER[0];
-      return `<button class="fac-card ${chosen === id ? 'on' : ''}" data-fac="${id}"
+      return `<button class="fac-card ${chosen === id ? 'on' : ''}${locked ? ' locked' : ''}"
+                      data-fac="${id}"${locked ? ' disabled aria-disabled="true"' : ''}
                       style="--fc:${f.color};--fa:${f.accent}"
-                      data-tt="${f.name}|${f.bonusName}: ${f.bonusDesc} Their rivals are ${
+                      data-tt="${f.name}|${locked
+                        ? 'Locked until Humanity has carried the Earth System. The story starts on the day the rock came apart, and it is meant to be read in order.'
+                        : `${f.bonusName}: ${f.bonusDesc} Their rivals are ${
                         rivalFactionsOf(id).map(x => FACTIONS[x].short).join(', ')}. You begin with ${cmd.name}, ${cmd.title}.${
-                        isSecret ? ' Unlocked the day this install first conquered a galaxy.' : ''}">
+                        isSecret ? ' Unlocked the day this install first conquered a galaxy.' : ''}`}">
+        ${locked ? '<span class="fac-secret">LOCKED &middot; CLEAR THE EARTH SYSTEM FIRST</span>' : ''}
         ${isSecret ? '<span class="fac-secret">SECRET BANNER · UNLOCKED BY CONQUEST</span>' : ''}
         <span class="fac-crest" aria-hidden="true">${
           (typeof ARTPACK !== 'undefined' && ARTPACK['fac_' + id])
@@ -1886,8 +1898,17 @@ const UI = {
       </button>`;
     }).join('');
     $$('[data-fac]').forEach(b => b.addEventListener('click', () => {
+      /* A disabled button does not fire click in any browser this ships to, so
+         this guard is belt and braces: the ONE way a locked banner could still
+         be chosen is a stale this.sel.faction surviving from before the lock,
+         which the reset below also covers. */
+      if (b.disabled || b.classList.contains('locked')) return;
       this.sel.faction = b.dataset.fac; Sound.play('click'); this.renderFactions();
     }));
+    /* If a locked banner is somehow still selected (an older save, a reload
+       mid-choice), drop it rather than letting the confirm button act on it. */
+    if (!earthDone && this.sel.faction && this.sel.faction !== 'human')
+      this.sel.faction = null;
     /* This render just destroyed every card, including whichever one a tap
        had opened a tooltip against. Leaving it up orphans it: the owner is
        detached, so the per-element toggle can never match it again. The

@@ -433,6 +433,12 @@ const Meta = {
 
   /** Has THIS INSTALL ever taken a galaxy? The fifth banner's only gate. */
   gameBeaten() { return (this.vault().victories || 0) > 0; },
+
+  /** Has this account ever cleared the Earth System as Humanity?
+      Gates the other four banners (owner, Session 42). A finished galaxy
+      implies it, so anyone who beat the game before this shipped keeps their
+      choice rather than being locked out of factions they already earned. */
+  earthCleared() { return !!this.vault().earthCleared || this.gameBeaten(); },
   setSettings(s) { const r = this.root(); r.settings = Object.assign(r.settings || {}, s); this.save(); },
   /* Saving used to serialise the WHOLE root synchronously on every mutation --
      measured at 1.93 ms per call against a 253 KB blob, and the blob only grows
@@ -620,6 +626,27 @@ const Meta = {
     if (prev < 1 && stars >= 1) souls += this.SOULS_BASE;
     for (let n = prev + 1; n <= stars; n++) souls += this.soulsForStar(n);
     if (stars > prev) c.stars[worldId] = stars;
+
+    /* THE OTHER FOUR POWERS ARE LOCKED UNTIL EARTH IS FINISHED (owner
+       directive, Session 42). Every player receives the canon in the order it
+       was written, and faction curiosity becomes a reason to FINISH act one
+       rather than a reason to abandon it.
+
+       Deliberately CLEARED (one star on every world), not TAKEN (three stars on
+       every world, which is what systemsTaken below means). A gate that demands
+       a perfect act-one run to see the rest of the game is a wall, not a hook.
+
+       The flag lives in the vault, not the profile, because the unlock is an
+       account-level fact: having once carried Earth should not be forgotten
+       because a later campaign was abandoned. */
+    if ((c.faction || p.faction || 'human') === 'human' && !this.vault().earthCleared) {
+      const gx0 = this.galaxy();
+      const home = gx0 && gx0.systems && gx0.systems[0];
+      if (home && home.worlds.every(w => (c.stars[w.id] || 0) >= 1)) {
+        this.vault().earthCleared = true;
+        this.save();
+      }
+    }
 
     /* A solar system whose every world is conquered pays a bounty, once. */
     let systemTaken = null, saved = [], storyTower = null, refusedOffer = null;
