@@ -507,6 +507,50 @@
     return '25 turning acts, every system name lands on the act that follows it';
   });
 
+  /* ---- 10. the story-beat interleave (Session 40) ----------------------- */
+  T('39.33 THE DEPARTURE plays at campaign start and never on seat 1', () => {
+    /* Found by reading the assembled screenplay: beat 0 is a campaign-opening
+       address ("Set course for Luna", "Take the system") and rendered on the
+       result screen AFTER that conquest. It now plays via
+       playStoryInterstitial at campaign start, and the result surface must
+       suppress index 0 or the player hears the send-off twice, an act late. */
+    if (typeof UI.playStoryInterstitial !== 'function') bad('playStoryInterstitial is missing');
+    const realC = Meta.campaign;
+    try {
+      Meta.campaign = () => ({ faction: 'human', systemsTaken: ['s0'] });
+      const one = UI.storyBeatHtml();
+      Meta.campaign = () => ({ faction: 'human', systemsTaken: ['s0', 's1'] });
+      const two = UI.storyBeatHtml();
+      if (one !== '') bad('seat 1 still renders a beat card');
+      if (!two || two.indexOf('The Unredacted') < 0)
+        bad('seat 2 should carry beat 1 (The Unredacted), got ' + String(two).slice(0, 60));
+      return 'seat 1 empty, seat 2 carries FILES, departure surface present';
+    } finally { Meta.campaign = realC; }
+  });
+
+  T('39.34 no layer claims a defeat that has not happened yet', () => {
+    /* Two shipped: the Federation's "defeated Archivist" (the Federation
+       never fights a human garrison anywhere in its campaign) and the
+       pirates' "Chorus, beaten" one act before they ever fight the
+       Federation. Both reframed as transmissions. The phrases are banned
+       outright because both were wrong for the same reason and a future
+       writing pass could reintroduce either verbatim. */
+    const BANNED = [/defeated archivist/i, /chorus,\s*beaten/i];
+    const hits = [];
+    UORDER.forEach(fac => {
+      (CUTSCENES[fac].sys || []).forEach((sl, i) => {
+        const t = (sl.a || '') + ' ' + (sl.b || '');
+        BANNED.forEach(re => { if (re.test(t)) hits.push(fac + ' turning act' + (i + 1)); });
+      });
+      Story.arc(fac).forEach((b, i) => {
+        const t = (b.line || '') + ' ' + (b.reveal || '');
+        BANNED.forEach(re => { if (re.test(t)) hits.push(fac + ' story beat ' + i); });
+      });
+    });
+    if (hits.length) bad(hits.join(', '));
+    return 'both premature-defeat phrasings absent from all 60 slides and beats';
+  });
+
   const pass = checks.filter(c => c.ok).length;
   return { pass, fail: checks.length - pass, checks };
 })()

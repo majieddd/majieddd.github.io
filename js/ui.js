@@ -316,8 +316,21 @@ const UI = {
          before the first screen of the war. Skippable, and the routing
          beneath is identical with or without it. */
       const proceed = () => { this.show('screen-command'); this.buildCommanderScreen(); };
-      if (typeof Cutscenes !== 'undefined' && Cutscenes.has('intro', f)) Cutscenes.play('intro', f, 0, proceed);
-      else proceed();
+      /* THE DEPARTURE (Session 40). Story beat 0 is a campaign-opening
+         address: the Marshal orders the fleet to Luna, the Necrotist orders
+         the pasture widened. It used to render on the result screen AFTER
+         the first system fell, where "Set course for Luna" read as a speech
+         about a conquest already finished. Found by reading the assembled
+         screenplay (tools/screenplay.js) end to end: every slide was fine
+         alone and the interleave was wrong. It now plays here, between the
+         oath and the first screen of the war, which is the moment it is
+         written for; storyBeatHtml suppresses index 0 so it cannot repeat. */
+      const departure = () => {
+        const beat = (typeof Story !== 'undefined' && Story.beat) ? Story.beat(f, 0) : null;
+        if (beat) this.playStoryInterstitial(beat, proceed); else proceed();
+      };
+      if (typeof Cutscenes !== 'undefined' && Cutscenes.has('intro', f)) Cutscenes.play('intro', f, 0, departure);
+      else departure();
     });
     $('#btn-back-command').addEventListener('click', () => { Sound.play('click'); this.show('screen-command'); this.renderCommanders(); });
     $('#btn-to-loadout').addEventListener('click', () => { Sound.play('click'); this.show('screen-loadout'); this.renderLoadout(); });
@@ -1530,6 +1543,26 @@ const UI = {
     </div>`;
   },
 
+  /** THE STORY INTERSTITIAL: one beat, full screen, one CONTINUE. The same
+      card the result screen renders, hosted in the cutscene overlay's shell
+      so it inherits the shade, the faction colour and the reduced-motion
+      behaviour without a second surface growing its own opinions. `done` is
+      called exactly once, on the button or on a backdrop click. */
+  playStoryInterstitial(beat, done) {
+    const fin = () => { if (done) { const d = done; done = null; ov.className = ''; ov.innerHTML = ''; d(); } };
+    let ov = document.getElementById('cutscene');
+    if (!ov) { ov = document.createElement('div'); ov.id = 'cutscene'; document.body.appendChild(ov); }
+    const fac = FACTIONS[Meta.faction()] || { color: '#7dd3fc' };
+    ov.style.setProperty('--fc', fac.color);
+    ov.className = 'show';
+    ov.innerHTML = `<div class="cs-stage cs-story"><div class="cs-shade"></div>
+        <div class="cs-storycard">${this.storyBeatCard(beat, false)}
+          <button class="btn" id="cs-story-go">CONTINUE</button></div></div>`;
+    ov.querySelector('#cs-story-go').addEventListener('click', ev => { ev.stopPropagation(); fin(); });
+    ov.onclick = fin;
+    if (typeof Sound !== 'undefined' && Sound.play) Sound.play('click');
+  },
+
   storyBeatHtml() {
     if (typeof Story === 'undefined') return '';
     const c = Meta.campaign();
@@ -1541,6 +1574,14 @@ const UI = {
        screen, so the reward screen never shows it: without this guard the
        fifth system would fire beat 5 here and the finale would repeat it. */
     if (taken - 1 >= arc.length - 1) return '';
+    /* THE FIRST beat is THE DEPARTURE and now plays at campaign start (the
+       faction-go handler), where its "set course" tense is true. Showing it
+       here again after the first seat falls would repeat it an act late,
+       which is the exact defect the move fixed. Beats 1 to 4 keep this
+       surface: their alignment with the systems they follow is load-bearing
+       (FILES lands the act after the deferral vaults, MIRROR the act after
+       the relay trace) and was verified by reading all five screenplays. */
+    if (taken - 1 === 0) return '';
     return this.storyBeatCard(Story.beat(c.faction || Meta.faction() || 'human', taken - 1), false);
   },
 

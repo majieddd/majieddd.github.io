@@ -53,7 +53,7 @@ const CUTSCENES = {
     sys: [
       { key: 'cut_light_sys1', a: 'The Pleiades stand secured. The hymns are certified. The rings hold, as they have always held.', b: 'The Chorus pulled the registry afterwards. Protected: all forty worlds. Risen: none. She has stopped singing the second verse.' },
       { key: 'cut_light_sys2', a: 'One page in the human files carries our seal. Earth, flagged for protection, 1947. Deferred. Deferred. Deferred.', b: 'Three generations of harvest ran under that deferral. The word non-interference does not survive contact with the page.' },
-      { key: 'cut_light_sys3', a: 'The humans do not thank us for the rings. From inside a fence, they say, attendance looks exactly like ownership.', b: 'We defended our claim to be defending life. The defeated Archivist said it to our faces, and nobody present could file an objection.' },
+      { key: 'cut_light_sys3', a: 'The humans do not thank us for the rings. From inside a fence, they say, attendance looks exactly like ownership.', b: 'We defended our claim to be defending life. The Archivist said it to our faces on an open channel, and nobody present could file an objection.' },
       { key: 'cut_light_sys4', a: 'The Warden landed. Doctrine said hold the ring and let the plague run its course. He burned the blight fields himself.', b: 'The tribunal wants his wings. The world he saved wants his statue. The Mandate cannot hold both verdicts, and it is starting to show.' },
       { key: 'cut_light_sys5', a: 'The Voice traced the deferrals, the sealed pages, the rings that never open. They chain to three seats above field command.', b: 'Someone in the upper rings is spending our light on something. It is not the worlds we ring. The First Speaker has been told.' },
     ],
@@ -87,7 +87,7 @@ const CUTSCENES = {
     sys: [
       { key: 'cut_pirate_sys1', a: 'Barnard’s Star is ours again, stem to stern, and Harbour Nine never once asked a refugee for papers.', b: 'It never asked the other crews either. Same bay, same week, medicine and chattel. The no-questions rule works both ways. It always did.' },
       { key: 'cut_pirate_sys2', a: 'The Scrapper had the sealed collaborator list in his hold for six hours. The bidding would have bought a fleet.', b: 'He posted it free, to every open channel, and cannot explain why. First chosen line on the map. Drawn at full price, for nothing.' },
-      { key: 'cut_pirate_sys3', a: 'The Chorus, beaten, left us a sentence instead of a surrender: freedom that will not choose is just drift.', b: 'The Corsair laughed for a day. He has not laughed since. A ship nothing steers is not free. It is cargo.' },
+      { key: 'cut_pirate_sys3', a: 'The Chorus sent one sentence ahead of her fleet, instead of an envoy: freedom that will not choose is just drift.', b: 'The Corsair laughed for a day. He has not laughed since. A ship nothing steers is not free. It is cargo.' },
       { key: 'cut_pirate_sys4', a: 'A harvest broker offered the Warlord a fleet to run cargo that sings through his corridor.', b: 'He sank the advance into the sun and posted the manifest. No law made him. No law could. That is exactly why it counts.' },
       { key: 'cut_pirate_sys5', a: 'The Arsonist burned the Meridian run. Best toll on the map, and the traffic was people, in crates. Route, relays, her own depots.', b: 'Scarlet is not speaking to her. The ledger is screaming. The fire, she says, never felt cleaner. The crew is choosing sides, which is to say: codes.' },
     ],

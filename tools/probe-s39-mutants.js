@@ -156,11 +156,43 @@
       },
     },
     {
+      id: 'M15', expect: '39.34',
+      what: 'a premature defeat claim returns to a turning slide',
+      plant() {
+        const sl = CUTSCENES.pirate.sys[2], was = sl.a;
+        sl.a = 'The Chorus, beaten, left us a sentence instead of a surrender.';
+        return () => { sl.a = was; };
+      },
+    },
+    {
+      id: 'M16', expect: '39.33',
+      what: 'seat 1 renders THE DEPARTURE again, an act after it played',
+      plant() {
+        const real = UI.storyBeatHtml.bind(UI);
+        const realC = Meta.campaign;
+        UI.storyBeatHtml = function () {
+          const c = Meta.campaign();
+          const taken = ((c && c.systemsTaken) || []).length;
+          if (!taken) return '';
+          return this.storyBeatCard(Story.beat((c && c.faction) || 'human', taken - 1), false);
+        };
+        return () => { UI.storyBeatHtml = real; Meta.campaign = realC; };
+      },
+    },
+    {
       id: 'M10', expect: '39.18',
-      what: 'the gallery stops listing worlds it has no plates for',
+      what: 'the gallery quietly drops a planet slot',
+      /* The first version stripped only gal-missing tiles, which made the
+         mutant a NO-OP the moment the render finished: with all 875 plates
+         rendered there is nothing carrying that class, the regex removed
+         nothing, and M10 reported UNDETECTED against a check that was fine.
+         A mutant that depends on transient world-state is a mutant that
+         expires; this one now drops the first tile unconditionally, which is
+         the same defect (a slot silently missing) in a form that exists at
+         every stage of a render. */
       plant() {
         const real = UI.galleryPlanetHtml.bind(UI);
-        UI.galleryPlanetHtml = () => real().replace(/<figure class="gal-tile gal-missing">[\s\S]*?<\/figure>/g, '');
+        UI.galleryPlanetHtml = () => real().replace(/<figure class="gal-tile[^"]*">[\s\S]*?<\/figure>/, '');
         return () => { UI.galleryPlanetHtml = real; };
       },
     },
