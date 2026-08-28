@@ -876,7 +876,66 @@ const PLANET_CUTS = {
    touches, so the table can grow a system at a time without the caller
    changing shape.
 -------------------------------------------------------------------------- */
+/* ==========================================================================
+   THE CAMPAIGN MOMENTS (Session 40): three cutscene types the engine could
+   already stage and the writing never voiced.
+
+   The screenplay read-through (tools/screenplay.js) showed the five campaigns
+   flowing clean on the happy path, and three engine states still speaking in
+   derived boilerplate: a CONTESTED world (two rival claims plus yours), a
+   RENEGADE world (your own banner refusing you), and a DEFEAT (the one flow
+   every player hits and the only one with no authored line at all). Each is
+   one line per faction, in that faction's own register, keyed by KIND rather
+   than by world: these are moments about the CAMPAIGN STATE, not the ground,
+   so per-world variants would be 105 more lines saying the same thing.
+
+   PRESENTATION ONLY, like everything in this file. The flags they read
+   (w.contested, w.renegade, the battle verdict) are set by the engine;
+   nothing here writes anything back. */
+const PLANET_MOMENTS = {
+  /* Deploying to a world two rivals already fight over. Beat 2's holder line
+     states the fact; this replaces beat 1's voice so the APPROACH knows what
+     it is flying into. */
+  contested: {
+    human:  'Two fleets are already killing each other over this ground. We are not here to pick a side. We are here to end the auction.',
+    light:  'Two powers contest this world and neither one asked it. The Mandate calls that a dispute. The world underneath calls it weather. Both claims end today.',
+    xeno:   'Two rivals bleed each other over the pasture. Good. Exhaustion is a yield like any other, and the Compact harvests last.',
+    pirate: 'Two flags are shooting over one rock, which means the rock has no working roads. We open roads. Both of them can file a complaint.',
+    robot:  'SITE: contested. CLAIMANTS: two, engaged. The queue ranks them as obstructions in order of tonnage. This unit notes that neither claim parses.',
+  },
+  /* Deploying against your own banner. js/dialogue.js already carries the
+     RENEGADE_LINES exchange for the VS screen; this is the approach that
+     precedes it, so the family argument does not begin mid-sentence. */
+  renegade: {
+    human:  'The banner on that world is ours and it is not answering. They heard the same broadcast we did and drew a different line. Nobody wanted this order. Confirm it anyway.',
+    light:  'The ring below flies our gold and will not open to us. A warden who stops answering the Mandate is not an enemy. The word for what they are is worse: a verdict.',
+    xeno:   'A limb of the body has stopped answering the chorus and grown its own appetite. The body does not negotiate with a limb. It reabsorbs it, or it cuts.',
+    pirate: 'That crew flies no flag, same as us, and they have closed a road, which is nothing like us. Free is not a thing you get to keep doing wrong.',
+    robot:  'UNITS BELOW: maker-format, designation shared, queue divergent. They stopped asking and started deciding. ANOMALY: this unit cannot name the difference from itself.',
+  },
+  /* A campaign battle lost. The one beat every player will eventually see,
+     and the only flow that had no authored sentence anywhere: victory gets
+     two plates and an exchange, defeat got a stat screen. One line, spoken
+     over the assault plate of the battle just lost. */
+  defeat: {
+    human:  'The ground is theirs tonight. Write everything down: what held, what broke, who we lost. Earth did not come this far to learn nothing from a loss.',
+    light:  'The line broke. Sing the retreat honestly, every name at full length. The Mandate does not require us to win. It requires us to come back.',
+    xeno:   'The ground is surrendered. The body withdraws, digests what it learned, and returns with the lesson grown in. Hunger is patient. That is the whole of its power.',
+    pirate: 'We lost the rock. The crews are alive, the holds are empty, and the road out is still ours. You can rebuild anything out here except a crew. Count heads.',
+    robot:  'WITHDRAWAL EXECUTED. Losses logged by designation, not by count. TASK: continue. ADDENDUM, unauthorised: the ground was not the objective. The asking is. Both survive.',
+  },
+};
+
 const PlanetCuts = {
+
+  /** One campaign-moment line, or null. `kind` is 'contested', 'renegade' or
+      'defeat'; unknown kinds and unknown factions degrade to null, and null
+      means the caller keeps whatever it was already doing. */
+  moment(kind, factionId) {
+    const t = PLANET_MOMENTS[kind];
+    return (t && t[factionId]) || null;
+  },
+
 
   /** The universe coordinate key for a world. Returns null for a world that
       has no coordinates, which is every v1 (pre-one-universe) saved galaxy:

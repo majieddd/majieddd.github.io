@@ -180,6 +180,24 @@
       },
     },
     {
+      id: 'M17', expect: '39.35',
+      what: 'a defeat line goes missing for one power',
+      plant() {
+        const t = PLANET_MOMENTS.defeat, was = t.pirate;
+        delete t.pirate;
+        return () => { t.pirate = was; };
+      },
+    },
+    {
+      id: 'M18', expect: '39.36',
+      what: 'the renegade approach falls back to the ordinary line',
+      plant() {
+        const t = PLANET_MOMENTS.renegade, was = t.human;
+        delete t.human;
+        return () => { t.human = was; };
+      },
+    },
+    {
       id: 'M10', expect: '39.18',
       what: 'the gallery quietly drops a planet slot',
       /* The first version stripped only gal-missing tiles, which made the

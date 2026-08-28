@@ -96,6 +96,16 @@ function screenplay(fac) {
     w(''); w('#### THE TURNING  (interstitial)');
     w('> ' + t.a); w('>'); w('> ' + t.b);
   }
+  w(''); w('---'); w('');
+  w('## CAMPAIGN MOMENTS  (state-triggered, any world)');
+  [['contested', 'Deploying to a CONTESTED world (beat 1 voice)'],
+   ['renegade', 'Deploying against your OWN banner (beat 1 voice)'],
+   ['defeat', 'A campaign battle LOST (one slide before the result screen)']]
+    .forEach(([k, label]) => {
+      const m = vm.runInContext('PLANET_MOMENTS[' + JSON.stringify(k) + '][' + JSON.stringify(fac) + ']', ctx);
+      w(''); w('**' + label + '.**'); w('> ' + m);
+    });
+
   const fin = STORY[fac][5];
   w(''); w('---'); w('');
   w('## FINALE: ' + STORY_ACTS[5].name);

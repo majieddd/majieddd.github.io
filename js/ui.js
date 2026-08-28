@@ -710,9 +710,19 @@ const UI = {
     const lines = pc && typeof PlanetCuts !== 'undefined' ? PlanetCuts.lines(w, fac) : null;
     if (pc && lines) {
       const k = b => PlanetCuts.plate(w, fac, b);
+      /* THE MOMENT VOICE (Session 40). A renegade or contested world is a
+         different STORY even when it is the same ground, and beat 1 is the
+         only beat about the reader, so it is the beat that carries the
+         difference. Renegade outranks contested: a world can in principle be
+         both, and fighting your own banner is the stranger fact. The per-
+         world line the moment displaces is not lost to the player who cares:
+         it still opens every ordinary deploy to that world, which is most of
+         them. Beats 2 to 5 stay per-world: the ground does not change sides. */
+      const momentLine = w.renegade ? PlanetCuts.moment('renegade', fac)
+                       : w.contested ? PlanetCuts.moment('contested', fac) : null;
       return [
         /* APPROACH. Where you are, then your own power's voice on arriving. */
-        { key: k(1), alt: alt, text: where + ' ' + lines[0] },
+        { key: k(1), alt: alt, text: where + ' ' + (momentLine || lines[0]) },
         /* THE GROUND. What this place is, then who is standing on it. */
         { key: k(2), alt: alt, text: (pc.ground + ' ' + holdLine).trim() },
         /* THE ASSAULT. What defends it, then what winning here means. The
@@ -7712,7 +7722,32 @@ const UI = {
                          () => this.showEndScreen(won));
       return;
     }
+    /* THE DEFEAT BEAT (Session 40). Victory earned two plates and a
+       commander exchange; a loss cut straight to the stat screen, which made
+       defeat the one flow in the campaign with no authored sentence. One
+       slide now: the faction's own line over the assault plate of the battle
+       just lost. Same gates as the outro, inverted: campaign only, never a
+       skirmish, never a duel, and a missing plate degrades to the world
+       plate through the same `alt` contract every planet beat carries. */
+    const defeat = this.defeatSlides(Game.worldRecord, won);
+    if (defeat.length && typeof Cutscenes !== 'undefined' && Cutscenes.playList) {
+      Cutscenes.playList(Meta.faction() || 'human', defeat,
+                         () => this.showEndScreen(won));
+      return;
+    }
     this.showEndScreen(won);
+  },
+
+  /** One slide on a campaign loss, or []. [] is the pre-existing flow. */
+  defeatSlides(w, won) {
+    if (won || !w) return [];
+    if (Game._skirmish) return [];
+    if (typeof Net !== 'undefined' && Net.live) return [];
+    if (typeof PlanetCuts === 'undefined') return [];
+    const fac = Meta.faction() || 'human';
+    const line = PlanetCuts.moment('defeat', fac);
+    if (!line || !PlanetCuts.entry(w)) return [];
+    return [{ key: PlanetCuts.plate(w, fac, 3), alt: 'world_' + w.map, text: line }];
   },
 
   showEndScreen(won) {

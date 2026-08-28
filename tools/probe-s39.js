@@ -551,6 +551,50 @@
     return 'both premature-defeat phrasings absent from all 60 slides and beats';
   });
 
+  /* ---- 11. the campaign moments (Session 40) ---------------------------- */
+  T('39.35 every campaign moment exists for every power, and no two share', () => {
+    const KINDS = ['contested', 'renegade', 'defeat'];
+    const seen = {}, out = [];
+    KINDS.forEach(k => FACS.forEach(f => {
+      const t = PlanetCuts.moment(k, f);
+      if (!t || t.length < 40) out.push(k + '/' + f + ' missing or thin');
+      else if (seen[t]) out.push(k + '/' + f + ' duplicates ' + seen[t]);
+      else seen[t] = k + '/' + f;
+    }));
+    if (out.length) bad(out.join(', '));
+    if (PlanetCuts.moment('nonsense', 'human') !== null) bad('unknown kind did not degrade to null');
+    return '15 moment lines, 3 kinds x 5 powers, all distinct, unknown kinds null';
+  });
+
+  T('39.36 a renegade or contested world speaks the moment voice on approach', () => {
+    /* Same world, three campaign states, three different beat-1 texts, and
+       the per-world plate keys unchanged: the moment changes the VOICE, not
+       the ground. Renegade outranks contested when both are set. */
+    const plain = UI.worldSlides(world)[0];
+    const cw = Object.assign({}, world, { contested: true });
+    const rw = Object.assign({}, world, { renegade: true, contested: true });
+    const c1 = UI.worldSlides(cw)[0], r1 = UI.worldSlides(rw)[0];
+    if (c1.text === plain.text) bad('contested approach is unchanged');
+    if (r1.text === plain.text || r1.text === c1.text) bad('renegade approach is not distinct');
+    if (c1.text.indexOf(PlanetCuts.moment('contested', 'human')) < 0) bad('contested line absent');
+    if (r1.text.indexOf(PlanetCuts.moment('renegade', 'human')) < 0) bad('renegade did not outrank contested');
+    if (c1.key !== plain.key || r1.key !== plain.key) bad('the plate key moved with the voice');
+    return 'three states, three voices, one plate key';
+  });
+
+  T('39.37 a campaign loss plays exactly one defeat beat, and nothing else does', () => {
+    const s = UI.defeatSlides(world, false);
+    if (s.length !== 1) bad('campaign loss produced ' + s.length + ' slides');
+    if (!/^pcut_\d\d_[a-z]+_3$/.test(s[0].key)) bad('defeat is not spoken over the assault plate: ' + s[0].key);
+    if (!s[0].alt || s[0].alt.indexOf('world_') !== 0) bad('missing world-plate fallback');
+    if (UI.defeatSlides(world, true).length) bad('a WIN produced a defeat beat');
+    const was = Game._skirmish; Game._skirmish = true;
+    const n = UI.defeatSlides(world, false).length;
+    Game._skirmish = was;
+    if (n) bad('a skirmish loss produced a defeat beat');
+    return s[0].key + ' on loss; win and skirmish refused';
+  });
+
   const pass = checks.filter(c => c.ok).length;
   return { pass, fail: checks.length - pass, checks };
 })()
