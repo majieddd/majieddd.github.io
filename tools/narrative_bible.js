@@ -1,3 +1,10 @@
+/* SUPERSEDED, Session 42. tools/storyboard.js now owns narrative/index.html and
+   narrative/<faction>.html, and RUNNING THIS FILE WILL OVERWRITE THEM with the
+   older all-powers-per-world layout the owner asked to replace.
+
+   Kept because its per-act scenario and moral sections have no equivalent yet.
+   If you want those, port them into storyboard.js rather than running this.  */
+
 /* THE NARRATIVE BIBLE: one HTML page per faction showing that faction's whole
    campaign as a screenplay, with every plate rendered inline beside the line
    the player reads over it.
