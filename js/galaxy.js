@@ -391,9 +391,40 @@ function generateGalaxy(seed, playerFaction, mapPool, kindsW, gxv) {
            back to the full eligible set, so their boards stay byte-identical. */
         map: (() => { const elig = MAPS.filter(m => !m.tri && (!m.minTier || m.minTier <= si));
                       const th = GX_THEMES[si % GX_THEMES.length];
-                      let pool = (mapPool > 11) ? elig.filter(m => th.families.indexOf(m.family) >= 0) : [];
+                      /* THE AUTHORED BOARDS STAY IN THE DRAW. A themed pool
+                         of `th.families` alone is procedural-only, because the
+                         twenty-one hand-made maps carry no `family` at all: the
+                         moment the tiers were fixed so themes stopped falling
+                         back, every authored board would have vanished from
+                         every campaign. The theme still decides which
+                         PROCEDURAL ground a system is made of; the authored
+                         maps ride alongside it as the backbone they have always
+                         been. */
+                      const themed = elig.filter(m => m.family && th.families.indexOf(m.family) >= 0);
+                      const plain  = elig.filter(m => !m.family);
+                      let pool = [], weighted = false;
+                      if (mapPool > 11 && themed.length && plain.length) {
+                        /* WEIGHTED, or the theme never reads. Four themed
+                           families against twenty-one authored boards is a 16%
+                           chance of themed ground per world (measured over 40
+                           galaxies, 1000 worlds), so a system labelled WALLED
+                           GROUND fielded roughly one walled board in five and
+                           the label was decoration. The themed families are
+                           repeated until they are about half the draw. */
+                        const reps = Math.max(1, Math.round(plain.length / themed.length));
+                        for (let r = 0; r < reps; r++) pool = pool.concat(themed);
+                        pool = pool.concat(plain);
+                        weighted = true;
+                      }
                       if (!pool.length) pool = elig;      // theme empty at this tier: any eligible map
-                      const n2 = (mapPool >= 1 && mapPool <= pool.length) ? mapPool : pool.length;
+                      /* The mapPool PREFIX CAP is a save-compatibility device
+                         for the old unthemed path, where `pool` really is a
+                         prefix of MAPS. A weighted pool is not a prefix of
+                         anything, and capping it to mapPool would silently
+                         make the tail undrawable, so the cap applies only to
+                         the legacy path that needs it. */
+                      const n2 = weighted ? pool.length
+                               : ((mapPool >= 1 && mapPool <= pool.length) ? mapPool : pool.length);
                       return pool[Math.floor(rnd() * n2)].id; })(),
         arena: rnd() < 0.55 ? ARENA_MODS[Math.floor(rnd() * ARENA_MODS.length)].id : null,
         /* Still exactly ONE rnd() call, in the same position: boonFor

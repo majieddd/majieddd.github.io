@@ -70,7 +70,11 @@ function laneTiles(lane) {
   return { tiles: out, gaps };
 }
 
-const failures = { G1: [], G2: [], G3: [], G4: [], G5: [], G6: [], G7: [], G8: [] };
+const failures = { G1: [], G2: [], G3: [], G4: [], G5: [], G6: [], G7: [], G8: [], G9: [], G10: [] };
+/* Per-family tallies for the two LAYOUT properties, which are shares rather
+   than pass/fail per board: a single node landing awkwardly is not a defect,
+   a family placing most of them out of reach is. */
+const layout = {};
 let boards = 0;
 
 for (const fam of fams) {
@@ -173,6 +177,34 @@ for (const fam of fams) {
     const span = Math.abs(sp[0] - bs[0]) + Math.abs(sp[1] - bs[1]);
     if (span < 6) failures.G7.push(fam + '/' + s + ' spawn to base only ' + span + ' tiles apart');
 
+    /* ---- LAYOUT, the two properties that decide whether a board reads as a
+       battlefield or as a field with a road across the top of it. Owner,
+       Session 38: the maps "don't feel like they're working properly". ---- */
+    const Lt = [...allLane].map(k => { const c = k.indexOf(','); return [+k.slice(0, c), +k.slice(c + 1)]; });
+    const withinOf = (x, y, r) => {
+      for (const [lx, ly] of Lt) if (Math.abs(lx - x) <= r && Math.abs(ly - y) <= r) return true;
+      return false;
+    };
+    const acc = layout[fam] || (layout[fam] = { nodeIn: 0, nodeAll: 0, areaIn: 0, area: 0 });
+
+    /* G9 a BUILD node must be worth taking, which means a tower standing on
+       it can reach the road. Measured before the laneBand fix: staircase 53%,
+       fortress-ring 54%, twin-gate 55%. Element bonuses on ground nobody
+       builds on. */
+    for (const n of (a.nodes || [])) {
+      if (n[3] === 'lane') continue;                 /* lane nodes sit ON the road by definition */
+      acc.nodeAll++;
+      if (withinOf(n[0], n[1], 3)) acc.nodeIn++;
+    }
+
+    /* G10 how much of the board is within a short tower's reach of SOME road,
+       counting the mirror. This is dead ground measured honestly: a tile with
+       no lane on it is still useful if it can shoot one. */
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+      acc.area++;
+      if (withinOf(x, y, 3) || withinOf(cols - 1 - x, y, 3)) acc.areaIn++;
+    }
+
     /* G8 the lane must not touch its own reflection, or the two sides share
        road and the mirrored board is not two boards. */
     for (const k of allLane) {
@@ -180,6 +212,19 @@ for (const fam of fams) {
       if (allLane.has(key(cols - 1 - lx, ly))) { failures.G8.push(fam + '/' + s + ' lane meets its mirror at ' + k); break; }
     }
   }
+}
+
+/* FLOORS, not targets. Set below every family's measured value with room to
+   spare, so this catches a real regression rather than normal drift. At the
+   time of writing the weakest are twin-gate 66% of area in reach and
+   open-field 82% of nodes reachable. */
+const NODE_FLOOR = 0.75, AREA_FLOOR = 0.60;
+for (const fam of Object.keys(layout)) {
+  const a = layout[fam];
+  if (a.nodeAll && a.nodeIn / a.nodeAll < NODE_FLOOR)
+    failures.G9.push(fam + ' ' + Math.round(100 * a.nodeIn / a.nodeAll) + '% of build nodes in reach of a road');
+  if (a.area && a.areaIn / a.area < AREA_FLOOR)
+    failures.G10.push(fam + ' ' + Math.round(100 * a.areaIn / a.area) + '% of board area within reach of a road');
 }
 
 const NAMES = {
@@ -190,7 +235,9 @@ const NAMES = {
   G5: 'every board has room to build',
   G6: 'every stretch of road can be shot at from somewhere',
   G7: 'spawn and base are a road apart, not a dot',
-  G8: 'no lane overlaps its own mirror'
+  G8: 'no lane overlaps its own mirror',
+  G9: 'build nodes sit where a tower on them can reach the road',
+  G10: 'most of the board is within a tower of some road, not dead ground'
 };
 
 let bad = 0;

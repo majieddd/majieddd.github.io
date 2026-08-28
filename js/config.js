@@ -590,30 +590,53 @@ const MAPS = [
   },
 
   /* ═══════════ PROCEDURAL FAMILIES (mapgen.js) ═══════════
+     MINTIER IS COUPLED TO GX_THEMES, and was not. js/galaxy.js offers system
+     `si` the families of GX_THEMES[si % 4] and then filters that pool by
+     `minTier <= si`. The two were authored independently, so almost every
+     theme was empty at the system it was written for and the generator fell
+     back to whatever else was eligible. Measured on a real galaxy before this
+     was fixed, seed 20290413:
+
+       system 0  5 worlds, 5 maps, all AUTHORED (its theme needs minTier 0,
+                 the lowest any family carried was 1)
+       system 1  4 maps        system 2  4 maps
+       system 3  5 worlds, ONE map: every single world was twin-channel,
+                 the only family in theme 3 whose tier cleared si=3
+       system 4  2 maps
+
+       13 distinct boards in a whole campaign, and ELEVEN of the fifteen
+       procedural families never appeared at all: chokepoint, island-scatter,
+       open-field, convergence, fortress-ring, gauntlet, staircase,
+       switchback, labyrinth, twin-temple, twin-gate.
+
+     Each family's minTier is now its theme index, so a theme is always live
+     in the system that offers it. Keep them in step: moving a family between
+     themes means moving its minTier with it.
+
      Each entry carries `procedural: true` + a family; buildField() calls
      MapGen.proceduralGeometry(family, worldId) and bakes the result in. The
      authored lanes/cols below are a FALLBACK only: they keep the board
      playable if mapgen.js ever fails to load. `minTier` gates discovery by
      solar-system depth (the galaxy pool filters on it); solo families carry
      noReanim so they read as last-stand sieges, not two-ended duels. */
-  { id: 'spiral', name: 'Vortex Reach', procedural: true, family: 'spiral', minTier: 1,
+  { id: 'spiral', name: 'Vortex Reach', procedural: true, family: 'spiral', minTier: 0,
     cols: 24, rows: 20, lanes: [[[3,10],[8,10],[8,5],[16,5],[16,15],[21,15]]],
     blocks: [[10,9,13,10]], nodes: [] },
-  { id: 'twin-channel', name: 'Twin Straits', procedural: true, family: 'twin-channel', minTier: 2,
+  { id: 'twin-channel', name: 'Twin Straits', procedural: true, family: 'twin-channel', minTier: 3,
     cols: 26, rows: 20, lanes: [[[3,7],[21,7]],[[3,13],[21,13]]],
     blocks: [[9,9,16,10]], nodes: [] },
-  { id: 'chokepoint', name: 'The Narrows', procedural: true, family: 'chokepoint', minTier: 3,
+  { id: 'chokepoint', name: 'The Narrows', procedural: true, family: 'chokepoint', minTier: 1,
     cols: 24, rows: 20, lanes: [[[3,10],[9,10],[9,6],[15,6],[15,14],[21,14]]],
     blocks: [[8,7,15,8]], nodes: [] },
-  { id: 'island-scatter', name: 'Shattered Shoals', procedural: true, family: 'island-scatter', minTier: 4,
+  { id: 'island-scatter', name: 'Shattered Shoals', procedural: true, family: 'island-scatter', minTier: 2,
     cols: 30, rows: 20, lanes: [[[3,10],[27,10]]],
     blocks: [[8,6,11,9],[14,11,17,14]], nodes: [] },
-  { id: 'open-field', name: 'The Expanse', procedural: true, family: 'open-field', minTier: 5,
+  { id: 'open-field', name: 'The Expanse', procedural: true, family: 'open-field', minTier: 0,
     cols: 36, rows: 20, lanes: [[[3,10],[33,10]]], blocks: [], nodes: [] },
-  { id: 'convergence', name: 'Last Bastion', procedural: true, family: 'convergence', minTier: 4,
+  { id: 'convergence', name: 'Last Bastion', procedural: true, family: 'convergence', minTier: 3,
     noReanim: true, cols: 24, rows: 20, lanes: [[[3,5],[12,9]],[[3,15],[12,11]]],
     blocks: [[11,8,13,11]], nodes: [] },
-  { id: 'fortress-ring', name: 'Siege Ring', procedural: true, family: 'fortress-ring', minTier: 4,
+  { id: 'fortress-ring', name: 'Siege Ring', procedural: true, family: 'fortress-ring', minTier: 3,
     noReanim: true, cols: 26, rows: 20, lanes: [[[3,10],[9,4],[17,4],[17,16],[23,16]]],
     blocks: [[10,8,15,11]], nodes: [] },
 
@@ -621,21 +644,21 @@ const MAPS = [
      Same contract as above. Tier gates spread across systems 1-4 so every
      system's themed pool (galaxy.js GX_THEMES) has at least one family that
      is actually eligible when it is reached. */
-  { id: 'braid', name: 'Woven Roads', procedural: true, family: 'braid', minTier: 1,
+  { id: 'braid', name: 'Woven Roads', procedural: true, family: 'braid', minTier: 0,
     cols: 26, rows: 20, lanes: [[[3,7],[21,7]],[[3,13],[21,13]]], blocks: [], nodes: [] },
-  { id: 'gauntlet', name: 'The Fenced Road', procedural: true, family: 'gauntlet', minTier: 2,
+  { id: 'gauntlet', name: 'The Fenced Road', procedural: true, family: 'gauntlet', minTier: 1,
     cols: 28, rows: 20, lanes: [[[3,10],[25,10]]], blocks: [], nodes: [] },
-  { id: 'staircase', name: 'Descent Steps', procedural: true, family: 'staircase', minTier: 3,
+  { id: 'staircase', name: 'Descent Steps', procedural: true, family: 'staircase', minTier: 2,
     cols: 26, rows: 20, lanes: [[[3,4],[10,4],[10,8],[17,8],[17,12],[25,12]]], blocks: [], nodes: [] },
-  { id: 'horseshoe', name: 'The Plaza', procedural: true, family: 'horseshoe', minTier: 2,
+  { id: 'horseshoe', name: 'The Plaza', procedural: true, family: 'horseshoe', minTier: 1,
     cols: 26, rows: 20, lanes: [[[3,5],[14,5],[14,10],[8,10],[8,15],[2,15]]], blocks: [], nodes: [] },
-  { id: 'switchback', name: 'Hairpin Pass', procedural: true, family: 'switchback', minTier: 3,
+  { id: 'switchback', name: 'Hairpin Pass', procedural: true, family: 'switchback', minTier: 2,
     cols: 26, rows: 20, lanes: [[[3,4],[8,4],[8,15],[14,15],[14,4],[20,4]]], blocks: [], nodes: [] },
-  { id: 'labyrinth', name: 'The Maze', procedural: true, family: 'labyrinth', minTier: 4,
+  { id: 'labyrinth', name: 'The Maze', procedural: true, family: 'labyrinth', minTier: 3,
     cols: 30, rows: 20, lanes: [[[3,10],[9,10],[9,5],[16,5],[16,15],[27,15]]], blocks: [], nodes: [] },
-  { id: 'twin-temple', name: 'Twin Sanctums', procedural: true, family: 'twin-temple', minTier: 3,
+  { id: 'twin-temple', name: 'Twin Sanctums', procedural: true, family: 'twin-temple', minTier: 2,
     cols: 26, rows: 20, lanes: [[[3,5],[14,5]],[[3,15],[14,15]]], blocks: [], nodes: [] },
-  { id: 'twin-gate', name: 'The Bars', procedural: true, family: 'twin-gate', minTier: 4,
+  { id: 'twin-gate', name: 'The Bars', procedural: true, family: 'twin-gate', minTier: 1,
     cols: 28, rows: 20, lanes: [[[3,10],[25,10]]], blocks: [], nodes: [] }
 ];
 

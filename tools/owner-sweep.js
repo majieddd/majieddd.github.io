@@ -2783,6 +2783,95 @@
     });
   })();
 
+  /* == 42. THE CAMPAIGN ACTUALLY SERVES ITS MAPS ==========================
+     Owner, Session 38: "I'm not really able to have a good variety of maps to
+     play through it feels like." They were right, and the cause was two
+     systems disagreeing silently.
+
+     js/galaxy.js offers system `si` the families of GX_THEMES[si % 4], then
+     filters that pool by `minTier <= si`. The two tables were authored
+     independently, so a theme was almost never eligible in the system it was
+     written for. Measured on the shipped build, seed 20290413:
+
+       system 3 served ONE map. All five of its ordinary worlds were
+       twin-channel, the only family in theme 3 whose tier cleared si=3.
+       13 distinct boards in a whole campaign, and ELEVEN of the fifteen
+       procedural families never appeared at all.
+
+     Nothing failed, because a pool that collapses to one entry is still a
+     pool and every board it builds is valid. Only counting catches it. */
+  (function campaignVariety() {
+    var PROC = MAPS.filter(function (m) { return m.procedural && m.family; });
+    var POOL = MAPS.filter(function (m) { return !m.tri; }).length;
+
+    function galaxies(n) {
+      var out = [];
+      for (var k = 0; k < n; k++) {
+        try { out.push(generateGalaxy(4200 + k * 13, 'human', POOL, 1, 2)); } catch (e) { /* reported by the caller */ }
+      }
+      return out;
+    }
+
+    T('42.1 no system serves the same board over and over', function () {
+      var gs = galaxies(12), thin = [], systems = 0;
+      for (var i = 0; i < gs.length; i++) {
+        var bySys = {};
+        for (var a = 0; a < gs[i].systems.length; a++) {
+          var sy = gs[i].systems[a];
+          for (var b = 0; b < sy.worlds.length; b++) {
+            var w = sy.worlds[b];
+            if (w.contested) continue;
+            (bySys[w.si] = bySys[w.si] || {})[w.map] = 1;
+          }
+        }
+        for (var si in bySys) {
+          systems++;
+          var d = Object.keys(bySys[si]).length;
+          if (d < 2) thin.push('galaxy ' + i + ' system ' + si + ': ' + d + ' distinct map' + (d === 1 ? '' : 's'));
+        }
+      }
+      ok('42.1 no system serves the same board over and over',
+         gs.length > 0 && thin.length === 0,
+         !gs.length ? 'generateGalaxy produced nothing'
+           : thin.length ? thin.slice(0, 4).join('; ')
+           : systems + ' systems across ' + gs.length + ' galaxies, every one serving at least 2 distinct boards');
+    });
+
+    T('42.2 every procedural family is reachable in a campaign', function () {
+      var gs = galaxies(12), seen = {};
+      for (var i = 0; i < gs.length; i++)
+        for (var a = 0; a < gs[i].systems.length; a++)
+          for (var b = 0; b < gs[i].systems[a].worlds.length; b++) seen[gs[i].systems[a].worlds[b].map] = 1;
+      var never = PROC.filter(function (m) { return !seen[m.id]; }).map(function (m) { return m.id; });
+      ok('42.2 every procedural family is reachable in a campaign',
+         gs.length > 0 && never.length === 0,
+         never.length ? never.length + ' of ' + PROC.length + ' never appear in ' + gs.length +
+                        ' galaxies: ' + never.join(', ')
+                      : 'all ' + PROC.length + ' procedural families appear across ' + gs.length + ' galaxies');
+    });
+
+    T('42.3 a system fields the ground its theme advertises', function () {
+      /* The themes name each system (OPEN GROUND, WALLED GROUND). Four themed
+         families against twenty-one authored boards made that label a 16%
+         chance of being true, so the draw is weighted. This asserts the label
+         is not decoration without demanding the authored boards disappear. */
+      var gs = galaxies(12), proc = 0, tot = 0;
+      for (var i = 0; i < gs.length; i++)
+        for (var a = 0; a < gs[i].systems.length; a++)
+          for (var b = 0; b < gs[i].systems[a].worlds.length; b++) {
+            var w = gs[i].systems[a].worlds[b];
+            if (w.contested) continue;
+            tot++;
+            if (PROC.some(function (m) { return m.id === w.map; })) proc++;
+          }
+      var share = tot ? proc / tot : 0;
+      ok('42.3 a system fields the ground its theme advertises',
+         tot > 0 && share >= 0.30,
+         Math.round(share * 100) + '% of ordinary worlds are themed procedural ground across ' +
+         tot + ' worlds (was 16% before the draw was weighted, floor is 30%)');
+    });
+  })();
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;

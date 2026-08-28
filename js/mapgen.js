@@ -260,6 +260,38 @@
     return s;
   }
 
+  /**
+   * THE ROWS THE FIGHT ACTUALLY HAPPENS ON.
+   *
+   * Every scatter in this file used to draw its y from `irange(rnd, 1, rows - 2)`,
+   * the full height of the board, while the LANE is generated inside a band
+   * that is often only three or four rows tall. The result is terrain in the
+   * void: measured across 40 seeds per family before this landed,
+   *
+   *     staircase      lane spans  3 of 16 rows, 12.0 rows carry no road
+   *                    36% of blocks and 41% of walls within reach of a lane
+   *     fortress-ring  lane spans  4 rows, 11.5 dead, 54% of NODES reachable
+   *     twin-gate      lane spans  4 rows, 12.3 dead
+   *
+   * An element node the player cannot build a tower next to is not a bonus,
+   * it is decoration, and a wall ten tiles from any road blocks nothing. So
+   * everything scattered is drawn from the lane's own band, widened by `pad`.
+   *
+   * Falls back to the full interior when there is no lane to measure, so a
+   * caller that passes an empty set still gets a legal range.
+   */
+  function laneBand(rows, laneSet, pad) {
+    let lo = Infinity, hi = -Infinity;
+    for (const k of laneSet) {
+      const y = Number(k.slice(k.indexOf(',') + 1));
+      if (y < lo) lo = y;
+      if (y > hi) hi = y;
+    }
+    const top = 1, bot = Math.max(2, rows - 2);
+    if (!isFinite(lo)) return [top, bot];
+    return [Math.max(top, lo - pad), Math.min(bot, Math.max(lo - pad + 1, hi + pad))];
+  }
+
   /** N random rubble rectangles that touch no lane tile and no other block.
       Authored in the LEFT half only: buildField mirrors every rectangle, so a
       full-width draw would place mirror copies on top of the rival's lanes. */
@@ -271,7 +303,9 @@
       const maxX = halfW - w;                   // keep the whole rect left of the axis
       if (maxX < 1) continue;
       const x = irange(rnd, 1, maxX);
-      const y = irange(rnd, 1, Math.max(2, rows - 1 - h));   // y+h must stay on-grid
+      /* THE LANE'S BAND, not the whole board. See laneBand above. */
+      const bnd = laneBand(rows, laneSet, 3);
+      const y = irange(rnd, bnd[0], Math.max(bnd[0], Math.min(bnd[1], rows - 1 - h)));
       let overlaps = false;
       for (let ty = y; ty <= y + h && !overlaps; ty++)
         for (let tx = x; tx <= x + w && !overlaps; tx++)
@@ -306,7 +340,8 @@
       const wxMax = halfW - (horiz ? len : thick);   // stay left of the axis
       if (wxMax < 2) continue;
       const wx = irange(rnd, 2, wxMax);
-      const wy = irange(rnd, 1, Math.max(2, rows - 2));
+      const wb = laneBand(rows, laneSet, 3);
+      const wy = irange(rnd, wb[0], wb[1]);
       const x0 = wx, y0 = wy;
       const x1 = horiz ? Math.min(halfW, wx + len) : Math.min(halfW, wx + thick);
       const y1 = horiz ? Math.min(rows - 2, wy + thick) : Math.min(rows - 2, wy + len);
@@ -323,6 +358,10 @@
   }
 
   const ELEMENTS = ['fire', 'frost', 'storm', 'void', 'venom'];
+  /* How close a build node must sit to the road. Three tiles is inside the
+     range of every tower in the game, so a node here is always a real
+     decision rather than a tile the player looks at once and ignores. */
+  const NODE_REACH = 3;
   /** Element nodes on open ground: build nodes mostly, a few lane nodes.
       Authored in the LEFT half only (mirrored by buildField); the mirror axis
       column itself is excluded so no node ever mirrors onto its own tile.
@@ -339,11 +378,27 @@
         if (!tiles.length) continue;
         [nx, ny] = pick(rnd, tiles).split(',').map(Number);
       } else {
+        /* A BUILD NODE HAS TO BE WORTH TAKING, which means a tower standing on
+           it must be able to reach the road. The old draw was uniform over the
+           whole board and put 46% of fortress-ring's nodes, and 47% of
+           staircase's, where no lane comes within reach: an element bonus on
+           ground nobody will ever build on. Drawn from the lane's band now,
+           and rejected outright unless a lane tile is within NODE_REACH. */
+        const nb = laneBand(rows, laneSet, 2);
+        const nearLane = (x, y) => {
+          for (const k of laneSet) {
+            const c = k.indexOf(',');
+            if (Math.abs(Number(k.slice(0, c)) - x) <= NODE_REACH &&
+                Math.abs(Number(k.slice(c + 1)) - y) <= NODE_REACH) return true;
+          }
+          return false;
+        };
         do {
           nx = irange(rnd, 1, Math.floor((cols - 2) / 2));
-          ny = irange(rnd, 1, rows - 2);
+          ny = irange(rnd, nb[0], nb[1]);
           tries++;
-        } while ((laneSet.has(nx + ',' + ny) || blockSet.has(nx + ',' + ny)) && tries < 40);
+        } while ((laneSet.has(nx + ',' + ny) || blockSet.has(nx + ',' + ny) ||
+                  !nearLane(nx, ny)) && tries < 40);
         if (laneSet.has(nx + ',' + ny) || blockSet.has(nx + ',' + ny)) continue;
       }
       nodes.push([nx, ny, pick(rnd, ELEMENTS), kind]);
@@ -843,6 +898,98 @@
         geo.nodes = generateNodes(cols, rows, rnd, ls, blockTileSet(geo.blocks));
     }
 
+    return trimDeadGround(geo);
+  }
+
+  /**
+   * CUT THE HALF OF THE BOARD NOBODY FIGHTS ON.
+   *
+   * The owner, on the shipped build: the maps "don't feel like they're
+   * working properly". Rendered as text (tools/showboard.js) the reason is
+   * immediate: on most families the road runs across the top of the board and
+   * the bottom third to half is empty ground with nothing on it. Measured
+   * across 40 seeds per family before this landed, rows carrying NO lane tile:
+   *
+   *     open-field 15.1 of 21     twin-gate 12.3 of 16   staircase 12.0 of 16
+   *     twin-channel 11.7         twin-temple 11.6       fortress-ring 11.5
+   *     switchback 11.4           labyrinth 11.1         chokepoint 10.2
+   *
+   * Nine of fifteen families spent two thirds of the board on nothing. That
+   * is what a board "not working" looks like: the camera frames a field, the
+   * fight happens in a strip across the top of it, and the rest is scenery
+   * the player scrolls past.
+   *
+   * Trimmed rather than re-authored. Rewriting fifteen waypoint generators to
+   * fill a fixed height is a much larger change with a much larger blast
+   * radius; the board is a box drawn around the lanes, so the honest fix is to
+   * draw the box to fit. Height becomes the lowest lane row plus BOARD_MARGIN,
+   * which leaves real building depth under the road without leaving a desert.
+   *
+   * Terrain below the new floor is dropped. After the laneBand change above
+   * almost nothing is: everything scattered is already drawn within three rows
+   * of the road.
+   */
+  const BOARD_MARGIN = 4;    /* buildable depth kept beyond the outermost lane */
+  const BOARD_MIN_ROWS = 11; /* never trim a board below a playable height */
+  const BOARD_SHIFT_MIN = 4; /* only pull a board up when it is this far adrift */
+
+  /* RECENTRED, not just cropped from the bottom. The first cut trimmed only
+     below the lowest lane row and moved the headline number by six points,
+     because on most families the road does not sit at the top: it sits in a
+     band somewhere in the middle with waste above AND below it. Shifting the
+     whole board so the road is BOARD_MARGIN from the top edge and cropping to
+     BOARD_MARGIN past the bottom of it removes both at once.
+
+     x is never touched. The mirror axis is a function of `cols`, and the base
+     waypoint legitimately sits at x = -1, so a horizontal shift would move the
+     rival's half and put a base off the wrong edge. */
+  function trimDeadGround(geo) {
+    if (!geo || !geo.lanes || !geo.lanes.length) return geo;
+    const ls = tileSet(geo.lanes);
+    let lo = Infinity, hi = -Infinity;
+    for (const k of ls) {
+      const y = Number(k.slice(k.indexOf(',') + 1));
+      if (y < lo) lo = y;
+      if (y > hi) hi = y;
+    }
+    if (!isFinite(lo)) return geo;
+
+    /* NEVER NEGATIVE. `lo - BOARD_MARGIN` goes negative whenever a lane
+       already starts closer to the top than the margin, and that shifted the
+       whole board DOWN and pushed its lowest lane tiles off the bottom edge.
+       probe-mapgen G3 caught it on 37 of 600 boards across convergence,
+       braid, horseshoe and twin-temple before this clamp existed. Cropping
+       dead ground may pull a board up; it must never push one down. */
+    /* AND ONLY WHEN THE WASTE IS REAL. Pinning every lane to exactly
+       BOARD_MARGIN is what collapses variety: two boards of one family whose
+       only difference was the road sitting two rows lower became the SAME
+       board, and owner-sweep 29.1 caught it at 1 identical pair in 14,
+       reproducibly, across three runs. Vertical placement is variety the
+       campaign is entitled to.
+       So a small offset is left alone and only a large one is corrected: a
+       road four or more rows below where it needs to be is dead ground, a
+       road one or two rows off is character. */
+    const slack = lo - BOARD_MARGIN;
+    const dy = slack >= BOARD_SHIFT_MIN ? slack : 0;
+    const newHi = hi - dy;
+    const rows = Math.max(BOARD_MIN_ROWS,
+                          Math.min(geo.rows, newHi + 1 + BOARD_MARGIN));
+    if (dy === 0 && rows >= geo.rows) return geo;
+
+    for (const lane of geo.lanes) for (const p of lane) p[1] -= dy;
+    const shiftRect = r => { r[1] -= dy; r[3] -= dy; return r; };
+    geo.blocks = (geo.blocks || []).map(shiftRect);
+    geo.walls = (geo.walls || []).map(shiftRect);
+    geo.nodes = (geo.nodes || []).map(n => { n[1] -= dy; return n; });
+
+    geo.rows = rows;
+    /* Anything the shift pushed off either edge is dropped rather than
+       clamped: a wall squashed against the rim is terrain the generator did
+       not intend, and after the laneBand change almost nothing lands here. */
+    const fits = ([x0, y0, x1, y1]) => y0 >= 0 && y1 >= 0 && y0 < rows && y1 < rows;
+    geo.blocks = geo.blocks.filter(fits);
+    geo.walls = geo.walls.filter(fits);
+    geo.nodes = geo.nodes.filter(n => n[1] >= 0 && n[1] < rows);
     return geo;
   }
 
