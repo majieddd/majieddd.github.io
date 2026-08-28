@@ -4816,12 +4816,32 @@ body.phone-hud #dock,
 body.phone-hud #rotate-hint { display: none !important; }
 
 /* The board is everything between the two bars. */
-body.phone-hud #canvas-wrap,
-body.phone-hud.immersive #canvas-wrap { inset: var(--pt-h) 0 var(--pb-h) 0; padding: 0; }
+body.phone-battle #canvas-wrap,
+body.phone-battle.immersive #canvas-wrap { inset: var(--pt-h) 0 var(--pb-h) 0; padding: 0; }
 
 /* ---- the top strip: four numbers and the wave ---- */
 #phone-top { display: none; }
-body.phone-hud #phone-top {
+/* .phone-battle, not .phone-hud: these are BATTLE bars and were showing on
+   every menu screen, including a WAVE chip and a BASE LEVEL button over the
+   title. See updateBattleClass in js/phone.js.
+
+   AND A CSS BELT UNDER THAT BRACE. The class is set from a MutationObserver,
+   whose callback is a microtask: it lands before paint, so a player never sees
+   a flash, but any synchronous reader between UI.show and that microtask sees
+   the bars still up. mobile M12 is exactly such a reader and failed on a fix
+   that was working. The rule below hides them with no JS involved at all, and
+   the class stays as the semantic one that also insets the canvas.
+
+   The sibling combinator is sound here and checked: every .screen and both
+   bars are direct children of body, and js/phone.js appends the bars after the
+   screens exist. If that ever stops being true this rule silently stops
+   hiding, which is what M12 is for. */
+body.phone-hud #screen-game.hidden ~ #phone-top,
+body.phone-hud #screen-game.hidden ~ #phone-bar,
+body.phone-hud #screen-game.hidden ~ #phone-radial,
+body.phone-hud #screen-game.hidden ~ #phone-sheet { display: none !important; }
+
+body.phone-battle #phone-top {
   display: flex; align-items: center; justify-content: space-between; gap: var(--s2);
   position: fixed; left: 0; right: 0; top: 0; z-index: 40;
   height: var(--pt-h); padding: env(safe-area-inset-top, 0px) var(--s3) 0; align-items: center;
@@ -4854,7 +4874,7 @@ body.phone-hud #phone-top {
 
 /* ---- the bottom bar: base, skills, units, always ---- */
 #phone-bar { display: none; }
-body.phone-hud #phone-bar {
+body.phone-battle #phone-bar {
   display: flex; align-items: stretch; gap: 6px;
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
   height: var(--pb-h); padding: 5px var(--s2) calc(5px + env(safe-area-inset-bottom, 0px));

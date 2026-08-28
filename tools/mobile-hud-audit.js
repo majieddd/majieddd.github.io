@@ -462,6 +462,36 @@
            : 'both bars composite identically over white and black, so text contrast is fixed');
     }
 
+    /* ---- M12 the battle bars only exist during a battle ----------------- */
+    /* FOUND BY PLAYING THE DEPLOYED BUILD rather than jumping straight to
+       screen-game, which is what every check here had always done. Both bars
+       are position:fixed and were shown for any phone-width viewport, so the
+       TITLE SCREEN carried a WAVE 1 chip and a BASE LEVEL button floating over
+       it, and adopt() had already pulled #btn-baselvl out of the dock to put
+       it there. Nothing failed: the bars were correct, they were simply
+       everywhere.
+
+       The lesson is the entry-point one this suite already holds: a harness
+       that always arrives by the same door never sees the other rooms. */
+    var battleOnly = [];
+    if (typeof UI !== 'undefined' && UI.show) {
+      var gameScreen = document.getElementById('screen-game');
+      var wasHidden = gameScreen && gameScreen.classList.contains('hidden');
+      UI.show('screen-title');
+      var tEl = document.getElementById('phone-top'), bEl = document.getElementById('phone-bar');
+      if (tEl && vis(tEl)) battleOnly.push('#phone-top is up on the title screen');
+      if (bEl && vis(bEl)) battleOnly.push('#phone-bar is up on the title screen');
+      var baseEl = document.getElementById('btn-baselvl');
+      if (baseEl && vis(baseEl)) battleOnly.push('the base upgrade is visible off the battle screen');
+      /* Put the screen back however it was, so the checks after this one see
+         the state they expect. */
+      UI.show(wasHidden ? 'screen-title' : 'screen-game');
+    } else battleOnly.push('UI.show unavailable, nothing was checked');
+    ok('M12 the battle bars are not on the menus',
+       battleOnly.length === 0,
+       battleOnly.length ? battleOnly.join('; ')
+                         : 'both bars and the borrowed base control disappear off the battle screen');
+
     /* ---- M11 a tower's radial carries its whole decision ---------------- */
     /* Owner, Session 40: "to upgrade a tower individually, you click on it and
        a radial menu with options pops up, similar to kingdom rush". Three

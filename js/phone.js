@@ -71,8 +71,33 @@ const Phone = {
     const was = this.on;
     this.on = this.isPhone();
     document.body.classList.toggle('phone-hud', this.on);
+    this.updateBattleClass();
     if (this.on && !was) this.adopt();
     if (!this.on && was) { this.closeSheet(); this.closeRadial(); this.restore(); }
+  },
+
+  /**
+   * THE BARS BELONG TO A BATTLE, NOT TO A PHONE.
+   *
+   * Found by playing the deployed build instead of jumping straight to
+   * screen-game: both bars are position:fixed and were shown whenever the
+   * viewport was phone-width, so the title screen carried a WAVE 1 chip and a
+   * BASE LEVEL button floating over it. Worse, adopt() had already pulled
+   * #btn-baselvl out of the dock, so a battle control was sitting on the main
+   * menu.
+   *
+   * A body class rather than a CSS sibling selector (`#screen-game:not(.hidden)
+   * ~ #phone-top` would work today) because that depends on the bars staying
+   * later siblings of the screen, which is true by accident of append order and
+   * would break silently the first time screens move into a wrapper.
+   */
+  updateBattleClass() {
+    const g = document.getElementById('screen-game');
+    const live = !!(this.on && g && !g.classList.contains('hidden'));
+    if (live === this._battle) return;
+    this._battle = live;
+    document.body.classList.toggle('phone-battle', live);
+    if (!live) { this.closeSheet(); this.closeRadial(); }
   },
 
   /* ------------------------------------------------- borrowed UI elements */
@@ -167,6 +192,14 @@ const Phone = {
     const cv = document.getElementById('game');
     if (cv) ['wheel', 'pointerdown'].forEach(t =>
       cv.addEventListener(t, () => { if (this.radialTower) this.closeRadial(); }, { passive: true }));
+
+    /* UI.show toggles `.hidden` and never calls syncAll on its way to a menu,
+       so the bars would stay up until something else happened to sync. Watching
+       the class is the only signal that always fires. */
+    const g = document.getElementById('screen-game');
+    if (g && typeof MutationObserver === 'function')
+      new MutationObserver(() => this.updateBattleClass())
+        .observe(g, { attributes: true, attributeFilter: ['class'] });
   },
 
   /**
