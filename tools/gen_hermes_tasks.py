@@ -127,8 +127,31 @@ with open(os.path.join(HERE, 'hermes_lore_preamble.txt'), encoding='utf-8') as _
     PREAMBLE = _fh.read().strip()
 
 
+import re  # noqa: E402
+
+# MEASURED, THE HARD WAY: prompts must be ONE LINE and short.
+#
+# The first fan-out worked because its prompts were single-line and roughly 400
+# to 900 characters. The next batch added a multi-line preamble, giving ~3,600
+# character prompts carrying ~50 newlines, and every single call HUNG: a
+# standalone timing test sat for the full 281 second timeout and returned
+# nothing, and 12 workers sat at 0 completions indefinitely.
+#
+# The cause is the Windows command line. These prompts are passed as an argument
+# through bin/hermes.cmd, and cmd.exe mangles long arguments carrying embedded
+# newlines rather than failing loudly. It looks exactly like a slow model.
+#
+# So the whole prompt is collapsed to a single line here, unconditionally,
+# rather than trusting each template to be written flat. Keep prompts under
+# MAX_PROMPT characters.
+MAX_PROMPT = 2800
+_oversize = []
+
+
 def write(name, text):
-    body = PREAMBLE + '\n\n' + ('=' * 60) + '\n\n' + text
+    body = re.sub(r'\s+', ' ', PREAMBLE + ' ' + text).strip()
+    if len(body) > MAX_PROMPT:
+        _oversize.append((name, len(body)))
     with open(os.path.join(TASKS, name + '.prompt'), 'w', encoding='utf-8') as fh:
         fh.write(body)
 
@@ -203,4 +226,18 @@ for si, sysname in SYSTEMS.items():
             "%s" % (voice, sysname, home, NO_DASH)))
 
 n = len([f for f in os.listdir(TASKS) if f.endswith('.prompt')])
+sizes = [os.path.getsize(os.path.join(TASKS, f))
+         for f in os.listdir(TASKS) if f.endswith('.prompt')]
+lines = max(open(os.path.join(TASKS, f), encoding='utf-8').read().count('\n')
+            for f in os.listdir(TASKS) if f.endswith('.prompt'))
 print('queued %d prompt files in %s' % (n, TASKS))
+print('prompt chars: max %d, mean %d, cap %d' % (max(sizes), sum(sizes) // n, MAX_PROMPT))
+print('max embedded newlines in any prompt: %d (must be 0)' % lines)
+if _oversize:
+    print('WARNING oversize prompts (they may hang the Windows command line):')
+    for nm, ln in sorted(_oversize, key=lambda x: -x[1])[:10]:
+        print('   %s %d chars' % (nm, ln))
+    sys.exit(1)
+if lines:
+    print('FAIL: a prompt carries a newline, which hangs bin/hermes.cmd')
+    sys.exit(1)

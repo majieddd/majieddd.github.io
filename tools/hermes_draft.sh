@@ -16,7 +16,10 @@ mkdir -p "$OUT"
 
 run() {
   name="$1"; shift
-  ( cd "$HB" && timeout 900 ./bin/hermes.cmd -z "$*" -m hy3-free ) > "$OUT/$name.md" 2>&1
+  # One line only: cmd.exe hangs on long multi-line arguments. See
+  # tools/gen_hermes_tasks.py for the measurement that established this.
+  p="$(printf '%s' "$*" | tr '\n' ' ')"
+  ( cd "$HB" && timeout 600 ./bin/hermes.cmd -z "$p" -m hy3-free ) > "$OUT/$name.md" 2>&1
   echo "done $name"
 }
 

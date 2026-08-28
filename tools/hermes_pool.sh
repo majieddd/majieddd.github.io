@@ -35,7 +35,10 @@ one() {
   # Write to a temp file first so a killed run never leaves a truncated output
   # that the resume check would then wrongly treat as complete.
   tmp="$out.partial"
-  ( cd "$HERMES_BIN" && timeout 900 ./bin/hermes.cmd -z "$(cat "$f")" -m hy3-free ) > "$tmp" 2>&1
+  # Collapse to one line. cmd.exe mangles long arguments carrying newlines
+  # rather than failing, which presents as every worker hanging forever.
+  p="$(tr '\n' ' ' < "$f")"
+  ( cd "$HERMES_BIN" && timeout 600 ./bin/hermes.cmd -z "$p" -m hy3-free ) > "$tmp" 2>&1
   if [ -s "$tmp" ]; then mv -f "$tmp" "$out"; echo "done $name"; else rm -f "$tmp"; echo "FAIL $name"; fi
 }
 export -f one
