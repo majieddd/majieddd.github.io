@@ -316,8 +316,21 @@ const UI = {
          before the first screen of the war. Skippable, and the routing
          beneath is identical with or without it. */
       const proceed = () => { this.show('screen-command'); this.buildCommanderScreen(); };
-      if (typeof Cutscenes !== 'undefined' && Cutscenes.has('intro', f)) Cutscenes.play('intro', f, 0, proceed);
-      else proceed();
+      /* THE DEPARTURE (Session 40). Story beat 0 is a campaign-opening
+         address: the Marshal orders the fleet to Luna, the Necrotist orders
+         the pasture widened. It used to render on the result screen AFTER
+         the first system fell, where "Set course for Luna" read as a speech
+         about a conquest already finished. Found by reading the assembled
+         screenplay (tools/screenplay.js) end to end: every slide was fine
+         alone and the interleave was wrong. It now plays here, between the
+         oath and the first screen of the war, which is the moment it is
+         written for; storyBeatHtml suppresses index 0 so it cannot repeat. */
+      const departure = () => {
+        const beat = (typeof Story !== 'undefined' && Story.beat) ? Story.beat(f, 0) : null;
+        if (beat) this.playStoryInterstitial(beat, proceed); else proceed();
+      };
+      if (typeof Cutscenes !== 'undefined' && Cutscenes.has('intro', f)) Cutscenes.play('intro', f, 0, departure);
+      else departure();
     });
     $('#btn-back-command').addEventListener('click', () => { Sound.play('click'); this.show('screen-command'); this.renderCommanders(); });
     $('#btn-to-loadout').addEventListener('click', () => { Sound.play('click'); this.show('screen-loadout'); this.renderLoadout(); });
@@ -697,9 +710,28 @@ const UI = {
     const lines = pc && typeof PlanetCuts !== 'undefined' ? PlanetCuts.lines(w, fac) : null;
     if (pc && lines) {
       const k = b => PlanetCuts.plate(w, fac, b);
+      /* THE MOMENT VOICE (Session 40). A renegade or contested world is a
+         different STORY even when it is the same ground, and beat 1 is the
+         only beat about the reader, so it is the beat that carries the
+         difference. Renegade outranks contested: a world can in principle be
+         both, and fighting your own banner is the stranger fact. The per-
+         world line the moment displaces is not lost to the player who cares:
+         it still opens every ordinary deploy to that world, which is most of
+         them. Beats 2 to 5 stay per-world: the ground does not change sides. */
+      /* PRECEDENCE, most surprising fact first. Fighting your own banner
+         outranks a three-way war, which outranks having lost this ground
+         once before, which outranks the fact that it is a throne. A world
+         can be several of these at once and only one sentence is spoken. */
+      const prog = (Meta.campaign() || {}).stars;
+      const retaken = !w.renegade && typeof starsOn === 'function' &&
+                      starsOn(prog, w.id) > 0 && w.owner && w.owner !== fac;
+      const momentLine = w.renegade ? PlanetCuts.moment('renegade', fac)
+                       : w.contested ? PlanetCuts.moment('contested', fac)
+                       : retaken ? PlanetCuts.moment('retaken', fac)
+                       : w.seat ? PlanetCuts.moment('seat', fac) : null;
       return [
         /* APPROACH. Where you are, then your own power's voice on arriving. */
-        { key: k(1), alt: alt, text: where + ' ' + lines[0] },
+        { key: k(1), alt: alt, text: where + ' ' + (momentLine || lines[0]) },
         /* THE GROUND. What this place is, then who is standing on it. */
         { key: k(2), alt: alt, text: (pc.ground + ' ' + holdLine).trim() },
         /* THE ASSAULT. What defends it, then what winning here means. The
@@ -744,8 +776,14 @@ const UI = {
     const lines = PlanetCuts.lines(w, fac);
     if (!pc || !lines) return [];
     const alt = 'world_' + w.map;
+    /* THREE STARS is CONQUERED, not merely held: ninety per cent of your
+       lives intact. A flawless take and a bloody one narrated identically
+       was the last place the outro ignored something the engine knew. Only
+       the AFTERMATH voice changes; NEW ORDER stays per-world, because what
+       the world becomes does not depend on how cheaply it fell. */
+    const after = (stars >= 3 && PlanetCuts.moment('flawless', fac)) || lines[1];
     return [
-      { key: PlanetCuts.plate(w, fac, 4), alt: alt, text: lines[1] },
+      { key: PlanetCuts.plate(w, fac, 4), alt: alt, text: after },
       { key: PlanetCuts.plate(w, fac, 5), alt: alt, text: lines[2] },
     ];
   },
@@ -1530,6 +1568,26 @@ const UI = {
     </div>`;
   },
 
+  /** THE STORY INTERSTITIAL: one beat, full screen, one CONTINUE. The same
+      card the result screen renders, hosted in the cutscene overlay's shell
+      so it inherits the shade, the faction colour and the reduced-motion
+      behaviour without a second surface growing its own opinions. `done` is
+      called exactly once, on the button or on a backdrop click. */
+  playStoryInterstitial(beat, done) {
+    const fin = () => { if (done) { const d = done; done = null; ov.className = ''; ov.innerHTML = ''; d(); } };
+    let ov = document.getElementById('cutscene');
+    if (!ov) { ov = document.createElement('div'); ov.id = 'cutscene'; document.body.appendChild(ov); }
+    const fac = FACTIONS[Meta.faction()] || { color: '#7dd3fc' };
+    ov.style.setProperty('--fc', fac.color);
+    ov.className = 'show';
+    ov.innerHTML = `<div class="cs-stage cs-story"><div class="cs-shade"></div>
+        <div class="cs-storycard">${this.storyBeatCard(beat, false)}
+          <button class="btn" id="cs-story-go">CONTINUE</button></div></div>`;
+    ov.querySelector('#cs-story-go').addEventListener('click', ev => { ev.stopPropagation(); fin(); });
+    ov.onclick = fin;
+    if (typeof Sound !== 'undefined' && Sound.play) Sound.play('click');
+  },
+
   storyBeatHtml() {
     if (typeof Story === 'undefined') return '';
     const c = Meta.campaign();
@@ -1541,6 +1599,14 @@ const UI = {
        screen, so the reward screen never shows it: without this guard the
        fifth system would fire beat 5 here and the finale would repeat it. */
     if (taken - 1 >= arc.length - 1) return '';
+    /* THE FIRST beat is THE DEPARTURE and now plays at campaign start (the
+       faction-go handler), where its "set course" tense is true. Showing it
+       here again after the first seat falls would repeat it an act late,
+       which is the exact defect the move fixed. Beats 1 to 4 keep this
+       surface: their alignment with the systems they follow is load-bearing
+       (FILES lands the act after the deferral vaults, MIRROR the act after
+       the relay trace) and was verified by reading all five screenplays. */
+    if (taken - 1 === 0) return '';
     return this.storyBeatCard(Story.beat(c.faction || Meta.faction() || 'human', taken - 1), false);
   },
 
@@ -7676,7 +7742,32 @@ const UI = {
                          () => this.showEndScreen(won));
       return;
     }
+    /* THE DEFEAT BEAT (Session 40). Victory earned two plates and a
+       commander exchange; a loss cut straight to the stat screen, which made
+       defeat the one flow in the campaign with no authored sentence. One
+       slide now: the faction's own line over the assault plate of the battle
+       just lost. Same gates as the outro, inverted: campaign only, never a
+       skirmish, never a duel, and a missing plate degrades to the world
+       plate through the same `alt` contract every planet beat carries. */
+    const defeat = this.defeatSlides(Game.worldRecord, won);
+    if (defeat.length && typeof Cutscenes !== 'undefined' && Cutscenes.playList) {
+      Cutscenes.playList(Meta.faction() || 'human', defeat,
+                         () => this.showEndScreen(won));
+      return;
+    }
     this.showEndScreen(won);
+  },
+
+  /** One slide on a campaign loss, or []. [] is the pre-existing flow. */
+  defeatSlides(w, won) {
+    if (won || !w) return [];
+    if (Game._skirmish) return [];
+    if (typeof Net !== 'undefined' && Net.live) return [];
+    if (typeof PlanetCuts === 'undefined') return [];
+    const fac = Meta.faction() || 'human';
+    const line = PlanetCuts.moment('defeat', fac);
+    if (!line || !PlanetCuts.entry(w)) return [];
+    return [{ key: PlanetCuts.plate(w, fac, 3), alt: 'world_' + w.map, text: line }];
   },
 
   showEndScreen(won) {

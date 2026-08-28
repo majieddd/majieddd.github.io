@@ -27,11 +27,11 @@ const CUTSCENES = {
 
   human: {
     intro: [
-      { key: 'cut_human_intro_1', text: 'September 11, 2028. One broadcast: the rock is coming, and everything else they ever hid. The harvest. The edits. Where we really stood.' },
-      { key: 'cut_human_intro_2', text: 'The panic burned out in weeks. What was left underneath frightened them more: people who wanted to fight.' },
-      { key: 'cut_human_intro_3', text: 'Over one last holiday season, every nation conspired as one. Families gathered. The best minds alive built two things: the intercept, and the fleet.' },
-      { key: 'cut_human_intro_4', text: 'April 13, 2029. A Friday. Apophis broke against everything we had. The rock is gravel. Nobody aboard wants to go home and wait for the next secret.' },
-      { key: 'cut_human_intro_5', text: 'The fleet built to save one world is departing to claim the rest. First the Moon they watched us from. Then everything. THE MANIFEST BEGINS.' },
+      { key: 'cut_human_intro_1', text: 'September 11, 2028. The world received official news: the rock had changed trajectory and was on a collision course with Earth.' },
+      { key: 'cut_human_intro_2', text: 'Every government laid itself bare and put on the table every solution it had been quietly cooking for decades. Nobody was surprised by how deep the drawer went. Everyone had always half known.' },
+      { key: 'cut_human_intro_3', text: 'Over one last holiday season, every nation conspired as one. Families gathered. The best minds alive built two things: our protection, and our longevity.' },
+      { key: 'cut_human_intro_4', text: 'Like a movie, it was a Friday the thirteenth, April 2029, when Apophis came inside a tenth of the distance to our own Moon. It did not matter. We hit it with everything we had and the rock came apart.' },
+      { key: 'cut_human_intro_5', text: 'But destruction really does bring life. What came down through the fire was not rock. It was already moving, and it had been riding inside the whole time. Hell landed on Earth that Friday. THE MANIFEST BEGINS.' },
     ],
     sys: [
       { key: 'cut_human_sys1', a: 'The Earth System is ours, pole to pole and rock to rock, for the first time in ten thousand years.', b: 'And on the far side of our own Moon: their relay, still warm. They never even hid it well. They never needed to.' },
@@ -53,7 +53,7 @@ const CUTSCENES = {
     sys: [
       { key: 'cut_light_sys1', a: 'The Pleiades stand secured. The hymns are certified. The rings hold, as they have always held.', b: 'The Chorus pulled the registry afterwards. Protected: all forty worlds. Risen: none. She has stopped singing the second verse.' },
       { key: 'cut_light_sys2', a: 'One page in the human files carries our seal. Earth, flagged for protection, 1947. Deferred. Deferred. Deferred.', b: 'Three generations of harvest ran under that deferral. The word non-interference does not survive contact with the page.' },
-      { key: 'cut_light_sys3', a: 'The humans do not thank us for the rings. From inside a fence, they say, attendance looks exactly like ownership.', b: 'We defended our claim to be defending life. The defeated Archivist said it to our faces, and nobody present could file an objection.' },
+      { key: 'cut_light_sys3', a: 'The humans do not thank us for the rings. From inside a fence, they say, attendance looks exactly like ownership.', b: 'We defended our claim to be defending life. The Archivist said it to our faces on an open channel, and nobody present could file an objection.' },
       { key: 'cut_light_sys4', a: 'The Warden landed. Doctrine said hold the ring and let the plague run its course. He burned the blight fields himself.', b: 'The tribunal wants his wings. The world he saved wants his statue. The Mandate cannot hold both verdicts, and it is starting to show.' },
       { key: 'cut_light_sys5', a: 'The Voice traced the deferrals, the sealed pages, the rings that never open. They chain to three seats above field command.', b: 'Someone in the upper rings is spending our light on something. It is not the worlds we ring. The First Speaker has been told.' },
     ],
@@ -87,7 +87,7 @@ const CUTSCENES = {
     sys: [
       { key: 'cut_pirate_sys1', a: 'Barnard’s Star is ours again, stem to stern, and Harbour Nine never once asked a refugee for papers.', b: 'It never asked the other crews either. Same bay, same week, medicine and chattel. The no-questions rule works both ways. It always did.' },
       { key: 'cut_pirate_sys2', a: 'The Scrapper had the sealed collaborator list in his hold for six hours. The bidding would have bought a fleet.', b: 'He posted it free, to every open channel, and cannot explain why. First chosen line on the map. Drawn at full price, for nothing.' },
-      { key: 'cut_pirate_sys3', a: 'The Chorus, beaten, left us a sentence instead of a surrender: freedom that will not choose is just drift.', b: 'The Corsair laughed for a day. He has not laughed since. A ship nothing steers is not free. It is cargo.' },
+      { key: 'cut_pirate_sys3', a: 'The Chorus sent one sentence ahead of her fleet, instead of an envoy: freedom that will not choose is just drift.', b: 'The Corsair laughed for a day. He has not laughed since. A ship nothing steers is not free. It is cargo.' },
       { key: 'cut_pirate_sys4', a: 'A harvest broker offered the Warlord a fleet to run cargo that sings through his corridor.', b: 'He sank the advance into the sun and posted the manifest. No law made him. No law could. That is exactly why it counts.' },
       { key: 'cut_pirate_sys5', a: 'The Arsonist burned the Meridian run. Best toll on the map, and the traffic was people, in crates. Route, relays, her own depots.', b: 'Scarlet is not speaking to her. The ledger is screaming. The fire, she says, never felt cleaner. The crew is choosing sides, which is to say: codes.' },
     ],

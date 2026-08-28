@@ -92,7 +92,16 @@ function galaxyRng(seed) {
    the swarm that dims KIC 8462852. */
 const GX_HOME_SYSTEMS = {
   human:  { name: 'THE EARTH SYSTEM',
-            worlds: ['MERCURY', 'VENUS', 'MARS', 'CERES', 'EUROPA', 'TITAN', 'LUNA'] },
+            /* EARTH IS WORLD ZERO (owner directive, Session 41). The campaign
+               opens on the day Apophis broke over Earth and the game never let
+               you stand on it: v2 built the Earth System without Earth in it.
+               Earth takes wi 0, which is the first world of the first act for a
+               human player and the entry world of this system for everyone else.
+               MERCURY is displaced rather than the list grown: WORLDS_PER_SYSTEM
+               is 7 and load-bearing across net, save and mapgen. Names are
+               index-derived and consume no rnd() call, so every seed's kinds,
+               maps, arenas, owners and boons are byte-identical after this. */
+            worlds: ['EARTH', 'VENUS', 'MARS', 'CERES', 'EUROPA', 'TITAN', 'LUNA'] },
   light:  { name: 'THE PLEIADES',
             worlds: ['MAIA', 'ELECTRA', 'TAYGETA', 'MEROPE', 'CELAENO', 'STEROPE', 'ALCYONE'] },
   xeno:   { name: 'ZETA RETICULI',

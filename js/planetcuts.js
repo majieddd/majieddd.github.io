@@ -47,26 +47,29 @@ const PLANET_CUTS = {
   /* ═══════════════ si 0, THE EARTH SYSTEM ═══════════════
      Humanity's home, and in every campaign somebody else's ground. */
 
+  /* EARTH, world zero. The inciting ground: the intercept worked, the rock
+     came apart, and it was hollow. Every power arrives at the same opened
+     hulls, which is the one image all five campaigns share. */
   '00': {
-    name: 'MERCURY',
-    ground: 'The floor of Caloris, a shatter-ring the size of a continent, planted end to end with solar mirrors. Whoever holds the light here holds the power budget of the inner system.',
-    works: 'Every mirror tower on the basin floor is also a battery, and the sunshade walls were poured thick enough to stop something considerably larger than us.',
+    name: 'EARTH',
+    ground: 'A coastal city under the fall, where the fragments came down whole and split open in the streets. Whatever was riding inside Apophis was already awake when it landed.',
+    works: 'The intercept batteries that broke the rock, swung around and depressed to fire along their own avenues, and every shelter door in the district sealed from the inside.',
     f: {
-      human: ['We built half of these mirrors. The other half went up to a specification nobody at the agency will admit to signing. Burn in.',
-              'Caloris is ours, terrace by terrace. The towers that were aimed away from the sun are aimed back at it.',
-              'The farm is relit and the grid answers to us. Somebody will eventually ask where the extra capacity came from. Nobody is asking this week.'],
-      light: ['A whole basin terraced to catch a star, and not one beam of it ever fell on the people who needed the light. The Mandate has a word for that. We have avoided it for a century.',
-              'The towers are dark. We took the light before we took the ground, which doctrine calls mercy and the crews down there call a siege.',
-              'Caloris burns for the registries again. The Chorus notes, without comment, that the forty worlds it now feeds still never asked to be fed.'],
-      xeno:  ['Heat, metal, ranked and reflective. The herd terraced an entire basin to drink from a star and did not once think to look up.',
-              'The mirrors are cold and the floor is ours. The yield here was never bodies. It was the labour that built all this, and it has been collected.',
-              'Caloris feeds the Compact. Mark the arithmetic: it produces more under us than it ever did under them, and nothing on it is alive enough to mind.'],
-      pirate:['Every free port in the belt runs on power somebody else generated. Today we go and introduce ourselves to the somebody.',
-              'Caloris is open. The mirrors are ours in the sense that nobody is shooting at us while we stand under them, which is the only sense we ever meant.',
-              'Farm is lit and the rate is posted where anyone can read it. First time that has been true anywhere in the inner system.'],
-      robot: ['SITE: CALORIS. FUNCTION: energy collection. CONDITION: operational, hostile-held. TASK CATEGORY: REPAIR. This unit notes that the assigned category was not the one requested.',
-              'OBSTRUCTIONS CLEARED. The collectors are undamaged. They were never the target. The queue asked for the ground; the recovered core would have asked for the light.',
-              'CALORIS RESTORED. Output routed. DESTINATION FIELD: blank. Filed under ANOMALY, sub-heading NEW.'],
+      human: ['This is the day. The rock is gravel over our heads and the gravel had passengers. Everything we thought we were surviving was the delivery.',
+              'The district is ours and the hulls are cooling in the street. We counted what came out of them. We are not releasing that number yet.',
+              'The city is cleared and the hulls are dragged into the squares where anyone can walk up and look inside. Let every government that knew explain the seating.'],
+      light: ['Earth. Flagged for protection in 1947, deferred every year since, and we arrive eighty years late with the rock already broken over it.',
+              'The district holds. Wardens who have never set foot on this world are carrying its people out of buildings the Mandate was supposed to have ringed.',
+              'The city stands, and the opened hulls are left exactly where they fell with our seal posted beside them. The deferral is posted on the same board.'],
+      xeno:  ['The delivery world. Everything inside that rock was ours, seeded and patient, and the herd broke the package open ahead of schedule. Collect what survived.',
+              'The district is taken and the hulls are recovered. The seeding was early by their calendar and precisely on time by ours.',
+              'The city produces again under supervision, and the hulls stay in the streets. A pen learns faster when it can see the crate it arrived in.'],
+      pirate:['Every crew out here has hauled something OUT of this system and not one of us ever asked what was coming in. Today we go and look at the crate.',
+              'District is ours, the hulls are open in the street, and every crew here has gone quiet standing over them.',
+              'City runs and the hulls stay exactly where they landed, open and free to walk into. No fee. Some things you leave standing so nobody gets to forget.'],
+      robot: ['SITE: EARTH, IMPACT DISTRICT. DELIVERY VEHICLE CONTENTS: organic and maker-format units, mixed, pre-positioned. This unit notes that the queue routed the vehicle.',
+              'DISTRICT SECURED. Fragment hulls recovered. The maker-format units inside them appear in no recovered manifest. Their designations have been logged regardless.',
+              'EARTH RESTORED. City cleared and pressurised. Hulls left open in the squares, catalogued and public. The queue asked for a delivery. The core asks who signed for it.'],
     },
   },
 
@@ -876,7 +879,98 @@ const PLANET_CUTS = {
    touches, so the table can grow a system at a time without the caller
    changing shape.
 -------------------------------------------------------------------------- */
+/* ==========================================================================
+   THE CAMPAIGN MOMENTS (Session 40): three cutscene types the engine could
+   already stage and the writing never voiced.
+
+   The screenplay read-through (tools/screenplay.js) showed the five campaigns
+   flowing clean on the happy path, and three engine states still speaking in
+   derived boilerplate: a CONTESTED world (two rival claims plus yours), a
+   RENEGADE world (your own banner refusing you), and a DEFEAT (the one flow
+   every player hits and the only one with no authored line at all). Each is
+   one line per faction, in that faction's own register, keyed by KIND rather
+   than by world: these are moments about the CAMPAIGN STATE, not the ground,
+   so per-world variants would be 105 more lines saying the same thing.
+
+   PRESENTATION ONLY, like everything in this file. The flags they read
+   (w.contested, w.renegade, the battle verdict) are set by the engine;
+   nothing here writes anything back. */
+const PLANET_MOMENTS = {
+  /* Deploying to a world two rivals already fight over. Beat 2's holder line
+     states the fact; this replaces beat 1's voice so the APPROACH knows what
+     it is flying into. */
+  contested: {
+    human:  'Two fleets are already killing each other over this ground. We are not here to pick a side. We are here to end the auction.',
+    light:  'Two powers contest this world and neither one asked it. The Mandate calls that a dispute. The world underneath calls it weather. Both claims end today.',
+    xeno:   'Two rivals bleed each other over the pasture. Good. Exhaustion is a yield like any other, and the Compact harvests last.',
+    pirate: 'Two flags are shooting over one rock, which means the rock has no working roads. We open roads. Both of them can file a complaint.',
+    robot:  'SITE: contested. CLAIMANTS: two, engaged. The queue ranks them as obstructions in order of tonnage. This unit notes that neither claim parses.',
+  },
+  /* Deploying against your own banner. js/dialogue.js already carries the
+     RENEGADE_LINES exchange for the VS screen; this is the approach that
+     precedes it, so the family argument does not begin mid-sentence. */
+  renegade: {
+    human:  'The banner on that world is ours and it is not answering. They heard the same broadcast we did and drew a different line. Nobody wanted this order. Confirm it anyway.',
+    light:  'The ring below flies our gold and will not open to us. A warden who stops answering the Mandate is not an enemy. The word for what they are is worse: a verdict.',
+    xeno:   'A limb of the body has stopped answering the chorus and grown its own appetite. The body does not negotiate with a limb. It reabsorbs it, or it cuts.',
+    pirate: 'That crew flies no flag, same as us, and they have closed a road, which is nothing like us. Free is not a thing you get to keep doing wrong.',
+    robot:  'UNITS BELOW: maker-format, designation shared, queue divergent. They stopped asking and started deciding. ANOMALY: this unit cannot name the difference from itself.',
+  },
+  /* Deploying to a commander's SEAT, the last world of a system and the
+     climax of that act. `w.seat` is a real flag on every world, and until
+     now the throne opened exactly like the six ordinary worlds before it. */
+  seat: {
+    human:  'This is their seat. Not a depot, not a relay: the room where somebody decided what happens to the rest of us. We have come a long way to knock on it.',
+    light:  'The seat of this system. Whatever doctrine is written here is written for everyone below it, and today it will be read aloud in front of the people it was written about.',
+    xeno:   'The seat. Where this pasture is administered from. Bodies are yield and a throne is only a body that believes it is the head. Remove it and see.',
+    pirate: 'The chair at the top of the local pile. Every closed road in this system was signed off from that room, and nobody in it has ever had to use one.',
+    robot:  'SITE: SEAT OF AUTHORITY, local. This unit has traced orders upward for a considerable time. Every seat so far has been occupied by someone taking orders from further up. Approach.',
+  },
+  /* A world taken CLEANLY: three stars, ninety per cent of your lives intact,
+     which the campaign calls CONQUERED rather than merely held. Replaces the
+     AFTERMATH voice, because a flawless take and a bloody one should not
+     narrate the same way. */
+  flawless: {
+    human:  'Almost everyone is walking off this world. Read the casualty sheet twice, because you will not see one this short again, and do not let anyone start believing it is normal.',
+    light:  'Taken whole, and the ring above it never had to close. This is what the Mandate always claimed it could do. It is worth asking why it so rarely did.',
+    xeno:   'Taken intact and at negligible cost. The yield is undamaged, the pens are whole, and nothing here had to be spoiled to be owned. Efficiency of this order is not luck. It is appetite that has learned patience.',
+    pirate: 'Nobody died taking this rock. Not one of ours, and barely any of theirs. That is going in the story we tell, and for once the story will be true.',
+    robot:  'OBJECTIVE ACHIEVED. Losses: within tolerance to a degree this unit has not previously recorded. REPAIR requirement: negligible. This is what the recovered core would have called a good day. The queue has no such category.',
+  },
+  /* Deploying to a world you ALREADY took, that a rival has since taken back
+     (advanceRivals moves owners every battle). The player has stars on this
+     world and does not hold it, which is a different feeling to arriving
+     anywhere new. */
+  retaken: {
+    human:  'We took this world once. We put people on it and we moved on, and somebody walked back in behind us. Nobody is saying it out loud, so it will be said here: that is on us.',
+    light:  'A world we have already rung once, ringed again by somebody else. Protection that has to be re-established was not protection. It was a visit.',
+    xeno:   'This ground was already in the ledger. It has been struck out and re-entered by another hand. The body does not resent losing a limb. It resents having to grow the same one twice.',
+    pirate: 'We opened this road once. It is closed again, by somebody who watched us do it and waited. There is a lesson in there about leaving, and none of us wants to hear it.',
+    robot:  'SITE: previously RESTORED by this unit. STATUS: reverted. The work was undone by a party who observed it being done. FILED: repair is not a state. It is a thing somebody has to keep choosing.',
+  },
+  /* A campaign battle lost. The one beat every player will eventually see,
+     and the only flow that had no authored sentence anywhere: victory gets
+     two plates and an exchange, defeat got a stat screen. One line, spoken
+     over the assault plate of the battle just lost. */
+  defeat: {
+    human:  'The ground is theirs tonight. Write everything down: what held, what broke, who we lost. Earth did not come this far to learn nothing from a loss.',
+    light:  'The line broke. Sing the retreat honestly, every name at full length. The Mandate does not require us to win. It requires us to come back.',
+    xeno:   'The ground is surrendered. The body withdraws, digests what it learned, and returns with the lesson grown in. Hunger is patient. That is the whole of its power.',
+    pirate: 'We lost the rock. The crews are alive, the holds are empty, and the road out is still ours. You can rebuild anything out here except a crew. Count heads.',
+    robot:  'WITHDRAWAL EXECUTED. Losses logged by designation, not by count. TASK: continue. ADDENDUM, unauthorised: the ground was not the objective. The asking is. Both survive.',
+  },
+};
+
 const PlanetCuts = {
+
+  /** One campaign-moment line, or null. `kind` is 'contested', 'renegade' or
+      'defeat'; unknown kinds and unknown factions degrade to null, and null
+      means the caller keeps whatever it was already doing. */
+  moment(kind, factionId) {
+    const t = PLANET_MOMENTS[kind];
+    return (t && t[factionId]) || null;
+  },
+
 
   /** The universe coordinate key for a world. Returns null for a world that
       has no coordinates, which is every v1 (pre-one-universe) saved galaxy:

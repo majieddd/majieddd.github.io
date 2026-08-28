@@ -133,14 +133,25 @@ MARK = {
 WORLDS = [
 
     # ---- si 0, THE EARTH SYSTEM. Humanity's home, held by the harvest. -----
-    (0, 0, 'MERCURY',
-     'a sun-scorched airless crater world filling the frame, the star enormous and white '
-     'behind it, the day-night terminator cutting the planet exactly in half',
-     'the floor of the Caloris impact basin, a grey shatter-ring of terraces, ranks of solar '
-     'collector mirrors standing across it',
-     'mirror-tower batteries and raised sunshade walls with heat sinks buried in the regolith',
-     'the collector mirrors dark and slag-streaked, the terraces cratered, sunshade walls down',
-     'the mirror farm relit rank by rank and feeding power into a new grid'),
+    # EARTH, world zero (owner directive, Session 41). The campaign opens on
+    # the day Apophis broke over this planet and the player was never allowed
+    # to stand on it. The site is the impact district: the intercept worked,
+    # the rock came apart, and the fragments were hollow and full of
+    # passengers. Every faction meets the same opened hulls in the street,
+    # which is what makes the five campaigns visibly rhyme instead of running
+    # as five sealed loops.
+    (0, 0, 'EARTH',
+     'a blue and white living world filling the frame, seen from inside the debris field of a '
+     'shattered asteroid, its upper atmosphere streaked in every direction with the burning '
+     'entry trails of the fragments that were inside the rock',
+     'a coastal city under the fall, where the fragments came down whole and split open in the '
+     'streets between the towers, their hulls still glowing',
+     'the intercept batteries that broke the rock, swung around and depressed to fire level '
+     'along their own avenues, and every shelter door in the district sealed from the inside',
+     'the district burning in a ring around the impact scars, the opened fragment hulls cooling '
+     'where they fell between the towers',
+     'the city cleared block by block and the opened hulls dragged into the open squares where '
+     'anyone can walk up and look inside them'),
 
     (0, 1, 'VENUS',
      'a planet swallowed whole in a thick sulphur-yellow cloud deck, layer upon layer, '

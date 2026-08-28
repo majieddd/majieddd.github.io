@@ -4772,6 +4772,16 @@ body.rm-user #screen-game #rotate-hint b { animation: none; }
   .sig-note { font-size: 11.5px; }
 }
 
+/* ── THE STORY INTERSTITIAL (Session 40) ──────────────────────────────────
+   Story beat 0, THE DEPARTURE, hosted in the cutscene overlay at campaign
+   start. The card itself is .rw-story, unchanged from the result screen; this
+   only centres it and gives the one button room. */
+.cs-story { display:grid; place-items:center; }
+.cs-storycard { position:relative; z-index:2; max-width:640px; width:min(92vw,640px);
+  display:flex; flex-direction:column; gap:14px; }
+.cs-storycard .rw-story { margin:0; }
+.cs-storycard .btn { align-self:center; min-width:180px; }
+
 /* ── THE PHONE BATTLE HUD ─────────────────────────────────────────────────
    Owner, Session 39: the phone build wanted "just giving the information of
    your econ, the upcoming wave and the HP of yourself and your opponent, as
