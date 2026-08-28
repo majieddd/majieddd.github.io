@@ -32,7 +32,7 @@ for (const f of ['config', 'lore', 'factions', 'galaxy', 'story', 'cutscenes',
    lift the bindings out with an in-context expression. */
 const G = vm.runInContext(
   '({ GX_UNIVERSE_ORDER, GX_HOME_SYSTEMS, GX_V2_HOLDER, CUTSCENES, PLANET_CUTS, ' +
-  'PLANET_MOMENTS, STORY, STORY_ACTS, COMMANDER_ROSTER, FACTIONS })', ctx);
+  'PLANET_MOMENTS, STORY, STORY_ACTS, ACT_SCENARIOS, COMMANDER_ROSTER, FACTIONS })', ctx);
 
 /* The prompt subjects, for the hover title on each plate. Read from the same
    catalogue the renderer used, so a drifted prompt shows up here too. */
@@ -111,9 +111,131 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
   font-size:13.5px;color:#cbd5e1}
 .moment{border:1px solid var(--line);border-radius:6px;padding:10px 14px;margin:10px 0}
 .moment b{font-size:11px;letter-spacing:.08em;color:var(--fc);display:block;margin-bottom:4px}
+.tl{margin:16px 0 6px}
+.tl-act{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-top:1px dashed var(--line)}
+.tl-act:first-child{border-top:0}
+.tl-n{flex:0 0 42px;font-size:11px;letter-spacing:.08em;color:var(--dim);padding-top:5px}
+.tl-n b{display:block;font-size:17px;color:var(--fc);line-height:1.1}
+.tl-body{flex:1;min-width:0}
+.tl-sys{font-size:12px;letter-spacing:.06em;color:var(--dim);margin-bottom:6px}
+.tl-sys b{color:var(--ink)}
+.tl-path{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.tl-w{font-size:11.5px;padding:3px 8px;border:1px solid var(--line);border-radius:99px;
+  color:#cbd5e1;white-space:nowrap}
+.tl-w.seat{border-color:var(--fc);color:var(--fc);font-weight:600}
+.tl-arrow{color:#475569;font-size:11px}
+.tl-beat{font-size:11px;padding:3px 9px;border-radius:4px;white-space:nowrap;
+  background:rgba(148,163,184,.14);color:var(--dim);letter-spacing:.04em}
+.scen{font-size:13.5px;line-height:1.65;color:#cbd5e1;margin:6px 0 18px;
+  border-left:2px solid var(--fc);padding-left:16px}
+.note{margin:8px 0 4px}
+.note textarea{width:100%;min-height:34px;resize:vertical;background:rgba(148,163,184,.06);
+  color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 10px;
+  font:inherit;font-size:12.5px;line-height:1.5}
+.note textarea::placeholder{color:#475569}
+.note textarea:focus{outline:0;border-color:var(--fc);background:rgba(148,163,184,.1)}
+.note textarea.has{border-color:var(--fc);background:rgba(148,163,184,.12)}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;
+  gap:12px;padding:10px 20px;background:rgba(10,14,23,.96);border-top:1px solid var(--line);
+  backdrop-filter:blur(8px)}
+.bar .count{font-size:12.5px;color:var(--dim);margin-right:auto}
+.bar .count b{color:var(--fc)}
+.bar button{font:inherit;font-size:12.5px;letter-spacing:.04em;padding:7px 14px;
+  border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.bar button:hover{border-color:var(--fc);color:var(--fc)}
+.bar button.pri{background:var(--fc);color:var(--bg);border-color:var(--fc);font-weight:600}
+.bar button.pri:hover{filter:brightness(1.12);color:var(--bg)}
 @media(max-width:900px){.beats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.beats{grid-template-columns:1fr}}
 `;
+
+/* A note field. `id` is what comes back in the export, so it must name the
+   thing precisely enough to act on: act3/ELECTRA, act3/scenario, act3/story. */
+/* THE REVIEW BAR. Notes persist to localStorage on every keystroke so a
+   reload or a closed tab never loses a pass, and SAVE writes a markdown file
+   carrying ONLY the filled notes, each under the section id it belongs to.
+   That file is the deliverable: it can be pasted straight back into a session
+   and every heading names exactly one world, act or beat. COPY does the same
+   thing to the clipboard for a short pass.
+
+   No framework, no build step, no network. These pages are documentation and
+   must keep working from a file:// path years from now. */
+const BAR = `
+<div class="bar">
+  <span class="count"><b id="nc">0</b> notes on this page</span>
+  <button id="nclear">CLEAR</button>
+  <button id="ncopy">COPY</button>
+  <button class="pri" id="nsave">SAVE NOTES</button>
+</div>
+<script>
+(function(){
+  var FAC = "__SLUG__", TITLE = "__FAC__", PREFIX = "bible:" + FAC + ":";
+  var boxes = [].slice.call(document.querySelectorAll("textarea[data-note]"));
+  function grow(t){ t.style.height = "auto"; t.style.height = (t.scrollHeight + 2) + "px"; }
+  function count(){
+    var n = boxes.filter(function(t){ return t.value.trim(); }).length;
+    document.getElementById("nc").textContent = n;
+  }
+  boxes.forEach(function(t){
+    var k = PREFIX + t.dataset.note;
+    try { t.value = localStorage.getItem(k) || ""; } catch(e){}
+    if (t.value) { t.classList.add("has"); grow(t); }
+    t.addEventListener("input", function(){
+      try { t.value.trim() ? localStorage.setItem(k, t.value) : localStorage.removeItem(k); } catch(e){}
+      t.classList.toggle("has", !!t.value.trim());
+      grow(t); count();
+    });
+  });
+  count();
+  function build(){
+    var out = ["# NOTES: " + TITLE, "", "_Narrative bible review. Each heading is a section id._", ""];
+    boxes.forEach(function(t){
+      var v = t.value.trim();
+      if (!v) return;
+      out.push("## " + t.dataset.note, "", v, "");
+    });
+    return out.length > 4 ? out.join("\n") : "";
+  }
+  document.getElementById("nsave").addEventListener("click", function(){
+    var md = build();
+    if (!md) { alert("No notes typed yet."); return; }
+    var b = new Blob([md], {type:"text/markdown"});
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(b);
+    a.download = "notes-" + FAC + ".md";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  });
+  document.getElementById("ncopy").addEventListener("click", function(){
+    var md = build();
+    if (!md) { alert("No notes typed yet."); return; }
+    var btn = this;
+    function done(){ var o = btn.textContent; btn.textContent = "COPIED"; setTimeout(function(){ btn.textContent = o; }, 1200); }
+    if (navigator.clipboard) navigator.clipboard.writeText(md).then(done, function(){ fallback(md, done); });
+    else fallback(md, done);
+  });
+  function fallback(md, done){
+    var ta = document.createElement("textarea");
+    ta.value = md; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); } catch(e){ alert("Copy failed; use SAVE NOTES."); }
+    ta.remove();
+  }
+  document.getElementById("nclear").addEventListener("click", function(){
+    if (!confirm("Clear every note on this page? This cannot be undone.")) return;
+    boxes.forEach(function(t){
+      try { localStorage.removeItem(PREFIX + t.dataset.note); } catch(e){}
+      t.value = ""; t.classList.remove("has"); grow(t);
+    });
+    count();
+  });
+})();
+<\/script>`;
+
+function noteBox(id, placeholder) {
+  return '<div class="note"><textarea data-note="' + esc(id) + '" rows="1" placeholder="' +
+    esc(placeholder) + '"></textarea></div>';
+}
 
 function page(fac) {
   const home = G.GX_UNIVERSE_ORDER.indexOf(fac);
@@ -135,6 +257,7 @@ function page(fac) {
   w('<style>' + CSS + '</style></head><body style="--fc:' + col + '">');
   w('<header><h1>' + esc(facName(fac)) + ' &mdash; THE COMPLETE CAMPAIGN</h1><nav>');
   w('<a href="index.html">&larr; all factions</a>');
+  w('<a href="#timeline">path</a>');
   acts.forEach(a => w('<a href="#act' + (a.tier + 1) + '">ACT ' + (a.tier + 1) + ': ' + esc(a.sys.name) + '</a>'));
   w('<a href="#moments">moments</a><a href="#finale">finale</a></nav></header><main>');
 
@@ -153,11 +276,33 @@ function page(fac) {
   });
   w('</table>');
 
+  /* ---------- the planetary path ---------- */
+  w('<h2 id="timeline">THE PLANETARY PATH</h2>');
+  w('<p class="sub">Worlds unlock outward from the first of each system and the commander seat opens last, ' +
+    'so this is the order the campaign is actually fought in, world by world, act by act.</p>');
+  w('<div class="tl">');
+  acts.forEach(a => {
+    w('<div class="tl-act"><div class="tl-n">ACT<b>' + (a.tier + 1) + '</b></div><div class="tl-body">');
+    w('<div class="tl-sys"><b>' + esc(a.sys.name) + '</b> &middot; held by ' + esc(facName(a.holder)) + '</div>');
+    w('<div class="tl-path">');
+    for (let wi = 0; wi < 7; wi++) {
+      const e = G.PLANET_CUTS['' + a.si + wi];
+      if (wi) w('<span class="tl-arrow">&rsaquo;</span>');
+      w('<span class="tl-w' + (wi === 6 ? ' seat' : '') + '">' +
+        (wi === 6 ? '&#9733; ' : '') + esc(e.name) + '</span>');
+    }
+    w('<span class="tl-arrow">&rsaquo;&rsaquo;</span><span class="tl-beat">' +
+      esc(G.STORY_ACTS[a.tier].name) + '</span>');
+    w('</div></div></div>');
+  });
+  w('</div>');
+
   /* ---------- the oath and the departure ---------- */
   w('<h2 id="oath">THE OATH <span style="color:var(--dim);font-size:12px">(campaign start)</span></h2>');
   w('<div class="oath">');
   G.CUTSCENES[fac].intro.forEach((s, i) => w('<p><b>' + (i + 1) + '.</b> ' + esc(s.text) + '</p>'));
   w('</div>');
+  w(noteBox('oath', 'Notes on the oath...'));
   const dep = G.STORY[fac][0];
   w(storyBlock(dep, G.STORY_ACTS[0].name, 'interstitial, straight after the oath'));
 
@@ -165,6 +310,9 @@ function page(fac) {
   acts.forEach(a => {
     w('<h2 id="act' + (a.tier + 1) + '">ACT ' + (a.tier + 1) + ': ' + esc(a.sys.name) +
       ' <span style="color:var(--dim);font-size:12px">garrisoned by ' + esc(facName(a.holder)) + '</span></h2>');
+    const scen = G.ACT_SCENARIOS[fac] && G.ACT_SCENARIOS[fac][a.tier];
+    if (scen) w('<p class="scen">' + esc(scen) + '</p>');
+    w(noteBox('act' + (a.tier + 1) + '/scenario', 'Notes on ACT ' + (a.tier + 1) + ' as a whole...'));
     for (let wi = 0; wi < 7; wi++) {
       const e = G.PLANET_CUTS['' + a.si + wi];
       const L = e.f[fac];
@@ -179,11 +327,13 @@ function page(fac) {
         w('<span class="key">' + key + '</span><p>' + esc(text) + '</p></div>');
       }
       w('</div>');
+      w(noteBox('act' + (a.tier + 1) + '/' + e.name, 'Notes on ' + e.name + '...'));
     }
     if (a.tier > 0) w(storyBlock(G.STORY[fac][a.tier], G.STORY_ACTS[a.tier].name, 'result screen, after the seat falls'));
     const t = G.CUTSCENES[fac].sys[a.tier];
     w('<div class="turn"><b style="color:var(--fc);font-size:11px;letter-spacing:.08em">THE TURNING</b>' +
       '<p>' + esc(t.a) + '</p><p>' + esc(t.b) + '</p></div>');
+    w(noteBox('act' + (a.tier + 1) + '/beat+turning', 'Notes on the story beat and turning...'));
   });
 
   /* ---------- moments and finale ---------- */
@@ -193,9 +343,13 @@ function page(fac) {
     const line = G.PLANET_MOMENTS[k] && G.PLANET_MOMENTS[k][fac];
     if (line) w('<div class="moment"><b>' + esc(label.toUpperCase()) + '</b>' + esc(line) + '</div>');
   });
+  w(noteBox('moments', 'Notes on the campaign moments...'));
   w('<h2 id="finale">FINALE</h2>');
   w(storyBlock(G.STORY[fac][5], G.STORY_ACTS[5].name, 'galaxy conquered screen'));
-  w('</main></body></html>');
+  w(noteBox('finale', 'Notes on the finale...'));
+  w('</main>');
+  w(BAR.replace('__FAC__', esc(facName(fac))).replace('__SLUG__', fac));
+  w('</body></html>');
   return o.join('\n');
 
   function storyBlock(b, actName, where) {

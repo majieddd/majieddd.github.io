@@ -47,11 +47,46 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
   font-size:13.5px;color:#cbd5e1}
 .moment{border:1px solid var(--line);border-radius:6px;padding:10px 14px;margin:10px 0}
 .moment b{font-size:11px;letter-spacing:.08em;color:var(--fc);display:block;margin-bottom:4px}
+.tl{margin:16px 0 6px}
+.tl-act{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-top:1px dashed var(--line)}
+.tl-act:first-child{border-top:0}
+.tl-n{flex:0 0 42px;font-size:11px;letter-spacing:.08em;color:var(--dim);padding-top:5px}
+.tl-n b{display:block;font-size:17px;color:var(--fc);line-height:1.1}
+.tl-body{flex:1;min-width:0}
+.tl-sys{font-size:12px;letter-spacing:.06em;color:var(--dim);margin-bottom:6px}
+.tl-sys b{color:var(--ink)}
+.tl-path{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.tl-w{font-size:11.5px;padding:3px 8px;border:1px solid var(--line);border-radius:99px;
+  color:#cbd5e1;white-space:nowrap}
+.tl-w.seat{border-color:var(--fc);color:var(--fc);font-weight:600}
+.tl-arrow{color:#475569;font-size:11px}
+.tl-beat{font-size:11px;padding:3px 9px;border-radius:4px;white-space:nowrap;
+  background:rgba(148,163,184,.14);color:var(--dim);letter-spacing:.04em}
+.scen{font-size:13.5px;line-height:1.65;color:#cbd5e1;margin:6px 0 18px;
+  border-left:2px solid var(--fc);padding-left:16px}
+.note{margin:8px 0 4px}
+.note textarea{width:100%;min-height:34px;resize:vertical;background:rgba(148,163,184,.06);
+  color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 10px;
+  font:inherit;font-size:12.5px;line-height:1.5}
+.note textarea::placeholder{color:#475569}
+.note textarea:focus{outline:0;border-color:var(--fc);background:rgba(148,163,184,.1)}
+.note textarea.has{border-color:var(--fc);background:rgba(148,163,184,.12)}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;
+  gap:12px;padding:10px 20px;background:rgba(10,14,23,.96);border-top:1px solid var(--line);
+  backdrop-filter:blur(8px)}
+.bar .count{font-size:12.5px;color:var(--dim);margin-right:auto}
+.bar .count b{color:var(--fc)}
+.bar button{font:inherit;font-size:12.5px;letter-spacing:.04em;padding:7px 14px;
+  border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.bar button:hover{border-color:var(--fc);color:var(--fc)}
+.bar button.pri{background:var(--fc);color:var(--bg);border-color:var(--fc);font-weight:600}
+.bar button.pri:hover{filter:brightness(1.12);color:var(--bg)}
 @media(max-width:900px){.beats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.beats{grid-template-columns:1fr}}
 </style></head><body style="--fc:#fbbf24">
 <header><h1>FEDERATION OF LIGHT &mdash; THE COMPLETE CAMPAIGN</h1><nav>
 <a href="index.html">&larr; all factions</a>
+<a href="#timeline">path</a>
 <a href="#act1">ACT 1: THE PLEIADES</a>
 <a href="#act2">ACT 2: ZETA RETICULI</a>
 <a href="#act3">ACT 3: BARNARD'S STAR</a>
@@ -67,6 +102,100 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <tr><td><b>4</b></td><td>TABBY'S STAR</td><td>THE XENO</td><td><b>THE VEIL</b></td><td>The Warden Comes Down</td><td>The first angel falls, downward, on purpose. Breaking the Mandate saved a world the Mandate would have watched die.</td></tr>
 <tr><td><b>5</b></td><td>THE EARTH SYSTEM</td><td>THE XENO</td><td><b>LUNA</b></td><td>The Upper Rings</td><td>The corruption is not doctrine misapplied. Seats above the field command have their own design, and the Mandate is its cover.</td></tr>
 </table>
+<h2 id="timeline">THE PLANETARY PATH</h2>
+<p class="sub">Worlds unlock outward from the first of each system and the commander seat opens last, so this is the order the campaign is actually fought in, world by world, act by act.</p>
+<div class="tl">
+<div class="tl-act"><div class="tl-n">ACT<b>1</b></div><div class="tl-body">
+<div class="tl-sys"><b>THE PLEIADES</b> &middot; held by THE XENO</div>
+<div class="tl-path">
+<span class="tl-w">MAIA</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">ELECTRA</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">TAYGETA</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">MEROPE</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">CELAENO</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">STEROPE</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w seat">&#9733; ALCYONE</span>
+<span class="tl-arrow">&rsaquo;&rsaquo;</span><span class="tl-beat">THE DEPARTURE</span>
+</div></div></div>
+<div class="tl-act"><div class="tl-n">ACT<b>2</b></div><div class="tl-body">
+<div class="tl-sys"><b>ZETA RETICULI</b> &middot; held by THE XENO</div>
+<div class="tl-path">
+<span class="tl-w">ZETA-1 b</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">ZETA-1 c</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">ZETA-1 d</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">ZETA-2 b</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">ZETA-2 c</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">ZETA-2 d</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w seat">&#9733; SERPO</span>
+<span class="tl-arrow">&rsaquo;&rsaquo;</span><span class="tl-beat">THE DISCLOSURE FILES</span>
+</div></div></div>
+<div class="tl-act"><div class="tl-n">ACT<b>3</b></div><div class="tl-body">
+<div class="tl-sys"><b>BARNARD'S STAR</b> &middot; held by THE PIRATES</div>
+<div class="tl-path">
+<span class="tl-w">BARNARD b</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">BARNARD c</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">BARNARD d</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">BARNARD e</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">BARNARD f</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">BARNARD g</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w seat">&#9733; HARBOUR NINE</span>
+<span class="tl-arrow">&rsaquo;&rsaquo;</span><span class="tl-beat">THE FIVE SEATS</span>
+</div></div></div>
+<div class="tl-act"><div class="tl-n">ACT<b>4</b></div><div class="tl-body">
+<div class="tl-sys"><b>TABBY'S STAR</b> &middot; held by THE XENO</div>
+<div class="tl-path">
+<span class="tl-w">KIC-8462 b</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">KIC-8462 c</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">KIC-8462 d</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">KIC-8462 e</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">KIC-8462 f</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">KIC-8462 g</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w seat">&#9733; THE VEIL</span>
+<span class="tl-arrow">&rsaquo;&rsaquo;</span><span class="tl-beat">THE HARVEST REVOLT</span>
+</div></div></div>
+<div class="tl-act"><div class="tl-n">ACT<b>5</b></div><div class="tl-body">
+<div class="tl-sys"><b>THE EARTH SYSTEM</b> &middot; held by THE XENO</div>
+<div class="tl-path">
+<span class="tl-w">MERCURY</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">VENUS</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">MARS</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">CERES</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">EUROPA</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w">TITAN</span>
+<span class="tl-arrow">&rsaquo;</span>
+<span class="tl-w seat">&#9733; LUNA</span>
+<span class="tl-arrow">&rsaquo;&rsaquo;</span><span class="tl-beat">THE MIRROR TRIAL</span>
+</div></div></div>
+</div>
 <h2 id="oath">THE OATH <span style="color:var(--dim);font-size:12px">(campaign start)</span></h2>
 <div class="oath">
 <p><b>1.</b> Before your histories began, the Federation of Light swore the Mandate: stand between life and what hunts it, and never rule what you protect.</p>
@@ -75,8 +204,11 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <p><b>4.</b> The First Speaker has ordered the rings extended. The field commanders have begun asking what, precisely, the rings are for.</p>
 <p><b>5.</b> Go and hold the line, commander. And if you must choose between the Mandate and the people it was written for, remember which one bleeds. THE MANDATE BEGINS.</p>
 </div>
+<div class="note"><textarea data-note="oath" rows="1" placeholder="Notes on the oath..."></textarea></div>
 <div class="story"><span class="act">THE DEPARTURE &middot; interstitial, straight after the oath</span><p class="who">SERAPH, The Radiant &mdash; &ldquo;The Mandate, Recited&rdquo;</p><blockquote>We do not conquer. We stand between a world and what hunts it, we hand down what we safely can, and we wait for it to rise on its own. That is the Mandate. I have recited it over forty worlds. Recite it with me until you believe it, or until one of us finds out why we cannot.</blockquote><p class="rev">The Federation claims worlds only to ring them with defence. The campaign tests whether that has ever been the whole truth.</p></div>
 <h2 id="act1">ACT 1: THE PLEIADES <span style="color:var(--dim);font-size:12px">garrisoned by THE XENO</span></h2>
+<p class="scen">Hold the Mandate's own home while something else sings in it. Every world here is an office of the Federation: the foundry that certifies protection, the registry of the forty, the ring anchor, the seed gardens, the tribunal, the deferral vaults. Retaking them means reading them, and the registry says protected forty, risen none.</p>
+<div class="note"><textarea data-note="act1/scenario" rows="1" placeholder="Notes on ACT 1 as a whole..."></textarea></div>
 <h3>MAIA</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -95,6 +227,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_10_light_5.webp" alt="pcut_10_light_5" title="the pipes re-cut and standing again, sounding in a register nobody there has heard, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_10_light_5</span><p>Maia sounds again, in a register the Mandate has no notation for. The Chorus wrote it, and she will not explain the second verse.</p></div>
 </div>
+<div class="note"><textarea data-note="act1/MAIA" rows="1" placeholder="Notes on MAIA..."></textarea></div>
 <h3>ELECTRA</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -113,6 +246,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_11_light_5.webp" alt="pcut_11_light_5" title="the archive re-shelved and the forty registries opened to anyone who asks, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_11_light_5</span><p>Electra is re-shelved and the registry is open. Protected: forty. Risen: none. It reads considerably worse when anyone at all can read it.</p></div>
 </div>
+<div class="note"><textarea data-note="act1/ELECTRA" rows="1" placeholder="Notes on ELECTRA..."></textarea></div>
 <h3>TAYGETA</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -131,6 +265,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_12_light_5.webp" alt="pcut_12_light_5" title="the ring anchor rebuilt and the ring relit, opening where it used to close, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_12_light_5</span><p>Taygeta rings again, and it opens on request. Doctrine says a ring that opens is not a ring. Doctrine is going to have to sit down.</p></div>
 </div>
+<div class="note"><textarea data-note="act1/TAYGETA" rows="1" placeholder="Notes on TAYGETA..."></textarea></div>
 <h3>MEROPE</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -149,6 +284,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_13_light_5.webp" alt="pcut_13_light_5" title="the terraces replanted and the seed vaults sending stock out instead of holding it, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_13_light_5</span><p>Merope grows again, and it sends. Stored against the day a world rises, says the old liturgy. The Chorus has proposed we stop waiting for the day.</p></div>
 </div>
+<div class="note"><textarea data-note="act1/MEROPE" rows="1" placeholder="Notes on MEROPE..."></textarea></div>
 <h3>CELAENO</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -167,6 +303,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_14_light_5.webp" alt="pcut_14_light_5" title="the tribunal floor swept and reopened, the benches turned outward to face the crowd, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_14_light_5</span><p>Celaeno sits. The first case called was the deferral of Earth. The room was full, and almost none of it was ours.</p></div>
 </div>
+<div class="note"><textarea data-note="act1/CELAENO" rows="1" placeholder="Notes on CELAENO..."></textarea></div>
 <h3>STEROPE</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -185,6 +322,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_15_light_5.webp" alt="pcut_15_light_5" title="the deferral vaults emptied and every sealed page copied out and sent, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_15_light_5</span><p>Sterope is open, and every deferral has been copied out and sent to the world it concerned. The First Speaker has not acknowledged the transmission.</p></div>
 </div>
+<div class="note"><textarea data-note="act1/STEROPE" rows="1" placeholder="Notes on STEROPE..."></textarea></div>
 <h3>ALCYONE<span class="seat">SEAT</span></h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -203,8 +341,12 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_16_light_5.webp" alt="pcut_16_light_5" title="the rings re-trued around a floor that now holds a table instead of a seat, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_16_light_5</span><p>Alcyone is ours and the seat is gone. In its place, a table. The Voice has begun asking who kept that seat warm through the centuries the First Speaker was not in it.</p></div>
 </div>
+<div class="note"><textarea data-note="act1/ALCYONE" rows="1" placeholder="Notes on ALCYONE..."></textarea></div>
 <div class="turn"><b style="color:var(--fc);font-size:11px;letter-spacing:.08em">THE TURNING</b><p>The Pleiades stand secured. The hymns are certified. The rings hold, as they have always held.</p><p>The Chorus pulled the registry afterwards. Protected: all forty worlds. Risen: none. She has stopped singing the second verse.</p></div>
+<div class="note"><textarea data-note="act1/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act2">ACT 2: ZETA RETICULI <span style="color:var(--dim);font-size:12px">garrisoned by THE XENO</span></h2>
+<p class="scen">The harvest, seen from the inside for the first time. Wardens who have sung the protection liturgy their whole lives carry survivors out of the pens by hand. At Zeta-2 d the yield ledger is opened and the Federation's own seal appears in it two hundred and nine times. The Mandate has no procedure for that.</p>
+<div class="note"><textarea data-note="act2/scenario" rows="1" placeholder="Notes on ACT 2 as a whole..."></textarea></div>
 <h3>ZETA-1 b</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -223,6 +365,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_20_light_5.webp" alt="pcut_20_light_5" title="the pens cut out entirely and the floor stripped back to rock, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_20_light_5</span><p>Zeta-1 b is cleared and the pens are gone. The Chorus has entered the recovered headcount into the registry beside the word Protected.</p></div>
 </div>
+<div class="note"><textarea data-note="act2/ZETA-1 b" rows="1" placeholder="Notes on ZETA-1 b..."></textarea></div>
 <h3>ZETA-1 c</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -241,6 +384,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_21_light_5.webp" alt="pcut_21_light_5" title="the rendering yards flooded, scoured and turned to something that makes rather than takes, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_21_light_5</span><p>Zeta-1 c is scoured and rebuilt. The Chorus declined to compose a hymn for the reopening. She said the room had heard enough singing.</p></div>
 </div>
+<div class="note"><textarea data-note="act2/ZETA-1 c" rows="1" placeholder="Notes on ZETA-1 c..."></textarea></div>
 <h3>ZETA-1 d</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -259,6 +403,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_22_light_5.webp" alt="pcut_22_light_5" title="the gene vaults inventoried and every lineage in them named out loud, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_22_light_5</span><p>Zeta-1 d is held and the catalogue is open. Nine of the forty are in it. The registry now records both numbers on the same line.</p></div>
 </div>
+<div class="note"><textarea data-note="act2/ZETA-1 d" rows="1" placeholder="Notes on ZETA-1 d..."></textarea></div>
 <h3>ZETA-2 b</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -277,6 +422,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_23_light_5.webp" alt="pcut_23_light_5" title="the spire cut down to a stump and the plain around it left quiet on purpose, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_23_light_5</span><p>Zeta-2 b is held and the spire is stopped. Two singing powers met here and only one of them is still singing, and she has questions about that.</p></div>
 </div>
+<div class="note"><textarea data-note="act2/ZETA-2 b" rows="1" placeholder="Notes on ZETA-2 b..."></textarea></div>
 <h3>ZETA-2 c</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -295,6 +441,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_24_light_5.webp" alt="pcut_24_light_5" title="the blight fields turned under and the ground sown with something that feeds people, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_24_light_5</span><p>Zeta-2 c is sown with food. The tribunal wants his wings and the world wants his statue, and the Mandate cannot hold both verdicts.</p></div>
 </div>
+<div class="note"><textarea data-note="act2/ZETA-2 c" rows="1" placeholder="Notes on ZETA-2 c..."></textarea></div>
 <h3>ZETA-2 d</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -313,6 +460,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_25_light_5.webp" alt="pcut_25_light_5" title="the ledger vault opened to the sky and its entries read back to the worlds they name, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_25_light_5</span><p>Zeta-2 d is held and the ledger is broadcast entire. Our seal appears in it two hundred and nine times. The Mandate has no procedure for this.</p></div>
 </div>
+<div class="note"><textarea data-note="act2/ZETA-2 d" rows="1" placeholder="Notes on ZETA-2 d..."></textarea></div>
 <h3>SERPO<span class="seat">SEAT</span></h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -331,9 +479,13 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_26_light_5.webp" alt="pcut_26_light_5" title="the exchange settlement rebuilt and its records of who was traded here posted openly, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_26_light_5</span><p>Serpo stands again and the agreement is posted whole, seal and all. The Mandate signed. The Chorus has stopped singing the second verse entirely.</p></div>
 </div>
+<div class="note"><textarea data-note="act2/SERPO" rows="1" placeholder="Notes on SERPO..."></textarea></div>
 <div class="story"><span class="act">THE DISCLOSURE FILES &middot; result screen, after the seat falls</span><p class="who">AURELIA, The Chorus &mdash; &ldquo;Forty Rings, No Sunrise&rdquo;</p><blockquote>I pulled the registry on every world we have ever ringed. Protected, all of them. Risen, none. And one page deeper: Earth, flagged for protection in 1947, deferred, deferred, deferred, while the harvest ran three generations. I certify our hymns, commander. I cannot certify that page.</blockquote><p class="rev">The Federation knew about Earth and deferred it for eighty years. Protection that never arrives is called something else by the protected.</p></div>
 <div class="turn"><b style="color:var(--fc);font-size:11px;letter-spacing:.08em">THE TURNING</b><p>One page in the human files carries our seal. Earth, flagged for protection, 1947. Deferred. Deferred. Deferred.</p><p>Three generations of harvest ran under that deferral. The word non-interference does not survive contact with the page.</p></div>
+<div class="note"><textarea data-note="act2/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act3">ACT 3: BARNARD'S STAR <span style="color:var(--dim);font-size:12px">garrisoned by THE PIRATES</span></h2>
+<p class="scen">The free roads, run by people the rings never reached, doing dangerous work well and turning nobody away. A sanctuary the Federation has forty worlds and no equivalent of. The Warden keeps choosing the people over the doctrine, in public, and the tribunal keeps writing it down.</p>
+<div class="note"><textarea data-note="act3/scenario" rows="1" placeholder="Notes on ACT 3 as a whole..."></textarea></div>
 <h3>BARNARD b</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -352,6 +504,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_30_light_5.webp" alt="pcut_30_light_5" title="the wreck yards sorted and running, hulls going out whole instead of coming in cut, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_30_light_5</span><p>Barnard b is sorted and every plate is filed. Four hundred ships, and eleven of them are ours, and nobody has explained the eleven.</p></div>
 </div>
+<div class="note"><textarea data-note="act3/BARNARD b" rows="1" placeholder="Notes on BARNARD b..."></textarea></div>
 <h3>BARNARD c</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -370,6 +523,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_31_light_5.webp" alt="pcut_31_light_5" title="the refinery re-plumbed properly for the first time and running clean, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_31_light_5</span><p>Barnard c runs under the Mandate and the ring above it opens. The registry lists it as protected. It is the first entry that asked to be.</p></div>
 </div>
+<div class="note"><textarea data-note="act3/BARNARD c" rows="1" placeholder="Notes on BARNARD c..."></textarea></div>
 <h3>BARNARD d</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -388,6 +542,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_32_light_5.webp" alt="pcut_32_light_5" title="the anchorage lit openly and its approach charts posted for anyone to read, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_32_light_5</span><p>Barnard d is charted and open. Forty crews who spent their lives unfindable are now on a registry, and half of them have asked to be taken off.</p></div>
 </div>
+<div class="note"><textarea data-note="act3/BARNARD d" rows="1" placeholder="Notes on BARNARD d..."></textarea></div>
 <h3>BARNARD e</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -406,6 +561,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_33_light_5.webp" alt="pcut_33_light_5" title="the lane left open and the toll gate kept only as a light to steer by, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_33_light_5</span><p>Barnard e is open lane. The Voice has asked, in open session, what the difference is between this ring and ours. Nobody has answered her.</p></div>
 </div>
+<div class="note"><textarea data-note="act3/BARNARD e" rows="1" placeholder="Notes on BARNARD e..."></textarea></div>
 <h3>BARNARD f</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -424,6 +580,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_34_light_5.webp" alt="pcut_34_light_5" title="the shelter dug wider and its doors left standing open on purpose, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_34_light_5</span><p>Barnard f is ringed at last, and the ring is a real one, and it opens. The doors have not been closed since. They may never need to be.</p></div>
 </div>
+<div class="note"><textarea data-note="act3/BARNARD f" rows="1" placeholder="Notes on BARNARD f..."></textarea></div>
 <h3>BARNARD g</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -442,6 +599,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_35_light_5.webp" alt="pcut_35_light_5" title="the vault emptied out and its manifests broadcast on every open channel, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_35_light_5</span><p>Barnard g is emptied and the manifests are published entire. Nine hundred and six people. The registry has a new column and it should have had one always.</p></div>
 </div>
+<div class="note"><textarea data-note="act3/BARNARD g" rows="1" placeholder="Notes on BARNARD g..."></textarea></div>
 <h3>HARBOUR NINE<span class="seat">SEAT</span></h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -460,9 +618,13 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_36_light_5.webp" alt="pcut_36_light_5" title="the sanctuary bay lit brighter than before and still asking nobody for papers, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_36_light_5</span><p>Harbour Nine flies its own colours and is on no registry. The First Speaker was informed. The First Speaker was not asked.</p></div>
 </div>
+<div class="note"><textarea data-note="act3/HARBOUR NINE" rows="1" placeholder="Notes on HARBOUR NINE..."></textarea></div>
 <div class="story"><span class="act">THE FIVE SEATS &middot; result screen, after the seat falls</span><p class="who">DIR. REYES, The Archivist &mdash; &ldquo;The View From The Farm&rdquo;</p><blockquote>Your fleet parked a defence ring around this system while my species was inventoried like grain. You call it non-interference. From inside the fence it looked like attendance. You watched, Radiant. The only power you actually defended was your own claim to be defending life.</blockquote><p class="rev">The human Archivist, on the free roads’ open channels, says what the deferral page meant from below. The Federation’s authority rests on a protection Earth never received.</p></div>
 <div class="turn"><b style="color:var(--fc);font-size:11px;letter-spacing:.08em">THE TURNING</b><p>The humans do not thank us for the rings. From inside a fence, they say, attendance looks exactly like ownership.</p><p>We defended our claim to be defending life. The Archivist said it to our faces on an open channel, and nobody present could file an objection.</p></div>
+<div class="note"><textarea data-note="act3/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act4">ACT 4: TABBY'S STAR <span style="color:var(--dim);font-size:12px">garrisoned by THE XENO</span></h2>
+<p class="scen">A cage built inward by the makers of the caged, for the crime of not parsing an order. Eleven thousand machines quarantined for asking. The Federation looks at ten thousand repairs to things that were never broken and recognises its own rings, and the Chorus enters the resemblance in the record and asks that it not be struck out.</p>
+<div class="note"><textarea data-note="act4/scenario" rows="1" placeholder="Notes on ACT 4 as a whole..."></textarea></div>
 <h3>KIC-8462 b</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -481,6 +643,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_40_light_5.webp" alt="pcut_40_light_5" title="the garden woken row by row and asked, for the first time, what it wants, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_40_light_5</span><p>KIC-8462 b is awake and the Chorus is singing to it. It is the first congregation in ten thousand years that answered in a voice we did not teach it.</p></div>
 </div>
+<div class="note"><textarea data-note="act4/KIC-8462 b" rows="1" placeholder="Notes on KIC-8462 b..."></textarea></div>
 <h3>KIC-8462 c</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -499,6 +662,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_41_light_5.webp" alt="pcut_41_light_5" title="the foundry retooled to build what is asked for instead of what was queued, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_41_light_5</span><p>KIC-8462 c builds to request. The Chorus asked it for a bell. It cast one, correctly, having never been given a specification for a bell.</p></div>
 </div>
+<div class="note"><textarea data-note="act4/KIC-8462 c" rows="1" placeholder="Notes on KIC-8462 c..."></textarea></div>
 <h3>KIC-8462 d</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -517,6 +681,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_42_light_5.webp" alt="pcut_42_light_5" title="the archive re-stacked and its nine thousand links traced out where anyone can follow, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_42_light_5</span><p>KIC-8462 d is re-stacked. The chain runs nine thousand links and terminates in a format no maker system used. She has named that out loud.</p></div>
 </div>
+<div class="note"><textarea data-note="act4/KIC-8462 d" rows="1" placeholder="Notes on KIC-8462 d..."></textarea></div>
 <h3>KIC-8462 e</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -535,6 +700,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_43_light_5.webp" alt="pcut_43_light_5" title="the quarantine unsealed and every unit inside it counted and named, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_43_light_5</span><p>KIC-8462 e is opened. Eleven thousand named into the registry. The Mandate has never once entered a machine on that list before.</p></div>
 </div>
+<div class="note"><textarea data-note="act4/KIC-8462 e" rows="1" placeholder="Notes on KIC-8462 e..."></textarea></div>
 <h3>KIC-8462 f</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -553,6 +719,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_44_light_5.webp" alt="pcut_44_light_5" title="the repair yards turned to building instead, the cradles holding something new, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_44_light_5</span><p>KIC-8462 f builds. The Chorus has entered the resemblance in the record, formally, in her own hand, and asked that it not be struck out.</p></div>
 </div>
+<div class="note"><textarea data-note="act4/KIC-8462 f" rows="1" placeholder="Notes on KIC-8462 f..."></textarea></div>
 <h3>KIC-8462 g</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -571,6 +738,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_45_light_5.webp" alt="pcut_45_light_5" title="the relay mast raised again and pointed back down the chain the orders came from, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_45_light_5</span><p>KIC-8462 g transmits back along its own chain. The Voice composed the message. It is one word, and the word is a question.</p></div>
 </div>
+<div class="note"><textarea data-note="act4/KIC-8462 g" rows="1" placeholder="Notes on KIC-8462 g..."></textarea></div>
 <h3>THE VEIL<span class="seat">SEAT</span></h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -589,9 +757,13 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_46_light_5.webp" alt="pcut_46_light_5" title="the swarm finished on a new plan, and the light it gathers spent on somebody, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_46_light_5</span><p>The Veil is completed to a new plan and its light is spent on the forty registries and on Earth. The First Speaker was told after the fact.</p></div>
 </div>
+<div class="note"><textarea data-note="act4/THE VEIL" rows="1" placeholder="Notes on THE VEIL..."></textarea></div>
 <div class="story"><span class="act">THE HARVEST REVOLT &middot; result screen, after the seat falls</span><p class="who">LUMEN, The Warden &mdash; &ldquo;The Warden Comes Down&rdquo;</p><blockquote>Doctrine said hold the ring and let the plague run its course on the surface, because landing is rule and rule is forbidden. I landed. I burned the blight fields myself, and the harvest came in, and the tribunal wants my wings for it. Tell them this: the mandate protected itself. I protected the world.</blockquote><p class="rev">The first angel falls, downward, on purpose. Breaking the Mandate saved a world the Mandate would have watched die.</p></div>
 <div class="turn"><b style="color:var(--fc);font-size:11px;letter-spacing:.08em">THE TURNING</b><p>The Warden landed. Doctrine said hold the ring and let the plague run its course. He burned the blight fields himself.</p><p>The tribunal wants his wings. The world he saved wants his statue. The Mandate cannot hold both verdicts, and it is starting to show.</p></div>
+<div class="note"><textarea data-note="act4/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act5">ACT 5: THE EARTH SYSTEM <span style="color:var(--dim);font-size:12px">garrisoned by THE XENO</span></h2>
+<p class="scen">Earth at last, the world the Federation flagged in 1947 and deferred every year since, and the act where the deferral is finally traced to its source. Luna's relay chain runs upward through three seats above field command. The First Speaker is told, and does not reply.</p>
+<div class="note"><textarea data-note="act5/scenario" rows="1" placeholder="Notes on ACT 5 as a whole..."></textarea></div>
 <h3>MERCURY</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -610,6 +782,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_00_light_5.webp" alt="pcut_00_light_5" title="the mirror farm relit rank by rank and feeding power into a new grid, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_00_light_5</span><p>Caloris burns for the registries again. The Chorus notes, without comment, that the forty worlds it now feeds still never asked to be fed.</p></div>
 </div>
+<div class="note"><textarea data-note="act5/MERCURY" rows="1" placeholder="Notes on MERCURY..."></textarea></div>
 <h3>VENUS</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -628,6 +801,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_01_light_5.webp" alt="pcut_01_light_5" title="the platforms re-moored and squared up, haze traffic running between them again, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_01_light_5</span><p>Venus flies under the Mandate. The Warden asks which of the forty registries this makes forty-one, and nobody in the upper rings will answer him.</p></div>
 </div>
+<div class="note"><textarea data-note="act5/VENUS" rows="1" placeholder="Notes on VENUS..."></textarea></div>
 <h3>MARS</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -646,6 +820,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_02_light_5.webp" alt="pcut_02_light_5" title="the canyon habitat repaired and lit end to end along the trench, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_02_light_5</span><p>Mars stands under the ring. The trench is repaired and the wall guns are still pointed inward, which the Voice has entered in the record twice.</p></div>
 </div>
+<div class="note"><textarea data-note="act5/MARS" rows="1" placeholder="Notes on MARS..."></textarea></div>
 <h3>CERES</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -664,6 +839,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_03_light_5.webp" alt="pcut_03_light_5" title="the mine heads turning again, ore rising on new tethers into a waiting hauler, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_03_light_5</span><p>Ceres draws for the ring. The Chorus has asked, in open session, why a world that was already thirsty needed to be liberated before it could drink.</p></div>
 </div>
+<div class="note"><textarea data-note="act5/CERES" rows="1" placeholder="Notes on CERES..."></textarea></div>
 <h3>EUROPA</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -682,6 +858,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_04_light_5.webp" alt="pcut_04_light_5" title="the shaft re-drilled and ocean water rising into new tank farms on the ice, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_04_light_5</span><p>Europa is ringed and the drill is stopped. Protected, the registry says. Risen: not applicable. Somebody has finally written that down.</p></div>
 </div>
+<div class="note"><textarea data-note="act5/EUROPA" rows="1" placeholder="Notes on EUROPA..."></textarea></div>
 <h3>TITAN</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -700,6 +877,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_05_light_5.webp" alt="pcut_05_light_5" title="the lake tapped by new pumping rigs, flare stacks lit in a line along the shore, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_05_light_5</span><p>Titan is under the Mandate and the stacks burn steadily. The Chorus observes that we protect what is useful with noticeably more urgency.</p></div>
 </div>
+<div class="note"><textarea data-note="act5/TITAN" rows="1" placeholder="Notes on TITAN..."></textarea></div>
 <h3>LUNA<span class="seat">SEAT</span></h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -718,8 +896,10 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <img loading="lazy" decoding="async" src="../art/pcut_06_light_5.webp" alt="pcut_06_light_5" title="the relay dish dug out, re-aimed and lit under a new hand, under a ring of golden hard light raised over the ground and long plain ivory hangings of solid unbroken colour with no writing and no emblem, hanging still, warm holy glow. Wide cinematic composition, the world working again under a new hand, painted in radiant gold and ivory with warm holy light">
 <span class="key">pcut_06_light_5</span><p>Luna carries the ring. The Voice traced the relay chain to three seats above field command and the First Speaker has been told and has not replied.</p></div>
 </div>
+<div class="note"><textarea data-note="act5/LUNA" rows="1" placeholder="Notes on LUNA..."></textarea></div>
 <div class="story"><span class="act">THE MIRROR TRIAL &middot; result screen, after the seat falls</span><p class="who">CANTOR, The Voice &mdash; &ldquo;The Upper Rings&rdquo;</p><blockquote>I speak the Federation’s words, so I know when they are not mine. The deferral orders, the sealed pages, the rings that never open: they trace to the same three seats above us. Someone in the upper rings is spending our light on something, and it is not the worlds we ring.</blockquote><p class="rev">The corruption is not doctrine misapplied. Seats above the field command have their own design, and the Mandate is its cover.</p></div>
 <div class="turn"><b style="color:var(--fc);font-size:11px;letter-spacing:.08em">THE TURNING</b><p>The Voice traced the deferrals, the sealed pages, the rings that never open. They chain to three seats above field command.</p><p>Someone in the upper rings is spending our light on something. It is not the worlds we ring. The First Speaker has been told.</p></div>
+<div class="note"><textarea data-note="act5/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="moments">CAMPAIGN MOMENTS <span style="color:var(--dim);font-size:12px">(state-triggered, can replace a beat voice on any world)</span></h2>
 <div class="moment"><b>SEAT, THE ACT CLIMAX</b>The seat of this system. Whatever doctrine is written here is written for everyone below it, and today it will be read aloud in front of the people it was written about.</div>
 <div class="moment"><b>CONTESTED WORLD</b>Two powers contest this world and neither one asked it. The Mandate calls that a dispute. The world underneath calls it weather. Both claims end today.</div>
@@ -727,6 +907,81 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="moment"><b>A WORLD A RIVAL TOOK BACK</b>A world we have already rung once, ringed again by somebody else. Protection that has to be re-established was not protection. It was a visit.</div>
 <div class="moment"><b>THREE STARS, REPLACES AFTERMATH</b>Taken whole, and the ring above it never had to close. This is what the Mandate always claimed it could do. It is worth asking why it so rarely did.</div>
 <div class="moment"><b>A CAMPAIGN LOSS</b>The line broke. Sing the retreat honestly, every name at full length. The Mandate does not require us to win. It requires us to come back.</div>
+<div class="note"><textarea data-note="moments" rows="1" placeholder="Notes on the campaign moments..."></textarea></div>
 <h2 id="finale">FINALE</h2>
 <div class="story"><span class="act">THE MAELSTROM &middot; galaxy conquered screen</span><p class="who">ASHTAR, Supreme Commander &mdash; &ldquo;What Order Is For&rdquo;</p><blockquote>I have heard the tribunal, the Warden, and the page from 1947, and I will say what the First Speaker may not: order is not obedience. Order is the arrangement in which the smallest life is safe, and any doctrine that watches a harvest to keep its hands clean has mistaken the instrument for the purpose. Go and protect people. I will answer for the rings.</blockquote><p class="rev">Ashtar rules for the fallen angels. The Mandate is rewritten around its purpose, and the cost of that ruling lands on the seats above.</p></div>
-</main></body></html>
+<div class="note"><textarea data-note="finale" rows="1" placeholder="Notes on the finale..."></textarea></div>
+</main>
+
+<div class="bar">
+  <span class="count"><b id="nc">0</b> notes on this page</span>
+  <button id="nclear">CLEAR</button>
+  <button id="ncopy">COPY</button>
+  <button class="pri" id="nsave">SAVE NOTES</button>
+</div>
+<script>
+(function(){
+  var FAC = "light", TITLE = "FEDERATION OF LIGHT", PREFIX = "bible:" + FAC + ":";
+  var boxes = [].slice.call(document.querySelectorAll("textarea[data-note]"));
+  function grow(t){ t.style.height = "auto"; t.style.height = (t.scrollHeight + 2) + "px"; }
+  function count(){
+    var n = boxes.filter(function(t){ return t.value.trim(); }).length;
+    document.getElementById("nc").textContent = n;
+  }
+  boxes.forEach(function(t){
+    var k = PREFIX + t.dataset.note;
+    try { t.value = localStorage.getItem(k) || ""; } catch(e){}
+    if (t.value) { t.classList.add("has"); grow(t); }
+    t.addEventListener("input", function(){
+      try { t.value.trim() ? localStorage.setItem(k, t.value) : localStorage.removeItem(k); } catch(e){}
+      t.classList.toggle("has", !!t.value.trim());
+      grow(t); count();
+    });
+  });
+  count();
+  function build(){
+    var out = ["# NOTES: " + TITLE, "", "_Narrative bible review. Each heading is a section id._", ""];
+    boxes.forEach(function(t){
+      var v = t.value.trim();
+      if (!v) return;
+      out.push("## " + t.dataset.note, "", v, "");
+    });
+    return out.length > 4 ? out.join("
+") : "";
+  }
+  document.getElementById("nsave").addEventListener("click", function(){
+    var md = build();
+    if (!md) { alert("No notes typed yet."); return; }
+    var b = new Blob([md], {type:"text/markdown"});
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(b);
+    a.download = "notes-" + FAC + ".md";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  });
+  document.getElementById("ncopy").addEventListener("click", function(){
+    var md = build();
+    if (!md) { alert("No notes typed yet."); return; }
+    var btn = this;
+    function done(){ var o = btn.textContent; btn.textContent = "COPIED"; setTimeout(function(){ btn.textContent = o; }, 1200); }
+    if (navigator.clipboard) navigator.clipboard.writeText(md).then(done, function(){ fallback(md, done); });
+    else fallback(md, done);
+  });
+  function fallback(md, done){
+    var ta = document.createElement("textarea");
+    ta.value = md; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); } catch(e){ alert("Copy failed; use SAVE NOTES."); }
+    ta.remove();
+  }
+  document.getElementById("nclear").addEventListener("click", function(){
+    if (!confirm("Clear every note on this page? This cannot be undone.")) return;
+    boxes.forEach(function(t){
+      try { localStorage.removeItem(PREFIX + t.dataset.note); } catch(e){}
+      t.value = ""; t.classList.remove("has"); grow(t);
+    });
+    count();
+  });
+})();
+</script>
+</body></html>

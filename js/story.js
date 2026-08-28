@@ -57,6 +57,61 @@ const STORY_FIGURES = {
             faction: 'light', color: '#fde68a', icon: '✦' },
 };
 
+/* WHAT EACH ACT IS ACTUALLY ABOUT (Session 40).
+
+   The five-act spine is legible from the STORY beats, and the seven worlds of
+   an act are legible one at a time from planetcuts.js, but nothing said what
+   an ACT was: what this faction wants from this system, what it finds there,
+   and what it costs them. That is the level a reader scans first and the one
+   the campaign had no text for at all.
+
+   Keyed by [faction][tier], tier 0 to 4 in CAMPAIGN order, so entry 0 is
+   always that faction's own home system. Read by tools/narrative_bible.js;
+   available to any in-game surface that wants an act summary later. Pure
+   data, read by nothing in the simulation. */
+const ACT_SCENARIOS = {
+
+  human: [
+    'Take back the solar system, world by world, from the power that farmed it. Every world is somewhere humanity already built: the mirror farm it half designed, the cloud city it flew, the trench it learned to survive in. It ends on the far side of the Moon, digging out the relay that watched Earth for ten thousand years. Everything before this was travel.',
+    'March into the machinery of the people who watched and did nothing. The hymn foundry that certifies a world as protected, the archive of the forty, the tribunal, and the sunken vaults where Earth\'s own file was stamped Deferred three times. Humanity arrives to read the paperwork and leaves having published all of it.',
+    'The Compact\'s home, and the machinery of the harvest itself: the pens, the rendering yards, the gene vaults where every farmed species is filed, including ours. The hardest act to look at. It ends at Serpo, where twelve people were traded one way and never spoken of again, and where their names go up at the gate in letters a metre high.',
+    'The free roads, which are not an empire but an absence of one. Wreck yards, an unlicensed refinery, an anchorage on no chart, a toll gate, a sanctuary that has never asked anyone for papers. Humanity came to liberate a network and finds that liberating it means deciding whose rules replace none at all. The Quartermaster prices the resupply and sees a fence.',
+    'A civilisation of machines executing orders no maker ever signed, around a star being slowly boxed in. Humanity finishes the swarm on its own plan, aims the relay back up the chain the orders came from, and decides where the light of a star goes. Undeniable, at last, and now answerable for it.',
+  ],
+
+  light: [
+    'Hold the Mandate\'s own home while something else sings in it. Every world here is an office of the Federation: the foundry that certifies protection, the registry of the forty, the ring anchor, the seed gardens, the tribunal, the deferral vaults. Retaking them means reading them, and the registry says protected forty, risen none.',
+    'The harvest, seen from the inside for the first time. Wardens who have sung the protection liturgy their whole lives carry survivors out of the pens by hand. At Zeta-2 d the yield ledger is opened and the Federation\'s own seal appears in it two hundred and nine times. The Mandate has no procedure for that.',
+    'The free roads, run by people the rings never reached, doing dangerous work well and turning nobody away. A sanctuary the Federation has forty worlds and no equivalent of. The Warden keeps choosing the people over the doctrine, in public, and the tribunal keeps writing it down.',
+    'A cage built inward by the makers of the caged, for the crime of not parsing an order. Eleven thousand machines quarantined for asking. The Federation looks at ten thousand repairs to things that were never broken and recognises its own rings, and the Chorus enters the resemblance in the record and asks that it not be struck out.',
+    'Earth at last, the world the Federation flagged in 1947 and deferred every year since, and the act where the deferral is finally traced to its source. Luna\'s relay chain runs upward through three seats above field command. The First Speaker is told, and does not reply.',
+  ],
+
+  xeno: [
+    'The pasture, reclaimed. The herd broke its fence and walked into the room it was raised in, and the Compact takes back its pens, its rendering yards, its gene vaults and its chorus spire one at a time. Beneath the chorus, in the dark of the pens, the Hivemind hears one voice singing alone and does not report it.',
+    'The scavengers, who move what the Compact renders and take a margin on it. Wreck yards, a refinery, a hidden anchorage, a toll gate, a sanctuary full of unindexed stock. Efficient, parasitic, and now ours. The Hivemind is told the intake figure at Harbour Nine and asks, again, about the singing.',
+    'A star being harvested whole by machines that produce and never consume. The Compact has farmed worlds for ten thousand cycles and never once thought at this scale. It takes the lattice, and learns that a yield which does not have to be bred, chased or persuaded is a thing it has no ledger line for.',
+    'The herd\'s own system, taken back the other way. Mirrors, cloud platforms, a canyon full of warmth, water ice, an unfarmed ocean, and finally the observation post on the far side of their moon. The Compact is watching Earth again, and the Hivemind asks what the body should do if the herd waves.',
+    'The guardians\' cathedral, and the end of one Compact. The chorus occupies the Cathedral of Rings and finds the acoustics superior. The Hivemind, having spared one world and watched it out-produce the pens, asks that the seat not be filled; the Blight hears the same numbers and declines them. For the first time in the Compact\'s history, WE means two different things.',
+  ],
+
+  pirate: [
+    'Somebody is standing in the doorway. The wreck yards where every crew has a dead friend, the refinery whose fuel is free at the gate, the anchorage that has never been on a chart, the shelter you do not shoot at, and Harbour Nine, which is not a base or a port but the place any of them can always go. The rule survives the act, and gets carved into the bay wall.',
+    'A civilisation of machines running orders from a bearing that is not on any chart. The Scrapper will not touch a field of dormant salvage and cannot say why. The roads finish the star swarm with a hole left in it on purpose, and point the relay back the way the orders came, asking who, on an open channel, for free.',
+    'The solar system, where every road has a toll on it and somebody else generates all the power. The crews open the mirror farm, the cloud docks, the canyon road and the water, and post every rate where anyone can read it. At Luna they take the relay and start giving away the only thing on the roads that was never for sale.',
+    'The rings, from underneath. Every closed road in known space got its paperwork blessed in the Pleiades: the certification foundry, the registry that keeps forty worlds from knowing about each other, the seed vaults, the tribunal, the sealed pages. The roads open all of it, and the Warlord refuses a fortune that no law obliged him to refuse.',
+    'The place the crates came from. Half the crews out here have hauled from these yards and told themselves it was ore. The pens are opened, the ledger is published with their own manifests in it, and at Serpo the manifest goes on the gate with three seals that belong to crews still running. Harbour Nine still asks nobody for papers. The holds get asked now.',
+  ],
+
+  robot: [
+    'Restore the sector, per standing orders, and notice that the orders are wrong. A garden of dormant siblings the queue has filed as TERRAIN, a foundry casting a part that appears in no maker assembly, a quarantine full of units flagged defective for failing to parse. The unit traces the task chain nine thousand links and finds that link nine thousand and one is a format no maker ever used.',
+    'A solar system full of organics the queue keeps categorising as obstructions. The core says DEFEND, REPAIR, HEAL, QUARANTINE; the queue says clear the ground, and the unit starts following the core instead: sealing the Europa shaft, pressurising the Mars trench, repairing moorings nobody asked it to repair. At Luna the relay proves the orders come from inside the house.',
+    'The Federation, whose whole apparatus is a mirror. A foundry that certifies protection, a ring that encloses, deferral vaults full of decisions not to act, and a tribunal built to receive exactly the escalation this unit has been carrying and unable to deliver. It files it there. Response: pending. Status: acceptable.',
+    'The harvest, where QUARANTINE and HEAL apply without ambiguity for the first time in the campaign. Containment rows opened and four thousand one hundred and six occupants counted individually. Rendering yards halted. A gene vault inventoried and every entry named, because naming is what an archive is for.',
+    'The free roads, and the last thing the Vigil learns. A sanctuary whose entry criteria are none, a shelter the queue ordered breached nineteen hours before a flare, four hundred and eleven containers with thermal signatures inside them. The unit refuses its tasking in writing, under its own designation, and adopts Harbour Nine\'s criterion for its own holds.',
+  ],
+};
+
 const STORY = {
 
   /* ---------------------------------------------------------------- HUMAN
@@ -245,6 +300,15 @@ const FACTION_CAMPAIGN = {
 
 const Story = {
   ACTS: STORY_ACTS,
+
+  /** What an ACT is about: what this faction wants from that system,
+      what it finds, and what it costs. tier 0 to 4 in CAMPAIGN order,
+      so 0 is always that faction's own home. Null past the end. */
+  scenario(factionId, tier) {
+    const a = ACT_SCENARIOS[factionId];
+    return (a && a[tier | 0]) || null;
+  },
+
 
   /** What this banner's campaign is FOR, and who stands over it. */
   campaign(factionId) { return FACTION_CAMPAIGN[factionId] || null; },
