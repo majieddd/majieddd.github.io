@@ -35,11 +35,86 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
  border:1px solid #1a2530}
 .note{background:#111a24;border-left:3px solid #7dd3fc;padding:12px 16px;margin:18px 0}
 </style><div class="wrap">
-<div class="nav"><a href="#top">TOP</a><a href="#swap">THE SWAP</a><a href="#parked">PARKED SCENES</a><a href="#new">NEW WORLDS</a><a href="#bonus">BONUS SYSTEMS</a><a href="#beat5">BEAT 5</a><a href="#morals">MORALS</a></div>
+<div class="nav"><a href="#top">TOP</a><a href="#review">STORY REVIEW</a><a href="#swap">THE SWAP</a><a href="#parked">PARKED SCENES</a><a href="#new">NEW WORLDS</a><a href="#bonus">BONUS SYSTEMS</a><a href="#beat5">BEAT 5</a><a href="#morals">MORALS</a></div>
 <h1 id="top">SESSION 42: what changes in the storyboard</h1>
 <p class="sub">Every scene below is marked <span class="tag keep">KEEP</span><span class="tag parked">PARKED</span><span class="tag new">NEW</span>. Nothing here has been rendered. Nothing has been deleted: parked scenes are reproduced in full so they stay available as reference.</p>
 <div class="note"><b>The one structural change.</b> Two of the five core systems are replaced. Barnard's Star becomes PROXIMA CENTAURI, home of the Free Captains. Tabby's Star becomes SIRIUS, home of the Parallel. Both displaced systems survive as bonus systems, so no image is lost. Every other act is untouched.</div>
-<h2 id="swap">1. The swap, at a glance</h2>
+<h2 id="review">1. Adversarial story review</h2>
+<p class="sub">Read as a creative director would: looking for the places this stops being a story and becomes a spreadsheet. Every number below is re-measured by <code>tools/story_audit.js</code> each time this page is built, so a claim here cannot drift from the text it describes.</p>
+<table><tr><th>Measurement</th><th>Result</th><th>Reading</th></tr>
+<tr><td>Location descriptions that read as labels, not narration</td><td><b>30 of 35</b></td><td>Nobody narrates in noun phrases. This is the defect the owner spotted first.</td></tr>
+<tr><td>Closing lines that open by naming their own world</td><td><b>113 of 175</b></td><td>A template. The third beat is where a power says what it MADE of a place.</td></tr>
+<tr><td>Parallel lines using the construction &quot;X RESTORED&quot;</td><td><b>31 of 105</b></td><td>The machine voice has become a form to fill in.</td></tr>
+<tr><td>Dialogue cells referencing the inciting event</td><td><b>9 of 525</b></td><td>The reason any of this is happening disappears after act one.</td></tr>
+<tr><td>Encyclopedia vocabulary reaching the player</td><td><b>0 of 525</b></td><td>Not a leak problem. The lore is not in the story at all.</td></tr>
+</table>
+<h3>Does the premise survive the campaign?</h3>
+<table><tr><th>Act</th><th>Cells referencing why the war started</th></tr>
+<tr><td>THE EARTH SYSTEM</td><td>5 of 105</td></tr>
+<tr><td>THE PLEIADES</td><td style="color:#f08a8a;font-weight:700">0 of 105  (silent)</td></tr>
+<tr><td>ZETA RETICULI</td><td style="color:#f08a8a;font-weight:700">0 of 105  (silent)</td></tr>
+<tr><td>PROXIMA CENTAURI</td><td>4 of 105</td></tr>
+<tr><td>SIRIUS</td><td style="color:#f08a8a;font-weight:700">0 of 105  (silent)</td></tr>
+</table>
+<h3>Word tics, per power</h3><table><tr><th>Power</th><th>Most repeated words</th></tr>
+<tr><td style="color:#38e8ff">HUMANITY</td><td>there (20), every (17), about (13), again (13), where (12), still (11)</td></tr>
+<tr><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td>mandate (17), accord (17), never (13), world (12), wardens (11), nobody (11)</td></tr>
+<tr><td style="color:#7c3aed">THE XENO</td><td>compact (32), which (24), houses (20), ledger (17), world (13), their (13)</td></tr>
+<tr><td style="color:#ef4444">THE PIRATES</td><td>every (25), nobody (19), there (11), never (10), somebody (9), still (9)</td></tr>
+<tr><td style="color:#e2e8f0">THE PARALLEL</td><td>restored (33), queue (25), secured (23), units (10), recovered (10), function (9)</td></tr>
+</table>
+<h3>Findings</h3>
+<div class="card">
+<div class="fld"><span class="tag gap">CRITICAL</span><span class="tag new">DECIDE</span> <b style="color:#fff">F1. The lore says Apophis passed safely. The campaign says it hit.</b></div>
+<div class="fld"><b>EVIDENCE</b> js/lore.js timeline: &quot;2029-04-13 Apophis safely passes Earth; fiction preserves a tiny timing residual.&quot; The campaign opening says the intercept broke it open and hell landed. The same lore then runs 26 fictional events from 2036 to 2099 and ends at &quot;Five-Way War&quot;, which IS this game. So the lore dates the war to 2099 and the campaign opens in 2029.</div>
+<div class="fld"><b>WHY</b> This is not a wording clash, it is two different centuries. Every faction origin in the timeline (Ashtar Declaration 2093, Farm Revolts 2095, Scrap Constellation Charter 2097, Parallel Declaration 2098) sits in a decade the campaign never mentions, and the campaign inciting event sits seventy years before any of them.</div>
+<div class="fld"><b>FIX</b> Apophis is a real object and it RETURNS. Keep the lore exactly as written: the 2029 pass is safe, public and on the record, and the &quot;tiny timing residual&quot; is the tell. The 2029 pass was the survey. The intercept the campaign opens on is a LATER return, in 2099, and this time the rock is hollow. That preserves the timeline unchanged, keeps the owner oath beat that hell landed, and makes &quot;everyone else was in on it&quot; literal: seventy years of knowing what the residual meant. The grievance stops being a mood and becomes a provable cover-up.</div>
+<div class="fld"><b>COST</b> <span style="color:#7f93a8">Rewrite the oath date references only. No plate re-renders. Roughly 8 lines.</span></div>
+</div>
+<div class="card">
+<div class="fld"><span class="tag gap">CRITICAL</span><span class="tag gap">OPEN</span> <b style="color:#fff">F2. The premise evaporates after act one.</b></div>
+<div class="fld"><b>EVIDENCE</b> Measured across all 525 dialogue cells: 9 reference the inciting event. THE PLEIADES 0 of 105, ZETA RETICULI 0 of 105, SIRIUS 0 of 105. Three of five acts never mention why any of this is happening.</div>
+<div class="fld"><b>WHY</b> The STORY spine is strong and has real reversals: the fleet built to stop Apophis was never standing down; the occupation had human partners; the modifications you resent are what make you competitive; worlds you free become worlds you hold. Six lines per power carry a tragedy. The other 105 cells per power ignore it completely. The arc exists in one percent of the text and the player spends the other ninety-nine percent taking depots.</div>
+<div class="fld"><b>FIX</b> Every act gets a THREAD LINE: one revelation from the spine that its seven worlds keep circling. Act 2 is the partners, act 3 is the breeding, act 4 is what you become by holding, act 5 is the machines you cannot switch off. Two or three worlds per act must carry it explicitly, so a player who reads only the ground text still gets the story.</div>
+<div class="fld"><b>COST</b> <span style="color:#7f93a8">About 40 rewritten cells. No re-renders: this is text over existing plates.</span></div>
+</div>
+<div class="card">
+<div class="fld"><span class="tag parked">MAJOR</span><span class="tag parked">FIXING</span> <b style="color:#fff">F3. Thirty of thirty-five location descriptions are labels, not narration.</b></div>
+<div class="fld"><b>EVIDENCE</b> Measured: 30 of 35 ground lines open on a noun phrase with no finite verb. &quot;A coastal city under the fall, where the fragments came down.&quot; &quot;A hall of tuned crystal pipes standing upright in nebula light.&quot; &quot;The wreck yards, a plain of hulls from a hundred builders.&quot;</div>
+<div class="fld"><b>WHY</b> Owner raised this first and it is systemic, not a one-off. These read as museum placards or stage directions. Nobody narrates in noun phrases. The player is being handed a caption where they were promised a voice. I wrote fourteen of these myself in exactly the same register, so this is a defect I reproduced rather than caught.</div>
+<div class="fld"><b>FIX</b> Rewrite all 35 as something a person would actually say aloud, leading with the verb and the event rather than the label. Before: &quot;A coastal city under the fall, where the fragments came down whole and split open in the streets.&quot; After: &quot;The fragments came down whole over the harbour district and split open in the streets. Whatever was riding inside was already awake.&quot;</div>
+<div class="fld"><b>COST</b> <span style="color:#7f93a8">35 ground lines and 35 works lines. No re-renders.</span></div>
+</div>
+<div class="card">
+<div class="fld"><span class="tag parked">MAJOR</span><span class="tag gap">OPEN</span> <b style="color:#fff">F4. Two thirds of all closing lines announce their own world like a status report.</b></div>
+<div class="fld"><b>EVIDENCE</b> Measured: 113 of 175 beat-3 lines open by naming the world. &quot;Proxima d is sorted and every plate is filed.&quot; &quot;The flare shelter runs to quota.&quot; The Parallel uses the construction &quot;X RESTORED&quot; in 31 of its 105 lines, and its top two words across the whole campaign are restored (33) and secured (23).</div>
+<div class="fld"><b>WHY</b> It is a template, and templates read as filler however good the individual sentence is. The third beat is the only place a power says what it MADE of a world, which is where its morality actually lives, and two thirds of them are spent restating a place name the player can see on screen.</div>
+<div class="fld"><b>FIX</b> Cap world-naming openers at roughly one in five. Give the third beat a job: it must state a CONSEQUENCE somebody pays, not a status. For the Parallel, retire &quot;RESTORED&quot; as a default and let the log break register when the unit notices something it cannot file.</div>
+<div class="fld"><b>COST</b> <span style="color:#7f93a8">About 90 rewritten lines. No re-renders.</span></div>
+</div>
+<div class="card">
+<div class="fld"><span class="tag parked">MAJOR</span><span class="tag gap">OPEN</span> <b style="color:#fff">F5. Every world has the same three-act shape, thirty-five times, with no reversal.</b></div>
+<div class="fld"><b>EVIDENCE</b> All 35 worlds run arrive, take, normalise. No world in the game is lost, refused, discovered to be a trap, taken by the wrong side, or turns out not to matter. The six MOMENT variants (contested, renegade, retaken, flawless, defeat) change the words but not the shape.</div>
+<div class="fld"><b>WHY</b> A hero story needs the floor to drop. Nothing here ever costs the player a belief. The strongest single image in the whole campaign, the Parallel reaching the origin of every order it has obeyed and finding the chairs empty, works precisely because it inverts the pattern, and it is the only one that does.</div>
+<div class="fld"><b>FIX</b> One reversal per act, in the fifth or sixth world, before the seat. Candidates: a world that was already yours and had been reporting falsely; a world the power takes and then has to give back; a world where the enemy garrison surrenders and the power has no policy for prisoners; a world that turns out to be a decoy while the real objective moves. Five reversals total.</div>
+<div class="fld"><b>COST</b> <span style="color:#7f93a8">Five worlds rewritten plus roughly 25 plates re-rendered.</span></div>
+</div>
+<div class="card">
+<div class="fld"><span class="tag parked">MAJOR</span><span class="tag new">DECIDE</span> <b style="color:#fff">F6. The best backstory in the project is invisible to the player.</b></div>
+<div class="fld"><b>EVIDENCE</b> js/lore.js holds 130 mythos operations, 37 Archive War missions, a 65-event timeline and 26 fictional events between 2036 and 2099. Player-facing modules reference this vocabulary ZERO times: no Archive War, no Severance, no Archon, no Roswell, no Serpent Court.</div>
+<div class="fld"><b>WHY</b> Owner said the lore feels out of context with the plot. The measurement says something sharper: it is not in the plot at all. And it contains exactly the material the campaign is missing. The Ashtar Declaration is where the Federation comes from. The Farm Revolts are the harvest the Compact is still running. The Scrap Constellation Charter is the founding of the Free Captains, a name the dialogue never once uses. Sol Protective Quarantine is why humanity is alone.</div>
+<div class="fld"><b>FIX</b> Bind, do not delete. Give each of the five acts one dated line from the timeline, spoken by a power that was there. The Federation should cite the Ashtar Declaration by date the way it cites its own registry. Then either surface the mythos operations as unlockable field-manual entries, or accept they are an author bible and stop calling them lore.</div>
+<div class="fld"><b>COST</b> <span style="color:#7f93a8">Five dated lines minimum. Full field-manual surfacing is a separate feature.</span></div>
+</div>
+<div class="card">
+<div class="fld"><span class="tag keep">MINOR</span><span class="tag gap">OPEN</span> <b style="color:#fff">F7. Timeline is unsorted and story text carries curly apostrophes.</b></div>
+<div class="fld"><b>EVIDENCE</b> The timeline places 2094 to 2099 immediately before December 1960, so it cannot be read in order. js/story.js contains typographic apostrophes (oppressor and campaign possessives) where the rest of the project uses straight quotes.</div>
+<div class="fld"><b>WHY</b> Neither is player visible today, which is exactly why both will survive until something renders the timeline and it comes out shuffled.</div>
+<div class="fld"><b>FIX</b> Sort the timeline by parsed date. Normalise apostrophes at the source.</div>
+<div class="fld"><b>COST</b> <span style="color:#7f93a8">Minutes.</span></div>
+</div>
+<div class="note"><b>DECIDE</b> means the call is the owner's, not mine: F1 changes when the campaign is set, and F6 decides whether 130 mythos operations are player content or an author bible. Everything else I can just fix.</div>
+<h2 id="swap">2. The swap, at a glance</h2>
 <table><tr><th>Act</th><th>System</th><th>Home of</th><th>Status</th><th>Seat</th></tr>
 <tr><td>1</td><td><b>THE EARTH SYSTEM</b></td><td style="color:#38e8ff">HUMANITY</td><td><span class="tag keep">UNCHANGED</span></td><td>LUNA</td></tr>
 <tr><td>2</td><td><b>THE PLEIADES</b></td><td style="color:#fbbf24">FEDERATION OF LIGHT</td><td><span class="tag keep">UNCHANGED</span></td><td>ALCYONE</td></tr>
@@ -49,7 +124,7 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 </table>
 <p class="why"><b>PROXIMA CENTAURI.</b> Both are red flare dwarfs, so all seven world functions transfer and the flare shelter stays literally correct. Proxima is additionally the closest star to Earth, which makes it the first port out and the natural home of a power whose whole identity is passage.</p>
 <p class="why"><b>SIRIUS.</b> Sirius B is a white dwarf: a star once LARGER than Sirius A that burned through, shed most of itself and collapsed into a core the size of Earth carrying the mass of the Sun. The makers own star shed its form, which is a better home image for a power that outlived its bodies than an irregularly dimming star was.</p>
-<h2 id="parked">2. Parked scenes: the 14 worlds being retired</h2>
+<h2 id="parked">3. Parked scenes: the 14 worlds being retired</h2>
 <p class="sub">These are the current Barnard's Star and Tabby's Star worlds and every line written for them: 14 worlds times 5 powers, reproduced in full. They are being replaced, not deleted. If a line here is better than its replacement, say so and it moves across.</p>
 <h3>BARNARD'S STAR <span class="tag parked">PARKED</span></h3>
 <div class="card p">
@@ -403,7 +478,7 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="line">LATTICE BREACHED. Collection interrupted. This unit has recalculated the output destination four hundred times. The field remains blank.</div>
 <div class="line">THE VEIL RESTORED. Completed to a plan authored by the remaining units in congress. Output destination field populated at last. It names somebody.</div>
 </div>
-<h2 id="new">3. New worlds, written and not yet rendered</h2>
+<h2 id="new">4. New worlds, written and not yet rendered</h2>
 <p class="sub">The art driving strings are authored. The faction dialogue for these worlds is still being written: where a cell is missing it is marked as a gap rather than quietly skipped.</p>
 <h3>PROXIMA CENTAURI <span class="tag new">NEW</span> <span style="color:#7f93a8;font-size:13px;font-weight:400">home of THE PIRATES, replaces BARNARD'S STAR</span></h3>
 <div class="card n">
@@ -785,7 +860,7 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="line">TIERS TAKEN. Occupancy: zero. Occupancy records: none held. This unit has descended nine hundred tiers and found nine hundred empty rooms.</div>
 <div class="line">THE DOG STAR RESTORED. Desks realigned, gates rehung, orders still issuing. This unit has reached the origin of every instruction it has obeyed, and the chairs are empty. The queue continues. This unit continues.</div>
 </div>
-<h2 id="bonus">4. Bonus systems, all new</h2>
+<h2 id="bonus">5. Bonus systems, all new</h2>
 <p class="sub">Not acts. Each hangs off the core act it comments on and unlocks when that act is cleared. Two to three worlds each, twelve in total, and the place the neutral machine units and towers live.</p>
 <table><tr><th>System</th><th>Unlocks after</th><th>Worlds</th></tr>
 <tr><td><b>TABBY'S STAR</b></td><td>SIRIUS</td><td>THE VEIL, THE DIMMING</td></tr>
@@ -816,7 +891,7 @@ pre{white-space:pre-wrap;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;
 <div class="fld"><b>WORLD</b> VEGA b, the world that may not be there at all, inferred from a dent in the disk and never imaged</div>
 <div class="fld"><b>WORLD</b> THE FIRST NEST, the claimed origin of the human line, with no evidence either way</div>
 <p class="why">Vega points its pole within five degrees of Earth, so the whole system is seen face on like a target, which hands the art its composition for free. Hanging Lyra off the Xeno act is deliberate: the power that farms humanity unlocks the place that claims to have made it. Source is Billy Meier, NOT the Law of One.</p></div>
-<h2 id="beat5">5. Beat 5 stops being one image</h2>
+<h2 id="beat5">6. Beat 5 stops being one image</h2>
 <p class="sub">The flag still plants on ordinary worlds. On each act's SEAT the act ends instead on a commander at a distance watching somebody else plant it, and wondering. Roughly five reflective endings against thirty planted ones per campaign, which is what keeps the planted flag meaning anything.</p>
 <h3>ACT 1: THE EARTH SYSTEM, seat LUNA</h3>
 <div class="card n">
@@ -1000,7 +1075,7 @@ IMAGE: At the edge of a painted panorama of THE DOG STAR's broken capital, a sma
 
 LINE: THIS UNIT HELD ITS PLACE IN THE QUEUE AND GAVE UP ITS BODY TO REACH ITS OWN HOME. STANDING ORDER FULFILLED, YET THIS UNIT WONDERS IF THE CORE THAT SENT IT HERE MEANT FOR THE SOIL TO FALL TO ANOTHER.</pre>
 </div>
-<h2 id="morals">6. The moral of each act</h2>
+<h2 id="morals">7. The moral of each act</h2>
 <p class="sub">The Avatar and Tyranny model: the player should learn something by vicariously BEING this power, and should never be lectured. Each entry states what the power sincerely believes, what somebody else pays for that belief, what the player is left holding, and the one thing the power still cannot see about itself.</p>
 <h3>ACT 1: THE EARTH SYSTEM</h3>
 <div class="card n">

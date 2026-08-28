@@ -141,7 +141,8 @@ const w = s => out.push(s);
 
 w('<!doctype html><meta charset="utf-8"><title>Cosmic Conquest: Session 42 storyboard changes</title>');
 w('<style>' + CSS + '</style><div class="wrap">');
-w('<div class="nav"><a href="#top">TOP</a><a href="#swap">THE SWAP</a>' +
+w('<div class="nav"><a href="#top">TOP</a><a href="#review">STORY REVIEW</a>' +
+  '<a href="#swap">THE SWAP</a>' +
   '<a href="#parked">PARKED SCENES</a><a href="#new">NEW WORLDS</a>' +
   '<a href="#bonus">BONUS SYSTEMS</a><a href="#beat5">BEAT 5</a><a href="#morals">MORALS</a></div>');
 
@@ -156,8 +157,82 @@ w('<div class="note"><b>The one structural change.</b> Two of the five core syst
   'Tabby\'s Star becomes SIRIUS, home of the Parallel. Both displaced systems survive as ' +
   'bonus systems, so no image is lost. Every other act is untouched.</div>');
 
+/* ---------------- section: adversarial story review ---------------- */
+let AUDIT = null, FINDINGS = [];
+try { FINDINGS = require('./story_findings.js').FINDINGS; } catch (e) { }
+try {
+  require('child_process').execSync('node "' + path.join(ROOT, 'tools', 'story_audit.js') +
+    '" --json', { cwd: ROOT, stdio: 'ignore' });
+  AUDIT = JSON.parse(fs.readFileSync(path.join(ROOT, '_review', 'story_audit.json'), 'utf8'));
+} catch (e) { console.log('  (audit unavailable: ' + e.message.split('\n')[0] + ')'); }
+
+w('<h2 id="review">1. Adversarial story review</h2>');
+w('<p class="sub">Read as a creative director would: looking for the places this stops being a ' +
+  'story and becomes a spreadsheet. Every number below is re-measured by ' +
+  '<code>tools/story_audit.js</code> each time this page is built, so a claim here cannot drift ' +
+  'from the text it describes.</p>');
+
+if (AUDIT) {
+  w('<table><tr><th>Measurement</th><th>Result</th><th>Reading</th></tr>');
+  const rows = [
+    ['Location descriptions that read as labels, not narration',
+     AUDIT.labelGrounds.length + ' of ' + AUDIT.totals.worlds,
+     'Nobody narrates in noun phrases. This is the defect the owner spotted first.'],
+    ['Closing lines that open by naming their own world',
+     AUDIT.beat3NamesItself + ' of ' + AUDIT.beat3Total,
+     'A template. The third beat is where a power says what it MADE of a place.'],
+    ['Parallel lines using the construction "X RESTORED"',
+     AUDIT.robotRestored + ' of ' + AUDIT.robotTotal,
+     'The machine voice has become a form to fill in.'],
+    ['Dialogue cells referencing the inciting event',
+     AUDIT.premiseByAct.reduce((n, a) => n + a.hits, 0) + ' of ' + AUDIT.totals.cells,
+     'The reason any of this is happening disappears after act one.'],
+    ['Encyclopedia vocabulary reaching the player',
+     AUDIT.leaks.length + ' of ' + AUDIT.totals.cells,
+     'Not a leak problem. The lore is not in the story at all.'],
+  ];
+  rows.forEach(r => w('<tr><td>' + esc(r[0]) + '</td><td><b>' + esc(r[1]) + '</b></td><td>' +
+    esc(r[2]) + '</td></tr>'));
+  w('</table>');
+
+  w('<h3>Does the premise survive the campaign?</h3>');
+  w('<table><tr><th>Act</th><th>Cells referencing why the war started</th></tr>');
+  AUDIT.premiseByAct.forEach(a => {
+    const bad = a.hits === 0;
+    w('<tr><td>' + esc(a.system) + '</td><td' + (bad ? ' style="color:#f08a8a;font-weight:700"' : '') +
+      '>' + a.hits + ' of ' + a.of + (bad ? '  (silent)' : '') + '</td></tr>');
+  });
+  w('</table>');
+
+  if (AUDIT.tics) {
+    w('<h3>Word tics, per power</h3><table><tr><th>Power</th><th>Most repeated words</th></tr>');
+    Object.entries(AUDIT.tics).forEach(([f, t]) =>
+      w('<tr><td style="color:' + facColor(f) + '">' + esc(facName(f)) + '</td><td>' +
+        esc(t.slice(0, 6).map(x => x[0] + ' (' + x[1] + ')').join(', ')) + '</td></tr>'));
+    w('</table>');
+  }
+}
+
+w('<h3>Findings</h3>');
+const SEV = { CRITICAL: 'gap', MAJOR: 'parked', MINOR: 'keep' };
+const STAT = { OPEN: 'gap', FIXING: 'parked', FIXED: 'keep', DECIDE: 'new' };
+FINDINGS.forEach(f => {
+  w('<div class="card">');
+  w('<div class="fld"><span class="tag ' + (SEV[f.severity] || 'keep') + '">' + esc(f.severity) +
+    '</span><span class="tag ' + (STAT[f.status] || 'keep') + '">' + esc(f.status) +
+    '</span> <b style="color:#fff">' + esc(f.id) + '. ' + esc(f.title) + '</b></div>');
+  w('<div class="fld"><b>EVIDENCE</b> ' + esc(f.evidence) + '</div>');
+  w('<div class="fld"><b>WHY</b> ' + esc(f.why) + '</div>');
+  w('<div class="fld"><b>FIX</b> ' + esc(f.fix) + '</div>');
+  w('<div class="fld"><b>COST</b> <span style="color:#7f93a8">' + esc(f.cost) + '</span></div>');
+  w('</div>');
+});
+w('<div class="note"><b>DECIDE</b> means the call is the owner\'s, not mine: F1 changes when the ' +
+  'campaign is set, and F6 decides whether 130 mythos operations are player content or an author ' +
+  'bible. Everything else I can just fix.</div>');
+
 /* ---------------- section: the swap ---------------- */
-w('<h2 id="swap">1. The swap, at a glance</h2>');
+w('<h2 id="swap">2. The swap, at a glance</h2>');
 w('<table><tr><th>Act</th><th>System</th><th>Home of</th><th>Status</th><th>Seat</th></tr>');
 [0, 1, 2, 3, 4].forEach(si => {
   const isNew = !!NEW_CORE[si];
@@ -175,7 +250,7 @@ Object.keys(NEW_CORE).forEach(si => {
 });
 
 /* ---------------- section: parked scenes ---------------- */
-w('<h2 id="parked">2. Parked scenes: the 14 worlds being retired</h2>');
+w('<h2 id="parked">3. Parked scenes: the 14 worlds being retired</h2>');
 w('<p class="sub">These are the current Barnard\'s Star and Tabby\'s Star worlds and every ' +
   'line written for them: 14 worlds times 5 powers, reproduced in full. They are being ' +
   'replaced, not deleted. If a line here is better than its replacement, say so and it ' +
@@ -218,7 +293,7 @@ let parkedWorlds = 0, parkedLines = 0;
 });
 
 /* ---------------- section: new worlds ---------------- */
-w('<h2 id="new">3. New worlds, written and not yet rendered</h2>');
+w('<h2 id="new">4. New worlds, written and not yet rendered</h2>');
 w('<p class="sub">The art driving strings are authored. The faction dialogue for these ' +
   'worlds is still being written: where a cell is missing it is marked as a gap rather ' +
   'than quietly skipped.</p>');
@@ -260,7 +335,7 @@ w('<p class="sub">The art driving strings are authored. The faction dialogue for
 });
 
 /* ---------------- section: bonus ---------------- */
-w('<h2 id="bonus">4. Bonus systems, all new</h2>');
+w('<h2 id="bonus">5. Bonus systems, all new</h2>');
 w('<p class="sub">Not acts. Each hangs off the core act it comments on and unlocks when ' +
   'that act is cleared. Two to three worlds each, twelve in total, and the place the ' +
   'neutral machine units and towers live.</p>');
@@ -278,7 +353,7 @@ BONUS.forEach(([sys, after, worlds, why]) => {
 });
 
 /* ---------------- section: beat 5 ---------------- */
-w('<h2 id="beat5">5. Beat 5 stops being one image</h2>');
+w('<h2 id="beat5">6. Beat 5 stops being one image</h2>');
 w('<p class="sub">The flag still plants on ordinary worlds. On each act\'s SEAT the act ' +
   'ends instead on a commander at a distance watching somebody else plant it, and ' +
   'wondering. Roughly five reflective endings against thirty planted ones per campaign, ' +
@@ -298,7 +373,7 @@ let b5have = 0, b5want = 0;
 });
 
 /* ---------------- section: morals ---------------- */
-w('<h2 id="morals">6. The moral of each act</h2>');
+w('<h2 id="morals">7. The moral of each act</h2>');
 w('<p class="sub">The Avatar and Tyranny model: the player should learn something by ' +
   'vicariously BEING this power, and should never be lectured. Each entry states what the ' +
   'power sincerely believes, what somebody else pays for that belief, what the player is ' +
