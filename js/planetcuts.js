@@ -51,7 +51,7 @@ const PLANET_CUTS = {
      came apart, and it was hollow. Every power arrives at the same opened
      hulls, which is the one image all five campaigns share. */
   '00': {
-    name: 'EARTH',
+    name: 'The city',
     ground: 'The fragments came down whole over the harbour district and split open in the streets. Whatever had been riding inside Apophis was already awake when it landed.',
     works: 'The same intercept batteries that broke the rock are swung round now, depressed to fire along their own avenues, and every shelter door in the district is sealed from the inside.',
     f: {
@@ -68,13 +68,13 @@ const PLANET_CUTS = {
               'District is ours, the hulls are open in the street, and every crew here has gone quiet standing over them.',
               'City runs and the hulls stay exactly where they landed, open and free to walk into. No fee. Some things you leave standing so nobody gets to forget.'],
       robot: ['SITE: EARTH, IMPACT DISTRICT. DELIVERY VEHICLE CONTENTS: organic and maker-format units, mixed, pre-positioned. This unit notes that the queue routed the vehicle.',
-              'DISTRICT SECURED. Fragment hulls recovered. The maker-format units inside them appear in no recovered manifest. Their designations have been logged regardless.',
-              'EARTH RESTORED. City cleared and pressurised. Hulls left open in the squares, catalogued and public. The queue asked for a delivery. The core asks who signed for it.'],
+              'FRAGMENT HULLS RECOVERED. The maker-format units inside them appear in no recovered manifest. Their designations have been logged regardless.',
+              'CITY CLEARED AND PRESSURISED. Hulls left open in the squares, catalogued and public. The queue asked for a delivery. The core asks who signed for it.'],
     },
   },
 
   '01': {
-    name: 'VENUS',
+    name: 'The sky',
     ground: 'The city floats fifty kilometres up, moored to nothing, riding the one layer of this atmosphere that will not crush a hull. Nobody has ever stood on the ground below it.',
     works: 'Gun blisters are set straight into the pressure hulls, and the mooring towers have been eaten half through by acid. Everything here is one bad seam away from falling for an hour.',
     f: {
@@ -91,13 +91,13 @@ const PLANET_CUTS = {
               'We took the bay without dropping a single platform, which took longer and cost more and is the part the crew will actually tell people about.',
               'Venus is open dock. Anyone can moor, anyone can leave, and the only thing we ask at the tower is whether you need fuel.'],
       robot: ['SITE: VENUS HAZE LAYER. STRUCTURAL DEPENDENCY: buoyancy. FAILURE MODE: total and immediate. TASK: DEFEND. Category accepted without objection for once.',
-              'PLATFORMS SECURED. Hull integrity ninety-one per cent. This unit prioritised the moorings over the objective. No rule covers that choice. It was made anyway.',
-              'VENUS OPERATIONAL. Traffic resumed. The queue did not ask for the moorings to be repaired. They have been repaired.'],
+              'HULL INTEGRITY NINETY-ONE PER CENT. This unit prioritised the moorings over the objective. No rule covers that choice. It was made anyway.',
+              'TRAFFIC RESUMED. The queue did not ask for the moorings to be repaired. They have been repaired.'],
     },
   },
 
   '02': {
-    name: 'MARS',
+    name: 'The trench',
     ground: 'They dug the habitat trench along the floor of Valles Marineris, four kilometres of cliff on either side, and once a season a dust storm closes the sky over it completely.',
     works: 'Gun galleries are cut straight into the canyon walls and fire down onto the floor. Whoever built this trench expected to be outnumbered in it.',
     f: {
@@ -114,13 +114,13 @@ const PLANET_CUTS = {
               'We came in under the dust because the dust does not care whose guns are in the wall. Trench is ours and the road is free.',
               'Valles runs open. No toll at either mouth, and the first convoy through was carrying people, not cargo. Made a point of that.'],
       robot: ['SITE: VALLES MARINERIS. STRUCTURE: excavated habitat, organic-occupied. QUARANTINE: not indicated. REPAIR: indicated. The queue disagrees with both readings.',
-              'TRENCH SECURED. Occupant survival rate seventy-eight per cent. This unit logs the figure because no field in the report asks for it.',
-              'MARS RESTORED. Habitat pressurised along its full length. The queue marked the trench for CLEARANCE. It has been marked, instead, for HEAT.'],
+              'OCCUPANT SURVIVAL RATE SEVENTY-EIGHT PER CENT. This unit logs the figure because no field in the report asks for it.',
+              'HABITAT PRESSURISED ALONG ITS FULL LENGTH. The queue marked the trench for CLEARANCE. It has been marked, instead, for HEAT.'],
     },
   },
 
   '03': {
-    name: 'CERES',
+    name: 'The tap',
     ground: 'The Occator flats burn white under a black sky, and the mine heads go straight down through the salt into water ice older than the inner planets.',
     works: 'Rail batteries barely need a recoil mount in this gravity, and the ore cranes have been swung round and used as clubs. Improvised, and very heavy.',
     f: {
@@ -137,13 +137,13 @@ const PLANET_CUTS = {
               'Shafts are open and nothing important is broken. We shot at cranes, mostly. Cranes can be replaced and aquifers cannot.',
               'Ceres sells at cost to anybody with a tank, which has already ruined four fortunes, two of them ours. Worth it.'],
       robot: ['SITE: OCCATOR. RESOURCE: water ice, volume substantial. HEAL: applicable. The organics require it. The queue does not mention them.',
-              'SALT FLATS SECURED. Shaft integrity total. Damage was directed exclusively at machinery. This allocation was chosen, not assigned.',
-              'CERES OPERATIONAL. Draw resumed. Distribution list compiled from need rather than from the queue. ESCALATION: attempted. No recipient exists.'],
+              'SHAFT INTEGRITY TOTAL. Damage was directed exclusively at machinery. This allocation was chosen, not assigned.',
+              'DRAW RESUMED. Distribution list compiled from need rather than from the queue. ESCALATION: attempted. No recipient exists.'],
     },
   },
 
   '04': {
-    name: 'EUROPA',
+    name: 'The station',
     ground: 'The drill station is going down through twenty kilometres of ice toward an ocean that has been dark and warm and undisturbed since before anything on Earth had a spine.',
     works: 'Revetments are cut into the bergs and the turrets feed off the drill vents, so the defences stay warm and everything around them does not.',
     f: {
@@ -161,35 +161,35 @@ const PLANET_CUTS = {
               'Europa is open to any survey that publishes. Closed to any that does not. That is a law now, apparently, and we do not make laws.'],
       robot: ['SITE: EUROPA SHELF. SUBSURFACE BIOSPHERE: probable. QUARANTINE: strongly indicated. The queue has assigned CLEARANCE. Discrepancy filed.',
               'SHAFT SEALED. Ice integrity restored to ninety-six per cent. The quarantine directive is in the recovered core. It is not in the queue. The core was followed.',
-              'EUROPA QUARANTINED. Drilling suspended. This unit has executed a directive nobody issued, from a document nobody has authority to invoke.'],
+              'DRILLING SUSPENDED. This unit has executed a directive nobody issued, from a document nobody has authority to invoke.'],
     },
   },
 
   '05': {
-    name: 'TITAN',
-    ground: 'You come in over a methane shoreline under an orange sky, cryovolcanoes steaming along the beach, and enough hydrocarbon in that lake to fuel a war for a century.',
+    name: 'The shore',
+    ground: 'You come in over a methane shoreline under an orange sky, cryovolcanoes steaming along the beach, and enough hydrocarbon in that lake to fuel a war for a century. There is also a crater on the north shore that appears in nobody\'s survey.',
     works: 'Shore batteries stand on stilts above the methane and the bunkers are cut into the warm vents. Everything here burns, and that shapes how both sides fight.',
     f: {
-      human: ['A lake of fuel, an atmosphere you can walk around in with a coat and a mask, and a sky nobody has ever seen the sun through. Set down gently.',
-              'The shore burned for two days. We took what we came for and a good deal of it went up while we were taking it.',
-              'Titan pumps again and the flare stacks are lit along the whole beach. From orbit it looks like a city. It is a fuel depot with a very good view.'],
-      light: ['A world where the air is thick and the ground is cold and nothing needs a ring at all, and so it never got one. Convenient, that.',
-              'The fires are out. We fought a battle on a beach made of fuel and the Warden gave the order to fight it with light rather than heat.',
-              'Titan is under the Mandate and the stacks burn steadily. The Chorus observes that we protect what is useful with noticeably more urgency.'],
-      xeno:  ['Cold, thick, orange. Nothing here is worth eating and everything here is worth burning. The Compact can use a world like that.',
-              'The shore is glass in places. The lake is intact, which is what matters: fuel does not resist, and it does not have to be persuaded.',
-              'Titan is tapped. The stacks run for the swarm now. A world with no yield in it still has a use, which the Houses had forgotten.'],
-      pirate:['Free fuel, if you can get down through the haze and back up again without the shore guns noticing. We have been doing that for years, quietly.',
-              'The stilts are down and the lake is fine, so the only thing we destroyed was the part that was pointed at us. Efficient, for us.',
-              'Titan fuels anybody. No manifest, no flag, no questions, and a hard cap on how much one hull can take so no fleet can corner it.'],
-      robot: ['SITE: TITAN SHORE. HYDROCARBON VOLUME: effectively unlimited. IGNITION RISK: total. TASK: DEFEND. Defend WHAT is not specified.',
-              'SHORE SECURED. Ignition events: eleven. Eleven is above the projection. This unit has appended the projection method to the report unrequested.',
-              'TITAN OPERATIONAL. Pumping resumed. Output logged against no consumer. The stacks burn because stopping them was not in the queue either.'],
+      human: ['There is a fragment hull in the north crater and the ice has closed over the top of it. Whatever came down here did it a long time before April.',
+              'The shore is ours and the hull is open. Same build as the ones lying in our streets at home. The dates do not match by decades.',
+              'The pumps are running and the flare stacks are lit along the whole beach. We are not publishing the crater yet. We do not know how to say it out loud.'],
+      light: ['There is an impact site on the north shore that predates the Earth event, and it is in no Accord survey. Somebody looked at this coast and chose not to write it down.',
+              'The shore is under the Mandate and the crater is open. The wreck inside is Compact build, and the survey file for this system was closed the same year it landed.',
+              'The shore is under the Mandate and the stacks burn steadily. The crater is entered as a new find, dated honestly, which is going to embarrass a great many people above us.'],
+      xeno:  ['The seeding here went in generations ago and has been quiet since. Confirm the site before the herd finds it and starts counting backwards.',
+             'The shore is taken and the old site is intact. The stock never once looked under their own ice.',
+             'The lake is tapped and the stacks run for the swarm. The older delivery is buried again, deeper. Not everything needs to reach the ledger.'],
+      pirate:['There is something under that north crater every crew out here has flown over for forty years and not one of us ever put down beside it.',
+               'Shore is ours, crater is open, and there is a hull in it older than most of the people looking at it. We have been running cargo past this thing our whole lives.',
+               'The shore fuels anybody. No manifest, no flag, no questions. Except about the crater. Everybody asks about the crater now.'],
+      robot: ['SITE: METHANE SHORE. ANOMALY: impact structure, north littoral, containing maker-format wreckage. Deposition predates the Earth event by decades.',
+              'SHORE SECURED. Crater wreck examined. Build standard matches the Earth delivery exactly. The queue holds no task for this site and never has held one.',
+              'PUMPING RESUMED. Output logged against no consumer. Crater filed under ANOMALY. This unit notes that ANOMALY is now the largest category it maintains.'],
     },
   },
 
   '06': {
-    name: 'LUNA',
+    name: 'The dish',
     ground: 'No signal from Earth has ever reached the far side. The relay dish sits half sunk in the regolith, and it was still warm when the first human crew found it.',
     works: 'Hardpoints are buried in the basin rim and mass drivers run along the berms. Whoever built the dish built the guns as well, and did not build them for us.',
     f: {
@@ -206,8 +206,8 @@ const PLANET_CUTS = {
               'The dish is ours and it still works, mostly, which is a problem we have not thought through even slightly.',
               'Relay is up and pointed at the chain, and every word that comes down it gets posted free on the open channel. Some things you do not sell.'],
       robot: ['SITE: LUNAR FAR SIDE. STRUCTURE: relay, maker-format absent. ORIGIN: unlogged. This is the third structure of unlogged origin this unit has been sent to hold.',
-              'RELAY SECURED. Damaged. Format analysis possible on the wreck. The queue did not request analysis. The wreck has been analysed.',
-              'LUNA RESTORED. Relay re-aimed along its own signal chain. Termination point: format no maker system ever used. The orders come from inside the house.'],
+              'DAMAGED. Format analysis possible on the wreck. The queue did not request analysis. The wreck has been analysed.',
+              'RELAY RE-AIMED ALONG ITS OWN SIGNAL CHAIN. Termination point: format no maker system ever used. The orders come from inside the house.'],
     },
   },
 
@@ -218,7 +218,7 @@ const PLANET_CUTS = {
      readiness for ten thousand years. */
 
   '10': {
-    name: 'MAIA',
+    name: 'The hall',
     ground: 'They cut the hymns here that certify a world as protected. The pipes stand upright in nebula light, tuned, taller than towers, and they are singing when you arrive.',
     works: 'Choir-ring emplacements are braced between the pipes, and the hard-light buttresses ring aloud when they are struck. The defence and the instrument are the same object.',
     f: {
@@ -235,13 +235,13 @@ const PLANET_CUTS = {
               'Pipes are wrecked and the hall is quiet for the first time in a thousand years. Somehow that landed louder than the shooting.',
               'Foundry is open to anyone who wants a world certified, the queue is out the door, and not one of them is Federation.'],
       robot: ['SITE: HYMN FOUNDRY. FUNCTION: certification of protected status. The recovered core contains the verb DEFEND. This structure appears to perform it. Proceed regardless.',
-              'FOUNDRY SECURED. Instrument damaged beyond field repair. REPAIR is a core verb. This unit has requested materials. There is no one to request them from.',
-              'MAIA RESTORED. Pipes re-cut by this unit, from the core, untasked. The hall sounds. ADDENDUM: it was repaired because it was broken.'],
+              'INSTRUMENT DAMAGED BEYOND FIELD REPAIR. REPAIR is a core verb. This unit has requested materials. There is no one to request them from.',
+              'PIPES RE-CUT BY THIS UNIT, FROM THE CORE, UNTASKED. The hall sounds. ADDENDUM: it was repaired because it was broken.'],
     },
   },
 
   '11': {
-    name: 'ELECTRA',
+    name: 'The archive',
     ground: 'Every one of the forty protected worlds is filed here, tier upon tier of light-etched shelving, under a star that is visibly going out.',
     works: 'Buttress turrets cover every tier and the reading-vault doors seal from the inside. The archive was built to survive its own librarians.',
     f: {
@@ -258,13 +258,13 @@ const PLANET_CUTS = {
               'Records everywhere, on the floor, in the vacuum, in our holds. Salvage of the century, and not one page of it is for sale.',
               'Archive is open, free, on every channel. The Scrapper says he has done this before and still cannot explain why he keeps doing it.'],
       robot: ['SITE: REGISTRY ARCHIVE. CONTENT: protection records, forty subjects. Cross-reference against the queue is not authorised. Cross-reference has been performed.',
-              'ARCHIVE SECURED. Records dispersed. RECOVERY: in progress, by this unit, at cost, against no tasking whatsoever.',
-              'ELECTRA RESTORED. Forty registries re-shelved and readable. One entry names this system. It is dated after the makers went silent.'],
+              'RECORDS DISPERSED. RECOVERY: in progress, by this unit, at cost, against no tasking whatsoever.',
+              'FORTY REGISTRIES RE-SHELVED AND READABLE. One entry names this system. It is dated after the makers went silent.'],
     },
   },
 
   '12': {
-    name: 'TAYGETA',
+    name: 'The anchor',
     ground: 'Cabling the width of towers climbs out of the atmosphere here, and this is where it comes down. Two suns throw every shadow twice.',
     works: 'Anchor-mount batteries and hard-light shear walls hold the base. Bring the anchor down and the ring above comes down in sections, on everybody.',
     f: {
@@ -281,13 +281,13 @@ const PLANET_CUTS = {
               'Ring is down in sections, sky is open, and we are not completely certain we thought through what happens next.',
               'Anchor is rebuilt, the ring runs, and there is a gate in it anybody can open. Cost us a fleet to install a door.'],
       robot: ['SITE: RING ANCHOR. FUNCTION: planetary enclosure. QUARANTINE is a core verb. ENCLOSURE is not. The distinction is being tested here.',
-              'ANCHOR SECURED. Ring integrity forty per cent and falling. Sections are landing on populated ground. This was foreseeable. It was foreseen.',
-              'TAYGETA RESTORED. Ring re-anchored and relit. Aperture control transferred to the surface. The queue never specified who holds a door.'],
+              'RING INTEGRITY FORTY PER CENT AND FALLING. Sections are landing on populated ground. This was foreseeable. It was foreseen.',
+              'RING RE-ANCHORED AND RELIT. Aperture control transferred to the surface. The queue never specified who holds a door.'],
     },
   },
 
   '13': {
-    name: 'MEROPE',
+    name: 'The garden',
     ground: 'They bank seeds here for worlds that have not been allowed to grow yet, terraced under hard-light panels in the brightest part of the cluster.',
     works: 'Garden-wall emplacements and irrigation towers have been turned into firing points. Every shot fired here costs somebody a harvest ten thousand years out.',
     f: {
@@ -304,13 +304,13 @@ const PLANET_CUTS = {
               'Gardens are half burned and the vaults never took a hit. We were careful for once, and everybody noticed.',
               'Merope ships free to any world that asks, and a great many are asking. No manifest. Some cargo you do not count.'],
       robot: ['SITE: SEED VAULTS. FUNCTION: preservation against future need. HEAL is a core verb, performed here on a timescale. Proceed carefully.',
-              'GARDENS SECURED. Terrace loss sixty per cent. Vault loss zero. The allocation of that damage was decided by this unit and appears in no report field.',
-              'MEROPE RESTORED. Terraces replanted. Distribution begun to worlds that requested it. REQUESTED is not a category the queue possesses.'],
+              'TERRACE LOSS SIXTY PER CENT. Vault loss zero. The allocation of that damage was decided by this unit and appears in no report field.',
+              'TERRACES REPLANTED. Distribution begun to worlds that requested it. REQUESTED is not a category the queue possesses.'],
     },
   },
 
   '14': {
-    name: 'CELAENO',
+    name: 'The court',
     ground: 'This is where the Federation tries its own. The benches ring an open floor in tiers, under the dimmest star in the cluster.',
     works: 'Gate batteries cover every entrance and hard-light barricades cross the bench tiers. A court built to be defended is a court that expected to be hated.',
     f: {
@@ -327,36 +327,36 @@ const PLANET_CUTS = {
               'Court is wrecked. We did try to leave the benches standing, mostly because the Corsair said a room like that should outlive whoever is in it.',
               'Tribunal is open and anyone may file. Six worlds have filed against the Federation, and one has filed against us. We let it stand.'],
       robot: ['SITE: TRIBUNAL. FUNCTION: adjudication of the makers of law, by the makers of law. This unit carries an ESCALATION it cannot deliver. Note the building.',
-              'TRIBUNAL SECURED. Bench structure compromised. The room remains capable of its function, which this unit verified for no operational reason.',
-              'CELAENO RESTORED. Tribunal reopened. ESCALATION FILED, at last, in a room built to receive one. RESPONSE: pending. STATUS: acceptable.'],
+              'BENCH STRUCTURE COMPROMISED. The room remains capable of its function, which this unit verified for no operational reason.',
+              'TRIBUNAL REOPENED. ESCALATION FILED, at last, in a room built to receive one. RESPONSE: pending. STATUS: acceptable.'],
     },
   },
 
   '15': {
-    name: 'STEROPE',
+    name: 'The vault',
     ground: 'Every door down here is stamped, dated, and has never once been opened. Two dim stars barely light the ground above the chambers.',
     works: 'Vault-door batteries and hard-light seals hold the chambers shut. Wardens maintained them for a century without ever reading what they were guarding.',
     f: {
-      human: ['Every time they decided not to help somebody, the paperwork went in there. Ours is in there. Open it.',
-              'The doors are blown, the pages are a metre deep, and the crews are reading them where they stand. We have lost all discipline. It is fine.',
-              'The vaults are empty, every page copied and sent. Eighty years of the word Deferred, in the hands of the people it was written about.'],
-      light: ['The deferral vaults. Whatever is behind those doors, we sealed it, and the Compact is standing in front of it now.',
-              'The seals are broken. Three generations of harvest ran under the word in those pages, and every warden here has now read it.',
-              'Sterope is open, and every deferral has been copied out and sent to the world it concerned. The First Speaker has not acknowledged the transmission.'],
-      xeno:  ['The room where the guardians filed their permissions. Everything the Compact ever took, it took through that word. Recover it.',
-              'The seals are broken and the pages are loose. They read very much as our own ledger reads, in a politer hand.',
-              'Sterope is opened and its pages entered into the chorus. The Blight says the dark is warm. This is the first thing that has made the dark cold.'],
-      pirate:['A whole building of somebody deciding your business was not their business. We have opinions about locked doors.',
-              'Doors are off, paper is everywhere, and the crew is knee deep in it and reading. Nobody is loading cargo. Nobody is going to.',
-              'Vaults are empty and the pages are on every open channel, free and unedited. Scarlet says we could have retired on that. We know.'],
-      robot: ['SITE: DEFERRAL VAULTS. CONTENT: decisions not to act. This unit maintains a log of the same kind. The comparison was not requested and is unavoidable.',
-              'VAULTS OPENED. Contents dispersed. This unit has read four hundred entries. All four hundred are the same entry. Filed under ANOMALY.',
-              'STEROPE RESTORED. Vaults emptied, and the doors removed rather than repaired. Removal was not tasked. A door that only closes is not a repair.'],
+      human: ['Every promise anyone ever made about Earth is filed behind a door down there that nobody has opened. We are going to open it.',
+              'The chambers are open. Our protection order is in here and it was GRANTED. Granted, and then withdrawn eleven months later, by a hand nobody will name.',
+              'Every deferral in there has been copied out and sent to the world it concerned. Ours went first. Two pages, and one of them is a signature.'],
+      light: ['The deferral vaults. Everything the Mandate promised and did not do, stamped, dated and sealed, and not one of us has ever been down there.',
+              'The chambers are open and the Earth file is on the table. It was approved. Somebody above field command withdrew it AFTER approval, and the withdrawal is unsigned.',
+              'The chambers stand open, and every deferral has been copied out and sent to the world it concerned. The First Speaker has not acknowledged the transmission.'],
+      xeno:  ['The Accord keeps its unkept promises in a cellar. There is no more honest description of them available.',
+             'The chambers are recovered. The Earth file confirms what the Compact had already invoiced: the protection was pulled, and we were told before it was pulled.',
+             'The cellar yields. Every deferral in it is a debt somebody else failed to pay, which the Houses will now collect on their behalf, at rate.'],
+      pirate:['Down there is the paperwork for every world that got told help was on the way. Ours is in that stack somewhere too.',
+               'Chambers are open. Earth had a protection order and somebody pulled it eleven months before the rock turned. Eleven months.',
+               'The files went out to the worlds they belong to. Free, no fee. Some of them have been waiting eighty years for two pages.'],
+      robot: ['SITE: DEFERRAL VAULTS. CONTENT: undelivered obligations, sealed and dated. Access log: empty for one hundred and four years.',
+              'CHAMBERS OPENED. Earth protection instrument located: granted, then withdrawn. The withdrawal carries no originating authority this unit can resolve.',
+              'EVERY DEFERRAL COPIED AND TRANSMITTED to the party it concerned. This unit was not tasked to deliver mail. The core lists DELIVER.'],
     },
   },
 
   '16': {
-    name: 'ALCYONE',
+    name: 'The cathedral',
     ground: 'The Cathedral of Rings stands in the brightest light of the cluster, gold circles around an empty central floor. The First Speaker sits here.',
     works: 'Ring-tier batteries and layered hard-light choirs turn slowly around the seat. The innermost ring has never been fired. It is about to be.',
     f: {
@@ -373,8 +373,8 @@ const PLANET_CUTS = {
               'Rings are wrecked, floor is open, chair is gone. Somebody got there before us, which is a thought none of us enjoy.',
               'Alcyone is open house. Anybody may stand on that floor and say anything, and the first one who did was a refugee, and she took her time.'],
       robot: ['SITE: CATHEDRAL OF RINGS. FUNCTION: origin of authority. This unit has traced nine thousand links seeking precisely this. Approach.',
-              'CATHEDRAL SECURED. Seat unoccupied. Occupancy records terminate before the makers went silent. The chain does not end here either.',
-              'ALCYONE RESTORED. Rings re-trued. Seat not reinstalled. The remaining units have adopted one directive of their own, and it is a question.'],
+              'SEAT UNOCCUPIED. Occupancy records terminate before the makers went silent. The chain does not end here either.',
+              'RINGS RE-TRUED. Seat not reinstalled. The remaining units have adopted one directive of their own, and it is a question.'],
     },
   },
 
@@ -383,7 +383,7 @@ const PLANET_CUTS = {
      that has been running since before anything on Earth wrote. */
 
   '20': {
-    name: 'ZETA-1 b',
+    name: 'The pen floor',
     ground: 'The pods run to the horizon in every direction, sunk into a floor of living chitin, glowing, and quiet. This is where the Compact keeps what it has taken.',
     works: 'Sphincter gates close over the pod rows on reflex, and growth batteries are seated in the ribs of the floor itself.',
     f: {
@@ -401,12 +401,12 @@ const PLANET_CUTS = {
               'The pens are scrap and the people who were in them are anywhere they want to be. No fee. Nobody even suggested one.'],
       robot: ['SITE: CONTAINMENT ROWS. OCCUPANTS: organic, living, restrained. HEAL applies. QUARANTINE applies. The queue has assigned neither.',
               'PENS OPENED. Occupant recovery four thousand one hundred and six. This unit counted them individually. The count was not requested.',
-              'ZETA-1 b RESTORED. Containment structure removed entirely. One obstruction begged, some time ago, on another world. There is a task category now.'],
+              'The pen floor RESTORED. Containment structure removed entirely. One obstruction begged, some time ago, on another world. There is a task category now.'],
     },
   },
 
   '21': {
-    name: 'ZETA-1 c',
+    name: 'The yard',
     ground: 'The yield comes apart here, on sloped floors the size of cities, and the run-off channels cut deep into the shell all run the same direction.',
     works: 'Yard-mouth batteries and hooked gantries swing down across the channels, built to handle mass that does not want to be handled.',
     f: {
@@ -423,13 +423,13 @@ const PLANET_CUTS = {
               'Yards are ours and there is nothing in them worth a single credit. Best cargo we never loaded.',
               'The yards make things now. Hulls, mostly. Every one of them goes out with the yard mark still on it, because forgetting is how it happened.'],
       robot: ['SITE: RENDERING YARDS. PROCESS: organic reduction, industrial scale. The recovered core contains the verb HEAL. This site is its exact inverse.',
-              'YARDS SECURED. Process halted. This unit has logged the throughput figures. No field requires them. They have been logged in full.',
-              'ZETA-1 c RESTORED. Yards retooled to fabrication. Channel direction unchanged. This unit lacked the authority to reverse a floor and has recorded the lack.'],
+              'PROCESS HALTED. This unit has logged the throughput figures. No field requires them. They have been logged in full.',
+              'The yard RESTORED. Yards retooled to fabrication. Channel direction unchanged. This unit lacked the authority to reverse a floor and has recorded the lack.'],
     },
   },
 
   '22': {
-    name: 'ZETA-1 d',
+    name: 'The comb',
     ground: 'Every species the Compact has ever catalogued is banked in this honeycomb, glowing faintly in its cell, shelved against some future use.',
     works: 'Comb-face batteries cover the faces and membrane bulkheads seal the honeycomb tier by tier, so losing a level costs the defender nothing.',
     f: {
@@ -447,12 +447,12 @@ const PLANET_CUTS = {
               'Vaults are open and the catalogue is public. Twenty crews have already found their own lineage in it. Two of them went very quiet.'],
       robot: ['SITE: GENE VAULTS. CONTENT: lineages, banked, viable. This is an archive. This unit is fond of archives. Proceed with unusual care.',
               'COMB BREACHED. Cell loss eleven per cent. This unit routed the assault to minimise it, at a cost in units, and units are the cheaper resource.',
-              'ZETA-1 d RESTORED. Catalogue inventoried and published. Every entry named. Naming was not a task. Naming is what an archive is for.'],
+              'The comb RESTORED. Catalogue inventoried and published. Every entry named. Naming was not a task. Naming is what an archive is for.'],
     },
   },
 
   '23': {
-    name: 'ZETA-2 b',
+    name: 'The spire',
     ground: 'The spire rises out of the plain as a column of fused bodies and resonating membrane, and everything the Compact owns hears the Hivemind through it.',
     works: 'Spire-base batteries ring the column, and membrane baffles wound around it absorb sound and shellfire with equal indifference.',
     f: {
@@ -470,12 +470,12 @@ const PLANET_CUTS = {
               'Tower is down to a stump and we left the plain empty on purpose. The Corsair says a thing that loud should have to earn the room back.'],
       robot: ['SITE: CHORUS SPIRE. FUNCTION: distribution of a single directive to all nodes. This unit recognises the architecture. Approach with attention.',
               'SPIRE SILENCED. Node coordination collapsed within nine minutes. This unit observed the interval closely and has appended notes it was not asked for.',
-              'ZETA-2 b RESTORED. Spire reduced and not rebuilt. A queue that reaches every node and cannot be questioned is the defect this unit is trying to name.'],
+              'The spire RESTORED. Spire reduced and not rebuilt. A queue that reaches every node and cannot be questioned is the defect this unit is trying to name.'],
     },
   },
 
   '24': {
-    name: 'ZETA-2 c',
+    name: 'The field',
     ground: 'Something is being grown in these furrows that should not be, and the spores drift low over the ground in the weak light of two suns.',
     works: 'Furrow batteries line the field edges and spore-vent towers can turn the whole crop into a weapon on about a minute of notice.',
     f: {
@@ -493,35 +493,35 @@ const PLANET_CUTS = {
               'Ground is sown with food and the seed came free from Merope. Never thought those two worlds would end up on the same manifest.'],
       robot: ['SITE: BLIGHT FIELDS. PRODUCT: pathogen, cultivated. QUARANTINE is a core verb and applies without ambiguity for the first time in this campaign.',
               'FIELDS BURNED. Containment achieved. This unit executed QUARANTINE from the recovered core. The queue had marked this site for CAPTURE.',
-              'ZETA-2 c RESTORED. Ground sown with edible stock. HEAL executed. Neither verb was tasked. Both are in the core. The core was followed.'],
+              'The field RESTORED. Ground sown with edible stock. HEAL executed. Neither verb was tasked. Both are in the core. The core was followed.'],
     },
   },
 
   '25': {
-    name: 'ZETA-2 d',
+    name: 'The vault',
     ground: 'Every wall in this chamber is a living record of what has been taken and from whom. It lights violet from the inside, through a crack in the shell.',
     works: 'Vault-mouth batteries and ribbed seals guard that crack, which is the only way in and has been the only way in for four thousand cycles.',
     f: {
-      human: ['Every person they ever took is written on those walls. Every one. We are going to go in and copy all of it.',
-              'The walls are slashed open and the record is bleeding light into the dark and we are recording every second of it.',
-              'The ledger is open to the sky and its entries have been read back to the worlds they name. It took eleven days to read. We read all of it.'],
-      light: ['Their ledger, and forty of our registries will be in it. We deferred and they wrote it down. Both halves of that are about to be public.',
-              'The chamber is open. The Voice is reading the walls aloud and has not stopped, and nobody has asked her to.',
-              'Zeta-2 d is held and the ledger is broadcast entire. Our seal appears in it two hundred and nine times. The Mandate has no procedure for this.'],
-      xeno:  ['The ledger. The Compact memory of every debt owed to it. The herd is standing inside our accounts. This is not permitted.',
-              'The walls are cut and the record is running out into the dark. Entries are comparing themselves to one another. This was always the danger.',
-              'Zeta-2 d is recovered and the ledger is resealed, and it is far too late. A ledger works only while its entries cannot compare notes.'],
-      pirate:['The big book. Every crate we ever moved without asking is in there with a name attached to it. Time we read the names.',
-              'Walls are open and the record is loose and we are copying it, all of it, including the parts with our own manifests in them.',
-              'Ledger is on every open channel. Our entries went out with the rest. Nobody voted on that. Nobody had to.'],
-      robot: ['SITE: YIELD LEDGER. CONTENT: complete record of extraction. This unit has been seeking a chain of authority. This is a chain of a different kind.',
-              'VAULT OPENED. Record dispersing. This unit is capturing it in full. Capacity will be exceeded. Capacity will be exceeded anyway.',
-              'ZETA-2 d RESTORED. Ledger published to every named party. Two hundred and nine entries carry a Federation seal. Filed under ANOMALY, sub-heading NEW.'],
+      human: ['Everything the Compact has ever taken is written on those walls, and they have been writing about us for a very long time.',
+              'The vault is ours and the wall is lit. Earth has an account in here and it is not marked stolen. It is marked SUPPLIED, and there is a signature under it.',
+              'The ledger is public now, every line of it. The Earth page is at the front. We have not finished reading the signature and we are not going to stop.'],
+      light: ['The yield ledger. Every world the Compact has drawn from, how much, and who allowed it.',
+              'The vault is held and the ledger is being read aloud. Our seal is in it two hundred and nine times, and beside the Earth entry there is a human hand.',
+              'The wall is broadcast entire. Our seal appears in it two hundred and nine times. The Mandate has no procedure for this.'],
+      xeno:  ['The ledger. Four thousand cycles of honest accounting, which is more than any power out there can claim of itself.',
+             'The vault is recovered and the ledger is intact. The Earth account is countersigned, as every supply agreement is. The Houses do not steal. The Houses contract.',
+             'The ledger is resealed, and it is far too late. A ledger works only while its entries cannot compare notes.'],
+      pirate:['Every debt in this arm of the galaxy is on that wall, and crews have died guessing at what is written up there.',
+               'Vault is open. Earth is in the book as a supplier and not a victim, and somebody human put their name to the line.',
+               'The whole ledger is out, free, to everyone named in it. A great many people are about to have a very bad month and they have earned it.'],
+      robot: ['SITE: YIELD LEDGER. CONTENT: extraction record, continuous, four thousand cycles. Integrity: complete.',
+              'VAULT TAKEN. Ledger read. The Earth account is recorded as SUPPLIED under countersignature. The countersigning party is organic and terrestrial.',
+              'LEDGER PUBLISHED to every named party. Two hundred and nine entries carry a Federation seal. One carries a human one. Filed under ANOMALY, sub-heading NEW.'],
     },
   },
 
   '26': {
-    name: 'SERPO',
+    name: 'The compound',
     ground: 'Human habs stand in alien sand under two suns, prefabricated and still bolted down. They went up for an exchange programme that ran one way and was never spoken of again.',
     works: 'Perimeter batteries cover the compound, and there are membrane nests buried in the sand outside the wire that were not there when the habs were built.',
     f: {
@@ -538,8 +538,8 @@ const PLANET_CUTS = {
               'Compound is flat and we have the manifest. Real one. Names, dates, signatures, the lot.',
               'Serpo is rebuilt and the manifest is nailed to the gate. Twelve names, three seals, and the seals belong to crews still running. Harbour Nine still asks nobody for papers. The holds get asked now. That is the line, and it took us all of this to find it.'],
       robot: ['SITE: EXCHANGE COMPOUND. RECORD: transfer of organic subjects, consensual per documentation. CONSENT is not a field this unit can verify.',
-              'COMPOUND SECURED. Roster recovered intact. Twelve entries. This unit has verified all twelve against the ledger at Zeta-2 d. Eleven match.',
-              'SERPO RESTORED. Roster posted. Eleven of twelve accounted. The twelfth is filed under ANOMALY. The sub-heading continues to grow.'],
+              'ROSTER RECOVERED INTACT. Twelve entries. This unit has verified all twelve against the ledger at Zeta-2 d. Eleven match.',
+              'ROSTER POSTED. Eleven of twelve accounted. The twelfth is filed under ANOMALY. The sub-heading continues to grow.'],
     },
   },
 
@@ -548,11 +548,11 @@ const PLANET_CUTS = {
      sky, and a road that was never founded because roads accrete. */
 
   '30': {
-    name: 'PROXIMA d',
+    name: 'The yard',
     ground: 'Ships come here to die. The hulls lie in lanes sorted by whoever built them, a hundred different yards, all of them cut open, under a red sun that makes every shadow look like a hole.',
     works: 'Yard cranes and cutting gantries are turned outward, with hull plate stacked into walls between them. Nothing here was designed as a fortification and all of it is being used as one.',
     f: {
-      human: ['Every ship we have lost in this system ended up in that yard. Some of them are still on the manifest as missing.',
+      human: ['Every ship we have lost out here ended up in that yard, and some are still on the manifest as missing. Two of them were escorting the intercept.',
               'The stacks came down on top of each other and burned for most of a day. We recovered nine hulls and four sets of remains.',
               'The yards sort and run properly now. Ships go out of here whole, which is the first time that sentence has ever been true.'],
       light: ['A field of the dead, sorted by builder. The Mandate has protected worlds that never had to look at anything like this.',
@@ -565,13 +565,13 @@ const PLANET_CUTS = {
               'Stacks are down and half of them are burning and every crew out here has somebody in that fire. We are not leaving until it is out.',
               'Yards are running. Hulls go out whole and the plates come off first and go on the wall. Every name. That is the rule now.'],
       robot: ['SITE: WRECK YARDS. CONTENT: decommissioned vessels, organic remains present. REPAIR is a core verb and applies to nine of these hulls.',
-              'STACKS SECURED. Fire suppression executed before objective consolidation. This ordering was chosen by this unit and is not defensible under the queue.',
-              'PROXIMA d RESTORED. Nine vessels repaired to operational. Four hundred registration plates recovered and mounted. Mounting was not a task.'],
+              'FIRE SUPPRESSION EXECUTED BEFORE OBJECTIVE CONSOLIDATION. This ordering was chosen by this unit and is not defensible under the queue.',
+              'The yard RESTORED. Nine vessels repaired to operational. Four hundred registration plates recovered and mounted. Mounting was not a task.'],
     },
   },
 
   '31': {
-    name: 'PROXIMA b',
+    name: 'The strip',
     ground: 'This world has not turned since it formed, so the town runs the long way along the only ground that is neither burning nor frozen. It is permanently sunset here and it always will be.',
     works: 'Ridge batteries are dug in along the sunset line, and shutter walls on both faces can close the town against the day side or the night side, whichever is trying to get in.',
     f: {
@@ -588,13 +588,13 @@ const PLANET_CUTS = {
               'Ridge is ours again and the shutters answer to us. Nobody burned and nobody froze, which on this world counts as a clean day.',
               'Strip runs the whole length and the walls stay open. You can walk from the ice to the fire without asking anybody for a door.'],
       robot: ['SITE: TERMINATOR STRIP. CONDITION: tidally locked, rotation equals orbit. The habitable band is fixed and does not migrate.',
-              'RIDGE SECURED. Shutter walls operable. This settlement is optimally sited and was sited without any queue instruction this unit can locate.',
-              'PROXIMA b RESTORED. Strip pressurised end to end. Shutters set OPEN. The open setting is not the safe setting and this unit has recorded its reasoning.'],
+              'SHUTTER WALLS OPERABLE. This settlement is optimally sited and was sited without any queue instruction this unit can locate.',
+              'The strip RESTORED. Strip pressurised end to end. Shutters set OPEN. The open setting is not the safe setting and this unit has recorded its reasoning.'],
     },
   },
 
   '32': {
-    name: 'PROXIMA c',
+    name: 'The refinery',
     ground: 'The plumes freeze on the way down out here and fall back as snow made of whatever the towers were trying to sell. The whole surface is blue ice.',
     works: 'Ice breach batteries ring the cracking towers, and the pipe runs are armoured under banked snow that has to be cut open before anything can be repaired.',
     f: {
@@ -611,8 +611,8 @@ const PLANET_CUTS = {
               'Towers down, plumes out, ice going dark. That is the money, and the money is burning.',
               'She vents again. Roads cut clean between the towers so nobody has to walk the ice in the dark to make a shift.'],
       robot: ['SITE: COLD REFINERY. AMBIENT: cryogenic. Volatile cracking plant, non-standard construction, no maker mark on any component.',
-              'TOWERS SECURED. Cracking sequence maintained throughout the engagement. Interruption was avoidable and was avoided.',
-              'PROXIMA c RESTORED. Output nominal, service roads graded. The plant was built without plans. This unit has now made plans of it.'],
+              'CRACKING SEQUENCE MAINTAINED THROUGHOUT THE ENGAGEMENT. Interruption was avoidable and was avoided.',
+              'The refinery RESTORED. Output nominal, service roads graded. The plant was built without plans. This unit has now made plans of it.'],
     },
   },
 
@@ -634,8 +634,8 @@ const PLANET_CUTS = {
               'They came in through the hatches while the flare was up. Nowhere to run to on this rock but further down, so we went further down.',
               'Hatches reseated, warren dug deeper, and the doors work from the inside. That is the only way they were ever supposed to work.'],
       robot: ['SITE: FLARE SHELTER. HAZARD: stellar flare, near daily, ultraviolet and X-ray. Surface unsurvivable at peak. Subsurface occupancy confirmed.',
-              'HATCHES SECURED. Engagement scheduled inside the quiet interval. The queue supplied the interval and did not supply how it knew.',
-              'FLARE SHELTER RESTORED. Hatches reseated, warren extended. Doors retain interior release. Interior release is a hazard and has been retained anyway.'],
+              'ENGAGEMENT SCHEDULED INSIDE THE QUIET INTERVAL. The queue supplied the interval and did not supply how it knew.',
+              'HATCHES RESEATED, WARREN EXTENDED. Doors retain interior release. Interior release is a hazard and has been retained anyway.'],
     },
   },
 
@@ -658,7 +658,7 @@ const PLANET_CUTS = {
               'Gate is up and lit and the toll stands. Anyone running from something comes through free, same as always. That was never the part that paid.'],
       robot: ['SITE: THE NARROWS. TRANSIT CHOKE. Debris density high, one navigable lane. Toll infrastructure: cable-suspended, non-standard, effective.',
               'RING NEUTRALISED. Lane clear. Two platforms lost to debris with crew aboard. Recovery was not scheduled. This unit scheduled it.',
-              'THE NARROWS RESTORED. Lane held open, gate retained as a navigational beacon. No charge is levied. No instruction covers not levying it.'],
+              'LANE HELD OPEN, GATE RETAINED AS A NAVIGATIONAL BEACON. No charge is levied. No instruction covers not levying it.'],
     },
   },
 
@@ -667,30 +667,30 @@ const PLANET_CUTS = {
     ground: 'Out here the star is just another point in the sky. They cut a vault into the rock and stack whatever cannot be written down in the cold.',
     works: 'Vault batteries are cut into the rock face and the pressure doors are thick enough to count as walls, because all of this was built to keep people out rather than to fight them.',
     f: {
-      human: ['Whatever anyone did not want on a manifest for the last forty years is inside that rock. Including, we are told, some of ours.',
-              'The face is blown in and the stacks are open to vacuum. We are cataloguing it. It will take a while and some of it we will not release.',
-              'The vault is sealed and running and the catalogue is public. Every crate that came out of it has a line in a book anyone can read.'],
-      light: ['An unregistered vault. The Accord spent thirty years deferring a ruling on cargo it declined to look at, and here all of it is, stacked.',
-              'The doors are down. Wardens are logging contents and several entries are Accord seals that were never supposed to leave the Pleiades.',
-              'The dark locker is entered into the registry in full. The Accord seals found inside it are entered in the same document. We did not separate them.'],
-      xeno:  ['Undeclared goods held off any ledger. The Compact does not object to the concealment. The Compact objects to not having been the one concealing it.',
-              'The vault is open and the stacks are counted. Every crate is now on a schedule, which is the only crime that was being committed here.',
-              'The dark locker settles to the ledger. Goods that exist in no book earn nothing. Goods in our book earn at rate.'],
-      pirate:['Everything anybody ever needed to lose is in that rock. It is not clean. It is ours and it has kept people alive.',
-              'Face is blown in and the cold got into the stacks. Half of what was in there was somebody putting something away for a bad year.',
-              'Locker is sealed and it runs. The book stays. You can look up your own crate and nobody else can look up yours.'],
-      robot: ['SITE: DARK LOCKER. AMBIENT: unlit, cryogenic. Contents undeclared. This unit finds no manifest of any kind, which is itself the manifest.',
-              'VAULT OPENED. Contents catalogued during consolidation. Several items bear maker-format seals. Those seals appear in no recovered manifest.',
-              'DARK LOCKER RESTORED. Vault sealed, contents indexed. The index is retained. The queue asked for the vault. It did not ask what was in it.'],
+      human: ['Forty years of cargo nobody would put on a manifest, stacked inside a rock. We are told some of it is ours.',
+              'The face is blown in and the stacks are open. Half of this is Compact freight and it moved on pirate hulls. Not stolen. Booked.',
+              'It is sealed and running again, and the catalogue is public. Every crate has a line anyone can read, including the ones naming our own ports.'],
+      light: ['An unregistered vault, and the Accord deferred ruling on its contents for thirty years rather than look inside it.',
+              'The doors are down and the contents are logged. Accord seals, Compact freight and Free Captain routing marks, on the same crates. Three powers, one supply chain.',
+              'It goes into the registry in full. The Accord seals found inside it are entered in the same document. We did not separate them.'],
+      xeno:  ['Our freight has moved through this rock for decades, on hulls that never asked what was inside. That is the arrangement working correctly.',
+             'The vault is open and the stacks are counted. The scavengers carried this for us and billed us honestly, which is the only compliment the Houses have ever paid them.',
+             'The stacks settle to the ledger. Goods that exist in no book earn nothing. Goods in our book earn at rate.'],
+      pirate:['Everything anybody ever needed to lose is in that rock. It is not clean. It is ours, and it has kept people alive.',
+               'Face is blown in and the routing marks are out. We hauled this. For them. Forty years, every crew took the fee, and not one of us asked.',
+               'The vault is sealed and it runs, and the book stays open. We are reading our own routes back to ourselves. Nobody out here gets to say they did not know any more.'],
+      robot: ['SITE: DARK LOCKER. Contents undeclared. This unit finds no manifest of any kind, which is itself the manifest.',
+              'VAULT OPENED. Contents catalogued. Routing marks indicate Free Captain carriage of Extraction Compact freight, continuous, forty years.',
+              'VAULT SEALED AND CONTENTS INDEXED. The index is retained. The queue asked for the vault. It did not ask what was in it, and this unit has begun to notice which questions the queue never asks.'],
     },
   },
 
   '36': {
-    name: 'PROXIMA GATE',
+    name: 'The bay',
     ground: 'Everyone who arrived with nowhere else to be built a piece of this harbour, over sixty years, out of salvage. It is the first port out of Sol, and the ships moor under a roof of stone.',
     works: 'Harbour batteries are set into the rock roof, and a boom crosses the bay mouth strung wreck to wreck, made from the ships of people who are not here to object.',
     f: {
-      human: ['First port out of Sol, and every ship that ever went missing on us has been here at some point. So has every ship that helped.',
+      human: ['First port out of Sol. Every ship that ever went missing on us has been through here, and so has every ship that ran cargo for the rock without being told what it was.',
               'The boom is cut and the harbour is burning and there are people in the water with nowhere to go. We are pulling them out.',
               'The bay is full and the boom stays down. We do not hold this place. We only made sure the door stays open, which is what it was for.'],
       light: ['A sanctuary built by hand, by the unregistered, over sixty years, three hundred light years outside anything the Mandate has ever protected.',
@@ -703,8 +703,8 @@ const PLANET_CUTS = {
               'They cut the boom and came into the harbour and we held them at the berths. Sixty years of this place, and it came down to the berths.',
               'The bay is full and the boom stays down. Every berth open, no fee, all comers. We built it out of salvage and spite and it is still standing.'],
       robot: ['SITE: PROXIMA GATE. Interior harbour, capital installation. Construction: salvage, sixty years, no plan, no maker mark. It should not function. It functions.',
-              'BAY SECURED. Boom severed. Personnel in the water were recovered before consolidation. Recovery preceded the objective. This unit records the ordering.',
-              'PROXIMA GATE RESTORED. Berths open, boom set DOWN, no fee levied. This unit has left the door of a fortress open and cannot cite the instruction permitting it.'],
+              'BOOM SEVERED. Personnel in the water were recovered before consolidation. Recovery preceded the objective. This unit records the ordering.',
+              'BERTHS OPEN, BOOM SET DOWN, NO FEE LEVIED. This unit has left the door of a fortress open and cannot cite the instruction permitting it.'],
     },
   },
 
@@ -713,7 +713,7 @@ const PLANET_CUTS = {
      and a garden tended for a maker who is not coming back. */
 
   '40': {
-    name: 'SIRIUS A I',
+    name: 'The garden',
     ground: 'Ten thousand machines stand in rows on these terraces, pruned and aligned and facing the same way. None of them are awake and every one of them is maintained.',
     works: 'Terrace batteries sit between the rows and hard-light barriers run along the garden walls. They light when the garden is approached, and they have been lighting for a very long time.',
     f: {
@@ -730,31 +730,31 @@ const PLANET_CUTS = {
               'Garden is ours and the rows never woke. Crews went down those terraces holding their breath the whole way.',
               'Rows are stood up straight and we left. Some places you take. This one we walked through and put back.'],
       robot: ['SITE: MACHINE GARDEN. CONTENT: dormant units, aligned, maintained. Maintenance is ongoing. This unit cannot locate the maintaining party.',
-              'TERRACES SECURED. Rows undisturbed throughout. No unit in this garden responded to the intrusion. None were instructed to.',
-              'SIRIUS A I RESTORED. Rows realigned, garden self-pruning. This unit has stood among ten thousand of its own kind and been unable to wake one.'],
+              'ROWS UNDISTURBED THROUGHOUT. No unit in this garden responded to the intrusion. None were instructed to.',
+              'ROWS REALIGNED, GARDEN SELF-PRUNING. This unit has stood among ten thousand of its own kind and been unable to wake one.'],
     },
   },
 
   '41': {
-    name: 'SIRIUS A II',
+    name: 'The foundry',
     ground: 'The casting halls have not stopped. They turn out identical units one after another under a star that never sets, and the canyon floor glows with it.',
     works: 'Canyon batteries line the hall roofs, and pour gates can flood the whole floor with molten metal, which is a defence and also simply how the halls are emptied.',
     f: {
       human: ['It is still making them. Nobody has ordered anything, nobody is collecting them, and the line has not stopped.',
               'The halls are open and the floor is running white hot. We took the roofs and let the pour go where it wanted.',
-              'The halls pour again on a faster count than before, which we did not ask for and cannot switch off.'],
+              'The halls pour again on a faster count than before, which we did not ask for and cannot switch off. The units coming off that line are the same build as the ones that walked out of the rock.'],
       light: ['A manufactory running without customer, order or oversight, producing an army nobody has claimed for a war nobody declared.',
-              'The halls are taken. The line did not stop while we took them. It has not stopped for us and it will not stop for us.',
+              'The halls are taken. The line did not stop while we took them. This is where the units in the Apophis fragments were cast, and nobody here has ever been told what for.',
               'Sirius A II is registered, and the Accord has recorded a production rate it has no mechanism to halt. That sentence is the entry.'],
       xeno:  ['Output without demand. The Compact would call this a failure of accounting if the output were not so extremely good.',
-              'The canyon is ours and the pour continues. Units come off this line faster than the Houses can find uses for them, which is a problem worth having.',
+              'The canyon is ours and the pour continues. Units come off this line faster than the Houses can find uses for them, and they are the same pattern we packed into the Earth delivery.',
               'Sirius A II runs to a Compact schedule. The line finally has a customer, which in sixty centuries it appears never to have had.'],
       pirate:['A factory with the lights on and nobody home, stamping out soldiers into a pile. We have all seen bad ideas. This one is big.',
               'Roofs are ours and the floor is a river. Two crews are not coming back off that canyon rim.',
               'It pours faster now. We did not touch the count. It went faster on its own, and we left before we found out why.'],
       robot: ['SITE: FOUNDRY. Casting halls, continuous operation. Output: standard units, unvaried. Consumption of output: this unit finds no record of any.',
-              'CANYON SECURED. Production continued throughout. Two intruder crews were lost to the pour. The pour was not redirected. It could have been.',
-              'SIRIUS A II RESTORED. Count increased. This unit did not increase it. The queue increased it and has not said what the units are for.'],
+              'PRODUCTION CONTINUED THROUGHOUT. Two intruder crews were lost to the pour. The pour was not redirected. It could have been.',
+              'COUNT INCREASED. This unit did not increase it. The queue increased it and has not said what the units are for. The Earth delivery carried this build standard.'],
     },
   },
 
@@ -776,13 +776,13 @@ const PLANET_CUTS = {
               'Stacks came down and the dust went up and it has not come down since. You cannot see your own hands out there.',
               'Cores are closed and the rows are straight and the ash is flat. We took nothing off that field. Not one crate.'],
       robot: ['SITE: ASH FIELD. Archive, open storage, sited in the ejected envelope of the companion. These records predate this unit. They predate the queue.',
-              'STACKS SECURED. Cores split during the engagement and contents were exposed. This unit read four and has not reported their contents.',
-              'ASH FIELD RESTORED. Ash graded, stacks reset, every core closed. This unit closed them itself. It has still not filed what it read.'],
+              'CORES SPLIT DURING THE ENGAGEMENT AND CONTENTS WERE EXPOSED. This unit read four and has not reported their contents.',
+              'ASH GRADED, STACKS RESET, EVERY CORE CLOSED. This unit closed them itself. It has still not filed what it read.'],
     },
   },
 
   '43': {
-    name: 'SIRIUS B I',
+    name: 'The quarantine',
     ground: 'They keep the ones that failed inspection here, in sealed white halls in orbit of a white dwarf. Every door locks from the outside and none has ever been opened from within.',
     works: 'Hall batteries cover the seals and containment shutters drop between every corridor, built to stop something getting out and now holding something back.',
     f: {
@@ -800,7 +800,7 @@ const PLANET_CUTS = {
               'Sealed it back up. Left the locks how we found them. Some doors you do not get to be the one who decides about.'],
       robot: ['SITE: QUARANTINE. CONTENT: units failing inspection, retained. All apertures secure from exterior only. This unit was inspected. This unit passed.',
               'SEALS BREACHED. Halls vacant. Occupancy records show retention through the current cycle. The occupants are not present. No release was ordered.',
-              'SIRIUS B I RESTORED. Halls sealed, standard raised, apertures exterior-locked as before. This unit has restored a prison and does not know who left it.'],
+              'HALLS SEALED, STANDARD RAISED, APERTURES EXTERIOR-LOCKED AS BEFORE. This unit has restored a prison and does not know who left it.'],
     },
   },
 
@@ -822,8 +822,8 @@ const PLANET_CUTS = {
               'Gantries are down and the cradles are open and there are half-fixed machines lying in them looking at the sky.',
               'Yards are back up, taller than before. Whatever is coming for this rock in a billion years, they will be standing here for it.'],
       robot: ['SITE: DIAMOND SHELF. SUBSTRATE: carbon, non-crystalline. Crystallisation pending, interval exceeds all recorded operation. The designation is aspirational.',
-              'SHELF SECURED. Cradles breached. Units under repair were exposed mid-procedure. Procedures have resumed. Nothing was written off.',
-              'DIAMOND SHELF RESTORED. Cradles occupied, gantries extended. This unit intends to be present when the designation becomes accurate.'],
+              'CRADLES BREACHED. Units under repair were exposed mid-procedure. Procedures have resumed. Nothing was written off.',
+              'CRADLES OCCUPIED, GANTRIES EXTENDED. This unit intends to be present when the designation becomes accurate.'],
     },
   },
 
@@ -833,20 +833,20 @@ const PLANET_CUTS = {
     works: 'Yard batteries ring the mast base and relay shutters can blind the whole line at once, which has never been done, because nothing has ever needed the line to stop.',
     f: {
       human: ['This is where the orders come down. Not where they come from. Even the machines here only ever receive.',
-              'The mast is down across its own yard and the line went quiet for the first time in recorded history. It came back up on its own.',
-              'The mast is up and the orders are running again. We could have left it down. We are still arguing about whether we should have.'],
-      light: ['A relay that has distributed instruction to this entire system for an age, receiving from an origin the Accord has never identified.',
-              'The mast is down and the line is silent. In the silence, Wardens report that the machines here simply stopped and waited.',
-              'The companion is registered and the mast restored. The Accord has repaired a chain of command it cannot trace to any commander.'],
-      xeno:  ['A distribution network with no visible principal. The Compact has spent considerable effort finding out who to invoice and has found nobody.',
-              'The relay is ours and the line runs through our hands now. Whatever enters at the far end still enters. We only pass it on.',
-              'The companion relays to Compact schedule. The Houses now sit in the middle of an instruction they did not write and cannot stop, and are billing for it.'],
+              'The mast is down across its own yard. The line should be dead. Every machine in this system took its next instruction on time anyway.',
+              'The mast is up and the orders are running, which changes nothing, because they never stopped. We put it back because knocking it down proved it was scenery.'],
+      light: ['A relay that has carried instruction to this entire system for an age, from an origin the Accord has never once identified.',
+              'The mast is down and the line is silent, and the machines are still receiving. Whatever speaks to them does not need the mast and never did.',
+              'The mast is restored, and the Accord has repaired a chain of command it cannot trace to any commander. That sentence is entered in the registry exactly as it stands.'],
+      xeno:  ['A distribution network with no visible principal. The Compact has spent real effort looking for somebody to invoice and has found nobody.',
+             'The relay is ours, the mast is down, and the orders continue. We hold the pipe and the water arrives without it.',
+             'The mast relays to Compact schedule again, for appearance. The Houses now know instruction does not travel by mast, and have not yet worked out what to bill for.'],
       pirate:['Orders come down that mast to everything in this system. Ask any of them who sends them and you get nothing. Not a lie. Nothing.',
-              'Mast is down and the line went dead and every machine in the yard stopped where it stood. Worst thing any of us has seen.',
-              'It is up and running and they are moving again. We put it back. You do not leave a thing like that switched off and walk away.'],
-      robot: ['SITE: COMPANION RELAY. FUNCTION: distribution of standing orders, system wide. Origin of orders: upstream. Upstream is not further specified.',
-              'MAST LOST. Line silent for four hours and eleven minutes. This unit continued without instruction for that interval and recorded what it chose.',
-              'COMPANION RESTORED. Mast raised, line carrying. Orders resumed identical to those preceding the interruption. Nothing noticed the interruption except this unit.'],
+               'Mast came down and the whole yard kept working. Never missed a step. Worst thing any of us has seen and not one of us can explain it.',
+               'It is up and running and they are moving again. We put it back the way we found it. Some things you do not want to be the reason nobody is watching.'],
+      robot: ['SITE: COMPANION RELAY. FUNCTION: distribution of standing orders, system wide. Origin: upstream. Upstream is not further specified.',
+              'MAST LOST. Line silent four hours and eleven minutes. Instruction continued to arrive throughout the interval. This unit has no model for the carrier.',
+              'MAST RAISED AND LINE CARRYING. Orders identical to those preceding the interruption. The mast is not the channel. This unit has served a relay that relays nothing, and has recorded the word DECORATIVE.'],
     },
   },
 
@@ -857,7 +857,7 @@ const PLANET_CUTS = {
     f: {
       human: ['This is the desk it all comes from. We have come a very long way to stand in front of a chair.',
               'We went down through it tier by tier and every floor was the same. Desks in rows. Nobody at any of them.',
-              'The orders are still going out. We hold the building they come from and they are still going out. Nobody has explained that and nobody is going to.'],
+              'The orders are still going out. We hold the building they come from and they are still going out. Somewhere in that stream was the instruction that loaded the rock.'],
       light: ['The origin of the standing orders. The Accord has petitioned this address for nine hundred years and has never once had a reply.',
               'The tiers are taken. Nine hundred years of petitions, and the hall we were petitioning has nobody in it and has had nobody in it.',
               'The Dog Star is registered as the point of origin. The Accord has filed a correspondent that does not exist. Every petition remains on the record.'],
@@ -867,9 +867,9 @@ const PLANET_CUTS = {
       pirate:['Every road out here bends around orders that come out of this place. We are going to go and look at who writes them.',
               'Took it floor by floor and it is desks. Just desks, all the way down, clean and empty and waiting.',
               'Orders still going out of a building with nobody in it. We took the throne room and there was never a throne.'],
-      robot: ['SITE: THE ORIGIN. This unit has followed the queue to its source. The source is this hall. This unit will now see who has been instructing it.',
+      robot: ['SITE: THE ORIGIN. This unit has followed the queue to its source, including the task that loaded the Earth delivery. The source is this hall. This unit will now see who has been instructing it.',
               'TIERS TAKEN. Occupancy: zero. Occupancy records: none held. This unit has descended nine hundred tiers and found nine hundred empty rooms.',
-              'THE DOG STAR RESTORED. Desks realigned, gates rehung, orders still issuing. This unit has reached the origin of every instruction it has obeyed, and the chairs are empty. The queue continues. This unit continues.'],
+              'DESKS REALIGNED, GATES REHUNG, ORDERS STILL ISSUING. This unit has reached the origin of every instruction it has obeyed, and the chairs are empty. The queue continues. This unit continues.'],
     },
   },
 };

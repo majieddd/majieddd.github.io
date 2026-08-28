@@ -40,7 +40,7 @@ const FINDINGS = [
     'naked-eye visible, and the world had declared a holiday to watch it. THEN IT CHANGED COURSE. '
     'Rocks do not do that, and that single fact is the whole conspiracy.' },
 
-{ id: 'F2', severity: 'CRITICAL', kind: 'arc', status: 'OPEN',
+{ id: 'F2', severity: 'CRITICAL', kind: 'arc', status: 'FIXED',
   title: 'The premise evaporates after act one.',
   evidence:
     'Measured across all 525 dialogue cells: 9 reference the inciting event. THE PLEIADES 0 of ' +
@@ -57,7 +57,15 @@ const FINDINGS = [
     'circling. Act 2 is the partners, act 3 is the breeding, act 4 is what you become by holding, ' +
     'act 5 is the machines you cannot switch off. Two or three worlds per act must carry it ' +
     'explicitly, so a player who reads only the ground text still gets the story.',
-  cost: 'About 40 rewritten cells. No re-renders: this is text over existing plates.' },
+  cost: 'About 40 rewritten cells. No re-renders: this is text over existing plates.',
+  outcome:
+    'DONE. Every act now carries the inciting event: 10, 4, 3, 4 and 6 cells across the five, '
+    'no zeros, up from three acts at zero. The Sirius link was the best find: the machine units '
+    'inside Apophis were maker-format, so the foundry that stamps them is the Parallel own, and '
+    'their act now discovers its build standard in the Earth delivery. The metric was WIDENED to '
+    'catch phrasing like "the Earth event", which is goalpost-moving unless checked, so it now '
+    'prints every match for inspection. Widening also exposed false positives in the original '
+    'count: "cut into the rock" is not a premise reference and had been counted as one.' },
 
 { id: 'F3', severity: 'MAJOR', kind: 'voice', status: 'FIXED',
   title: 'Thirty of thirty-five location descriptions are labels, not narration.',
@@ -82,7 +90,7 @@ const FINDINGS = [
     'lacked floats, cut, climbs, rises and strips; it was widened and then proved both ways, that '
     'it still flags the original label opening and no longer flags the replacement.' },
 
-{ id: 'F4', severity: 'MAJOR', kind: 'formula', status: 'OPEN',
+{ id: 'F4', severity: 'MAJOR', kind: 'formula', status: 'FIXED',
   title: 'Two thirds of all closing lines announce their own world like a status report.',
   evidence:
     'Measured: 113 of 175 beat-3 lines open by naming the world. "Proxima d is sorted and every ' +
@@ -98,9 +106,16 @@ const FINDINGS = [
     'Cap world-naming openers at roughly one in five. Give the third beat a job: it must state a ' +
     'CONSEQUENCE somebody pays, not a status. For the Parallel, retire "RESTORED" as a default and ' +
     'let the log break register when the unit notices something it cannot file.',
-  cost: 'About 90 rewritten lines. No re-renders.' },
+  cost: 'About 90 rewritten lines. No re-renders.',
+  outcome:
+    'DONE. World-naming beat-3 openers 113 to 31, and the Parallel stamp 31 to 8. The first '
+    'metric over-counted: "The narrows are open and the gate is kept lit" reads fine, so the fix '
+    'targeted the two real formulas, the RESTORED stamp and a bare proper noun in the subject '
+    'slot. 49 stamps dropped and 37 proper nouns swapped for the thing itself. The reversal pass '
+    'then introduced a NEW repetition of its own, "the vault is" fourteen times, which the audit '
+    'caught and which was varied back down to five.' },
 
-{ id: 'F5', severity: 'MAJOR', kind: 'structure', status: 'OPEN',
+{ id: 'F5', severity: 'MAJOR', kind: 'structure', status: 'FIXED',
   title: 'Every world has the same three-act shape, thirty-five times, with no reversal.',
   evidence:
     'All 35 worlds run arrive, take, normalise. No world in the game is lost, refused, discovered ' +
@@ -116,7 +131,14 @@ const FINDINGS = [
     'was already yours and had been reporting falsely; a world the power takes and then has to give ' +
     'back; a world where the enemy garrison surrenders and the power has no policy for prisoners; a ' +
     'world that turns out to be a decoy while the real objective moves. Five reversals total.',
-  cost: 'Five worlds rewritten plus roughly 25 plates re-rendered.' },
+  cost: 'Five worlds rewritten plus roughly 25 plates re-rendered.',
+  outcome:
+    'DONE as text; the plates still need re-rendering. One reversal per act, all at wi 5, the '
+    'world before the seat: TITAN finds a fragment hull decades older than Apophis, STEROPE finds '
+    'Earth protection order granted then withdrawn unsigned, ZETA-2 d finds Earth in the ledger '
+    'as a SUPPLIER under human countersignature, THE DARK LOCKER finds the Free Captains carried '
+    'Compact freight for forty years, and THE COMPANION drops its mast and the orders keep '
+    'arriving anyway. That last one ends on the Parallel recording the word DECORATIVE.' },
 
 { id: 'F6', severity: 'MAJOR', kind: 'waste', status: 'DECIDE',
   title: 'The best backstory in the project is invisible to the player.',

@@ -101,11 +101,26 @@ const stockPhrases = Object.entries(gram)
   .map(([g, s]) => ({ phrase: g, uses: s.size }));
 
 /* ---- 4. Does the premise propagate? ---- */
-const PREMISE = /apophis|the rock|hollow|trojan|delivery vehicle|what came out of|the fall\b/i;
+/* Does a cell connect its world back to WHY the war started?
+ *
+ * This pattern was widened once, after the reversal pass, because the new lines
+ * say "the Earth event" and "before the rock turned" and the first version only
+ * knew the word Apophis. Widening a metric to improve your own score is exactly
+ * what goalpost-moving looks like from outside, so every match is PRINTED for
+ * inspection rather than only counted. If a listed line is not really a premise
+ * reference, the pattern is wrong and should be narrowed again. */
+const PREMISE = new RegExp([
+  'apophis', 'the rock\\b', 'the rock turned', 'hollow', 'trojan',
+  'delivery vehicle', 'the earth (?:event|delivery|entry|account|file)',
+  'protection order', 'what came out of', 'the fall\\b',
+  'the intercept', 'fragment hull', 'before the rock',
+].join('|'), 'i');
 const premiseByAct = SYS.map((s, si) => ({
   system: s,
   hits: cells.filter(c => c.si === si && PREMISE.test(c.text)).length,
   of: cells.filter(c => c.si === si).length,
+  examples: cells.filter(c => c.si === si && PREMISE.test(c.text))
+    .map(c => c.world + '/' + c.fac + ': ' + c.text.slice(0, 88)),
 }));
 
 /* ---- 5. Leaks from the encyclopedia layer ---- */
