@@ -315,7 +315,15 @@ const UI = {
       /* THE OATH (batch 2): five slides of why this banner is out here,
          before the first screen of the war. Skippable, and the routing
          beneath is identical with or without it. */
-      const proceed = () => { this.show('screen-command'); this.buildCommanderScreen(); };
+      /* THE COLD OPEN (owner, Session 42) takes over here for a first human
+         campaign: the intro ends and the player is already in the square,
+         with no world map, commander screen or loadout grid in between. It
+         returns false and falls through to the ordinary route for every other
+         case, so this line is the only wiring the feature needs. */
+      const proceed = () => {
+        if (f === 'human' && this.coldOpen()) return;
+        this.show('screen-command'); this.buildCommanderScreen();
+      };
       /* THE DEPARTURE (Session 40). Story beat 0 is a campaign-opening
          address: the Marshal orders the fleet to Luna, the Necrotist orders
          the pasture widened. It used to render on the result screen AFTER
@@ -582,6 +590,73 @@ const UI = {
 
   /** How many slots this profile can actually fill. */
   loadoutTarget() { return Math.min(LOADOUT_SIZE, Meta.unlockedTowers().length); },
+
+  /** THE COLD OPEN (owner directive, Session 42).
+   *
+   *  A brand-new human campaign does not meet a world map, a commander screen
+   *  or a loadout grid. The intro ends on a city square filling with what came
+   *  out of the rock, and the player is standing in THAT square, already
+   *  commanding, before anything asks them to choose. Everything the game
+   *  normally asks up front is taught in place afterwards.
+   *
+   *  The reasoning is that the opening is the strongest thing the campaign has
+   *  and four menus between the panic and the fight throw it away.
+   *
+   *  Returns true if it took over, false if the caller should route normally.
+   *  It refuses in every case where a choice is real: a returning player, a
+   *  campaign already under way, any non-human banner, or a galaxy that does
+   *  not present an entry world where it is expected. Silently doing the wrong
+   *  thing here costs the player their agency, so every guard fails CLOSED,
+   *  back to the ordinary screens.
+   */
+  coldOpen() {
+    const c = Meta.campaign();
+    if (!c || (c.faction || Meta.faction()) !== 'human') return false;
+    if (c.depth > 0 || (c.stars && Object.keys(c.stars).length)) return false;
+    const gx = Meta.galaxy();
+    const home = gx && gx.systems && gx.systems[0];
+    if (!home) return false;
+    /* The entry world, which is EARTH: world zero of act one. Fall back to wi 0
+       rather than guessing by name, because names are presentation. */
+    const w = home.worlds.find(x => x.entry) || home.worlds[0];
+    if (!w) return false;
+
+    try {
+      c.chosen = { world: w.id, map: w.map, arena: w.arena, boon: w.boon,
+                   renegade: !!w.renegade,
+                   rival: worldBossOf(home, w), rivalFaction: w.owner, kind: w.kind,
+                   contested: !!w.contested, contestedBy: w.contestedBy,
+                   si: w.si,
+                   loadoutSeed: worldLoadoutSeed(c.seed, w.id),
+                   difficulty: this.rampOf(c).diffFor(w.si),
+                   escStart: this.rampOf(c).escFor(w.si) };
+
+      /* Equip what the player already owns, in order, up to whatever the
+         loadout can hold. deploy() requires exactly loadoutTarget() towers and
+         plays a denial sound otherwise, so a short fill here would strand the
+         player on a screen they were never shown. */
+      const own = Meta.unlockedTowers();
+      this.sel.loadout = own.slice(0, this.loadoutTarget());
+      if (this.sel.loadout.length !== this.loadoutTarget()) return false;
+      /* Meta.equipped(), NOT Meta.equippedCommander: the latter is a PROFILE
+         FIELD, so testing it as a method here would have been permanently
+         falsy and silently skipped the equipped commander in favour of the
+         free one. campaignStart has already granted the banner's base
+         commander, so the fallback is always a real id. */
+      if (!this.sel.commander)
+        this.sel.commander = Meta.equipped() || freeCommanderOf('human') || null;
+
+      Meta.save();
+    } catch (e) {
+      /* Any surprise in galaxy shape drops the player onto the normal path
+         rather than into a broken battle. Reported, never swallowed. */
+      if (typeof console !== 'undefined' && console.warn)
+        console.warn('coldOpen declined: ' + (e && e.message));
+      return false;
+    }
+    this.deploy();
+    return true;
+  },
 
   deploy() {
     /* You begin the game owning a single tower, so the requirement is "every

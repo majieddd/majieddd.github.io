@@ -113,6 +113,16 @@ function staticGates() {
                                  .filter(l => l.indexOf('[FAIL]') >= 0)
                                  .map(l => l.replace(/^\s*\[FAIL\]\s*/, '')).join('; '));
 
+  /* THE COLD OPEN (owner, Session 42). Its guards all fail CLOSED, back to the
+     ordinary menus, which is correct behaviour and also means a broken cold
+     open is INVISIBLE: the player just sees the screens the game always had
+     and nothing reports anything. So the preconditions are pinned instead. */
+  const co = run(process.execPath, ['tools/probe-coldopen.js']);
+  if (co.code === 0) say('cold open: ' + (co.out.trim().split('\n').pop() || '').trim());
+  else fail('cold open: ' + co.out.trim().split('\n')
+                              .filter(l => l.indexOf('[FAIL]') >= 0)
+                              .map(l => l.replace(/^\s*\[FAIL\]\s*/, '')).join('; '));
+
   /* AN UNCLOSED CSS BLOCK CANNOT THROW, so it needs a counter. css/polish.css
      shipped with an `@media (max-width: 860px)` opened and never closed, which
      silently scoped the debug bar and the entire field-manual figure layout to
