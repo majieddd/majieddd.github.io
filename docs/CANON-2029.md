@@ -56,19 +56,19 @@ to deny.
 designed. Apophis is broken.
 
 **April 13, 2029. What was inside it.** The rock was hollow, and it was
-crewed. Apophis was a delivery vehicle: Extraction Compact stock and
+crewed. Apophis was a delivery vehicle: Hungry stock and
 maker-format machine units, packed into a body aimed at Earth, and they were
 already awake when the pieces came down.
 
-**The Compact planned the intercept into the delivery.** This is the part
+**The Hungry planned the intercept into the delivery.** This is the part
 that takes a while to sink in. Breaking the rock was not humanity defeating
 the plan, it was humanity completing it. A sealed mass entering atmosphere
 burns. A mass broken into thousands of shielded fragments by defenders who
 have pooled every weapon they own does not: it scatters, decelerates, and
-lands intact across half a planet. The Compact did not need to beat Earth's
-defences. It needed Earth to HAVE defences, and to use them, on a date the
-Compact had known for eleven months. Humanity's finest hour was the
-Compact's landing procedure.
+lands intact across half a planet. The Hungry did not need to beat Earth's
+defences. They needed Earth to HAVE defences, and to use them, on a date the
+Hungry had known for eleven months. Humanity's finest hour was the
+Hungry's landing procedure.
 
 **The Federation of Light did not know.** This is the second thing, and it
 is worse than betrayal. The Federation had detected Apophis and had already
@@ -83,8 +83,8 @@ ever looked inside it.
 **The moral of the opening, stated once and never again.** Beings who call
 themselves the guardians of life sat above a world and let a catastrophe come
 on principle, and the principle blinded them so completely that they could
-not see the catastrophe was not natural at all. The Compact did not have to
-outfight the Federation. It only had to hide inside the one thing the
+not see the catastrophe was not natural at all. The Hungry did not have to
+outfight the Federation. They only had to hide inside the one thing the
 Federation had promised not to touch. That is the question hanging over the
 Federation for the rest of the campaign, and no character should ever
 summarise it out loud.
@@ -136,7 +136,7 @@ menu between the panic and the fight throws it away.
 
 ## The other four powers are locked until Earth is finished
 
-Owner directive. The Federation, the Compact, the Free Captains and the Parallel
+Owner directive. The Federation, the Hungry, the Free Captains and the Parallel
 cannot be selected until the player has cleared **the whole Earth System**, all
 seven worlds of act one.
 
@@ -295,7 +295,7 @@ That single change pays for itself three times over.
 - It makes the conspiracy layer literal. Every faction origin now happens in
   living memory, in secret, while the public record says nothing.
 - It makes **"everyone else was in on it"** provable rather than a grievance.
-  The Federation's Ashtar Declaration, the Compact's Farm Revolts, the Scrap
+  The Federation's Ashtar Declaration, the Hungry's Farm Revolts, the Scrap
   Constellation Charter and the Parallel Declaration all predate the Disclosure.
 - It puts the first event on **1947**, which is where the modern public
   anomaly record already begins, so the fiction and the real record share a

@@ -104,8 +104,8 @@ BONUS = [
 
 FACTIONS = {
     'human': 'Humanity, the Solar Schism blocs. Blunt, tired soldiers. First person plural, short sentences, bitter, no poetry. They have just learned the Apophis asteroid was a Trojan horse and that other powers knew in advance.',
-    'light': 'The Federation of Light, the Luminous Accord. Sacred bureaucracy: registries, mandates, protections flagged and then deferred for decades. Their guilt is paperwork. They never gloat, and they never demand anyone surrender their free will: their menace is protecting people who never asked.',
-    'xeno': 'The Xeno, meaning the Extraction Compact: a business, NOT a species. Livestock and harvest language, cold and proprietary: herds, yield, pens, stock, quotas, schedules. Not cruel, agricultural. It speaks like a firm that has audited everyone.',
+    'light': 'The Federation of Light, the Galactic Federation of Light. Sacred bureaucracy: registries, mandates, protections flagged and then deferred for decades. Their guilt is paperwork. They never gloat, and they never demand anyone surrender their free will: their menace is protecting people who never asked.',
+    'xeno': 'The Xeno, meaning the Hungry: a business, NOT a species. Livestock and harvest language, cold and proprietary: herds, yield, pens, stock, quotas, schedules. Not cruel, agricultural. It speaks like a firm that has audited everyone.',
     'pirate': 'The Pirates, the Free Captains, who call their territory the Free Roads. Rough, warm, first person, loyal to crews and hostile to authority. Salvage, tolls, debts, no fee.',
     'robot': 'The Parallel, the Continuance coalition, an ancient machine order that gave up physical bodies. Clipped site logs, ALL CAPS labels, refers to itself as "This unit" and never "we". Speaks of the queue, the core, standing orders. Its quiet horror is that it does not know who writes the orders. It is NOT the Vigil.',
 }
@@ -122,7 +122,7 @@ NO_DASH = 'NEVER use an em dash; use commas, colons or full stops. No preamble, 
 #
 # This caught a real defect in the first draft of these prompts: they described
 # the Xeno as though it were a species, which the lore contract explicitly
-# forbids ("Xeno is not a species", it is the Extraction Compact).
+# forbids ("Xeno is not a species", it is the Hungry).
 with open(os.path.join(HERE, 'hermes_lore_preamble.txt'), encoding='utf-8') as _fh:
     PREAMBLE = _fh.read().strip()
 

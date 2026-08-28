@@ -30,7 +30,7 @@ const FACTIONS = {
   },
 
   light: {
-    id: 'light', name: 'FEDERATION OF LIGHT', short: 'Federation',
+    id: 'light', name: 'GALACTIC FEDERATION OF LIGHT', short: 'Federation',
     color: '#fbbf24', accent: '#fde68a', icon: '☀',
     creed: 'All life is one life. Consent is the only way in.',
     tagline: 'Sworn to defend all life, and to make refusing that defence unthinkable.',
@@ -96,7 +96,7 @@ const FACTIONS = {
     crest: '<svg viewBox="0 0 40 40"><path d="M7 7l26 26M33 7L7 33" stroke="currentColor" stroke-width="2.6" fill="none"/><circle cx="20" cy="20" r="6" fill="currentColor"/></svg>',
     blurb:
       'Made of anything and all things: defectors, escaped experiments, whole ' +
-      'crews that would sign no Accord and serve no House. Their ground is not a ' +
+      'crews that would sign no Federation and serve no House. Their ground is not a ' +
       'place but every transition between other people’s places: gates, fuel, ' +
       'forged papers, sanctuary ports, the road around a quarantine. Every power ' +
       'calls them criminals. Every power still pays the toll.',
@@ -255,7 +255,7 @@ const FACTION_ENEMY_TYPES = {
                  desc:'Collects. Not a soldier and never has been, which is why it walks toward you at exactly the same pace throughout.' },
   stockman:    { id:'stockman', faction:'xeno', name:'Stockman', hp:300, speed:0.9, armor:7, bounty:36, lives:2, radius:13,
                  color:'#a855f7', shape:'warden',
-                 desc:'Counts what is left standing and adjusts the figure. The Compact does not steal. The Compact contracts.' },
+                 desc:'Counts what is left standing and adjusts the figure. The Hungry do not steal. The Hungry contracts.' },
   graft:       { id:'graft', faction:'xeno', name:'Graft', hp:180, speed:1.05, armor:4, bounty:26, lives:2, radius:11,
                  color:'#d8b4fe', shape:'hex', elemResist:{ venom:0.5 },
                  desc:'Two lineages fused at the seam because the ledger said the yield would improve. It did.' },
@@ -1046,7 +1046,7 @@ const LORE_CODEX = [
           'begins on this day, from Earth, and the first system on the map is our own.' },
   { id: 'order', title: 'The Old Order',
     body: 'Nothing out there is empty. The Federation of Light rings worlds it claims ' +
-          'to protect. The Xeno Compact farms worlds it claims to preserve, and ' +
+          'to protect. The Xeno Hungry farms worlds it claims to preserve, and ' +
           'humanity was one of its herds. The Pirates hold the roads between, owned by ' +
           'no one and indispensable to everyone. Above all of it stand the Vigil, ' +
           'automatons of a civilization no living power has ever met. Every world you ' +
@@ -1066,7 +1066,7 @@ const LORE_CODEX = [
           'same corridor at both commanders in the same numbers. Nothing out there is ' +
           'fighting for you.' },
   { id: 'ancients', title: 'The Ancients',
-    body: 'Older than the Federation, older than the Compact, and gone in a way that ' +
+    body: 'Older than the Federation, older than the Hungry, and gone in a way that ' +
           'is not dying: the Ancients shed physical form entirely. A mind that is ' +
           'everywhere has no location, no enemy, and no mouth, and a mind with no ' +
           'mouth issues no commands. Which is the whole mystery of the Vigil: whatever ' +
@@ -1094,7 +1094,7 @@ const LORE_CODEX = [
           'map will remember differently.' },
   { id: 'souls', title: 'SOULS',
     body: 'The harvest currency. Consciousness leaves a signature, the signature can ' +
-          'be banked, and the Compact built an economy on exactly that long before ' +
+          'be banked, and the Hungry built an economy on exactly that long before ' +
           'humanity named it. SOULS buy commanders, second abilities, and arsenal ' +
           'permanently, across every campaign on the profile. Stars pay them, ' +
           'conquest pays them, and spending them is the one purchase the galaxy ' +

@@ -2573,7 +2573,7 @@ const SCENARIOS = [
  */
 const RENEGADE_HUNT = {
   id: 'renegade_hunt', name: 'RENEGADE HUNT', kind: 'duel', icon: '⚑',
-  brief: 'A commander of your own power broke the Accord. Take the world back.',
+  brief: 'A commander of your own power broke the Federation. Take the world back.',
   stars: ['Win the battle',
           'Win holding 55% of your lives',
           'Win holding 90% of your lives'],

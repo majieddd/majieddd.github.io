@@ -128,6 +128,17 @@ function staticGates() {
                                 .filter(l => l.indexOf('[FAIL]') >= 0)
                                 .map(l => l.replace(/^\s*\[FAIL\]\s*/, '')).join('; '));
 
+  /* TERM CONSISTENCY AND INTERLINKING FIDELITY. A rename across 829 player
+     strings leaves residue that parses fine and reads almost right, and act
+     framing drifts from the acts it frames without anything erroring. This
+     found the act-one scenario still ending "on the far side of the Moon"
+     long after act one was reordered to end at Saturn. */
+  const ch = run(process.execPath, ['tools/probe-coherence.js']);
+  if (ch.code === 0) say('coherence: ' + (ch.out.trim().split('\n').pop() || '').trim());
+  else fail('coherence: ' + ch.out.trim().split('\n')
+                              .filter(l => l.indexOf('[FAIL]') >= 0)
+                              .map(l => l.replace(/^\s*\[FAIL\]\s*/, '')).join('; '));
+
   const co = run(process.execPath, ['tools/probe-coldopen.js']);
   if (co.code === 0) say('cold open: ' + (co.out.trim().split('\n').pop() || '').trim());
   else fail('cold open: ' + co.out.trim().split('\n')

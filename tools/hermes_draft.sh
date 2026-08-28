@@ -74,13 +74,13 @@ EOF
 )
 
 V_light=$(cat <<'EOF'
-VOICE: the Federation of Light, the Luminous Accord. Sacred bureaucracy. They speak in registries, mandates, protections flagged and then deferred for decades. Their guilt is paperwork. Never gloating, and they never demand anyone give up their free will: their menace is protecting people who never asked to be protected. Sample of the correct voice:
+VOICE: the Federation of Light, the Galactic Federation of Light. Sacred bureaucracy. They speak in registries, mandates, protections flagged and then deferred for decades. Their guilt is paperwork. Never gloating, and they never demand anyone give up their free will: their menace is protecting people who never asked to be protected. Sample of the correct voice:
 "Earth. Flagged for protection in 1947, deferred every year since, and we arrive eighty years late with the rock already broken over it."
 EOF
 )
 
 V_xeno=$(cat <<'EOF'
-VOICE: the Xeno, meaning the Extraction Compact. A BUSINESS, not a species: never write it as a race and never call anyone "a Xeno". Livestock and harvest language, cold and proprietary. They speak of herds, yield, pens, stock, quotas and schedules. They are not cruel, they are agricultural. Sample of the correct voice:
+VOICE: the Xeno, meaning the Hungry. A BUSINESS, not a species: never write it as a race and never call anyone "a Xeno". Livestock and harvest language, cold and proprietary. They speak of herds, yield, pens, stock, quotas and schedules. They are not cruel, they are agricultural. Sample of the correct voice:
 "The delivery world. Everything inside that rock was ours, seeded and patient, and the herd broke the package open ahead of schedule. Collect what survived."
 EOF
 )

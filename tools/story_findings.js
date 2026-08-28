@@ -137,7 +137,7 @@ const FINDINGS = [
     'world before the seat: TITAN finds a fragment hull decades older than Apophis, STEROPE finds '
     'Earth protection order granted then withdrawn unsigned, ZETA-2 d finds Earth in the ledger '
     'as a SUPPLIER under human countersignature, THE DARK LOCKER finds the Free Captains carried '
-    'Compact freight for forty years, and THE COMPANION drops its mast and the orders keep '
+    'Hungry freight for forty years, and THE COMPANION drops its mast and the orders keep '
     'arriving anyway. That last one ends on the Parallel recording the word DECORATIVE.' },
 
 { id: 'F6', severity: 'MAJOR', kind: 'waste', status: 'DECIDE',
@@ -150,7 +150,7 @@ const FINDINGS = [
     'Owner said the lore feels out of context with the plot. The measurement says something sharper: ' +
     'it is not in the plot at all. And it contains exactly the material the campaign is missing. ' +
     'The Ashtar Declaration is where the Federation comes from. The Farm Revolts are the harvest the ' +
-    'Compact is still running. The Scrap Constellation Charter is the founding of the Free Captains, ' +
+    'Hungry is still running. The Scrap Constellation Charter is the founding of the Free Captains, ' +
     'a name the dialogue never once uses. Sol Protective Quarantine is why humanity is alone.',
   fix:
     'Bind, do not delete. Give each of the five acts one dated line from the timeline, spoken by a ' +

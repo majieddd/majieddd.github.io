@@ -372,7 +372,7 @@
       'The Federation holds the ring here. What the ring is protecting, and from whom, reads differently from the ground.'
     ],
     xeno: [
-      'A Compact harvest site: the pens are quiet, the yield still ships, and the herd here has not heard that one herd broke its fence.',
+      'A Hungry harvest site: the pens are quiet, the yield still ships, and the herd here has not heard that one herd broke its fence.',
       'The Harvest holds it the way a stomach holds a meal. Nothing about the arrangement believes it can be interrupted.'
     ],
     pirate: [

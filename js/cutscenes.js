@@ -80,7 +80,7 @@ const CUTSCENES = {
       /* SILENT. */
       { key: 'cut_light_intro_6', text: '' },
       { key: 'cut_light_intro_7', text: 'Nobody looked inside it.' },
-      { key: 'cut_light_intro_8', text: 'The Compact were in there the whole time... and it was our own doctrine that made us unable to see them.' },
+      { key: 'cut_light_intro_8', text: 'The Hungry were in there the whole time... and it was our own doctrine that made us unable to see them.' },
       { key: 'cut_light_intro_9', text: 'Now a species we deferred for eighty years has built a fleet in one winter, and it is out here asking what the rings were FOR... and we do not have an answer. THE MANDATE BEGINS.' },
     ],
     sys: [
@@ -94,8 +94,8 @@ const CUTSCENES = {
 
   xeno: {
     intro: [
-      { key: 'cut_xeno_intro_1', text: 'Consciousness... It is the only harvest that ever mattered, and for an age the Compact took it wherever it grew.' },
-      { key: 'cut_xeno_intro_2', text: 'Then the Accord drew a line around forty worlds and called it protection.' },
+      { key: 'cut_xeno_intro_1', text: 'Consciousness... It is the only harvest that ever mattered, and for an age the Hungry took it wherever it grew.' },
+      { key: 'cut_xeno_intro_2', text: 'Then the Federation drew a line around forty worlds and called it protection.' },
       { key: 'cut_xeno_intro_3', text: 'We did not go to war over it. We went looking for the parts of this galaxy nobody had bothered to ring... and there was a great deal of it.' },
       { key: 'cut_xeno_intro_4', text: 'They found us again. The argument ended in paper.' },
       { key: 'cut_xeno_intro_5', text: 'No violence. Experimentation only. Under review, in agreed quantities... signed by people who wanted an excuse to stop looking.' },
@@ -107,10 +107,10 @@ const CUTSCENES = {
     ],
     sys: [
       { key: 'cut_xeno_sys1', a: 'Zeta Reticuli is swept. The pens refill. The yield flows the way the yield has always flowed.', b: 'In the dark of the pens, the Hivemind heard something under the chorus: one voice, alone, singing to itself. It has not reported the sound.' },
-      { key: 'cut_xeno_sys2', a: 'The herd’s disclosure files spread from world to world. Property reading its own bill of sale.', b: 'The Compact does not fear the reading. It should. A ledger works only while the entries cannot compare notes.' },
+      { key: 'cut_xeno_sys2', a: 'The herd’s disclosure files spread from world to world. Property reading its own bill of sale.', b: 'The Hungry do not fear the reading. They should. A ledger works only while the entries cannot compare notes.' },
       { key: 'cut_xeno_sys3', a: 'The armed herd fights through our seats one by one, and the Necrotist has begun to admire the workmanship.', b: 'Everything we ever farmed is now a thing that farms back. There is a lesson in that. The Houses have voted not to learn it.' },
       { key: 'cut_xeno_sys4', a: 'The Hivemind withheld one world from the yield. Unfarmed, it doubled its output and gave the surplus freely, singing.', b: 'The chorus cannot metabolise the result. Choice outperformed the pens, on our own ledger, and the experiment is being repeated quietly.' },
-      { key: 'cut_xeno_sys5', a: 'The Blight has heard the spared world’s numbers and declined them. The dark is warm, it says. The dark is what we are.', b: 'Two commanders, one chorus, and for the first time in the Compact’s history the word WE means two different things.' },
+      { key: 'cut_xeno_sys5', a: 'The Blight has heard the spared world’s numbers and declined them. The dark is warm, it says. The dark is what we are.', b: 'Two commanders, one chorus, and for the first time in the Hungry’s history the word WE means two different things.' },
     ],
   },
 
@@ -128,7 +128,7 @@ const CUTSCENES = {
       { key: 'cut_pirate_intro_9', text: 'So here is the only rule we have ever written down. The roads stay open, and anyone running from something comes through FREE. THE FREE ROADS BEGIN.' },
     ],
     sys: [
-      { key: 'cut_pirate_sys1', a: 'Barnard’s Star is ours again, stem to stern, and Harbour Nine never once asked a refugee for papers.', b: 'It never asked the other crews either. Same bay, same week, medicine and chattel. The no-questions rule works both ways. It always did.' },
+      { key: 'cut_pirate_sys1', a: 'Proxima Centauri is ours again, stem to stern, and Proxima Gate never once asked a refugee for papers.', b: 'It never asked the other crews either. Same bay, same week, medicine and chattel. The no-questions rule works both ways. It always did.' },
       { key: 'cut_pirate_sys2', a: 'The Scrapper had the sealed collaborator list in his hold for six hours. The bidding would have bought a fleet.', b: 'He posted it free, to every open channel, and cannot explain why. First chosen line on the map. Drawn at full price, for nothing.' },
       { key: 'cut_pirate_sys3', a: 'The Chorus sent one sentence ahead of her fleet, instead of an envoy: freedom that will not choose is just drift.', b: 'The Corsair laughed for a day. He has not laughed since. A ship nothing steers is not free. It is cargo.' },
       { key: 'cut_pirate_sys4', a: 'A harvest broker offered the Warlord a fleet to run cargo that sings through his corridor.', b: 'He sank the advance into the sun and posted the manifest. No law made him. No law could. That is exactly why it counts.' },

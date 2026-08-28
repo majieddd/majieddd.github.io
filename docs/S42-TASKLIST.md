@@ -91,6 +91,6 @@ Status updated as work lands. Scope lives in `GALAXY-SCOPE-S42.md`.
   Ra is described as having evolved on Venus. **Arcturians and the Lyran root
   race are NOT Law of One**; they are Milanovich and Meier respectively.
 - An external grading pass proposed 25 act morals; several were off canon
-  (sealed machines in the Compact's Tabby's act, repair yards in Zeta, the
+  (sealed machines in the Hungry's Tabby's act, repair yards in Zeta, the
   ledger in Sol). Its STRUCTURAL defects were verified and are real; its per
   act content was not trusted.

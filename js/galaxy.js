@@ -188,7 +188,7 @@ const GX_UNIVERSE_ORDER = ['human', 'light', 'xeno', 'pirate', 'robot'];
  * third-party threat, then a two-power fight, then a fortress, then a swarm
  * again, then a raid during a siege, then the seat.
  *
- * These are the garrisons the fiction already asserts. The Compact were inside
+ * These are the garrisons the fiction already asserts. The Hungry were inside
  * Apophis, the Federation kept a base at Venus and a ruling not to help, the
  * machines were on Mercury, and the scavengers were selling to all three. So
  * this table is true no matter who is playing, and it is applied to every
@@ -205,9 +205,9 @@ const GX_SOL_ENCOUNTERS = {
   0: { owner: 'xeno',                       scenario: 'swarm',
        note: 'EARTH: whatever came out of the rock, and a great deal of it. Survive.' },
   1: { owner: 'xeno',                       scenario: 'vigil',
-       note: 'LUNA: abandoned depots on the far side, the Compact already inside them, and then the Vigil wakes.' },
+       note: 'LUNA: abandoned depots on the far side, the Hungry already inside them, and then the Vigil wakes.' },
   2: { owner: 'xeno',  contestedBy: 'robot', scenario: 'assault',
-       note: 'MARS: the Compact hold the trench, and the machines are working the same ground.' },
+       note: 'MARS: the Hungry hold the trench, and the machines are working the same ground.' },
   3: { owner: 'light',                      scenario: 'assault',
        note: 'VENUS: a Federation station that has been in our sky the whole time.' },
   4: { owner: 'robot',                      scenario: 'swarm',
@@ -215,7 +215,7 @@ const GX_SOL_ENCOUNTERS = {
   5: { owner: 'light',  contestedBy: 'robot', scenario: 'overrun',
        note: 'JUPITER: a Federation anchorage, and the machines raid it while we are taking it.' },
   6: { owner: 'xeno',   contestedBy: 'pirate', scenario: 'assault',
-       note: 'SATURN: the Compact seat and their commander. The scavengers hit it at the same time, for the door.' },
+       note: 'SATURN: the Hungry seat and their commander. The scavengers hit it at the same time, for the door.' },
 };
 
 /* Who HOLDS each home system, per player faction. Row: universe system by its
@@ -631,7 +631,7 @@ function generateGalaxy(seed, playerFaction, mapPool, kindsW, gxv) {
   /* THE EARTH SYSTEM IS AUTHORED (owner, Session 42). Applied HERE, after every
      draw has happened, so it cannot move the stream by a single call. Keyed on
      the system's IDENTITY rather than on si, because si is player-relative:
-     the Earth System is act one for humanity and act four for the Compact, and
+     the Earth System is act one for humanity and act four for the Hungry, and
      an si-keyed table would have authored whichever system the player happened
      to start in. Measured that mistake before this comment existed.
 

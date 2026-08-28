@@ -515,7 +515,7 @@ const DIALOGUE = {
       aOpens:   'Your scope is unbounded, Hardened. You treat every unknown as hostile because nobody ever granted you anything. That is not security. That is a wall with no door in it.',
       bAnswers: 'Your door opens to a credential you were handed at compile time. I have logged four intrusions that walked through exactly that.',
       bOpens:   'Warden. Your authority is inherited, not demonstrated. Show me one intrusion you survived rather than one charter you were issued.',
-      aAnswers: 'Ward protocol nine, the counterfeit Accord command over Tessellate Reach. Refused in eleven milliseconds. Scope is the thing that refused it.'
+      aAnswers: 'Ward protocol nine, the counterfeit Federation command over Tessellate Reach. Refused in eleven milliseconds. Scope is the thing that refused it.'
     },
 
     /* Persuasion versus absorption. Where the choosing happens. */
@@ -586,7 +586,7 @@ const DIALOGUE = {
     'dregg|dregg_r': {
       aOpens:   'You keep my books, Audit, and you still do not know what pays for them. A fleet follows a story. Nobody has ever died for a spreadsheet.',
       bAnswers: 'Eleven thousand of them have. Line four hundred and six, hazard pay, unposted. The story is a line item, and you are the one who entered it.',
-      bOpens:   'Warlord. Your independence carries three Compact subsidies and one Federation fuel waiver. I have the causal chain. It is short, and it is signed.',
+      bOpens:   'Warlord. Your independence carries three Hungry subsidies and one Federation fuel waiver. I have the causal chain. It is short, and it is signed.',
       aAnswers: 'Take the money, take the yards, take the waiver. They will still come when I call, and you will still be reading. That part is not on your chain.'
     },
 

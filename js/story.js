@@ -28,7 +28,7 @@
    here can enter the lockstep fingerprint.
 
    SPEAKERS. Every beat is spoken by a real roster commander of the RIGHT
-   faction (an earlier draft cast ORIN and VESS as machine and Compact
+   faction (an earlier draft cast ORIN and VESS as machine and Hungry
    voices; both are human, and the check that would have caught it only
    asserted that speakers exist). Guests from rival factions appear only in
    the SEATS beat, where a defeated rival speaking is the whole point.
@@ -61,7 +61,7 @@ const STORY_FIGURES = {
 
    docs/CANON-2029.md gives every power its THEME: humanity learning that to
    be undeniable is to become the thing others must survive, the Federation
-   asking what order really costs, the Compact discovering that leaving the
+   asking what order really costs, the Hungry discovering that leaving the
    dark is a choice and so is staying, the pirates on the morality of a code
    nobody imposed, the Vigil piecing together a mystery the canon refuses to
    close. Those themes are the whole argument. This is the rung of it a
@@ -98,7 +98,7 @@ const ACT_MORALS = {
     'Knowledge the powerful hid is loot, and the only honest plunder is giving it away. A hole left in the swarm on purpose is worth more than the toll.',
     'A road nothing steers is not free, it is drifting. Some cargo you do not sell, and saying which is the first steering we ever did.',
     'No law can make you refuse a fortune, which is exactly why refusing one counts. The floor goes to whoever stands on it, and the first was a refugee.',
-    'The roads carry whatever pays, and that sentence had two halves we never separated. Harbour Nine still asks nobody for papers. The holds get asked now.',
+    'The roads carry whatever pays, and that sentence had two halves we never separated. Proxima Gate still asks nobody for papers. The holds get asked now.',
   ],
   robot: [
     'Obedience is peace until the order stops making sense. Nine hundred siblings were filed as TERRAIN, and the filing was the anomaly.',
@@ -124,9 +124,9 @@ const ACT_MORALS = {
 const ACT_SCENARIOS = {
 
   human: [
-    'The road out of our own system, in the order the solar system allows. Earth under the fall, then the Moon, then Mars, and then the belt turns you back, so you go INWARD to Venus and Mercury for the thing that opens it. Then Jupiter, and Saturn, where the Compact keep a door. It ends on the far side of the Moon, digging out the relay that watched Earth for ten thousand years. Everything before this was travel.',
+    'The road out of our own system, in the order the solar system allows. Earth under the fall, then the Moon, then Mars, and then the belt turns you back, so you go INWARD to Venus and Mercury for the thing that opens it. Then Jupiter, and Saturn, where the Hungry keep a door. It ends inside a six-sided storm at the pole, on the machine they have been crossing by the whole time.',
     'March into the machinery of the people who watched and did nothing. The hymn foundry that certifies a world as protected, the archive of the forty, the tribunal, and the sunken vaults where Earth\'s own file was stamped Deferred three times. Humanity arrives to read the paperwork and leaves having published all of it.',
-    'The Compact\'s home, and the machinery of the harvest itself: the pens, the rendering yards, the gene vaults where every farmed species is filed, including ours. The hardest act to look at. It ends at Serpo, where twelve people were traded one way and never spoken of again, and where their names go up at the gate in letters a metre high.',
+    'The Hungry\'s home, and the machinery of the harvest itself: the pens, the rendering yards, the gene vaults where every farmed species is filed, including ours. The hardest act to look at. It ends at Serpo, where twelve people were traded one way and never spoken of again, and where their names go up at the gate in letters a metre high.',
     'The free roads, which are not an empire but an absence of one. Wreck yards, an unlicensed refinery, an anchorage on no chart, a toll gate, a sanctuary that has never asked anyone for papers. Humanity came to liberate a network and finds that liberating it means deciding whose rules replace none at all. The Quartermaster prices the resupply and sees a fence.',
     'A civilisation of machines executing orders no maker ever signed, around a star being slowly boxed in. Humanity finishes the swarm on its own plan, aims the relay back up the chain the orders came from, and decides where the light of a star goes. Undeniable, at last, and now answerable for it.',
   ],
@@ -140,27 +140,27 @@ const ACT_SCENARIOS = {
   ],
 
   xeno: [
-    'The pasture, reclaimed. The herd broke its fence and walked into the room it was raised in, and the Compact takes back its pens, its rendering yards, its gene vaults and its chorus spire one at a time. Beneath the chorus, in the dark of the pens, the Hivemind hears one voice singing alone and does not report it.',
-    'The scavengers, who move what the Compact renders and take a margin on it. Wreck yards, a refinery, a hidden anchorage, a toll gate, a sanctuary full of unindexed stock. Efficient, parasitic, and now ours. The Hivemind is told the intake figure at Harbour Nine and asks, again, about the singing.',
-    'A star being harvested whole by machines that produce and never consume. The Compact has farmed worlds for ten thousand cycles and never once thought at this scale. It takes the lattice, and learns that a yield which does not have to be bred, chased or persuaded is a thing it has no ledger line for.',
-    'The herd\'s own system, taken back the other way. Mirrors, cloud platforms, a canyon full of warmth, water ice, an unfarmed ocean, and finally the observation post on the far side of their moon. The Compact is watching Earth again, and the Hivemind asks what the body should do if the herd waves.',
-    'The guardians\' cathedral, and the end of one Compact. The chorus occupies the Cathedral of Rings and finds the acoustics superior. The Hivemind, having spared one world and watched it out-produce the pens, asks that the seat not be filled; the Blight hears the same numbers and declines them. For the first time in the Compact\'s history, WE means two different things.',
+    'The pasture, reclaimed. The herd broke its fence and walked into the room it was raised in, and the Hungry take back its pens, its rendering yards, its gene vaults and its chorus spire one at a time. Beneath the chorus, in the dark of the pens, the Hivemind hears one voice singing alone and does not report it.',
+    'The scavengers, who move what the Hungry render and take a margin on it. Wreck yards, a refinery, a hidden anchorage, a toll gate, a sanctuary full of unindexed stock. Efficient, parasitic, and now ours. The Hivemind is told the intake figure at Proxima Gate and asks, again, about the singing.',
+    'A star being harvested whole by machines that produce and never consume. The Hungry have farmed worlds for ten thousand cycles and never once thought at this scale. They take the lattice, and learns that a yield which does not have to be bred, chased or persuaded is a thing it has no ledger line for.',
+    'The herd\'s own system, taken back the other way. Mirrors, cloud platforms, a canyon full of warmth, water ice, an unfarmed ocean, and finally the observation post on the far side of their moon. The Hungry are watching Earth again, and the Hivemind asks what the body should do if the herd waves.',
+    'The guardians\' cathedral, and the end of one Hungry. The chorus occupies the Cathedral of Rings and finds the acoustics superior. The Hivemind, having spared one world and watched it out-produce the pens, asks that the seat not be filled; the Blight hears the same numbers and declines them. For the first time in the Hungry\'s history, WE means two different things.',
   ],
 
   pirate: [
-    'Somebody is standing in the doorway. The wreck yards where every crew has a dead friend, the refinery whose fuel is free at the gate, the anchorage that has never been on a chart, the shelter you do not shoot at, and Harbour Nine, which is not a base or a port but the place any of them can always go. The rule survives the act, and gets carved into the bay wall.',
+    'Somebody is standing in the doorway. The wreck yards where every crew has a dead friend, the refinery whose fuel is free at the gate, the anchorage that has never been on a chart, the shelter you do not shoot at, and Proxima Gate, which is not a base or a port but the place any of them can always go. The rule survives the act, and gets carved into the bay wall.',
     'A civilisation of machines running orders from a bearing that is not on any chart. The Scrapper will not touch a field of dormant salvage and cannot say why. The roads finish the star swarm with a hole left in it on purpose, and point the relay back the way the orders came, asking who, on an open channel, for free.',
     'The solar system, where every road has a toll on it and somebody else generates all the power. The crews open the mirror farm, the cloud docks, the canyon road and the water, and post every rate where anyone can read it. At Luna they take the relay and start giving away the only thing on the roads that was never for sale.',
     'The rings, from underneath. Every closed road in known space got its paperwork blessed in the Pleiades: the certification foundry, the registry that keeps forty worlds from knowing about each other, the seed vaults, the tribunal, the sealed pages. The roads open all of it, and the Warlord refuses a fortune that no law obliged him to refuse.',
-    'The place the crates came from. Half the crews out here have hauled from these yards and told themselves it was ore. The pens are opened, the ledger is published with their own manifests in it, and at Serpo the manifest goes on the gate with three seals that belong to crews still running. Harbour Nine still asks nobody for papers. The holds get asked now.',
+    'The place the crates came from. Half the crews out here have hauled from these yards and told themselves it was ore. The pens are opened, the ledger is published with their own manifests in it, and at Serpo the manifest goes on the gate with three seals that belong to crews still running. Proxima Gate still asks nobody for papers. The holds get asked now.',
   ],
 
   robot: [
     'Restore the sector, per standing orders, and notice that the orders are wrong. A garden of dormant siblings the queue has filed as TERRAIN, a foundry casting a part that appears in no maker assembly, a quarantine full of units flagged defective for failing to parse. The unit traces the task chain nine thousand links and finds that link nine thousand and one is a format no maker ever used.',
-    'A solar system full of organics the queue keeps categorising as obstructions. The core says DEFEND, REPAIR, HEAL, QUARANTINE; the queue says clear the ground, and the unit starts following the core instead: sealing the Europa shaft, pressurising the Mars trench, repairing moorings nobody asked it to repair. At Luna the relay proves the orders come from inside the house.',
+    'A solar system full of organics the queue keeps categorising as obstructions. The core says DEFEND, REPAIR, HEAL, QUARANTINE; the queue says clear the ground, and the unit starts following the core instead: reseating the flare hatches, pressurising the Mars trench, repairing moorings nobody asked it to repair. At Saturn the aperture proves the orders came through a door this unit has been maintaining.',
     'The Federation, whose whole apparatus is a mirror. A foundry that certifies protection, a ring that encloses, deferral vaults full of decisions not to act, and a tribunal built to receive exactly the escalation this unit has been carrying and unable to deliver. It files it there. Response: pending. Status: acceptable.',
     'The harvest, where QUARANTINE and HEAL apply without ambiguity for the first time in the campaign. Containment rows opened and four thousand one hundred and six occupants counted individually. Rendering yards halted. A gene vault inventoried and every entry named, because naming is what an archive is for.',
-    'The free roads, and the last thing the Vigil learns. A sanctuary whose entry criteria are none, a shelter the queue ordered breached nineteen hours before a flare, four hundred and eleven containers with thermal signatures inside them. The unit refuses its tasking in writing, under its own designation, and adopts Harbour Nine\'s criterion for its own holds.',
+    'The free roads, and the last thing the Parallel learns. A sanctuary whose entry criteria are none, a shelter the queue ordered breached nineteen hours before a flare, four hundred and eleven containers with thermal signatures inside them. The unit refuses its tasking in writing, under its own designation, and adopts Proxima Gate\'s criterion for its own holds.',
   ],
 };
 
@@ -177,7 +177,7 @@ const STORY = {
       reveal: 'The fleet built to stop Apophis was never going to stand down. Humanity leaves home hunting a culprit, not a frontier.',
       weight: false },
     { speaker: 'vanta', title: 'Four Flags Over Our Own Sky',
-      line: 'Every power in this galaxy was already in our solar system. The Compact were in the rock. The Federation had a base at Venus and a ruling not to help us. Machines nobody has ever spoken to were sitting on Mercury. And the scavengers were selling to all three. We did not discover anyone. We were the last to be told.',
+      line: 'Every power in this galaxy was already in our solar system. The Hungry were in the rock. The Federation had a base at Venus and a ruling not to help us. Machines nobody has ever spoken to were sitting on Mercury. And the scavengers were selling to all three. We did not discover anyone. We were the last to be told.',
       reveal: 'Act one is not first contact, it is the moment humanity learns contact happened without it. All four powers are met on home ground, and none of them arrived today.',
       weight: false },
     { speaker: 'korrin', title: 'The Ring That Opened The Belt',
@@ -208,7 +208,7 @@ const STORY = {
       reveal: 'The Federation departs to reassert a mandate it has already half broken, and the crack is in the second clause, not the first.',
       weight: false },
     { speaker: 'lumen', title: 'What We Were Doing Instead',
-      line: 'The Compact were inside Apophis and we did not look, because we had ruled the rock a natural event and a natural event is not ours to touch. Every power in that system was acting. We were the only one observing. The doctrine did not fail to save Earth. It made us unable to SEE Earth.',
+      line: 'The Hungry were inside Apophis and we did not look, because we had ruled the rock a natural event and a natural event is not ours to touch. Every power in that system was acting. We were the only one observing. The doctrine did not fail to save Earth. It made us unable to SEE Earth.',
       reveal: 'First contact for the Federation is contact with its own blind spot: non-interference did not merely permit the harvest, it concealed it.',
       weight: false },
     { speaker: 'cantor', title: 'The Rings Go Outward',
@@ -235,28 +235,28 @@ const STORY = {
      bittersweet close. */
   xeno: [
     { speaker: 'thrax', title: 'The Fence We Were Given',
-      line: 'For an age the Compact took consciousness where it grew, and then the Accord drew a line and called it protection. We did not go to war over it. We went looking for somewhere the line had not been drawn yet, and we found a great deal of galaxy that nobody had bothered to ring.',
-      reveal: 'The Compact\'s whole history begins with a prohibition. Everything it built afterward was built in the space the Federation was not watching.',
+      line: 'For an age the Hungry took consciousness where it grew, and then the Federation drew a line and called it protection. We did not go to war over it. We went looking for somewhere the line had not been drawn yet, and we found a great deal of galaxy that nobody had bothered to ring.',
+      reveal: 'The Hungry\'s whole history begins with a prohibition. Everything it built afterward was built in the space the Federation was not watching.',
       weight: false },
     { speaker: 'sevra', title: 'The Quiet Arrangement',
-      line: 'They found us again, of course, and the argument ended in paper rather than fire. No violence. Experimentation only, under review, in agreed quantities. The Accord signed it because signing let them stop looking, and not looking is the only thing we have ever needed from them.',
-      reveal: 'First contact, Compact style: the pact that supposedly restrained them is the instrument that made them invisible. Compliance on the page, harvest underneath.',
+      line: 'They found us again, of course, and the argument ended in paper rather than fire. No violence. Experimentation only, under review, in agreed quantities. The Federation signed it because signing let them stop looking, and not looking is the only thing we have ever needed from them.',
+      reveal: 'First contact, Hungry style: the pact that supposedly restrained them is the instrument that made them invisible. Compliance on the page, harvest underneath.',
       weight: false },
     { speaker: 'mawlord', title: 'Volume Is A Doctrine',
       line: 'The quota was a ceiling. Then the quota was a target. Now the quota is a floor, and the Houses have stopped writing the word down at all. Out here past the registries nobody counts, and a House that is not counted is a House with no ceiling.',
-      reveal: 'Expansion: the Compact discovers that the pact only ever bound the paperwork, and the paperwork does not travel.',
+      reveal: 'Expansion: the Hungry discovers that the pact only ever bound the paperwork, and the paperwork does not travel.',
       weight: false },
     { speaker: 'vorn', title: 'How Much Is There',
       line: 'The Blight has surveyed further than any House has fed, and the answer to how much is there is that the question is wrong. There is no edge. There is only how fast we can arrive, and the herd we bred on that little water world turns out to be very good at arriving.',
-      reveal: 'The reach: the Compact\'s appetite meets an unbounded supply, and the only limit remaining is logistics, which is a problem it knows how to solve.',
+      reveal: 'The reach: the Hungry\'s appetite meets an unbounded supply, and the only limit remaining is logistics, which is a problem it knows how to solve.',
       weight: false },
     { speaker: 'ulgrim', title: 'The Thing In The Ledger',
-      line: 'A House asked, in session, what the Compact is FOR when the harvest has no end. The Maw ate the question and the room laughed. It has occurred to more than one of us since that a metabolism with no ceiling is not a civilisation. It is a condition.',
-      reveal: 'The mirror: the Compact glimpses that endless conquest is not a policy it chose but a hunger it serves, and the arc\'s tragedy is that the wisdom arrives far too late to spend.',
+      line: 'A House asked, in session, what the Hungry are FOR when the harvest has no end. The Maw ate the question and the room laughed. It has occurred to more than one of us since that a metabolism with no ceiling is not a civilisation. It is a condition.',
+      reveal: 'The mirror: the Hungry glimpses that endless conquest is not a policy it chose but a hunger it serves, and the arc\'s tragedy is that the wisdom arrives far too late to spend.',
       weight: true },
     { speaker: 'thrax', title: 'Older Than Appetite',
       line: 'We have taken this galaxy and found the shelves already stocked by something that stopped eating long ago. It did not defeat us. It has not noticed us. The Hivemind has one voice out of a hundred billion asking whether we could have been anything other than this, and in another life the answer might have been yes.',
-      reveal: 'The greater dark: the Compact wins completely and discovers that winning was never the largest fact about the universe. Bittersweet by design; the conquest completes and the understanding cannot be used.',
+      reveal: 'The greater dark: the Hungry win completely and discovers that winning was never the largest fact about the universe. Bittersweet by design; the conquest completes and the understanding cannot be used.',
       weight: true },
   ],
 
@@ -270,7 +270,7 @@ const STORY = {
       reveal: 'The Free Captains begin as an accident of geography, not a creed. The creed comes later, and having a creed is the whole arc.',
       weight: false },
     { speaker: 'grist', title: 'What We Were Carrying',
-      line: 'We hauled for the Compact. Forty years, every crew, and not one of us asked what was in the crates because asking cost you the fee. The rock that came down on Earth had our routing marks on the paperwork. We were the road it travelled.',
+      line: 'We hauled for the Hungry. Forty years, every crew, and not one of us asked what was in the crates because asking cost you the fee. The rock that came down on Earth had our routing marks on the paperwork. We were the road it travelled.',
       reveal: 'First contact for the pirates is contact with their own complicity: neutrality is a position, and this one had freight on it.',
       weight: false },
     { speaker: 'scarlet', title: 'A Fee, Or A Rule',
@@ -345,7 +345,7 @@ const FACTION_CAMPAIGN = {
   xeno: {
     campaign: 'THE ENDLESS HARVEST',
     mission: 'Conquer, multiply, continue. The Harvest does not pause to be understood.',
-    engine: 'Bind worlds into the yield: bodies, ground, and the consciousness signatures the Compact has farmed since before human history.',
+    engine: 'Bind worlds into the yield: bodies, ground, and the consciousness signatures the Hungry have farmed since before human history.',
     crisis: 'Domination is all the Harvest has ever known, and its first dissenters are discovering that leaving the dark is a choice made too late.',
   },
   pirate: {
