@@ -47,26 +47,29 @@ const PLANET_CUTS = {
   /* ═══════════════ si 0, THE EARTH SYSTEM ═══════════════
      Humanity's home, and in every campaign somebody else's ground. */
 
+  /* EARTH, world zero. The inciting ground: the intercept worked, the rock
+     came apart, and it was hollow. Every power arrives at the same opened
+     hulls, which is the one image all five campaigns share. */
   '00': {
-    name: 'MERCURY',
-    ground: 'The floor of Caloris, a shatter-ring the size of a continent, planted end to end with solar mirrors. Whoever holds the light here holds the power budget of the inner system.',
-    works: 'Every mirror tower on the basin floor is also a battery, and the sunshade walls were poured thick enough to stop something considerably larger than us.',
+    name: 'EARTH',
+    ground: 'A coastal city under the fall, where the fragments came down whole and split open in the streets. Whatever was riding inside Apophis was already awake when it landed.',
+    works: 'The intercept batteries that broke the rock, swung around and depressed to fire along their own avenues, and every shelter door in the district sealed from the inside.',
     f: {
-      human: ['We built half of these mirrors. The other half went up to a specification nobody at the agency will admit to signing. Burn in.',
-              'Caloris is ours, terrace by terrace. The towers that were aimed away from the sun are aimed back at it.',
-              'The farm is relit and the grid answers to us. Somebody will eventually ask where the extra capacity came from. Nobody is asking this week.'],
-      light: ['A whole basin terraced to catch a star, and not one beam of it ever fell on the people who needed the light. The Mandate has a word for that. We have avoided it for a century.',
-              'The towers are dark. We took the light before we took the ground, which doctrine calls mercy and the crews down there call a siege.',
-              'Caloris burns for the registries again. The Chorus notes, without comment, that the forty worlds it now feeds still never asked to be fed.'],
-      xeno:  ['Heat, metal, ranked and reflective. The herd terraced an entire basin to drink from a star and did not once think to look up.',
-              'The mirrors are cold and the floor is ours. The yield here was never bodies. It was the labour that built all this, and it has been collected.',
-              'Caloris feeds the Compact. Mark the arithmetic: it produces more under us than it ever did under them, and nothing on it is alive enough to mind.'],
-      pirate:['Every free port in the belt runs on power somebody else generated. Today we go and introduce ourselves to the somebody.',
-              'Caloris is open. The mirrors are ours in the sense that nobody is shooting at us while we stand under them, which is the only sense we ever meant.',
-              'Farm is lit and the rate is posted where anyone can read it. First time that has been true anywhere in the inner system.'],
-      robot: ['SITE: CALORIS. FUNCTION: energy collection. CONDITION: operational, hostile-held. TASK CATEGORY: REPAIR. This unit notes that the assigned category was not the one requested.',
-              'OBSTRUCTIONS CLEARED. The collectors are undamaged. They were never the target. The queue asked for the ground; the recovered core would have asked for the light.',
-              'CALORIS RESTORED. Output routed. DESTINATION FIELD: blank. Filed under ANOMALY, sub-heading NEW.'],
+      human: ['This is the day. The rock is gravel over our heads and the gravel had passengers. Everything we thought we were surviving was the delivery.',
+              'The district is ours and the hulls are cooling in the street. We counted what came out of them. We are not releasing that number yet.',
+              'The city is cleared and the hulls are dragged into the squares where anyone can walk up and look inside. Let every government that knew explain the seating.'],
+      light: ['Earth. Flagged for protection in 1947, deferred every year since, and we arrive eighty years late with the rock already broken over it.',
+              'The district holds. Wardens who have never set foot on this world are carrying its people out of buildings the Mandate was supposed to have ringed.',
+              'The city stands, and the opened hulls are left exactly where they fell with our seal posted beside them. The deferral is posted on the same board.'],
+      xeno:  ['The delivery world. Everything inside that rock was ours, seeded and patient, and the herd broke the package open ahead of schedule. Collect what survived.',
+              'The district is taken and the hulls are recovered. The seeding was early by their calendar and precisely on time by ours.',
+              'The city produces again under supervision, and the hulls stay in the streets. A pen learns faster when it can see the crate it arrived in.'],
+      pirate:['Every crew out here has hauled something OUT of this system and not one of us ever asked what was coming in. Today we go and look at the crate.',
+              'District is ours, the hulls are open in the street, and every crew here has gone quiet standing over them.',
+              'City runs and the hulls stay exactly where they landed, open and free to walk into. No fee. Some things you leave standing so nobody gets to forget.'],
+      robot: ['SITE: EARTH, IMPACT DISTRICT. DELIVERY VEHICLE CONTENTS: organic and maker-format units, mixed, pre-positioned. This unit notes that the queue routed the vehicle.',
+              'DISTRICT SECURED. Fragment hulls recovered. The maker-format units inside them appear in no recovered manifest. Their designations have been logged regardless.',
+              'EARTH RESTORED. City cleared and pressurised. Hulls left open in the squares, catalogued and public. The queue asked for a delivery. The core asks who signed for it.'],
     },
   },
 

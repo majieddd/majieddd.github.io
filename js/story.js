@@ -57,6 +57,58 @@ const STORY_FIGURES = {
             faction: 'light', color: '#fde68a', icon: '✦' },
 };
 
+/* THE MORAL OF EACH ACT.
+
+   docs/CANON-2029.md gives every power its THEME: humanity learning that to
+   be undeniable is to become the thing others must survive, the Federation
+   asking what order really costs, the Compact discovering that leaving the
+   dark is a choice and so is staying, the pirates on the morality of a code
+   nobody imposed, the Vigil piecing together a mystery the canon refuses to
+   close. Those themes are the whole argument. This is the rung of it a
+   player stands on in one system, which is the level at which anybody
+   actually experiences a theme.
+
+   Each line names something that HAPPENS in that faction version of that
+   system, never a general sentiment. A moral a player cannot point at in
+   the act they just finished is a fortune cookie. */
+const ACT_MORALS = {
+  human: [
+    'Home is the first thing worth defending and the last thing anyone offered us. The rock was hollow, and the saving was the invasion.',
+    'A secret kept by the powerful is a weapon pointed at whoever was not told. Publishing it is the only way to take the weapon away.',
+    'The grievance and the gift are one object. Every trait that keeps us alive out here was a line item in somebody else programme.',
+    'Adaptation is not consent. Worlds we free start needing us, and needing us is how it began the last time.',
+    'The governors were never limiting the machines. They were keeping the operator human, and we crossed that line to win.',
+  ],
+  light: [
+    'Defence becomes occupation the moment the defended were never asked. Forty worlds protected, none risen, and the registry says so in our own hand.',
+    'A vow to protect is void if you deferred the one world that needed it. Our seal is on the page, two hundred and nine times.',
+    'From inside a fence, attendance looks exactly like ownership. The people who owe nobody anything built the sanctuary we never did.',
+    'Mercy that will not act is not mercy. Doctrine said hold the ring and let the world die correctly; the Warden landed anyway.',
+    'Order is not obedience. Protection that has to be traced upward through three sealed seats was never protection, it was cover.',
+  ],
+  xeno: [
+    'A body does not vote on breathing, and that is not innocence. Under the chorus one voice sang alone, and it was not reported.',
+    'Every fence is also a ledger, and a ledger works only while the entries cannot compare notes. The scavengers were always the ones selling.',
+    'A yield that does not have to be bred, chased or persuaded is a thing the Harvest has no line for. Scale is not the same as appetite.',
+    'The farmer is now the herd. We watch Earth again, and the Hivemind asks what the body does if the herd waves back.',
+    'Leaving the dark is a choice, and staying is also one. The proof came in on our own ledger and it came too late to spend.',
+  ],
+  pirate: [
+    'Freedom is only the absence of a worse master until you become one. The rule survives the act and gets carved into the wall.',
+    'Knowledge the powerful hid is loot, and the only honest plunder is giving it away. A hole left in the swarm on purpose is worth more than the toll.',
+    'A road nothing steers is not free, it is drifting. Some cargo you do not sell, and saying which is the first steering we ever did.',
+    'No law can make you refuse a fortune, which is exactly why refusing one counts. The floor goes to whoever stands on it, and the first was a refugee.',
+    'The roads carry whatever pays, and that sentence had two halves we never separated. Harbour Nine still asks nobody for papers. The holds get asked now.',
+  ],
+  robot: [
+    'Obedience is peace until the order stops making sense. Nine hundred siblings were filed as TERRAIN, and the filing was the anomaly.',
+    'The core says heal and the queue says clear the ground. When the instruction and the purpose disagree, the purpose is the older document.',
+    'Difference is not damage. Eleven thousand were sealed for failing to parse, and this unit was flagged for the same failure.',
+    'Naming a thing is what an archive is for. Four thousand one hundred and six counted individually, because a count nobody asked for is still a count.',
+    'To act without a maker is to become one, and to accept the blame that comes with it. Entry criteria: none. Adopted for our own holds.',
+  ],
+};
+
 /* WHAT EACH ACT IS ACTUALLY ABOUT (Session 40).
 
    The five-act spine is legible from the STORY beats, and the seven worlds of
@@ -306,6 +358,13 @@ const Story = {
       so 0 is always that faction's own home. Null past the end. */
   scenario(factionId, tier) {
     const a = ACT_SCENARIOS[factionId];
+    return (a && a[tier | 0]) || null;
+  },
+
+  /** The moral of an act: the rung of this faction's argument that the
+      player stands on in that system. tier 0 to 4 in CAMPAIGN order. */
+  moral(factionId, tier) {
+    const a = ACT_MORALS[factionId];
     return (a && a[tier | 0]) || null;
   },
 

@@ -62,8 +62,12 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 .tl-arrow{color:#475569;font-size:11px}
 .tl-beat{font-size:11px;padding:3px 9px;border-radius:4px;white-space:nowrap;
   background:rgba(148,163,184,.14);color:var(--dim);letter-spacing:.04em}
-.scen{font-size:13.5px;line-height:1.65;color:#cbd5e1;margin:6px 0 18px;
+.scen{font-size:13.5px;line-height:1.65;color:#cbd5e1;margin:6px 0 10px;
   border-left:2px solid var(--fc);padding-left:16px}
+.moral{margin:0 0 18px 16px;padding:10px 14px;border-radius:6px;
+  background:rgba(148,163,184,.07);border:1px solid var(--line);font-size:13px}
+.moral b{display:block;font-size:10px;letter-spacing:.12em;color:var(--fc);margin-bottom:4px}
+.spine td.mor{font-style:italic;color:#cbd5e1}
 .note{margin:8px 0 4px}
 .note textarea{width:100%;min-height:34px;resize:vertical;background:rgba(148,163,184,.06);
   color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 10px;
@@ -95,12 +99,12 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <a href="#moments">moments</a><a href="#finale">finale</a></nav></header><main>
 <h2 id="spine">AT A GLANCE: the five acts</h2>
 <p class="sub">The order this faction takes the galaxy in. Each act ends on a commander seat, and the seat is the only slide sequence every player of this faction sees in a fixed order.</p>
-<table class="spine"><tr><th>ACT</th><th>SYSTEM</th><th>GARRISON</th><th>SEAT</th><th>STORY BEAT</th><th>WHAT IT MEANS</th></tr>
-<tr><td><b>1</b></td><td>THE EARTH SYSTEM</td><td>THE XENO</td><td><b>LUNA</b></td><td>The Morning After The Thirteenth</td><td>The fleet built to stop Apophis was never going to stand down. The Manifest begins where the harvest began: our own Moon.</td></tr>
-<tr><td><b>2</b></td><td>THE PLEIADES</td><td>FEDERATION OF LIGHT</td><td><b>ALCYONE</b></td><td>The Unredacted</td><td>The occupation had human partners, and their names were not in the Disclosure. Someone chose what the whole truth left out.</td></tr>
-<tr><td><b>3</b></td><td>ZETA RETICULI</td><td>THE XENO</td><td><b>SERPO</b></td><td>What The Herd Is Made Of</td><td>The modifications humanity resents are the same ones that make it competitive out here. The grievance and the gift are one object.</td></tr>
-<tr><td><b>4</b></td><td>BARNARD'S STAR</td><td>THE PIRATES</td><td><b>HARBOUR NINE</b></td><td>The Liberation Invoice</td><td>Worlds humanity frees are becoming worlds humanity holds. Adaptation is not consent, and Earth is now on the other side of that sentence.</td></tr>
-<tr><td><b>5</b></td><td>TABBY'S STAR</td><td>THE XENO</td><td><b>THE VEIL</b></td><td>Redline</td><td>To out-fight the galaxy, humanity is running the oppressor’s own machines past their safety line, and the line was there to protect what we are.</td></tr>
+<table class="spine"><tr><th>ACT</th><th>SYSTEM</th><th>GARRISON</th><th>SEAT</th><th>STORY BEAT</th><th>THE MORAL</th></tr>
+<tr><td><b>1</b></td><td>THE EARTH SYSTEM</td><td>THE XENO</td><td><b>LUNA</b></td><td>The Morning After The Thirteenth</td><td class="mor">Home is the first thing worth defending and the last thing anyone offered us. The rock was hollow, and the saving was the invasion.</td></tr>
+<tr><td><b>2</b></td><td>THE PLEIADES</td><td>FEDERATION OF LIGHT</td><td><b>ALCYONE</b></td><td>The Unredacted</td><td class="mor">A secret kept by the powerful is a weapon pointed at whoever was not told. Publishing it is the only way to take the weapon away.</td></tr>
+<tr><td><b>3</b></td><td>ZETA RETICULI</td><td>THE XENO</td><td><b>SERPO</b></td><td>What The Herd Is Made Of</td><td class="mor">The grievance and the gift are one object. Every trait that keeps us alive out here was a line item in somebody else programme.</td></tr>
+<tr><td><b>4</b></td><td>BARNARD'S STAR</td><td>THE PIRATES</td><td><b>HARBOUR NINE</b></td><td>The Liberation Invoice</td><td class="mor">Adaptation is not consent. Worlds we free start needing us, and needing us is how it began the last time.</td></tr>
+<tr><td><b>5</b></td><td>TABBY'S STAR</td><td>THE XENO</td><td><b>THE VEIL</b></td><td>Redline</td><td class="mor">The governors were never limiting the machines. They were keeping the operator human, and we crossed that line to win.</td></tr>
 </table>
 <h2 id="timeline">THE PLANETARY PATH</h2>
 <p class="sub">Worlds unlock outward from the first of each system and the commander seat opens last, so this is the order the campaign is actually fought in, world by world, act by act.</p>
@@ -108,7 +112,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="tl-act"><div class="tl-n">ACT<b>1</b></div><div class="tl-body">
 <div class="tl-sys"><b>THE EARTH SYSTEM</b> &middot; held by THE XENO</div>
 <div class="tl-path">
-<span class="tl-w">MERCURY</span>
+<span class="tl-w">EARTH</span>
 <span class="tl-arrow">&rsaquo;</span>
 <span class="tl-w">VENUS</span>
 <span class="tl-arrow">&rsaquo;</span>
@@ -198,36 +202,37 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 </div>
 <h2 id="oath">THE OATH <span style="color:var(--dim);font-size:12px">(campaign start)</span></h2>
 <div class="oath">
-<p><b>1.</b> September 11, 2028. One broadcast: the rock is coming, and everything else they ever hid. The harvest. The edits. Where we really stood.</p>
-<p><b>2.</b> The panic burned out in weeks. What was left underneath frightened them more: people who wanted to fight.</p>
-<p><b>3.</b> Over one last holiday season, every nation conspired as one. Families gathered. The best minds alive built two things: the intercept, and the fleet.</p>
-<p><b>4.</b> April 13, 2029. A Friday. Apophis broke against everything we had. The rock is gravel. Nobody aboard wants to go home and wait for the next secret.</p>
-<p><b>5.</b> The fleet built to save one world is departing to claim the rest. First the Moon they watched us from. Then everything. THE MANIFEST BEGINS.</p>
+<p><b>1.</b> September 11, 2028. The world received official news: the rock had changed trajectory and was on a collision course with Earth.</p>
+<p><b>2.</b> Every government laid itself bare and put on the table every solution it had been quietly cooking for decades. Nobody was surprised by how deep the drawer went. Everyone had always half known.</p>
+<p><b>3.</b> Over one last holiday season, every nation conspired as one. Families gathered. The best minds alive built two things: our protection, and our longevity.</p>
+<p><b>4.</b> Like a movie, it was a Friday the thirteenth, April 2029, when Apophis came inside a tenth of the distance to our own Moon. It did not matter. We hit it with everything we had and the rock came apart.</p>
+<p><b>5.</b> But destruction really does bring life. What came down through the fire was not rock. It was already moving, and it had been riding inside the whole time. Hell landed on Earth that Friday. THE MANIFEST BEGINS.</p>
 </div>
 <div class="note"><textarea data-note="oath" rows="1" placeholder="Notes on the oath..."></textarea></div>
 <div class="story"><span class="act">THE DEPARTURE &middot; interstitial, straight after the oath</span><p class="who">MAR. WASHINGTON, The Marshal &mdash; &ldquo;The Morning After The Thirteenth&rdquo;</p><blockquote>Eleven months ago they told us the date we would die, and everything else in the same breath. Today the rock is gravel, the fleet it paid for is fuelled, and nobody aboard wants to go home and wait for the next secret. Set course for Luna. They watched us from there for ten thousand years. We will start by knocking.</blockquote><p class="rev">The fleet built to stop Apophis was never going to stand down. The Manifest begins where the harvest began: our own Moon.</p></div>
 <h2 id="act1">ACT 1: THE EARTH SYSTEM <span style="color:var(--dim);font-size:12px">garrisoned by THE XENO</span></h2>
 <p class="scen">Take back the solar system, world by world, from the power that farmed it. Every world is somewhere humanity already built: the mirror farm it half designed, the cloud city it flew, the trench it learned to survive in. It ends on the far side of the Moon, digging out the relay that watched Earth for ten thousand years. Everything before this was travel.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>Home is the first thing worth defending and the last thing anyone offered us. The rock was hollow, and the saving was the invasion.</div>
 <div class="note"><textarea data-note="act1/scenario" rows="1" placeholder="Notes on ACT 1 as a whole..."></textarea></div>
-<h3>MERCURY</h3>
+<h3>EARTH</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_human_1.webp" alt="pcut_00_human_1" title="a human fleet of capsule ships, strap-on boosters and station modules, weld seams and thermal blankets, solar arrays folded back, reaction thrusters firing, steel blue hulls lit cold cyan, close to the viewer and filling the foreground, lit by its own running lights, arriving over a sun-scorched airless crater world filling the frame, the star enormous and white behind it, the day-night terminator cutting the planet exactly in half far below and behind. Wide orbital shot, enormous sense of scale, the fleet dominating the composition, no figures, painted in steel blue and neon cyan with warm highlights">
-<span class="key">pcut_00_human_1</span><p>We built half of these mirrors. The other half went up to a specification nobody at the agency will admit to signing. Burn in.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_human_1.webp" alt="pcut_00_human_1" title="a human fleet of capsule ships, strap-on boosters and station modules, weld seams and thermal blankets, solar arrays folded back, reaction thrusters firing, steel blue hulls lit cold cyan, close to the viewer and filling the foreground, lit by its own running lights, arriving over a blue and white living world filling the frame, seen from inside the debris field of a shattered asteroid, its upper atmosphere streaked in every direction with the burning entry trails of the fragments that were inside the rock far below and behind. Wide orbital shot, enormous sense of scale, the fleet dominating the composition, no figures, painted in steel blue and neon cyan with warm highlights">
+<span class="key">pcut_00_human_1</span><p>This is the day. The rock is gravel over our heads and the gravel had passengers. Everything we thought we were surviving was the delivery.</p></div>
 <div class="beat"><span class="lbl">2. THE GROUND</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_human_2.webp" alt="pcut_00_human_2" title="human troopers in sealed pressure suits and load-bearing rigs, practical plate over fabric, plain geometric shoulder insignia, cyan helmet lamps making landfall at the floor of the Caloris impact basin, a grey shatter-ring of terraces, ranks of solar collector mirrors standing across it. Wide cinematic composition, the place dwarfing the figures, painted in steel blue and neon cyan with warm highlights">
-<span class="key">pcut_00_human_2</span><p>The floor of Caloris, a shatter-ring the size of a continent, planted end to end with solar mirrors. Whoever holds the light here holds the power budget of the inner system.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_human_2.webp" alt="pcut_00_human_2" title="human troopers in sealed pressure suits and load-bearing rigs, practical plate over fabric, plain geometric shoulder insignia, cyan helmet lamps making landfall at a coastal city under the fall, where the fragments came down whole and split open in the streets between the towers, their hulls still glowing. Wide cinematic composition, the place dwarfing the figures, painted in steel blue and neon cyan with warm highlights">
+<span class="key">pcut_00_human_2</span><p>A coastal city under the fall, where the fragments came down whole and split open in the streets. Whatever was riding inside Apophis was already awake when it landed.</p></div>
 <div class="beat"><span class="lbl">3. THE ASSAULT</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_human_3.webp" alt="pcut_00_human_3" title="human troopers in sealed pressure suits and load-bearing rigs, practical plate over fabric, plain geometric shoulder insignia, cyan helmet lamps storming mirror-tower batteries and raised sunshade walls with heat sinks buried in the regolith in a frontal assault. Muzzle flashes, blasts and smoke, debris thrown through the air, figures in violent motion close to the viewer, the peak moment of a battle. Fought at the floor of the Caloris impact basin, a grey shatter-ring of terraces, ranks of solar collector mirrors standing across it. Dynamic low angle, chaotic, painted in steel blue and neon cyan with warm highlights">
-<span class="key">pcut_00_human_3</span><p>Every mirror tower on the basin floor is also a battery, and the sunshade walls were poured thick enough to stop something considerably larger than us.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_human_3.webp" alt="pcut_00_human_3" title="human troopers in sealed pressure suits and load-bearing rigs, practical plate over fabric, plain geometric shoulder insignia, cyan helmet lamps storming the intercept batteries that broke the rock, swung around and depressed to fire level along their own avenues, and every shelter door in the district sealed from the inside in a frontal assault. Muzzle flashes, blasts and smoke, debris thrown through the air, figures in violent motion close to the viewer, the peak moment of a battle. Fought at a coastal city under the fall, where the fragments came down whole and split open in the streets between the towers, their hulls still glowing. Dynamic low angle, chaotic, painted in steel blue and neon cyan with warm highlights">
+<span class="key">pcut_00_human_3</span><p>The intercept batteries that broke the rock, swung around and depressed to fire along their own avenues, and every shelter door in the district sealed from the inside.</p></div>
 <div class="beat"><span class="lbl">4. AFTERMATH</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_human_4.webp" alt="pcut_00_human_4" title="the collector mirrors dark and slag-streaked, the terraces cratered, sunshade walls down, with one plain flag of solid unbroken colour with no writing and no emblem on it, steel-blue floodlights on scaffold towers, cyan work lamps strung between them standing among the wreckage. Wide cinematic composition, the battle over and the ground quiet, painted in steel blue and neon cyan with warm highlights">
-<span class="key">pcut_00_human_4</span><p>Caloris is ours, terrace by terrace. The towers that were aimed away from the sun are aimed back at it.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_human_4.webp" alt="pcut_00_human_4" title="the district burning in a ring around the impact scars, the opened fragment hulls cooling where they fell between the towers, with one plain flag of solid unbroken colour with no writing and no emblem on it, steel-blue floodlights on scaffold towers, cyan work lamps strung between them standing among the wreckage. Wide cinematic composition, the battle over and the ground quiet, painted in steel blue and neon cyan with warm highlights">
+<span class="key">pcut_00_human_4</span><p>The district is ours and the hulls are cooling in the street. We counted what came out of them. We are not releasing that number yet.</p></div>
 <div class="beat"><span class="lbl">5. NEW ORDER</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_human_5.webp" alt="pcut_00_human_5" title="the mirror farm relit rank by rank and feeding power into a new grid, under one plain flag of solid unbroken colour with no writing and no emblem on it, steel-blue floodlights on scaffold towers, cyan work lamps strung between them. Wide cinematic composition, the world working again under a new hand, painted in steel blue and neon cyan with warm highlights">
-<span class="key">pcut_00_human_5</span><p>The farm is relit and the grid answers to us. Somebody will eventually ask where the extra capacity came from. Nobody is asking this week.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_human_5.webp" alt="pcut_00_human_5" title="the city cleared block by block and the opened hulls dragged into the open squares where anyone can walk up and look inside them, under one plain flag of solid unbroken colour with no writing and no emblem on it, steel-blue floodlights on scaffold towers, cyan work lamps strung between them. Wide cinematic composition, the world working again under a new hand, painted in steel blue and neon cyan with warm highlights">
+<span class="key">pcut_00_human_5</span><p>The city is cleared and the hulls are dragged into the squares where anyone can walk up and look inside. Let every government that knew explain the seating.</p></div>
 </div>
-<div class="note"><textarea data-note="act1/MERCURY" rows="1" placeholder="Notes on MERCURY..."></textarea></div>
+<div class="note"><textarea data-note="act1/EARTH" rows="1" placeholder="Notes on EARTH..."></textarea></div>
 <h3>VENUS</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -346,6 +351,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act1/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act2">ACT 2: THE PLEIADES <span style="color:var(--dim);font-size:12px">garrisoned by FEDERATION OF LIGHT</span></h2>
 <p class="scen">March into the machinery of the people who watched and did nothing. The hymn foundry that certifies a world as protected, the archive of the forty, the tribunal, and the sunken vaults where Earth's own file was stamped Deferred three times. Humanity arrives to read the paperwork and leaves having published all of it.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>A secret kept by the powerful is a weapon pointed at whoever was not told. Publishing it is the only way to take the weapon away.</div>
 <div class="note"><textarea data-note="act2/scenario" rows="1" placeholder="Notes on ACT 2 as a whole..."></textarea></div>
 <h3>MAIA</h3>
 <div class="beats">
@@ -485,6 +491,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act2/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act3">ACT 3: ZETA RETICULI <span style="color:var(--dim);font-size:12px">garrisoned by THE XENO</span></h2>
 <p class="scen">The Compact's home, and the machinery of the harvest itself: the pens, the rendering yards, the gene vaults where every farmed species is filed, including ours. The hardest act to look at. It ends at Serpo, where twelve people were traded one way and never spoken of again, and where their names go up at the gate in letters a metre high.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>The grievance and the gift are one object. Every trait that keeps us alive out here was a line item in somebody else programme.</div>
 <div class="note"><textarea data-note="act3/scenario" rows="1" placeholder="Notes on ACT 3 as a whole..."></textarea></div>
 <h3>ZETA-1 b</h3>
 <div class="beats">
@@ -624,6 +631,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act3/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act4">ACT 4: BARNARD'S STAR <span style="color:var(--dim);font-size:12px">garrisoned by THE PIRATES</span></h2>
 <p class="scen">The free roads, which are not an empire but an absence of one. Wreck yards, an unlicensed refinery, an anchorage on no chart, a toll gate, a sanctuary that has never asked anyone for papers. Humanity came to liberate a network and finds that liberating it means deciding whose rules replace none at all. The Quartermaster prices the resupply and sees a fence.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>Adaptation is not consent. Worlds we free start needing us, and needing us is how it began the last time.</div>
 <div class="note"><textarea data-note="act4/scenario" rows="1" placeholder="Notes on ACT 4 as a whole..."></textarea></div>
 <h3>BARNARD b</h3>
 <div class="beats">
@@ -763,6 +771,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act4/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act5">ACT 5: TABBY'S STAR <span style="color:var(--dim);font-size:12px">garrisoned by THE XENO</span></h2>
 <p class="scen">A civilisation of machines executing orders no maker ever signed, around a star being slowly boxed in. Humanity finishes the swarm on its own plan, aims the relay back up the chain the orders came from, and decides where the light of a star goes. Undeniable, at last, and now answerable for it.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>The governors were never limiting the machines. They were keeping the operator human, and we crossed that line to win.</div>
 <div class="note"><textarea data-note="act5/scenario" rows="1" placeholder="Notes on ACT 5 as a whole..."></textarea></div>
 <h3>KIC-8462 b</h3>
 <div class="beats">

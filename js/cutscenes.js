@@ -27,11 +27,11 @@ const CUTSCENES = {
 
   human: {
     intro: [
-      { key: 'cut_human_intro_1', text: 'September 11, 2028. One broadcast: the rock is coming, and everything else they ever hid. The harvest. The edits. Where we really stood.' },
-      { key: 'cut_human_intro_2', text: 'The panic burned out in weeks. What was left underneath frightened them more: people who wanted to fight.' },
-      { key: 'cut_human_intro_3', text: 'Over one last holiday season, every nation conspired as one. Families gathered. The best minds alive built two things: the intercept, and the fleet.' },
-      { key: 'cut_human_intro_4', text: 'April 13, 2029. A Friday. Apophis broke against everything we had. The rock is gravel. Nobody aboard wants to go home and wait for the next secret.' },
-      { key: 'cut_human_intro_5', text: 'The fleet built to save one world is departing to claim the rest. First the Moon they watched us from. Then everything. THE MANIFEST BEGINS.' },
+      { key: 'cut_human_intro_1', text: 'September 11, 2028. The world received official news: the rock had changed trajectory and was on a collision course with Earth.' },
+      { key: 'cut_human_intro_2', text: 'Every government laid itself bare and put on the table every solution it had been quietly cooking for decades. Nobody was surprised by how deep the drawer went. Everyone had always half known.' },
+      { key: 'cut_human_intro_3', text: 'Over one last holiday season, every nation conspired as one. Families gathered. The best minds alive built two things: our protection, and our longevity.' },
+      { key: 'cut_human_intro_4', text: 'Like a movie, it was a Friday the thirteenth, April 2029, when Apophis came inside a tenth of the distance to our own Moon. It did not matter. We hit it with everything we had and the rock came apart.' },
+      { key: 'cut_human_intro_5', text: 'But destruction really does bring life. What came down through the fire was not rock. It was already moving, and it had been riding inside the whole time. Hell landed on Earth that Friday. THE MANIFEST BEGINS.' },
     ],
     sys: [
       { key: 'cut_human_sys1', a: 'The Earth System is ours, pole to pole and rock to rock, for the first time in ten thousand years.', b: 'And on the far side of our own Moon: their relay, still warm. They never even hid it well. They never needed to.' },

@@ -62,8 +62,12 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 .tl-arrow{color:#475569;font-size:11px}
 .tl-beat{font-size:11px;padding:3px 9px;border-radius:4px;white-space:nowrap;
   background:rgba(148,163,184,.14);color:var(--dim);letter-spacing:.04em}
-.scen{font-size:13.5px;line-height:1.65;color:#cbd5e1;margin:6px 0 18px;
+.scen{font-size:13.5px;line-height:1.65;color:#cbd5e1;margin:6px 0 10px;
   border-left:2px solid var(--fc);padding-left:16px}
+.moral{margin:0 0 18px 16px;padding:10px 14px;border-radius:6px;
+  background:rgba(148,163,184,.07);border:1px solid var(--line);font-size:13px}
+.moral b{display:block;font-size:10px;letter-spacing:.12em;color:var(--fc);margin-bottom:4px}
+.spine td.mor{font-style:italic;color:#cbd5e1}
 .note{margin:8px 0 4px}
 .note textarea{width:100%;min-height:34px;resize:vertical;background:rgba(148,163,184,.06);
   color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 10px;
@@ -95,12 +99,12 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <a href="#moments">moments</a><a href="#finale">finale</a></nav></header><main>
 <h2 id="spine">AT A GLANCE: the five acts</h2>
 <p class="sub">The order this faction takes the galaxy in. Each act ends on a commander seat, and the seat is the only slide sequence every player of this faction sees in a fixed order.</p>
-<table class="spine"><tr><th>ACT</th><th>SYSTEM</th><th>GARRISON</th><th>SEAT</th><th>STORY BEAT</th><th>WHAT IT MEANS</th></tr>
-<tr><td><b>1</b></td><td>BARNARD'S STAR</td><td>HUMANITY</td><td><b>HARBOUR NINE</b></td><td>No Flags</td><td>The Constellation obeys nothing. Which means everything it does is chosen, and chosen is a heavier word than it sounds.</td></tr>
-<tr><td><b>2</b></td><td>TABBY'S STAR</td><td>THE XENO</td><td><b>THE VEIL</b></td><td>The Price Of True</td><td>A scrapper gave away the score of a lifetime to keep the truth loose. The first chosen line is drawn, at cost, for nothing.</td></tr>
-<tr><td><b>3</b></td><td>THE EARTH SYSTEM</td><td>THE XENO</td><td><b>LUNA</b></td><td>Drift</td><td>The Chorus sends one sentence ahead of her fleet, and it names the flaw: roads with no code carry whatever pays. Freedom without choice is drift.</td></tr>
-<tr><td><b>4</b></td><td>THE PLEIADES</td><td>FEDERATION OF LIGHT</td><td><b>ALCYONE</b></td><td>The Refusal</td><td>The Warlord refuses a fortune no rule obliged him to refuse. On the free roads, the only bindings are the ones you tie yourself.</td></tr>
-<tr><td><b>5</b></td><td>ZETA RETICULI</td><td>THE XENO</td><td><b>SERPO</b></td><td>The Burn</td><td>The crew splits over a burned route: profit against a chosen line. A code you will not pay for is a slogan.</td></tr>
+<table class="spine"><tr><th>ACT</th><th>SYSTEM</th><th>GARRISON</th><th>SEAT</th><th>STORY BEAT</th><th>THE MORAL</th></tr>
+<tr><td><b>1</b></td><td>BARNARD'S STAR</td><td>HUMANITY</td><td><b>HARBOUR NINE</b></td><td>No Flags</td><td class="mor">Freedom is only the absence of a worse master until you become one. The rule survives the act and gets carved into the wall.</td></tr>
+<tr><td><b>2</b></td><td>TABBY'S STAR</td><td>THE XENO</td><td><b>THE VEIL</b></td><td>The Price Of True</td><td class="mor">Knowledge the powerful hid is loot, and the only honest plunder is giving it away. A hole left in the swarm on purpose is worth more than the toll.</td></tr>
+<tr><td><b>3</b></td><td>THE EARTH SYSTEM</td><td>THE XENO</td><td><b>LUNA</b></td><td>Drift</td><td class="mor">A road nothing steers is not free, it is drifting. Some cargo you do not sell, and saying which is the first steering we ever did.</td></tr>
+<tr><td><b>4</b></td><td>THE PLEIADES</td><td>FEDERATION OF LIGHT</td><td><b>ALCYONE</b></td><td>The Refusal</td><td class="mor">No law can make you refuse a fortune, which is exactly why refusing one counts. The floor goes to whoever stands on it, and the first was a refugee.</td></tr>
+<tr><td><b>5</b></td><td>ZETA RETICULI</td><td>THE XENO</td><td><b>SERPO</b></td><td>The Burn</td><td class="mor">The roads carry whatever pays, and that sentence had two halves we never separated. Harbour Nine still asks nobody for papers. The holds get asked now.</td></tr>
 </table>
 <h2 id="timeline">THE PLANETARY PATH</h2>
 <p class="sub">Worlds unlock outward from the first of each system and the commander seat opens last, so this is the order the campaign is actually fought in, world by world, act by act.</p>
@@ -144,7 +148,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="tl-act"><div class="tl-n">ACT<b>3</b></div><div class="tl-body">
 <div class="tl-sys"><b>THE EARTH SYSTEM</b> &middot; held by THE XENO</div>
 <div class="tl-path">
-<span class="tl-w">MERCURY</span>
+<span class="tl-w">EARTH</span>
 <span class="tl-arrow">&rsaquo;</span>
 <span class="tl-w">VENUS</span>
 <span class="tl-arrow">&rsaquo;</span>
@@ -208,6 +212,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="story"><span class="act">THE DEPARTURE &middot; interstitial, straight after the oath</span><p class="who">RAKE, The Corsair &mdash; &ldquo;No Flags&rdquo;</p><blockquote>Every power out here has a book of rules and a fence to read it behind. We have the roads. Nobody drafted us, nobody owns us, and nothing we do tonight will be because somebody made us. Remember that part. It matters later.</blockquote><p class="rev">The Constellation obeys nothing. Which means everything it does is chosen, and chosen is a heavier word than it sounds.</p></div>
 <h2 id="act1">ACT 1: BARNARD'S STAR <span style="color:var(--dim);font-size:12px">garrisoned by HUMANITY</span></h2>
 <p class="scen">Somebody is standing in the doorway. The wreck yards where every crew has a dead friend, the refinery whose fuel is free at the gate, the anchorage that has never been on a chart, the shelter you do not shoot at, and Harbour Nine, which is not a base or a port but the place any of them can always go. The rule survives the act, and gets carved into the bay wall.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>Freedom is only the absence of a worse master until you become one. The rule survives the act and gets carved into the wall.</div>
 <div class="note"><textarea data-note="act1/scenario" rows="1" placeholder="Notes on ACT 1 as a whole..."></textarea></div>
 <h3>BARNARD b</h3>
 <div class="beats">
@@ -346,6 +351,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act1/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act2">ACT 2: TABBY'S STAR <span style="color:var(--dim);font-size:12px">garrisoned by THE XENO</span></h2>
 <p class="scen">A civilisation of machines running orders from a bearing that is not on any chart. The Scrapper will not touch a field of dormant salvage and cannot say why. The roads finish the star swarm with a hole left in it on purpose, and point the relay back the way the orders came, asking who, on an open channel, for free.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>Knowledge the powerful hid is loot, and the only honest plunder is giving it away. A hole left in the swarm on purpose is worth more than the toll.</div>
 <div class="note"><textarea data-note="act2/scenario" rows="1" placeholder="Notes on ACT 2 as a whole..."></textarea></div>
 <h3>KIC-8462 b</h3>
 <div class="beats">
@@ -485,26 +491,27 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act2/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act3">ACT 3: THE EARTH SYSTEM <span style="color:var(--dim);font-size:12px">garrisoned by THE XENO</span></h2>
 <p class="scen">The solar system, where every road has a toll on it and somebody else generates all the power. The crews open the mirror farm, the cloud docks, the canyon road and the water, and post every rate where anyone can read it. At Luna they take the relay and start giving away the only thing on the roads that was never for sale.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>A road nothing steers is not free, it is drifting. Some cargo you do not sell, and saying which is the first steering we ever did.</div>
 <div class="note"><textarea data-note="act3/scenario" rows="1" placeholder="Notes on ACT 3 as a whole..."></textarea></div>
-<h3>MERCURY</h3>
+<h3>EARTH</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_pirate_1.webp" alt="pcut_00_pirate_1" title="a raider armada where no two ships came from the same yard, patchwork galleons, gutted freighters flying rigging and converted tankers strung with lights, crimson and rust, close to the viewer and filling the foreground, lit by its own running lights, arriving over a sun-scorched airless crater world filling the frame, the star enormous and white behind it, the day-night terminator cutting the planet exactly in half far below and behind. Wide orbital shot, enormous sense of scale, the fleet dominating the composition, no figures, painted in blood crimson and rust with scavenged metal">
-<span class="key">pcut_00_pirate_1</span><p>Every free port in the belt runs on power somebody else generated. Today we go and introduce ourselves to the somebody.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_pirate_1.webp" alt="pcut_00_pirate_1" title="a raider armada where no two ships came from the same yard, patchwork galleons, gutted freighters flying rigging and converted tankers strung with lights, crimson and rust, close to the viewer and filling the foreground, lit by its own running lights, arriving over a blue and white living world filling the frame, seen from inside the debris field of a shattered asteroid, its upper atmosphere streaked in every direction with the burning entry trails of the fragments that were inside the rock far below and behind. Wide orbital shot, enormous sense of scale, the fleet dominating the composition, no figures, painted in blood crimson and rust with scavenged metal">
+<span class="key">pcut_00_pirate_1</span><p>Every crew out here has hauled something OUT of this system and not one of us ever asked what was coming in. Today we go and look at the crate.</p></div>
 <div class="beat"><span class="lbl">2. THE GROUND</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_pirate_2.webp" alt="pcut_00_pirate_2" title="a mixed boarding crew of reptiloid reavers, grey scrappers, mantid gunners and humans together in scavenged pressure rigs, crimson rags making landfall at the floor of the Caloris impact basin, a grey shatter-ring of terraces, ranks of solar collector mirrors standing across it. Wide cinematic composition, the place dwarfing the figures, painted in blood crimson and rust with scavenged metal">
-<span class="key">pcut_00_pirate_2</span><p>The floor of Caloris, a shatter-ring the size of a continent, planted end to end with solar mirrors. Whoever holds the light here holds the power budget of the inner system.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_pirate_2.webp" alt="pcut_00_pirate_2" title="a mixed boarding crew of reptiloid reavers, grey scrappers, mantid gunners and humans together in scavenged pressure rigs, crimson rags making landfall at a coastal city under the fall, where the fragments came down whole and split open in the streets between the towers, their hulls still glowing. Wide cinematic composition, the place dwarfing the figures, painted in blood crimson and rust with scavenged metal">
+<span class="key">pcut_00_pirate_2</span><p>A coastal city under the fall, where the fragments came down whole and split open in the streets. Whatever was riding inside Apophis was already awake when it landed.</p></div>
 <div class="beat"><span class="lbl">3. THE ASSAULT</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_pirate_3.webp" alt="pcut_00_pirate_3" title="a mixed boarding crew of reptiloid reavers, grey scrappers, mantid gunners and humans together in scavenged pressure rigs, crimson rags storming mirror-tower batteries and raised sunshade walls with heat sinks buried in the regolith in a frontal assault. Muzzle flashes, blasts and smoke, debris thrown through the air, figures in violent motion close to the viewer, the peak moment of a battle. Fought at the floor of the Caloris impact basin, a grey shatter-ring of terraces, ranks of solar collector mirrors standing across it. Dynamic low angle, chaotic, painted in blood crimson and rust with scavenged metal">
-<span class="key">pcut_00_pirate_3</span><p>Every mirror tower on the basin floor is also a battery, and the sunshade walls were poured thick enough to stop something considerably larger than us.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_pirate_3.webp" alt="pcut_00_pirate_3" title="a mixed boarding crew of reptiloid reavers, grey scrappers, mantid gunners and humans together in scavenged pressure rigs, crimson rags storming the intercept batteries that broke the rock, swung around and depressed to fire level along their own avenues, and every shelter door in the district sealed from the inside in a frontal assault. Muzzle flashes, blasts and smoke, debris thrown through the air, figures in violent motion close to the viewer, the peak moment of a battle. Fought at a coastal city under the fall, where the fragments came down whole and split open in the streets between the towers, their hulls still glowing. Dynamic low angle, chaotic, painted in blood crimson and rust with scavenged metal">
+<span class="key">pcut_00_pirate_3</span><p>The intercept batteries that broke the rock, swung around and depressed to fire along their own avenues, and every shelter door in the district sealed from the inside.</p></div>
 <div class="beat"><span class="lbl">4. AFTERMATH</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_pirate_4.webp" alt="pcut_00_pirate_4" title="the collector mirrors dark and slag-streaked, the terraces cratered, sunshade walls down, with crimson rags and strings of scavenged lamps hung across the wreckage, and no flag of any kind standing among the wreckage. Wide cinematic composition, the battle over and the ground quiet, painted in blood crimson and rust with scavenged metal">
-<span class="key">pcut_00_pirate_4</span><p>Caloris is open. The mirrors are ours in the sense that nobody is shooting at us while we stand under them, which is the only sense we ever meant.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_pirate_4.webp" alt="pcut_00_pirate_4" title="the district burning in a ring around the impact scars, the opened fragment hulls cooling where they fell between the towers, with crimson rags and strings of scavenged lamps hung across the wreckage, and no flag of any kind standing among the wreckage. Wide cinematic composition, the battle over and the ground quiet, painted in blood crimson and rust with scavenged metal">
+<span class="key">pcut_00_pirate_4</span><p>District is ours, the hulls are open in the street, and every crew here has gone quiet standing over them.</p></div>
 <div class="beat"><span class="lbl">5. NEW ORDER</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_pirate_5.webp" alt="pcut_00_pirate_5" title="the mirror farm relit rank by rank and feeding power into a new grid, under crimson rags and strings of scavenged lamps hung across the wreckage, and no flag of any kind. Wide cinematic composition, the world working again under a new hand, painted in blood crimson and rust with scavenged metal">
-<span class="key">pcut_00_pirate_5</span><p>Farm is lit and the rate is posted where anyone can read it. First time that has been true anywhere in the inner system.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_pirate_5.webp" alt="pcut_00_pirate_5" title="the city cleared block by block and the opened hulls dragged into the open squares where anyone can walk up and look inside them, under crimson rags and strings of scavenged lamps hung across the wreckage, and no flag of any kind. Wide cinematic composition, the world working again under a new hand, painted in blood crimson and rust with scavenged metal">
+<span class="key">pcut_00_pirate_5</span><p>City runs and the hulls stay exactly where they landed, open and free to walk into. No fee. Some things you leave standing so nobody gets to forget.</p></div>
 </div>
-<div class="note"><textarea data-note="act3/MERCURY" rows="1" placeholder="Notes on MERCURY..."></textarea></div>
+<div class="note"><textarea data-note="act3/EARTH" rows="1" placeholder="Notes on EARTH..."></textarea></div>
 <h3>VENUS</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -624,6 +631,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act3/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act4">ACT 4: THE PLEIADES <span style="color:var(--dim);font-size:12px">garrisoned by FEDERATION OF LIGHT</span></h2>
 <p class="scen">The rings, from underneath. Every closed road in known space got its paperwork blessed in the Pleiades: the certification foundry, the registry that keeps forty worlds from knowing about each other, the seed vaults, the tribunal, the sealed pages. The roads open all of it, and the Warlord refuses a fortune that no law obliged him to refuse.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>No law can make you refuse a fortune, which is exactly why refusing one counts. The floor goes to whoever stands on it, and the first was a refugee.</div>
 <div class="note"><textarea data-note="act4/scenario" rows="1" placeholder="Notes on ACT 4 as a whole..."></textarea></div>
 <h3>MAIA</h3>
 <div class="beats">
@@ -763,6 +771,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act4/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act5">ACT 5: ZETA RETICULI <span style="color:var(--dim);font-size:12px">garrisoned by THE XENO</span></h2>
 <p class="scen">The place the crates came from. Half the crews out here have hauled from these yards and told themselves it was ore. The pens are opened, the ledger is published with their own manifests in it, and at Serpo the manifest goes on the gate with three seals that belong to crews still running. Harbour Nine still asks nobody for papers. The holds get asked now.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>The roads carry whatever pays, and that sentence had two halves we never separated. Harbour Nine still asks nobody for papers. The holds get asked now.</div>
 <div class="note"><textarea data-note="act5/scenario" rows="1" placeholder="Notes on ACT 5 as a whole..."></textarea></div>
 <h3>ZETA-1 b</h3>
 <div class="beats">

@@ -62,8 +62,12 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 .tl-arrow{color:#475569;font-size:11px}
 .tl-beat{font-size:11px;padding:3px 9px;border-radius:4px;white-space:nowrap;
   background:rgba(148,163,184,.14);color:var(--dim);letter-spacing:.04em}
-.scen{font-size:13.5px;line-height:1.65;color:#cbd5e1;margin:6px 0 18px;
+.scen{font-size:13.5px;line-height:1.65;color:#cbd5e1;margin:6px 0 10px;
   border-left:2px solid var(--fc);padding-left:16px}
+.moral{margin:0 0 18px 16px;padding:10px 14px;border-radius:6px;
+  background:rgba(148,163,184,.07);border:1px solid var(--line);font-size:13px}
+.moral b{display:block;font-size:10px;letter-spacing:.12em;color:var(--fc);margin-bottom:4px}
+.spine td.mor{font-style:italic;color:#cbd5e1}
 .note{margin:8px 0 4px}
 .note textarea{width:100%;min-height:34px;resize:vertical;background:rgba(148,163,184,.06);
   color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 10px;
@@ -95,12 +99,12 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <a href="#moments">moments</a><a href="#finale">finale</a></nav></header><main>
 <h2 id="spine">AT A GLANCE: the five acts</h2>
 <p class="sub">The order this faction takes the galaxy in. Each act ends on a commander seat, and the seat is the only slide sequence every player of this faction sees in a fixed order.</p>
-<table class="spine"><tr><th>ACT</th><th>SYSTEM</th><th>GARRISON</th><th>SEAT</th><th>STORY BEAT</th><th>WHAT IT MEANS</th></tr>
-<tr><td><b>1</b></td><td>ZETA RETICULI</td><td>HUMANITY</td><td><b>SERPO</b></td><td>Metabolism</td><td>The Compact is not on a crusade. Conquest is simply all it has ever known, which is a harder thing to fight than hatred.</td></tr>
-<tr><td><b>2</b></td><td>BARNARD'S STAR</td><td>THE PIRATES</td><td><b>HARBOUR NINE</b></td><td>One Voice</td><td>A hivemind heard an individual and could not digest the experience. The first crack of empathy opens inside the Harvest itself.</td></tr>
-<tr><td><b>3</b></td><td>TABBY'S STAR</td><td>THE PIRATES</td><td><b>THE VEIL</b></td><td>The Herd Answers</td><td>The defeated Marshal names the Harvest’s new condition: its oldest crop is armed, and the pasture shoots back.</td></tr>
-<tr><td><b>4</b></td><td>THE EARTH SYSTEM</td><td>HUMANITY</td><td><b>LUNA</b></td><td>The Sparing</td><td>A world left unharvested gave more than the harvest would have taken. Choice outperformed domination, measured by the Harvest’s own ledger.</td></tr>
-<tr><td><b>5</b></td><td>THE PLEIADES</td><td>FEDERATION OF LIGHT</td><td><b>ALCYONE</b></td><td>The Dark Is Ours</td><td>Given the same evidence, one commander chooses the light and one chooses the dark, and both call it being true to themselves. The Harvest splits.</td></tr>
+<table class="spine"><tr><th>ACT</th><th>SYSTEM</th><th>GARRISON</th><th>SEAT</th><th>STORY BEAT</th><th>THE MORAL</th></tr>
+<tr><td><b>1</b></td><td>ZETA RETICULI</td><td>HUMANITY</td><td><b>SERPO</b></td><td>Metabolism</td><td class="mor">A body does not vote on breathing, and that is not innocence. Under the chorus one voice sang alone, and it was not reported.</td></tr>
+<tr><td><b>2</b></td><td>BARNARD'S STAR</td><td>THE PIRATES</td><td><b>HARBOUR NINE</b></td><td>One Voice</td><td class="mor">Every fence is also a ledger, and a ledger works only while the entries cannot compare notes. The scavengers were always the ones selling.</td></tr>
+<tr><td><b>3</b></td><td>TABBY'S STAR</td><td>THE PIRATES</td><td><b>THE VEIL</b></td><td>The Herd Answers</td><td class="mor">A yield that does not have to be bred, chased or persuaded is a thing the Harvest has no line for. Scale is not the same as appetite.</td></tr>
+<tr><td><b>4</b></td><td>THE EARTH SYSTEM</td><td>HUMANITY</td><td><b>LUNA</b></td><td>The Sparing</td><td class="mor">The farmer is now the herd. We watch Earth again, and the Hivemind asks what the body does if the herd waves back.</td></tr>
+<tr><td><b>5</b></td><td>THE PLEIADES</td><td>FEDERATION OF LIGHT</td><td><b>ALCYONE</b></td><td>The Dark Is Ours</td><td class="mor">Leaving the dark is a choice, and staying is also one. The proof came in on our own ledger and it came too late to spend.</td></tr>
 </table>
 <h2 id="timeline">THE PLANETARY PATH</h2>
 <p class="sub">Worlds unlock outward from the first of each system and the commander seat opens last, so this is the order the campaign is actually fought in, world by world, act by act.</p>
@@ -162,7 +166,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="tl-act"><div class="tl-n">ACT<b>4</b></div><div class="tl-body">
 <div class="tl-sys"><b>THE EARTH SYSTEM</b> &middot; held by HUMANITY</div>
 <div class="tl-path">
-<span class="tl-w">MERCURY</span>
+<span class="tl-w">EARTH</span>
 <span class="tl-arrow">&rsaquo;</span>
 <span class="tl-w">VENUS</span>
 <span class="tl-arrow">&rsaquo;</span>
@@ -208,6 +212,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="story"><span class="act">THE DEPARTURE &middot; interstitial, straight after the oath</span><p class="who">SEVRA, The Necrotist &mdash; &ldquo;Metabolism&rdquo;</p><blockquote>The herd broke its fence, so we widen the pasture. Do not dress it in flags: we are not angry and we are not afraid. We conquer the way you breathe, because stopping is not a thing the body knows how to choose. Take the system. The Harvest does not pause to be understood.</blockquote><p class="rev">The Compact is not on a crusade. Conquest is simply all it has ever known, which is a harder thing to fight than hatred.</p></div>
 <h2 id="act1">ACT 1: ZETA RETICULI <span style="color:var(--dim);font-size:12px">garrisoned by HUMANITY</span></h2>
 <p class="scen">The pasture, reclaimed. The herd broke its fence and walked into the room it was raised in, and the Compact takes back its pens, its rendering yards, its gene vaults and its chorus spire one at a time. Beneath the chorus, in the dark of the pens, the Hivemind hears one voice singing alone and does not report it.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>A body does not vote on breathing, and that is not innocence. Under the chorus one voice sang alone, and it was not reported.</div>
 <div class="note"><textarea data-note="act1/scenario" rows="1" placeholder="Notes on ACT 1 as a whole..."></textarea></div>
 <h3>ZETA-1 b</h3>
 <div class="beats">
@@ -346,6 +351,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act1/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act2">ACT 2: BARNARD'S STAR <span style="color:var(--dim);font-size:12px">garrisoned by THE PIRATES</span></h2>
 <p class="scen">The scavengers, who move what the Compact renders and take a margin on it. Wreck yards, a refinery, a hidden anchorage, a toll gate, a sanctuary full of unindexed stock. Efficient, parasitic, and now ours. The Hivemind is told the intake figure at Harbour Nine and asks, again, about the singing.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>Every fence is also a ledger, and a ledger works only while the entries cannot compare notes. The scavengers were always the ones selling.</div>
 <div class="note"><textarea data-note="act2/scenario" rows="1" placeholder="Notes on ACT 2 as a whole..."></textarea></div>
 <h3>BARNARD b</h3>
 <div class="beats">
@@ -485,6 +491,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act2/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act3">ACT 3: TABBY'S STAR <span style="color:var(--dim);font-size:12px">garrisoned by THE PIRATES</span></h2>
 <p class="scen">A star being harvested whole by machines that produce and never consume. The Compact has farmed worlds for ten thousand cycles and never once thought at this scale. It takes the lattice, and learns that a yield which does not have to be bred, chased or persuaded is a thing it has no ledger line for.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>A yield that does not have to be bred, chased or persuaded is a thing the Harvest has no line for. Scale is not the same as appetite.</div>
 <div class="note"><textarea data-note="act3/scenario" rows="1" placeholder="Notes on ACT 3 as a whole..."></textarea></div>
 <h3>KIC-8462 b</h3>
 <div class="beats">
@@ -624,26 +631,27 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act3/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act4">ACT 4: THE EARTH SYSTEM <span style="color:var(--dim);font-size:12px">garrisoned by HUMANITY</span></h2>
 <p class="scen">The herd's own system, taken back the other way. Mirrors, cloud platforms, a canyon full of warmth, water ice, an unfarmed ocean, and finally the observation post on the far side of their moon. The Compact is watching Earth again, and the Hivemind asks what the body should do if the herd waves.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>The farmer is now the herd. We watch Earth again, and the Hivemind asks what the body does if the herd waves back.</div>
 <div class="note"><textarea data-note="act4/scenario" rows="1" placeholder="Notes on ACT 4 as a whole..."></textarea></div>
-<h3>MERCURY</h3>
+<h3>EARTH</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_xeno_1.webp" alt="pcut_00_xeno_1" title="a Compact swarm of chitin and membrane hulls, ribbed and wet and jointed, violet carapace with magenta light emitted from inside the bodies, close to the viewer and filling the foreground, lit by its own running lights, arriving over a sun-scorched airless crater world filling the frame, the star enormous and white behind it, the day-night terminator cutting the planet exactly in half far below and behind. Wide orbital shot, enormous sense of scale, the fleet dominating the composition, no figures, painted in violet and magenta with iridescent chitin">
-<span class="key">pcut_00_xeno_1</span><p>Heat, metal, ranked and reflective. The herd terraced an entire basin to drink from a star and did not once think to look up.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_xeno_1.webp" alt="pcut_00_xeno_1" title="a Compact swarm of chitin and membrane hulls, ribbed and wet and jointed, violet carapace with magenta light emitted from inside the bodies, close to the viewer and filling the foreground, lit by its own running lights, arriving over a blue and white living world filling the frame, seen from inside the debris field of a shattered asteroid, its upper atmosphere streaked in every direction with the burning entry trails of the fragments that were inside the rock far below and behind. Wide orbital shot, enormous sense of scale, the fleet dominating the composition, no figures, painted in violet and magenta with iridescent chitin">
+<span class="key">pcut_00_xeno_1</span><p>The delivery world. Everything inside that rock was ours, seeded and patient, and the herd broke the package open ahead of schedule. Collect what survived.</p></div>
 <div class="beat"><span class="lbl">2. THE GROUND</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_xeno_2.webp" alt="pcut_00_xeno_2" title="Compact drones of chitin and membrane with too many joints and eyes set wrong, bioluminescent veins under the carapace making landfall at the floor of the Caloris impact basin, a grey shatter-ring of terraces, ranks of solar collector mirrors standing across it. Wide cinematic composition, the place dwarfing the figures, painted in violet and magenta with iridescent chitin">
-<span class="key">pcut_00_xeno_2</span><p>The floor of Caloris, a shatter-ring the size of a continent, planted end to end with solar mirrors. Whoever holds the light here holds the power budget of the inner system.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_xeno_2.webp" alt="pcut_00_xeno_2" title="Compact drones of chitin and membrane with too many joints and eyes set wrong, bioluminescent veins under the carapace making landfall at a coastal city under the fall, where the fragments came down whole and split open in the streets between the towers, their hulls still glowing. Wide cinematic composition, the place dwarfing the figures, painted in violet and magenta with iridescent chitin">
+<span class="key">pcut_00_xeno_2</span><p>A coastal city under the fall, where the fragments came down whole and split open in the streets. Whatever was riding inside Apophis was already awake when it landed.</p></div>
 <div class="beat"><span class="lbl">3. THE ASSAULT</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_xeno_3.webp" alt="pcut_00_xeno_3" title="Compact drones of chitin and membrane with too many joints and eyes set wrong, bioluminescent veins under the carapace storming mirror-tower batteries and raised sunshade walls with heat sinks buried in the regolith in a frontal assault. Muzzle flashes, blasts and smoke, debris thrown through the air, figures in violent motion close to the viewer, the peak moment of a battle. Fought at the floor of the Caloris impact basin, a grey shatter-ring of terraces, ranks of solar collector mirrors standing across it. Dynamic low angle, chaotic, painted in violet and magenta with iridescent chitin">
-<span class="key">pcut_00_xeno_3</span><p>Every mirror tower on the basin floor is also a battery, and the sunshade walls were poured thick enough to stop something considerably larger than us.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_xeno_3.webp" alt="pcut_00_xeno_3" title="Compact drones of chitin and membrane with too many joints and eyes set wrong, bioluminescent veins under the carapace storming the intercept batteries that broke the rock, swung around and depressed to fire level along their own avenues, and every shelter door in the district sealed from the inside in a frontal assault. Muzzle flashes, blasts and smoke, debris thrown through the air, figures in violent motion close to the viewer, the peak moment of a battle. Fought at a coastal city under the fall, where the fragments came down whole and split open in the streets between the towers, their hulls still glowing. Dynamic low angle, chaotic, painted in violet and magenta with iridescent chitin">
+<span class="key">pcut_00_xeno_3</span><p>The intercept batteries that broke the rock, swung around and depressed to fire along their own avenues, and every shelter door in the district sealed from the inside.</p></div>
 <div class="beat"><span class="lbl">4. AFTERMATH</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_xeno_4.webp" alt="pcut_00_xeno_4" title="the collector mirrors dark and slag-streaked, the terraces cratered, sunshade walls down, with violet resin growth creeping over every surface, magenta light burning up through it from underneath standing among the wreckage. Wide cinematic composition, the battle over and the ground quiet, painted in violet and magenta with iridescent chitin">
-<span class="key">pcut_00_xeno_4</span><p>The mirrors are cold and the floor is ours. The yield here was never bodies. It was the labour that built all this, and it has been collected.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_xeno_4.webp" alt="pcut_00_xeno_4" title="the district burning in a ring around the impact scars, the opened fragment hulls cooling where they fell between the towers, with violet resin growth creeping over every surface, magenta light burning up through it from underneath standing among the wreckage. Wide cinematic composition, the battle over and the ground quiet, painted in violet and magenta with iridescent chitin">
+<span class="key">pcut_00_xeno_4</span><p>The district is taken and the hulls are recovered. The seeding was early by their calendar and precisely on time by ours.</p></div>
 <div class="beat"><span class="lbl">5. NEW ORDER</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_xeno_5.webp" alt="pcut_00_xeno_5" title="the mirror farm relit rank by rank and feeding power into a new grid, under violet resin growth creeping over every surface, magenta light burning up through it from underneath. Wide cinematic composition, the world working again under a new hand, painted in violet and magenta with iridescent chitin">
-<span class="key">pcut_00_xeno_5</span><p>Caloris feeds the Compact. Mark the arithmetic: it produces more under us than it ever did under them, and nothing on it is alive enough to mind.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_xeno_5.webp" alt="pcut_00_xeno_5" title="the city cleared block by block and the opened hulls dragged into the open squares where anyone can walk up and look inside them, under violet resin growth creeping over every surface, magenta light burning up through it from underneath. Wide cinematic composition, the world working again under a new hand, painted in violet and magenta with iridescent chitin">
+<span class="key">pcut_00_xeno_5</span><p>The city produces again under supervision, and the hulls stay in the streets. A pen learns faster when it can see the crate it arrived in.</p></div>
 </div>
-<div class="note"><textarea data-note="act4/MERCURY" rows="1" placeholder="Notes on MERCURY..."></textarea></div>
+<div class="note"><textarea data-note="act4/EARTH" rows="1" placeholder="Notes on EARTH..."></textarea></div>
 <h3>VENUS</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -763,6 +771,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act4/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act5">ACT 5: THE PLEIADES <span style="color:var(--dim);font-size:12px">garrisoned by FEDERATION OF LIGHT</span></h2>
 <p class="scen">The guardians' cathedral, and the end of one Compact. The chorus occupies the Cathedral of Rings and finds the acoustics superior. The Hivemind, having spared one world and watched it out-produce the pens, asks that the seat not be filled; the Blight hears the same numbers and declines them. For the first time in the Compact's history, WE means two different things.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>Leaving the dark is a choice, and staying is also one. The proof came in on our own ledger and it came too late to spend.</div>
 <div class="note"><textarea data-note="act5/scenario" rows="1" placeholder="Notes on ACT 5 as a whole..."></textarea></div>
 <h3>MAIA</h3>
 <div class="beats">

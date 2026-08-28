@@ -32,7 +32,7 @@ for (const f of ['config', 'lore', 'factions', 'galaxy', 'story', 'cutscenes',
    lift the bindings out with an in-context expression. */
 const G = vm.runInContext(
   '({ GX_UNIVERSE_ORDER, GX_HOME_SYSTEMS, GX_V2_HOLDER, CUTSCENES, PLANET_CUTS, ' +
-  'PLANET_MOMENTS, STORY, STORY_ACTS, ACT_SCENARIOS, COMMANDER_ROSTER, FACTIONS })', ctx);
+  'PLANET_MOMENTS, STORY, STORY_ACTS, ACT_SCENARIOS, ACT_MORALS, COMMANDER_ROSTER, FACTIONS })', ctx);
 
 /* The prompt subjects, for the hover title on each plate. Read from the same
    catalogue the renderer used, so a drifted prompt shows up here too. */
@@ -126,8 +126,12 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 .tl-arrow{color:#475569;font-size:11px}
 .tl-beat{font-size:11px;padding:3px 9px;border-radius:4px;white-space:nowrap;
   background:rgba(148,163,184,.14);color:var(--dim);letter-spacing:.04em}
-.scen{font-size:13.5px;line-height:1.65;color:#cbd5e1;margin:6px 0 18px;
+.scen{font-size:13.5px;line-height:1.65;color:#cbd5e1;margin:6px 0 10px;
   border-left:2px solid var(--fc);padding-left:16px}
+.moral{margin:0 0 18px 16px;padding:10px 14px;border-radius:6px;
+  background:rgba(148,163,184,.07);border:1px solid var(--line);font-size:13px}
+.moral b{display:block;font-size:10px;letter-spacing:.12em;color:var(--fc);margin-bottom:4px}
+.spine td.mor{font-style:italic;color:#cbd5e1}
 .note{margin:8px 0 4px}
 .note textarea{width:100%;min-height:34px;resize:vertical;background:rgba(148,163,184,.06);
   color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 10px;
@@ -266,13 +270,14 @@ function page(fac) {
   w('<p class="sub">The order this faction takes the galaxy in. Each act ends on a commander seat, ' +
     'and the seat is the only slide sequence every player of this faction sees in a fixed order.</p>');
   w('<table class="spine"><tr><th>ACT</th><th>SYSTEM</th><th>GARRISON</th><th>SEAT</th>' +
-    '<th>STORY BEAT</th><th>WHAT IT MEANS</th></tr>');
+    '<th>STORY BEAT</th><th>THE MORAL</th></tr>');
   acts.forEach(a => {
     const seatW = G.PLANET_CUTS['' + a.si + '6'];
     const b = G.STORY[fac][a.tier];
     w('<tr><td><b>' + (a.tier + 1) + '</b></td><td>' + esc(a.sys.name) + '</td>' +
       '<td>' + esc(facName(a.holder)) + '</td><td><b>' + esc(seatW.name) + '</b></td>' +
-      '<td>' + esc(b.title) + '</td><td>' + esc(b.reveal || '') + '</td></tr>');
+      '<td>' + esc(b.title) + '</td><td class="mor">' +
+      esc((G.ACT_MORALS[fac] && G.ACT_MORALS[fac][a.tier]) || b.reveal || '') + '</td></tr>');
   });
   w('</table>');
 
@@ -312,6 +317,8 @@ function page(fac) {
       ' <span style="color:var(--dim);font-size:12px">garrisoned by ' + esc(facName(a.holder)) + '</span></h2>');
     const scen = G.ACT_SCENARIOS[fac] && G.ACT_SCENARIOS[fac][a.tier];
     if (scen) w('<p class="scen">' + esc(scen) + '</p>');
+    const mor = G.ACT_MORALS[fac] && G.ACT_MORALS[fac][a.tier];
+    if (mor) w('<div class="moral"><b>THE MORAL OF THIS ACT</b>' + esc(mor) + '</div>');
     w(noteBox('act' + (a.tier + 1) + '/scenario', 'Notes on ACT ' + (a.tier + 1) + ' as a whole...'));
     for (let wi = 0; wi < 7; wi++) {
       const e = G.PLANET_CUTS['' + a.si + wi];

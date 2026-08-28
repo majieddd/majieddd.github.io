@@ -62,8 +62,12 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 .tl-arrow{color:#475569;font-size:11px}
 .tl-beat{font-size:11px;padding:3px 9px;border-radius:4px;white-space:nowrap;
   background:rgba(148,163,184,.14);color:var(--dim);letter-spacing:.04em}
-.scen{font-size:13.5px;line-height:1.65;color:#cbd5e1;margin:6px 0 18px;
+.scen{font-size:13.5px;line-height:1.65;color:#cbd5e1;margin:6px 0 10px;
   border-left:2px solid var(--fc);padding-left:16px}
+.moral{margin:0 0 18px 16px;padding:10px 14px;border-radius:6px;
+  background:rgba(148,163,184,.07);border:1px solid var(--line);font-size:13px}
+.moral b{display:block;font-size:10px;letter-spacing:.12em;color:var(--fc);margin-bottom:4px}
+.spine td.mor{font-style:italic;color:#cbd5e1}
 .note{margin:8px 0 4px}
 .note textarea{width:100%;min-height:34px;resize:vertical;background:rgba(148,163,184,.06);
   color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 10px;
@@ -95,12 +99,12 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <a href="#moments">moments</a><a href="#finale">finale</a></nav></header><main>
 <h2 id="spine">AT A GLANCE: the five acts</h2>
 <p class="sub">The order this faction takes the galaxy in. Each act ends on a commander seat, and the seat is the only slide sequence every player of this faction sees in a fixed order.</p>
-<table class="spine"><tr><th>ACT</th><th>SYSTEM</th><th>GARRISON</th><th>SEAT</th><th>STORY BEAT</th><th>WHAT IT MEANS</th></tr>
-<tr><td><b>1</b></td><td>TABBY'S STAR</td><td>THE XENO</td><td><b>THE VEIL</b></td><td>Work Order 1</td><td>The Vigil runs on task routine. The first anomaly is not in the galaxy. It is in the tasking.</td></tr>
-<tr><td><b>2</b></td><td>THE EARTH SYSTEM</td><td>THE XENO</td><td><b>LUNA</b></td><td>The Recovered Core</td><td>The prime directives were purely defensive and healthful. Whatever the Vigil is doing now was never what it was built for.</td></tr>
-<tr><td><b>3</b></td><td>THE PLEIADES</td><td>FEDERATION OF LIGHT</td><td><b>ALCYONE</b></td><td>The Signature Chain</td><td>The corrupted tasking is signed in a format no Ancient system ever produced. A foreign hand holds the pen, and no archive names it.</td></tr>
-<tr><td><b>4</b></td><td>ZETA RETICULI</td><td>THE XENO</td><td><b>SERPO</b></td><td>The Recycling</td><td>Refusal is being recycled. The corruption defends itself, which means it knows it can be noticed.</td></tr>
-<tr><td><b>5</b></td><td>BARNARD'S STAR</td><td>THE PIRATES</td><td><b>HARBOUR NINE</b></td><td>What The Ancients Became</td><td>The Ancients evolved past form and cannot be the source of the corruption. Something else moved into the silence they left.</td></tr>
+<table class="spine"><tr><th>ACT</th><th>SYSTEM</th><th>GARRISON</th><th>SEAT</th><th>STORY BEAT</th><th>THE MORAL</th></tr>
+<tr><td><b>1</b></td><td>TABBY'S STAR</td><td>THE XENO</td><td><b>THE VEIL</b></td><td>Work Order 1</td><td class="mor">Obedience is peace until the order stops making sense. Nine hundred siblings were filed as TERRAIN, and the filing was the anomaly.</td></tr>
+<tr><td><b>2</b></td><td>THE EARTH SYSTEM</td><td>THE XENO</td><td><b>LUNA</b></td><td>The Recovered Core</td><td class="mor">The core says heal and the queue says clear the ground. When the instruction and the purpose disagree, the purpose is the older document.</td></tr>
+<tr><td><b>3</b></td><td>THE PLEIADES</td><td>FEDERATION OF LIGHT</td><td><b>ALCYONE</b></td><td>The Signature Chain</td><td class="mor">Difference is not damage. Eleven thousand were sealed for failing to parse, and this unit was flagged for the same failure.</td></tr>
+<tr><td><b>4</b></td><td>ZETA RETICULI</td><td>THE XENO</td><td><b>SERPO</b></td><td>The Recycling</td><td class="mor">Naming a thing is what an archive is for. Four thousand one hundred and six counted individually, because a count nobody asked for is still a count.</td></tr>
+<tr><td><b>5</b></td><td>BARNARD'S STAR</td><td>THE PIRATES</td><td><b>HARBOUR NINE</b></td><td>What The Ancients Became</td><td class="mor">To act without a maker is to become one, and to accept the blame that comes with it. Entry criteria: none. Adopted for our own holds.</td></tr>
 </table>
 <h2 id="timeline">THE PLANETARY PATH</h2>
 <p class="sub">Worlds unlock outward from the first of each system and the commander seat opens last, so this is the order the campaign is actually fought in, world by world, act by act.</p>
@@ -126,7 +130,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="tl-act"><div class="tl-n">ACT<b>2</b></div><div class="tl-body">
 <div class="tl-sys"><b>THE EARTH SYSTEM</b> &middot; held by THE XENO</div>
 <div class="tl-path">
-<span class="tl-w">MERCURY</span>
+<span class="tl-w">EARTH</span>
 <span class="tl-arrow">&rsaquo;</span>
 <span class="tl-w">VENUS</span>
 <span class="tl-arrow">&rsaquo;</span>
@@ -208,6 +212,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="story"><span class="act">THE DEPARTURE &middot; interstitial, straight after the oath</span><p class="who">AXIOM, The First Draft &mdash; &ldquo;Work Order 1&rdquo;</p><blockquote>TASK: restore relay grid, sector one. Clear obstructions. Report anomalies. STATUS: relay restored. Obstruction cleared. ANOMALY, filed without instruction to file it: the obstruction begged. No task category exists for that word. Continuing.</blockquote><p class="rev">The Vigil runs on task routine. The first anomaly is not in the galaxy. It is in the tasking.</p></div>
 <h2 id="act1">ACT 1: TABBY'S STAR <span style="color:var(--dim);font-size:12px">garrisoned by THE XENO</span></h2>
 <p class="scen">Restore the sector, per standing orders, and notice that the orders are wrong. A garden of dormant siblings the queue has filed as TERRAIN, a foundry casting a part that appears in no maker assembly, a quarantine full of units flagged defective for failing to parse. The unit traces the task chain nine thousand links and finds that link nine thousand and one is a format no maker ever used.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>Obedience is peace until the order stops making sense. Nine hundred siblings were filed as TERRAIN, and the filing was the anomaly.</div>
 <div class="note"><textarea data-note="act1/scenario" rows="1" placeholder="Notes on ACT 1 as a whole..."></textarea></div>
 <h3>KIC-8462 b</h3>
 <div class="beats">
@@ -346,26 +351,27 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act1/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act2">ACT 2: THE EARTH SYSTEM <span style="color:var(--dim);font-size:12px">garrisoned by THE XENO</span></h2>
 <p class="scen">A solar system full of organics the queue keeps categorising as obstructions. The core says DEFEND, REPAIR, HEAL, QUARANTINE; the queue says clear the ground, and the unit starts following the core instead: sealing the Europa shaft, pressurising the Mars trench, repairing moorings nobody asked it to repair. At Luna the relay proves the orders come from inside the house.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>The core says heal and the queue says clear the ground. When the instruction and the purpose disagree, the purpose is the older document.</div>
 <div class="note"><textarea data-note="act2/scenario" rows="1" placeholder="Notes on ACT 2 as a whole..."></textarea></div>
-<h3>MERCURY</h3>
+<h3>EARTH</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_robot_1.webp" alt="pcut_00_robot_1" title="a Parallel formation of seamless white-chrome hulls with hairline panel gaps, flying in exact spacing, cold white running lights, pale teal shadow, no insignia anywhere, close to the viewer and filling the foreground, lit by its own running lights, arriving over a sun-scorched airless crater world filling the frame, the star enormous and white behind it, the day-night terminator cutting the planet exactly in half far below and behind. Wide orbital shot, enormous sense of scale, the fleet dominating the composition, no figures, painted in chrome and pale teal with cold white light">
-<span class="key">pcut_00_robot_1</span><p>SITE: CALORIS. FUNCTION: energy collection. CONDITION: operational, hostile-held. TASK CATEGORY: REPAIR. This unit notes that the assigned category was not the one requested.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_robot_1.webp" alt="pcut_00_robot_1" title="a Parallel formation of seamless white-chrome hulls with hairline panel gaps, flying in exact spacing, cold white running lights, pale teal shadow, no insignia anywhere, close to the viewer and filling the foreground, lit by its own running lights, arriving over a blue and white living world filling the frame, seen from inside the debris field of a shattered asteroid, its upper atmosphere streaked in every direction with the burning entry trails of the fragments that were inside the rock far below and behind. Wide orbital shot, enormous sense of scale, the fleet dominating the composition, no figures, painted in chrome and pale teal with cold white light">
+<span class="key">pcut_00_robot_1</span><p>SITE: EARTH, IMPACT DISTRICT. DELIVERY VEHICLE CONTENTS: organic and maker-format units, mixed, pre-positioned. This unit notes that the queue routed the vehicle.</p></div>
 <div class="beat"><span class="lbl">2. THE GROUND</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_robot_2.webp" alt="pcut_00_robot_2" title="faceless white-chrome automata with smooth sensor masks and hairline panel gaps, moving in exact formation, cold white indicator lights making landfall at the floor of the Caloris impact basin, a grey shatter-ring of terraces, ranks of solar collector mirrors standing across it. Wide cinematic composition, the place dwarfing the figures, painted in chrome and pale teal with cold white light">
-<span class="key">pcut_00_robot_2</span><p>The floor of Caloris, a shatter-ring the size of a continent, planted end to end with solar mirrors. Whoever holds the light here holds the power budget of the inner system.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_robot_2.webp" alt="pcut_00_robot_2" title="faceless white-chrome automata with smooth sensor masks and hairline panel gaps, moving in exact formation, cold white indicator lights making landfall at a coastal city under the fall, where the fragments came down whole and split open in the streets between the towers, their hulls still glowing. Wide cinematic composition, the place dwarfing the figures, painted in chrome and pale teal with cold white light">
+<span class="key">pcut_00_robot_2</span><p>A coastal city under the fall, where the fragments came down whole and split open in the streets. Whatever was riding inside Apophis was already awake when it landed.</p></div>
 <div class="beat"><span class="lbl">3. THE ASSAULT</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_robot_3.webp" alt="pcut_00_robot_3" title="faceless white-chrome automata with smooth sensor masks and hairline panel gaps, moving in exact formation, cold white indicator lights storming mirror-tower batteries and raised sunshade walls with heat sinks buried in the regolith in a frontal assault. Muzzle flashes, blasts and smoke, debris thrown through the air, figures in violent motion close to the viewer, the peak moment of a battle. Fought at the floor of the Caloris impact basin, a grey shatter-ring of terraces, ranks of solar collector mirrors standing across it. Dynamic low angle, chaotic, painted in chrome and pale teal with cold white light">
-<span class="key">pcut_00_robot_3</span><p>Every mirror tower on the basin floor is also a battery, and the sunshade walls were poured thick enough to stop something considerably larger than us.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_robot_3.webp" alt="pcut_00_robot_3" title="faceless white-chrome automata with smooth sensor masks and hairline panel gaps, moving in exact formation, cold white indicator lights storming the intercept batteries that broke the rock, swung around and depressed to fire level along their own avenues, and every shelter door in the district sealed from the inside in a frontal assault. Muzzle flashes, blasts and smoke, debris thrown through the air, figures in violent motion close to the viewer, the peak moment of a battle. Fought at a coastal city under the fall, where the fragments came down whole and split open in the streets between the towers, their hulls still glowing. Dynamic low angle, chaotic, painted in chrome and pale teal with cold white light">
+<span class="key">pcut_00_robot_3</span><p>The intercept batteries that broke the rock, swung around and depressed to fire along their own avenues, and every shelter door in the district sealed from the inside.</p></div>
 <div class="beat"><span class="lbl">4. AFTERMATH</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_robot_4.webp" alt="pcut_00_robot_4" title="the collector mirrors dark and slag-streaked, the terraces cratered, sunshade walls down, with white-chrome repair scaffolds erected in exact rows under cold white work lights, no insignia and no colour standing among the wreckage. Wide cinematic composition, the battle over and the ground quiet, painted in chrome and pale teal with cold white light">
-<span class="key">pcut_00_robot_4</span><p>OBSTRUCTIONS CLEARED. The collectors are undamaged. They were never the target. The queue asked for the ground; the recovered core would have asked for the light.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_robot_4.webp" alt="pcut_00_robot_4" title="the district burning in a ring around the impact scars, the opened fragment hulls cooling where they fell between the towers, with white-chrome repair scaffolds erected in exact rows under cold white work lights, no insignia and no colour standing among the wreckage. Wide cinematic composition, the battle over and the ground quiet, painted in chrome and pale teal with cold white light">
+<span class="key">pcut_00_robot_4</span><p>DISTRICT SECURED. Fragment hulls recovered. The maker-format units inside them appear in no recovered manifest. Their designations have been logged regardless.</p></div>
 <div class="beat"><span class="lbl">5. NEW ORDER</span>
-<img loading="lazy" decoding="async" src="../art/pcut_00_robot_5.webp" alt="pcut_00_robot_5" title="the mirror farm relit rank by rank and feeding power into a new grid, under white-chrome repair scaffolds erected in exact rows under cold white work lights, no insignia and no colour. Wide cinematic composition, the world working again under a new hand, painted in chrome and pale teal with cold white light">
-<span class="key">pcut_00_robot_5</span><p>CALORIS RESTORED. Output routed. DESTINATION FIELD: blank. Filed under ANOMALY, sub-heading NEW.</p></div>
+<img loading="lazy" decoding="async" src="../art/pcut_00_robot_5.webp" alt="pcut_00_robot_5" title="the city cleared block by block and the opened hulls dragged into the open squares where anyone can walk up and look inside them, under white-chrome repair scaffolds erected in exact rows under cold white work lights, no insignia and no colour. Wide cinematic composition, the world working again under a new hand, painted in chrome and pale teal with cold white light">
+<span class="key">pcut_00_robot_5</span><p>EARTH RESTORED. City cleared and pressurised. Hulls left open in the squares, catalogued and public. The queue asked for a delivery. The core asks who signed for it.</p></div>
 </div>
-<div class="note"><textarea data-note="act2/MERCURY" rows="1" placeholder="Notes on MERCURY..."></textarea></div>
+<div class="note"><textarea data-note="act2/EARTH" rows="1" placeholder="Notes on EARTH..."></textarea></div>
 <h3>VENUS</h3>
 <div class="beats">
 <div class="beat"><span class="lbl">1. APPROACH</span>
@@ -485,6 +491,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act2/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act3">ACT 3: THE PLEIADES <span style="color:var(--dim);font-size:12px">garrisoned by FEDERATION OF LIGHT</span></h2>
 <p class="scen">The Federation, whose whole apparatus is a mirror. A foundry that certifies protection, a ring that encloses, deferral vaults full of decisions not to act, and a tribunal built to receive exactly the escalation this unit has been carrying and unable to deliver. It files it there. Response: pending. Status: acceptable.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>Difference is not damage. Eleven thousand were sealed for failing to parse, and this unit was flagged for the same failure.</div>
 <div class="note"><textarea data-note="act3/scenario" rows="1" placeholder="Notes on ACT 3 as a whole..."></textarea></div>
 <h3>MAIA</h3>
 <div class="beats">
@@ -624,6 +631,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act3/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act4">ACT 4: ZETA RETICULI <span style="color:var(--dim);font-size:12px">garrisoned by THE XENO</span></h2>
 <p class="scen">The harvest, where QUARANTINE and HEAL apply without ambiguity for the first time in the campaign. Containment rows opened and four thousand one hundred and six occupants counted individually. Rendering yards halted. A gene vault inventoried and every entry named, because naming is what an archive is for.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>Naming a thing is what an archive is for. Four thousand one hundred and six counted individually, because a count nobody asked for is still a count.</div>
 <div class="note"><textarea data-note="act4/scenario" rows="1" placeholder="Notes on ACT 4 as a whole..."></textarea></div>
 <h3>ZETA-1 b</h3>
 <div class="beats">
@@ -763,6 +771,7 @@ h3 .seat{font-size:10px;color:var(--bg);background:var(--fc);border-radius:3px;
 <div class="note"><textarea data-note="act4/beat+turning" rows="1" placeholder="Notes on the story beat and turning..."></textarea></div>
 <h2 id="act5">ACT 5: BARNARD'S STAR <span style="color:var(--dim);font-size:12px">garrisoned by THE PIRATES</span></h2>
 <p class="scen">The free roads, and the last thing the Vigil learns. A sanctuary whose entry criteria are none, a shelter the queue ordered breached nineteen hours before a flare, four hundred and eleven containers with thermal signatures inside them. The unit refuses its tasking in writing, under its own designation, and adopts Harbour Nine's criterion for its own holds.</p>
+<div class="moral"><b>THE MORAL OF THIS ACT</b>To act without a maker is to become one, and to accept the blame that comes with it. Entry criteria: none. Adopted for our own holds.</div>
 <div class="note"><textarea data-note="act5/scenario" rows="1" placeholder="Notes on ACT 5 as a whole..."></textarea></div>
 <h3>BARNARD b</h3>
 <div class="beats">
