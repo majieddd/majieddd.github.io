@@ -73,7 +73,7 @@ const STORY_FIGURES = {
    the act they just finished is a fortune cookie. */
 const ACT_MORALS = {
   human: [
-    'Home is the first thing worth defending and the last thing anyone offered us. The rock was hollow, and the saving was the invasion.',
+    'Nobody is coming, and waiting is just a slower way of losing. There was a door in our own sky and not one of them mentioned it. A species this small stops being somebody else\'s schedule by going out and not stopping.',
     'A secret kept by the powerful is a weapon pointed at whoever was not told. Publishing it is the only way to take the weapon away.',
     'The grievance and the gift are one object. Every trait that keeps us alive out here was a line item in somebody else programme.',
     'Adaptation is not consent. Worlds we free start needing us, and needing us is how it began the last time.',
@@ -124,7 +124,7 @@ const ACT_MORALS = {
 const ACT_SCENARIOS = {
 
   human: [
-    'Take back the solar system, world by world, from the power that farmed it. Every world is somewhere humanity already built: the mirror farm it half designed, the cloud city it flew, the trench it learned to survive in. It ends on the far side of the Moon, digging out the relay that watched Earth for ten thousand years. Everything before this was travel.',
+    'The road out of our own system, in the order the solar system allows. Earth under the fall, then the Moon, then Mars, and then the belt turns you back, so you go INWARD to Venus and Mercury for the thing that opens it. Then Jupiter, and Saturn, where the Compact keep a door. It ends on the far side of the Moon, digging out the relay that watched Earth for ten thousand years. Everything before this was travel.',
     'March into the machinery of the people who watched and did nothing. The hymn foundry that certifies a world as protected, the archive of the forty, the tribunal, and the sunken vaults where Earth\'s own file was stamped Deferred three times. Humanity arrives to read the paperwork and leaves having published all of it.',
     'The Compact\'s home, and the machinery of the harvest itself: the pens, the rendering yards, the gene vaults where every farmed species is filed, including ours. The hardest act to look at. It ends at Serpo, where twelve people were traded one way and never spoken of again, and where their names go up at the gate in letters a metre high.',
     'The free roads, which are not an empire but an absence of one. Wreck yards, an unlicensed refinery, an anchorage on no chart, a toll gate, a sanctuary that has never asked anyone for papers. Humanity came to liberate a network and finds that liberating it means deciding whose rules replace none at all. The Quartermaster prices the resupply and sees a fence.',

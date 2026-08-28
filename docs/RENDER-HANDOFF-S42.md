@@ -31,14 +31,20 @@ Measured throughput: **47.5 seconds per plate** on the local 5090.
 | # | Batch | Plates | GPU | Why now |
 |---|---|---|---|---|
 | 1 | **The human opening, slides 6 to 15** | 10 | 8 min | The opening is the strongest thing in the game and two thirds of it has no art |
-| 2 | **The Earth System, all 7 worlds** | 175 | 2.3 h | The act everyone plays first, and 5 of its 7 worlds are showing the wrong planet |
+| 2 | **EARTH, MERCURY, JUPITER, SATURN** | 100 | 1.3 h | Four Earth System worlds with NO plate at all |
 | 3 | **Proxima Centauri, 7 worlds** | 175 | 2.3 h | The system replaced Barnard's Star; every plate is a different place |
 | 4 | **Sirius, 7 worlds** | 175 | 2.3 h | The system replaced Tabby's Star; same |
-| | | **535** | **7 h** | |
+| | | **460** | **6 h** | |
 
-Batches 2 to 4 are the 475 panels the storyboard stamps **OLD ART, NOT THIS
-PLACE**, plus the 60 that were already correct in those systems and are
-re-rendered anyway because their neighbours changed.
+**LUNA, MARS and VENUS are already done.** Their art existed, it was just filed
+under the wrong planet after the act was reordered, so it was MOVED rather than
+re-rendered: the Luna shots onto Luna, the Venus shots onto Venus. Plates for
+worlds that no longer exist (Ceres, Europa, Titan) and Earth's superseded brief
+were set aside to `art/_retired/`, not deleted.
+
+That is the cheapest 50 plates in this handoff and it cost no GPU time at all.
+Check `art/_retired/` before rendering anything: a shot may already exist under
+another world's name.
 
 ---
 
@@ -79,31 +85,20 @@ Prompts are already written in `artgen/krea_jobs.py`.
 
 ---
 
-## 4. Batch 2: the Earth System, and why all seven
+## 4. Batch 2: the four Earth System worlds with no art
 
-The act was reordered into a journey, so five of the seven keys now point at a
-different planet than the art shows.
-
-| Key | World now | Plate currently shows | |
+| Key | World | State | Brief |
 |---|---|---|---|
-| 00 | EARTH | Earth | correct, re-render for consistency |
-| 01 | LUNA | **Venus** | wrong planet |
-| 02 | MARS | Mars | correct, re-render for consistency |
-| 03 | VENUS | **Ceres** | wrong planet |
-| 04 | MERCURY | **Europa** | wrong planet |
-| 05 | JUPITER | **Titan** | wrong planet |
-| 06 | SATURN | **Luna** | wrong planet |
+| 00 | EARTH | none | **A New York square**, the same one the opening ends in. Emplacements rising out of the plaza, batteries unshuttering on the rooftops, the crowd becoming a defence. The player is holding the city they just watched break |
+| 04 | MERCURY | none | The terminator works: shuttered habs in the crawling band of shade, and a kilometres-wide ring buried in the iron below |
+| 05 | JUPITER | none | The storm anchorage. No ground anywhere. Moored hulls strung together above a cloud deck, bands wider than worlds behind them |
+| 06 | SATURN | none | **The hexagon.** Hard straight edges, six emitters at the corners, the rings cutting the frame. In the final beat the centre shows a starfield that does not belong to this sky |
 
-Render all seven so the act is visually coherent, not just the five that are
-wrong.
+EARTH matters most after the opening: it is the first board anyone plays, it
+continues directly out of the last silent panel, and it should be recognisably
+New York so the player knows exactly where they are standing.
 
-**SATURN is the one to get right.** The seat is the hexagon: a real, persistent,
-six-sided polar storm about thirty thousand kilometres across. Hard straight
-edges, six emitters at the corners, and in the final beat the centre shows a
-starfield that does not belong to this sky. Nothing else in the solar system has
-corners, and the whole act ends on that fact.
-
----
+SATURN is the act's climax and the only place in the solar system with corners.
 
 ## 5. Who is in each picture
 
@@ -113,13 +108,13 @@ who appears in the frame.
 
 | World | Garrison | Scenario |
 |---|---|---|
-| EARTH | The Xeno | THE SWARM |
-| LUNA | The Xeno, then the Vigil turns on both sides | THE LONG VIGIL |
-| MARS | The Xeno and the Pirates | ASSAULT |
+| EARTH | The Xeno | THE SWARM, survive it |
+| LUNA | The Xeno in abandoned far-side depots, then the Vigil wakes and fights both sides | THE LONG VIGIL |
+| MARS | The Xeno and the Parallel on the same ground | ASSAULT |
 | VENUS | Federation of Light | ASSAULT |
-| MERCURY | The Parallel | THE SWARM |
-| JUPITER | Federation of Light, raided by the Xeno | OVERRUN |
-| SATURN | The Xeno seat, invaded by the Federation | ASSAULT |
+| MERCURY | The Parallel, in numbers, around the ring | THE SWARM |
+| JUPITER | Federation of Light, raided by the Parallel | OVERRUN |
+| SATURN | The Xeno seat and their commander, hit by the Pirates at the same time, for the door | ASSAULT |
 
 Every other system's garrison is the canon seed's roll and is shown per world on
 the storyboard pages.

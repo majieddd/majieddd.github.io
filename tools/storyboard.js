@@ -51,12 +51,13 @@ const has = k => { try { return fs.existsSync(path.join(ART, k + '.webp')); } ca
  * every one of those 350 files still resolves and the page would happily show
  * a wreck yard under a terminator strip. "0 missing" would have been a lie.
  * They are marked STALE until they are re-rendered. */
-/* Systems 3 and 4 changed identity wholesale. The Earth System changed ORDER,
-   which is the same defect wearing a smaller hat: wi 1 was Venus and is now
-   Luna, so the Luna panels are currently showing Venus. Only wi 0 (EARTH) and
-   wi 2 (MARS) kept both their name and their slot. */
-const REORDERED_SOL = { '01': 1, '03': 1, '04': 1, '05': 1, '06': 1 };
-const staleWorld = key => key[0] === '3' || key[0] === '4' || !!REORDERED_SOL[key];
+/* Systems 3 and 4 changed identity wholesale and are still stale.
+   The Earth System has been RE-PLATED (tools/_s42_replate.js): the Luna art
+   moved onto Luna and the Venus art onto Venus, and the plates for worlds that
+   no longer exist were set aside to art/_retired rather than deleted. So Sol
+   no longer has any world showing the WRONG place; it has four showing NOTHING,
+   which the missing-plate frame already reports honestly. */
+const staleWorld = key => key[0] === '3' || key[0] === '4';
 const plate = (k, stale) => has(k)
   ? '<img loading="lazy" src="../art/' + k + '.webp" alt="">' +
     (stale ? '<span class="stale">OLD ART &middot; NOT THIS PLACE</span>' : '')
@@ -433,6 +434,36 @@ function index() {
       '<td>' + esc(r.got) + '</td></tr>'));
     w('</table>');
   }
+
+  /* THE RUNNING TASK LIST. Owner asked for this on the page itself so a session
+     that stops mid-flight can be resumed without reconstructing where it got to.
+     Rows with a check read the CODE; rows without are judgement calls and say so. */
+  w('<h2>Task list</h2>');
+  w('<p class="sub">Where this is up to. Rows marked <b style="color:#6ee7a0">IN</b> are ' +
+    'verified against the code on every rebuild. Rows marked <b style="color:#ffd89b">TODO</b> ' +
+    'are the work queue, in the order I would take it.</p>');
+  const TODO = [
+    ['TODO', 'Render EARTH, MERCURY, JUPITER, SATURN',
+     'Four Earth System worlds have no plate at all. Earth needs the New York square from the opening, with emplacements rising.'],
+    ['TODO', 'Render the ten new opening slides',
+     'Slides 6 to 15. Eight, nine and ten are silent and must read as one continuous shot: same plaza, same crowd, same camera.'],
+    ['TODO', 'Re-render Proxima Centauri and Sirius',
+     '350 panels still showing the Barnard and Tabby art underneath the new text.'],
+    ['TODO', 'Three more units per power, fifteen in all',
+     'Human three are the craft the record argues about: Tic Tac, Fluxliner, Phoenix Lights. Needs doctrine and signature-talent rows, so it is a balance change, not copy.'],
+    ['TODO', 'Apply the opening voice to the other four intros',
+     'The human fifteen is the reference now. The other powers still run five slides in the older register.'],
+    ['TODO', 'Beat 5 watcher variants',
+     'Drafted for 23 of 25 acts and not yet wired into the game.'],
+    ['TODO', 'The five bonus systems',
+     'Kepler, Arcturus, Vega, and the two demoted acts. Scoped on paper, twelve worlds, not in the galaxy.'],
+  ];
+  w('<table class="dec">');
+  rows.filter(r => r.ok).forEach(r => w('<tr class="y"><td>IN</td><td><b>' + esc(r.id) +
+    '</b><br><span>' + esc(r.why) + '</span></td><td>' + esc(r.got) + '</td></tr>'));
+  TODO.forEach(t => w('<tr class="n"><td>' + esc(t[0]) + '</td><td><b>' + esc(t[1]) +
+    '</b></td><td>' + esc(t[2]) + '</td></tr>'));
+  w('</table>');
 
   w('<h2>Where we are</h2>');
   w('<div class="stat"><span><b>' + panels + '</b> panels across five campaigns</span>' +

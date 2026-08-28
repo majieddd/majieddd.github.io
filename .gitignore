@@ -55,3 +55,4 @@ artgen/.firefly_token.json
 _hermes/tasks/
 _hermes/out/*.partial
 _review/
+art/_retired/

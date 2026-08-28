@@ -30,7 +30,7 @@ const CUTSCENES = {
        carries the canon nobody else has to re-explain, so it runs longer than
        the other four and it is the only intro with SILENT panels.
 
-       Beats 6, 7 and 8 have no text ON PURPOSE. They are the square before,
+       Beats 8, 9 and 10 have no text ON PURPOSE. They are the square before,
        during and after, and a caption would narrate what the player is already
        watching. playList types sl.text word by word; an empty string types
        nothing and the panel simply waits for the click, which is exactly the
@@ -42,27 +42,27 @@ const CUTSCENES = {
        visible. So the world did not brace, the world booked the day off. THEN
        IT CHANGED COURSE, and rocks do not do that. */
     intro: [
-      { key: 'cut_human_intro_1', text: 'They found it in 2004 and for one week it was the most dangerous object ever catalogued. Then they cleared it. Apophis would pass us on the thirteenth of April, 2029, at twenty thousand miles: a tenth of the way to the Moon, closer in than our own satellites.' },
-      { key: 'cut_human_intro_2', text: 'A rock the size of a stadium, hanging in the sky like a second moon, bright enough to see with your own eyes. Every nation on Earth looking up at the same thing on the same night. The first thing our whole species would ever watch together.' },
-      { key: 'cut_human_intro_3', text: 'Then it changed course. Not much, and not all at once. It changed as it came closer, and it kept changing, and every correction pointed further in. Rocks do not do that.' },
-      { key: 'cut_human_intro_4', text: 'September 11, 2028. The world was told the truth, and then it was told everything else. For about a week, nobody slept.' },
-      { key: 'cut_human_intro_5', text: 'Every government laid itself bare and put on the table every solution it had been quietly cooking for decades. Nobody was surprised by how deep the drawer went. Everyone had always half known.' },
-      { key: 'cut_human_intro_6', text: 'So they put every good mind alive in one room, and the room said it could be done. The leaders of the world were confident enough to keep the holiday they had already declared. Friday the thirteenth of April, 2029: the first day our whole species agreed to celebrate at once.' },
-      { key: 'cut_human_intro_7', text: 'And when it came, the world went outside to watch humanity beat the biggest thing that had ever come for it.' },
+      { key: 'cut_human_intro_1', text: 'Apophis... They found it in 2004 and for one week it was the planet\'s most dangerous threat ever catalogued.' },
+      { key: 'cut_human_intro_2', text: 'Governments cleared it, saying it would pass us at twenty thousand miles. That is a tenth of the way to the Moon, closer in than our own satellites.' },
+      { key: 'cut_human_intro_3', text: 'Then it changed course. Not much, and not all at once. It changed as it came closer, and it kept changing, and every correction pointed further in.' },
+      { key: 'cut_human_intro_4', text: 'Then came September 11, 2028... The world was told the truth. For about a week, it was restless.' },
+      { key: 'cut_human_intro_5', text: 'While families gathered for one last somber holiday season, the greatest minds went to work, building on decades of anticipated preparation.' },
+      { key: 'cut_human_intro_6', text: 'The world\'s leaders were so confident in their solution, they declared the arrival date the first global holiday for the human race.' },
+      { key: 'cut_human_intro_7', text: 'And so on April 13th, everyone stepped outside to watch humanity take on its biggest challenge yet...' },
       /* SILENT. The square, celebrating. */
       { key: 'cut_human_intro_8', text: '' },
       /* SILENT. The sky filling, on the same faces. */
       { key: 'cut_human_intro_9', text: '' },
       /* SILENT. Ground level. It is among them. */
       { key: 'cut_human_intro_10', text: '' },
-      { key: 'cut_human_intro_11', text: 'The biggest thing that ever came for us was never the rock. The rock was the delivery. Break a sealed mass and it burns coming in; break it into ten thousand shielded pieces, with everything you have, on a date you announced eleven months early, and it lands. Our finest hour was their landing procedure.' },
-      { key: 'cut_human_intro_12', text: 'We have known since 1947 that we were not alone. We learned quickly that not being alone is not the same as being among friends. Everything out there wants something, and the wants do not agree.' },
-      { key: 'cut_human_intro_13', text: 'So we took the wreckage apart and we learned. Quietly, badly at first, for decades. In 1959 it stopped being one country secret: the Global Research Center for Weapons of Planetary Annihilation opened for the Defence of the Species, and the Antarctic Treaty signed that same year was the paperwork that made it legal. Nobody owns that continent. That was the point.' },
-      { key: 'cut_human_intro_14', text: 'For eighty years we have been building the arsenal. Not for a rock.' },
-      { key: 'cut_human_intro_15', text: 'For anything. Hell landed on Earth that Friday, and it landed in range. THE MANIFEST BEGINS.' },
+      { key: 'cut_human_intro_11', text: 'Aliens. As the Xeno used the meteor as a trojan horse, Earth became infected with the hostile presence of ruthless warriors here to take the planet.' },
+      { key: 'cut_human_intro_12', text: 'But ever since 1947, we knew we were not alone. And ever since 1959, when the world\'s governments established Antarctica as a planetary defense research facility, we have waited for this moment.' },
+      { key: 'cut_human_intro_13', text: 'And through reverse engineering and ingenuity...' },
+      { key: 'cut_human_intro_14', text: 'We have been building that very arsenal for over 80 years... Not for a rock...' },
+      { key: 'cut_human_intro_15', text: 'But for ANYTHING... and as humans we realized... we had to save ourselves.' },
     ],
     sys: [
-      { key: 'cut_human_sys1', a: 'The Earth System is ours, pole to pole and rock to rock, for the first time in ten thousand years.', b: 'And on the far side of our own Moon: their relay, still warm. They never even hid it well. They never needed to.' },
+      { key: 'cut_human_sys1', a: 'April 2029. The solar system is ours, rock to rock, for the first time since anybody has been writing it down.', b: 'And under the rings of Saturn, inside a six-sided storm that is not weather, we found the door they have been using the whole time. It is still turning.' },
       { key: 'cut_human_sys2', a: 'The Disclosure files travel with the fleet. Every page re-read by people who now know what redaction smells like.', b: 'Somewhere in those pages is a signature. Human. Dated 1953. The whole truth left names out, and we are going to find them.' },
       { key: 'cut_human_sys3', a: 'The seats fall one by one, and each defeated commander says the same thing in a different way: you were made for this.', b: 'They mean it as a compliment. It is the oldest insult ever paid to us, and we are done being anyone’s best work.' },
       { key: 'cut_human_sys4', a: 'The freed worlds ask for our standards, our filters, our fuel. Saying yes is mercy. Saying yes is also how it started last time.', b: 'Nobody signed anything. Nobody had to. The Quartermaster keeps drawing up supply contracts that look like fences.' },
