@@ -146,6 +146,65 @@ did to Earth. And it converts faction curiosity into a reason to finish an act
 rather than a reason to abandon one, which is the failure mode of every game
 that opens with five playable armies.
 
+## Act one is a journey outward, and it ends on a door
+
+Owner directive, Session 42. The Earth System is not seven interchangeable
+rocks. It is one road, and every stop on it is there because the last one made
+it possible.
+
+| wi | World | Why you are here |
+|---|---|---|
+| 0 | **EARTH** | You fight on your own planet, in the square the intro ends on |
+| 1 | **LUNA** | The nearest thing to us, and the relay was always on the far side |
+| 2 | **MARS** | The last easy step outward |
+| 3 | **VENUS** | The belt turns you back, so the road goes INWARD instead |
+| 4 | **MERCURY** | A ring wound into the largest iron core in the solar system. It pushes rock aside, and that is a road through the belt |
+| 5 | **JUPITER** | You cross. There is traffic out here and none of it is yours, and every lane ends at Saturn |
+| 6 | **SATURN** *(seat)* | The hexagon. It is not weather. It is a door |
+
+**The shape of it matters more than the list.** Act one is the only act where
+the player is turned back. Venus is not a conquest, it is a detour forced by a
+wall, and Mercury is the answer to that wall. A campaign that only ever moves
+forward has no geography; this one has an obstacle the player has to go around.
+
+**The ice giants.** The owner's path also gates Saturn behind Uranus and
+Neptune, which broadcast an interdiction. That is written into the Jupiter and
+Saturn beats as the wards that must be broken, but they are NOT playable worlds,
+because `WORLDS_PER_SYSTEM` is 7 and it is load-bearing across net, save and
+mapgen. The owner's route is nine stops. Making the ice giants playable means
+moving that constant, which moves the galaxy PRNG stream and invalidates every
+save. **Flagged, not decided.**
+
+## The door at Saturn, and why it is a hexagon
+
+Saturn's north polar hexagon is real. Voyager saw it, Cassini tracked it for
+over a decade, and it is a persistent six-sided jet stream about thirty thousand
+kilometres across that does not drift. Nothing else in the solar system has
+corners. It is a genuinely unexplained regular polygon at planetary scale, which
+is exactly the kind of real anomaly this setting is built to walk into.
+
+So the aperture is six emitters held in **circular phase**: electrogravitic
+oscillators spun up in a ring until local spacetime twists and separation across
+the opening falls to zero. Not a tunnel bored through distance. Distance simply
+stops applying inside the ring for as long as it is held.
+
+The philosophy the Parallel notices and cannot file: if separation is a property
+of the space between things rather than a fact about the things, then nothing
+ever actually travelled. The door does not move you. It removes the reason you
+were not already there.
+
+**The artifact.** The mechanism is general and the scale is not fixed, which is
+why the fiction reaches for the most familiar modern version of the same shape:
+Malaysia Airlines Flight 370, gone in 2014 with 239 aboard and never recovered.
+The disappearance is documented fact. The later recording appearing to show
+three luminous objects circling the aircraft in formation before a flash is
+widely assessed as fabricated, and it is carried in the timeline as a
+**contested artifact, layer A/D, not as evidence.** The project guardrail holds:
+disclosure-era records are presented as contested records, never as verdicts.
+
+Its value here is only the shape of the claim. Objects in a ring, then absence.
+A player who looks it up should find both the case and the doubt.
+
 ## The five powers
 
 - **HUMANITY, The Manifest.** Take back the solar system, then the stars.

@@ -101,7 +101,7 @@ const GX_HOME_SYSTEMS = {
                is 7 and load-bearing across net, save and mapgen. Names are
                index-derived and consume no rnd() call, so every seed's kinds,
                maps, arenas, owners and boons are byte-identical after this. */
-            worlds: ['EARTH', 'VENUS', 'MARS', 'CERES', 'EUROPA', 'TITAN', 'LUNA'] },
+            worlds: ['EARTH', 'LUNA', 'MARS', 'VENUS', 'MERCURY', 'JUPITER', 'SATURN'] },
   light:  { name: 'THE PLEIADES',
             worlds: ['MAIA', 'ELECTRA', 'TAYGETA', 'MEROPE', 'CELAENO', 'STEROPE', 'ALCYONE'] },
   xeno:   { name: 'ZETA RETICULI',

@@ -153,15 +153,13 @@ WORLDS = [
      'the city cleared block by block and the opened hulls dragged into the open squares where '
      'anyone can walk up and look inside them'),
 
-    (0, 1, 'VENUS',
-     'a planet swallowed whole in a thick sulphur-yellow cloud deck, layer upon layer, '
-     'lightning flickering deep inside the murk',
-     'a floating cloud platform city riding the fifty-kilometre haze layer, gasbag hulls '
-     'moored in long rows above an unseen surface',
-     'pressure-hull gun blisters and acid-scoured mooring towers ringing the platform',
-     'platforms listing and venting, mooring lines snapped, the cloud deck lit from below by '
-     'the fires',
-     'the platforms re-moored and squared up, haze traffic running between them again'),
+    (0, 1, 'LUNA',
+     'the far side of a grey airless moon with no Earth anywhere in the sky, only a hard '
+     'starfield above the regolith',
+     'a half-buried alien relay dish sitting in a grey regolith basin, its rim still warm',
+     'buried hardpoints ringing the dish, regolith berms and mass drivers laid along them',
+     'the dish rim cracked and dark, the berms blown open, dust still hanging in the vacuum',
+     'the relay dish dug out, re-aimed and lit under a new hand'),
 
     (0, 2, 'MARS',
      'a rust-red desert world with a dust storm sheeting across one hemisphere, the great '
@@ -172,41 +170,51 @@ WORLDS = [
      'the trench line broken open and burning, red dust rolling over the wreckage',
      'the canyon habitat repaired and lit end to end along the trench'),
 
-    (0, 3, 'CERES',
-     'a small grey dwarf planet turning slowly, brilliant white salt deposits blazing out of '
-     'one dark crater',
-     'the Occator crater salt flats, dazzling white evaporite domes under a black sky, mine '
-     'heads sunk down into them',
-     'low-gravity rail batteries and tethered ore cranes swung around as weapons',
-     'the salt domes cratered and grey with fallout, cranes toppled across the white',
-     'the mine heads turning again, ore rising on new tethers into a waiting hauler'),
+    (0, 3, 'VENUS',
+     'a planet swallowed whole in a thick sulphur-yellow cloud deck, layer upon layer, '
+     'lightning flickering deep inside the murk',
+     'a floating cloud platform city riding the fifty-kilometre haze layer, gasbag hulls '
+     'moored in long rows above an unseen surface',
+     'pressure-hull gun blisters and acid-scoured mooring towers ringing the platform',
+     'platforms listing and venting, mooring lines snapped, the cloud deck lit from below by '
+     'the fires',
+     'the platforms re-moored and squared up, haze traffic running between them again'),
 
-    (0, 4, 'EUROPA',
-     'an ice moon webbed all over with red-brown crack lines, a banded gas giant enormous '
-     'behind it',
-     'a chaos-terrain field of tilted ice bergs, a drill station sunk through the shell toward '
-     'the ocean beneath',
-     'ice-cut revetments and steam-vent turrets ringing the drill shaft',
-     'the drill shaft flooded and refrozen over, bergs split apart, steam venting from the '
-     'cracks',
-     'the shaft re-drilled and ocean water rising into new tank farms on the ice'),
+    (0, 4, 'MERCURY',
+     'a sun-blasted world with the star filling a third of the sky, one long shadow line crawling '
+     'around it and every structure hiding in that line',
+     'the terminator works, shuttered habs and gantries built into the moving band of shade, with a '
+     'kilometres-wide ring buried in the iron below',
+     'sun-side batteries fed by more power than they can spend, and shutter walls that close ahead '
+     'of the advancing light',
+     'the shutter walls burst open to the day side and the works burning white where the light '
+     'reached them',
+     'the buried ring turning and drawing current, the works shuttered and running, a road opened '
+     'through the belt'),
 
-    (0, 5, 'TITAN',
-     'an orange haze moon with no surface visible at all, a thin bright ring line above the '
-     'murk',
-     'the shore of a black methane lake under an orange sky, cryovolcanic vents steaming '
-     'along the beach',
-     'shore batteries raised on stilts above the methane and bunkers cut into the warm vents',
-     'the shoreline burning with methane fire, the stilts collapsed into the lake',
-     'the lake tapped by new pumping rigs, flare stacks lit in a line along the shore'),
+    (0, 5, 'JUPITER',
+     'an immense banded gas giant filling the whole frame, storm bands wider than worlds, a tethered '
+     'anchorage riding the cloud deck as a speck against it',
+     'the storm anchorage, moored hulls strung together above a cloud deck with no ground anywhere '
+     'beneath them',
+     'storm-band batteries slung under the anchorage hulls and magnetic shields holding off the '
+     'radiation',
+     'the anchorage broken apart and falling into the cloud deck, mooring lines whipping loose, '
+     'shields dark',
+     'the anchorage re-moored and the shields relit, its routing charts posted open for anyone to '
+     'read'),
 
-    (0, 6, 'LUNA',
-     'the far side of a grey airless moon with no Earth anywhere in the sky, only a hard '
-     'starfield above the regolith',
-     'a half-buried alien relay dish sitting in a grey regolith basin, its rim still warm',
-     'buried hardpoints ringing the dish, regolith berms and mass drivers laid along them',
-     'the dish rim cracked and dark, the berms blown open, dust still hanging in the vacuum',
-     'the relay dish dug out, re-aimed and lit under a new hand'),
+    (0, 6, 'SATURN',
+     'a ringed giant seen close, the rings cutting the frame edge to edge, and at the pole a vast '
+     'six-sided storm turning with hard straight edges',
+     'the hexagon, a six-sided standing wave the size of a continent turning at the pole, six '
+     'emitters spaced around its corners',
+     'ring-shadow batteries firing up through the gaps in the rings, and the hexagon itself closing '
+     'on anything inside it',
+     'the hexagon stalled and broken open, three of its six emitters dark and the standing wave '
+     'collapsing into ordinary cloud',
+     'the hexagon turning again at full phase, its centre showing a starfield that does not belong '
+     'to this sky'),
 
     # ---- si 1, THE PLEIADES. The Federation's home: young blue stars in ----
     # reflection nebulosity, and a cathedral culture that gives each world a

@@ -50,7 +50,12 @@ const has = k => { try { return fs.existsSync(path.join(ART, k + '.webp')); } ca
  * every one of those 350 files still resolves and the page would happily show
  * a wreck yard under a terminator strip. "0 missing" would have been a lie.
  * They are marked STALE until they are re-rendered. */
-const staleWorld = key => key[0] === '3' || key[0] === '4';
+/* Systems 3 and 4 changed identity wholesale. The Earth System changed ORDER,
+   which is the same defect wearing a smaller hat: wi 1 was Venus and is now
+   Luna, so the Luna panels are currently showing Venus. Only wi 0 (EARTH) and
+   wi 2 (MARS) kept both their name and their slot. */
+const REORDERED_SOL = { '01': 1, '03': 1, '04': 1, '05': 1, '06': 1 };
+const staleWorld = key => key[0] === '3' || key[0] === '4' || !!REORDERED_SOL[key];
 const plate = (k, stale) => has(k)
   ? '<img loading="lazy" src="../art/' + k + '.webp" alt="">' +
     (stale ? '<span class="stale">OLD ART &middot; NOT THIS PLACE</span>' : '')

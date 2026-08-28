@@ -131,6 +131,12 @@
       "rebased_from": "2036"
     },
     {
+      "date": "1955-1960",
+      "layer": "B/D",
+      "event": "Electrogravitics research is pursued openly by several aerospace firms, then vanishes from the public literature.",
+      "cause": "The open phase is documented and the silence afterward is real. Whether the silence means cancellation or classification is exactly the kind of gap this setting is built in."
+    },
+    {
       "date": "1959",
       "layer": "A/B",
       "event": "Project Horizon and Air Force lunar research studies.",
@@ -255,6 +261,12 @@
       "status": "canon"
     },
     {
+      "date": "1981-2017",
+      "layer": "A",
+      "event": "Saturn's north polar hexagon is observed by Voyager and then tracked for decades by Cassini: a persistent six-sided jet stream roughly thirty thousand kilometres across that does not drift.",
+      "cause": "A genuinely unexplained regular polygon at planetary scale. Nothing else in the solar system has corners, which is why this fiction puts the door there."
+    },
+    {
       "date": "1984",
       "layer": "F",
       "event": "Abyssal Reply",
@@ -338,6 +350,12 @@
       "cause": "Rival Human blocs activate the Gate before species-wide political consensus exists.",
       "status": "canon",
       "rebased_from": "2086"
+    },
+    {
+      "date": "March 8, 2014",
+      "layer": "A/D",
+      "event": "Malaysia Airlines Flight 370 disappears with 239 aboard and is never recovered.",
+      "cause": "The disappearance itself is documented fact. A later recording purporting to show three luminous objects circling the aircraft in formation before a flash is widely assessed as fabricated, and is carried here as a CONTESTED ARTIFACT rather than evidence. Its value to this fiction is the shape of the claim: objects in a ring, then absence."
     },
     {
       "date": "2015",
@@ -484,6 +502,12 @@
       "cause": "All five conquest systems become simultaneously scalable across reactivated Source-Lattice pentads.",
       "status": "canon",
       "rebased_from": "2099"
+    },
+    {
+      "date": "2029",
+      "layer": "F",
+      "event": "The hexagon is entered and found to be an aperture: six emitters held in circular phase, twisting local spacetime until separation across the opening falls to zero.",
+      "cause": "Reverse engineering it shows the principle is general and the scale is not fixed. A ring of oscillators spun up in formation opens a seamless passage for as long as it is held, which is the mechanism the contested 2014 artifact appears to describe in miniature."
     }
   ]
 }
