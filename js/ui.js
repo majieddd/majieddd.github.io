@@ -718,8 +718,17 @@ const UI = {
          world line the moment displaces is not lost to the player who cares:
          it still opens every ordinary deploy to that world, which is most of
          them. Beats 2 to 5 stay per-world: the ground does not change sides. */
+      /* PRECEDENCE, most surprising fact first. Fighting your own banner
+         outranks a three-way war, which outranks having lost this ground
+         once before, which outranks the fact that it is a throne. A world
+         can be several of these at once and only one sentence is spoken. */
+      const prog = (Meta.campaign() || {}).stars;
+      const retaken = !w.renegade && typeof starsOn === 'function' &&
+                      starsOn(prog, w.id) > 0 && w.owner && w.owner !== fac;
       const momentLine = w.renegade ? PlanetCuts.moment('renegade', fac)
-                       : w.contested ? PlanetCuts.moment('contested', fac) : null;
+                       : w.contested ? PlanetCuts.moment('contested', fac)
+                       : retaken ? PlanetCuts.moment('retaken', fac)
+                       : w.seat ? PlanetCuts.moment('seat', fac) : null;
       return [
         /* APPROACH. Where you are, then your own power's voice on arriving. */
         { key: k(1), alt: alt, text: where + ' ' + (momentLine || lines[0]) },
@@ -767,8 +776,14 @@ const UI = {
     const lines = PlanetCuts.lines(w, fac);
     if (!pc || !lines) return [];
     const alt = 'world_' + w.map;
+    /* THREE STARS is CONQUERED, not merely held: ninety per cent of your
+       lives intact. A flawless take and a bloody one narrated identically
+       was the last place the outro ignored something the engine knew. Only
+       the AFTERMATH voice changes; NEW ORDER stays per-world, because what
+       the world becomes does not depend on how cheaply it fell. */
+    const after = (stars >= 3 && PlanetCuts.moment('flawless', fac)) || lines[1];
     return [
-      { key: PlanetCuts.plate(w, fac, 4), alt: alt, text: lines[1] },
+      { key: PlanetCuts.plate(w, fac, 4), alt: alt, text: after },
       { key: PlanetCuts.plate(w, fac, 5), alt: alt, text: lines[2] },
     ];
   },

@@ -198,6 +198,24 @@
       },
     },
     {
+      id: 'M19', expect: '39.38',
+      what: 'a seat world opens like any other world',
+      plant() {
+        const t = PLANET_MOMENTS.seat, was = t.human;
+        delete t.human;
+        return () => { t.human = was; };
+      },
+    },
+    {
+      id: 'M20', expect: '39.39',
+      what: 'a flawless conquest narrates identically to a costly one',
+      plant() {
+        const t = PLANET_MOMENTS.flawless, was = t.human;
+        delete t.human;
+        return () => { t.human = was; };
+      },
+    },
+    {
       id: 'M10', expect: '39.18',
       what: 'the gallery quietly drops a planet slot',
       /* The first version stripped only gal-missing tiles, which made the

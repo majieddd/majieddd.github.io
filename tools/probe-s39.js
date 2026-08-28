@@ -553,7 +553,7 @@
 
   /* ---- 11. the campaign moments (Session 40) ---------------------------- */
   T('39.35 every campaign moment exists for every power, and no two share', () => {
-    const KINDS = ['contested', 'renegade', 'defeat'];
+    const KINDS = ['contested', 'renegade', 'retaken', 'seat', 'flawless', 'defeat'];
     const seen = {}, out = [];
     KINDS.forEach(k => FACS.forEach(f => {
       const t = PlanetCuts.moment(k, f);
@@ -563,7 +563,7 @@
     }));
     if (out.length) bad(out.join(', '));
     if (PlanetCuts.moment('nonsense', 'human') !== null) bad('unknown kind did not degrade to null');
-    return '15 moment lines, 3 kinds x 5 powers, all distinct, unknown kinds null';
+    return '30 moment lines, 6 kinds x 5 powers, all distinct, unknown kinds null';
   });
 
   T('39.36 a renegade or contested world speaks the moment voice on approach', () => {
@@ -593,6 +593,38 @@
     Game._skirmish = was;
     if (n) bad('a skirmish loss produced a defeat beat');
     return s[0].key + ' on loss; win and skirmish refused';
+  });
+
+  T('39.38 the approach voice picks the most surprising fact first', () => {
+    /* Precedence: renegade > contested > retaken > seat > per-world. A world
+       can be several at once and exactly one sentence is spoken. */
+    const seat = gx.systems[0].worlds[6];
+    if (!seat.seat) bad('world index 6 is not the seat; the galaxy shape moved');
+    const M = k => PlanetCuts.moment(k, 'human');
+    const say = w => UI.worldSlides(w)[0].text;
+    const plain = say(Object.assign({}, world, { seat: false, contested: false, renegade: false }));
+    const seatT = say(Object.assign({}, seat, { contested: false, renegade: false }));
+    const bothT = say(Object.assign({}, seat, { contested: true }));
+    const renT = say(Object.assign({}, seat, { contested: true, renegade: true }));
+    if (seatT.indexOf(M('seat')) < 0) bad('a seat world does not speak the seat voice');
+    if (plain.indexOf(M('seat')) >= 0) bad('an ordinary world spoke the seat voice');
+    if (bothT.indexOf(M('contested')) < 0) bad('contested did not outrank seat');
+    if (renT.indexOf(M('renegade')) < 0) bad('renegade did not outrank contested');
+    return 'seat spoken on the seat, and outranked by contested then renegade';
+  });
+
+  T('39.39 a three-star take narrates differently from a bloody one', () => {
+    /* Only the AFTERMATH voice changes; NEW ORDER stays per-world, because
+       what a world becomes does not depend on how cheaply it fell. */
+    const one = UI.outroSlides(world, true, 1);
+    const three = UI.outroSlides(world, true, 3);
+    if (one.length !== 2 || three.length !== 2) bad('outro is not two beats');
+    if (one[0].text === three[0].text) bad('AFTERMATH is identical at 1 and 3 stars');
+    if (three[0].text.indexOf(PlanetCuts.moment('flawless', 'human')) < 0)
+      bad('three stars did not speak the flawless voice');
+    if (one[1].text !== three[1].text) bad('NEW ORDER moved with the star count');
+    if (one[0].key !== three[0].key) bad('the plate key moved with the star count');
+    return 'AFTERMATH differs at 3 stars, NEW ORDER and both plate keys unchanged';
   });
 
   const pass = checks.filter(c => c.ok).length;

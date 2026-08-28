@@ -98,8 +98,11 @@ function screenplay(fac) {
   }
   w(''); w('---'); w('');
   w('## CAMPAIGN MOMENTS  (state-triggered, any world)');
-  [['contested', 'Deploying to a CONTESTED world (beat 1 voice)'],
+  [['seat', 'Deploying to a commander SEAT, the act climax (beat 1 voice)'],
+   ['contested', 'Deploying to a CONTESTED world (beat 1 voice)'],
    ['renegade', 'Deploying against your OWN banner (beat 1 voice)'],
+   ['retaken', 'Deploying to a world you took and a rival took back (beat 1 voice)'],
+   ['flawless', 'A THREE-STAR conquest (replaces the AFTERMATH voice)'],
    ['defeat', 'A campaign battle LOST (one slide before the result screen)']]
     .forEach(([k, label]) => {
       const m = vm.runInContext('PLANET_MOMENTS[' + JSON.stringify(k) + '][' + JSON.stringify(fac) + ']', ctx);

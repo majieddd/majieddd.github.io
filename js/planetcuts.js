@@ -913,6 +913,38 @@ const PLANET_MOMENTS = {
     pirate: 'That crew flies no flag, same as us, and they have closed a road, which is nothing like us. Free is not a thing you get to keep doing wrong.',
     robot:  'UNITS BELOW: maker-format, designation shared, queue divergent. They stopped asking and started deciding. ANOMALY: this unit cannot name the difference from itself.',
   },
+  /* Deploying to a commander's SEAT, the last world of a system and the
+     climax of that act. `w.seat` is a real flag on every world, and until
+     now the throne opened exactly like the six ordinary worlds before it. */
+  seat: {
+    human:  'This is their seat. Not a depot, not a relay: the room where somebody decided what happens to the rest of us. We have come a long way to knock on it.',
+    light:  'The seat of this system. Whatever doctrine is written here is written for everyone below it, and today it will be read aloud in front of the people it was written about.',
+    xeno:   'The seat. Where this pasture is administered from. Bodies are yield and a throne is only a body that believes it is the head. Remove it and see.',
+    pirate: 'The chair at the top of the local pile. Every closed road in this system was signed off from that room, and nobody in it has ever had to use one.',
+    robot:  'SITE: SEAT OF AUTHORITY, local. This unit has traced orders upward for a considerable time. Every seat so far has been occupied by someone taking orders from further up. Approach.',
+  },
+  /* A world taken CLEANLY: three stars, ninety per cent of your lives intact,
+     which the campaign calls CONQUERED rather than merely held. Replaces the
+     AFTERMATH voice, because a flawless take and a bloody one should not
+     narrate the same way. */
+  flawless: {
+    human:  'Almost everyone is walking off this world. Read the casualty sheet twice, because you will not see one this short again, and do not let anyone start believing it is normal.',
+    light:  'Taken whole, and the ring above it never had to close. This is what the Mandate always claimed it could do. It is worth asking why it so rarely did.',
+    xeno:   'Taken intact and at negligible cost. The yield is undamaged, the pens are whole, and nothing here had to be spoiled to be owned. Efficiency of this order is not luck. It is appetite that has learned patience.',
+    pirate: 'Nobody died taking this rock. Not one of ours, and barely any of theirs. That is going in the story we tell, and for once the story will be true.',
+    robot:  'OBJECTIVE ACHIEVED. Losses: within tolerance to a degree this unit has not previously recorded. REPAIR requirement: negligible. This is what the recovered core would have called a good day. The queue has no such category.',
+  },
+  /* Deploying to a world you ALREADY took, that a rival has since taken back
+     (advanceRivals moves owners every battle). The player has stars on this
+     world and does not hold it, which is a different feeling to arriving
+     anywhere new. */
+  retaken: {
+    human:  'We took this world once. We put people on it and we moved on, and somebody walked back in behind us. Nobody is saying it out loud, so it will be said here: that is on us.',
+    light:  'A world we have already rung once, ringed again by somebody else. Protection that has to be re-established was not protection. It was a visit.',
+    xeno:   'This ground was already in the ledger. It has been struck out and re-entered by another hand. The body does not resent losing a limb. It resents having to grow the same one twice.',
+    pirate: 'We opened this road once. It is closed again, by somebody who watched us do it and waited. There is a lesson in there about leaving, and none of us wants to hear it.',
+    robot:  'SITE: previously RESTORED by this unit. STATUS: reverted. The work was undone by a party who observed it being done. FILED: repair is not a state. It is a thing somebody has to keep choosing.',
+  },
   /* A campaign battle lost. The one beat every player will eventually see,
      and the only flow that had no authored sentence anywhere: victory gets
      two plates and an exchange, defeat got a stat screen. One line, spoken
