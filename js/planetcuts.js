@@ -51,7 +51,7 @@ const PLANET_CUTS = {
      came apart, and it was hollow. Every power arrives at the same opened
      hulls, which is the one image all five campaigns share. */
   '00': {
-    name: 'The city',
+    name: 'EARTH',
     ground: 'The fragments came down whole over the harbour district and split open in the streets. Whatever had been riding inside Apophis was already awake when it landed.',
     works: 'The same intercept batteries that broke the rock are swung round now, depressed to fire along their own avenues, and every shelter door in the district is sealed from the inside.',
     f: {
@@ -74,7 +74,7 @@ const PLANET_CUTS = {
   },
 
   '01': {
-    name: 'The sky',
+    name: 'VENUS',
     ground: 'The city floats fifty kilometres up, moored to nothing, riding the one layer of this atmosphere that will not crush a hull. Nobody has ever stood on the ground below it.',
     works: 'Gun blisters are set straight into the pressure hulls, and the mooring towers have been eaten half through by acid. Everything here is one bad seam away from falling for an hour.',
     f: {
@@ -97,7 +97,7 @@ const PLANET_CUTS = {
   },
 
   '02': {
-    name: 'The trench',
+    name: 'MARS',
     ground: 'They dug the habitat trench along the floor of Valles Marineris, four kilometres of cliff on either side, and once a season a dust storm closes the sky over it completely.',
     works: 'Gun galleries are cut straight into the canyon walls and fire down onto the floor. Whoever built this trench expected to be outnumbered in it.',
     f: {
@@ -120,7 +120,7 @@ const PLANET_CUTS = {
   },
 
   '03': {
-    name: 'The tap',
+    name: 'CERES',
     ground: 'The Occator flats burn white under a black sky, and the mine heads go straight down through the salt into water ice older than the inner planets.',
     works: 'Rail batteries barely need a recoil mount in this gravity, and the ore cranes have been swung round and used as clubs. Improvised, and very heavy.',
     f: {
@@ -143,7 +143,7 @@ const PLANET_CUTS = {
   },
 
   '04': {
-    name: 'The station',
+    name: 'EUROPA',
     ground: 'The drill station is going down through twenty kilometres of ice toward an ocean that has been dark and warm and undisturbed since before anything on Earth had a spine.',
     works: 'Revetments are cut into the bergs and the turrets feed off the drill vents, so the defences stay warm and everything around them does not.',
     f: {
@@ -166,7 +166,7 @@ const PLANET_CUTS = {
   },
 
   '05': {
-    name: 'The shore',
+    name: 'TITAN',
     ground: 'You come in over a methane shoreline under an orange sky, cryovolcanoes steaming along the beach, and enough hydrocarbon in that lake to fuel a war for a century. There is also a crater on the north shore that appears in nobody\'s survey.',
     works: 'Shore batteries stand on stilts above the methane and the bunkers are cut into the warm vents. Everything here burns, and that shapes how both sides fight.',
     f: {
@@ -189,7 +189,7 @@ const PLANET_CUTS = {
   },
 
   '06': {
-    name: 'The dish',
+    name: 'LUNA',
     ground: 'No signal from Earth has ever reached the far side. The relay dish sits half sunk in the regolith, and it was still warm when the first human crew found it.',
     works: 'Hardpoints are buried in the basin rim and mass drivers run along the berms. Whoever built the dish built the guns as well, and did not build them for us.',
     f: {
@@ -218,7 +218,7 @@ const PLANET_CUTS = {
      readiness for ten thousand years. */
 
   '10': {
-    name: 'The hall',
+    name: 'MAIA',
     ground: 'They cut the hymns here that certify a world as protected. The pipes stand upright in nebula light, tuned, taller than towers, and they are singing when you arrive.',
     works: 'Choir-ring emplacements are braced between the pipes, and the hard-light buttresses ring aloud when they are struck. The defence and the instrument are the same object.',
     f: {
@@ -241,7 +241,7 @@ const PLANET_CUTS = {
   },
 
   '11': {
-    name: 'The archive',
+    name: 'ELECTRA',
     ground: 'Every one of the forty protected worlds is filed here, tier upon tier of light-etched shelving, under a star that is visibly going out.',
     works: 'Buttress turrets cover every tier and the reading-vault doors seal from the inside. The archive was built to survive its own librarians.',
     f: {
@@ -264,7 +264,7 @@ const PLANET_CUTS = {
   },
 
   '12': {
-    name: 'The anchor',
+    name: 'TAYGETA',
     ground: 'Cabling the width of towers climbs out of the atmosphere here, and this is where it comes down. Two suns throw every shadow twice.',
     works: 'Anchor-mount batteries and hard-light shear walls hold the base. Bring the anchor down and the ring above comes down in sections, on everybody.',
     f: {
@@ -287,7 +287,7 @@ const PLANET_CUTS = {
   },
 
   '13': {
-    name: 'The garden',
+    name: 'MEROPE',
     ground: 'They bank seeds here for worlds that have not been allowed to grow yet, terraced under hard-light panels in the brightest part of the cluster.',
     works: 'Garden-wall emplacements and irrigation towers have been turned into firing points. Every shot fired here costs somebody a harvest ten thousand years out.',
     f: {
@@ -310,7 +310,7 @@ const PLANET_CUTS = {
   },
 
   '14': {
-    name: 'The court',
+    name: 'CELAENO',
     ground: 'This is where the Federation tries its own. The benches ring an open floor in tiers, under the dimmest star in the cluster.',
     works: 'Gate batteries cover every entrance and hard-light barricades cross the bench tiers. A court built to be defended is a court that expected to be hated.',
     f: {
@@ -333,7 +333,7 @@ const PLANET_CUTS = {
   },
 
   '15': {
-    name: 'The vault',
+    name: 'STEROPE',
     ground: 'Every door down here is stamped, dated, and has never once been opened. Two dim stars barely light the ground above the chambers.',
     works: 'Vault-door batteries and hard-light seals hold the chambers shut. Wardens maintained them for a century without ever reading what they were guarding.',
     f: {
@@ -356,7 +356,7 @@ const PLANET_CUTS = {
   },
 
   '16': {
-    name: 'The cathedral',
+    name: 'ALCYONE',
     ground: 'The Cathedral of Rings stands in the brightest light of the cluster, gold circles around an empty central floor. The First Speaker sits here.',
     works: 'Ring-tier batteries and layered hard-light choirs turn slowly around the seat. The innermost ring has never been fired. It is about to be.',
     f: {
@@ -383,7 +383,7 @@ const PLANET_CUTS = {
      that has been running since before anything on Earth wrote. */
 
   '20': {
-    name: 'The pen floor',
+    name: 'ZETA-1 b',
     ground: 'The pods run to the horizon in every direction, sunk into a floor of living chitin, glowing, and quiet. This is where the Compact keeps what it has taken.',
     works: 'Sphincter gates close over the pod rows on reflex, and growth batteries are seated in the ribs of the floor itself.',
     f: {
@@ -406,7 +406,7 @@ const PLANET_CUTS = {
   },
 
   '21': {
-    name: 'The yard',
+    name: 'ZETA-1 c',
     ground: 'The yield comes apart here, on sloped floors the size of cities, and the run-off channels cut deep into the shell all run the same direction.',
     works: 'Yard-mouth batteries and hooked gantries swing down across the channels, built to handle mass that does not want to be handled.',
     f: {
@@ -429,7 +429,7 @@ const PLANET_CUTS = {
   },
 
   '22': {
-    name: 'The comb',
+    name: 'ZETA-1 d',
     ground: 'Every species the Compact has ever catalogued is banked in this honeycomb, glowing faintly in its cell, shelved against some future use.',
     works: 'Comb-face batteries cover the faces and membrane bulkheads seal the honeycomb tier by tier, so losing a level costs the defender nothing.',
     f: {
@@ -452,7 +452,7 @@ const PLANET_CUTS = {
   },
 
   '23': {
-    name: 'The spire',
+    name: 'ZETA-2 b',
     ground: 'The spire rises out of the plain as a column of fused bodies and resonating membrane, and everything the Compact owns hears the Hivemind through it.',
     works: 'Spire-base batteries ring the column, and membrane baffles wound around it absorb sound and shellfire with equal indifference.',
     f: {
@@ -475,7 +475,7 @@ const PLANET_CUTS = {
   },
 
   '24': {
-    name: 'The field',
+    name: 'ZETA-2 c',
     ground: 'Something is being grown in these furrows that should not be, and the spores drift low over the ground in the weak light of two suns.',
     works: 'Furrow batteries line the field edges and spore-vent towers can turn the whole crop into a weapon on about a minute of notice.',
     f: {
@@ -498,7 +498,7 @@ const PLANET_CUTS = {
   },
 
   '25': {
-    name: 'The vault',
+    name: 'ZETA-2 d',
     ground: 'Every wall in this chamber is a living record of what has been taken and from whom. It lights violet from the inside, through a crack in the shell.',
     works: 'Vault-mouth batteries and ribbed seals guard that crack, which is the only way in and has been the only way in for four thousand cycles.',
     f: {
@@ -521,7 +521,7 @@ const PLANET_CUTS = {
   },
 
   '26': {
-    name: 'The compound',
+    name: 'SERPO',
     ground: 'Human habs stand in alien sand under two suns, prefabricated and still bolted down. They went up for an exchange programme that ran one way and was never spoken of again.',
     works: 'Perimeter batteries cover the compound, and there are membrane nests buried in the sand outside the wire that were not there when the habs were built.',
     f: {
@@ -548,7 +548,7 @@ const PLANET_CUTS = {
      sky, and a road that was never founded because roads accrete. */
 
   '30': {
-    name: 'The yard',
+    name: 'PROXIMA d',
     ground: 'Ships come here to die. The hulls lie in lanes sorted by whoever built them, a hundred different yards, all of them cut open, under a red sun that makes every shadow look like a hole.',
     works: 'Yard cranes and cutting gantries are turned outward, with hull plate stacked into walls between them. Nothing here was designed as a fortification and all of it is being used as one.',
     f: {
@@ -571,7 +571,7 @@ const PLANET_CUTS = {
   },
 
   '31': {
-    name: 'The strip',
+    name: 'PROXIMA b',
     ground: 'This world has not turned since it formed, so the town runs the long way along the only ground that is neither burning nor frozen. It is permanently sunset here and it always will be.',
     works: 'Ridge batteries are dug in along the sunset line, and shutter walls on both faces can close the town against the day side or the night side, whichever is trying to get in.',
     f: {
@@ -594,7 +594,7 @@ const PLANET_CUTS = {
   },
 
   '32': {
-    name: 'The refinery',
+    name: 'PROXIMA c',
     ground: 'The plumes freeze on the way down out here and fall back as snow made of whatever the towers were trying to sell. The whole surface is blue ice.',
     works: 'Ice breach batteries ring the cracking towers, and the pipe runs are armoured under banked snow that has to be cut open before anything can be repaired.',
     f: {
@@ -686,7 +686,7 @@ const PLANET_CUTS = {
   },
 
   '36': {
-    name: 'The bay',
+    name: 'PROXIMA GATE',
     ground: 'Everyone who arrived with nowhere else to be built a piece of this harbour, over sixty years, out of salvage. It is the first port out of Sol, and the ships moor under a roof of stone.',
     works: 'Harbour batteries are set into the rock roof, and a boom crosses the bay mouth strung wreck to wreck, made from the ships of people who are not here to object.',
     f: {
@@ -713,7 +713,7 @@ const PLANET_CUTS = {
      and a garden tended for a maker who is not coming back. */
 
   '40': {
-    name: 'The garden',
+    name: 'SIRIUS A I',
     ground: 'Ten thousand machines stand in rows on these terraces, pruned and aligned and facing the same way. None of them are awake and every one of them is maintained.',
     works: 'Terrace batteries sit between the rows and hard-light barriers run along the garden walls. They light when the garden is approached, and they have been lighting for a very long time.',
     f: {
@@ -736,7 +736,7 @@ const PLANET_CUTS = {
   },
 
   '41': {
-    name: 'The foundry',
+    name: 'SIRIUS A II',
     ground: 'The casting halls have not stopped. They turn out identical units one after another under a star that never sets, and the canyon floor glows with it.',
     works: 'Canyon batteries line the hall roofs, and pour gates can flood the whole floor with molten metal, which is a defence and also simply how the halls are emptied.',
     f: {
@@ -782,7 +782,7 @@ const PLANET_CUTS = {
   },
 
   '43': {
-    name: 'The quarantine',
+    name: 'SIRIUS B I',
     ground: 'They keep the ones that failed inspection here, in sealed white halls in orbit of a white dwarf. Every door locks from the outside and none has ever been opened from within.',
     works: 'Hall batteries cover the seals and containment shutters drop between every corridor, built to stop something getting out and now holding something back.',
     f: {

@@ -130,6 +130,15 @@ h2{font-size:15px;letter-spacing:.14em;margin:38px 0 6px;color:#fff;text-transfo
 .fcard span{color:#75899e;font-size:12.5px;line-height:1.5}
 .stat{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0 0;font-size:13px;color:#8aa0b5}
 .stat b{color:#fff}
+table.dec{border-collapse:collapse;width:100%;margin:12px 0 8px;font-size:13.5px}
+table.dec td{border-top:1px solid #16202c;padding:9px 10px;vertical-align:top}
+table.dec td:first-child{width:78px;font-size:10px;letter-spacing:.14em;white-space:nowrap;padding-top:12px}
+table.dec td:last-child{color:#75899e;width:34%}
+table.dec tr.y td:first-child{color:#6ee7a0}
+table.dec tr.n td:first-child{color:#f0a8a8}
+table.dec tr.n b{color:#ffd89b}
+table.dec b{color:#fff;font-weight:600}
+table.dec span{color:#75899e;font-size:12.5px}
 @media(max-width:1100px){.strip{grid-template-columns:repeat(2,1fr)}.grid5{grid-template-columns:1fr 1fr}}
 `;
 
@@ -266,6 +275,26 @@ function index() {
       if (!has(kk)) missing++; else if (staleWorld(key)) stale++;
     }
   })));
+  /* DECIDED vs SHIPPED. Every row runs a check against the code, so a decision
+     that never landed cannot sit here looking done. */
+  let rows = [];
+  try {
+    const gx2 = vm.runInContext('({ CUTSCENES, GX_HOME_SYSTEMS, PLANET_CUTS, UNIT_TYPES, LORE })', ctx);
+    rows = require('./decisions.js').build(gx2, k => has(k.replace(/\.webp$/, '')));
+  } catch (e) { console.log('  (decisions unavailable: ' + e.message.split('\n')[0] + ')'); }
+  if (rows.length) {
+    const done = rows.filter(r => r.ok).length;
+    w('<h2>Decided, and whether it is actually in the game</h2>');
+    w('<p class="sub"><b style="color:#fff">' + done + ' of ' + rows.length + '</b> landed. ' +
+      'Every row below runs a check against the code on every rebuild, so nothing here can ' +
+      'claim to be done because somebody typed that it was.</p>');
+    w('<table class="dec">');
+    rows.forEach(r => w('<tr class="' + (r.ok ? 'y' : 'n') + '"><td>' + (r.ok ? 'IN' : 'NOT YET') +
+      '</td><td><b>' + esc(r.id) + '</b><br><span>' + esc(r.why) + '</span></td>' +
+      '<td>' + esc(r.got) + '</td></tr>'));
+    w('</table>');
+  }
+
   w('<h2>Where we are</h2>');
   w('<div class="stat"><span><b>' + panels + '</b> panels across five campaigns</span>' +
     '<span><b>' + (panels - missing - stale) + '</b> art matches the text</span>' +

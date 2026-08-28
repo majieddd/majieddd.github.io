@@ -603,11 +603,27 @@ TOWER_PLATES = {
 # SUBJECT leads, faction palette second, STYLE tail last: the CLIP cliff eats
 # the tail, and the tail is the only part that can afford to be eaten.
 CUTSCENE_PLATES = [
-    ('cut_human_intro_1', 'human', 'a colossal asteroid looming over Earth at night, city lights below, emergency broadcast beams sweeping the sky'),
-    ('cut_human_intro_2', 'human', 'a silent crowd in a rain-soaked plaza staring up at a public screen, faces lit by its glow'),
-    ('cut_human_intro_3', 'human', 'engineers of every nation around a holographic warship blueprint in a vast winter hangar, snow through the doors'),
-    ('cut_human_intro_4', 'human', 'an asteroid shattering into burning fragments above Earth, intercept missile trails converging, aurora shockwave'),
-    ('cut_human_intro_5', 'human', 'a vast human fleet lifting from Earth toward a full Moon, contrails and launch fire over the curve of the planet'),
+    # THE FIFTEEN BEAT HUMAN OPENING (owner, Session 42). Longer than the other
+    # four because this act carries the canon nobody else re-explains, and the
+    # only intro with SILENT panels. Beats 8, 9 and 10 are the square before,
+    # during and after, and they carry NO caption in js/cutscenes.js, so these
+    # three plates have to tell the whole turn on their own. They are written
+    # for continuity: same plaza, same crowd, same camera, three moments.
+    ('cut_human_intro_1', 'human', 'a small bright asteroid crossing a clear night sky above a city, closer than the satellites, people on rooftops pointing up'),
+    ('cut_human_intro_2', 'human', 'a stadium-sized rock hanging like a second moon over a coastline at night, crowds along the shore watching it, festival lights strung between buildings'),
+    ('cut_human_intro_3', 'human', 'an observatory hall at night, tracking plots on every screen showing a curve bending inward, astronomers standing very still'),
+    ('cut_human_intro_4', 'human', 'a silent crowd in a rain-soaked plaza staring up at a public screen, faces lit by its glow'),
+    ('cut_human_intro_5', 'human', 'a colossal asteroid looming over Earth at night, city lights below, emergency broadcast beams sweeping the sky'),
+    ('cut_human_intro_6', 'human', 'engineers of every nation around a holographic warship blueprint in a vast winter hangar, snow through the doors'),
+    ('cut_human_intro_7', 'human', 'a city square at dusk filling with families and strung lights, everyone carrying chairs and blankets, looking up expectantly'),
+    ('cut_human_intro_8', 'human', 'a packed city square at night seen from above, every face turned up, the white flash of an intercept blooming overhead, arms raised, celebration'),
+    ('cut_human_intro_9', 'human', 'the same city square and the same upturned faces as the night sky above them fills with descending dark shapes trailing fire, cheering mouths and widening eyes together'),
+    ('cut_human_intro_10', 'human', 'the same city square at ground level, overturned chairs and strung lights torn down, tall dark shapes moving among scattering people, panic'),
+    ('cut_human_intro_11', 'human', 'a shattered asteroid fragment opened like a hull in a city street, ramps down, its interior lit from inside'),
+    ('cut_human_intro_12', 'human', 'a desert hangar in 1947 with a recovered disc under canvas and floodlights, soldiers posted at the doors'),
+    ('cut_human_intro_13', 'human', 'a vast subterranean research hall under Antarctic ice, reverse-engineered alien components on gantries, flags of many nations on one wall'),
+    ('cut_human_intro_14', 'human', 'a city square emplacement firing upward at a descending burning fragment, gun crews braced, tracer light'),
+    ('cut_human_intro_15', 'human', 'the same emplacement and the same crew swinging the barrel down to fire level at a tall dark shape advancing up the avenue'),
     ('cut_human_sys1',   'human', 'human soldiers planting a banner on grey lunar regolith beside a half-buried alien relay dish, Earth rising behind'),
     ('cut_human_sys2',   'human', 'a war-room table drowned in disclosure files and redacted pages, one document circled under a cone of lamplight'),
     ('cut_human_sys3',   'human', 'a defeated alien commander kneeling before human officers on a shattered throne platform, banners burning'),

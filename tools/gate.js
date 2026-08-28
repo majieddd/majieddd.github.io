@@ -117,6 +117,17 @@ function staticGates() {
      ordinary menus, which is correct behaviour and also means a broken cold
      open is INVISIBLE: the player just sees the screens the game always had
      and nothing reports anything. So the preconditions are pinned instead. */
+  /* THE AUTHORED WORLD TEXT. A bulk rewrite over planetcuts.js destroyed 28 of
+     35 world NAMES and every existing gate stayed green: the file parsed, the
+     line count held, the lengths held, and the storyboard reads names from the
+     galaxy so it rendered perfectly over broken data. Verifying what you
+     changed is not verifying what you might have broken. */
+  const pc = run(process.execPath, ['tools/probe-planetcuts.js']);
+  if (pc.code === 0) say('planet text: ' + (pc.out.trim().split('\n').pop() || '').trim());
+  else fail('planet text: ' + pc.out.trim().split('\n')
+                                .filter(l => l.indexOf('[FAIL]') >= 0)
+                                .map(l => l.replace(/^\s*\[FAIL\]\s*/, '')).join('; '));
+
   const co = run(process.execPath, ['tools/probe-coldopen.js']);
   if (co.code === 0) say('cold open: ' + (co.out.trim().split('\n').pop() || '').trim());
   else fail('cold open: ' + co.out.trim().split('\n')
