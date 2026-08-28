@@ -1,0 +1,1469 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A playable voxel tactical demo for Cosmic Conquest.">
+  <link rel="icon" href="data:,">
+  <title>Cosmic Conquest: The Coil Voxel Command Demo</title>
+  <style>
+    :root {
+      --void: #070d18;
+      --ground: #0e1726;
+      --surface: #142033;
+      --surface-raised: #1b2a40;
+      --ink: #dbe8f6;
+      --muted: #9ab0c5;
+      --faint: #60768d;
+      --line: #35506b;
+      --cyan: #38e8ff;
+      --rose: #ff6b9d;
+      --gold: #fbbf24;
+      --green: #63d99a;
+      --violet: #9d7aff;
+      --danger: #f07878;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --r-1: 4px;
+      --r-2: 8px;
+      --t-micro: 10px;
+      --t-label: 12px;
+      --t-body: 14px;
+      --t-title: 17px;
+      --t-head: 22px;
+      --display: "Bahnschrift SemiCondensed", "Avenir Next Condensed", "Arial Narrow", sans-serif;
+      --ui: "Segoe UI", "Segoe UI Variable Text", system-ui, sans-serif;
+      --num: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: var(--void); }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0;
+      background: var(--void);
+      color: var(--ink);
+      font-family: var(--ui);
+    }
+
+    button {
+      min-width: 0;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-1);
+      background: var(--surface-raised);
+      color: var(--ink);
+      cursor: pointer;
+      font: 700 var(--t-label)/1 var(--display);
+      letter-spacing: .08em;
+    }
+
+    button:hover:not(:disabled) { border-color: var(--cyan); }
+    button:active:not(:disabled) { transform: translateY(1px); }
+    button:disabled { color: var(--faint); cursor: default; opacity: .55; }
+    button:focus, button:focus-visible, canvas:focus, canvas:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 3px;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow: clip;
+    }
+
+    .command-bar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: var(--space-3);
+      align-items: center;
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--line);
+      background: var(--ground);
+    }
+
+    .kicker,
+    .eyebrow {
+      margin: 0;
+      color: var(--muted);
+      font: 700 var(--t-micro)/1.1 var(--display);
+      letter-spacing: .14em;
+    }
+
+    .mission-name {
+      margin: 3px 0 0;
+      color: var(--ink);
+      font: 700 var(--t-head)/1 var(--display);
+      letter-spacing: .07em;
+    }
+
+    .bar-readout {
+      display: grid;
+      grid-auto-flow: column;
+      gap: var(--space-2);
+      align-items: center;
+    }
+
+    .metric {
+      display: grid;
+      gap: 2px;
+      min-width: 62px;
+      padding-left: var(--space-2);
+      border-left: 1px solid var(--line);
+    }
+
+    .metric span { color: var(--faint); font: 700 var(--t-micro)/1 var(--display); letter-spacing: .1em; }
+    .metric b { font: 700 var(--t-body)/1 var(--num); }
+    .metric.player b { color: var(--cyan); }
+    .metric.rival b { color: var(--rose); }
+    .metric.salvage b { color: var(--gold); }
+
+    .phase-stamp {
+      min-width: 126px;
+      padding: 8px 10px;
+      border: 1px solid var(--cyan);
+      border-radius: var(--r-1);
+      color: var(--cyan);
+      font: 700 var(--t-label)/1 var(--display);
+      letter-spacing: .1em;
+      text-align: center;
+    }
+
+    .battle-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(258px, 318px);
+      min-height: 0;
+    }
+
+    .field-wrap {
+      position: relative;
+      min-height: 380px;
+      overflow: hidden;
+      background: var(--void);
+    }
+
+    #field {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 380px;
+      background: var(--void);
+      cursor: crosshair;
+      touch-action: manipulation;
+    }
+
+    .field-legend {
+      position: absolute;
+      left: var(--space-3);
+      bottom: var(--space-3);
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-1) var(--space-3);
+      max-width: calc(100% - 24px);
+      padding: var(--space-2);
+      border: 1px solid var(--line);
+      border-radius: var(--r-1);
+      background: var(--ground);
+      color: var(--muted);
+      font: 600 var(--t-micro)/1.25 var(--ui);
+    }
+
+    .legend-key { display: inline-flex; align-items: center; gap: 5px; }
+    .legend-mark { width: 9px; height: 9px; border: 1px solid var(--ink); transform: rotate(45deg); }
+    .legend-mark.player { background: var(--cyan); }
+    .legend-mark.relay { background: var(--violet); }
+    .legend-mark.rival { background: var(--rose); }
+    .legend-mark.vigil { background: var(--gold); }
+
+    .plan-panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      border-left: 1px solid var(--line);
+      background: var(--ground);
+    }
+
+    .panel-section {
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-section:last-child { border-bottom: 0; }
+    .panel-section.grow { flex: 1; overflow: auto; }
+
+    .panel-title {
+      margin: 4px 0 var(--space-2);
+      color: var(--ink);
+      font: 700 var(--t-title)/1 var(--display);
+      letter-spacing: .06em;
+    }
+
+    .panel-copy {
+      margin: 0;
+      color: var(--muted);
+      font-size: var(--t-body);
+      line-height: 1.55;
+    }
+
+    .panel-copy em { color: var(--faint); }
+
+    .node-readout {
+      display: grid;
+      gap: var(--space-2);
+      min-height: 92px;
+      padding: var(--space-3);
+      border: 1px solid var(--line);
+      border-radius: var(--r-1);
+      background: var(--surface);
+    }
+
+    .node-readout b { color: var(--cyan); font: 700 var(--t-label)/1.15 var(--display); letter-spacing: .08em; }
+    .node-readout span { color: var(--muted); font-size: var(--t-body); line-height: 1.4; }
+
+    .control-pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+    .control-pair button { padding: 0 var(--space-2); }
+
+    .roster {
+      display: grid;
+      gap: var(--space-2);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .roster li {
+      display: grid;
+      grid-template-columns: 30px minmax(0, 1fr);
+      gap: var(--space-2);
+      align-items: center;
+      color: var(--muted);
+      font-size: var(--t-label);
+    }
+
+    .unit-chip {
+      width: 30px;
+      height: 22px;
+      border: 1px solid currentColor;
+      border-radius: 2px;
+      background: var(--surface-raised);
+      color: var(--cyan);
+    }
+
+    .unit-chip.gold { color: var(--gold); }
+    .unit-chip.violet { color: var(--violet); }
+    .unit-chip.rose { color: var(--rose); }
+    .unit-chip.teal { color: #8de4d5; }
+
+    .command-deck {
+      display: grid;
+      grid-template-columns: minmax(180px, .75fr) minmax(0, 2.5fr) minmax(200px, .8fr);
+      gap: var(--space-3);
+      align-items: stretch;
+      padding: var(--space-3) var(--space-4);
+      border-top: 1px solid var(--line);
+      background: var(--ground);
+    }
+
+    .deck-readout {
+      display: grid;
+      align-content: center;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .deck-readout b { color: var(--cyan); font: 700 var(--t-label)/1 var(--display); letter-spacing: .08em; }
+    .deck-readout span { color: var(--muted); font-size: var(--t-micro); line-height: 1.35; }
+
+    .tower-grid,
+    .muster-grid { display: grid; gap: var(--space-2); }
+    .tower-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .muster-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .tower-card,
+    .muster-card {
+      display: grid;
+      gap: 3px;
+      min-height: 66px;
+      padding: 8px;
+      border-color: var(--line);
+      background: var(--surface);
+      text-align: left;
+    }
+
+    .tower-card[aria-pressed="true"] { border-color: var(--cyan); box-shadow: inset 3px 0 0 var(--cyan); }
+    .tower-card .tower-name,
+    .muster-card .unit-name { color: var(--ink); font: 700 var(--t-label)/1 var(--display); letter-spacing: .08em; }
+    .tower-card small,
+    .muster-card small { color: var(--muted); font: 600 var(--t-micro)/1 var(--num); }
+    .tower-card strong,
+    .muster-card strong { color: var(--gold); font: 700 var(--t-micro)/1 var(--num); }
+
+    .deck-actions { display: grid; grid-template-rows: auto auto; gap: var(--space-2); }
+    .primary-action { border-color: var(--cyan); background: #17344b; color: var(--cyan); }
+    .upgrade-action { border-color: var(--gold); color: var(--gold); }
+
+    .status-line {
+      grid-column: 1 / -1;
+      min-height: 16px;
+      margin: 0;
+      color: var(--muted);
+      font: 600 var(--t-micro)/1.35 var(--ui);
+    }
+
+    .status-line strong { color: var(--green); font-family: var(--num); }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+
+    @media (max-width: 980px) {
+      .battle-layout { grid-template-columns: minmax(0, 1fr) 270px; }
+      .command-deck { grid-template-columns: minmax(160px, .8fr) minmax(0, 2fr); }
+      .deck-actions { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; grid-template-rows: none; }
+    }
+
+    @media (max-width: 760px) {
+      .command-bar { grid-template-columns: minmax(0, 1fr) auto; padding: var(--space-2) var(--space-3); }
+      .bar-readout { grid-column: 1 / -1; grid-row: 2; justify-content: start; }
+      .metric { min-width: 54px; }
+      .phase-stamp { min-width: 98px; font-size: var(--t-micro); }
+      .battle-layout { grid-template-columns: 1fr; }
+      .field-wrap { min-height: 420px; }
+      #field { min-height: 420px; }
+      .plan-panel { border-top: 1px solid var(--line); border-left: 0; }
+      .panel-section.grow { display: none; }
+      .command-deck { grid-template-columns: 1fr; padding: var(--space-3); }
+      .tower-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .deck-actions { grid-column: auto; }
+      .tower-card, .muster-card { min-height: 58px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="command-bar">
+      <div>
+        <p class="kicker">COSMIC CONQUEST / VOXEL COMMAND DEMO</p>
+        <h1 class="mission-name">THE COIL: CALORIS MIRROR FARM</h1>
+      </div>
+      <div class="phase-stamp" id="phase-readout">PLAN THE FIELD</div>
+      <div class="bar-readout" aria-label="Battle telemetry">
+        <div class="metric player"><span>YOU</span><b id="my-lives">20</b></div>
+        <div class="metric rival"><span>RIVAL</span><b id="rival-lives">20</b></div>
+        <div class="metric salvage"><span>SALVAGE</span><b id="credits">72</b></div>
+        <div class="metric"><span>WAVE</span><b id="wave">0</b></div>
+      </div>
+    </header>
+
+    <section class="battle-layout" aria-label="The Coil battlefield">
+      <div class="field-wrap">
+        <canvas id="field" tabindex="0" aria-label="Voxel battlefield. Select a tower, then select a hardpoint to deploy it."></canvas>
+        <div class="field-legend" aria-label="Battlefield legend">
+          <span class="legend-key"><i class="legend-mark player"></i>YOUR DETACHMENT</span>
+          <span class="legend-key"><i class="legend-mark relay"></i>REANIMATED PRESSURE</span>
+          <span class="legend-key"><i class="legend-mark rival"></i>RIVAL</span>
+          <span class="legend-key"><i class="legend-mark vigil"></i>NEUTRAL VIGIL</span>
+        </div>
+      </div>
+
+      <aside class="plan-panel" aria-label="Planning panel">
+        <section class="panel-section">
+          <p class="eyebrow">TERRAIN READ</p>
+          <h2 class="panel-title">A FAILED SOLAR COOLING LOOP</h2>
+          <p class="panel-copy">The Coil routes neutral Vigil machines from its crucible toward both command nodes. Heat-sink walls interrupt direct fire. Mortar shells cross them, while solar pads extend sightlines.</p>
+        </section>
+
+        <section class="panel-section">
+          <p class="eyebrow">SELECTED HARDPOINT</p>
+          <div class="node-readout" id="node-readout">
+            <b>NO PAD SELECTED</b>
+            <span>Select a diamond pad on the terrain to inspect its practical bonus.</span>
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <div class="control-pair">
+            <button type="button" id="turn-left">TURN LEFT</button>
+            <button type="button" id="turn-right">TURN RIGHT</button>
+            <button type="button" id="zoom-out">ZOOM OUT</button>
+            <button type="button" id="zoom-in">ZOOM IN</button>
+          </div>
+        </section>
+
+        <section class="panel-section grow">
+          <p class="eyebrow">VOXEL SILHOUETTE SET</p>
+          <h2 class="panel-title">BASIC UNIT LANGUAGE</h2>
+          <ul class="roster">
+            <li><i class="unit-chip"></i><span><b>HUMAN TROOPER</b><br>sealed suit and carbine, line unit</span></li>
+            <li><i class="unit-chip gold"></i><span><b>LIGHT VOTARY</b><br>slim shield bearer, ward unit</span></li>
+            <li><i class="unit-chip violet"></i><span><b>XENO CHITLING</b><br>low multi-legged swarm, dart unit</span></li>
+            <li><i class="unit-chip rose"></i><span><b>PIRATE BOARDER</b><br>grapple silhouette, breach unit</span></li>
+            <li><i class="unit-chip teal"></i><span><b>PARALLEL STITCH</b><br>clean repair drone, relay unit</span></li>
+          </ul>
+        </section>
+      </aside>
+    </section>
+
+    <footer class="command-deck">
+      <section class="deck-readout" aria-label="Selection readout">
+        <p class="eyebrow">FIELD ORDER</p>
+        <b id="selection-readout">BOLT EMPLACEMENT SELECTED</b>
+        <span id="selection-detail">Fires precise kinetic bursts at the closest incoming unit.</span>
+      </section>
+
+      <section class="tower-grid" aria-label="Tower selection">
+        <button class="tower-card" type="button" data-tower="bolt" aria-pressed="true">
+          <span class="tower-name">1 BOLT</span><small>KINETIC / RANGE</small><strong>17 SALVAGE</strong>
+        </button>
+        <button class="tower-card" type="button" data-tower="cryo" aria-pressed="false">
+          <span class="tower-name">2 CRYO</span><small>FROST / SLOW</small><strong>21 SALVAGE</strong>
+        </button>
+        <button class="tower-card" type="button" data-tower="mortar" aria-pressed="false">
+          <span class="tower-name">3 MORTAR</span><small>FIRE / SPLASH</small><strong>29 SALVAGE</strong>
+        </button>
+        <button class="tower-card" type="button" data-tower="flak" aria-pressed="false">
+          <span class="tower-name">4 FLAK</span><small>STORM / AIR</small><strong>24 SALVAGE</strong>
+        </button>
+      </section>
+
+      <section class="deck-actions" aria-label="Wave and upgrade controls">
+        <button type="button" class="primary-action" id="send-wave">START WAVE</button>
+        <button type="button" class="upgrade-action" id="upgrade-tower" disabled>UPGRADE SELECTED</button>
+      </section>
+
+      <section class="muster-grid" aria-label="Muster detachment">
+        <button class="muster-card" type="button" data-muster="trooper">
+          <span class="unit-name">TROOPER</span><small>LINE / 3 DAMAGE</small><strong>12 SALVAGE</strong>
+        </button>
+        <button class="muster-card" type="button" data-muster="gunskiff">
+          <span class="unit-name">GUNSKIFF</span><small>FLYING / 4 DAMAGE</small><strong>18 SALVAGE</strong>
+        </button>
+        <button class="muster-card" type="button" data-muster="linebreaker">
+          <span class="unit-name">LINEBREAKER</span><small>ARMOURED / 8 DAMAGE</small><strong>27 SALVAGE</strong>
+        </button>
+      </section>
+
+      <p class="status-line" id="status-line"><strong>READY</strong> Select a tower, then deploy it on a hardpoint. Press N or Enter to rush a wave.</p>
+    </footer>
+  </main>
+  <p class="sr-only" id="announcer" aria-live="polite"></p>
+
+  <script>
+  (() => {
+    'use strict';
+
+    const C = Object.freeze({
+      GRID_W: 21,
+      GRID_H: 15,
+      TILE_W: 42,
+      TILE_H: 22,
+      VOXEL_H: 18,
+      SIM_DT: 1 / 60,
+      MAX_STEPS: 5,
+      MAX_PROJECTILES: 72,
+      MAX_PARTICLES: 96,
+      STARTING_SALVAGE: 72,
+      PLAYER_LIVES: 20,
+      WAVE_SPAWN_PERIOD: 0.33,
+      WAVE_REWARD: 10,
+      TOWER_UPGRADE_BASE: 18,
+      MIN_ZOOM: 0.72,
+      MAX_ZOOM: 1.32
+    });
+
+    const PALETTE = Object.freeze({
+      void: '#070d18',
+      sky: '#101a2a',
+      terrainTop: '#26384a',
+      terrainLeft: '#1a2a3a',
+      terrainRight: '#101d2c',
+      path: '#28323e',
+      pathEdge: '#45576a',
+      ink: '#0b111b',
+      player: '#38e8ff',
+      rival: '#ff6b9d',
+      gold: '#fbbf24',
+      frost: '#84d9ff',
+      fire: '#ff916b',
+      storm: '#b8a0ff',
+      neutral: '#c5d0db',
+      xeno: '#9d7aff',
+      teal: '#8de4d5',
+      muted: '#91a9bd',
+      dark: '#101a29',
+      heat: '#cf7968'
+    });
+
+    const TOWERS = Object.freeze({
+      bolt: Object.freeze({ id: 'bolt', name: 'BOLT', cost: 17, damage: 5, range: 4.25, cooldown: 0.48, color: PALETTE.player, form: 'bolt', text: 'Fires precise kinetic bursts at the closest incoming unit.' }),
+      cryo: Object.freeze({ id: 'cryo', name: 'CRYO', cost: 21, damage: 2, range: 3.55, cooldown: 0.36, color: PALETTE.frost, form: 'cryo', slow: 0.56, text: 'Applies a frost field that slows incoming units.' }),
+      mortar: Object.freeze({ id: 'mortar', name: 'MORTAR', cost: 29, damage: 9, range: 5.55, cooldown: 1.15, color: PALETTE.fire, form: 'mortar', splash: 1.65, text: 'Lobs explosive shells over heat-sink walls and damages clusters.' }),
+      flak: Object.freeze({ id: 'flak', name: 'FLAK', cost: 24, damage: 7, range: 4.1, cooldown: 0.74, color: PALETTE.storm, form: 'flak', airOnly: true, text: 'Fires storm bursts at flying targets before they cross the coil.' })
+    });
+
+    const UNITS = Object.freeze({
+      vigil: Object.freeze({ id: 'vigil', name: 'VIGIL', hp: 21, speed: 1.02, bounty: 4, damage: 1, form: 'vigil', color: PALETTE.neutral }),
+      skimmer: Object.freeze({ id: 'skimmer', name: 'SKIMMER', hp: 13, speed: 1.38, bounty: 3, damage: 1, form: 'skimmer', color: PALETTE.gold, flying: true }),
+      bulwark: Object.freeze({ id: 'bulwark', name: 'BULWARK', hp: 43, speed: 0.67, bounty: 7, damage: 2, form: 'bulwark', color: PALETTE.neutral }),
+      trooper: Object.freeze({ id: 'trooper', name: 'TROOPER', hp: 12, speed: 1.25, cost: 12, damage: 3, form: 'trooper', color: PALETTE.player }),
+      gunskiff: Object.freeze({ id: 'gunskiff', name: 'GUNSKIFF', hp: 9, speed: 1.7, cost: 18, damage: 4, form: 'gunskiff', color: PALETTE.player, flying: true }),
+      linebreaker: Object.freeze({ id: 'linebreaker', name: 'LINEBREAKER', hp: 32, speed: 0.86, cost: 27, damage: 8, form: 'linebreaker', color: PALETTE.player }),
+      relay: Object.freeze({ id: 'relay', name: 'RELAY', hp: 11, speed: 1.48, damage: 3, form: 'relay', color: PALETTE.xeno })
+    });
+
+    const PADS = Object.freeze([
+      Object.freeze({ x: 4.7, y: 5.1, type: 'solar', name: 'SOLAR CROWN', detail: 'Extends this tower’s range by 1.2 tiles. The raised mirror plate has a clear firing lane.', bonus: { range: 1.2 } }),
+      Object.freeze({ x: 6.8, y: 8.8, type: 'coolant', name: 'COOLANT MANIFOLD', detail: 'Cryo towers slow 18 percent harder here. The blue channel feeds their condenser.', bonus: { cryo: 0.18 } }),
+      Object.freeze({ x: 8.2, y: 3.6, type: 'ballistic', name: 'SUNWARD BATTERY', detail: 'Mortar blasts gain 0.55 tiles of splash radius. The pad peers over the heat-sink bank.', bonus: { mortar: 0.55 } }),
+      Object.freeze({ x: 11.7, y: 10.9, type: 'relay', name: 'RELAY SPLICE', detail: 'Reanimated units leaving this route gain 16 percent travel speed. The node opens a cleaner signal path.', bonus: { relay: 0.16 } }),
+      Object.freeze({ x: 14.2, y: 7.3, type: 'high', name: 'OVERLOOK PLATE', detail: 'Extends this tower’s range by 0.7 tiles. Its height lets a defender watch the lower loop.', bonus: { range: 0.7 } }),
+      Object.freeze({ x: 16.1, y: 9.7, type: 'open', name: 'SCAVENGER PAD', detail: 'An open hardpoint with no modifier. Use it for direct coverage of the rival lane.', bonus: {} })
+    ]);
+
+    const route = (points) => {
+      const segments = [];
+      let total = 0;
+      for (let i = 1; i < points.length; i += 1) {
+        const a = points[i - 1];
+        const b = points[i];
+        const length = Math.hypot(b.x - a.x, b.y - a.y);
+        segments.push({ a, b, length, start: total });
+        total += length;
+      }
+      return { points, segments, total };
+    };
+
+    const ROUTES = {
+      toPlayer: route([
+        { x: 10.0, y: 7.5 }, { x: 8.7, y: 5.3 }, { x: 6.4, y: 4.3 },
+        { x: 4.7, y: 5.7 }, { x: 3.5, y: 8.0 }, { x: 1.2, y: 8.7 }
+      ]),
+      toRival: route([
+        { x: 10.0, y: 7.5 }, { x: 11.3, y: 9.7 }, { x: 13.6, y: 10.7 },
+        { x: 15.3, y: 9.3 }, { x: 16.6, y: 7.0 }, { x: 18.8, y: 6.3 }
+      ]),
+      outbound: null
+    };
+    ROUTES.outbound = route([...ROUTES.toPlayer.points.slice().reverse(), ...ROUTES.toRival.points.slice(1)]);
+    Object.freeze(ROUTES);
+
+    const field = document.getElementById('field');
+    const ctx = field.getContext('2d');
+    const terrainCanvas = document.createElement('canvas');
+    const terrainCtx = terrainCanvas.getContext('2d');
+    const ui = Object.freeze({
+      phase: document.getElementById('phase-readout'),
+      lives: document.getElementById('my-lives'),
+      rivalLives: document.getElementById('rival-lives'),
+      credits: document.getElementById('credits'),
+      wave: document.getElementById('wave'),
+      node: document.getElementById('node-readout'),
+      selection: document.getElementById('selection-readout'),
+      selectionDetail: document.getElementById('selection-detail'),
+      status: document.getElementById('status-line'),
+      announce: document.getElementById('announcer'),
+      start: document.getElementById('send-wave'),
+      upgrade: document.getElementById('upgrade-tower')
+    });
+
+    const view = { width: 0, height: 0, dpr: 1, dirtyTerrain: true };
+    const state = {
+      phase: 'plan',
+      paused: false,
+      playerLives: C.PLAYER_LIVES,
+      rivalLives: C.PLAYER_LIVES,
+      credits: C.STARTING_SALVAGE,
+      wave: 0,
+      selectedTower: 'bolt',
+      selectedPlaced: null,
+      selectedPad: null,
+      hoverPad: null,
+      camera: { turn: 0, zoom: 1 },
+      towers: [],
+      units: [],
+      projectiles: [],
+      particles: [],
+      pending: [],
+      spawnClock: 0,
+      accumulator: 0,
+      lastTime: 0,
+      seed: 0x514f494c,
+      terrainPositions: [],
+      drawOrder: []
+    };
+
+    const FONT_MICRO = '700 10px ui-monospace, Menlo, Consolas, monospace';
+    const FONT_LABEL = '700 11px "Bahnschrift SemiCondensed", "Arial Narrow", sans-serif';
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const nextRandom = () => {
+      state.seed = (state.seed + 0x6d2b79f5) | 0;
+      let t = state.seed;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+
+    const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+    const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+    const squareDistance = (a, b) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2;
+
+    const mapHeight = (x, y) => {
+      const dx = (x - 10) / 10.9;
+      const dy = (y - 7) / 7.4;
+      if (dx * dx + dy * dy > 1) return -1;
+      const rim = Math.max(0, Math.abs(dx) + Math.abs(dy) - 0.85);
+      const coil = Math.sin((x * 0.86) + (y * 0.42)) > 0.7 ? 0.28 : 0;
+      return 0.34 + rim * 0.7 + coil;
+    };
+
+    const terrainAt = (x, y) => Math.max(0.3, mapHeight(x, y));
+
+    const rotated = (x, y) => {
+      const cx = (C.GRID_W - 1) / 2;
+      const cy = (C.GRID_H - 1) / 2;
+      const dx = x - cx;
+      const dy = y - cy;
+      switch (state.camera.turn) {
+        case 1: return { x: dy + cx, y: -dx + cy };
+        case 2: return { x: -dx + cx, y: -dy + cy };
+        case 3: return { x: -dy + cx, y: dx + cy };
+        default: return { x, y };
+      }
+    };
+
+    const project = (x, y, z = 0) => {
+      const r = rotated(x, y);
+      const sx = view.width * 0.5 + (r.x - r.y) * (C.TILE_W * 0.5) * state.camera.zoom;
+      const sy = view.height * 0.52 + (r.x + r.y - 17) * (C.TILE_H * 0.5) * state.camera.zoom - z * C.VOXEL_H * state.camera.zoom;
+      return { x: sx, y: sy };
+    };
+
+    const polygon = (target, points, fill, stroke = PALETTE.ink) => {
+      target.beginPath();
+      target.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i += 1) target.lineTo(points[i].x, points[i].y);
+      target.closePath();
+      target.fillStyle = fill;
+      target.fill();
+      if (stroke) {
+        target.strokeStyle = stroke;
+        target.lineWidth = 1;
+        target.stroke();
+      }
+    };
+
+    const shade = (hex, amount) => {
+      const value = parseInt(hex.slice(1), 16);
+      const r = clamp((value >> 16) + amount, 0, 255);
+      const g = clamp(((value >> 8) & 255) + amount, 0, 255);
+      const b = clamp((value & 255) + amount, 0, 255);
+      return `rgb(${r}, ${g}, ${b})`;
+    };
+
+    const drawBlock = (target, x, y, z, width, depth, height, top, left, right, ink = PALETTE.ink) => {
+      const a = project(x, y, z + height);
+      const b = project(x + width, y, z + height);
+      const c = project(x + width, y + depth, z + height);
+      const d = project(x, y + depth, z + height);
+      const ab = project(x, y, z);
+      const bb = project(x + width, y, z);
+      const cb = project(x + width, y + depth, z);
+      const db = project(x, y + depth, z);
+      polygon(target, [a, b, c, d], top, ink);
+      polygon(target, [d, c, cb, db], right, ink);
+      polygon(target, [a, d, db, ab], left, ink);
+      return { a, b, c, d, ab, bb, cb, db };
+    };
+
+    const drawDiamond = (target, x, y, z, inset, fill, stroke = PALETTE.ink) => {
+      const a = project(x + inset, y + inset, z);
+      const b = project(x + 1 - inset, y + inset, z);
+      const c = project(x + 1 - inset, y + 1 - inset, z);
+      const d = project(x + inset, y + 1 - inset, z);
+      polygon(target, [a, b, c, d], fill, stroke);
+      return { x: (a.x + b.x + c.x + d.x) / 4, y: (a.y + b.y + c.y + d.y) / 4 };
+    };
+
+    const routePosition = (r, progress) => {
+      const distanceAlong = clamp(progress, 0, r.total);
+      for (let i = 0; i < r.segments.length; i += 1) {
+        const seg = r.segments[i];
+        if (distanceAlong <= seg.start + seg.length || i === r.segments.length - 1) {
+          const t = seg.length ? (distanceAlong - seg.start) / seg.length : 0;
+          return { x: seg.a.x + (seg.b.x - seg.a.x) * t, y: seg.a.y + (seg.b.y - seg.a.y) * t };
+        }
+      }
+      return r.points[r.points.length - 1];
+    };
+
+    const closestProgress = (r, point) => {
+      let best = { distance: Infinity, progress: 0 };
+      for (let i = 0; i < r.segments.length; i += 1) {
+        const seg = r.segments[i];
+        const vx = seg.b.x - seg.a.x;
+        const vy = seg.b.y - seg.a.y;
+        const lengthSquared = vx * vx + vy * vy;
+        const t = lengthSquared ? clamp(((point.x - seg.a.x) * vx + (point.y - seg.a.y) * vy) / lengthSquared, 0, 1) : 0;
+        const sample = { x: seg.a.x + vx * t, y: seg.a.y + vy * t };
+        const d = squareDistance(point, sample);
+        if (d < best.distance) best = { distance: d, progress: seg.start + seg.length * t };
+      }
+      return best.progress;
+    };
+
+    const announce = (message) => { ui.announce.textContent = message; };
+    const status = (message, stateLabel = 'READY') => {
+      ui.status.innerHTML = `<strong>${stateLabel}</strong> ${message}`;
+    };
+
+    const setSelectedTower = (id) => {
+      const def = TOWERS[id];
+      if (!def) return;
+      state.selectedTower = id;
+      state.selectedPlaced = null;
+      document.querySelectorAll('[data-tower]').forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.dataset.tower === id));
+      });
+      ui.selection.textContent = `${def.name} EMPLACEMENT SELECTED`;
+      ui.selectionDetail.textContent = def.text;
+      ui.upgrade.disabled = true;
+      status('Select an unoccupied hardpoint to deploy the selected tower.');
+      announce(`${def.name} emplacement selected.`);
+    };
+
+    const showNode = (index) => {
+      state.selectedPad = index;
+      const pad = PADS[index];
+      if (!pad) {
+        ui.node.innerHTML = '<b>NO PAD SELECTED</b><span>Select a diamond pad on the terrain to inspect its practical bonus.</span>';
+        return;
+      }
+      ui.node.innerHTML = `<b>${pad.name}</b><span>${pad.detail}</span>`;
+    };
+
+    const towerStats = (tower) => {
+      const base = TOWERS[tower.type];
+      const pad = PADS[tower.pad];
+      const levelDamage = base.damage * (1 + (tower.level - 1) * 0.42);
+      let range = base.range + (tower.level - 1) * 0.22;
+      let splash = base.splash || 0;
+      let slow = base.slow || 0;
+      if (pad.bonus.range) range += pad.bonus.range;
+      if (base.id === 'mortar' && pad.bonus.mortar) splash += pad.bonus.mortar;
+      if (base.id === 'cryo' && pad.bonus.cryo) slow += pad.bonus.cryo;
+      return { damage: levelDamage, range, splash, slow };
+    };
+
+    const buildTower = (type, padIndex = state.selectedPad) => {
+      const def = TOWERS[type];
+      const pad = PADS[padIndex];
+      if (!def || !pad) return false;
+      if (state.towers.some((tower) => tower.pad === padIndex)) {
+        status('That hardpoint is already occupied. Select an open diamond pad.', 'HOLD');
+        return false;
+      }
+      if (state.credits < def.cost) {
+        status(`Need ${def.cost - state.credits} more salvage to deploy ${def.name}.`, 'SHORT');
+        return false;
+      }
+      state.credits -= def.cost;
+      state.towers.push({ id: `tower-${state.towers.length + 1}`, type, pad: padIndex, level: 1, cooldown: 0, flash: 0 });
+      state.selectedPlaced = state.towers.length - 1;
+      showNode(padIndex);
+      ui.upgrade.disabled = false;
+      status(`${def.name} deployed on ${pad.name}. Shift-click is not needed in this demo: the tower remains armed for another pad.`, 'DEPLOYED');
+      announce(`${def.name} deployed on ${pad.name}.`);
+      return true;
+    };
+
+    const upgradeSelected = () => {
+      const tower = state.towers[state.selectedPlaced];
+      if (!tower) return;
+      const cost = C.TOWER_UPGRADE_BASE + tower.level * 9;
+      if (state.credits < cost) {
+        status(`Need ${cost - state.credits} more salvage to upgrade ${TOWERS[tower.type].name}.`, 'SHORT');
+        return;
+      }
+      state.credits -= cost;
+      tower.level += 1;
+      tower.flash = 0.28;
+      status(`${TOWERS[tower.type].name} upgraded to level ${tower.level}.`, 'UPGRADE');
+      announce(`${TOWERS[tower.type].name} upgraded to level ${tower.level}.`);
+    };
+
+    const makeUnit = (type, options) => {
+      const def = UNITS[type];
+      const unit = {
+        id: `unit-${state.units.length + 1}-${Math.floor(nextRandom() * 10000)}`,
+        type,
+        def,
+        route: options.route,
+        progress: options.progress || 0,
+        hp: def.hp,
+        maxHp: def.hp,
+        target: options.target,
+        team: options.team,
+        slow: 0,
+        pos: null,
+        born: state.wave
+      };
+      unit.pos = routePosition(unit.route, unit.progress);
+      state.units.push(unit);
+      return unit;
+    };
+
+    const spawnWave = () => {
+      if (state.phase === 'victory' || state.phase === 'defeat') return;
+      if (state.phase === 'active') {
+        state.paused = !state.paused;
+        status(state.paused ? 'Simulation paused. Plan placement, camera angle, or an upgrade.' : 'Simulation resumed.', state.paused ? 'PAUSED' : 'ACTIVE');
+        return;
+      }
+      state.wave += 1;
+      state.phase = 'active';
+      state.paused = false;
+      const count = 3 + state.wave * 2;
+      state.pending.length = 0;
+      for (let i = 0; i < count; i += 1) {
+        const heavy = state.wave > 2 && i === count - 1;
+        const flying = state.wave > 1 && i % 4 === 2;
+        const type = heavy ? 'bulwark' : flying ? 'skimmer' : 'vigil';
+        state.pending.push({ type, target: 'player' });
+        state.pending.push({ type, target: 'rival' });
+      }
+      state.spawnClock = 0;
+      status(`Wave ${state.wave} is advancing from the crucible. Tower kills reanimate toward the rival on the same route.`, 'ACTIVE');
+      announce(`Wave ${state.wave} started.`);
+    };
+
+    const muster = (type) => {
+      const def = UNITS[type];
+      if (!def || !def.cost) return;
+      if (state.credits < def.cost) {
+        status(`Need ${def.cost - state.credits} more salvage to muster ${def.name}.`, 'SHORT');
+        return;
+      }
+      state.credits -= def.cost;
+      makeUnit(type, { route: ROUTES.outbound, target: 'rival', team: 'player' });
+      status(`${def.name} is marching the shared route toward the rival command node.`, 'MUSTERED');
+      announce(`${def.name} mustered.`);
+    };
+
+    const addParticle = (pos, color) => {
+      if (reduceMotion || state.particles.length >= C.MAX_PARTICLES) return;
+      state.particles.push({ x: pos.x, y: pos.y, z: 0.9, vx: nextRandom() - 0.5, vy: nextRandom() - 0.5, life: 0.34, color });
+    };
+
+    const killUnit = (unit, killer) => {
+      const index = state.units.indexOf(unit);
+      if (index < 0) return;
+      state.units.splice(index, 1);
+      addParticle(unit.pos, unit.def.color);
+      if (unit.team === 'neutral' && killer) {
+        state.credits += unit.def.bounty;
+        const start = closestProgress(ROUTES.outbound, unit.pos);
+        const relayPad = PADS[killer.pad];
+        const speedBonus = relayPad && relayPad.bonus.relay ? 1 + relayPad.bonus.relay : 1;
+        const relay = makeUnit('relay', { route: ROUTES.outbound, progress: start, target: 'rival', team: 'player' });
+        relay.speedBonus = speedBonus;
+        status(`${unit.def.name} reanimated. Its relay body is running toward the rival command node.`, 'RELAY');
+      }
+    };
+
+    const damageUnit = (unit, amount, tower, stats) => {
+      unit.hp -= amount;
+      if (stats.slow) unit.slow = Math.max(unit.slow, stats.slow);
+      addParticle(unit.pos, TOWERS[tower.type].color);
+      if (unit.hp <= 0) killUnit(unit, tower);
+    };
+
+    const chooseTarget = (tower, stats) => {
+      const pad = PADS[tower.pad];
+      const best = { unit: null, progress: -Infinity };
+      for (let i = 0; i < state.units.length; i += 1) {
+        const unit = state.units[i];
+        if (unit.team !== 'neutral' || unit.target !== 'player') continue;
+        if (TOWERS[tower.type].airOnly && !unit.def.flying) continue;
+        if (!TOWERS[tower.type].airOnly && unit.def.flying && tower.type === 'mortar') continue;
+        if (distance(pad, unit.pos) > stats.range) continue;
+        if (unit.progress > best.progress) {
+          best.unit = unit;
+          best.progress = unit.progress;
+        }
+      }
+      return best.unit;
+    };
+
+    const fireTower = (tower, target, stats) => {
+      const pad = PADS[tower.pad];
+      if (state.projectiles.length < C.MAX_PROJECTILES) {
+        state.projectiles.push({ from: { x: pad.x, y: pad.y }, to: { x: target.pos.x, y: target.pos.y }, life: 0.16, color: TOWERS[tower.type].color, kind: tower.type });
+      }
+      tower.flash = 0.11;
+      if (stats.splash) {
+        const targets = [];
+        for (let i = 0; i < state.units.length; i += 1) {
+          const unit = state.units[i];
+          if (unit.team === 'neutral' && unit.target === 'player' && distance(unit.pos, target.pos) <= stats.splash) targets.push(unit);
+        }
+        targets.forEach((unit) => damageUnit(unit, stats.damage, tower, stats));
+      } else {
+        damageUnit(target, stats.damage, tower, stats);
+      }
+    };
+
+    const endAtBase = (unit) => {
+      const def = unit.def;
+      if (unit.team === 'neutral') {
+        if (unit.target === 'player') {
+          state.playerLives = Math.max(0, state.playerLives - def.damage);
+          status(`${def.name} breached your command node. Build coverage along the upper coil.`, 'BREACH');
+        } else {
+          state.rivalLives = Math.max(0, state.rivalLives - def.damage);
+        }
+      } else if (unit.team === 'player') {
+        state.rivalLives = Math.max(0, state.rivalLives - def.damage);
+        status(`${def.name} reached the rival command node for ${def.damage} damage.`, 'PRESSURE');
+      }
+    };
+
+    const step = (dt) => {
+      if (state.phase !== 'active' || state.paused) return;
+      state.spawnClock -= dt;
+      if (state.pending.length && state.spawnClock <= 0) {
+        const next = state.pending.shift();
+        makeUnit(next.type, {
+          route: next.target === 'player' ? ROUTES.toPlayer : ROUTES.toRival,
+          target: next.target,
+          team: 'neutral'
+        });
+        state.spawnClock = C.WAVE_SPAWN_PERIOD;
+      }
+
+      for (let i = state.towers.length - 1; i >= 0; i -= 1) {
+        const tower = state.towers[i];
+        tower.cooldown = Math.max(0, tower.cooldown - dt);
+        tower.flash = Math.max(0, tower.flash - dt);
+        if (tower.cooldown > 0) continue;
+        const stats = towerStats(tower);
+        const target = chooseTarget(tower, stats);
+        if (target) {
+          fireTower(tower, target, stats);
+          tower.cooldown = TOWERS[tower.type].cooldown;
+        }
+      }
+
+      for (let i = state.units.length - 1; i >= 0; i -= 1) {
+        const unit = state.units[i];
+        const speed = unit.def.speed * (unit.speedBonus || 1) * (unit.slow > 0 ? 0.52 : 1);
+        unit.progress += speed * dt;
+        unit.slow = Math.max(0, unit.slow - dt);
+        if (unit.progress >= unit.route.total) {
+          endAtBase(unit);
+          state.units.splice(i, 1);
+        } else {
+          unit.pos = routePosition(unit.route, unit.progress);
+        }
+      }
+
+      for (let i = state.projectiles.length - 1; i >= 0; i -= 1) {
+        state.projectiles[i].life -= dt;
+        if (state.projectiles[i].life <= 0) state.projectiles.splice(i, 1);
+      }
+      for (let i = state.particles.length - 1; i >= 0; i -= 1) {
+        const particle = state.particles[i];
+        particle.life -= dt;
+        particle.x += particle.vx * dt * 1.4;
+        particle.y += particle.vy * dt * 1.4;
+        particle.z += dt * 0.6;
+        if (particle.life <= 0) state.particles.splice(i, 1);
+      }
+
+      if (state.playerLives <= 0) {
+        state.phase = 'defeat';
+        state.paused = true;
+        status('Your command node fell. Reload the demo to plan a new defense.', 'DEFEAT');
+        announce('Defeat. Your command node fell.');
+      } else if (state.rivalLives <= 0) {
+        state.phase = 'victory';
+        state.paused = true;
+        status('The rival command node fell. The Coil is secured for this demo run.', 'VICTORY');
+        announce('Victory. The rival command node fell.');
+      } else if (!state.pending.length && !state.units.some((unit) => unit.team === 'neutral')) {
+        state.phase = 'plan';
+        state.credits += C.WAVE_REWARD;
+        status(`Wave ${state.wave} cleared. ${C.WAVE_REWARD} salvage awarded. Reposition your plan before rushing again.`, 'CLEAR');
+        announce(`Wave ${state.wave} cleared. Planning phase returned.`);
+      }
+    };
+
+    const drawRoad = (target, r, color) => {
+      target.save();
+      target.beginPath();
+      r.points.forEach((point, index) => {
+        const p = project(point.x, point.y, terrainAt(point.x, point.y) + 0.06);
+        if (index) target.lineTo(p.x, p.y); else target.moveTo(p.x, p.y);
+      });
+      target.strokeStyle = PALETTE.path;
+      target.lineWidth = 10 * state.camera.zoom;
+      target.lineJoin = 'round';
+      target.stroke();
+      target.strokeStyle = color;
+      target.lineWidth = 2 * state.camera.zoom;
+      target.stroke();
+      target.restore();
+    };
+
+    const drawHeatSink = (target, x, y, h) => {
+      const base = terrainAt(x, y);
+      drawBlock(target, x, y, base, 0.72, 0.72, h, '#425463', '#263946', '#182a38');
+      const cap = project(x + 0.36, y + 0.36, base + h + 0.02);
+      target.fillStyle = PALETTE.heat;
+      target.fillRect(Math.round(cap.x - 1), Math.round(cap.y - 2), 3, 3);
+    };
+
+    const drawMirror = (target, x, y, h) => {
+      const base = terrainAt(x, y);
+      drawBlock(target, x, y, base, 0.2, 0.76, h, '#96b8c7', '#496675', '#213746');
+      const top = project(x + 0.1, y + 0.34, base + h + 0.08);
+      target.strokeStyle = PALETTE.gold;
+      target.lineWidth = 1;
+      target.beginPath();
+      target.moveTo(Math.round(top.x - 4), Math.round(top.y));
+      target.lineTo(Math.round(top.x + 4), Math.round(top.y - 2));
+      target.stroke();
+    };
+
+    const drawBase = (target, side) => {
+      const x = side === 'player' ? 0.6 : 19.4;
+      const y = side === 'player' ? 9.0 : 5.8;
+      const color = side === 'player' ? PALETTE.player : PALETTE.rival;
+      const base = terrainAt(x, y);
+      drawBlock(target, x, y, base, 1.05, 1.05, 1.65, shade(color, -58), shade(color, -96), shade(color, -128));
+      const tip = project(x + 0.52, y + 0.52, base + 1.82);
+      target.fillStyle = color;
+      target.fillRect(Math.round(tip.x - 2), Math.round(tip.y - 2), 4, 4);
+    };
+
+    const refreshTerrain = () => {
+      if (!view.width || !view.height) return;
+      terrainCanvas.width = Math.round(view.width * view.dpr);
+      terrainCanvas.height = Math.round(view.height * view.dpr);
+      terrainCtx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+      terrainCtx.clearRect(0, 0, view.width, view.height);
+      terrainCtx.fillStyle = PALETTE.sky;
+      terrainCtx.fillRect(0, 0, view.width, view.height);
+
+      const stars = 46;
+      const localSeed = state.seed;
+      for (let i = 0; i < stars; i += 1) {
+        const x = ((i * 73) % 997) / 997 * view.width;
+        const y = ((i * 41) % 613) / 613 * view.height * 0.45;
+        terrainCtx.fillStyle = i % 7 === 0 ? PALETTE.gold : '#53677b';
+        terrainCtx.fillRect(Math.round(x), Math.round(y), 1, 1);
+      }
+      state.seed = localSeed;
+
+      const tiles = [];
+      for (let y = 0; y < C.GRID_H; y += 1) {
+        for (let x = 0; x < C.GRID_W; x += 1) {
+          const h = mapHeight(x, y);
+          if (h >= 0) {
+            const r = rotated(x, y);
+            tiles.push({ x, y, h, depth: r.x + r.y });
+          }
+        }
+      }
+      tiles.sort((a, b) => a.depth - b.depth || a.x - b.x);
+      tiles.forEach((tile) => {
+        const heat = (tile.x + tile.y) % 5 === 0 ? 5 : 0;
+        drawBlock(terrainCtx, tile.x, tile.y, 0, 1, 1, tile.h, shade(PALETTE.terrainTop, heat), PALETTE.terrainLeft, PALETTE.terrainRight);
+      });
+
+      drawRoad(terrainCtx, ROUTES.toPlayer, PALETTE.player);
+      drawRoad(terrainCtx, ROUTES.toRival, PALETTE.rival);
+      drawRoad(terrainCtx, ROUTES.outbound, PALETTE.xeno);
+
+      [[7.2, 6.7, 1.75], [8.3, 6.2, 2.1], [12.2, 8.4, 1.85], [13.1, 8.9, 2.25], [15.2, 6.9, 1.45]].forEach(([x, y, h]) => drawHeatSink(terrainCtx, x, y, h));
+      [[2.6, 5.2, 2.5], [3.25, 4.55, 2.1], [17.5, 9.6, 2.2], [18.1, 8.9, 2.55]].forEach(([x, y, h]) => drawMirror(terrainCtx, x, y, h));
+      drawBase(terrainCtx, 'player');
+      drawBase(terrainCtx, 'rival');
+      PADS.forEach((pad, index) => {
+        const z = terrainAt(pad.x, pad.y) + 0.12;
+        const core = pad.type === 'coolant' ? PALETTE.frost : pad.type === 'ballistic' ? PALETTE.fire : pad.type === 'relay' ? PALETTE.xeno : PALETTE.gold;
+        const point = drawDiamond(terrainCtx, pad.x - 0.35, pad.y - 0.35, z, 0.05, shade(core, -68));
+        drawDiamond(terrainCtx, pad.x - 0.22, pad.y - 0.22, z + 0.03, 0.05, core);
+        state.terrainPositions[index] = point;
+      });
+      view.dirtyTerrain = false;
+    };
+
+    const drawTower = (target, tower) => {
+      const pad = PADS[tower.pad];
+      const base = terrainAt(pad.x, pad.y) + 0.14;
+      const def = TOWERS[tower.type];
+      const selected = state.selectedPlaced === state.towers.indexOf(tower);
+      let height = 1.05;
+      let top = def.color;
+      if (def.form === 'mortar') height = 1.35;
+      if (def.form === 'flak') height = 1.22;
+      drawBlock(target, pad.x - 0.28, pad.y - 0.28, base, 0.56, 0.56, height, shade(top, -24), shade(top, -94), shade(top, -132));
+      const crown = project(pad.x, pad.y, base + height + 0.02);
+      target.strokeStyle = top;
+      target.fillStyle = top;
+      target.lineWidth = 2;
+      if (def.form === 'mortar') {
+        target.beginPath();
+        target.moveTo(Math.round(crown.x - 7), Math.round(crown.y - 2));
+        target.lineTo(Math.round(crown.x + 6), Math.round(crown.y - 7));
+        target.stroke();
+      } else if (def.form === 'cryo') {
+        target.beginPath();
+        target.arc(Math.round(crown.x), Math.round(crown.y - 2), 5, 0, Math.PI * 2);
+        target.stroke();
+      } else if (def.form === 'flak') {
+        target.fillRect(Math.round(crown.x - 7), Math.round(crown.y - 4), 4, 3);
+        target.fillRect(Math.round(crown.x + 3), Math.round(crown.y - 7), 4, 3);
+      } else {
+        target.fillRect(Math.round(crown.x - 2), Math.round(crown.y - 9), 4, 9);
+      }
+      if (selected || tower.flash > 0) {
+        target.strokeStyle = selected ? PALETTE.gold : def.color;
+        target.lineWidth = 2;
+        target.beginPath();
+        target.arc(Math.round(crown.x), Math.round(crown.y), 12 * state.camera.zoom, 0, Math.PI * 2);
+        target.stroke();
+      }
+      tower.screen = crown;
+    };
+
+    const drawUnit = (target, unit) => {
+      const pos = unit.pos;
+      if (!pos) return;
+      const base = terrainAt(pos.x, pos.y) + (unit.def.flying ? 0.9 : 0.14);
+      const c = unit.def.color;
+      const p = project(pos.x, pos.y, base);
+      if (unit.def.form === 'skimmer' || unit.def.form === 'gunskiff') {
+        target.fillStyle = PALETTE.ink;
+        target.fillRect(Math.round(p.x - 8), Math.round(p.y + 3), 16, 3);
+        polygon(target, [{ x: p.x - 7, y: p.y }, { x: p.x, y: p.y - 6 }, { x: p.x + 8, y: p.y }, { x: p.x, y: p.y + 3 }], c, PALETTE.ink);
+        target.fillStyle = shade(c, -72);
+        target.fillRect(Math.round(p.x - 2), Math.round(p.y + 2), 4, 4);
+      } else if (unit.def.form === 'bulwark' || unit.def.form === 'linebreaker') {
+        drawBlock(target, pos.x - 0.2, pos.y - 0.2, base, 0.4, 0.4, 0.78, shade(c, -18), shade(c, -78), shade(c, -112));
+        target.fillStyle = c;
+        target.fillRect(Math.round(p.x - 6), Math.round(p.y - 3), 12, 3);
+      } else if (unit.def.form === 'relay') {
+        drawBlock(target, pos.x - 0.15, pos.y - 0.15, base, 0.3, 0.3, 0.6, shade(c, 26), shade(c, -40), shade(c, -80));
+        target.strokeStyle = PALETTE.xeno;
+        target.lineWidth = 1;
+        target.beginPath();
+        target.arc(Math.round(p.x), Math.round(p.y - 4), 8 * state.camera.zoom, 0, Math.PI * 2);
+        target.stroke();
+      } else if (unit.def.form === 'vigil') {
+        drawBlock(target, pos.x - 0.14, pos.y - 0.14, base, 0.28, 0.28, 0.58, shade(c, -6), shade(c, -62), shade(c, -98));
+        target.fillStyle = PALETTE.gold;
+        target.fillRect(Math.round(p.x - 2), Math.round(p.y - 5), 4, 3);
+      } else {
+        drawBlock(target, pos.x - 0.12, pos.y - 0.12, base, 0.24, 0.24, 0.52, shade(c, -8), shade(c, -68), shade(c, -100));
+        target.fillStyle = c;
+        target.fillRect(Math.round(p.x + 2), Math.round(p.y - 3), 6, 2);
+      }
+      if (unit.team === 'neutral' && unit.hp < unit.maxHp) {
+        const ratio = clamp(unit.hp / unit.maxHp, 0, 1);
+        target.fillStyle = PALETTE.ink;
+        target.fillRect(Math.round(p.x - 7), Math.round(p.y - 13), 14, 2);
+        target.fillStyle = PALETTE.gold;
+        target.fillRect(Math.round(p.x - 7), Math.round(p.y - 13), Math.round(14 * ratio), 2);
+      }
+      if (unit.slow > 0) {
+        target.strokeStyle = PALETTE.frost;
+        target.lineWidth = 1;
+        target.beginPath();
+        target.moveTo(Math.round(p.x - 6), Math.round(p.y - 7));
+        target.lineTo(Math.round(p.x + 6), Math.round(p.y - 7));
+        target.stroke();
+      }
+      unit.screen = p;
+    };
+
+    const drawProjectiles = (target) => {
+      for (let i = 0; i < state.projectiles.length; i += 1) {
+        const projectile = state.projectiles[i];
+        const from = project(projectile.from.x, projectile.from.y, terrainAt(projectile.from.x, projectile.from.y) + 1.2);
+        const to = project(projectile.to.x, projectile.to.y, terrainAt(projectile.to.x, projectile.to.y) + 0.5);
+        target.globalAlpha = clamp(projectile.life / 0.16, 0, 1);
+        target.strokeStyle = projectile.color;
+        target.lineWidth = projectile.kind === 'mortar' ? 3 : 2;
+        target.beginPath();
+        target.moveTo(Math.round(from.x), Math.round(from.y));
+        if (projectile.kind === 'mortar') {
+          const midX = (from.x + to.x) / 2;
+          const midY = Math.min(from.y, to.y) - 26 * state.camera.zoom;
+          target.quadraticCurveTo(Math.round(midX), Math.round(midY), Math.round(to.x), Math.round(to.y));
+        } else {
+          target.lineTo(Math.round(to.x), Math.round(to.y));
+        }
+        target.stroke();
+      }
+      target.globalAlpha = 1;
+    };
+
+    const drawParticles = (target) => {
+      for (let i = 0; i < state.particles.length; i += 1) {
+        const particle = state.particles[i];
+        const p = project(particle.x, particle.y, terrainAt(particle.x, particle.y) + particle.z);
+        target.globalAlpha = clamp(particle.life / 0.34, 0, 1);
+        target.fillStyle = particle.color;
+        target.fillRect(Math.round(p.x), Math.round(p.y), 2, 2);
+      }
+      target.globalAlpha = 1;
+    };
+
+    const drawPads = (target) => {
+      PADS.forEach((pad, index) => {
+        if (state.towers.some((tower) => tower.pad === index)) return;
+        const p = state.terrainPositions[index];
+        if (!p) return;
+        const active = state.selectedPad === index || state.hoverPad === index;
+        target.strokeStyle = active ? PALETTE.player : PALETTE.gold;
+        target.lineWidth = active ? 2 : 1;
+        target.beginPath();
+        target.arc(Math.round(p.x), Math.round(p.y), (active ? 11 : 8) * state.camera.zoom, 0, Math.PI * 2);
+        target.stroke();
+      });
+    };
+
+    const render = () => {
+      if (view.dirtyTerrain) refreshTerrain();
+      ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+      ctx.clearRect(0, 0, view.width, view.height);
+      ctx.drawImage(terrainCanvas, 0, 0, terrainCanvas.width, terrainCanvas.height, 0, 0, view.width, view.height);
+      drawPads(ctx);
+
+      state.drawOrder.length = 0;
+      state.towers.forEach((tower) => state.drawOrder.push({ kind: 'tower', item: tower, pos: PADS[tower.pad] }));
+      state.units.forEach((unit) => state.drawOrder.push({ kind: 'unit', item: unit, pos: unit.pos }));
+      state.drawOrder.sort((a, b) => (a.pos.y + a.pos.x) - (b.pos.y + b.pos.x));
+      state.drawOrder.forEach((drawable) => {
+        if (drawable.kind === 'tower') drawTower(ctx, drawable.item); else drawUnit(ctx, drawable.item);
+      });
+      drawProjectiles(ctx);
+      drawParticles(ctx);
+      ctx.font = FONT_MICRO;
+      ctx.fillStyle = PALETTE.muted;
+      ctx.fillText(`CAMERA ${state.camera.turn * 90}°  /  ${Math.round(state.camera.zoom * 100)}%`, 14, 20);
+      ctx.font = FONT_LABEL;
+      ctx.fillStyle = PALETTE.gold;
+      ctx.fillText('CRUCIBLE', Math.round(view.width / 2 - 24), 48);
+    };
+
+    const updateUi = () => {
+      const phaseText = state.phase === 'active' ? (state.paused ? 'PAUSED / PLAN' : 'WAVE ACTIVE') : state.phase === 'victory' ? 'MISSION SECURED' : state.phase === 'defeat' ? 'COMMAND LOST' : 'PLAN THE FIELD';
+      ui.phase.textContent = phaseText;
+      ui.lives.textContent = String(state.playerLives);
+      ui.rivalLives.textContent = String(state.rivalLives);
+      ui.credits.textContent = String(Math.floor(state.credits));
+      ui.wave.textContent = String(state.wave);
+      ui.start.textContent = state.phase === 'active' ? (state.paused ? 'RESUME WAVE' : 'PAUSE / PLAN') : state.phase === 'victory' || state.phase === 'defeat' ? 'RUN COMPLETE' : state.wave ? 'RUSH NEXT WAVE' : 'START WAVE';
+      ui.start.disabled = state.phase === 'victory' || state.phase === 'defeat';
+      const selected = state.towers[state.selectedPlaced];
+      ui.upgrade.disabled = !selected || state.phase === 'victory' || state.phase === 'defeat';
+      if (selected) {
+        const cost = C.TOWER_UPGRADE_BASE + selected.level * 9;
+        ui.upgrade.textContent = `UPGRADE ${TOWERS[selected.type].name} / ${cost}`;
+      } else {
+        ui.upgrade.textContent = 'UPGRADE SELECTED';
+      }
+      document.querySelectorAll('[data-muster]').forEach((button) => {
+        const def = UNITS[button.dataset.muster];
+        button.disabled = state.credits < def.cost || state.phase === 'victory' || state.phase === 'defeat';
+      });
+    };
+
+    const resize = () => {
+      const rect = field.getBoundingClientRect();
+      const nextDpr = Math.min(window.devicePixelRatio || 1, 2);
+      const changed = view.width !== Math.round(rect.width) || view.height !== Math.round(rect.height) || view.dpr !== nextDpr;
+      view.width = Math.max(1, Math.round(rect.width));
+      view.height = Math.max(1, Math.round(rect.height));
+      view.dpr = nextDpr;
+      if (changed) {
+        field.width = Math.round(view.width * view.dpr);
+        field.height = Math.round(view.height * view.dpr);
+        view.dirtyTerrain = true;
+      }
+    };
+
+    const hitPad = (x, y) => {
+      let best = { index: -1, distance: Infinity };
+      state.terrainPositions.forEach((position, index) => {
+        if (!position) return;
+        const d = Math.hypot(x - position.x, y - position.y);
+        if (d < best.distance) best = { index, distance: d };
+      });
+      return best.distance <= 22 * state.camera.zoom ? best.index : -1;
+    };
+
+    const hitTower = (x, y) => {
+      let best = { index: -1, distance: Infinity };
+      state.towers.forEach((tower, index) => {
+        if (!tower.screen) return;
+        const d = Math.hypot(x - tower.screen.x, y - tower.screen.y);
+        if (d < best.distance) best = { index, distance: d };
+      });
+      return best.distance <= 22 * state.camera.zoom ? best.index : -1;
+    };
+
+    const pointerPosition = (event) => {
+      const rect = field.getBoundingClientRect();
+      return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    };
+
+    field.addEventListener('mousemove', (event) => {
+      const p = pointerPosition(event);
+      const next = hitPad(p.x, p.y);
+      if (next !== state.hoverPad) {
+        state.hoverPad = next;
+        field.style.cursor = next >= 0 ? 'pointer' : 'crosshair';
+      }
+    });
+
+    field.addEventListener('mouseleave', () => { state.hoverPad = null; });
+    field.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      state.camera.zoom = clamp(state.camera.zoom + (event.deltaY < 0 ? 0.08 : -0.08), C.MIN_ZOOM, C.MAX_ZOOM);
+      view.dirtyTerrain = true;
+    }, { passive: false });
+
+    field.addEventListener('click', (event) => {
+      const p = pointerPosition(event);
+      const towerIndex = hitTower(p.x, p.y);
+      if (towerIndex >= 0) {
+        state.selectedPlaced = towerIndex;
+        state.selectedPad = state.towers[towerIndex].pad;
+        const tower = state.towers[towerIndex];
+        const stats = towerStats(tower);
+        ui.selection.textContent = `${TOWERS[tower.type].name} LEVEL ${tower.level} INSPECTED`;
+        ui.selectionDetail.textContent = `Deals ${stats.damage.toFixed(1)} damage at ${stats.range.toFixed(1)} tiles of range. Press U to upgrade.`;
+        showNode(tower.pad);
+        status(`${TOWERS[tower.type].name} selected. Press U or use the upgrade control.`, 'INSPECT');
+        return;
+      }
+      const padIndex = hitPad(p.x, p.y);
+      if (padIndex >= 0) {
+        showNode(padIndex);
+        buildTower(state.selectedTower, padIndex);
+      } else {
+        state.selectedPlaced = null;
+        ui.upgrade.disabled = true;
+      }
+    });
+
+    const rotateCamera = (delta) => {
+      state.camera.turn = (state.camera.turn + delta + 4) % 4;
+      view.dirtyTerrain = true;
+      status(`Camera turned to ${state.camera.turn * 90} degrees. The lane semantics remain fixed under the diorama.`, 'CAMERA');
+    };
+
+    document.querySelectorAll('[data-tower]').forEach((button) => {
+      button.addEventListener('click', () => setSelectedTower(button.dataset.tower));
+    });
+    document.querySelectorAll('[data-muster]').forEach((button) => {
+      button.addEventListener('click', () => muster(button.dataset.muster));
+    });
+    ui.start.addEventListener('click', spawnWave);
+    ui.upgrade.addEventListener('click', upgradeSelected);
+    document.getElementById('turn-left').addEventListener('click', () => rotateCamera(-1));
+    document.getElementById('turn-right').addEventListener('click', () => rotateCamera(1));
+    document.getElementById('zoom-out').addEventListener('click', () => {
+      state.camera.zoom = clamp(state.camera.zoom - 0.1, C.MIN_ZOOM, C.MAX_ZOOM);
+      view.dirtyTerrain = true;
+    });
+    document.getElementById('zoom-in').addEventListener('click', () => {
+      state.camera.zoom = clamp(state.camera.zoom + 0.1, C.MIN_ZOOM, C.MAX_ZOOM);
+      view.dirtyTerrain = true;
+    });
+
+    document.addEventListener('keydown', (event) => {
+      const key = event.key.toLowerCase();
+      if (['1', '2', '3', '4'].includes(key)) {
+        setSelectedTower(['bolt', 'cryo', 'mortar', 'flak'][Number(key) - 1]);
+      } else if (key === 'u') {
+        upgradeSelected();
+      } else if (key === 'n' || key === 'enter') {
+        event.preventDefault();
+        spawnWave();
+      } else if (key === ' ' || key === 'p') {
+        event.preventDefault();
+        if (state.phase === 'active') spawnWave(); else if (state.phase === 'plan') spawnWave();
+      } else if (key === '[') {
+        rotateCamera(-1);
+      } else if (key === ']') {
+        rotateCamera(1);
+      } else if (key === 'escape') {
+        state.selectedPlaced = null;
+        state.selectedPad = null;
+        showNode(null);
+        ui.upgrade.disabled = true;
+        status('Inspector cleared. Select a tower card or hardpoint to continue planning.');
+      }
+    });
+
+    const frame = (time) => {
+      if (!state.lastTime) state.lastTime = time;
+      const rawDt = Math.min((time - state.lastTime) / 1000, 1 / 30);
+      state.lastTime = time;
+      state.accumulator += rawDt;
+      let steps = 0;
+      while (state.accumulator >= C.SIM_DT && steps < C.MAX_STEPS) {
+        step(C.SIM_DT);
+        state.accumulator -= C.SIM_DT;
+        steps += 1;
+      }
+      if (steps === C.MAX_STEPS) state.accumulator = 0;
+      resize();
+      updateUi();
+      render();
+      requestAnimationFrame(frame);
+    };
+
+    window.VoxelDemo = Object.freeze({
+      snapshot: () => ({
+        phase: state.phase,
+        paused: state.paused,
+        wave: state.wave,
+        credits: state.credits,
+        playerLives: state.playerLives,
+        rivalLives: state.rivalLives,
+        towers: state.towers.map((tower) => ({ type: tower.type, pad: tower.pad, level: tower.level })),
+        units: state.units.map((unit) => ({ type: unit.type, team: unit.team, target: unit.target }))
+      }),
+      build: (type, pad) => buildTower(type, pad),
+      start: spawnWave,
+      muster,
+      rotate: rotateCamera,
+      setZoom: (zoom) => { state.camera.zoom = clamp(zoom, C.MIN_ZOOM, C.MAX_ZOOM); view.dirtyTerrain = true; },
+      getPads: () => PADS.map((pad) => ({ name: pad.name, type: pad.type })),
+      getPadScreens: () => state.terrainPositions.map((point) => point && ({ x: point.x, y: point.y }))
+    });
+
+    window.addEventListener('resize', resize);
+    resize();
+    setSelectedTower('bolt');
+    requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>

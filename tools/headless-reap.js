@@ -35,6 +35,7 @@ const { execFileSync } = require('child_process');
 
 const FIX = process.argv.includes('--fix');
 const PREFIX = 'aegis-headless-';
+const BROWSER_PROCESS_RE = /(?:^|\/)(?:Google Chrome|Chromium|chromium|google-chrome|chrome)(?:\s|$)/;
 
 function listOrphanDirs() {
   const tmp = os.tmpdir();
@@ -46,12 +47,23 @@ function listOrphanDirs() {
     .map(e => path.join(tmp, e.name));
 }
 
-/* Windows only: this project runs on Windows (see the environment header in
-   every session), and PowerShell's CIM query is the one reliable way to read
-   a running process's full command line, which plain tasklist does not
-   expose. If this ever needs to run cross-platform, `ps -eo pid,args` is the
-   POSIX equivalent and the parse below would need a second branch. */
 function listChromeWithUserDir() {
+  if (process.platform !== 'win32') {
+    let out;
+    try {
+      out = execFileSync('ps', ['-axo', 'pid=,command='], { encoding: 'utf8' });
+    } catch (e) {
+      console.error('could not enumerate browser processes: ' + e.message);
+      return [];
+    }
+    return out.split('\n').map(line => {
+      const match = line.match(/^\s*(\d+)\s+(.+)$/);
+      return match ? { ProcessId: Number(match[1]), CommandLine: match[2] } : null;
+    }).filter(p => p && p.CommandLine.includes(PREFIX) && BROWSER_PROCESS_RE.test(p.CommandLine));
+  }
+
+  /* PowerShell's CIM query is the reliable Windows route to a process's full
+     command line, which plain tasklist does not expose. */
   let out;
   try {
     out = execFileSync('powershell.exe', [
@@ -67,6 +79,10 @@ function listChromeWithUserDir() {
   try { parsed = JSON.parse(out || '[]'); } catch (e) { return []; }
   if (!Array.isArray(parsed)) parsed = [parsed];
   return parsed.filter(p => p && typeof p.CommandLine === 'string' && p.CommandLine.includes(PREFIX));
+}
+
+function pause(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 
 function main() {
@@ -102,7 +118,10 @@ function main() {
   }
 
   for (const p of procs) {
-    try { execFileSync('taskkill.exe', ['/PID', String(p.ProcessId), '/F'], { windowsHide: true }); }
+    try {
+      if (process.platform === 'win32') execFileSync('taskkill.exe', ['/PID', String(p.ProcessId), '/F'], { windowsHide: true });
+      else process.kill(p.ProcessId, 'SIGTERM');
+    }
     catch (e) { console.error('  could not kill PID ' + p.ProcessId + ': ' + e.message); }
   }
   /* A just-killed chrome can hold its own profile's file locks for a short
@@ -113,7 +132,7 @@ function main() {
     let removed = false;
     for (let i = 0; i < 5 && !removed; i++) {
       try { fs.rmSync(d, { recursive: true, force: true }); removed = true; }
-      catch (e) { if (i < 4) { try { require('child_process').execSync('powershell -c "Start-Sleep -Milliseconds 300"'); } catch (e2) {} } }
+      catch (e) { if (i < 4) pause(300); }
     }
     console.log((removed ? '  removed ' : '  FAILED to remove ') + d);
   }
