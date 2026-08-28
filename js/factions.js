@@ -259,25 +259,34 @@ const FACTION_ENEMY_TYPES = {
                  elemWeak:{ storm:0.3 },
                  desc:'Salvage welded onto salvage. Blast damage does 50% less against the layers -- storm finds the seams.' },
 
-  /* HUMANITY -- disciplined, armoured, holding formation to the last rank. */
+  /* HUMANITY -- disciplined, armoured, holding formation to the last rank.
+     THE CRAFT WERE OURS ALL ALONG (owner directive, Session 42). Humanity's
+     flying roster is named for the aircraft the public record has argued about
+     for eighty years, on the premise that most of what was sighted was already
+     ours: black projects flown in secret, and after Disclosure flown openly.
+     This is a NAME and DESC pass only. Every id, cost, hp, speed, armor, shape
+     and aura below is untouched, because a copy change that moves a number is
+     not a copy change any more. The infantry stays infantry: a TR-3B is not a
+     rifleman, and the Trooper is the unit that proves Human conquest is
+     institutional rather than merely technological. */
   trooper:     { id:'trooper', faction:'human', name:'Trooper', hp:66, speed:1.15, armor:2, bounty:10, lives:1, radius:10,
                  color:'#38e8ff', shape:'block',
                  desc:'Line infantry on alien drives. Outnumbered on every front and still walking towards you.' },
-  gunskiff:    { id:'gunskiff', faction:'human', name:'Gunskiff', hp:92, speed:1.5, armor:2, bounty:16, lives:1, radius:9,
+  gunskiff:    { id:'gunskiff', faction:'human', name:'Foo Fighter', hp:92, speed:1.5, armor:2, bounty:16, lives:1, radius:9,
                  color:'#67e8f9', shape:'diamond', flying:true,
                  elemWeak:{ storm:0.4 },
-                 desc:'A crewed skiff that flies the maze rather than walking it.' },
-  linebreaker: { id:'linebreaker', faction:'human', name:'Linebreaker', hp:335, speed:0.74, armor:10, bounty:30, lives:3, radius:14,
+                 desc:'The lights bomber crews reported over Europe in 1944. They were ours then too. It flies the maze instead of walking it.' },
+  linebreaker: { id:'linebreaker', faction:'human', name:'Aurora', hp:335, speed:0.74, armor:10, bounty:30, lives:3, radius:14,
                  color:'#22d3ee', shape:'hex', elemResist:{ frost:0.4 },
                  elemWeak:{ storm:0.3 },
-                 desc:'Bolted-on alien plate, heated against cold. Frost barely marks it.' },
-  dragoon:     { id:'dragoon', faction:'human', name:'Dragoon', hp:405, speed:0.85, armor:9, bounty:46, lives:3, radius:15,
+                 desc:'Flying black since decades before anyone was told. Bolted-on alien plate, heated against cold, and frost barely marks it.' },
+  dragoon:     { id:'dragoon', faction:'human', name:'Black Manta', hp:405, speed:0.85, armor:9, bounty:46, lives:3, radius:15,
                  color:'#0ea5e9', shape:'warden', pullImmune:true, slowResist:0.6,
-                 desc:'Anchored assault armour. It cannot be displaced and barely be slowed -- you have to out-damage it.' },
-  vanguard:    { id:'vanguard', faction:'human', name:'Vanguard', hp:465, speed:0.72, armor:12, bounty:48, lives:3, radius:16,
+                 desc:'Anchored assault armour off a programme that never had a public name. It cannot be displaced and barely slowed: you have to out-damage it.' },
+  vanguard:    { id:'vanguard', faction:'human', name:'TR-3B', hp:465, speed:0.72, armor:12, bounty:48, lives:3, radius:16,
                  color:'#06b6d4', shape:'vanguard',
                  aura:{ radius:2.6, armor:9, tint:'#06b6d4', label:'LOCKSTEP' },
-                 desc:'AURA: the formation gives +9 armour within 2.6 tiles. Humanity endures by standing closer together.' },
+                 desc:'AURA: +9 armour within 2.6 tiles. The big quiet triangle everyone photographed and nobody was believed about. Humanity endures by standing closer together.' },
 
   /* THE PARALLEL -- no proc, no gamble, no appetite. Every other power’s
      roster has a trick: a ward that reforms, a body that splits, a corpse

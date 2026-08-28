@@ -101,6 +101,14 @@
       "status": "canon"
     },
     {
+      "date": "1947-2034",
+      "layer": "F",
+      "event": "Calibration Era",
+      "cause": "Dense calibrated sensing removes many easy anomalies, increasing the value of high-quality residuals.",
+      "status": "canon",
+      "rebased_from": "2030-2034"
+    },
+    {
       "date": "1948-1949",
       "layer": "B",
       "event": "Project Sign and Project Grudge.",
@@ -113,6 +121,14 @@
       "event": "Project Blue Book and early Ashtar contactee traditions grow in separate source lineages.",
       "cause": "Official investigation and UFO religion coexist without validating each other.",
       "status": "canon"
+    },
+    {
+      "date": "1954",
+      "layer": "F",
+      "event": "Watcher Mesh Standard",
+      "cause": "Synthetic media and incompatible exports force native-master and transformation-chain provenance.",
+      "status": "canon",
+      "rebased_from": "2036"
     },
     {
       "date": "1959",
@@ -136,6 +152,14 @@
       "status": "historical-anchor"
     },
     {
+      "date": "1960",
+      "layer": "F",
+      "event": "Candidate Zero",
+      "cause": "Independent sensors image a manufactured object with no known launch provenance; silence prevents immediate attribution.",
+      "status": "canon",
+      "rebased_from": "2041"
+    },
+    {
       "date": "February 3, 1961",
       "layer": "A",
       "event": "Strategic Air Command begins continuous Looking Glass airborne command-post operations.",
@@ -148,6 +172,14 @@
       "event": "Operation Northwoods proposals and Starfish Prime occur in the same year.",
       "cause": "Real false-pretext planning and real space-environment alteration demonstrate why proposal, operation, and effect must be separated.",
       "status": "canon"
+    },
+    {
+      "date": "1966",
+      "layer": "F",
+      "event": "Signal Winter",
+      "cause": "High-profile false positives and synthetic evidence collapse public confidence; serious anomaly work moves behind restricted programs.",
+      "status": "canon",
+      "rebased_from": "2046"
     },
     {
       "date": "October 1969 / report filed 1973",
@@ -171,6 +203,14 @@
       "status": "source-history"
     },
     {
+      "date": "1972",
+      "layer": "F",
+      "event": "Open-Sky Compact",
+      "cause": "No single government can monopolize Solar observations, so rival polities agree on minimum metadata standards.",
+      "status": "canon",
+      "rebased_from": "2051"
+    },
+    {
       "date": "1974",
       "layer": "A/C/D",
       "event": "Arecibo Message; modern scripture-engineering and pseudo-ancient aviation debates.",
@@ -185,6 +225,14 @@
       "status": "canon"
     },
     {
+      "date": "1976",
+      "layer": "F",
+      "event": "Phase-Correlation Experiments",
+      "cause": "Multi-lab work isolates a weak consciousness-linked instrument residual without validating old paranormal systems.",
+      "status": "canon",
+      "rebased_from": "2054"
+    },
+    {
       "date": "1977",
       "layer": "C/D/E",
       "event": "Vrillon intrusion and Alternative 3 broadcast.",
@@ -192,11 +240,27 @@
       "status": "canon"
     },
     {
+      "date": "1980",
+      "layer": "F",
+      "event": "Noetic Authentication",
+      "cause": "The residual becomes a reproducible identity-continuity channel.",
+      "status": "canon",
+      "rebased_from": "2058"
+    },
+    {
       "date": "1981-1984",
       "layer": "D",
       "event": "Law of One / Ra sessions.",
       "cause": "Provides fictional design concepts for free will, Orion, social memory, and quarantine without becoming verified history.",
       "status": "canon"
+    },
+    {
+      "date": "1984",
+      "layer": "F",
+      "event": "Abyssal Reply",
+      "cause": "Old Weather returns a valid authentication response but no interpretable political message.",
+      "status": "canon",
+      "rebased_from": "2061"
     },
     {
       "date": "1985",
@@ -213,6 +277,38 @@
       "status": "historical-anchor"
     },
     {
+      "date": "1987",
+      "layer": "F",
+      "event": "Handshake at L5",
+      "cause": "Candidate Zero answers with permissions, versioning, and revoked-authority metadata.",
+      "status": "canon",
+      "rebased_from": "2064"
+    },
+    {
+      "date": "1992",
+      "layer": "F",
+      "event": "Artifact Consensus",
+      "cause": "Independent replication establishes a non-Human technological system predating current spaceflight.",
+      "status": "canon",
+      "rebased_from": "2068"
+    },
+    {
+      "date": "1997",
+      "layer": "F",
+      "event": "Solar Sovereignty Crisis",
+      "cause": "Off-world Human polities refuse Earth-wide authority over contact and artifacts.",
+      "status": "canon",
+      "rebased_from": "2072"
+    },
+    {
+      "date": "2002",
+      "layer": "F",
+      "event": "First Contact Mandate fails",
+      "cause": "No Human government gains accepted authority to control nonhuman infrastructure; unsanctioned expeditions accelerate.",
+      "status": "canon",
+      "rebased_from": "2076"
+    },
+    {
       "date": "2004",
       "layer": "B",
       "event": "Nimitz/Tic Tac incident.",
@@ -220,11 +316,83 @@
       "status": "canon"
     },
     {
+      "date": "2008",
+      "layer": "F",
+      "event": "Planet Nine and Sol Anchor",
+      "cause": "A natural distant planet is found; a separate artificial installation is identified nearby.",
+      "status": "canon",
+      "rebased_from": "2081"
+    },
+    {
+      "date": "2010",
+      "layer": "F",
+      "event": "Anchor Crisis",
+      "cause": "Humans and Old Weather disagree over salvage, custody, and successor rights.",
+      "status": "canon",
+      "rebased_from": "2083"
+    },
+    {
+      "date": "2014",
+      "layer": "F",
+      "event": "Sol Gate opens",
+      "cause": "Rival Human blocs activate the Gate before species-wide political consensus exists.",
+      "status": "canon",
+      "rebased_from": "2086"
+    },
+    {
+      "date": "2015",
+      "layer": "F",
+      "event": "First Gate Diaspora",
+      "cause": "Unapproved expeditions recover mixed-origin salvage, explaining rapid pre-contact technology blending.",
+      "status": "canon",
+      "rebased_from": "2087"
+    },
+    {
       "date": "2017",
       "layer": "A",
       "event": "Oumuamua becomes first confirmed interstellar object.",
       "cause": "Proves extrasolar material naturally crosses the Solar System.",
       "status": "canon"
+    },
+    {
+      "date": "2017",
+      "layer": "F",
+      "event": "Living Contact",
+      "cause": "Humans meet refugees, traders, defectors, and post-imperial communities rather than one monolithic alien civilization.",
+      "status": "canon",
+      "rebased_from": "2089"
+    },
+    {
+      "date": "2018",
+      "layer": "F",
+      "event": "Treaty Mirror",
+      "cause": "Compact-aligned brokers privately approach Human institutions through contradictory identities and legacy claims.",
+      "status": "canon",
+      "rebased_from": "2090"
+    },
+    {
+      "date": "2019",
+      "layer": "F",
+      "event": "Authenticated Federation Contact",
+      "cause": "The Luminous Accord becomes the first living nonhuman polity to pass planetary-scale Human provenance tests.",
+      "status": "canon",
+      "rebased_from": "2091"
+    },
+    {
+      "date": "2021",
+      "layer": "F",
+      "event": "Disclosure Fracture",
+      "cause": "Human, Federation, Compact, Pirate, and Machine archives contradict one another, turning history into active politics.",
+      "status": "canon",
+      "rebased_from": "2092"
+    },
+    {
+      "date": "2022",
+      "layer": "F",
+      "event": "Ashtar Declaration",
+      "cause": "Ashtar voids historic Compact claims and offers protection/Accord, triggering the Human consent crisis.",
+      "status": "canon",
+      "rebased_from": "2093"
     },
     {
       "date": "2023-02",
@@ -241,11 +409,27 @@
       "status": "canon"
     },
     {
+      "date": "2023",
+      "layer": "F",
+      "event": "Client Awakening",
+      "cause": "Dormant Compact dependencies activate across legal, genetic, economic, religious, and technical systems.",
+      "status": "canon",
+      "rebased_from": "2094"
+    },
+    {
       "date": "2024",
       "layer": "A/B",
       "event": "AARO historical report.",
       "cause": "Official review documents claim history while reporting no verified hidden extraterrestrial reverse-engineering evidence.",
       "status": "canon"
+    },
+    {
+      "date": "2024",
+      "layer": "F",
+      "event": "Farm Revolts",
+      "cause": "Liberation reveals client populations may biologically or infrastructurally depend on the systems being dismantled.",
+      "status": "canon",
+      "rebased_from": "2095"
     },
     {
       "date": "2025",
@@ -255,6 +439,14 @@
       "status": "canon"
     },
     {
+      "date": "2025",
+      "layer": "F",
+      "event": "Sol Protective Quarantine",
+      "cause": "Federation transit restrictions block renewed extraction but are perceived by Humans as external rule.",
+      "status": "canon",
+      "rebased_from": "2096"
+    },
+    {
       "date": "2026",
       "layer": "A",
       "event": "UAP archives and public provenance databases expand.",
@@ -262,200 +454,36 @@
       "status": "canon"
     },
     {
-      "date": "2029-04-13",
-      "layer": "A/F",
-      "event": "Apophis safely passes Earth; fiction preserves a tiny timing residual.",
-      "cause": "A natural astronomical event accidentally calibrates dormant ranging infrastructure in the fictional layer.",
-      "status": "canon"
-    },
-    {
-      "date": "2030-2034",
-      "layer": "F",
-      "event": "Calibration Era",
-      "cause": "Dense calibrated sensing removes many easy anomalies, increasing the value of high-quality residuals.",
-      "status": "canon"
-    },
-    {
-      "date": "2036",
-      "layer": "F",
-      "event": "Watcher Mesh Standard",
-      "cause": "Synthetic media and incompatible exports force native-master and transformation-chain provenance.",
-      "status": "canon"
-    },
-    {
-      "date": "2041",
-      "layer": "F",
-      "event": "Candidate Zero",
-      "cause": "Independent sensors image a manufactured object with no known launch provenance; silence prevents immediate attribution.",
-      "status": "canon"
-    },
-    {
-      "date": "2046",
-      "layer": "F",
-      "event": "Signal Winter",
-      "cause": "High-profile false positives and synthetic evidence collapse public confidence; serious anomaly work moves behind restricted programs.",
-      "status": "canon"
-    },
-    {
-      "date": "2051",
-      "layer": "F",
-      "event": "Open-Sky Compact",
-      "cause": "No single government can monopolize Solar observations, so rival polities agree on minimum metadata standards.",
-      "status": "canon"
-    },
-    {
-      "date": "2054",
-      "layer": "F",
-      "event": "Phase-Correlation Experiments",
-      "cause": "Multi-lab work isolates a weak consciousness-linked instrument residual without validating old paranormal systems.",
-      "status": "canon"
-    },
-    {
-      "date": "2058",
-      "layer": "F",
-      "event": "Noetic Authentication",
-      "cause": "The residual becomes a reproducible identity-continuity channel.",
-      "status": "canon"
-    },
-    {
-      "date": "2061",
-      "layer": "F",
-      "event": "Abyssal Reply",
-      "cause": "Old Weather returns a valid authentication response but no interpretable political message.",
-      "status": "canon"
-    },
-    {
-      "date": "2064",
-      "layer": "F",
-      "event": "Handshake at L5",
-      "cause": "Candidate Zero answers with permissions, versioning, and revoked-authority metadata.",
-      "status": "canon"
-    },
-    {
-      "date": "2068",
-      "layer": "F",
-      "event": "Artifact Consensus",
-      "cause": "Independent replication establishes a non-Human technological system predating current spaceflight.",
-      "status": "canon"
-    },
-    {
-      "date": "2072",
-      "layer": "F",
-      "event": "Solar Sovereignty Crisis",
-      "cause": "Off-world Human polities refuse Earth-wide authority over contact and artifacts.",
-      "status": "canon"
-    },
-    {
-      "date": "2076",
-      "layer": "F",
-      "event": "First Contact Mandate fails",
-      "cause": "No Human government gains accepted authority to control nonhuman infrastructure; unsanctioned expeditions accelerate.",
-      "status": "canon"
-    },
-    {
-      "date": "2081",
-      "layer": "F",
-      "event": "Planet Nine and Sol Anchor",
-      "cause": "A natural distant planet is found; a separate artificial installation is identified nearby.",
-      "status": "canon"
-    },
-    {
-      "date": "2083",
-      "layer": "F",
-      "event": "Anchor Crisis",
-      "cause": "Humans and Old Weather disagree over salvage, custody, and successor rights.",
-      "status": "canon"
-    },
-    {
-      "date": "2086",
-      "layer": "F",
-      "event": "Sol Gate opens",
-      "cause": "Rival Human blocs activate the Gate before species-wide political consensus exists.",
-      "status": "canon"
-    },
-    {
-      "date": "2087",
-      "layer": "F",
-      "event": "First Gate Diaspora",
-      "cause": "Unapproved expeditions recover mixed-origin salvage, explaining rapid pre-contact technology blending.",
-      "status": "canon"
-    },
-    {
-      "date": "2089",
-      "layer": "F",
-      "event": "Living Contact",
-      "cause": "Humans meet refugees, traders, defectors, and post-imperial communities rather than one monolithic alien civilization.",
-      "status": "canon"
-    },
-    {
-      "date": "2090",
-      "layer": "F",
-      "event": "Treaty Mirror",
-      "cause": "Compact-aligned brokers privately approach Human institutions through contradictory identities and legacy claims.",
-      "status": "canon"
-    },
-    {
-      "date": "2091",
-      "layer": "F",
-      "event": "Authenticated Federation Contact",
-      "cause": "The Luminous Accord becomes the first living nonhuman polity to pass planetary-scale Human provenance tests.",
-      "status": "canon"
-    },
-    {
-      "date": "2092",
-      "layer": "F",
-      "event": "Disclosure Fracture",
-      "cause": "Human, Federation, Compact, Pirate, and Machine archives contradict one another, turning history into active politics.",
-      "status": "canon"
-    },
-    {
-      "date": "2093",
-      "layer": "F",
-      "event": "Ashtar Declaration",
-      "cause": "Ashtar voids historic Compact claims and offers protection/Accord, triggering the Human consent crisis.",
-      "status": "canon"
-    },
-    {
-      "date": "2094",
-      "layer": "F",
-      "event": "Client Awakening",
-      "cause": "Dormant Compact dependencies activate across legal, genetic, economic, religious, and technical systems.",
-      "status": "canon"
-    },
-    {
-      "date": "2095",
-      "layer": "F",
-      "event": "Farm Revolts",
-      "cause": "Liberation reveals client populations may biologically or infrastructurally depend on the systems being dismantled.",
-      "status": "canon"
-    },
-    {
-      "date": "2096",
-      "layer": "F",
-      "event": "Sol Protective Quarantine",
-      "cause": "Federation transit restrictions block renewed extraction but are perceived by Humans as external rule.",
-      "status": "canon"
-    },
-    {
-      "date": "2097",
+      "date": "2027",
       "layer": "F",
       "event": "Scrap Constellation Charter",
       "cause": "Smugglers, refugee fleets, route pilots, and sanctuary ports become a coherent nonterritorial Pirate polity.",
-      "status": "canon"
+      "status": "canon",
+      "rebased_from": "2097"
     },
     {
-      "date": "2098",
+      "date": "2028",
       "layer": "F",
       "event": "Weather Seed / Parallel Declaration",
       "cause": "Machine mission spreads beyond Sol and divergent copies demand political personhood while Vigil routines remain neutral.",
-      "status": "canon"
+      "status": "canon",
+      "rebased_from": "2098"
     },
     {
-      "date": "2099",
+      "date": "2029-04-13",
+      "layer": "F",
+      "event": "Apophis is intercepted and broken. The rock is hollow and crewed: a delivery vehicle of Extraction Compact stock and maker-format units, which the intercept scatters intact across half a planet instead of burning on entry. The Federation of Light had ruled the object a natural event and declined to divert it, and so never looked inside it.",
+      "cause": "The public record of a safe pass is preserved as the cover story; the timing residual is the tell.",
+      "status": "canon",
+      "superseded_text": "Apophis safely passes Earth; fiction preserves a tiny timing residual."
+    },
+    {
+      "date": "2029",
       "layer": "F",
       "event": "Five-Way War",
       "cause": "All five conquest systems become simultaneously scalable across reactivated Source-Lattice pentads.",
-      "status": "canon"
+      "status": "canon",
+      "rebased_from": "2099"
     }
   ]
 }

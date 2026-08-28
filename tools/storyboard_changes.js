@@ -392,6 +392,58 @@ let mhave = 0, mwant = 0;
   });
 });
 
+/* ---------------- section: mythos operations, for owner triage ---------------- */
+w('<h2 id="mythos">8. The 130 Mythos Operations, listed for your decision</h2>');
+w('<p class="sub">Every one is <code>status: scenario-seed</code> and <code>evidence: F</code>, ' +
+  'this project\'s own label for fiction. They were never written as planet flavour: each is a ' +
+  'MISSION PREMISE. Listed in full rather than summarised, because a summary of a list somebody ' +
+  'has to triage is useless to them.</p>');
+w('<div class="note"><b>The test being applied.</b> If an entry can become a unit, a tower, a ' +
+  'bonus world or a playable mission, it is content and it ships. If it is only atmosphere ' +
+  'attached to a planet and does not move the story, it does not. The suggested column is my ' +
+  'read, not a decision.</div>');
+
+const MO = vm.runInContext('LORE.mythosOperations', ctx) || {};
+const moRows = Object.values(MO);
+/* Categories whose entries can plausibly become a mechanic rather than a caption. */
+const MECHANICAL = {
+  'Crash retrieval and black aerospace': 'UNIT or TOWER, human black-project craft',
+  'Secret space programs': 'UNIT, human black-project craft',
+  'Moon Mars and secret space': 'BONUS WORLD',
+  'Technosignature candidates': 'BONUS WORLD',
+  'Orbital archaeology': 'BONUS WORLD',
+  'Lunar anomalies': 'BONUS WORLD, hangs off LUNA',
+  'Lunar myth': 'BONUS WORLD, hangs off LUNA',
+  'Galactic strategy': 'MISSION',
+  'Weather, atmosphere, and environment': 'ARENA MODIFIER',
+  'Population, biosphere, and control': 'MISSION, Compact acts',
+  'Depopulation and elite escape': 'MISSION, Compact acts',
+  'Abduction and future-human lore': 'MISSION',
+  'Time and reality': 'MISSION, Parallel acts',
+  'Mythic geography': 'BONUS WORLD',
+  'Lost civilization / archaeology': 'BONUS WORLD',
+};
+const byCat = {};
+moRows.forEach(m => (byCat[m.category] = byCat[m.category] || []).push(m));
+const cats = Object.keys(byCat).sort((a, b) => {
+  const am = MECHANICAL[a] ? 0 : 1, bm = MECHANICAL[b] ? 0 : 1;
+  return am - bm || byCat[b].length - byCat[a].length || a.localeCompare(b);
+});
+const mech = cats.filter(c => MECHANICAL[c]).reduce((n, c) => n + byCat[c].length, 0);
+w('<p class="sub"><b>' + mech + ' of ' + moRows.length + '</b> sit in categories that can carry a ' +
+  'mechanic. The remaining ' + (moRows.length - mech) + ' are, on my read, author bible.</p>');
+
+cats.forEach(c => {
+  const useful = MECHANICAL[c];
+  w('<h3>' + esc(c) + ' <span class="tag ' + (useful ? 'new' : 'parked') + '">' +
+    (useful ? esc(useful) : 'AUTHOR BIBLE') + '</span> ' +
+    '<span style="color:#7f93a8;font-size:13px;font-weight:400">' + byCat[c].length + ' entries</span></h3>');
+  w('<table><tr><th style="width:70px">ID</th><th style="width:230px">Title</th><th>Premise</th></tr>');
+  byCat[c].forEach(m => w('<tr><td>' + esc(m.id) + '</td><td><b>' + esc(m.title) + '</b></td><td>' +
+    esc(m.premise || '') + '</td></tr>'));
+  w('</table>');
+});
+
 w('<h2>Coverage of this document</h2>');
 w('<table><tr><th>Section</th><th>Written</th><th>Pending</th></tr>');
 w('<tr><td>Parked scenes preserved</td><td>' + parkedWorlds + ' worlds, ' + parkedLines +
