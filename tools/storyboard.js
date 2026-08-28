@@ -30,7 +30,8 @@ for (const f of ['config', 'lore', 'factions', 'towers2', 'roster', 'story',
 
 const G = vm.runInContext(
   '({ GX_HOME_SYSTEMS, GX_UNIVERSE_ORDER, PLANET_CUTS, PLANET_MOMENTS, CUTSCENES, ' +
-  'STORY, FACTIONS })', ctx);
+  'STORY, FACTIONS, COMMANDER_ROSTER, UNIT_TYPES, DIALOGUE, LORE, ' +
+  'ACT_MORALS, ACT_SCENARIOS, BOONS })', ctx);
 
 const FACS = ['human', 'light', 'xeno', 'pirate', 'robot'];
 const SYSOF = { human: 0, light: 1, xeno: 2, pirate: 3, robot: 4 };
@@ -135,6 +136,24 @@ h2{font-size:15px;letter-spacing:.14em;margin:38px 0 6px;color:#fff;text-transfo
 .fcard span{color:#75899e;font-size:12.5px;line-height:1.5}
 .stat{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0 0;font-size:13px;color:#8aa0b5}
 .stat b{color:#fff}
+.power{border-left:3px solid var(--fc);padding:2px 0 2px 16px;margin:14px 0 6px}
+.creed{font-size:17px;color:#fff;letter-spacing:.05em;margin-bottom:6px}
+.blurb{color:#b9c9d8;font-size:14px;margin:0 0 10px;max-width:900px}
+.bonus{display:inline-block;background:#0d141c;border:1px solid #1d2836;border-radius:5px;
+ padding:7px 12px;font-size:13px;color:#b9c9d8}
+.bonus b{color:var(--fc);letter-spacing:.06em;margin-right:6px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px;margin:10px 0 6px}
+.card{background:#0d141c;border:1px solid #1d2836;border-radius:6px;padding:11px 13px;
+ display:flex;flex-direction:column;gap:5px}
+.card b{color:#fff;font-size:14px;letter-spacing:.05em}
+.card .nums{color:var(--fc);font-size:11px;letter-spacing:.1em}
+.card span{color:#93a7ba;font-size:12.5px;line-height:1.5}
+.card i{color:#75899e;font-style:normal;letter-spacing:.06em;font-size:11px}
+.card .quote{color:#c3d2e0;border-left:2px solid #23303f;padding-left:9px;font-style:italic}
+.beat .reveal{display:block;margin-top:7px;padding-top:7px;border-top:1px solid #1d2836;
+ color:#8aa0b5;font-size:13px}
+.beat.moral{border-color:#3d3320;background:#12100c}
+.beat.moral b{color:#fbbf24}
 table.dec{border-collapse:collapse;width:100%;margin:12px 0 8px;font-size:13.5px}
 table.dec td{border-top:1px solid #16202c;padding:9px 10px;vertical-align:top}
 table.dec td:first-child{width:78px;font-size:10px;letter-spacing:.14em;white-space:nowrap;padding-top:12px}
@@ -199,6 +218,71 @@ function page(fac) {
   w('<p class="sub">The campaign in play order. Three panels before each battle, two after. ' +
     'Type in any box to leave a note, then SAVE NOTES to download them.</p>');
 
+  /* ---- who you are: the role-playing layer, on the same sheet ---- */
+  const F = G.FACTIONS[fac] || {};
+  w('<div class="power">');
+  w('<div class="creed">' + esc(F.creed || '') + '</div>');
+  if (F.tagline) w('<p class="sub" style="margin:0 0 10px">' + esc(F.tagline) + '</p>');
+  if (F.blurb) w('<p class="blurb">' + esc(F.blurb) + '</p>');
+  if (F.bonusName) w('<div class="bonus"><b>' + esc(F.bonusName) + '</b> ' + esc(F.bonusDesc || '') + '</div>');
+  w('</div>');
+
+  /* Units. What the player actually fields, beside the story about them. */
+  const units = Object.values(G.UNIT_TYPES || {}).filter(u => u.faction === fac);
+  if (units.length) {
+    w('<h2>What you field</h2>');
+    w('<div class="cards">');
+    units.forEach(u => w('<div class="card"><b>' + esc(u.name) + '</b>' +
+      '<span class="nums">' + [u.hp && ('hp ' + u.hp), u.speed && ('spd ' + u.speed),
+        u.armor && ('armour ' + u.armor)].filter(Boolean).join(' &middot; ') + '</span>' +
+      '<span>' + esc(u.desc || '') + '</span></div>'));
+    w('</div>');
+  }
+
+  /* Commanders, with the lore entry that explains them. */
+  const roster = (G.COMMANDER_ROSTER || []).filter(c => c.faction === fac);
+  if (roster.length) {
+    w('<h2>Who leads</h2>');
+    w('<div class="cards">');
+    roster.forEach(c => {
+      const lo = (G.LORE && G.LORE.commanders && G.LORE.commanders[c.id]) || {};
+      const open = (G.DIALOGUE && G.DIALOGUE.openers && G.DIALOGUE.openers[c.id]) || '';
+      w('<div class="card"><b>' + esc(c.name) + '</b>' +
+        '<span class="nums">' + esc(c.title || '') + '</span>' +
+        (lo.role ? '<span>' + esc(lo.role) + '</span>' : '') +
+        (lo.motive ? '<span><i>Wants:</i> ' + esc(lo.motive) + '</span>' : '') +
+        (lo.fracture ? '<span><i>Breaks on:</i> ' + esc(lo.fracture) + '</span>' : '') +
+        (open ? '<span class="quote">' + esc(open) + '</span>' : '') +
+        '</div>');
+    });
+    w('</div>');
+  }
+
+  /* The spine: six beats that carry the whole tragedy, with what each reveals. */
+  const spine = (G.STORY && G.STORY[fac]) || [];
+  if (spine.length) {
+    w('<h2>The spine</h2>');
+    w('<p class="sub">Six beats that carry the arc. Everything else on this page hangs off them.</p>');
+    spine.forEach((b, i) => w('<div class="beat"><b>BEAT ' + (i + 1) + '</b>' + esc(b.line || '') +
+      (b.reveal ? '<span class="reveal">' + esc(b.reveal) + '</span>' : '') + '</div>'));
+  }
+
+  /* The six alternate opening lines a world can speak instead of its own. */
+  const MOM = [['seat', 'a throne world'], ['contested', 'two rivals already here'],
+               ['renegade', 'your own banner holds it'], ['retaken', 'you lost this once'],
+               ['flawless', 'three stars'], ['defeat', 'you lost the campaign']];
+  if (G.PLANET_MOMENTS) {
+    w('<h2>Alternate voices</h2>');
+    w('<p class="sub">These replace the first line on any world where they apply, most surprising fact first.</p>');
+    w('<div class="cards">');
+    MOM.forEach(([k, label]) => {
+      const t = G.PLANET_MOMENTS[k] && G.PLANET_MOMENTS[k][fac];
+      if (t) w('<div class="card"><b>' + esc(k.toUpperCase()) + '</b><span class="nums">' +
+               esc(label) + '</span><span class="quote">' + esc(t) + '</span></div>');
+    });
+    w('</div>');
+  }
+
   /* ---- the intro ---- */
   w('<h2>Opening cinematic</h2>');
   const intro = cs.intro || [];
@@ -215,8 +299,14 @@ function page(fac) {
       '<span class="actname">' + esc(act.sys) + '</span>' +
       '<span class="actwho">' + (act.homeOf === fac ? 'your home' : 'home of ' + esc(facName(act.homeOf))) +
       '</span></div>');
+    /* What this act IS, and what the player is meant to be left holding. Both
+       are authored per power per act and were previously visible nowhere. */
+    const scen = (G.ACT_SCENARIOS && G.ACT_SCENARIOS[fac] || [])[ai];
+    const moral = (G.ACT_MORALS && G.ACT_MORALS[fac] || [])[ai];
+    if (scen) w('<div class="beat"><b>WHAT THIS ACT IS</b>' + esc(scen) + '</div>');
     if (sysBeat)
       w('<div class="beat"><b>WHEN THE ACT ENDS</b>' + esc(sysBeat.a) + ' ' + esc(sysBeat.b) + '</div>');
+    if (moral) w('<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>' + esc(moral) + '</div>');
 
     act.worlds.forEach((wname, wi) => {
       const key = '' + act.si + wi;

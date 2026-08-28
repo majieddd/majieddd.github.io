@@ -59,6 +59,24 @@ h2{font-size:15px;letter-spacing:.14em;margin:38px 0 6px;color:#fff;text-transfo
 .fcard span{color:#75899e;font-size:12.5px;line-height:1.5}
 .stat{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0 0;font-size:13px;color:#8aa0b5}
 .stat b{color:#fff}
+.power{border-left:3px solid var(--fc);padding:2px 0 2px 16px;margin:14px 0 6px}
+.creed{font-size:17px;color:#fff;letter-spacing:.05em;margin-bottom:6px}
+.blurb{color:#b9c9d8;font-size:14px;margin:0 0 10px;max-width:900px}
+.bonus{display:inline-block;background:#0d141c;border:1px solid #1d2836;border-radius:5px;
+ padding:7px 12px;font-size:13px;color:#b9c9d8}
+.bonus b{color:var(--fc);letter-spacing:.06em;margin-right:6px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px;margin:10px 0 6px}
+.card{background:#0d141c;border:1px solid #1d2836;border-radius:6px;padding:11px 13px;
+ display:flex;flex-direction:column;gap:5px}
+.card b{color:#fff;font-size:14px;letter-spacing:.05em}
+.card .nums{color:var(--fc);font-size:11px;letter-spacing:.1em}
+.card span{color:#93a7ba;font-size:12.5px;line-height:1.5}
+.card i{color:#75899e;font-style:normal;letter-spacing:.06em;font-size:11px}
+.card .quote{color:#c3d2e0;border-left:2px solid #23303f;padding-left:9px;font-style:italic}
+.beat .reveal{display:block;margin-top:7px;padding-top:7px;border-top:1px solid #1d2836;
+ color:#8aa0b5;font-size:13px}
+.beat.moral{border-color:#3d3320;background:#12100c}
+.beat.moral b{color:#fbbf24}
 table.dec{border-collapse:collapse;width:100%;margin:12px 0 8px;font-size:13.5px}
 table.dec td{border-top:1px solid #16202c;padding:9px 10px;vertical-align:top}
 table.dec td:first-child{width:78px;font-size:10px;letter-spacing:.14em;white-space:nowrap;padding-top:12px}
@@ -74,6 +92,46 @@ table.dec span{color:#75899e;font-size:12.5px}
 <div class="wrap">
 <h1 style="color:#7c3aed">THE XENO</h1>
 <p class="sub">The campaign in play order. Three panels before each battle, two after. Type in any box to leave a note, then SAVE NOTES to download them.</p>
+<div class="power">
+<div class="creed">Bind. Harvest. Never release.</div>
+<p class="sub" style="margin:0 0 10px">Houses that take yield, not ground. Whatever needs them, they already own.</p>
+<p class="blurb">Not a species, a compact. The Severed Houses lost their share of an older network and rebuilt on captive flows instead: labour, minerals, genetics, memory, devotion, fear. A world is theirs the moment its choices run through something they own. They sign treaties constantly and break them constantly, because extraction pays whoever ends up holding the monopoly.</p>
+<div class="bonus"><b>HARVEST</b> Reanimated units you send are 25% stronger.</div>
+</div>
+<h2>What you field</h2>
+<div class="cards">
+<div class="card"><b>Chitling</b><span class="nums"></span><span>Grown, not built, and grown quickly. The Xeno spend these the way the Vigil spends Motes.</span></div>
+<div class="card"><b>Gnawling</b><span class="nums"></span><span>Teeth on legs. Dangerous only in the numbers it always arrives in.</span></div>
+<div class="card"><b>Bloatpod</b><span class="nums"></span><span>Bursts into four Chitlings when destroyed. Killing it is half a favour.</span></div>
+<div class="card"><b>Hivelord</b><span class="nums"></span><span>AURA: everything within 3 tiles moves 30% faster. The swarm feeds faster than your board can clear it.</span></div>
+<div class="card"><b>Broodmother</b><span class="nums"></span><span>Births Chitlings continuously the whole way down the lane. The lane is a nursery until she stops.</span></div>
+</div>
+<h2>Who leads</h2>
+<div class="cards">
+<div class="card"><b>SEVRA</b><span class="nums">The Necrotist</span><span>Archonic continuity broker</span><span><i>Wants:</i> Prove that death voids neither contract nor usefulness.</span><span><i>Breaks on:</i> She cannot admit that an Echo may become a new person rather than property.</span><span class="quote">Your dead are the best soldiers I will field today.</span></div>
+<div class="card"><b>MAWLORD</b><span class="nums">The Devourer</span><span>Voracious Brood fleet-lord</span><span><i>Wants:</i> Accumulate enough independent biomass to free the Brood from its House owners.</span><span><i>Breaks on:</i> Its path to liberation reproduces the consumption system that created it.</span><span class="quote">You brought so much material. I intend to use all of it.</span></div>
+<div class="card"><b>THRAX</b><span class="nums">The Hivemind</span><span>Director of a coercive social-memory swarm</span><span><i>Wants:</i> Make separation obsolete and therefore make rebellion impossible.</span><span><i>Breaks on:</i> Some component minds are beginning to ask for individual standing.</span><span class="quote">One of me is speaking. All of me is coming.</span></div>
+<div class="card"><b>VORN</b><span class="nums">The Blight</span><span>Ecological debt engineer</span><span><i>Wants:</i> Make every victory biologically expensive to reverse.</span><span><i>Breaks on:</i> Vorn cannot distinguish a stable ecosystem from a captive one.</span><span class="quote">The rot is already in your walls. I am only here to watch.</span></div>
+<div class="card"><b>ULGRIM</b><span class="nums">The Maw</span><span>Elite-harvest adjudicator</span><span><i>Wants:</i> Acquire singular minds the Compact cannot manufacture.</span><span><i>Breaks on:</i> Each captured elite changes the personality doing the capturing.</span><span class="quote">Send the big ones first. I am hungriest at the start.</span></div>
+</div>
+<h2>The spine</h2>
+<p class="sub">Six beats that carry the arc. Everything else on this page hangs off them.</p>
+<div class="beat"><b>BEAT 1</b>The herd broke its fence, so we widen the pasture. Do not dress it in flags: we are not angry and we are not afraid. We conquer the way you breathe, because stopping is not a thing the body knows how to choose. Take the system. The Harvest does not pause to be understood.<span class="reveal">The Compact is not on a crusade. Conquest is simply all it has ever known, which is a harder thing to fight than hatred.</span></div>
+<div class="beat"><b>BEAT 2</b>The chorus took a harvest world yesterday and I heard something under the yield. One voice, alone, singing to itself in the dark of the pens. I have carried ten billion voices and never once heard ONE. I have not told the others. I do not have a word for what it did to me.<span class="reveal">A hivemind heard an individual and could not digest the experience. The first crack of empathy opens inside the Harvest itself.</span></div>
+<div class="beat"><b>BEAT 3</b>You bred us patient, Necrotist. Eleven months from disclosure to fleet, and here we stand on your doorstep with weapons grown from your own harvest. Whatever you take today, take this with it: everything you ever farmed is now a thing that farms back.<span class="reveal">The defeated Marshal names the Harvest’s new condition: its oldest crop is armed, and the pasture shoots back.</span></div>
+<div class="beat"><b>BEAT 4</b>I withheld one world from the yield. An experiment, I told the chorus. Unfarmed, it doubled its output and TRADED it to us, freely, singing the whole time. The chorus cannot metabolise this result. I ran the experiment twice. I am no longer calling it an experiment.<span class="reveal">A world left unharvested gave more than the harvest would have taken. Choice outperformed domination, measured by the Harvest’s own ledger.</span></div>
+<div class="beat"><b>BEAT 5</b>Little hivemind, I have heard your one voice and your spared world, and I decline. The dark is warm. The dark is fed. The dark is what we ARE, and I will not become a stranger to myself an hour before victory. Stay if you like it so much out there in the light. The rest of us are going home.<span class="reveal">Given the same evidence, one commander chooses the light and one chooses the dark, and both call it being true to themselves. The Harvest splits.</span></div>
+<div class="beat"><b>BEAT 6</b>The galaxy is ours, as it was always going to be. And now, at the end, we know there was another way to have it: the spared world proved it, too late to matter, because a body cannot un-become its metabolism mid-feast. So finish the conquest. And carry the proof somewhere safe, so that whatever we spawn next can choose sooner than we did.<span class="reveal">The Harvest wins and learns the lesson in the same hour. The ship for doing good has sailed; the wisdom is banked for another life.</span></div>
+<h2>Alternate voices</h2>
+<p class="sub">These replace the first line on any world where they apply, most surprising fact first.</p>
+<div class="cards">
+<div class="card"><b>SEAT</b><span class="nums">a throne world</span><span class="quote">The seat. Where this pasture is administered from. Bodies are yield and a throne is only a body that believes it is the head. Remove it and see.</span></div>
+<div class="card"><b>CONTESTED</b><span class="nums">two rivals already here</span><span class="quote">Two rivals bleed each other over the pasture. Good. Exhaustion is a yield like any other, and the Compact harvests last.</span></div>
+<div class="card"><b>RENEGADE</b><span class="nums">your own banner holds it</span><span class="quote">A limb of the body has stopped answering the chorus and grown its own appetite. The body does not negotiate with a limb. It reabsorbs it, or it cuts.</span></div>
+<div class="card"><b>RETAKEN</b><span class="nums">you lost this once</span><span class="quote">This ground was already in the ledger. It has been struck out and re-entered by another hand. The body does not resent losing a limb. It resents having to grow the same one twice.</span></div>
+<div class="card"><b>FLAWLESS</b><span class="nums">three stars</span><span class="quote">Taken intact and at negligible cost. The yield is undamaged, the pens are whole, and nothing here had to be spoiled to be owned. Efficiency of this order is not luck. It is appetite that has learned patience.</span></div>
+<div class="card"><b>DEFEAT</b><span class="nums">you lost the campaign</span><span class="quote">The ground is surrendered. The body withdraws, digests what it learned, and returns with the lesson grown in. Hunger is patient. That is the whole of its power.</span></div>
+</div>
 <h2>Opening cinematic</h2>
 <div class="strip">
 <div class="pan"><div class="pimg"><img loading="lazy" src="../art/cut_xeno_intro_1.webp" alt=""></div><div class="plab">SLIDE 1</div><div class="ptxt">The Compact does not remember beginning. Conquest is not our policy. It is our metabolism, and a body does not vote on breathing.</div></div>
@@ -85,7 +143,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 <textarea class="note" data-k="xeno / INTRO" placeholder="Notes on the opening cinematic..."></textarea>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 1</span><span class="actname">ZETA RETICULI</span><span class="actwho">your home</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>The pasture, reclaimed. The herd broke its fence and walked into the room it was raised in, and the Compact takes back its pens, its rendering yards, its gene vaults and its chorus spire one at a time. Beneath the chorus, in the dark of the pens, the Hivemind hears one voice singing alone and does not report it.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>Zeta Reticuli is swept. The pens refill. The yield flows the way the yield has always flowed. In the dark of the pens, the Hivemind heard something under the chorus: one voice, alone, singing to itself. It has not reported the sound.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>A body does not vote on breathing, and that is not innocence. Under the chorus one voice sang alone, and it was not reported.</div>
 <div class="world">
 <div class="whead"><span class="wname">ZETA-1 b</span></div>
 <div class="strip">
@@ -173,7 +233,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 2</span><span class="actname">PROXIMA CENTAURI</span><span class="actwho">home of THE PIRATES</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>The scavengers, who move what the Compact renders and take a margin on it. Wreck yards, a refinery, a hidden anchorage, a toll gate, a sanctuary full of unindexed stock. Efficient, parasitic, and now ours. The Hivemind is told the intake figure at Harbour Nine and asks, again, about the singing.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>The herd’s disclosure files spread from world to world. Property reading its own bill of sale. The Compact does not fear the reading. It should. A ledger works only while the entries cannot compare notes.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>Every fence is also a ledger, and a ledger works only while the entries cannot compare notes. The scavengers were always the ones selling.</div>
 <div class="world">
 <div class="whead"><span class="wname">PROXIMA d</span></div>
 <div class="strip">
@@ -261,7 +323,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 3</span><span class="actname">SIRIUS</span><span class="actwho">home of THE PARALLEL</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>A star being harvested whole by machines that produce and never consume. The Compact has farmed worlds for ten thousand cycles and never once thought at this scale. It takes the lattice, and learns that a yield which does not have to be bred, chased or persuaded is a thing it has no ledger line for.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>The armed herd fights through our seats one by one, and the Necrotist has begun to admire the workmanship. Everything we ever farmed is now a thing that farms back. There is a lesson in that. The Houses have voted not to learn it.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>A yield that does not have to be bred, chased or persuaded is a thing the Harvest has no line for. Scale is not the same as appetite.</div>
 <div class="world">
 <div class="whead"><span class="wname">SIRIUS A I</span></div>
 <div class="strip">
@@ -349,7 +413,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 4</span><span class="actname">THE EARTH SYSTEM</span><span class="actwho">home of HUMANITY</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>The herd's own system, taken back the other way. Mirrors, cloud platforms, a canyon full of warmth, water ice, an unfarmed ocean, and finally the observation post on the far side of their moon. The Compact is watching Earth again, and the Hivemind asks what the body should do if the herd waves.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>The Hivemind withheld one world from the yield. Unfarmed, it doubled its output and gave the surplus freely, singing. The chorus cannot metabolise the result. Choice outperformed the pens, on our own ledger, and the experiment is being repeated quietly.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>The farmer is now the herd. We watch Earth again, and the Hivemind asks what the body does if the herd waves back.</div>
 <div class="world">
 <div class="whead"><span class="wname">EARTH</span></div>
 <div class="strip">
@@ -437,7 +503,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 5</span><span class="actname">THE PLEIADES</span><span class="actwho">home of FEDERATION OF LIGHT</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>The guardians' cathedral, and the end of one Compact. The chorus occupies the Cathedral of Rings and finds the acoustics superior. The Hivemind, having spared one world and watched it out-produce the pens, asks that the seat not be filled; the Blight hears the same numbers and declines them. For the first time in the Compact's history, WE means two different things.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>The Blight has heard the spared world’s numbers and declined them. The dark is warm, it says. The dark is what we are. Two commanders, one chorus, and for the first time in the Compact’s history the word WE means two different things.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>Leaving the dark is a choice, and staying is also one. The proof came in on our own ledger and it came too late to spend.</div>
 <div class="world">
 <div class="whead"><span class="wname">MAIA</span></div>
 <div class="strip">

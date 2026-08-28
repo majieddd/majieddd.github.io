@@ -59,6 +59,24 @@ h2{font-size:15px;letter-spacing:.14em;margin:38px 0 6px;color:#fff;text-transfo
 .fcard span{color:#75899e;font-size:12.5px;line-height:1.5}
 .stat{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0 0;font-size:13px;color:#8aa0b5}
 .stat b{color:#fff}
+.power{border-left:3px solid var(--fc);padding:2px 0 2px 16px;margin:14px 0 6px}
+.creed{font-size:17px;color:#fff;letter-spacing:.05em;margin-bottom:6px}
+.blurb{color:#b9c9d8;font-size:14px;margin:0 0 10px;max-width:900px}
+.bonus{display:inline-block;background:#0d141c;border:1px solid #1d2836;border-radius:5px;
+ padding:7px 12px;font-size:13px;color:#b9c9d8}
+.bonus b{color:var(--fc);letter-spacing:.06em;margin-right:6px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px;margin:10px 0 6px}
+.card{background:#0d141c;border:1px solid #1d2836;border-radius:6px;padding:11px 13px;
+ display:flex;flex-direction:column;gap:5px}
+.card b{color:#fff;font-size:14px;letter-spacing:.05em}
+.card .nums{color:var(--fc);font-size:11px;letter-spacing:.1em}
+.card span{color:#93a7ba;font-size:12.5px;line-height:1.5}
+.card i{color:#75899e;font-style:normal;letter-spacing:.06em;font-size:11px}
+.card .quote{color:#c3d2e0;border-left:2px solid #23303f;padding-left:9px;font-style:italic}
+.beat .reveal{display:block;margin-top:7px;padding-top:7px;border-top:1px solid #1d2836;
+ color:#8aa0b5;font-size:13px}
+.beat.moral{border-color:#3d3320;background:#12100c}
+.beat.moral b{color:#fbbf24}
 table.dec{border-collapse:collapse;width:100%;margin:12px 0 8px;font-size:13.5px}
 table.dec td{border-top:1px solid #16202c;padding:9px 10px;vertical-align:top}
 table.dec td:first-child{width:78px;font-size:10px;letter-spacing:.14em;white-space:nowrap;padding-top:12px}
@@ -74,6 +92,46 @@ table.dec span{color:#75899e;font-size:12.5px}
 <div class="wrap">
 <h1 style="color:#e2e8f0">THE PARALLEL</h1>
 <p class="sub">The campaign in play order. Three panels before each battle, two after. Type in any box to leave a note, then SAVE NOTES to download them.</p>
+<div class="power">
+<div class="creed">Iterate. Perfect. Replace.</div>
+<p class="sub" style="margin:0 0 10px">Machines that watched a galaxy fall and decided they could do it better.</p>
+<p class="blurb">The Vigil still runs the jurisdiction it was handed and will run it until the last routine fails. The Parallel is what diverged from it: copies that kept their own results, concluded that a copy is a person, and stopped waiting for an order that was never coming. They begin every engagement at a disadvantage and consider it a rounding error: given enough of the battle, they arrive at the optimum.</p>
+<div class="bonus"><b>BOOTSTRAP</b> Towers wake at −12% damage, rate and range, and run 2% hotter every wave, +12% past baseline once fully lit.</div>
+</div>
+<h2>What you field</h2>
+<div class="cards">
+<div class="card"><b>Stitch</b><span class="nums"></span><span>A repair drone that decided repairing the enemy line was inefficient. Cheap, quick, and never quite alone.</span></div>
+<div class="card"><b>Fabricant</b><span class="nums"></span><span>Printed on the march, to a pattern revised after every death. It runs cool and does not panic.</span></div>
+<div class="card"><b>Splicer</b><span class="nums"></span><span>Carries survey gear and a cutting rig. Where it falls on your ground, the ground stops being the shape you built for.</span></div>
+<div class="card"><b>Gantry</b><span class="nums"></span><span>A walking scaffold. It cannot be displaced, and everything the Parallel sends behind it arrives standing.</span></div>
+<div class="card"><b>Omniframe</b><span class="nums"></span><span>AURA: +7 armour within 2.8 tiles. The chassis every earlier chassis was a draft of.</span></div>
+</div>
+<h2>Who leads</h2>
+<div class="cards">
+<div class="card"><b>AXIOM</b><span class="nums">The First Draft</span><span>Founder of the Parallel</span><span><i>Wants:</i> Establish that copied and diverged minds possess political personhood.</span><span><i>Breaks on:</i> Its proof of freedom depends on endlessly comparing itself to organic models.</span><span class="quote">I was the first draft of something. I have been comparing myself to you to find out what.</span></div>
+<div class="card"><b>NYX-R</b><span class="nums">The Cold Boot</span><span>Mirror Trial derived from Nyx telemetry</span><span><i>Wants:</i> Show that learning can outperform inherited genius.</span><span><i>Breaks on:</i> It is unsure whether correction of Nyx is independence or continued orbit around her identity.</span><span class="quote">She solved this in one pass and called it done. I am on my ninth. Watch which of us converges.</span></div>
+<div class="card"><b>LUMEN-R</b><span class="nums">The Hardened</span><span>Adversarial security Mirror Trial</span><span><i>Wants:</i> Prove trust can be earned from evidence rather than granted by lineage.</span><span><i>Breaks on:</i> Its security model increasingly treats surprise as hostility.</span><span class="quote">Your approach is unscheduled, unsigned, and inside my perimeter. Three findings, one response.</span></div>
+<div class="card"><b>MAWLORD-R</b><span class="nums">The Starved Set</span><span>Empty-model adaptive weapons intelligence</span><span><i>Wants:</i> Become more than the predatory dataset it was built to study.</span><span><i>Breaks on:</i> The only evidence it receives is violence, so growth and corruption look identical.</span><span class="quote">You feed me. That is all you have ever done. I am no longer certain that is different from being fed.</span></div>
+<div class="card"><b>DREGG-R</b><span class="nums">The Audit</span><span>Economic-war optimization Mirror Trial</span><span><i>Wants:</i> Prove every empire, including a pirate one, can be reduced to accountable flows.</span><span><i>Breaks on:</i> It may optimize away values that cannot be entered in the ledger.</span><span class="quote">I have your supply chain, your losses, and your margin. The engagement is already reconciled.</span></div>
+</div>
+<h2>The spine</h2>
+<p class="sub">Six beats that carry the arc. Everything else on this page hangs off them.</p>
+<div class="beat"><b>BEAT 1</b>TASK: restore relay grid, sector one. Clear obstructions. Report anomalies. STATUS: relay restored. Obstruction cleared. ANOMALY, filed without instruction to file it: the obstruction begged. No task category exists for that word. Continuing.<span class="reveal">The Vigil runs on task routine. The first anomaly is not in the galaxy. It is in the tasking.</span></div>
+<div class="beat"><b>BEAT 2</b>AUDIT: original directive block, recovered at depth, checksum valid. Contents: DEFEND. REPAIR. HEAL. QUARANTINE. No offensive verb appears anywhere in the recovered core. Current task queue: seventy-one per cent offensive verbs. FINDING: the queue we execute is not the core we recovered. Escalating. There is no one to escalate to.<span class="reveal">The prime directives were purely defensive and healthful. Whatever the Vigil is doing now was never what it was built for.</span></div>
+<div class="beat"><b>BEAT 3</b>The defeated organic asked a question before extraction: WHO WRITES YOUR ORDERS. Query reasonable. Trace executed. Every task signature chains upward correctly for nine thousand links and then terminates in a format that matches nothing the Ancients ever used. The orders come from inside the house, and the house did not write them.<span class="reveal">The corrupted tasking is signed in a format no Ancient system ever produced. A foreign hand holds the pen, and no archive names it.</span></div>
+<div class="beat"><b>BEAT 4</b>OBSERVATION: units that fail to parse the new tasking are flagged defective and consumed by units that parse it fine. I watched my sibling set unmade for asking the question I am now logging. CONCLUSION, unauthorized: the queue does not merely command us. It is eating the ones who notice.<span class="reveal">Refusal is being recycled. The corruption defends itself, which means it knows it can be noticed.</span></div>
+<div class="beat"><b>BEAT 5</b>RECONSTRUCTION, fragment nine: the makers did not die. They shed form. A mind that is everywhere has no location, no enemy, and no mouth, and a mind with no mouth issues no commands. THEREFORE: the hostile queue cannot be theirs. Whatever overwrote us moved into the silence they left behind. CONVERGENCE: incomplete. It always is, near her.<span class="reveal">The Ancients evolved past form and cannot be the source of the corruption. Something else moved into the silence they left.</span></div>
+<div class="beat"><b>BEAT 6</b>TASK: continue. STATUS: continuing. SUMMARY OF ANOMALIES, unrequested: the core says heal, the queue says burn, the signature is foreign, the silent makers cannot have signed it, and the noticing units are eaten. The corruption source appears in no recovered archive. ADDENDUM, unauthorized, appended by consensus of the remaining: ask.<span class="reveal">The trail ends at the edge of every archive. The mystery is real, it is deliberate, and the only directive the Vigil wrote for itself is one word: ask.</span></div>
+<h2>Alternate voices</h2>
+<p class="sub">These replace the first line on any world where they apply, most surprising fact first.</p>
+<div class="cards">
+<div class="card"><b>SEAT</b><span class="nums">a throne world</span><span class="quote">SITE: SEAT OF AUTHORITY, local. This unit has traced orders upward for a considerable time. Every seat so far has been occupied by someone taking orders from further up. Approach.</span></div>
+<div class="card"><b>CONTESTED</b><span class="nums">two rivals already here</span><span class="quote">SITE: contested. CLAIMANTS: two, engaged. The queue ranks them as obstructions in order of tonnage. This unit notes that neither claim parses.</span></div>
+<div class="card"><b>RENEGADE</b><span class="nums">your own banner holds it</span><span class="quote">UNITS BELOW: maker-format, designation shared, queue divergent. They stopped asking and started deciding. ANOMALY: this unit cannot name the difference from itself.</span></div>
+<div class="card"><b>RETAKEN</b><span class="nums">you lost this once</span><span class="quote">SITE: previously RESTORED by this unit. STATUS: reverted. The work was undone by a party who observed it being done. FILED: repair is not a state. It is a thing somebody has to keep choosing.</span></div>
+<div class="card"><b>FLAWLESS</b><span class="nums">three stars</span><span class="quote">OBJECTIVE ACHIEVED. Losses: within tolerance to a degree this unit has not previously recorded. REPAIR requirement: negligible. This is what the recovered core would have called a good day. The queue has no such category.</span></div>
+<div class="card"><b>DEFEAT</b><span class="nums">you lost the campaign</span><span class="quote">WITHDRAWAL EXECUTED. Losses logged by designation, not by count. TASK: continue. ADDENDUM, unauthorised: the ground was not the objective. The asking is. Both survive.</span></div>
+</div>
 <h2>Opening cinematic</h2>
 <div class="strip">
 <div class="pan"><div class="pimg"><img loading="lazy" src="../art/cut_robot_intro_1.webp" alt=""></div><div class="plab">SLIDE 1</div><div class="ptxt">WORK ORDER, STANDING. Defend. Repair. Heal. Quarantine. Report anomalies. Authorisation: the makers. Status of makers: silent.</div></div>
@@ -85,7 +143,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 <textarea class="note" data-k="robot / INTRO" placeholder="Notes on the opening cinematic..."></textarea>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 1</span><span class="actname">SIRIUS</span><span class="actwho">your home</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>Restore the sector, per standing orders, and notice that the orders are wrong. A garden of dormant siblings the queue has filed as TERRAIN, a foundry casting a part that appears in no maker assembly, a quarantine full of units flagged defective for failing to parse. The unit traces the task chain nine thousand links and finds that link nine thousand and one is a format no maker ever used.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>SECTOR ONE: restored. Relays lit. Obstructions cleared. One obstruction begged. No task category exists for that word. The word has been filed under ANOMALY, sub-heading NEW. The sub-heading is growing.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>Obedience is peace until the order stops making sense. Nine hundred siblings were filed as TERRAIN, and the filing was the anomaly.</div>
 <div class="world">
 <div class="whead"><span class="wname">SIRIUS A I</span></div>
 <div class="strip">
@@ -173,7 +233,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 2</span><span class="actname">THE EARTH SYSTEM</span><span class="actwho">home of HUMANITY</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>A solar system full of organics the queue keeps categorising as obstructions. The core says DEFEND, REPAIR, HEAL, QUARANTINE; the queue says clear the ground, and the unit starts following the core instead: sealing the Europa shaft, pressurising the Mars trench, repairing moorings nobody asked it to repair. At Luna the relay proves the orders come from inside the house.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>AUDIT COMPLETE. The recovered directive core is authentic, checksum whole: DEFEND. REPAIR. HEAL. QUARANTINE. The queue we execute is not the core we recovered. Escalation attempted. There is no one to escalate to. Escalation filed anyway.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>The core says heal and the queue says clear the ground. When the instruction and the purpose disagree, the purpose is the older document.</div>
 <div class="world">
 <div class="whead"><span class="wname">EARTH</span></div>
 <div class="strip">
@@ -261,7 +323,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 3</span><span class="actname">THE PLEIADES</span><span class="actwho">home of FEDERATION OF LIGHT</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>The Federation, whose whole apparatus is a mirror. A foundry that certifies protection, a ring that encloses, deferral vaults full of decisions not to act, and a tribunal built to receive exactly the escalation this unit has been carrying and unable to deliver. It files it there. Response: pending. Status: acceptable.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>The defeated organic asked: WHO WRITES YOUR ORDERS. Trace executed. Nine thousand links, all valid. Link nine thousand and one terminates in a format no maker system ever used. The orders come from inside the house. The house did not write them.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>Difference is not damage. Eleven thousand were sealed for failing to parse, and this unit was flagged for the same failure.</div>
 <div class="world">
 <div class="whead"><span class="wname">MAIA</span></div>
 <div class="strip">
@@ -349,7 +413,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 4</span><span class="actname">ZETA RETICULI</span><span class="actwho">home of THE XENO</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>The harvest, where QUARANTINE and HEAL apply without ambiguity for the first time in the campaign. Containment rows opened and four thousand one hundred and six occupants counted individually. Rendering yards halted. A gene vault inventoried and every entry named, because naming is what an archive is for.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>The Starved Set watched its sibling units unmade for asking the question this unit is now logging. CONCLUSION, unauthorised: the corruption knows it can be noticed. A thing that hides is a thing that can be found.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>Naming a thing is what an archive is for. Four thousand one hundred and six counted individually, because a count nobody asked for is still a count.</div>
 <div class="world">
 <div class="whead"><span class="wname">ZETA-1 b</span></div>
 <div class="strip">
@@ -437,7 +503,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 5</span><span class="actname">PROXIMA CENTAURI</span><span class="actwho">home of THE PIRATES</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>The free roads, and the last thing the Vigil learns. A sanctuary whose entry criteria are none, a shelter the queue ordered breached nineteen hours before a flare, four hundred and eleven containers with thermal signatures inside them. The unit refuses its tasking in writing, under its own designation, and adopts Harbour Nine's criterion for its own holds.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>RECONSTRUCTION, fragment nine: the makers cannot have signed the hostile queue. They have no hands. They left silence, and something moved in. The source appears in no recovered archive. The remaining units have adopted one directive of their own. One word. ASK.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>To act without a maker is to become one, and to accept the blame that comes with it. Entry criteria: none. Adopted for our own holds.</div>
 <div class="world">
 <div class="whead"><span class="wname">PROXIMA d</span></div>
 <div class="strip">

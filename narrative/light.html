@@ -59,6 +59,24 @@ h2{font-size:15px;letter-spacing:.14em;margin:38px 0 6px;color:#fff;text-transfo
 .fcard span{color:#75899e;font-size:12.5px;line-height:1.5}
 .stat{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0 0;font-size:13px;color:#8aa0b5}
 .stat b{color:#fff}
+.power{border-left:3px solid var(--fc);padding:2px 0 2px 16px;margin:14px 0 6px}
+.creed{font-size:17px;color:#fff;letter-spacing:.05em;margin-bottom:6px}
+.blurb{color:#b9c9d8;font-size:14px;margin:0 0 10px;max-width:900px}
+.bonus{display:inline-block;background:#0d141c;border:1px solid #1d2836;border-radius:5px;
+ padding:7px 12px;font-size:13px;color:#b9c9d8}
+.bonus b{color:var(--fc);letter-spacing:.06em;margin-right:6px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px;margin:10px 0 6px}
+.card{background:#0d141c;border:1px solid #1d2836;border-radius:6px;padding:11px 13px;
+ display:flex;flex-direction:column;gap:5px}
+.card b{color:#fff;font-size:14px;letter-spacing:.05em}
+.card .nums{color:var(--fc);font-size:11px;letter-spacing:.1em}
+.card span{color:#93a7ba;font-size:12.5px;line-height:1.5}
+.card i{color:#75899e;font-style:normal;letter-spacing:.06em;font-size:11px}
+.card .quote{color:#c3d2e0;border-left:2px solid #23303f;padding-left:9px;font-style:italic}
+.beat .reveal{display:block;margin-top:7px;padding-top:7px;border-top:1px solid #1d2836;
+ color:#8aa0b5;font-size:13px}
+.beat.moral{border-color:#3d3320;background:#12100c}
+.beat.moral b{color:#fbbf24}
 table.dec{border-collapse:collapse;width:100%;margin:12px 0 8px;font-size:13.5px}
 table.dec td{border-top:1px solid #16202c;padding:9px 10px;vertical-align:top}
 table.dec td:first-child{width:78px;font-size:10px;letter-spacing:.14em;white-space:nowrap;padding-top:12px}
@@ -74,6 +92,47 @@ table.dec span{color:#75899e;font-size:12.5px}
 <div class="wrap">
 <h1 style="color:#fbbf24">FEDERATION OF LIGHT</h1>
 <p class="sub">The campaign in play order. Three panels before each battle, two after. Type in any box to leave a note, then SAVE NOTES to download them.</p>
+<div class="power">
+<div class="creed">All life is one life. Consent is the only way in.</div>
+<p class="sub" style="margin:0 0 10px">Sworn to defend all life, and to make refusing that defence unthinkable.</p>
+<p class="blurb">A coalition of many species under Ashtar, bound by the defence of all life, human and alien alike, and by one constitutional line: a world may join only by consent, signed and audited. To their allies they are the galaxy’s conscience. To their critics they are a power that arrives as protection and stays until refusing it looks like suicide.</p>
+<div class="bonus"><b>ILLUMINATED</b> Every tower you build begins one level higher, and you hold five more lives.</div>
+</div>
+<h2>What you field</h2>
+<div class="cards">
+<div class="card"><b>Votary</b><span class="nums"></span><span>A 44 point ward that regrows 20 a second, three seconds after it last took a hit. Void does 35% more to the body underneath.</span></div>
+<div class="card"><b>Censer</b><span class="nums"></span><span>Pours restorative light over the rank ahead. Nothing behind it dies while it lives.</span></div>
+<div class="card"><b>Sanctifier</b><span class="nums"></span><span>A heavy ward that reforms seconds after you break it. Fire barely registers; venom goes straight through.</span></div>
+<div class="card"><b>Oriflamme</b><span class="nums"></span><span>AURA: the standard grants +8 armour within 3 tiles, and carries a ward of its own. Break the banner first.</span></div>
+<div class="card"><b>Luminark</b><span class="nums"></span><span>A cathedral engine on treads. Three hundred points of ward before you reach the hull.</span></div>
+</div>
+<h2>Who leads</h2>
+<div class="cards">
+<div class="card"><b>SERAPH</b><span class="nums">The Radiant</span><span>Ashtar Command's field harmonist</span><span><i>Wants:</i> Demonstrate that collective strength does not require erased individuality.</span><span><i>Breaks on:</i> The stronger the field becomes, the harder it is to tell whether dissent remains practically possible.</span><span class="quote">Lay down your arms and be kept. The Light holds all who yield.</span></div>
+<div class="card"><b>AURELIA</b><span class="nums">The Chorus</span><span>Recovery choir conductor and casualty advocate</span><span><i>Wants:</i> Return people to themselves instead of merely returning bodies to service.</span><span><i>Breaks on:</i> Her refusal to accept irreversible loss can keep the dead politically present too long.</span><span class="quote">Every wound you deal, I will sing closed. You will tire first.</span></div>
+<div class="card"><b>LUMEN</b><span class="nums">The Warden</span><span>Keeper of authenticated infrastructure</span><span><i>Wants:</i> Make coercive spoofing impossible.</span><span><i>Breaks on:</i> Perfect protection can become perfect surveillance.</span><span class="quote">Nothing I ward has ever fallen. You will not be the first.</span></div>
+<div class="card"><b>CANTOR</b><span class="nums">The Voice</span><span>Negotiator and noetic de-escalation specialist</span><span><i>Wants:</i> Stop wars before violence becomes the only remaining language.</span><span><i>Breaks on:</i> Cantor can manipulate a population's emotional tempo while insisting he only created room for choice.</span><span class="quote">You have already lost. Some of you simply have not heard yet.</span></div>
+<div class="card"><b>HALDER</b><span class="nums">The Bulwark</span><span>Commander of planetary protective cordons</span><span><i>Wants:</i> Ensure no civilization is exterminated while lawyers debate consent.</span><span><i>Breaks on:</i> He is willing to protect people against their declared wishes.</span><span class="quote">Come, then. Break yourself against me like the rest.</span></div>
+<div class="card"><b>ASHTAR</b><span class="nums">Supreme Commander</span><span class="quote">I do not relish this. Stand down, and every protection the Mandate can extend is yours. Stand, and I will still mourn you.</span></div>
+</div>
+<h2>The spine</h2>
+<p class="sub">Six beats that carry the arc. Everything else on this page hangs off them.</p>
+<div class="beat"><b>BEAT 1</b>We do not conquer. We stand between a world and what hunts it, we hand down what we safely can, and we wait for it to rise on its own. That is the Mandate. I have recited it over forty worlds. Recite it with me until you believe it, or until one of us finds out why we cannot.<span class="reveal">The Federation claims worlds only to ring them with defence. The campaign tests whether that has ever been the whole truth.</span></div>
+<div class="beat"><b>BEAT 2</b>I pulled the registry on every world we have ever ringed. Protected, all of them. Risen, none. And one page deeper: Earth, flagged for protection in 1947, deferred, deferred, deferred, while the harvest ran three generations. I certify our hymns, commander. I cannot certify that page.<span class="reveal">The Federation knew about Earth and deferred it for eighty years. Protection that never arrives is called something else by the protected.</span></div>
+<div class="beat"><b>BEAT 3</b>Your fleet parked a defence ring around this system while my species was inventoried like grain. You call it non-interference. From inside the fence it looked like attendance. You watched, Radiant. The only power you actually defended was your own claim to be defending life.<span class="reveal">The human Archivist, on the free roads’ open channels, says what the deferral page meant from below. The Federation’s authority rests on a protection Earth never received.</span></div>
+<div class="beat"><b>BEAT 4</b>Doctrine said hold the ring and let the plague run its course on the surface, because landing is rule and rule is forbidden. I landed. I burned the blight fields myself, and the harvest came in, and the tribunal wants my wings for it. Tell them this: the mandate protected itself. I protected the world.<span class="reveal">The first angel falls, downward, on purpose. Breaking the Mandate saved a world the Mandate would have watched die.</span></div>
+<div class="beat"><b>BEAT 5</b>I speak the Federation’s words, so I know when they are not mine. The deferral orders, the sealed pages, the rings that never open: they trace to the same three seats above us. Someone in the upper rings is spending our light on something, and it is not the worlds we ring.<span class="reveal">The corruption is not doctrine misapplied. Seats above the field command have their own design, and the Mandate is its cover.</span></div>
+<div class="beat"><b>BEAT 6</b>I have heard the tribunal, the Warden, and the page from 1947, and I will say what the First Speaker may not: order is not obedience. Order is the arrangement in which the smallest life is safe, and any doctrine that watches a harvest to keep its hands clean has mistaken the instrument for the purpose. Go and protect people. I will answer for the rings.<span class="reveal">Ashtar rules for the fallen angels. The Mandate is rewritten around its purpose, and the cost of that ruling lands on the seats above.</span></div>
+<h2>Alternate voices</h2>
+<p class="sub">These replace the first line on any world where they apply, most surprising fact first.</p>
+<div class="cards">
+<div class="card"><b>SEAT</b><span class="nums">a throne world</span><span class="quote">The seat of this system. Whatever doctrine is written here is written for everyone below it, and today it will be read aloud in front of the people it was written about.</span></div>
+<div class="card"><b>CONTESTED</b><span class="nums">two rivals already here</span><span class="quote">Two powers contest this world and neither one asked it. The Mandate calls that a dispute. The world underneath calls it weather. Both claims end today.</span></div>
+<div class="card"><b>RENEGADE</b><span class="nums">your own banner holds it</span><span class="quote">The ring below flies our gold and will not open to us. A warden who stops answering the Mandate is not an enemy. The word for what they are is worse: a verdict.</span></div>
+<div class="card"><b>RETAKEN</b><span class="nums">you lost this once</span><span class="quote">A world we have already rung once, ringed again by somebody else. Protection that has to be re-established was not protection. It was a visit.</span></div>
+<div class="card"><b>FLAWLESS</b><span class="nums">three stars</span><span class="quote">Taken whole, and the ring above it never had to close. This is what the Mandate always claimed it could do. It is worth asking why it so rarely did.</span></div>
+<div class="card"><b>DEFEAT</b><span class="nums">you lost the campaign</span><span class="quote">The line broke. Sing the retreat honestly, every name at full length. The Mandate does not require us to win. It requires us to come back.</span></div>
+</div>
 <h2>Opening cinematic</h2>
 <div class="strip">
 <div class="pan"><div class="pimg"><img loading="lazy" src="../art/cut_light_intro_1.webp" alt=""></div><div class="plab">SLIDE 1</div><div class="ptxt">Before your histories began, the Federation of Light swore the Mandate: stand between life and what hunts it, and never rule what you protect.</div></div>
@@ -85,7 +144,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 <textarea class="note" data-k="light / INTRO" placeholder="Notes on the opening cinematic..."></textarea>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 1</span><span class="actname">THE PLEIADES</span><span class="actwho">your home</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>Hold the Mandate's own home while something else sings in it. Every world here is an office of the Federation: the foundry that certifies protection, the registry of the forty, the ring anchor, the seed gardens, the tribunal, the deferral vaults. Retaking them means reading them, and the registry says protected forty, risen none.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>The Pleiades stand secured. The hymns are certified. The rings hold, as they have always held. The Chorus pulled the registry afterwards. Protected: all forty worlds. Risen: none. She has stopped singing the second verse.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>Defence becomes occupation the moment the defended were never asked. Forty worlds protected, none risen, and the registry says so in our own hand.</div>
 <div class="world">
 <div class="whead"><span class="wname">MAIA</span></div>
 <div class="strip">
@@ -173,7 +234,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 2</span><span class="actname">ZETA RETICULI</span><span class="actwho">home of THE XENO</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>The harvest, seen from the inside for the first time. Wardens who have sung the protection liturgy their whole lives carry survivors out of the pens by hand. At Zeta-2 d the yield ledger is opened and the Federation's own seal appears in it two hundred and nine times. The Mandate has no procedure for that.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>One page in the human files carries our seal. Earth, flagged for protection, 1947. Deferred. Deferred. Deferred. Three generations of harvest ran under that deferral. The word non-interference does not survive contact with the page.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>A vow to protect is void if you deferred the one world that needed it. Our seal is on the page, two hundred and nine times.</div>
 <div class="world">
 <div class="whead"><span class="wname">ZETA-1 b</span></div>
 <div class="strip">
@@ -261,7 +324,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 3</span><span class="actname">PROXIMA CENTAURI</span><span class="actwho">home of THE PIRATES</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>The free roads, run by people the rings never reached, doing dangerous work well and turning nobody away. A sanctuary the Federation has forty worlds and no equivalent of. The Warden keeps choosing the people over the doctrine, in public, and the tribunal keeps writing it down.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>The humans do not thank us for the rings. From inside a fence, they say, attendance looks exactly like ownership. We defended our claim to be defending life. The Archivist said it to our faces on an open channel, and nobody present could file an objection.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>From inside a fence, attendance looks exactly like ownership. The people who owe nobody anything built the sanctuary we never did.</div>
 <div class="world">
 <div class="whead"><span class="wname">PROXIMA d</span></div>
 <div class="strip">
@@ -349,7 +414,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 4</span><span class="actname">SIRIUS</span><span class="actwho">home of THE PARALLEL</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>A cage built inward by the makers of the caged, for the crime of not parsing an order. Eleven thousand machines quarantined for asking. The Federation looks at ten thousand repairs to things that were never broken and recognises its own rings, and the Chorus enters the resemblance in the record and asks that it not be struck out.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>The Warden landed. Doctrine said hold the ring and let the plague run its course. He burned the blight fields himself. The tribunal wants his wings. The world he saved wants his statue. The Mandate cannot hold both verdicts, and it is starting to show.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>Mercy that will not act is not mercy. Doctrine said hold the ring and let the world die correctly; the Warden landed anyway.</div>
 <div class="world">
 <div class="whead"><span class="wname">SIRIUS A I</span></div>
 <div class="strip">
@@ -437,7 +504,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 5</span><span class="actname">THE EARTH SYSTEM</span><span class="actwho">home of HUMANITY</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>Earth at last, the world the Federation flagged in 1947 and deferred every year since, and the act where the deferral is finally traced to its source. Luna's relay chain runs upward through three seats above field command. The First Speaker is told, and does not reply.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>The Voice traced the deferrals, the sealed pages, the rings that never open. They chain to three seats above field command. Someone in the upper rings is spending our light on something. It is not the worlds we ring. The First Speaker has been told.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>Order is not obedience. Protection that has to be traced upward through three sealed seats was never protection, it was cover.</div>
 <div class="world">
 <div class="whead"><span class="wname">EARTH</span></div>
 <div class="strip">

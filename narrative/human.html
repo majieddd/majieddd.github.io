@@ -59,6 +59,24 @@ h2{font-size:15px;letter-spacing:.14em;margin:38px 0 6px;color:#fff;text-transfo
 .fcard span{color:#75899e;font-size:12.5px;line-height:1.5}
 .stat{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0 0;font-size:13px;color:#8aa0b5}
 .stat b{color:#fff}
+.power{border-left:3px solid var(--fc);padding:2px 0 2px 16px;margin:14px 0 6px}
+.creed{font-size:17px;color:#fff;letter-spacing:.05em;margin-bottom:6px}
+.blurb{color:#b9c9d8;font-size:14px;margin:0 0 10px;max-width:900px}
+.bonus{display:inline-block;background:#0d141c;border:1px solid #1d2836;border-radius:5px;
+ padding:7px 12px;font-size:13px;color:#b9c9d8}
+.bonus b{color:var(--fc);letter-spacing:.06em;margin-right:6px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px;margin:10px 0 6px}
+.card{background:#0d141c;border:1px solid #1d2836;border-radius:6px;padding:11px 13px;
+ display:flex;flex-direction:column;gap:5px}
+.card b{color:#fff;font-size:14px;letter-spacing:.05em}
+.card .nums{color:var(--fc);font-size:11px;letter-spacing:.1em}
+.card span{color:#93a7ba;font-size:12.5px;line-height:1.5}
+.card i{color:#75899e;font-style:normal;letter-spacing:.06em;font-size:11px}
+.card .quote{color:#c3d2e0;border-left:2px solid #23303f;padding-left:9px;font-style:italic}
+.beat .reveal{display:block;margin-top:7px;padding-top:7px;border-top:1px solid #1d2836;
+ color:#8aa0b5;font-size:13px}
+.beat.moral{border-color:#3d3320;background:#12100c}
+.beat.moral b{color:#fbbf24}
 table.dec{border-collapse:collapse;width:100%;margin:12px 0 8px;font-size:13.5px}
 table.dec td{border-top:1px solid #16202c;padding:9px 10px;vertical-align:top}
 table.dec td:first-child{width:78px;font-size:10px;letter-spacing:.14em;white-space:nowrap;padding-top:12px}
@@ -74,6 +92,47 @@ table.dec span{color:#75899e;font-size:12.5px}
 <div class="wrap">
 <h1 style="color:#38e8ff">HUMANITY</h1>
 <p class="sub">The campaign in play order. Three panels before each battle, two after. Type in any box to leave a note, then SAVE NOTES to download them.</p>
+<div class="power">
+<div class="creed">Adapt. Endure. Hold the line.</div>
+<p class="sub" style="margin:0 0 10px">Adaptable, outnumbered, unwilling to leave. Alien drives on human hulls.</p>
+<p class="blurb">Late to the stars and outnumbered on every front. What humanity brought to integration was not doctrine or appetite but adaptability: the willingness to bolt alien technology onto human frames and make it work. Neither selfless nor devouring. Simply unwilling to leave.</p>
+<div class="bonus"><b>RESILIENT</b> +10 lives and +10% to every tower statistic.</div>
+</div>
+<h2>What you field</h2>
+<div class="cards">
+<div class="card"><b>Trooper</b><span class="nums"></span><span>Line infantry on alien drives. Outnumbered on every front and still walking towards you.</span></div>
+<div class="card"><b>Foo Fighter</b><span class="nums"></span><span>The lights bomber crews reported over Europe in 1944. They were ours then too. It flies the maze instead of walking it.</span></div>
+<div class="card"><b>Aurora</b><span class="nums"></span><span>Flying black since decades before anyone was told. Bolted-on alien plate, heated against cold, and frost barely marks it.</span></div>
+<div class="card"><b>Black Manta</b><span class="nums"></span><span>Anchored assault armour off a programme that never had a public name. It cannot be displaced and barely slowed: you have to out-damage it.</span></div>
+<div class="card"><b>TR-3B</b><span class="nums"></span><span>AURA: +9 armour within 2.6 tiles. The big quiet triangle everyone photographed and nobody was believed about. Humanity endures by standing closer together.</span></div>
+</div>
+<h2>Who leads</h2>
+<div class="cards">
+<div class="card"><b>DIR. REYES</b><span class="nums">The Archivist</span><span>Director of the Open Archive Combat Index</span><span><i>Wants:</i> Make contradictory records useful without pretending they agree.</span><span><i>Breaks on:</i> She will expose any secret except the one proving how often Humanity edited its own disclosure history.</span><span class="quote">I have read every battle you have ever fought. This one ends the same way.</span></div>
+<div class="card"><b>GEN. OKAFOR</b><span class="nums">The Quartermaster</span><span>Architect of interoperable Solar logistics</span><span><i>Wants:</i> Make Human expansion impossible to starve or embargo.</span><span><i>Breaks on:</i> Every standard he exports quietly makes frontier worlds dependent on Human industry.</span><span class="quote">I priced your defeat before you arrived. It was cheap.</span></div>
+<div class="card"><b>DR. TANAKA</b><span class="nums">The Overclocker</span><span>Illegal ascension engineer turned war hero</span><span><i>Wants:</i> Prove no technology remains sacred once it can be measured.</span><span><i>Breaks on:</i> Her victories normalize dangerous escalation and leave generations maintaining devices designed to fail after she is gone.</span><span class="quote">My towers are already past their rated limits. So am I.</span></div>
+<div class="card"><b>CHF. O'RYAN</b><span class="nums">The Engineer</span><span>Field reconstruction and anti-sabotage chief</span><span><i>Wants:</i> Turn every captured system into a locally serviceable tool.</span><span><i>Breaks on:</i> He treats understanding as ownership and underestimates what copied systems may remember.</span><span class="quote">Whatever you break, I rebuild before it hits the ground.</span></div>
+<div class="card"><b>MAR. WASHINGTON</b><span class="nums">The Marshal</span><span>Commander of the Last-Line Charter</span><span><i>Wants:</i> Establish places no outside power can order abandoned.</span><span><i>Breaks on:</i> Her defense of autonomy can become territorial absolutism.</span><span class="quote">This ground is mine. That is not a boast, it is a measurement.</span></div>
+<div class="card"><b>ISA</b><span class="nums">The Wanderer</span><span class="quote">Put it down, friend. Whatever they told you this ground is worth, you are worth more.</span></div>
+</div>
+<h2>The spine</h2>
+<p class="sub">Six beats that carry the arc. Everything else on this page hangs off them.</p>
+<div class="beat"><b>BEAT 1</b>Eleven months ago they told us the date we would die, and everything else in the same breath. Today the rock is gravel, the fleet it paid for is fuelled, and nobody aboard wants to go home and wait for the next secret. Set course for Luna. They watched us from there for ten thousand years. We will start by knocking.<span class="reveal">The fleet built to stop Apophis was never going to stand down. The Manifest begins where the harvest began: our own Moon.</span></div>
+<div class="beat"><b>BEAT 2</b>I have read every page they released on Disclosure Day, and the worst one is not the harvest ledger. It is a consent form. Our alphabet, our legal boilerplate, a human signature, dated 1953. Somebody down here sold the herd to the farmers, and the file with the names on it is still sealed.<span class="reveal">The occupation had human partners, and their names were not in the Disclosure. Someone chose what the whole truth left out.</span></div>
+<div class="beat"><b>BEAT 3</b>You fight beautifully, human. You should. We bred you for resilience the way you bred wolves into dogs. Every gene that saves you today was a line item in our programme. Hate us if it helps, but do it honestly: you are our best work.<span class="reveal">The modifications humanity resents are the same ones that make it competitive out here. The grievance and the gift are one object.</span></div>
+<div class="beat"><b>BEAT 4</b>Three freed worlds asked for our food, our fuel standard, and our air filters. I said yes three times, because saying no starves people. Then I priced the resupply schedule and saw the shape of it: in ten years they cannot leave us. Nobody signed anything. That used to be my definition of freedom.<span class="reveal">Worlds humanity frees are becoming worlds humanity holds. Adaptation is not consent, and Earth is now on the other side of that sentence.</span></div>
+<div class="beat"><b>BEAT 5</b>The drives, the governors, the ascension rigs: it is their technology, and I run it hotter than they ever dared because I do not carry their caution. Last night I finally read what the governors were FOR. They were not limiting power. They were keeping the operator human. I have been past that line for a year.<span class="reveal">To out-fight the galaxy, humanity is running the oppressor’s own machines past their safety line, and the line was there to protect what we are.</span></div>
+<div class="beat"><b>BEAT 6</b>The pentad is yours, and no one out there will deny humanity again. So decide what they are agreeing to. A neighbour with a long memory. A power with a border. Or the next thing the galaxy builds a fleet over the holidays to survive. We have been all three from the other side. Choose while it is still a choice.<span class="reveal">Undeniable is achieved. What it authorises is not, and that decision is the campaign’s real ending.</span></div>
+<h2>Alternate voices</h2>
+<p class="sub">These replace the first line on any world where they apply, most surprising fact first.</p>
+<div class="cards">
+<div class="card"><b>SEAT</b><span class="nums">a throne world</span><span class="quote">This is their seat. Not a depot, not a relay: the room where somebody decided what happens to the rest of us. We have come a long way to knock on it.</span></div>
+<div class="card"><b>CONTESTED</b><span class="nums">two rivals already here</span><span class="quote">Two fleets are already killing each other over this ground. We are not here to pick a side. We are here to end the auction.</span></div>
+<div class="card"><b>RENEGADE</b><span class="nums">your own banner holds it</span><span class="quote">The banner on that world is ours and it is not answering. They heard the same broadcast we did and drew a different line. Nobody wanted this order. Confirm it anyway.</span></div>
+<div class="card"><b>RETAKEN</b><span class="nums">you lost this once</span><span class="quote">We took this world once. We put people on it and we moved on, and somebody walked back in behind us. Nobody is saying it out loud, so it will be said here: that is on us.</span></div>
+<div class="card"><b>FLAWLESS</b><span class="nums">three stars</span><span class="quote">Almost everyone is walking off this world. Read the casualty sheet twice, because you will not see one this short again, and do not let anyone start believing it is normal.</span></div>
+<div class="card"><b>DEFEAT</b><span class="nums">you lost the campaign</span><span class="quote">The ground is theirs tonight. Write everything down: what held, what broke, who we lost. Earth did not come this far to learn nothing from a loss.</span></div>
+</div>
 <h2>Opening cinematic</h2>
 <div class="strip">
 <div class="pan"><div class="pimg"><img loading="lazy" src="../art/cut_human_intro_1.webp" alt=""></div><div class="plab">SLIDE 1</div><div class="ptxt">They found it in 2004 and for one week it was the most dangerous object ever catalogued. Then they cleared it. Apophis would pass us on the thirteenth of April, 2029, at twenty thousand miles: a tenth of the way to the Moon, closer in than our own satellites.</div></div>
@@ -95,7 +154,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 <textarea class="note" data-k="human / INTRO" placeholder="Notes on the opening cinematic..."></textarea>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 1</span><span class="actname">THE EARTH SYSTEM</span><span class="actwho">your home</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>Take back the solar system, world by world, from the power that farmed it. Every world is somewhere humanity already built: the mirror farm it half designed, the cloud city it flew, the trench it learned to survive in. It ends on the far side of the Moon, digging out the relay that watched Earth for ten thousand years. Everything before this was travel.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>The Earth System is ours, pole to pole and rock to rock, for the first time in ten thousand years. And on the far side of our own Moon: their relay, still warm. They never even hid it well. They never needed to.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>Home is the first thing worth defending and the last thing anyone offered us. The rock was hollow, and the saving was the invasion.</div>
 <div class="world">
 <div class="whead"><span class="wname">EARTH</span></div>
 <div class="strip">
@@ -183,7 +244,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 2</span><span class="actname">THE PLEIADES</span><span class="actwho">home of FEDERATION OF LIGHT</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>March into the machinery of the people who watched and did nothing. The hymn foundry that certifies a world as protected, the archive of the forty, the tribunal, and the sunken vaults where Earth's own file was stamped Deferred three times. Humanity arrives to read the paperwork and leaves having published all of it.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>The Disclosure files travel with the fleet. Every page re-read by people who now know what redaction smells like. Somewhere in those pages is a signature. Human. Dated 1953. The whole truth left names out, and we are going to find them.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>A secret kept by the powerful is a weapon pointed at whoever was not told. Publishing it is the only way to take the weapon away.</div>
 <div class="world">
 <div class="whead"><span class="wname">MAIA</span></div>
 <div class="strip">
@@ -271,7 +334,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 3</span><span class="actname">ZETA RETICULI</span><span class="actwho">home of THE XENO</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>The Compact's home, and the machinery of the harvest itself: the pens, the rendering yards, the gene vaults where every farmed species is filed, including ours. The hardest act to look at. It ends at Serpo, where twelve people were traded one way and never spoken of again, and where their names go up at the gate in letters a metre high.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>The seats fall one by one, and each defeated commander says the same thing in a different way: you were made for this. They mean it as a compliment. It is the oldest insult ever paid to us, and we are done being anyone’s best work.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>The grievance and the gift are one object. Every trait that keeps us alive out here was a line item in somebody else programme.</div>
 <div class="world">
 <div class="whead"><span class="wname">ZETA-1 b</span></div>
 <div class="strip">
@@ -359,7 +424,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 4</span><span class="actname">PROXIMA CENTAURI</span><span class="actwho">home of THE PIRATES</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>The free roads, which are not an empire but an absence of one. Wreck yards, an unlicensed refinery, an anchorage on no chart, a toll gate, a sanctuary that has never asked anyone for papers. Humanity came to liberate a network and finds that liberating it means deciding whose rules replace none at all. The Quartermaster prices the resupply and sees a fence.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>The freed worlds ask for our standards, our filters, our fuel. Saying yes is mercy. Saying yes is also how it started last time. Nobody signed anything. Nobody had to. The Quartermaster keeps drawing up supply contracts that look like fences.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>Adaptation is not consent. Worlds we free start needing us, and needing us is how it began the last time.</div>
 <div class="world">
 <div class="whead"><span class="wname">PROXIMA d</span></div>
 <div class="strip">
@@ -447,7 +514,9 @@ table.dec span{color:#75899e;font-size:12.5px}
 </div>
 <div class="act">
 <div class="actbar"><span class="actno">ACT 5</span><span class="actname">SIRIUS</span><span class="actwho">home of THE PARALLEL</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>A civilisation of machines executing orders no maker ever signed, around a star being slowly boxed in. Humanity finishes the swarm on its own plan, aims the relay back up the chain the orders came from, and decides where the light of a star goes. Undeniable, at last, and now answerable for it.</div>
 <div class="beat"><b>WHEN THE ACT ENDS</b>The fleet runs on their engines, past their safety lines, hotter than they ever dared. That is why we are winning. The governors were never limiting the machines. They were keeping the operator human. We have been past that line for a year.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>The governors were never limiting the machines. They were keeping the operator human, and we crossed that line to win.</div>
 <div class="world">
 <div class="whead"><span class="wname">SIRIUS A I</span></div>
 <div class="strip">
