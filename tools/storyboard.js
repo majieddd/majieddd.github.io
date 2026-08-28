@@ -104,6 +104,8 @@ h2{font-size:15px;letter-spacing:.14em;margin:38px 0 6px;color:#fff;text-transfo
 .chip{font-size:10px;letter-spacing:.12em;padding:2px 7px;border-radius:3px;border:1px solid}
 .seat{color:#fbbf24;border-color:#7c5e14;background:#241c07}
 .rev{color:#f0a8a8;border-color:#6b2a2a;background:#2a1212}
+.enc{color:#7dd3fc;border-color:#1d4a67;background:#0c1a25}
+.encnote{color:#8aa0b5;font-size:13px;margin:0 0 8px;font-style:italic}
 .strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
 .pan{background:#0b1119;border:1px solid #1a2531;border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
 .pan.after{border-color:#2a2136}
@@ -198,14 +200,48 @@ function noteBox(k, ph) {
 
 /* Worlds whose act is designed to turn. Kept here rather than inferred so the
    page states the intent even before the art is re-rendered. */
-const REVERSALS = { '05': 'Apophis was not the first delivery',
+/* One per act, at wi 5, the world before the seat. Key 05 was TITAN and its
+   reversal was a fragment hull older than Apophis; the Earth System reorder
+   made 05 JUPITER, so the label follows the text that is actually there now.
+   The Titan crater beat is retired with the world, not silently relabelled. */
+const REVERSALS = { '05': 'the traffic out here already ends at Saturn',
                     '15': 'the protection order was granted, then withdrawn',
                     '25': 'Earth is in the ledger as a SUPPLIER',
                     '35': 'the Free Captains carried the freight',
                     '45': 'the mast falls and the orders keep coming' };
 
+/* Who garrisons each world, and under which scenario, read from a live galaxy
+   on the canon seed. The renderer needs this: it decides who is IN the picture.
+   The Earth System is authored (GX_SOL_ENCOUNTERS); everywhere else is the
+   canon seed's roll, which is what a player on that seed actually meets. */
+function encountersFor(fac) {
+  const out = {};
+  try {
+    const gctx = { console, window: {}, document: undefined };
+    vm.createContext(gctx);
+    for (const f of ['config', 'lore', 'factions', 'towers2', 'roster', 'story'])
+      try { vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', f + '.js'), 'utf8'), gctx, { filename: f }); } catch (e) {}
+    vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', 'galaxy.js'), 'utf8'), gctx, { filename: 'galaxy.js' });
+    const g = vm.runInContext('generateGalaxy(20290413,"' + fac + '",0,1,2)', gctx);
+    const sc = vm.runInContext('worldScenarioOf', gctx);
+    const SOL = vm.runInContext('typeof GX_SOL_ENCOUNTERS !== "undefined" ? GX_SOL_ENCOUNTERS : {}', gctx);
+    const homeOf = { human: 0, light: 1, xeno: 2, pirate: 3, robot: 4 };
+    g.systems.forEach(sys => sys.worlds.forEach(wd => {
+      /* Re-key from the player-relative si back to the UNIVERSE index, which is
+         what planetcuts and the plate names use. */
+      const uni = (homeOf[fac] + wd.si) % 5;
+      const who = facName(wd.owner) +
+        (wd.contested && wd.contestedBy ? ' and ' + [].concat(wd.contestedBy).map(facName).join(' and ') : '');
+      const a = sys.name === 'THE EARTH SYSTEM' ? SOL[wd.wi] : null;
+      out['' + uni + wd.wi] = { scenario: sc(wd).name, who: who, note: a && a.note };
+    }));
+  } catch (e) { console.log('  (encounters unavailable: ' + String(e.message).slice(0, 80) + ')'); }
+  return out;
+}
+
 function page(fac) {
   const o = [];
+  const ENC = encountersFor(fac);
   const w = s => o.push(s);
   const cs = G.CUTSCENES[fac] || {};
   w('<!doctype html><meta charset="utf-8"><title>' + esc(facName(fac)) + ' storyboard</title>');
@@ -314,9 +350,17 @@ function page(fac) {
       const lines = (e && e.f && e.f[fac]) || [];
       const rev = REVERSALS[key];
       w('<div class="world">');
+      /* WHO IS IN THE PICTURE. Read live off the generated galaxy so the
+         renderer is told the same garrison the battle will actually field.
+         Only the Earth System is authored today; everywhere else this is the
+         canon seed's roll and is labelled as such. */
+      const enc = ENC[key];
       w('<div class="whead"><span class="wname">' + esc(wname) + '</span>' +
         (wi === 6 ? '<span class="chip seat">SEAT &middot; ACT ENDS HERE</span>' : '') +
-        (rev ? '<span class="chip rev">REVERSAL &middot; ' + esc(rev) + '</span>' : '') + '</div>');
+        (rev ? '<span class="chip rev">REVERSAL &middot; ' + esc(rev) + '</span>' : '') +
+        (enc ? '<span class="chip enc">' + esc(enc.scenario) + ' &middot; ' +
+               esc(enc.who) + '</span>' : '') + '</div>');
+      if (enc && enc.note) w('<p class="encnote">' + esc(enc.note) + '</p>');
       if (!e) { w('<p class="sub">No authored entry for this world yet.</p></div>'); return; }
       const k = b => 'pcut_' + key + '_' + fac + '_' + b;
       const st = staleWorld(key);

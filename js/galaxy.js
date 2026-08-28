@@ -180,6 +180,44 @@ const GX_STAR_POOL = [
 const GX_UNIVERSE_SEED = 20290413;
 const GX_UNIVERSE_ORDER = ['human', 'light', 'xeno', 'pirate', 'robot'];
 
+/* THE EARTH SYSTEM IS AUTHORED, NOT ROLLED (owner directive, Session 42).
+ *
+ * Act one is the act every player receives first and the one that carries the
+ * canon, so who is standing on each world is a STORY fact rather than a per
+ * seed draw. It is also the act that teaches the game: a swarm, then a
+ * third-party threat, then a two-power fight, then a fortress, then a swarm
+ * again, then a raid during a siege, then the seat.
+ *
+ * These are the garrisons the fiction already asserts. The Compact were inside
+ * Apophis, the Federation kept a base at Venus and a ruling not to help, the
+ * machines were on Mercury, and the scavengers were selling to all three. So
+ * this table is true no matter who is playing, and it is applied to every
+ * campaign rather than only to humanity's.
+ *
+ * THE STREAM DOES NOT MOVE. Every rnd() call still happens in the same order;
+ * only the RESULT is replaced afterward. See the worldOwner line below, which
+ * keeps the draw and discards it, exactly as the seat branch already did.
+ *
+ * `scenario` is honoured by worldScenarioOf, which is index-derived and takes
+ * no draws at all, so overriding it there is free.
+ */
+const GX_SOL_ENCOUNTERS = {
+  0: { owner: 'xeno',                       scenario: 'swarm',
+       note: 'EARTH: whatever came out of the rock, and a great deal of it. Survive.' },
+  1: { owner: 'xeno',                       scenario: 'vigil',
+       note: 'LUNA: a Compact commander followed us up, and then the Vigil woke and started killing both sides.' },
+  2: { owner: 'xeno',  contestedBy: 'pirate', scenario: 'assault',
+       note: 'MARS: the Compact hold the trench and the scavengers are working the same ground.' },
+  3: { owner: 'light',                      scenario: 'assault',
+       note: 'VENUS: a Federation station that has been in our sky the whole time.' },
+  4: { owner: 'robot',                      scenario: 'swarm',
+       note: 'MERCURY: the machines are already here, in numbers, around the ring.' },
+  5: { owner: 'light',  contestedBy: 'xeno', scenario: 'overrun',
+       note: 'JUPITER: a Federation anchorage, and the Compact raid it while we are taking it.' },
+  6: { owner: 'xeno',   contestedBy: 'light', scenario: 'assault',
+       note: 'SATURN: the Compact seat. The Federation arrive angry, and now there are three of us.' },
+};
+
 /* Who HOLDS each home system, per player faction. Row: universe system by its
    home faction. Column rule: the canonical holder, unless that would be the
    player's own faction, in which case the authored occupier of their story
@@ -580,9 +618,48 @@ function generateGalaxy(seed, playerFaction, mapPool, kindsW, gxv) {
     });
   }
   const galaxy = { seed, playerFaction, raider, systems };
+
   /* AFTER every world exists, and drawing NOTHING from rnd(). See the route
      section below for why that ordering is not negotiable. */
   buildRoutes(galaxy);
+
+  /* AUTHORED AFTER buildRoutes, not before. The route graph is derived
+     from the galaxy it is handed, so rewriting Sol before routing shifted
+     .links in OTHER systems: 80 field diffs outside the authored act,
+     caught by a per-field comparison that a whole-object hash would have
+     reported as one vague failure. Routing first, authoring second. */
+  /* THE EARTH SYSTEM IS AUTHORED (owner, Session 42). Applied HERE, after every
+     draw has happened, so it cannot move the stream by a single call. Keyed on
+     the system's IDENTITY rather than on si, because si is player-relative:
+     the Earth System is act one for humanity and act four for the Compact, and
+     an si-keyed table would have authored whichever system the player happened
+     to start in. Measured that mistake before this comment existed.
+
+     Overriding owner after generation leaves the world's BOON as it was rolled.
+     That is deliberate: the boon is a reward, not an identity, and re-rolling
+     it here would be a draw. */
+  if (v2 && typeof GX_SOL_ENCOUNTERS !== 'undefined' &&
+      typeof GX_HOME_SYSTEMS !== 'undefined') {
+    const solName = GX_HOME_SYSTEMS.human && GX_HOME_SYSTEMS.human.name;
+    const sol = systems.find(s => s.name === solName);
+    if (sol) sol.worlds.forEach(w => {
+      const a = GX_SOL_ENCOUNTERS[w.wi];
+      if (!a) return;
+      w.sol = true;                       /* read by worldScenarioOf */
+      if (a.owner) w.owner = a.owner;
+      /* Authored means AUTHORED. A world the table does not declare contested
+         has its rolled contested flag cleared, so act one is byte-identical for
+         every player and every seed. Without this the generator's own contested
+         nomination lands somewhere inside the authored act and the teaching
+         order the table exists to guarantee stops being guaranteed. */
+      if (a.contestedBy) { w.contested = true; w.contestedBy = [].concat(a.contestedBy); }
+      else { w.contested = false; w.contestedBy = null; }
+      /* A world the fiction hands to somebody else cannot also be the
+         renegade splinter of the player's own banner. */
+      if (a.owner && a.owner !== playerFaction) w.renegade = false;
+    });
+  }
+
   return galaxy;
 }
 
@@ -809,6 +886,16 @@ function worldBossOf(sys, w) {
  */
 function worldScenarioOf(w) {
   if (!w) return SCENARIOS[0];
+  /* The Earth System is authored (GX_SOL_ENCOUNTERS): act one teaches the game
+     in a deliberate order rather than whatever the index happens to produce.
+     Index-derived like the rest of this function, so it takes no draw. */
+  if (w.sol && typeof GX_SOL_ENCOUNTERS !== 'undefined') {
+    const a = GX_SOL_ENCOUNTERS[w.wi];
+    if (a && a.scenario) {
+      const s = SCENARIOS.find(x => x.id === a.scenario);
+      if (s) return s;
+    }
+  }
   const i = w.si * WORLDS_PER_SYSTEM + w.wi;
   if (i % SCENARIO_VARIANT_EVERY !== 0) return SCENARIOS[0];
   /* A seat is the system's boss fight and is always the duel: a commander seat
