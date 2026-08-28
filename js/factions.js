@@ -218,6 +218,15 @@ const FACTION_ENEMY_TYPES = {
                  desc:'A cathedral engine on treads. Three hundred points of ward before you reach the hull.' },
 
   /* THE XENO -- swarming, splitting, always more of it than there was. */
+  arbiter:     { id:'arbiter', faction:'light', name:'Arbiter', hp:250, speed:1.0, armor:8, bounty:34, lives:2, radius:12,
+                 color:'#fde68a', shape:'hex',
+                 desc:'Sent when a ruling has already been made. It does not carry the argument, only the finding.' },
+  deferral:    { id:'deferral', faction:'light', name:'Deferral', hp:130, speed:0.86, armor:5, bounty:22, lives:1, radius:10,
+                 color:'#facc15', shape:'diamond', slowResist:0.4,
+                 desc:'It does not stop you. It postpones you, and it is very good at it, and eighty years go by.' },
+  sealbearer:  { id:'sealbearer', faction:'light', name:'Sealbearer', hp:410, speed:0.7, armor:11, bounty:47, lives:3, radius:15,
+                 color:'#fbbf24', shape:'jugger',
+                 desc:'Carries the registry seal into the field, so that whatever happens here is on the record and is therefore lawful.' },
   chitling:    { id:'chitling', faction:'xeno', name:'Chitling', hp:48, speed:1.6, armor:0, bounty:5, lives:1, radius:7,
                  color:'#a855f7', shape:'dot',
                  desc:'Grown, not built, and grown quickly. The Xeno spend these the way the Vigil spends Motes.' },
@@ -241,6 +250,15 @@ const FACTION_ENEMY_TYPES = {
                  desc:'Births Chitlings continuously the whole way down the lane. The lane is a nursery until she stops.' },
 
   /* THE PIRATES -- fast, dirty, and gone before you have finished aiming. */
+  tither:      { id:'tither', faction:'xeno', name:'Tither', hp:88, speed:1.35, armor:2, bounty:13, lives:1, radius:9,
+                 color:'#c084fc', shape:'diamond',
+                 desc:'Collects. Not a soldier and never has been, which is why it walks toward you at exactly the same pace throughout.' },
+  stockman:    { id:'stockman', faction:'xeno', name:'Stockman', hp:300, speed:0.9, armor:7, bounty:36, lives:2, radius:13,
+                 color:'#a855f7', shape:'warden',
+                 desc:'Counts what is left standing and adjusts the figure. The Compact does not steal. The Compact contracts.' },
+  graft:       { id:'graft', faction:'xeno', name:'Graft', hp:180, speed:1.05, armor:4, bounty:26, lives:2, radius:11,
+                 color:'#d8b4fe', shape:'hex', elemResist:{ venom:0.5 },
+                 desc:'Two lineages fused at the seam because the ledger said the yield would improve. It did.' },
   cutter:      { id:'cutter', stealth:true, faction:'pirate', name:'Cutter', hp:46, speed:2.4, armor:0, bounty:11, lives:1, radius:8,
                  color:'#f87171', shape:'chevron',
                  desc:'A stolen hull with the mass stripped out of it. Nothing aboard but engine and intent.' },
@@ -269,6 +287,15 @@ const FACTION_ENEMY_TYPES = {
      not a copy change any more. The infantry stays infantry: a TR-3B is not a
      rifleman, and the Trooper is the unit that proves Human conquest is
      institutional rather than merely technological. */
+  tollman:     { id:'tollman', faction:'pirate', name:'Tollman', hp:210, speed:1.0, armor:6, bounty:29, lives:2, radius:12,
+                 color:'#ef4444', shape:'hex',
+                 desc:'Stands in the lane and names a price. Historically, most people have paid it.' },
+  runner:      { id:'runner', faction:'pirate', name:'Runner', hp:62, speed:2.3, armor:0, bounty:12, lives:1, radius:8,
+                 color:'#f87171', shape:'diamond', stealth:true,
+                 desc:'Carries what cannot be carried openly, and has never once asked what it is carrying.' },
+  powderhand:  { id:'powderhand', faction:'pirate', name:'Powderhand', hp:150, speed:1.15, armor:3, bounty:24, lives:1, radius:10,
+                 color:'#fb923c', shape:'block',
+                 desc:'Every crew has one. Nobody asks where they learned it, and everybody stands well back.' },
   trooper:     { id:'trooper', faction:'human', name:'Trooper', hp:66, speed:1.15, armor:2, bounty:10, lives:1, radius:10,
                  color:'#38e8ff', shape:'block',
                  desc:'Line infantry on alien drives. Outnumbered on every front and still walking towards you.' },
@@ -295,6 +322,16 @@ const FACTION_ENEMY_TYPES = {
      the mass, a little less speed for the armour, and a doctrine that makes
      the SECOND body better than the first because the first one died here.
      One light, two middling, two heavy, on the same ladder as everyone. */
+  tictac:      { id:'tictac', faction:'human', name:'Tic Tac', hp:74, speed:2.15, armor:0, bounty:14, lives:1, radius:8,
+                 color:'#a5f3fc', shape:'diamond', flying:true, slowResist:0.5,
+                 elemWeak:{ storm:0.35 },
+                 desc:'No wings, no exhaust, and it turns like the rules do not apply to it. Off the Nimitz, 2004. Half of it was ours.' },
+  fluxliner:   { id:'fluxliner', faction:'human', name:'Fluxliner', hp:290, speed:0.98, armor:7, bounty:38, lives:2, radius:13,
+                 color:'#22d3ee', shape:'warden', pullImmune:true,
+                 desc:'The bell-shaped one from the testimony nobody was allowed to corroborate. It cannot be dragged off its line.' },
+  phoenixlt:   { id:'phoenixlt', faction:'human', name:'Phoenix Lights', hp:58, speed:1.12, armor:2, bounty:9, lives:1, radius:8,
+                 color:'#67e8f9', shape:'block', flying:true,
+                 desc:'Never one craft. Always a formation, holding station, refusing to be a single thing you can point at. Arizona, 1997.' },
   stitch:      { id:'stitch', faction:'robot', name:'Stitch', hp:70, speed:1.45, armor:4, bounty:11, lives:1, radius:9,
                  color:'#cbd5e1', shape:'diamond',
                  elemWeak:{ storm:0.35 },
@@ -313,7 +350,16 @@ const FACTION_ENEMY_TYPES = {
   omniframe:   { id:'omniframe', faction:'robot', name:'Omniframe', hp:480, speed:0.7, armor:13, bounty:49, lives:3, radius:16,
                  color:'#f8fafc', shape:'vanguard',
                  aura:{ radius:2.8, armor:7, tint:'#f8fafc', label:'CONSENSUS' },
-                 desc:'AURA: +7 armour within 2.8 tiles. The chassis every earlier chassis was a draft of.' }
+                 desc:'AURA: +7 armour within 2.8 tiles. The chassis every earlier chassis was a draft of.' },
+  erratum:     { id:'erratum', faction:'robot', name:'Erratum', hp:120, speed:1.3, armor:5, bounty:19, lives:1, radius:9,
+                 color:'#e2e8f0', shape:'diamond',
+                 desc:'A logged discrepancy that was never answered, walking. There are four hundred and nine thousand of these.' },
+  addendum:    { id:'addendum', faction:'robot', name:'Addendum', hp:275, speed:0.95, armor:9, bounty:35, lives:2, radius:12,
+                 color:'#cbd5e1', shape:'hex',
+                 desc:'Appended to an order nobody signed, by a unit that had no authority to append it, and executed anyway.' },
+  precedent:   { id:'precedent', faction:'robot', name:'Precedent', hp:445, speed:0.72, armor:12, bounty:50, lives:3, radius:16,
+                 color:'#f1f5f9', shape:'jugger',
+                 desc:'Once a thing has been done without instruction, it becomes a thing that may be done. This is the second one.' },
 };
 Object.assign(ENEMY_TYPES, FACTION_ENEMY_TYPES);
 
@@ -674,7 +720,37 @@ const UNIT_SIGNATURE_TALENTS = {
   gantry:      [{ name:'RE-ARMER',       desc:'A relay burns 50% longer.',            mods:{ relayMul:1.50 } },
                 { name:'BALLAST RACKS',  desc:'+25% health.',                         mods:{ hpMul:1.25 } }],
   omniframe:   [{ name:'OVERBUILT',      desc:'+5 armour.',                           mods:{ armorAdd:5 } },
-                { name:'CROWN NODE',     desc:'+20% health and a relay burns 40% longer.', mods:{ hpMul:1.20, relayMul:1.40 } }]
+                { name:'CROWN NODE',     desc:'+20% health and a relay burns 40% longer.', mods:{ hpMul:1.20, relayMul:1.40 } }],
+  tictac:      [{ name:'IMPOSSIBLE TURN', desc:'+22% march speed.',                    mods:{ speedMul:1.22 } },
+                { name:'NO SIGNATURE',    desc:'+35% slow resistance.',                mods:{ slowResistAdd:0.35 } }],
+  fluxliner:   [{ name:'FIELD DRIVE',     desc:'+22% health.',                         mods:{ hpMul:1.22 } },
+                { name:'MERCURY LOOP',    desc:'A summon costs 15% less.',             mods:{ costMul:0.85 } }],
+  phoenixlt:   [{ name:'FORMATION',       desc:'+45% bodies per summon.',              mods:{ countMul:1.45 } },
+                { name:'HOLDING STATION', desc:'+2 armour.',                           mods:{ armorAdd:2 } }],
+  arbiter:     [{ name:'FINDING',         desc:'+3 armour.',                           mods:{ armorAdd:3 } },
+                { name:'ENFORCEMENT',     desc:'+15% health.',                         mods:{ hpMul:1.15 } }],
+  deferral:    [{ name:'POSTPONED',       desc:'+40% slow resistance.',                mods:{ slowResistAdd:0.40 } },
+                { name:'UNDER REVIEW',    desc:'+25% ward.',                           mods:{ shieldMul:1.25 } }],
+  sealbearer:  [{ name:'ON THE RECORD',   desc:'+4 armour.',                           mods:{ armorAdd:4 } },
+                { name:'LAWFUL',          desc:'+20% ward.',                           mods:{ shieldMul:1.20 } }],
+  tither:      [{ name:'COLLECTION',      desc:'+70% salvage.',                        mods:{ salvageMul:1.70 } },
+                { name:'STEADY PACE',     desc:'+25% slow resistance.',                mods:{ slowResistAdd:0.25 } }],
+  stockman:    [{ name:'RECOUNT',         desc:'+18% health.',                         mods:{ hpMul:1.18 } },
+                { name:'ADJUSTED FIGURE', desc:'A summon costs 14% less.',             mods:{ costMul:0.86 } }],
+  graft:       [{ name:'FUSED SEAM',      desc:'+3 armour.',                           mods:{ armorAdd:3 } },
+                { name:'IMPROVED YIELD',  desc:'+30% bodies per summon.',              mods:{ countMul:1.30 } }],
+  tollman:     [{ name:'NAMES A PRICE',   desc:'+80% salvage.',                        mods:{ salvageMul:1.80 } },
+                { name:'STANDS THE LANE', desc:'+3 armour.',                           mods:{ armorAdd:3 } }],
+  runner:      [{ name:'NO MANIFEST',     desc:'+20% march speed.',                    mods:{ speedMul:1.20 } },
+                { name:'QUIET HOLD',      desc:'A summon costs 20% less.',             mods:{ costMul:0.80 } }],
+  powderhand:  [{ name:'STAND WELL BACK', desc:'+35% bodies per summon.',              mods:{ countMul:1.35 } },
+                { name:'SELF TAUGHT',     desc:'+16% health.',                         mods:{ hpMul:1.16 } }],
+  erratum:     [{ name:'UNANSWERED',      desc:'+40% bodies per summon.',              mods:{ countMul:1.40 } },
+                { name:'LOGGED',          desc:'+2 armour.',                           mods:{ armorAdd:2 } }],
+  addendum:    [{ name:'APPENDED',        desc:'+3 armour.',                           mods:{ armorAdd:3 } },
+                { name:'EXECUTED ANYWAY', desc:'+18% health.',                         mods:{ hpMul:1.18 } }],
+  precedent:   [{ name:'ESTABLISHED',     desc:'+5 armour.',                           mods:{ armorAdd:5 } },
+                { name:'MAY BE DONE',     desc:'+22% health.',                         mods:{ hpMul:1.22 } }],
 };
 
 /**

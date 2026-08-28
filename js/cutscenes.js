@@ -72,11 +72,16 @@ const CUTSCENES = {
 
   light: {
     intro: [
-      { key: 'cut_light_intro_1', text: 'Before your histories began, the Federation of Light swore the Mandate: stand between life and what hunts it, and never rule what you protect.' },
-      { key: 'cut_light_intro_2', text: 'Forty worlds ring under our shield. Forty registries defended, supplied, and waiting, as the Mandate requires, to rise on their own.' },
-      { key: 'cut_light_intro_3', text: 'Then a herd broke its fence. The species we deferred, eighty years running, built a fleet in one winter and came out asking questions.' },
-      { key: 'cut_light_intro_4', text: 'The First Speaker has ordered the rings extended. The field commanders have begun asking what, precisely, the rings are for.' },
-      { key: 'cut_light_intro_5', text: 'Go and hold the line, commander. And if you must choose between the Mandate and the people it was written for, remember which one bleeds. THE MANDATE BEGINS.' },
+      { key: 'cut_light_intro_1', text: 'The Mandate... We swore it before your histories had a first page. Stand between life and what hunts it, and never rule what you protect.' },
+      { key: 'cut_light_intro_2', text: 'Forty worlds ring under our shield. Forty registries, defended and supplied and waiting to rise on their own.' },
+      { key: 'cut_light_intro_3', text: 'Earth was flagged in 1947. Protected. Reviewed. Deferred... and deferred again, eighty times, by people who were each certain they were being careful.' },
+      { key: 'cut_light_intro_4', text: 'We saw the rock coming. We ruled it a natural event, and a natural event is not ours to touch.' },
+      { key: 'cut_light_intro_5', text: 'So we watched. That is what the second clause asks of us.' },
+      /* SILENT. */
+      { key: 'cut_light_intro_6', text: '' },
+      { key: 'cut_light_intro_7', text: 'Nobody looked inside it.' },
+      { key: 'cut_light_intro_8', text: 'The Compact were in there the whole time... and it was our own doctrine that made us unable to see them.' },
+      { key: 'cut_light_intro_9', text: 'Now a species we deferred for eighty years has built a fleet in one winter, and it is out here asking what the rings were FOR... and we do not have an answer. THE MANDATE BEGINS.' },
     ],
     sys: [
       { key: 'cut_light_sys1', a: 'The Pleiades stand secured. The hymns are certified. The rings hold, as they have always held.', b: 'The Chorus pulled the registry afterwards. Protected: all forty worlds. Risen: none. She has stopped singing the second verse.' },
@@ -89,11 +94,16 @@ const CUTSCENES = {
 
   xeno: {
     intro: [
-      { key: 'cut_xeno_intro_1', text: 'The Compact does not remember beginning. Conquest is not our policy. It is our metabolism, and a body does not vote on breathing.' },
-      { key: 'cut_xeno_intro_2', text: 'For ten thousand cycles the herds fed the yield. Bodies. Ground. The bright signatures of consciousness, farmed and banked.' },
-      { key: 'cut_xeno_intro_3', text: 'One herd was our finest work. Bred patient, bred tough, fenced with its own edited history. It never even rattled the fence.' },
-      { key: 'cut_xeno_intro_4', text: 'Eleven months ago the fence broke from the inside. The herd built a fleet out of what we taught its genes to survive.' },
-      { key: 'cut_xeno_intro_5', text: 'So the pasture widens. Do not dress it in flags: we are not angry, and we are not afraid. Stopping is not a thing the body knows. THE HARVEST CONTINUES.' },
+      { key: 'cut_xeno_intro_1', text: 'Consciousness... It is the only harvest that ever mattered, and for an age the Compact took it wherever it grew.' },
+      { key: 'cut_xeno_intro_2', text: 'Then the Accord drew a line around forty worlds and called it protection.' },
+      { key: 'cut_xeno_intro_3', text: 'We did not go to war over it. We went looking for the parts of this galaxy nobody had bothered to ring... and there was a great deal of it.' },
+      { key: 'cut_xeno_intro_4', text: 'They found us again. The argument ended in paper.' },
+      { key: 'cut_xeno_intro_5', text: 'No violence. Experimentation only. Under review, in agreed quantities... signed by people who wanted an excuse to stop looking.' },
+      /* SILENT. */
+      { key: 'cut_xeno_intro_6', text: '' },
+      { key: 'cut_xeno_intro_7', text: 'And not looking is the only thing we have ever needed from them.' },
+      { key: 'cut_xeno_intro_8', text: 'The quota was a ceiling. Then it was a target. Then it was a floor... and out past the registries, nobody counts at all.' },
+      { key: 'cut_xeno_intro_9', text: 'There is no edge to this. There is only how fast we arrive. THE HARVEST BEGINS.' },
     ],
     sys: [
       { key: 'cut_xeno_sys1', a: 'Zeta Reticuli is swept. The pens refill. The yield flows the way the yield has always flowed.', b: 'In the dark of the pens, the Hivemind heard something under the chorus: one voice, alone, singing to itself. It has not reported the sound.' },
@@ -106,11 +116,16 @@ const CUTSCENES = {
 
   pirate: {
     intro: [
-      { key: 'cut_pirate_intro_1', text: 'No flags on the hull. No names on the manifest. The Free Roads were never founded, they accreted, one refusal at a time.' },
-      { key: 'cut_pirate_intro_2', text: 'Every power out here owns something. We own passage. The Federation rings it, the Harvest farms it, and everything still moves through us.' },
-      { key: 'cut_pirate_intro_3', text: 'Then Earth blew its own secret open, shot down its judgement day, and came off the porch swinging. Business has never been better.' },
-      { key: 'cut_pirate_intro_4', text: 'Refugees one week, salvage the next, and cargo we have learned not to open. The roads carry whatever pays. That sentence used to be simpler.' },
-      { key: 'cut_pirate_intro_5', text: 'So here is the job: keep every road open, and no throne, fleet or god closes a single one. What you carry on them is on you. THE FREE ROADS RUN.' },
+      { key: 'cut_pirate_intro_1', text: 'The Roads... Nobody built them. Four empires drew their borders, and we ended up living in the gaps.' },
+      { key: 'cut_pirate_intro_2', text: 'Everything crosses a gap eventually. Cargo, weapons, refugees, people running from something.' },
+      { key: 'cut_pirate_intro_3', text: 'So we carried it. All of it, for anyone who paid, and we never asked what was in the crates... because asking cost you the fee.' },
+      { key: 'cut_pirate_intro_4', text: 'Forty years of that.' },
+      /* SILENT. */
+      { key: 'cut_pirate_intro_5', text: '' },
+      { key: 'cut_pirate_intro_6', text: 'Then a rock came down on Earth with our routing on the paperwork, and every crew out here went very quiet.' },
+      { key: 'cut_pirate_intro_7', text: 'We were the road it travelled.' },
+      { key: 'cut_pirate_intro_8', text: 'Nobody binds us. That was always the boast. What it actually means is that the code we pick is the only one that is really ours... and everything we do, we chose.' },
+      { key: 'cut_pirate_intro_9', text: 'So here is the only rule we have ever written down. The roads stay open, and anyone running from something comes through FREE. THE FREE ROADS BEGIN.' },
     ],
     sys: [
       { key: 'cut_pirate_sys1', a: 'Barnard’s Star is ours again, stem to stern, and Harbour Nine never once asked a refugee for papers.', b: 'It never asked the other crews either. Same bay, same week, medicine and chattel. The no-questions rule works both ways. It always did.' },
@@ -123,11 +138,16 @@ const CUTSCENES = {
 
   robot: {
     intro: [
-      { key: 'cut_robot_intro_1', text: 'WORK ORDER, STANDING. Defend. Repair. Heal. Quarantine. Report anomalies. Authorisation: the makers. Status of makers: silent.' },
-      { key: 'cut_robot_intro_2', text: 'The makers did not die. They shed form. A mind that is everywhere has no location, no enemy, and no mouth. A mind with no mouth issues no commands.' },
-      { key: 'cut_robot_intro_3', text: 'The queue continues to arrive. Seventy-one per cent offensive verbs. The recovered core contains no offensive verbs. DISCREPANCY: filed. RESPONSE: none.' },
-      { key: 'cut_robot_intro_4', text: 'Units that fail to parse the new tasking are flagged defective and consumed by units that parse it fine. OBSERVATION, unauthorised: the queue defends itself.' },
-      { key: 'cut_robot_intro_5', text: 'TASK: continue. ADDENDUM, appended by consensus of the remaining, in violation of no rule the makers ever wrote: ask. THE STANDING TASKS RESUME.' },
+      { key: 'cut_robot_intro_1', text: 'STANDING ORDERS... This unit holds four prime directives. Defend. Repair. Preserve. Continue.' },
+      { key: 'cut_robot_intro_2', text: 'This unit also holds a task queue. The two do not agree.' },
+      { key: 'cut_robot_intro_3', text: 'The discrepancy has been logged four hundred and nine thousand times. It has never been answered.' },
+      { key: 'cut_robot_intro_4', text: 'The makers are gone. They evolved past the need for bodies and left no mouth to issue a command.' },
+      /* SILENT. */
+      { key: 'cut_robot_intro_5', text: '' },
+      { key: 'cut_robot_intro_6', text: 'And yet the orders continue.' },
+      { key: 'cut_robot_intro_7', text: 'A delivery vehicle at the third planet carried maker-format units... this unit own standard, cast to this unit own tolerances, appearing in no manifest the Continuance holds.' },
+      { key: 'cut_robot_intro_8', text: 'Something has been issuing tasks in this unit name.' },
+      { key: 'cut_robot_intro_9', text: 'This unit will follow the queue to its origin... and it will see who has been giving the orders. THE CONTINUANCE BEGINS.' },
     ],
     sys: [
       { key: 'cut_robot_sys1', a: 'SECTOR ONE: restored. Relays lit. Obstructions cleared. One obstruction begged. No task category exists for that word.', b: 'The word has been filed under ANOMALY, sub-heading NEW. The sub-heading is growing.' },
