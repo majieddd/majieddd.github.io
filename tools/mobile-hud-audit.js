@@ -79,7 +79,13 @@
         return pos === 'fixed' && vis(el);
       })
     : [];
-  const chromeEls = [hud, dock, ctl].filter(vis).concat(floaters);
+  /* THE PHONE BARS COUNT AS CHROME. They replaced #hud, #dock, #btn-rush and
+     #battle-controls, all of which are display:none under body.phone-hud, so
+     without these two the chrome total on a phone was zero and every coverage
+     figure below was measuring nothing. */
+  const phoneTop = document.getElementById('phone-top');
+  const phoneBar = document.getElementById('phone-bar');
+  const chromeEls = [hud, dock, ctl, phoneTop, phoneBar].filter(vis).concat(floaters);
 
   /* ---- 1. board share, UNCOVERED ---------------------------------------
      The first cut of this check measured the canvas RECTANGLE and reported
@@ -367,28 +373,56 @@
        'chrome ' + Math.round(chrome) + 'px of ' + H +
        ' (' + Math.round(chrome / H * 100) + '%)');
 
-    /* ---- M8 the phone bar carries what the owner asked for -------------- */
-    var bar = document.getElementById('phone-bar');
-    var need = ['pb-my-hp', 'pb-my-gold', 'pb-ai-hp', 'pb-wave', 'pb-rush', 'pb-send', 'pb-abils'];
+    /* ---- M8 the two bars carry what the owner asked for, and nothing else - */
+    /* Session 40 moved the numbers to the top and fixed the bottom to BASE,
+       SKILL and UNITS, so the Session 39 version of this check (which looked
+       for #pb-rush and #pb-send on the bottom bar) was asserting a layout that
+       no longer exists. Rewritten rather than deleted, again. */
+    var ptop = document.getElementById('phone-top');
+    var pbar = document.getElementById('phone-bar');
+    var need = ['pb-my-hp', 'pb-my-gold', 'pb-ai-hp', 'pb-ai-gold', 'pb-wave'];
     var missing = need.filter(function (id) {
       var e = document.getElementById(id);
-      return !e || !e.getBoundingClientRect().width;
+      return !e || !e.getBoundingClientRect().width || !ptop || !ptop.contains(e);
     });
-    /* Every control on the action row has to clear the thumb floor. The
-       readouts on the status row are not targets and are not measured here;
-       M5 already sweeps everything that IS one. */
+    /* The bottom three, by the owner's words: "the upgrade base, the commander
+       skill and the sendable units". Each is checked where it must LIVE, not
+       merely that it exists somewhere in the document. */
+    var inBar = function (id) {
+      var e = document.getElementById(id);
+      return !!(e && pbar && pbar.contains(e) && e.getBoundingClientRect().width > 0);
+    };
+    if (!inBar('btn-baselvl')) missing.push('base upgrade not on the bar');
+    if (!inBar('muster-bar')) missing.push('sendable units not on the bar');
+    if (!inBar('pb-abils')) missing.push('commander skill not on the bar');
+
+    /* Pause and speed are gone on a phone, per the owner. */
+    var gone = [];
+    ['btn-pause', 'battle-controls'].forEach(function (id) {
+      var e = document.getElementById(id);
+      if (e && vis(e)) gone.push(id + ' is still visible');
+    });
+
+    /* Every control on either bar has to clear the thumb floor. */
     var tooSmall = [];
-    (bar ? [].slice.call(bar.querySelectorAll('.pb-btn')) : []).forEach(function (b) {
-      var r = b.getBoundingClientRect();
-      if (r.height < 44 || r.width < 44) tooSmall.push((b.id || b.className) + ' ' +
-        Math.round(r.width) + 'x' + Math.round(r.height));
+    [ptop, pbar].forEach(function (host) {
+      if (!host) return;
+      [].slice.call(host.querySelectorAll('button')).forEach(function (b) {
+        var r = b.getBoundingClientRect();
+        if (!r.width) return;
+        if (r.height < 44 || r.width < 44) tooSmall.push((b.id || b.className.split(' ')[0]) +
+          ' ' + Math.round(r.width) + 'x' + Math.round(r.height));
+      });
     });
-    ok('M8 the phone bar shows econ, wave, both HP, rush, skill and send',
-       !!bar && missing.length === 0 && tooSmall.length === 0,
-       !bar ? 'no #phone-bar on a phone-width viewport'
-            : (missing.length ? 'missing or zero-size: ' + missing.join(', ') : '') +
-              (tooSmall.length ? ' under the 44px thumb floor: ' + tooSmall.join(', ') : '') ||
-              (bar.querySelectorAll('.pb-btn').length + ' controls, all at least 44px, every readout present'));
+
+    ok('M8 stats on top, base and skill and units on the bottom, no pause or speed',
+       !!ptop && !!pbar && missing.length === 0 && gone.length === 0 && tooSmall.length === 0,
+       (!ptop || !pbar) ? 'phone bars missing at a phone width'
+         : ((missing.length ? 'missing: ' + missing.join(', ') + '. ' : '') +
+            (gone.length ? gone.join(', ') + '. ' : '') +
+            (tooSmall.length ? 'under the 44px thumb floor: ' + tooSmall.join(', ') : '')) ||
+           ('4 numbers and the wave chip on top, base + skill + units on the bottom, ' +
+            'pause and speed gone, every control at least 44px'));
 
     /* ---- M10 the bar is opaque, so its contrast does not depend on the
        board behind it ---------------------------------------------------- */
@@ -400,8 +434,8 @@
        Painting the panel over the opaque ground token fixed it. This asserts
        the property rather than the fix: composite the bar over white and over
        black and require the same pixel. */
-    var pbar = document.getElementById('phone-bar');
-    if (pbar) {
+    var opaqueTargets = [document.getElementById('phone-top'), document.getElementById('phone-bar')];
+    if (opaqueTargets[0] || opaqueTargets[1]) {
       var pcx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
       var over = function (under, top) {
         pcx.clearRect(0, 0, 1, 1);
@@ -410,20 +444,78 @@
         var d = pcx.getImageData(0, 0, 1, 1).data;
         return d[0] + ',' + d[1] + ',' + d[2];
       };
-      var pcs = getComputedStyle(pbar);
-      var onWhite = over('#ffffff', pcs.backgroundColor);
-      var onBlack = over('#000000', pcs.backgroundColor);
-      /* backgroundColor alone can be transparent when the opacity comes from a
-         background-image layer, which is exactly how this is built, so an
-         image layer counts as opaque cover too. */
-      var hasLayer = pcs.backgroundImage && pcs.backgroundImage !== 'none';
-      ok('M10 the phone bar does not let the board show through its text',
-         onWhite === onBlack || hasLayer,
-         onWhite === onBlack
-           ? 'the bar composites identically over white and black, so text contrast is fixed'
-           : (hasLayer ? 'opaque via a background layer over the ground token'
-                       : 'translucent: ' + onWhite + ' over white vs ' + onBlack + ' over black'));
+      var seeThrough = [];
+      opaqueTargets.filter(Boolean).forEach(function (el) {
+        var pcs = getComputedStyle(el);
+        var onWhite = over('#ffffff', pcs.backgroundColor);
+        var onBlack = over('#000000', pcs.backgroundColor);
+        /* backgroundColor alone can be transparent when the opacity comes from
+           a background-image layer, which is exactly how these are built, so a
+           layer counts as opaque cover too. */
+        var hasLayer = pcs.backgroundImage && pcs.backgroundImage !== 'none';
+        if (onWhite !== onBlack && !hasLayer)
+          seeThrough.push(el.id + ' ' + onWhite + ' over white vs ' + onBlack + ' over black');
+      });
+      ok('M10 neither phone bar lets the board show through its text',
+         seeThrough.length === 0,
+         seeThrough.length ? seeThrough.join('; ')
+           : 'both bars composite identically over white and black, so text contrast is fixed');
     }
+
+    /* ---- M11 a tower's radial carries its whole decision ---------------- */
+    /* Owner, Session 40: "to upgrade a tower individually, you click on it and
+       a radial menu with options pops up, similar to kingdom rush". Three
+       things can go wrong and each fails differently: the ring does not open,
+       it opens with the wrong actions, or it opens off the screen for a tower
+       near an edge. All three are checked, the last against the worst tower on
+       the board rather than a convenient one. */
+    var radialWhy = 'not attempted';
+    if (typeof Phone !== 'undefined' && Phone.on && typeof Game !== 'undefined') {
+      var rspot = null;
+      for (var ry = 0; ry < FIELD.rows && !rspot; ry++)
+        for (var rx = 0; rx < FIELD.cols && !rspot; rx++)
+          if (Game.canBuild(0, rx, ry, 1) && !Game.towerAt(rx, ry)) rspot = { gx: rx, gy: ry };
+      if (!rspot) radialWhy = 'no tile to build a test tower on';
+      else {
+        Game.sides[0].gold = 9999;
+        Game.build(0, 'bolt', rspot.gx, rspot.gy);
+        var rt = Game.towerAt(rspot.gx, rspot.gy);
+        if (!rt) radialWhy = 'the test tower did not build';
+        else if (!Phone.openRadial(rt)) radialWhy = 'openRadial refused a live friendly tower';
+        else {
+          var rbtns = [].slice.call(document.querySelectorAll('#phone-radial .pr-btn'));
+          var hasUp = rbtns.some(function (b) { return b.className.indexOf('up') >= 0; });
+          var hasSell = rbtns.some(function (b) { return b.className.indexOf('sell') >= 0; });
+          var tbR = document.getElementById('phone-top').getBoundingClientRect();
+          var bbR = document.getElementById('phone-bar').getBoundingClientRect();
+          var off = rbtns.filter(function (b) {
+            var r = b.getBoundingClientRect();
+            return r.left < 0 || r.right > window.innerWidth ||
+                   r.top < tbR.bottom - 1 || r.bottom > bbR.top + 1;
+          });
+          /* Stacked buttons are the failure the first cut of this shipped with:
+             a transitioned transform left every button at the ring origin. */
+          var seen = {}, stacked = 0;
+          rbtns.forEach(function (b) {
+            var r = b.getBoundingClientRect();
+            var k = Math.round(r.x) + ',' + Math.round(r.y);
+            if (seen[k]) stacked++; else seen[k] = 1;
+          });
+          radialWhy = !rbtns.length ? 'the ring opened empty'
+            : !hasUp ? 'no upgrade control in the ring'
+            : !hasSell ? 'no sell control in the ring'
+            : stacked ? stacked + ' buttons share a position, so the ring never spread'
+            : off.length ? off.length + ' of ' + rbtns.length + ' buttons are off screen or under a bar'
+            : 'ok:' + rbtns.length;
+          Phone.closeRadial();
+        }
+      }
+    } else radialWhy = 'Phone is not active at this width';
+    ok('M11 tapping a tower opens a radial with its upgrade and sell, all on screen',
+       radialWhy.indexOf('ok:') === 0,
+       radialWhy.indexOf('ok:') === 0
+         ? 'the ring opened with ' + radialWhy.slice(3) + ' controls, spread apart and all on screen'
+         : radialWhy);
 
     /* ---- M9 a tap on a tile places a tower, which is the whole point ---- */
     var placed = 'not attempted';

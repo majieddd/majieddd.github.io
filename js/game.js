@@ -5158,6 +5158,26 @@ const Game = {
     return { gx: Math.floor(p.x / TILE), gy: Math.floor(p.y / TILE) };
   },
 
+  /**
+   * Board pixels to CLIENT pixels: the exact forward of pointerToBoard above.
+   *
+   * Written here, beside its inverse, for the reason that function's own
+   * comment gives: "the one time these two disagreed the field rendered
+   * cropped and every pointer coordinate was offset". A second copy of this
+   * arithmetic living in a UI file is the same hazard with a longer fuse, so
+   * the phone radial anchors through this rather than re-deriving it.
+   *
+   * Returns null when the canvas has no size, matching pointerToBoard's own
+   * refusal to propagate a non-finite coordinate.
+   */
+  boardToClient(x, y) {
+    const r = this.canvas && this.canvas.getBoundingClientRect();
+    if (!r || !(r.width > 0) || !(r.height > 0)) return null;
+    const s = this.viewScale * this.camZoom();
+    const c = this.camClamped();
+    return { x: r.left + (x - c.x) * s, y: r.top + (y - c.y) * s, scale: s };
+  },
+
   /* ====================================================== RADIAL PLACEMENT */
 
   /**
@@ -5815,8 +5835,11 @@ const Game = {
          This runs last so it changes nothing about the selection above: it
          only opens the sheet that acts on it. */
       if (typeof Phone !== 'undefined' && Phone.on) {
-        if (existing) Phone.openInspector();
-        else if (this.canBuild(0, p.gx, p.gy, 1)) Phone.openBuildAt(p.gx, p.gy);
+        /* A tower gets its RADIAL, the Kingdom Rush ring the owner asked for
+           in Session 40: upgrade, specialise, targeting and sell, on the
+           tower, instead of a panel somewhere else on the screen. */
+        if (existing && existing.side === 0) Phone.openRadial(existing);
+        else if (!existing && this.canBuild(0, p.gx, p.gy, 1)) Phone.openBuildAt(p.gx, p.gy);
       }
     });
     cv.addEventListener('contextmenu', e => {
