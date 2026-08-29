@@ -707,6 +707,7 @@ var SH = (function () {
     'uniform sampler2D uColor;',
     'uniform sampler2D uBloom;',
     'uniform sampler2D uTooth;',
+    'uniform sampler2D uSceneDepth;',
     'uniform vec2 uRes;',
     'uniform float uTime;',
     'uniform float uBloomStrength;',
@@ -748,6 +749,16 @@ var SH = (function () {
     '    col = texture(uColor, uv).rgb;',
     '  }',
     '',
+    /* Is this pixel actual scene geometry, or the sky/void behind it? The sky
+       and unlit decals write a huge placeholder depth (1e5) into this same
+       attachment specifically so passes downstream can tell the difference.
+       Composite is where that distinction is needed most: the sky here is a
+       deep, near-black navy across most of the frame, and every effect below
+       that keys off raw darkness (halftone, canvas weave) would otherwise
+       read "empty space" as "surface in shadow" and paint it accordingly. */
+    '  float sceneDepth = texture(uSceneDepth, uv).a;',
+    '  float isScene = 1.0 - step(1000.0, sceneDepth);',
+    '',
     '  vec3 bloom = texture(uBloom, uv).rgb;',
     '  col += bloom * uBloomStrength;',
     '',
@@ -765,14 +776,25 @@ var SH = (function () {
        only where the image is already dark. Applying it everywhere is the
        classic mistake: it turns highlights into a moire mess and reads as a
        filter. Confined to the shadow mass it reads as the print process that
-       the style law actually asks for. */
+       the style law actually asks for.
+
+       "Dark" was being measured as raw luminance alone, with no notion of
+       WHAT is dark. The sky is a near-black navy across most of the frame,
+       comfortably under the 0.06 threshold, and it is not a shadow: it is
+       empty space with nothing casting anything onto it. Every dark pixel of
+       sky or void was getting the full dot screen, which reads as a fixed
+       field of debris sitting on the screen, because the dot grid is defined
+       in SCREEN space and the sky behind it does not move with the camera to
+       part company from it. isScene (from the depth this pass now also
+       samples) excludes anything that is not actual rendered geometry, so
+       the effect goes back to living only on shadowed surfaces. */
     '  if (uHalftone > 0.0){',
     '    float ang = 0.4363;',
     '    vec2 hp = vec2(uv.x * uRes.x, uv.y * uRes.y);',
     '    vec2 rp = vec2(hp.x * cos(ang) - hp.y * sin(ang), hp.x * sin(ang) + hp.y * cos(ang));',
     '    vec2 cell = fract(rp / 3.4) - 0.5;',
     '    float dotR = length(cell) * 2.0;',
-    '    float shadowMask = 1.0 - smoothstep(0.06, 0.42, lum);',
+    '    float shadowMask = (1.0 - smoothstep(0.06, 0.42, lum)) * isScene;',
     '    float screen = smoothstep(dotR - 0.35, dotR + 0.35, 0.35 + lum * 1.1);',
     '    col = mix(col, col * (0.62 + 0.38 * screen), shadowMask * uHalftone);',
     '  }',

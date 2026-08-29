@@ -1141,6 +1141,89 @@
     FX.clear();
   })();
 
+  /* ---------- T. screen-space effects respect the sky ----------
+     THE BUG THIS CATCHES: halftone's shadow mask was pure luminance,
+     `1.0 - smoothstep(0.06, 0.42, lum)`, with no notion of what was dark. The
+     sky is a near-black navy across most of the frame, comfortably under
+     0.06, and it is not a shadow: it is empty space with nothing casting
+     anything onto it. Every pixel of it got the full rotated dot screen
+     anyway. Because that dot grid is defined in SCREEN space while the sky
+     behind it does not track the camera, the player sees a field of dots that
+     sits still on the glass while the world turns under it, and there is no
+     word for that except a dirty lens or debris on the screen.
+
+     Reported directly: "There is currently an overlay on the screen that
+     doesn't move that looks like debris or dirty spots." Measured on the
+     live page before the fix: a pure-sky strip carried high-frequency energy
+     of 0.483, and turning halftone off dropped that to 0.305, a 37% share of
+     the sky's own local variance traced to a print effect with no print
+     surface under it.
+
+     The fix reads the same depth the ink pass already reads (the sky writes
+     a placeholder 1e5 there for exactly this reason) and gates the shadow
+     mask on actually being scene geometry. So the proof has two halves, and
+     either alone would hide a regression: the sky must stop moving with the
+     toggle, and real shadowed ground must not stop moving with it too, or
+     "fixed" would just mean "the effect is dead everywhere," the exact
+     failure class section S exists to catch. */
+  (function () {
+    var g = reset();
+    if (!GAME.renderOnce(1 / 60) || !('halftone' in R.ART)) {
+      ok('T.1 halftone respects the sky', true, 'no render or no halftone, skipped'); return;
+    }
+    var gl = R.gl, grainWas = R.ART.grain, haloWas = R.ART.halftone;
+    R.ART.grain = 0;
+    if (!(haloWas > 0)) haloWas = R.ART.halftone = 0.62;
+
+    function hf(x0, y0, cw, ch) {
+      GAME.renderOnce(0);
+      if (cw < 8 || ch < 8) return null;
+      var buf = new Uint8Array(cw * ch * 4);
+      gl.readPixels(x0, y0, cw, ch, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+      var n = cw * ch, lum = new Float32Array(n);
+      for (var i = 0; i < n; i++) lum[i] = 0.2126 * buf[i * 4] + 0.7152 * buf[i * 4 + 1] + 0.0722 * buf[i * 4 + 2];
+      var acc = 0, m = 0;
+      for (var y = 1; y < ch - 1; y++) for (var x = 1; x < cw - 1; x++) {
+        var k = y * cw + x;
+        var nb = (lum[k - 1] + lum[k + 1] + lum[k - cw] + lum[k + cw]) * 0.25;
+        acc += Math.abs(lum[k] - nb); m++;
+      }
+      return acc / m;
+    }
+
+    var W = gl.drawingBufferWidth, H = gl.drawingBufferHeight;
+    if (!(W > 40 && H > 40)) { R.ART.grain = grainWas; R.ART.halftone = haloWas; ok('T.1 halftone respects the sky', true, 'buffer too small, skipped'); return; }
+
+    /* A thin strip right at the TOP edge of the frame. At this project's
+       default framing (camera pitched down over the board) that band is sky
+       on every board this game ships, tall spires included: the board itself
+       never reaches the top few percent of the frame. */
+    var skyY0 = Math.floor(H * 0.94), skyH = Math.max(8, Math.floor(H * 0.05));
+    var skyX0 = Math.floor(W * 0.08), skyW = Math.floor(W * 0.84);
+
+    R.ART.halftone = 0; var skyOff = hf(skyX0, skyY0, skyW, skyH);
+    R.ART.halftone = haloWas; var skyOn = hf(skyX0, skyY0, skyW, skyH);
+    var skyDelta = Math.abs(skyOn - skyOff);
+
+    ok('T.1 halftone does not touch the sky', skyDelta < 0.03,
+      'sky high-frequency energy moved ' + skyDelta.toFixed(4) + ' with the toggle (off ' +
+      skyOff.toFixed(4) + ', on ' + skyOn.toFixed(4) + ')');
+
+    /* The whole frame minus that same sky strip: mostly ground, largely lit,
+       but with real shadow under every spire and every placed tower. If the
+       fix for T.1 were "stop halftone from doing anything," this would read
+       zero too, and that failure is exactly what section S is for. */
+    R.ART.halftone = 0; var sceneOff = hf(0, 0, W, skyY0);
+    R.ART.halftone = haloWas; var sceneOn = hf(0, 0, W, skyY0);
+    var sceneDelta = sceneOn - sceneOff;
+
+    ok('T.2 halftone still marks real shadow', sceneDelta > 0.05,
+      'scene high-frequency energy moved ' + sceneDelta.toFixed(4) + ' with the toggle (off ' +
+      sceneOff.toFixed(4) + ', on ' + sceneOn.toFixed(4) + ')');
+
+    R.ART.grain = grainWas; R.ART.halftone = haloWas;
+  })();
+
   /* ---------- W. feet stay planted ----------
      THE definitive measure of walk quality, and the one the eye notices even
      when it cannot name it. In a correct gait at least one foot is in stance

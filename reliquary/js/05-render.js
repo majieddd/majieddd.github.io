@@ -813,6 +813,12 @@ var R = (function () {
     p.tex('uColor', 0, rt.ink.textures[0]);
     p.tex('uBloom', 1, quality.bloom ? rt.blurB.textures[0] : rt.bright.textures[0]);
     p.tex('uTooth', 2, toothTex);
+    /* Same normal+depth attachment the ink pass already reads, so halftone
+       can tell actual geometry from sky/void and stop stamping a dot screen
+       onto empty space. rt.main still holds it here: composite runs after
+       the particle pass, which detaches and reattaches this exact texture on
+       rt.main's OWN framebuffer and always restores it before returning. */
+    p.tex('uSceneDepth', 3, rt.main.textures[1]);
     p.u2f('uRes', W, H);
     p.u1f('uTime', time);
     p.u1f('uBloomStrength', quality.bloom ? ART.bloomStrength : 0.0);

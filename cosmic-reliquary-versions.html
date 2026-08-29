@@ -78,9 +78,24 @@ h1 .thin{font-weight:300; color:var(--text-dim)}
   </div>
 
   <a class="v" href="cosmic-reliquary-v1.3.html">
-    <div class="vh"><span class="tag">LATEST</span><span class="tag fix">FIXED</span><span class="vn">v1.3  Shading, shadows, dead features, and a mote colour bug</span></div>
+    <div class="vh"><span class="tag">LATEST</span><span class="tag fix">FIXED</span><span class="vn">v1.3  Shading, shadows, dead features, and two post-ship colour bugs</span></div>
     <div class="vd">
       <ul>
+        <li><strong>Fixed after ship: a dot screen sat on the screen, not on the scene.</strong>
+        Halftone's shadow mask was raw luminance alone: any pixel darker than a threshold got
+        the rotated dot pattern, with no notion of what was actually dark. The sky is a
+        near-black navy across most of the frame, comfortably under that threshold, and it is
+        not a shadow, it is empty space with nothing casting anything onto it. Because the dot
+        grid is defined in screen space while the sky behind it does not track the camera, every
+        dark pixel of sky got the full dot screen, and the player sees exactly what was
+        reported: an overlay that does not move, reading as debris or dirt on the glass rather
+        than as paint on the board. The fix reads the same depth the ink pass already reads (the
+        sky writes a placeholder value there for exactly this reason) and gates the effect on
+        actually being scene geometry. Measured on the live page: turning halftone on and off
+        used to move a pure-sky strip's local contrast by 0.18; after the fix that same toggle
+        moves it by under 0.006, while a genuinely shadowed patch of ground still moves by over
+        0.05, proving the fix removed the dots from the sky without quietly disabling the effect
+        everywhere.</li>
         <li><strong>Fixed after ship: ambient dust was painting the whole board.</strong>
         The dust motes read <code>palette.key</code>, the hex STRING kept on the palette for CSS
         ("#38e8ff"), instead of <code>palette.keyRgb</code>, the 0..1 array. Indexing a string
@@ -117,7 +132,7 @@ h1 .thin{font-weight:300; color:var(--text-dim)}
         deals damage. Found VAULT shipping a NaN in its own stat block, fixed the same way.</li>
       </ul>
     </div>
-    <div class="meta">153 checks green</div>
+    <div class="meta">155 checks green</div>
   </a>
 
   <a class="v" href="cosmic-reliquary-v1.2.html">
