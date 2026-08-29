@@ -1018,6 +1018,8 @@ function sideRgba(side, alpha) {
    labels, not canon join keys: grep confirms no other site references them.
 -------------------------------------------------------------------------- */
 const LORE_CODEX = [
+  { id: 'pattern', title: 'What The Files Agreed On',
+    body: 'The Disclosure did not release one file. It released decades of them, and every agency had reached the same place without comparing notes first. A Bureau case opened in 1947 stayed open for twenty-one years and was never closed, only shelved. Navy operators filed the same "round, cold object" against the same abrupt turns, call after call, under a report form named for the range it kept fouling. A French defence institute reached the identical conclusion in 1999 and was thanked and ignored. Nobody needed to be told twice. They had all already written it down.' },
   /* CANON 2029 (docs/CANON-2029.md). The 2099 Sol Gate premise is retired:
      the game begins April 13, 2029, the day Apophis was supposed to land.
      Same contract as ever: {id, title, body}, plain strings, and the Field
