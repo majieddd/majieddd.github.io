@@ -556,6 +556,51 @@ BEATS = [
           'new hand'),
 ]
 
+# BEAT 5 HAS TWO ENDINGS, and which one a world gets is a story fact.
+#
+# docs/GALAXY-SCOPE-S42.md section 6, owner note: the flag going in is right
+# for MOST worlds, and some should be "a commander at a distance watching it
+# happen and asking whether this was the thing to do". The rule stated there
+# is the SEAT world of each act, which lands at exactly five reflective plates
+# per campaign against thirty planted ones. That is the ratio the owner asked
+# for and it is also the ratio that keeps the planted flag meaning something:
+# a doubt shown on every world is not doubt, it is a house style.
+#
+# The seat is the LAST world of every system (js/galaxy.js says so and sets
+# `seat` on it), so the test is the world index and it needs no new data.
+#
+# THE FIGURE IS ALREADY WRITTEN, and the first cut of this got it wrong.
+#
+# All five seat `order` lines were authored with the watcher in them already
+# ("one small figure alone on a gantry far below watching it turn", "one
+# captain high on a catwalk watching the banner go up without them"). That is
+# what the tracker meant by drafted-but-not-wired: the WRITING landed and only
+# the template never changed, so beat 5 kept appending "under {mark}" and
+# planted a flag over the top of a scene about not celebrating.
+#
+# So this template adds NO new subject. It drops {mark} and describes the
+# figure the order line already put there. The first version introduced a
+# second one and Saturn came out with two watchers, caught by reading the
+# assembled prompt rather than the template.
+#
+# WATCHER is an APPEARANCE phrase, never a noun phrase that could read as
+# another person: it exists so the plate is recognisably its own faction
+# within the first half second, which ART-BIBLE section 2 requires of every
+# beat. Same no-lettering discipline as MARK and FORCE above.
+SEAT_WI = 6
+
+WATCHER = {
+    'human':  'in a sealed human pressure suit with a plain unmarked shoulder flash, back to the viewer',
+    'light':  'a tall luminous Federation warden of the contact species, wings folded, head lowered',
+    'xeno':   'a towering chitinous xeno matriarch, utterly still',
+    'pirate': 'a scarred pirate captain in a heavy coat, one hand on the rail',
+    'robot':  'a chrome automaton, single optic lit, entirely motionless',
+}
+
+WATCHER_BEAT_5 = ('{order}. That lone figure is {watcher}, turned away from the work and not '
+                  'celebrating it. Wide cinematic composition seen from a distance and from '
+                  'above, the figure small against the view, the mood unresolved')
+
 # THE ONE PLACE A NEUTRAL ART LINE IS NOT NEUTRAL.
 #
 # `after` and `order` are written once per world, and beats 4 and 5 use them
@@ -623,9 +668,14 @@ def planet_jobs(palette, style):
         wk = world_key(si, wi)
         for fac in FACTIONS:
             fields = dict(fleet=FLEET[fac], force=FORCE[fac], mark=MARK[fac],
+                          watcher=WATCHER[fac],
                           sky=sky, site=site, works=works, after=after,
                           order=ORDER_OVERRIDE.get((wk, fac), order))
             for suffix, template in BEATS:
+                # The seat world of every act closes on the watcher instead of
+                # the planted flag. See the WATCHER note above.
+                if suffix == '5' and wi == SEAT_WI:
+                    template = WATCHER_BEAT_5
                 subject = template.format(**fields)
                 jobs.append((
                     'pcut_%s_%s_%s' % (wk, fac, suffix),

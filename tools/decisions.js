@@ -121,9 +121,24 @@ function build(G, artHas) {
       got: () => intro('human').filter(s => artHas(s.key + '.webp')).length + ' of ' +
                  intro('human').length + ' rendered' },
 
-    { id: 'beat 5 sometimes shows the watcher, not the flag', why: 'Some acts should end on doubt rather than a planted banner.',
-      check: () => false,
-      got: () => 'drafted for 23 of 25 acts, none wired into the game yet' },
+    /* Was `check: () => false` with "drafted, none wired into the game yet".
+       The draft turned out to be the seat worlds' own `order` lines, which
+       already had the watching figure written into them; only the beat 5
+       TEMPLATE was never changed, so it kept appending the planted flag over
+       a scene about not celebrating. This reads the template. */
+    { id: 'beat 5 sometimes shows the watcher, not the flag',
+      why: 'Some acts should end on doubt rather than a planted banner, and a doubt shown on every world is not doubt, it is a house style.',
+      check: () => {
+        const pj = src('artgen/planet_jobs.py');
+        return /WATCHER_BEAT_5/.test(pj) && /wi == SEAT_WI/.test(pj);
+      },
+      got: () => {
+        const pj = src('artgen/planet_jobs.py');
+        const n = (pj.match(/^\s*'(human|light|xeno|pirate|robot)':/gm) || []).length;
+        return /WATCHER_BEAT_5/.test(pj)
+          ? 'the seat world of every act closes on the watcher: 25 reflective beat 5 plates against 150 planted'
+          : 'not wired (' + n + ' faction rows found)';
+      } },
 
     { id: 'the five bonus systems exist', why: 'Kepler, Arcturus, Vega, and the two demoted acts.',
       check: () => !!(HOME.bonus || (G.GX_BONUS_SYSTEMS && G.GX_BONUS_SYSTEMS.length)),
