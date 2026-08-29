@@ -482,9 +482,34 @@ function index() {
   w('<p class="sub">Where this is up to. Rows marked <b style="color:#6ee7a0">IN</b> are ' +
     'verified against the code on every rebuild. Rows marked <b style="color:#ffd89b">TODO</b> ' +
     'are the work queue, in the order I would take it.</p>');
+  /* LIVE, from the same cache_krea/.stale.json every other freshness row on
+     this page reads. This row's own text used to be the frozen count from
+     the commit that added it ("502 of 875 ... Earth 150, Pleiades 5"), which
+     was accurate for exactly one build and wrong for every one after: Earth
+     and Pleiades finished hours ago and the row still said 150 and 5. A
+     number written into prose at commit time is a snapshot pretending to be
+     a measurement; recomputing it here is the same fix CO.11 and the
+     Proxima/Sirius row already got. */
+  const staleBySys = (() => {
+    const names = ['Earth', 'Pleiades', 'Zeta', 'Proxima', 'Sirius'];
+    if (!STALE_SET) return null;
+    const n = names.map((_, si) => {
+      let c = 0;
+      for (let wi = 0; wi < 7; wi++)
+        for (const f of FACS)
+          for (let b = 1; b <= 5; b++)
+            if (STALE_SET.has('pcut_' + si + wi + '_' + f + '_' + b)) c++;
+      return c;
+    });
+    return { total: n.reduce((a, b) => a + b, 0), byName: names.map((nm, i) => nm + ' ' + n[i]) };
+  })();
   const TODO = [
     ['TODO', 'Re-render the planet plates whose prompts moved',
-     'Counted rather than estimated, by diffing the prompt catalogue against the revision that produced the cache: 502 of 875 are stale and 373 are provably unchanged. By system: Earth 150, Pleiades 5, Zeta 4, Proxima 169, Sirius 174. The Proxima and Sirius figures are the old "350 Barnard and Tabby panels" row, measured. `node artgen/krea_gen.py --stale` prints the live number.'],
+     staleBySys
+       ? ('Counted from cache_krea/.stale.json, which artgen/krea_gen.py rewrites on every run: ' +
+          staleBySys.total + ' of 875 plates do not yet match the current catalogue. By system: ' +
+          staleBySys.byName.join(', ') + '. `node artgen/krea_gen.py --stale` prints the same number.')
+       : 'No artgen run on this machine yet, so this cannot be measured here. `node artgen/krea_gen.py --stale` prints it once one has.'],
     ['TODO', 'Re-baseline the balance pins IN A BROWSER',
      'Verified headlessly that no existing stat moved: 54 bodies unchanged, 15 added, 0 removed. But PINS is window.PINS and this project compares pins only inside one page session, so the A/B still needs a live build. See docs/BALANCE-BASELINE.md.'],
     ['LORE', 'The five bonus systems stay lore, by decision',
