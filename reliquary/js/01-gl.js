@@ -186,6 +186,33 @@ var GL = (function () {
     gl.enableVertexAttribArray(ATTR.aux);
     gl.vertexAttribPointer(ATTR.aux, 3, gl.FLOAT, false, stride, 9 * 4);
 
+    /* BOUNDING SPHERE, computed once at build time. Frustum culling needs a
+       cheap conservative volume per mesh, and the vertex data is right here and
+       never read again after the upload, so this is the only place where the
+       cost can be paid once rather than every frame. Centre of the AABB rather
+       than the centroid, because the radius is measured from it and the two
+       have to agree for the sphere to be as tight as an axis-aligned pass can
+       make it. */
+    var bMin0 = Infinity, bMin1 = Infinity, bMin2 = Infinity;
+    var bMax0 = -Infinity, bMax1 = -Infinity, bMax2 = -Infinity;
+    for (var vi = 0; vi < data.verts.length; vi += 12) {
+      var x = data.verts[vi], y = data.verts[vi + 1], z = data.verts[vi + 2];
+      if (x < bMin0) bMin0 = x; if (x > bMax0) bMax0 = x;
+      if (y < bMin1) bMin1 = y; if (y > bMax1) bMax1 = y;
+      if (z < bMin2) bMin2 = z; if (z > bMax2) bMax2 = z;
+    }
+    var bcx = 0, bcy = 0, bcz = 0, brad = 0;
+    if (isFinite(bMin0)) {
+      bcx = (bMin0 + bMax0) * 0.5; bcy = (bMin1 + bMax1) * 0.5; bcz = (bMin2 + bMax2) * 0.5;
+      var best = 0;
+      for (var vj = 0; vj < data.verts.length; vj += 12) {
+        var dx = data.verts[vj] - bcx, dy = data.verts[vj + 1] - bcy, dz = data.verts[vj + 2] - bcz;
+        var d2 = dx * dx + dy * dy + dz * dz;
+        if (d2 > best) best = d2;
+      }
+      brad = Math.sqrt(best);
+    }
+
     _live.mesh++;
     var ibo = null, count = 0, type = gl.UNSIGNED_SHORT;
     if (data.index) {
@@ -202,6 +229,7 @@ var GL = (function () {
     return {
       vao: vao, vbo: vbo, ibo: ibo, count: count, type: type,
       bounds: data.bounds || null,
+      bcx: bcx, bcy: bcy, bcz: bcz, radius: brad,
       draw: function () {
         gl.bindVertexArray(vao);
         if (ibo) gl.drawElements(gl.TRIANGLES, count, type, 0);

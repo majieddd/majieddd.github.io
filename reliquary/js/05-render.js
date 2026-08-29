@@ -184,6 +184,11 @@ var R = (function () {
        behind it. Too small and the hard intersection line survives; too large
        and smoke dissolves before it reaches the ground it is supposed to be
        rolling along. */
+    /* Frustum culling on or off. A switch, not a tuning knob: it exists so a
+       harness can render the same frame both ways and prove the optimisation
+       changes the draw count and not the picture. An optimisation that alters
+       what is on screen is not an optimisation. */
+    cull: 1,
     particleSoftness: 1.35,
     inkStrength: 0.95,
     inkNormalThreshold: 0.55,
@@ -204,9 +209,82 @@ var R = (function () {
 
   /* Per-frame counters. "It feels slow" is not actionable; a draw-call count
      and a per-pass millisecond split is. */
-  var prof = { draws: 0, shadowDraws: 0, tris: 0, ms: {}, on: false };
-  function markStart(k) { if (prof.on) prof.ms['_' + k] = U.nowMs(); }
-  function markEnd(k) { if (prof.on) prof.ms[k] = U.nowMs() - prof.ms['_' + k]; }
+  var prof = { draws: 0, shadowDraws: 0, culled: 0, culledShadow: 0, tris: 0, ms: {}, on: false };
+  /* PROFILING FORCES A SYNC, and it has to. GL calls only queue work, so
+     timing a pass by wall clock around its submission measures how long the
+     driver took to accept commands and nothing about how long they take to
+     run. The numbers that produced were not merely imprecise, they were
+     incoherent: one build reported the opaque pass rising from 35.1ms to
+     218.2ms while the total frame time it is part of moved 14.57 to 15.32.
+     gl.finish() drains the queue so each figure covers real work. It is a
+     heavy hammer and it is only ever swung when profiling is explicitly
+     switched on, which nothing in the game does. */
+  function markStart(k) { if (prof.on) { gl.finish(); prof.ms['_' + k] = U.nowMs(); } }
+  function markEnd(k) { if (prof.on) { gl.finish(); prof.ms[k] = U.nowMs() - prof.ms['_' + k]; } }
+
+  /* ---------- frustum culling ----------
+     Every mesh pushed used to be drawn, visible or not. On a board whose half
+     extents are 47.8 by 35.0 with a camera that zooms right in, that means
+     paying full vertex and shadow cost for geometry nowhere near the screen.
+
+     Gribb and Hartmann plane extraction: the six clip planes fall straight out
+     of the rows of the view-projection matrix, so there is nothing to maintain
+     and nothing that can drift out of sync with the camera. Each item is then
+     one dot product per plane against its bounding sphere.
+
+     CONSERVATIVE ON PURPOSE. A sphere around an axis-aligned box around the
+     mesh is loose, and a uniform-scale radius is looser still. Culling too
+     little costs a draw call; culling too much drops geometry the player can
+     see, and that is not a performance bug, it is a rendering bug. When the
+     two are in tension this errs toward drawing. */
+  var frustum = new Float32Array(24);
+  var lightFrustum = new Float32Array(24);
+
+  function extractFrustum(m, out) {
+    /* Column-major m, rows of the matrix are m[i], m[i+4], m[i+8], m[i+12]. */
+    var i, sign, o;
+    for (i = 0; i < 6; i++) {
+      var row = i >> 1;              /* 0 = x, 1 = y, 2 = z */
+      sign = (i & 1) ? -1 : 1;       /* left/right, bottom/top, near/far */
+      o = i * 4;
+      out[o]     = m[3]  + sign * m[row];
+      out[o + 1] = m[7]  + sign * m[row + 4];
+      out[o + 2] = m[11] + sign * m[row + 8];
+      out[o + 3] = m[15] + sign * m[row + 12];
+      var len = Math.sqrt(out[o] * out[o] + out[o + 1] * out[o + 1] + out[o + 2] * out[o + 2]);
+      if (len > 1e-8) { out[o] /= len; out[o + 1] /= len; out[o + 2] /= len; out[o + 3] /= len; }
+    }
+  }
+
+  /* World-space centre and radius of an item's mesh, under its model matrix.
+     Radius is scaled by the LARGEST axis scale, which is the only choice that
+     stays conservative under a non-uniform scale. */
+  function itemSphere(it, out) {
+    var m = it.model, ms = it.mesh;
+    if (!ms || !(ms.radius > 0)) return false;
+    var cx = ms.bcx, cy = ms.bcy, cz = ms.bcz;
+    out[0] = m[0] * cx + m[4] * cy + m[8] * cz + m[12];
+    out[1] = m[1] * cx + m[5] * cy + m[9] * cz + m[13];
+    out[2] = m[2] * cx + m[6] * cy + m[10] * cz + m[14];
+    var s0 = m[0] * m[0] + m[1] * m[1] + m[2] * m[2];
+    var s1 = m[4] * m[4] + m[5] * m[5] + m[6] * m[6];
+    var s2 = m[8] * m[8] + m[9] * m[9] + m[10] * m[10];
+    var sc = Math.sqrt(Math.max(s0, Math.max(s1, s2)));
+    /* The explode effect pushes facets outward along their normals, so a mesh
+       mid-shatter occupies far more space than its build-time bounds. */
+    out[3] = ms.radius * sc + (it.explode || 0) * 2.0 + 0.05;
+    return true;
+  }
+
+  var tmpSphere = new Float32Array(4);
+
+  function sphereInFrustum(planes, sx, sy, sz, r) {
+    for (var i = 0; i < 6; i++) {
+      var o = i * 4;
+      if (planes[o] * sx + planes[o + 1] * sy + planes[o + 2] * sz + planes[o + 3] < -r) return false;
+    }
+    return true;
+  }
 
   var WHITE3 = [1, 1, 1];
   var view = U.m4ident(), proj = U.m4ident(), viewProj = U.m4ident();
@@ -496,9 +574,19 @@ var R = (function () {
 
     var p = prog.shadow.use();
     p.um4('uLightVP', lightVP);
+    extractFrustum(lightVP, lightFrustum);
     for (var i = 0; i < opaqueN; i++) {
       var it = opaque[i];
       if (!it.castShadow) continue;
+      /* Against the LIGHT's frustum, not the camera's: an object off screen can
+         still cast a shadow onto something on screen, so reusing the camera
+         planes here would delete exactly the shadows that matter at the edge
+         of the view. */
+      if (ART.cull && itemSphere(it, tmpSphere) &&
+          !sphereInFrustum(lightFrustum, tmpSphere[0], tmpSphere[1], tmpSphere[2], tmpSphere[3])) {
+        prof.culledShadow++;
+        continue;
+      }
       p.um4('uModel', it.model);
       p.u1f('uExplode', it.explode);
       it.mesh.draw();
@@ -571,6 +659,11 @@ var R = (function () {
 
     for (var i = 0; i < opaqueN; i++) {
       var it = opaque[i];
+      if (ART.cull && itemSphere(it, tmpSphere) &&
+          !sphereInFrustum(frustum, tmpSphere[0], tmpSphere[1], tmpSphere[2], tmpSphere[3])) {
+        prof.culled++;
+        continue;
+      }
       p.um4('uModel', it.model);
       U.m3normalFromM4(it.model, tmpN);
       p.um3('uNormalMat', tmpN);
@@ -746,9 +839,10 @@ var R = (function () {
   function render(dt) {
     if (!gl || !rt.main) return;
     try {
-      prof.draws = 0; prof.shadowDraws = 0;
+      prof.draws = 0; prof.shadowDraws = 0; prof.culled = 0; prof.culledShadow = 0;
       time += dt;
       buildMatrices(dt);
+      extractFrustum(viewProj, frustum);
       markStart('shadow'); shadowPass(); markEnd('shadow');
 
       rt.main.bind();
@@ -831,6 +925,7 @@ var R = (function () {
     adaptive: adapt,
     stats: function () {
       return { draws: prof.draws, shadowDraws: prof.shadowDraws,
+        culled: prof.culled, culledShadow: prof.culledShadow,
                opaqueItems: opaqueN, transparentItems: transparentN,
                particles: particleN, ms: prof.ms };
     },

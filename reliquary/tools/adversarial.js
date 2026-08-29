@@ -990,6 +990,90 @@
     FX.clear();
   })();
 
+  /* ---------- C. frustum culling is both effective and safe ----------
+     An optimisation needs two proofs and neither is worth anything alone. That
+     it removes work: a cull that never fires is a dead feature wearing the
+     costume of a fast one, and this project has already shipped two of those.
+     That it removes only invisible work: a cull that drops geometry the player
+     can see is not a fast renderer, it is a broken one, and it will look like
+     a fast renderer in every benchmark.
+
+     So the same frame is rendered twice, once with culling and once without,
+     and the two images are compared pixel for pixel. */
+  (function () {
+    var g = reset();
+    if (!GAME.renderOnce(1 / 60) || !('cull' in R.ART)) {
+      ok('C.1 culling is measurable', true, 'no render or no toggle, skipped'); return;
+    }
+    /* FILL THE BOARD FIRST. An empty board draws five things, and a cull that
+       removes two of five proves nothing about a cull that has to remove
+       eighty of a hundred and ten. The first version of this check tested the
+       default reset state and failed for exactly that reason. */
+    g.gold = 999999;
+    var order = DATA.TOWER_ORDER;
+    g.board.plots.forEach(function (pl, i) { SIM.place(pl.id, order[i % order.length]); });
+    for (var q = 0; q < 8; q++) { SIM.spawnDenizen('chitling', { dist: 6 + q * 5 }); }
+    for (var r = 0; r < 30; r++) SIM.step(1 / 60);
+    var gl = R.gl, grainWas = R.ART.grain;
+    R.ART.grain = 0;
+
+    function snap() {
+      GAME.renderOnce(0);
+      var W = gl.drawingBufferWidth, H = gl.drawingBufferHeight;
+      var b = new Uint8Array(W * H * 4);
+      gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, b);
+      var n = W * H, L = new Float32Array(n);
+      for (var i = 0; i < n; i++) L[i] = 0.2126 * b[i * 4] + 0.7152 * b[i * 4 + 1] + 0.0722 * b[i * 4 + 2];
+      return { L: L, st: R.stats() };
+    }
+    function compare() {
+      R.ART.cull = 0; var off = snap();
+      R.ART.cull = 1; var on = snap();
+      var worst = 0, over = 0;
+      for (var i = 0; i < off.L.length; i++) {
+        var d = Math.abs(off.L[i] - on.L[i]);
+        if (d > worst) worst = d;
+        if (d > 2) over++;
+      }
+      return { off: off.st, on: on.st, worst: worst, over: over, px: off.L.length };
+    }
+
+    /* Zoomed right in, which is where culling has something to do and also
+       where a wrong cull is most obvious: at this distance most of the board
+       is off screen but the part that remains fills the frame. */
+    var cam = GAME.cam;
+    cam.targetDist = cam.dist = 30;
+    cam.targetPitch = cam.pitch = 0.60;
+    for (var w = 0; w < 10; w++) GAME.renderOnce(1 / 60);
+    var z = compare();
+
+    /* MEASURED, on a board with a tower on every plot and a wave walking:
+       196 draws becomes 122, so 74 items are cut. A sparser board zoomed to
+       the same distance cuts harder, 110 to 25, because fewer of the things
+       that remain are near the camera. The threshold is set from the DENSER
+       case, which is both the pessimistic one and the one that matters, since
+       a full board is when frame time is under the most pressure. */
+    ok('C.1 culling removes work when zoomed in', z.on.draws < z.off.draws * 0.75,
+      z.off.draws + ' draws becomes ' + z.on.draws + ' (' + z.on.culled + ' culled)');
+
+    /* THE SAFETY PROOF. Not "looks the same": zero pixels may differ by more
+       than two levels, which is the noise the renderer produces between two
+       identical frames anyway. */
+    ok('C.2 culling changes nothing on screen', z.over === 0 && z.worst < 3.0,
+      z.over + ' of ' + z.px + ' pixels differ by more than 2, worst ' + z.worst.toFixed(1));
+
+    /* And it must not fire when the whole board is in view, or the sphere test
+       is too tight and is trimming things at the edge of the frame. */
+    GAME.__fitCamera && GAME.__fitCamera();
+    for (var v = 0; v < 10; v++) GAME.renderOnce(1 / 60);
+    var f = compare();
+    ok('C.3 nothing is culled when the whole board is in view', f.on.culled === 0 && f.over === 0,
+      f.on.culled + ' culled, ' + f.over + ' pixels changed');
+
+    R.ART.cull = 1;
+    R.ART.grain = grainWas;
+  })();
+
   /* ---------- W. feet stay planted ----------
      THE definitive measure of walk quality, and the one the eye notices even
      when it cannot name it. In a correct gait at least one foot is in stance

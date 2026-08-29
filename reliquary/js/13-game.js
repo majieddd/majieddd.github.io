@@ -1014,6 +1014,9 @@ var GAME = (function () {
     get paused() { return paused; },
     set paused(v) { paused = v; },
     cam: cam, input: input, stats: stats,
+    /* Read by the culling gate, which has to restore the default framing
+       after zooming in to check that nothing is trimmed at full view. */
+    __fitCamera: function () { fitCamera(false); },
     errors: function () { return errors.slice(); }
   };
 })();
