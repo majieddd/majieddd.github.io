@@ -23,7 +23,7 @@ for (const f of ['config', 'lore', 'factions', 'towers2', 'roster', 'story',
 
 const G = vm.runInContext('({ STORY, STORY_ACTS, ACT_SCENARIOS, ACT_MORALS, CUTSCENES, ' +
   'PLANET_CUTS, PLANET_MOMENTS, GX_HOME_SYSTEMS, FACTIONS, COMMANDER_ROSTER, ' +
-  'LORE_CODEX, UNIT_TYPES, DIALOGUE, LORE, BOONS })', ctx);
+  'LORE_CODEX, UNIT_TYPES, DIALOGUE, LORE, BOONS, SCENARIOS })', ctx);
 const FACS = ['human', 'light', 'xeno', 'pirate', 'robot'];
 
 /* Every string a player can read, with where it came from. */
@@ -68,6 +68,7 @@ Object.values(G.FACTIONS || {}).forEach(f => {
   add('faction/' + f.id + '/tagline', f.tagline);
   add('faction/' + f.id + '/blurb', f.blurb);
 });
+(G.SCENARIOS || []).forEach(s => add('scenario/' + (s.id || s.name), s.flavor));
 Object.entries((G.DIALOGUE && G.DIALOGUE.openers) || {}).forEach(([id, t]) => add('dialogue/opener/' + id, t));
 Object.entries((G.DIALOGUE && G.DIALOGUE.answers) || {}).forEach(([id, t]) => add('dialogue/answer/' + id, t));
 Object.entries((G.DIALOGUE && G.DIALOGUE.stanceAnswers) || {}).forEach(([fac, byStance]) =>
