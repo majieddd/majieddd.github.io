@@ -50,8 +50,8 @@
    fortress-ring. They are authored here, in LORE.maps shape and LORE.maps
    voice, and selfCheck() proves the coverage rather than asserting it.
 
-   THE PREMISE THE SEVEN ARE WRITTEN AGAINST. It is 2099, after the Severance
-   and after the Disclosure Fracture. Nothing a commander fights on is a
+   THE PREMISE THE SEVEN ARE WRITTEN AGAINST. It is 2029, after the Disclosure
+   of September 2028 and the intercept that followed it. Nothing a commander fights on is a
    natural landform. Every board is jurisdiction infrastructure that was built
    to do a job, stopped doing it, and is still shaped like the job. So every
    site record here splits in two: what the site was FOR, and what that same
@@ -80,7 +80,7 @@
     spiral: {
       id: 'spiral', name: 'Vortex Reach',
       classification: 'Inward transit winding',
-      canon: 'A Lattice approach spiral built so no inbound convoy reached the centre without passing the same inspection ring three times.',
+      canon: 'An approach spiral built so no inbound convoy reached the centre without passing the same inspection ring three times.',
       functionThen: 'Graduated customs. The winding existed so that arriving cargo was counted at every ring rather than once at the door, and the cut back out was the release lane for anything already cleared.',
       conflictNow: 'The inspection rings are gone and the geometry is not. Everything that walks in walks the whole winding, and the release lane crosses every ring it just wound, so one good position answers four passes and a bad one answers none.'
     },
@@ -232,7 +232,7 @@
   var SITE_SPLIT = {
 
     spine: {
-      functionThen: 'Survey trunk. One straight Lattice backbone with clear shoulders, kept open so a jurisdiction could be walked end to end and verified by eye rather than by filing.',
+      functionThen: 'Survey trunk. One straight transit backbone with clear shoulders, kept open so a jurisdiction could be walked end to end and verified by eye rather than by filing.',
       conflictNow: 'The shoulders that made it easy to inspect make it easy to hold. Every tile sees the lane at least twice, which is why it is where new commanders are taught: the ground hides nothing and forgives nothing.'
     },
     delta: {
@@ -380,8 +380,8 @@
       'The Constellation runs it as a waystation. Everything moves through here, which is exactly the argument for and against it.'
     ],
     robot: [
-      'A Vigil work site: the automatons execute their standing tasks here, and the tasks stopped matching the recovered directives long ago.',
-      'The Vigil holds it and maintains it perfectly, for a purpose no recovered archive can produce.'
+      'A Continuance work site: the automatons execute their standing tasks here, and the tasks stopped matching the recovered directives long ago.',
+      'The Parallel holds it and maintains it perfectly, for a purpose no recovered archive can produce.'
     ]
   };
 

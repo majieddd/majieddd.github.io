@@ -122,7 +122,7 @@ const AW_REFRAME = {
      words, and the authenticity claim is attached to the paperwork rather
      than to the sighting, which is what the grade actually means. */
   'AW-01': {
-    premise: 'A Blue Book residual acquires meaning only once a Lattice coordinate frame is recovered. The file is a genuine record of a report. The coordinate reading laid over it is invented for this war, not a finding about the file.'
+    premise: 'A Blue Book residual acquires meaning only once an aperture coordinate frame is recovered. The file is a genuine record of a report. The coordinate reading laid over it is invented for this war, not a finding about the file.'
   },
 
   /* Canon: "A Navy denial confirms responsive classified UAP photographs

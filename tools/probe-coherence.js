@@ -17,7 +17,7 @@ const ROOT = path.dirname(__dirname);
 const ctx = { console, window: {}, document: undefined };
 vm.createContext(ctx);
 for (const f of ['config', 'lore', 'factions', 'towers2', 'roster', 'story',
-                 'galaxy', 'cutscenes', 'planetcuts', 'dialogue'])
+                 'galaxy', 'cutscenes', 'planetcuts', 'dialogue', 'worldlore', 'missions'])
   try { vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', f + '.js'), 'utf8'), ctx, { filename: f }); }
   catch (e) {}
 
@@ -182,6 +182,31 @@ T('CO.9 the Xeno is never a species', () => {
   const bad = hits(/\ba Xeno\b|\bXenos\b|\bXeno (species|race|biology)/i);
   must(!bad.length, () => bad.map(b => b.where).join(', '));
   return 'no cell makes it a lineage';
+});
+
+/* ---- 11. worldlore.js and missions.js, read as raw source ----
+ * Both carry player-facing prose in banks that live inside an IIFE (var
+ * OWNER_LINES, KIND_LINES, etc in worldlore.js) or need a full dependency
+ * chain to evaluate through the public API (missions.js's AW_MISSIONS).
+ * Neither is a clean exported object the CELLS extraction above can walk, so
+ * this checks the source text directly instead of skipping them, which is
+ * exactly how OWNER_LINES.robot sat mislabeled "Vigil" for a whole session:
+ * nothing was reading this file at all. */
+T('CO.11 worldlore.js and missions.js carry no retired term or Vigil claim', () => {
+  const bad = [];
+  ['js/worldlore.js', 'js/missions.js'].forEach(rel => {
+    let src;
+    try { src = fs.readFileSync(path.join(ROOT, rel), 'utf8'); } catch (e) { return; }
+    if (/\bCompact\b|\bAccord\b|\bSeverance\b|\bDisclosure Fracture\b|\bLattice\b/.test(src))
+      bad.push(rel + ': retired term (Compact/Accord/Severance/Disclosure Fracture/Lattice)');
+    if (/\bCERES\b|\bEUROPA\b|\bTITAN\b|BARNARD|TABBY|KIC-8462|HARBOUR NINE/.test(src))
+      bad.push(rel + ': names a retired world');
+    if (/\bVigil\b[^'"\n]{0,60}\b(holds|hold|owns|own|maintains)\b/.test(src) &&
+        !/nest/i.test(src.slice(Math.max(0, src.search(/\bVigil\b/) - 40), src.search(/\bVigil\b/) + 80)))
+      bad.push(rel + ': "Vigil" paired with a holding/owning verb outside a nest context');
+  });
+  must(!bad.length, () => bad.join('; '));
+  return 'no retired term, no retired world, no Vigil holding claim';
 });
 
 const fails = checks.filter(c => c.verdict === 'FAIL');
