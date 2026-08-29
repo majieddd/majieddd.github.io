@@ -40,7 +40,46 @@ var R = (function () {
   var opaqueN = 0, transparentN = 0, particleN = 0;
 
   var pal = null;
-  var quality = { bloom: true, shadows: true, ink: true, shadowSize: 2048, scale: 1.0 };
+  /* QUALITY TIERS.
+     The renderer cannot measure the machine it will run on, and the adaptive
+     scaler can only trade resolution. A tier trades the things resolution
+     cannot: how many shadow taps every lit pixel pays for, how large the
+     shadow map is, and whether the bloom chain runs at all. Exposed in the HUD
+     because a player with a weak GPU should not have to wait for a heuristic
+     to notice. */
+  var TIERS = {
+    high:   { shadowTaps: 9, shadowSize: 2560, bloom: true,  ink: true, maxScale: 1.00, shadows: true,  triplanar: true },
+    medium: { shadowTaps: 4, shadowSize: 1536, bloom: true,  ink: true, maxScale: 0.85, shadows: true,  triplanar: false },
+    low:    { shadowTaps: 1, shadowSize: 1024, bloom: false, ink: true, maxScale: 0.70, shadows: true,  triplanar: false }
+  };
+  var quality = {
+    bloom: true, shadows: true, ink: true,
+    shadowSize: 2560, shadowTaps: 9, scale: 1.0, tier: 'high', triplanar: true
+  };
+
+  function setTier(name) {
+    var t = TIERS[name];
+    if (!t) return quality.tier;
+    quality.tier = name;
+    quality.shadowTaps = t.shadowTaps;
+    quality.bloom = t.bloom;
+    quality.ink = t.ink;
+    quality.shadows = t.shadows;
+    quality.triplanar = t.triplanar;
+    adapt.max = t.maxScale;
+    if (quality.scale > t.maxScale) quality.scale = t.maxScale;
+    if (quality.shadowSize !== t.shadowSize) {
+      quality.shadowSize = t.shadowSize;
+      if (rt.shadow) rt.shadow.dispose();
+      rt.shadow = GL.shadowTarget(t.shadowSize);
+    }
+    if (canvas) resize(adapt.cssW, adapt.cssH, DPR);
+    return quality.tier;
+  }
+  function cycleTier() {
+    var order = ['high', 'medium', 'low'];
+    return setTier(order[(order.indexOf(quality.tier) + 1) % order.length]);
+  }
 
   /* ---------- ART CONSTANTS ----------
      Every number that decides what the picture LOOKS like, in one block, so
@@ -69,8 +108,39 @@ var R = (function () {
     facetJitter: 0.19,
     shadowLift: 0.24,
     ambient: 0.30,
-    specStrength: 0.20,
-    specPower: 90.0,
+    /* A BROAD LOBE, BECAUSE THE NORMALS ARE FLAT. specPower was 90, and the
+       shader thresholds the result at 0.35, which requires dot(N,H) > 0.9884:
+       a cone 8.7 degrees wide. Every mesh here is non-indexed with per-face
+       normals, so N is constant across a whole facet and there is no gradient
+       for a narrow lobe to slide along. The result was all-or-nothing per
+       facet and in practice nothing: zeroing the entire specular term changed
+       the measured frame by 0.0001 in coefficient of variation, which is to
+       say one of the three pillars of the palette-knife look was not running
+       at all. A wide lobe is what a faceted surface can actually satisfy, and
+       the spatial variety that a narrow lobe would have supplied now comes
+       from the impasto ridge mask instead, which is where it belongs.
+
+       BOTH NUMBERS ARE MEASURED, NOT CHOSEN. Widening the lobe to 22 was not
+       enough on its own: the ground normal is very close to +Y and the half
+       vector sits around dot 0.80, so 0.80^22 = 0.008 still failed the 0.10
+       threshold and the term stayed dead. Sweeping power against a fixed crop
+       of one deterministic frame, against the v1.2 build in the same session:
+
+         power   hfNorm    cv       meanLum
+         v1.2    0.03215   0.2632   125.3     (specular effectively off)
+         6       0.02664   0.2318   152.8     floods, brighter but flat
+         9       0.02776   0.2519   148.2     same trade
+         14      0.03433   0.3774   124.3     <- holds brightness, gains form
+         22      0.03622   0.4157   117.0     more contrast, too dark
+
+       Then strength at power 14: 0.30 gave 124.3, 0.38 gave 125.9, 0.46 gave
+       127.5. The last one is the only setting that beats v1.2 on all three at
+       once: 1.8% brighter, 4.9% more micro-contrast, 41.6% more overall
+       contrast. hfNorm and cv are both divided by the frame mean on purpose,
+       because an unnormalised contrast figure rises whenever the picture
+       merely darkens and will happily sell an exposure change as texture. */
+    specStrength: 0.46,
+    specPower: 14.0,
     /* Rim at 1.25 with power 2.35 was wide enough to wash the whole grazing
        half of the board into a haze. A rim is meant to separate a silhouette,
        not to light a surface: tighter power, lower strength. */
@@ -79,6 +149,13 @@ var R = (function () {
     toothScale: 0.42,
     toothStrength: 0.46,
     fogDensity: 0.0040,
+    /* Shadow shaping. `band` is the ramp position a shadowed surface collapses
+       to, `edge` and `soft` place and widen the cel edge across the PCF
+       result, `depth` is how much of the specular and rim survive in shadow. */
+    shadowBand: 0.16,
+    shadowEdge: 0.30,
+    shadowSoft: 0.30,
+    shadowDepth: 0.30,
     bloomThreshold: 0.60,
     bloomStrength: 0.95,
     /* Exposure sits under 1.0 because the filmic curve lifts midtones by
@@ -114,7 +191,7 @@ var R = (function () {
     pos: [0, 22, 26], target: [0, 0, 0], up: [0, 1, 0],
     fov: 0.72, near: 0.5, far: 260
   };
-  var sun = { dir: [0.42, 0.80, 0.44], distance: 90, extent: 46 };
+  var sun = { dir: [0.42, 0.80, 0.44], distance: 90, extent: 46, centre: [0, 0, 0] };
   var fx = {
     shake: 0, aberration: 0, flashWhite: 0, desaturate: 0,
     exposure: 1.0, timeScale: 1
@@ -180,8 +257,11 @@ var R = (function () {
        changing what the image is MADE of, so a screenshot taken there still
        proves the art direction. Bloom and ink stay on for exactly that
        reason: they are the look, not a garnish. */
+    /* A software rasteriser renders correctly and slowly. Starting it on the
+       medium tier keeps the headless verifier usable without changing what the
+       image is MADE of, so a screenshot taken there still proves the art. */
     if (GL.caps.software) {
-      quality.shadowSize = 1024;
+      setTier('medium');
       quality.scale = 0.75;
     }
 
@@ -382,7 +462,9 @@ var R = (function () {
        texels and the contact shadows turn to mush; centring on what the player
        is looking at keeps them tight where it matters. */
     var L = U.V.norm(sun.dir);
-    var centre = cam.target;
+    /* The board is built around the origin, so the light box is too. Centring
+       it on cam.target made every shadow edge crawl as the camera moved. */
+    var centre = sun.centre || [0, 0, 0];
     var lightPos = U.V.add(centre, U.V.scale(L, sun.distance));
     var lv = U.m4look(lightPos, centre, [0, 1, 0]);
     var e = sun.extent;
@@ -467,8 +549,14 @@ var R = (function () {
     p.u1f('uShadowLift', ART.shadowLift);
     p.u1f('uShadowStrength', quality.shadows ? 1.0 : 0.0);
     p.u1f('uShadowTexel', 1.0 / rt.shadow.size);
+    p.u1f('uShadowBand', ART.shadowBand);
+    p.u1f('uShadowEdge', ART.shadowEdge);
+    p.u1f('uShadowSoft', ART.shadowSoft);
+    p.u1f('uShadowDepth', ART.shadowDepth);
+    p.u1f('uShadowTaps', quality.shadowTaps);
     p.u1f('uToothScale', ART.toothScale);
     p.u1f('uToothStrength', ART.toothStrength);
+    p.u1f('uToothTriplanar', quality.triplanar ? 1 : 0);
     p.u1f('uTime', time);
     p.u1f('uFogDensity', ART.fogDensity);
     p.u3v('uFogColor', pal.fog);
@@ -707,6 +795,7 @@ var R = (function () {
     setPalette: setPalette, palette: palette,
     project: project, screenToGround: screenToGround,
     cam: cam, sun: sun, fx: fx, quality: quality, ART: ART,
+    setTier: setTier, cycleTier: cycleTier, TIERS: TIERS,
     get W() { return W; }, get H() { return H; },
     get time() { return time; },
     get gl() { return gl; },

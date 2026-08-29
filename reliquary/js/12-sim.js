@@ -131,7 +131,14 @@ var SIM = (function () {
     if (t.__statsAt === statsStamp && t.__stats) return t.__stats;
     var d = DATA.TOWERS[t.id];
     var s = {
-      dps: d.dps, range: d.range, fireRate: d.fireRate || 1,
+      /* DEFAULTED, NOT ASSUMED PRESENT. VAULT is a support tower and carries no
+         dps or fireRate at all, so `d.dps` was undefined and every tier
+         multiplier below turned the whole field into NaN. Nothing read it,
+         because the support branch returns before firing, which is exactly why
+         a NaN sat in shipped state undetected until a test asked every tower
+         for a finite stat block. A latent NaN is a defect waiting for the first
+         feature that reads the field. */
+      dps: d.dps || 0, range: d.range || 0, fireRate: d.fireRate || 1,
       splash: d.splash || 0, projSpeed: d.projSpeed || 50,
       chains: d.chains || 0, chainRange: d.chainRange || 0,
       chainFalloff: d.chainFalloff || 0.7,
@@ -1115,9 +1122,35 @@ var SIM = (function () {
       }
 
       /* Everything else needs a target. */
+      /* RE-TARGET ON A CADENCE, NOT EVERY SUBSTEP.
+         A tower with no valid target used to scan every denizen on the board
+         120 times a second. With thirty towers and sixty denizens that is over
+         two hundred thousand range checks a second to discover, most of the
+         time, that there is still nothing in range. Keeping a valid target is
+         still checked every substep, so a tower never keeps shooting something
+         that has left its range; only the SEARCH is throttled, and an eighth
+         of a second is well under the fastest fire interval in the game. */
       var keep = t.target && inRange(t, t.target, s);
-      if (!keep) t.target = pickTarget(t, s);
+      if (!keep) {
+        t.target = null;
+        t.retargetT = (t.retargetT || 0) - dt;
+        if (t.retargetT <= 0) {
+          t.retargetT = 0.12;
+          t.target = pickTarget(t, s);
+        }
+      }
       var target = t.target;
+
+      if (!target) {
+        /* IDLE SCAN. A turret frozen at whatever angle it last fired at makes a
+           board between waves read as switched off. Sweeping slowly is the
+           cheapest possible signal that a machine is powered and looking, and
+           the per-tower phase offset stops thirty towers moving as one. The
+           sweep is driven off sim time, so it pauses with the game. */
+        t.idlePhase = (t.idlePhase === undefined) ? (t.uid * 0.7) % 6.283 : t.idlePhase;
+        var want = t.idlePhase + Math.sin(G.time * 0.34 + t.idlePhase) * 0.85;
+        t.yaw += U.angDiff(t.yaw, want) * Math.min(1, dt * 1.1);
+      }
 
       if (target) {
         var wantYaw = Math.atan2(target.pos[0] - t.pos[0], target.pos[2] - t.pos[2]);

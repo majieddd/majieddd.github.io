@@ -168,6 +168,11 @@ var RIG = (function () {
         world: U.m4ident(),
         hidden: !!s.hidden,
         emissive: s.emissive || 0,
+        /* Whether this part goes into the shadow map. A creature only needs
+           its body and head there: the legs are thin enough that their cast
+           shadow is invisible at play distance, and they are eight of its ten
+           draws. */
+        cast: s.cast !== false,
         /* free-form per-part state for springs */
         v: [0, 0, 0],
         s: [0, 0, 0]
@@ -215,10 +220,16 @@ var RIG = (function () {
   /* Submit every visible part. `opts` is passed through to R.push so a whole
      creature can flash or dissolve as one. */
   function draw(rig, opts) {
+    var castAll = !opts || opts.castShadow !== false;
     for (var i = 0; i < rig.parts.length; i++) {
       var p = rig.parts[i];
       if (p.hidden || !p.mesh) continue;
+      /* Mutating the shared opts object per part would be a per-frame
+         allocation for every rig; the flag is written and restored instead. */
+      var prev = opts.castShadow;
+      opts.castShadow = castAll && p.cast;
       R.push(p.mesh, p.world, opts);
+      opts.castShadow = prev;
     }
   }
 

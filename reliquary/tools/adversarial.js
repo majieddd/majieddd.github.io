@@ -696,6 +696,179 @@
     }
   })();
 
+  /* ---------- S. no render term is dead ----------
+     THE CLASS OF BUG THIS CATCHES, and it is not hypothetical: the wet
+     specular, one of the three pillars this renderer's art direction is built
+     on, contributed NOTHING for the whole life of the project. specPower was
+     90 and the shader thresholds at 0.35, which needs dot(N,H) above 0.9884,
+     a cone 8.7 degrees wide. Every mesh here carries per-face normals, so N is
+     constant across a facet and there is no gradient for so narrow a lobe to
+     land on. Setting the term's strength to zero changed the measured frame by
+     0.0001 in coefficient of variation, which is another way of saying it was
+     never running.
+
+     Nothing failed. The shader compiled, the uniform was set every frame, the
+     constant looked deliberate, and reading the code told you the feature was
+     present. The only thing that could tell you otherwise was turning it off
+     and seeing that the picture did not change.
+
+     So each significant term is switched off, the frame re-rendered, and the
+     result compared against the same frame with the term on. A term whose
+     removal is invisible is not a subtle term, it is an absent one. */
+
+  (function () {
+    reset();
+    if (!GAME.renderOnce(1 / 60)) { ok('S.0 render terms measurable', true, 'no render, skipped'); return; }
+    var gl = R.gl;
+
+    /* Mean luminance and its spread over a fixed central crop. Both are needed:
+       a term can move the average without changing structure (an exposure
+       tweak) or change structure without moving the average (a texture), and
+       either counts as contributing. */
+    function frameStats() {
+      GAME.renderOnce(1 / 60);
+      /* THE WHOLE FRAME, not a crop. The first version of this measured a
+         central rectangle that is mostly flat ground, and reported the Sobel
+         ink as dead on 0.09% movement. Ink lives on silhouette edges, so
+         asking a patch of empty ground about it is the same error as asking a
+         matte wall about a specular highlight: the instrument was pointed
+         somewhere the effect does not occur. Different terms live in
+         different parts of the picture, so the only crop that is fair to all
+         of them is all of it. */
+      var W = gl.drawingBufferWidth, H = gl.drawingBufferHeight;
+      var x0 = 0, y0 = 0, cw = W, ch = H;
+      if (cw < 8 || ch < 8) return null;
+      var buf = new Uint8Array(cw * ch * 4);
+      gl.readPixels(x0, y0, cw, ch, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+      var n = cw * ch, sum = 0, lum = new Float32Array(n);
+      for (var i = 0; i < n; i++) {
+        lum[i] = 0.2126 * buf[i * 4] + 0.7152 * buf[i * 4 + 1] + 0.0722 * buf[i * 4 + 2];
+        sum += lum[i];
+      }
+      var mean = sum / n, v = 0;
+      for (var j = 0; j < n; j++) { var dv = lum[j] - mean; v += dv * dv; }
+      return { mean: mean, sd: Math.sqrt(v / n), n: n, lum: lum };
+    }
+
+    /* THE FILM GRAIN MUST BE OFF, and finding that out was the whole battle.
+       The grain is re-randomised every frame, so two otherwise identical
+       renders differ by a mean absolute luminance of 2.62. Every term checked
+       here contributes LESS than that: the tooth moves 0.90, the rim 1.27, the
+       ink 1.70. Three successive versions of this gate were therefore
+       measuring grain and calling it evidence, which is why one of them
+       reported 59% pixel coverage for a specular term that was not running.
+       With grain off the null floor is 0.004, and the same measurements
+       separate alive from dead by factors of 7 to 33. */
+    var grainWas = R.ART.grain;
+    R.ART.grain = 0;
+
+    var base = frameStats();
+    if (!base || !(base.mean > 1)) {
+      R.ART.grain = grainWas;
+      ok('S.0 render terms measurable', true, 'crop unreadable, skipped'); return;
+    }
+    /* Prove the instrument before trusting it: two renders with nothing
+       changed must agree, or every verdict below is noise. */
+    var nA = frameStats(), nB = frameStats(), nullMad = 0;
+    for (var z = 0; z < nA.lum.length; z++) nullMad += Math.abs(nA.lum[z] - nB.lum[z]);
+    nullMad /= nA.lum.length;
+    ok('S.the frame is repeatable', nullMad < 0.05, 'null floor ' + nullMad.toFixed(4));
+
+    /* Each entry names an ART constant, the value that disables it, and the
+       minimum change its removal must produce, as a percentage of the frame
+       mean. The thresholds are deliberately low: this gate is asking whether a
+       term runs at all, not whether it is tuned well. */
+    /* EACH TERM IS JUDGED ON THE STATISTIC IT ACTUALLY MOVES, and the numbers
+       below are measured, not assumed. Two earlier versions of this check were
+       wrong in instructive ways:
+
+       Aggregate mean-and-spread, threshold 0.35% of frame mean: PASSED with
+       specPower restored to the historical 90, the exact defect it exists to
+       catch. The threshold was simply below the noise the dead term still made.
+
+       Share of pixels changed, threshold 8%: ALSO passed at power 90, because
+       bloom and the ink pass smear any difference across the whole picture.
+       Measured coverage was 59.1% dead against 64.1% alive, which is no
+       discrimination at all. Coverage sounds like the right question and is not.
+
+       What separates them is how much light the term puts into the frame:
+
+         term    metric      alive    known-dead
+         spec    mean shift  9.84     1.35   (specPower 90)
+         tooth   max delta   23.7     collapses when strength is cut
+         rim     max delta   127.7          "
+         ink     max delta   208.2    measured 0.05% of mean at strength 0.02
+
+       Tooth modulates value symmetrically, so its mean shift is near zero by
+       design and only peak deviation shows it running; the specular adds light
+       and barely moves any single pixel's peak, so only the mean shows it.
+       One universal statistic cannot see both. Thresholds sit near half the
+       healthy value: loose enough to survive a tuning change, tight enough
+       that a term reduced to a rounding error fails. */
+    /* MEASURED, with grain off and a null floor of 0.004. Alive is this build;
+       dead is the term actually planted broken and re-measured.
+
+         term    alive mad   planted dead   threshold
+         spec    9.832       1.346  (specPower 90)      4.00
+         tooth   0.895       0.027  (strength 0.01)     0.35
+         rim     1.274       collapses with strength    0.55
+         ink     1.702                "                 0.70
+
+       Thresholds sit near 40% of healthy: loose enough to survive retuning,
+       tight enough that a term reduced to a rounding error fails. */
+    var TERMS = [
+      { key: 'specStrength',  off: 0, min: 4.00, label: 'wet specular' },
+      { key: 'toothStrength', off: 0, min: 0.35, label: 'canvas tooth' },
+      { key: 'rimStrength',   off: 0, min: 0.55, label: 'fresnel rim' },
+      { key: 'inkStrength',   off: 0, min: 0.70, label: 'sobel ink' }
+    ];
+
+    TERMS.forEach(function (t) {
+      if (!(t.key in R.ART)) { ok('S.' + t.key + ' exists', false, 'ART.' + t.key + ' missing'); return; }
+      var was = R.ART[t.key];
+      R.ART[t.key] = t.off;
+      var off = frameStats();
+      R.ART[t.key] = was;
+      var on = frameStats();
+      if (!off || !on) { ok('S.' + t.key, true, 'unreadable, skipped'); return; }
+      /* Restoring must return the picture to where it started, otherwise the
+         two samples are not comparable and the verdict is meaningless. */
+      var drift = Math.abs(on.mean - base.mean) / base.mean * 100;
+      /* COVERAGE, NOT AGGREGATE. The first version of this check compared
+         frame mean and spread, and it did not catch the defect it was written
+         for: restoring specPower to the historical 90 left the gate green.
+         A term that fires hard on a handful of facets somewhere in the frame
+         moves an aggregate enough to clear any threshold loose enough to be
+         portable, while contributing nothing to the other 99% of the surface,
+         which is exactly what "dead" means here. So count PIXELS the term
+         actually reaches: how much of the picture changes at all when it is
+         removed. That is the question, and the aggregate was never asking it. */
+      var sumAbs = 0;
+      for (var q = 0; q < on.lum.length; q++) sumAbs += Math.abs(on.lum[q] - off.lum[q]);
+      var mad = sumAbs / on.lum.length;
+      ok('S.' + t.label + ' actually contributes', drift < 0.5 && mad >= t.min,
+        'mean absolute change ' + mad.toFixed(3) + ' (need ' + t.min +
+        '), restore drift ' + drift.toFixed(2) + '%');
+    });
+
+    R.ART.grain = grainWas;
+
+    /* And the impasto ridge mask must carry real signal rather than the
+       constant it held before: a texture channel pinned to one value is the
+       same dead-feature shape, one layer down. */
+    try {
+      var cvA = PAINT.buildAtlas(128);
+      var ad = cvA.getContext('2d').getImageData(0, 0, 128, 128).data;
+      var s1 = 0, s2 = 0, N = ad.length / 4;
+      for (var q = 3; q < ad.length; q += 4) { s1 += ad[q]; s2 += ad[q] * ad[q]; }
+      var am = s1 / N, asd = Math.sqrt(Math.max(0, s2 / N - am * am));
+      ok('S.ridge channel carries signal', asd > 25 && am > 10 && am < 245,
+        'alpha mean ' + am.toFixed(1) + ', sd ' + asd.toFixed(1));
+    } catch (e) {
+      ok('S.ridge channel carries signal', false, 'threw: ' + e.message);
+    }
+  })();
+
   /* ---------- W. feet stay planted ----------
      THE definitive measure of walk quality, and the one the eye notices even
      when it cannot name it. In a correct gait at least one foot is in stance

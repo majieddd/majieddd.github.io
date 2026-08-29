@@ -332,6 +332,7 @@ var TERRAIN = (function () {
       rockProto.push(rb.build({ jitter: 0.22 }));
     }
     var pieces = [];
+    var spirePieces = [];
     /* DECOR IS SCENERY, NOT SUBJECT. The first pass scattered 190 rocks at up
        to 3 units and they took over the frame: the board read as a quarry with
        a tower hidden in it. Scenery in this art direction exists to give the
@@ -384,10 +385,17 @@ var TERRAIN = (function () {
          below the rim instead, so they rise out of the void the plate floats
          in, which is what the board wants at its edge anyway. */
       var baseY = -3.2 - dr() * 2.0;
-      pieces.push(MESH.transform(sd, U.m4trs(sx, baseY, sz, 0, dr() * U.TAU, 0, 1, 1, 1)));
+      /* SPIRES ARE KEPT SEPARATE FROM THE SCATTER.
+         They stand outside the play area and are tall, so under a low sun they
+         throw enormous shadows straight across the board. Physically right and
+         visually ruinous: the debug channel showed most of the playfield under
+         a moving spire shadow. They belong to the horizon, so they render but
+         never cast. */
+      spirePieces.push(MESH.transform(sd, U.m4trs(sx, baseY, sz, 0, dr() * U.TAU, 0, 1, 1, 1)));
     }
 
     var decorData = pieces.length ? MESH.merge(pieces) : null;
+    var spireData = spirePieces.length ? MESH.merge(spirePieces) : null;
 
     return {
       id: def.id,
@@ -399,6 +407,7 @@ var TERRAIN = (function () {
       plots: plots,
       groundData: groundData,
       decorData: decorData,
+      spireData: spireData,
       spawn: pathAt(path, 0).pos,
       goal: pathAt(path, path.length).pos,
       pathAt: function (d) { return pathAt(path, d); },

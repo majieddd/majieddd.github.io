@@ -107,6 +107,10 @@ var GAME = (function () {
      garbage collected on the JS side. Twenty restarts leaked twenty ground
      meshes and twenty decor meshes of GPU memory, which is invisible until it
      is not. */
+  /* One fixed sun for the whole game. A moving key light would mean recomputing
+     the shadow box and re-baking nothing, for no gameplay gain. */
+  var SUN_DIR = [0.34, 0.88, 0.42];
+
   var runMeshes = [];
   function trackMesh(m) { if (m) runMeshes.push(m); return m; }
   function disposeRunMeshes() {
@@ -127,6 +131,7 @@ var GAME = (function () {
     /* Board meshes, rebuilt per run because the board can change. */
     G.groundMesh = trackMesh(GL.mesh(G.board.groundData));
     G.decorMesh = G.board.decorData ? trackMesh(GL.mesh(G.board.decorData)) : null;
+    G.spireMesh = G.board.spireData ? trackMesh(GL.mesh(G.board.spireData)) : null;
     var pal = R.palette();
     G.goalMesh = MODELS.goalMesh(pal.accent);
     G.spawnMesh = MODELS.spawnMesh(PAINT.FACTIONS[G.enemyFaction].accent);
@@ -145,6 +150,10 @@ var GAME = (function () {
        tan(fov/2). The 1.12 is real margin for the spires that sit outside the
        play area. */
     fitCamera();
+    /* Cover the plate plus the margin the rim decor sits in. */
+    R.sun.extent = Math.max(G.board.halfW, G.board.halfH) * 1.18;
+    R.sun.distance = R.sun.extent * 2.2;
+    R.sun.dir = SUN_DIR;
     G.status = 'play';
     G.waveTimer = 0;
     speed = 1;
@@ -350,7 +359,7 @@ var GAME = (function () {
     r = pool.pop();
     if (!r) {
       r = RIG.build(model.parts.map(function (p) {
-        return { name: p.name, parent: p.parent, bind: p.bind, mesh: p.mesh };
+        return { name: p.name, parent: p.parent, bind: p.bind, mesh: p.mesh, cast: p.cast };
       }));
     }
     /* The archetype is stamped on the rig so the release pass can put it back
@@ -386,6 +395,8 @@ var GAME = (function () {
 
   function poseDenizen(d, rig, dt) {
     RIG.rest(rig);
+    /* 0 while alive, rising to 1 across the death fade. */
+    var dyingT = (!d.alive && d.dying > 0) ? U.sat(1 - d.dying / 0.55) : 0;
     var body = rig.get('body');
     var moving = d.stun <= 0 && d.airborne <= 0;
     /* The creature's own facing, needed to place footfall dust in world space
@@ -443,6 +454,10 @@ var GAME = (function () {
       var phase = d.animPhase + phaseOff;
       var g = moving ? RIG.gait(phase, strideLen, lift, D.duty)
                      : { x: 0, y: 0, planted: true, t: 0 };
+      /* A dying creature stops walking and its legs give way outward. */
+      if (dyingT > 0) {
+        g = { x: g.x, y: 0, planted: false, t: 0 };
+      }
       if (g.planted) { plantedCount++; }
 
       /* DUST ON THE FRAME THE FOOT LANDS.
@@ -463,6 +478,12 @@ var GAME = (function () {
       /* The foot sits slightly outboard of the hip, which widens the stance
          and stops a four-legged walk reading as a tightrope. */
       var foot = [up.bind[0] * 1.10, g.y, up.bind[2] + g.x];
+      if (dyingT > 0) {
+        /* Splay outward and drop, so the silhouette breaks apart rather than
+           sinking as a rigid unit. */
+        foot = [up.bind[0] * (1.10 + dyingT * 1.5), -dyingT * 0.25,
+                up.bind[2] + g.x + (up.bind[2] >= 0 ? dyingT : -dyingT) * 0.6];
+      }
 
       /* WORLD-SPACE FOOT LOCK.
          Deriving the gait rate from the stride gets a foot CLOSE to stationary,
@@ -482,7 +503,7 @@ var GAME = (function () {
          The lock RELEASES if the point drifts out of reach, which happens when
          a creature turns sharply or is launched, because a leg stretched past
          its limit looks far worse than one that takes an extra step. */
-      if (g.planted) {
+      if (g.planted && dyingT <= 0) {
         if (!up.__planted) {
           var fw = localToWorld(foot, d, cosYaw, sinYaw);
           up.__plantW = fw;
@@ -516,6 +537,30 @@ var GAME = (function () {
       body.rot[2] = d.lean;
       body.rot[0] = moving ? Math.sin(bobT + 1.1) * 0.045 : 0;
       body.rot[1] = Math.sin(d.animPhase * U.TAU) * 0.06;
+
+      /* IDLE BREATH. A creature held still by a stun or a smokescreen used to
+         be perfectly rigid, which reads as a paused video rather than as a
+         living thing waiting. A slow swell on two axes, out of phase, costs two
+         sines and is the difference. */
+      if (!moving) {
+        var br = Math.sin(G.time * 1.15 + d.animPhase * 5.1);
+        body.scl[0] = 1 + br * 0.035;
+        body.scl[2] = 1 + br * 0.035;
+        body.scl[1] = 1 - br * 0.028;
+      }
+
+      /* DEATH COLLAPSE. Before this a body simply dissolved in place, still
+         standing to attention, which drained every kill of its payoff. It now
+         drops, pitches forward and splays as the dissolve takes it, so the
+         shatter has something to come apart FROM. */
+      if (dyingT > 0) {
+        var k = 1 - dyingT;                 /* 0 at the moment of death, 1 at the end */
+        var fall = U.ease.inQuad(k);
+        body.pos[1] -= fall * hipY * 0.72;
+        body.rot[0] += fall * 0.85;
+        body.rot[2] += fall * 0.45 * (d.uid % 2 ? 1 : -1);
+        body.scl[1] = 1 - fall * 0.25;
+      }
     }
     var head = rig.get('head');
     if (head) {
@@ -591,7 +636,11 @@ var GAME = (function () {
         flashColor: d.mark ? U.hex2rgb(DATA.ELEMENTS[d.mark].color) : [1, 0.85, 0.9],
         dissolve: dying ? U.sat(1 - d.dying / 0.55) * 0.9 : 0,
         rimScale: 0.34,
-        castShadow: d.def.boss || d.scale >= 1.5
+        /* Units cast again. Restricting it to the trunk (see RIG.draw) makes
+           it one or two draws per creature instead of ten, which is what made
+           it too expensive before. A body without a cast shadow reads as
+           floating no matter how good the contact disc is. */
+        castShadow: true
       };
       RIG.draw(rig, opts);
 
@@ -764,6 +813,7 @@ var GAME = (function () {
        towers in the read. With a brighter board and full rim they were as
        bright as the things the player is meant to be looking at. */
     if (G.decorMesh) R.push(G.decorMesh, U.m4ident(), { rimScale: 0.45 });
+    if (G.spireMesh) R.push(G.spireMesh, U.m4ident(), { rimScale: 0.40, castShadow: false });
 
     var pal = R.palette();
     var sp = G.board.spawn, gl = G.board.goal;
@@ -912,8 +962,14 @@ var GAME = (function () {
       cam.focus[2] + Math.cos(cam.yaw) * cp * cam.dist
     ];
     R.cam.target = [cam.focus[0], cam.focus[1] + 1.5, cam.focus[2]];
-    R.sun.extent = Math.max(40, cam.dist * 0.72);
-    R.sun.dir = [0.34, 0.88, 0.42];
+    /* THE SHADOW BOX IS FITTED TO THE BOARD, NOT THE CAMERA.
+       Recomputing it from cam.dist every frame meant the light frustum resized
+       and recentred whenever the player zoomed or panned, so every shadow edge
+       crawled across its own texels: the classic shadow swim. Fitting it once
+       to the play area makes the texel grid stationary in world space, which is
+       both stable and a known density (a 96 unit box at 2048 is under 5cm per
+       texel). Set in start(); the sun direction is constant. */
+    R.sun.dir = SUN_DIR;
   }
 
   /* Draw exactly one frame, synchronously, without touching the simulation.

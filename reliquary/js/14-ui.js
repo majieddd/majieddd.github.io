@@ -233,6 +233,15 @@ var UI = (function () {
       AUDIO.setMuted(on);
       mute.textContent = on ? 'MUTED' : 'SOUND';
     };
+    var qual = $('btn-quality');
+    if (qual) {
+      qual.textContent = R.quality.tier.toUpperCase();
+      qual.onclick = function () {
+        AUDIO.play('click');
+        qual.textContent = R.cycleTier().toUpperCase();
+        UI.toast('Graphics: ' + R.quality.tier.toUpperCase());
+      };
+    }
     var perf = $('btn-perf');
     if (perf) perf.onclick = function () {
       perfOn = !perfOn;
@@ -585,7 +594,8 @@ var UI = (function () {
         GAME.stats.frameMs.toFixed(1) + ' ms  ' +
         FX.count + ' particles  ' +
         G.denizens.length + ' units  ' +
-        G.towers.length + ' towers';
+        G.towers.length + ' towers  ' +
+        R.quality.tier + ' @ ' + Math.round(R.quality.scale * 100) + '%';
     }
 
     /* wave transitions produce their own banners */

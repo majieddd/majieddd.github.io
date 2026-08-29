@@ -797,6 +797,8 @@ var MODELS = (function () {
           name: s.name,
           parent: s.parent || null,
           bind: s.bind,
+          /* Only the trunk goes in the shadow map. See RIG.draw. */
+          cast: /^(body|head)$/.test(s.name),
           mesh: GL.mesh(data),
           /* The raw vertex data is retained alongside the uploaded mesh so the
              death effect can read the model's own facets back out and throw

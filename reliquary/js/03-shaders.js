@@ -126,14 +126,28 @@ var SH = (function () {
        makes the picture brighter AND increases contrast at the same time,
        which is what "brighter" actually means for a painting whose drawing is
        carried by its darks. */
+    /* LIGHT MULTIPLIES ALBEDO, IT DOES NOT ADD TO IT.
+       The lit stop used mix(albedo, uLightColor, 0.17), which adds a FIXED
+       amount of the light colour no matter how dark the surface is. On a
+       near-black enemy hull that one term was several times the albedo itself,
+       so every lit denizen washed out and stopped being the dark silhouette
+       the entire enemy design depends on. Measured before this change: enemies
+       at luminance 114 against a ground of 87, which is backwards.
+
+       A mid-value board looked correct throughout, which is exactly why the
+       fault survived a brightness pass: it only misbehaves at the dark end.
+
+       Multiplying is both what light actually does and what preserves the
+       relationship the art direction needs. Dark things stay dark in the light
+       and bright things take the light's colour.
+
+       The earlier 1.42 multiplier is also gone: it drove the lane and the
+       ground past the top of the tonemap so both flattened against the ceiling
+       and rendered at luminance 153 and 152, identical. A ramp that clips
+       destroys the separation it exists to create. */
     '  vec3 deep = mix(uShadowColor, albedo * 0.24, uShadowLift);',
-    '  vec3 mid  = albedo * 0.82;',
-    /* 1.42 CLIPPED. Measured on a lit board: the lane rendered luminance 153
-       and the ground 152, identical, because both albedos were driven past the
-       top of the tonemap and flattened against the ceiling. A ramp that clips
-       destroys exactly the separation it exists to create. 1.22 keeps the lit
-       band inside range so two different albedos stay two different values. */
-    '  vec3 lite = mix(albedo, uLightColor, 0.17) * 1.22;',
+    '  vec3 mid  = albedo * mix(vec3(1.0), uLightColor * 1.5, 0.35) * 0.80;',
+    '  vec3 lite = albedo * mix(vec3(1.0), uLightColor * 1.6, 0.55) * 1.34;',
     '  return q < 0.5 ? mix(deep, mid, q * 2.0) : mix(mid, lite, (q - 0.5) * 2.0);',
     '}'
   ].join('\n');
@@ -217,9 +231,15 @@ var SH = (function () {
     'uniform sampler2DShadow uShadow;',
     'uniform float uShadowTexel;',
     'uniform float uShadowStrength;',
+    'uniform float uShadowBand;',   /* the band a shadowed surface collapses to */
+    'uniform float uShadowEdge;',   /* where the cel shadow edge sits in the PCF result */
+    'uniform float uShadowSoft;',   /* how wide that edge is */
+    'uniform float uShadowDepth;',
+    'uniform float uShadowTaps;',  /* how far spec and rim are killed in shadow */
     'uniform sampler2D uTooth;',
     'uniform float uToothScale;',
     'uniform float uToothStrength;',
+    'uniform float uToothTriplanar;',
     'uniform float uTime;',
     'uniform vec4 uItemA;',   /* flash, dissolve, explode, alpha */
     'uniform vec4 uItemB;',   /* tintMix, facetJitter, rimScale, debugMode */
@@ -236,6 +256,10 @@ var SH = (function () {
        gives bilinear filtering inside each tap, so five taps buys a soft edge
        that looks like about twenty. A wider kernel is wasted here because the
        shadow is going to be posterised into the ramp anyway. */
+    'const vec2 PCF_DISK[9] = vec2[9](',
+    '  vec2( 0.0,  0.0), vec2( 1.0,  0.0), vec2(-1.0,  0.0),',
+    '  vec2( 0.0,  1.0), vec2( 0.0, -1.0), vec2( 0.7,  0.7),',
+    '  vec2(-0.7,  0.7), vec2( 0.7, -0.7), vec2(-0.7, -0.7));',
     'float shadowVis(){',
     '  vec3 pc = vShadowCoord.xyz / vShadowCoord.w;',
     '  pc = pc * 0.5 + 0.5;',
@@ -246,20 +270,63 @@ var SH = (function () {
     '  float ndl = max(dot(vNormal, uLightDir), 0.0);',
     '  float bias = mix(0.0035, 0.0006, ndl);',
     '  float z = pc.z - bias;',
-    '  float s = texture(uShadow, vec3(pc.xy, z));',
-    '  s += texture(uShadow, vec3(pc.xy + vec2( uShadowTexel, 0.0), z));',
-    '  s += texture(uShadow, vec3(pc.xy + vec2(-uShadowTexel, 0.0), z));',
-    '  s += texture(uShadow, vec3(pc.xy + vec2(0.0,  uShadowTexel), z));',
-    '  s += texture(uShadow, vec3(pc.xy + vec2(0.0, -uShadowTexel), z));',
-    '  return s * 0.2;',
+    /* NINE TAPS ON A ROTATED GRID. The previous five-tap plus was too tight
+       for the map resolution and left the hard stair-stepped edges the shadow
+       debug channel showed. Rotating the kernel per pixel by a hash of the
+       screen position turns what is left of the aliasing into a fine dither
+       that the halftone and grain in post absorb, instead of a staircase the
+       eye follows. */
+    '  float ang = hash12(floor(gl_FragCoord.xy)) * 6.2831853;',
+    '  vec2 rot = vec2(cos(ang), sin(ang));',
+    '  float s = 0.0;',
+    '  int taps = int(uShadowTaps);',
+    /* A dynamic loop bound. GLSL ES 3.00 permits it, and it lets the quality
+       tier trade shadow softness for fill rate without a second shader. */
+    '  for (int i = 0; i < 9; i++){',
+    '    if (i >= taps) break;',
+    '    vec2 o = PCF_DISK[i];',
+    '    vec2 r = vec2(o.x * rot.x - o.y * rot.y, o.x * rot.y + o.y * rot.x);',
+    '    s += texture(uShadow, vec3(pc.xy + r * uShadowTexel * 1.7, z));',
+    '  }',
+    '  return s / float(taps);',
     '}',
     '',
     /* Triplanar so the tooth follows the surface without any UVs, which the
        procedural meshes do not have and would be a lot of code to give them.
        The blend weights are raised to a power so the seams between the three
        projections are narrow. */
+    /* TRIPLANAR COSTS THREE TEXTURE FETCHES ON EVERY LIT PIXEL, which on a
+       full-screen board is the single largest sampler cost in the frame. Above
+       the quality threshold it blends all three projections properly; below it
+       it takes only the DOMINANT axis. Every surface in this game is faceted,
+       so each facet has one strongly dominant normal component and the seam
+       the cheap path would show has nowhere to appear. One fetch instead of
+       three, for a difference that needs a paused screenshot to find. */
+    /* Returns tooth in .x and the impasto ridge mask in .y, from ONE fetch
+       apiece rather than two, because they live in different channels of the
+       same texel. */
+    'vec2 toothRidge(vec3 p, vec3 n){',
+    '  if (uToothTriplanar < 0.5){',
+    '    vec3 an = abs(n);',
+    '    vec2 uv = (an.y > an.x && an.y > an.z) ? p.xz : ((an.x > an.z) ? p.zy : p.xy);',
+    '    vec4 t = texture(uTooth, uv * uToothScale);',
+    '    return vec2(t.r, t.a);',
+    '  }',
+    '  vec3 bl = pow(abs(n), vec3(4.0));',
+    '  bl /= max(bl.x + bl.y + bl.z, 1e-4);',
+    '  vec4 tx = texture(uTooth, p.zy * uToothScale);',
+    '  vec4 ty = texture(uTooth, p.xz * uToothScale);',
+    '  vec4 tz = texture(uTooth, p.xy * uToothScale);',
+    '  return vec2(tx.r, tx.a) * bl.x + vec2(ty.r, ty.a) * bl.y + vec2(tz.r, tz.a) * bl.z;',
+    '}',
+
     'float toothSample(vec3 p, vec3 n){',
-    '  vec3 w = pow(abs(n), vec3(4.0));',
+    '  vec3 a = abs(n);',
+    '  if (uToothTriplanar < 0.5){',
+    '    vec2 uv = (a.y >= a.x && a.y >= a.z) ? p.xz : ((a.x >= a.z) ? p.zy : p.xy);',
+    '    return texture(uTooth, uv * uToothScale).r;',
+    '  }',
+    '  vec3 w = pow(a, vec3(4.0));',
     '  w /= max(w.x + w.y + w.z, 1e-4);',
     '  float x = texture(uTooth, p.zy * uToothScale).r;',
     '  float y = texture(uTooth, p.xz * uToothScale).r;',
@@ -286,12 +353,26 @@ var SH = (function () {
     '',
     '  float ndl = dot(N, L);',
     '  float sh = mix(1.0, shadowVis(), uShadowStrength);',
-    /* The shadow is folded into the lighting term BEFORE quantising, so a
-       shadowed facet steps down a whole band rather than being darkened
-       smoothly. That keeps the cel edge intact inside shadows, which is where
-       most cel-shaded renderers give themselves away. */
-    '  float lit = posterise(ndl * mix(0.25, 1.0, sh), vSeed);',
-    '  vec3 col = rampColor(lit, vAlbedo);',
+    /* SHADOW IS A SEPARATE TERM FROM FORM, NOT A SCALE ON n dot l.
+       This used to read posterise(ndl * mix(0.25, 1.0, sh)), folding the
+       shadow into the lighting term before quantising. The consequence is that
+       a surface already sitting near the top of the ramp, which is exactly
+       what flat ground under an overhead sun is, drops by a quarter and STILL
+       quantises to the same band. The shadow map was computing correct
+       visibility and the shading was discarding it: the debug channel showed
+       large clear shadows while the rendered frame had none at all.
+
+       Form and shadow are now computed separately and composited. The form
+       band comes from geometry alone, the shadow picks the deep end of the
+       ramp for that same albedo, and a smoothstep across the PCF result gives
+       a cel edge whose width is art-directable rather than an accident of
+       where a band boundary happened to fall. */
+    '  float form = posterise(ndl, vSeed);',
+    '  vec3 litCol  = rampColor(form, vAlbedo);',
+    '  vec3 shadCol = rampColor(min(form, uShadowBand), vAlbedo);',
+    '  float shadMask = smoothstep(uShadowEdge, uShadowEdge + uShadowSoft, sh);',
+    '  vec3 col = mix(shadCol, litCol, shadMask);',
+    '  float lit = form * mix(uShadowDepth, 1.0, shadMask);',
     '',
     /* Hemispheric ambient. Sky colour from above, bounce colour from below.
        Cheap, and it is what stops the unlit side reading as a hole rather
@@ -303,22 +384,45 @@ var SH = (function () {
     '',
     /* Paint tooth. Modulates value only, never hue, so it reads as the canvas
        under the paint rather than as dirt on top of it. */
-    '  float tooth = toothSample(vWorld, N);',
+    '  vec2 tr = toothRidge(vWorld, N);',
+    '  float tooth = tr.x;',
+    '  float ridge = tr.y;',
     '  col *= 1.0 + (tooth - 0.5) * uToothStrength * vTooth;',
+    /* Crests catch the key even away from the specular lobe, which is what
+       makes thick paint read as thick from any angle. Confined to the lit
+       side and to the shadow mask so it never lifts a form shadow. */
+    /* SCALED BY uToothStrength, because it is part of the same surface
+       treatment and must answer to the same control. It did not, and a gate
+       that plants toothStrength at 0.01 stayed green: the crest kept firing
+       with the tooth switched off, so one uniform was nominally in charge of
+       two independent effects. That is how a control ends up not controlling
+       the thing its name promises. */
+    '  col += vAlbedo * uLightColor * ridge * 0.24 * uToothStrength * lit * shadMask * vTooth;',
     '',
     /* The wet specular. Posterised to two steps: either the knife ridge
        catches the light or it does not. A smooth lobe here would drag the
        whole image back toward conventional 3D. */
     '  vec3 H = normalize(L + Vd);',
     '  float spec = pow(max(dot(N, H), 0.0), uSpecPower);',
-    '  spec = step(0.35, spec) * (0.55 + 0.45 * step(0.75, spec));',
-    '  col += uLightColor * spec * uSpecStrength * sh;',
+    '  spec = step(0.10, spec) * (0.55 + 0.45 * step(0.40, spec));',
+    /* BREAK THE HIGHLIGHT ON THE PAINT. A posterised specular with no spatial
+       term is a clean hard-edged blob, which is the one thing an oil surface
+       never produces: the wet sheen sits on the raised crests and skips the
+       troughs. Biasing toward the ridge mask keeps the highlight's shape and
+       position while destroying its smooth interior. */
+    /* The endpoints are chosen so the AVERAGE of this factor over the ridge
+       mask is 1.0, given the measured mean of that mask (86/255 = 0.337):
+       0.25 + 0.337 * (2.48 - 0.25) = 1.00. Modulating without normalising cut
+       total specular energy by 40% and darkened the whole frame 125.3 to
+       116.9, which is a lighting change smuggled in under a texture change. */
+    '  spec *= mix(0.25, 2.48, ridge);',
+    '  col += uLightColor * spec * uSpecStrength * shadMask;',
     '',
     /* Rim. Biased toward the light side so it reads as light wrapping around
        the form, not as a uniform outline glow. */
     '  float fres = pow(1.0 - clamp(dot(N, Vd), 0.0, 1.0), uRimPower);',
     '  float rimSide = clamp(dot(N, L) * 0.5 + 0.65, 0.0, 1.0);',
-    '  col += uRimColor * fres * rimSide * uRimStrength * uItemB.z;',
+    '  col += uRimColor * fres * rimSide * uRimStrength * uItemB.z * mix(0.35, 1.0, shadMask);',
     '',
     /* Emissive facets bypass the ramp entirely. */
     '  col = mix(col, vAlbedo * 1.9 + uRimColor * 0.35, vEmis);',

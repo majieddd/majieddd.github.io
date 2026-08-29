@@ -176,6 +176,196 @@
     ok('3.vault pays income at wave end', g.gold > before, (g.gold - before) + 'g');
   })();
 
+  /* ---------- 3b. every tower DISTINGUISHING MECHANIC works ----------
+     Section 3 proves each tower deals damage. That is necessary and nowhere
+     near sufficient: a CRYO that never slows, a FLAK with no air bonus, a MAW
+     that never executes and a RAILGUN that hits one target are all towers that
+     "deal damage" and are all broken. Fourteen towers exist because they do
+     fourteen different things, so each is checked for the thing that makes it
+     worth its cost. */
+  section('TOWER MECHANICS');
+
+  function rig(towerId, opts) {
+    opts = opts || {};
+    var g = reset();
+    g.gold = 99999;
+    var free = g.board.plots.slice().sort(function (a, b) { return a.dist - b.dist; });
+    var t = SIM.place(free[opts.plot || 0].id, towerId);
+    if (!t) return null;
+    for (var u = 0; u < (opts.tier || 0); u++) SIM.upgrade(t);
+    /* Find the lane point nearest this tower so spawned bodies are reachable. */
+    var bestD = 0, bestDist = 1e9;
+    for (var d = 0; d < g.board.path.length; d += 2) {
+      var pt = g.board.pathAt(d).pos;
+      var dd = Math.hypot(pt[0] - t.pos[0], pt[2] - t.pos[2]);
+      if (dd < bestDist) { bestDist = dd; bestD = d; }
+    }
+    return { g: g, t: t, laneD: bestD };
+  }
+  function feed(g, laneD, type, n, spread, hp) {
+    var out = [];
+    var step = n > 1 ? (spread || 0) / (n - 1) : 0;
+    for (var i = 0; i < n; i++) {
+      var d = SIM.spawnDenizen(type, { dist: Math.max(0, laneD - (spread || 0) / 2) + i * step });
+      if (d) { if (hp) { d.hp = d.maxHp = hp; } out.push(d); }
+    }
+    return out;
+  }
+
+  (function () {
+    var r = rig('cryo'); if (!r) { ok('3b.cryo places', false, ''); return; }
+    var mobs = feed(r.g, r.laneD, 'chitling', 5, 5, 90000);
+    stepSim(5);
+    var slowed = mobs.filter(function (d) { return d.alive && d.slow > 0.1; }).length;
+    ok('3b.cryo applies a slow', slowed > 0, slowed + '/' + mobs.length + ' slowed');
+  })();
+
+  (function () {
+    var r = rig('mortar'); if (!r) { ok('3b.mortar places', false, ''); return; }
+    /* A flyer directly over the tower must be untouched: MORTAR is ground only. */
+    var air = SIM.spawnDenizen('tither', { dist: r.laneD });
+    air.hp = air.maxHp = 90000;
+    var before = air.hp;
+    stepSim(6);
+    ok('3b.mortar cannot hit air', air.hp === before, 'flyer took ' + Math.round(before - air.hp));
+  })();
+
+  (function () {
+    var r = rig('flak'); if (!r) { ok('3b.flak places', false, ''); return; }
+    var air = SIM.spawnDenizen('tither', { dist: r.laneD });
+    air.hp = air.maxHp = 400000;
+    stepSim(6);
+    var airDmg = 400000 - air.hp;
+    var r2 = rig('flak');
+    var gnd = SIM.spawnDenizen('chitling', { dist: r2.laneD });
+    gnd.hp = gnd.maxHp = 400000; gnd.speed = 0;
+    stepSim(6);
+    var gndDmg = 400000 - gnd.hp;
+    ok('3b.flak does more to air than to ground', airDmg > gndDmg * 1.6,
+      'air ' + Math.round(airDmg) + ' vs ground ' + Math.round(gndDmg));
+  })();
+
+  (function () {
+    var r = rig('arc'); if (!r) { ok('3b.arc places', false, ''); return; }
+    var mobs = feed(r.g, r.laneD, 'chitling', 6, 6, 90000);
+    mobs.forEach(function (d) { d.speed = 0; });
+    stepSim(4);
+    var hit = mobs.filter(function (d) { return d.hp < d.maxHp; }).length;
+    ok('3b.arc chains to several bodies', hit >= 3, hit + '/' + mobs.length + ' damaged');
+  })();
+
+  (function () {
+    var r = rig('prism'); if (!r) { ok('3b.prism places', false, ''); return; }
+    var d = SIM.spawnDenizen('stockman', { dist: r.laneD });
+    d.hp = d.maxHp = 900000; d.speed = 0;
+    stepSim(1.0);
+    var early = r.t.beamRamp;
+    stepSim(3.0);
+    ok('3b.prism ramps while it holds a target', r.t.beamRamp > early + 0.2,
+      early.toFixed(2) + ' then ' + r.t.beamRamp.toFixed(2));
+  })();
+
+  (function () {
+    var r = rig('pharos'); if (!r) { ok('3b.pharos places', false, ''); return; }
+    var a0 = r.t.sweepAngle;
+    var d = SIM.spawnDenizen('stockman', { dist: r.laneD });
+    d.hp = d.maxHp = 900000; d.speed = 0;
+    stepSim(4);
+    ok('3b.pharos rotates continuously', Math.abs(r.t.sweepAngle - a0) > 1.0,
+      'swept ' + (r.t.sweepAngle - a0).toFixed(2) + ' rad');
+  })();
+
+  (function () {
+    var r = rig('toxin'); if (!r) { ok('3b.toxin places', false, ''); return; }
+    var d = SIM.spawnDenizen('stockman', { dist: r.laneD });
+    d.hp = d.maxHp = 900000; d.speed = 0;
+    stepSim(4);
+    ok('3b.toxin stacks poison', d.poisonStacks > 1, d.poisonStacks + ' stacks');
+  })();
+
+  (function () {
+    var r = rig('maw'); if (!r) { ok('3b.maw places', false, ''); return; }
+    var d = SIM.spawnDenizen('stockman', { dist: r.laneD });
+    d.speed = 0;
+    /* Just above the execute threshold, so it must die well before the tower
+       could chew through that health with ordinary damage. */
+    d.hp = d.maxHp * (SIM.stats(r.t).execute + 0.02);
+    stepSim(3);
+    ok('3b.maw executes a weakened body', !d.alive, 'alive=' + d.alive);
+  })();
+
+  (function () {
+    var r = rig('pyre'); if (!r) { ok('3b.pyre places', false, ''); return; }
+    var mobs = feed(r.g, r.laneD, 'chitling', 4, 3, 90000);
+    mobs.forEach(function (d) { d.speed = 0; });
+    stepSim(3);
+    var burning = mobs.filter(function (d) { return d.burnT > 0; }).length;
+    ok('3b.pyre sets its targets alight', burning > 0, burning + ' burning');
+  })();
+
+  (function () {
+    var r = rig('cyclone'); if (!r) { ok('3b.cyclone places', false, ''); return; }
+    var mobs = feed(r.g, r.laneD, 'chitling', 4, 4, 90000);
+    var launched = 0;
+    for (var i = 0; i < 500; i++) {
+      SIM.step(1 / 120);
+      for (var k = 0; k < mobs.length; k++) if (mobs[k].airborne > 0) launched++;
+      if (launched) break;
+    }
+    ok('3b.cyclone launches ground units', launched > 0, 'airborne frames ' + launched);
+  })();
+
+  (function () {
+    var r = rig('railgun'); if (!r) { ok('3b.railgun places', false, ''); return; }
+    /* A line of bodies along the lane: a piercing shot must damage several. */
+    var mobs = feed(r.g, r.laneD, 'chitling', 6, 10, 200000);
+    mobs.forEach(function (d) { d.speed = 0; });
+    stepSim(5);
+    var hit = mobs.filter(function (d) { return d.hp < d.maxHp; }).length;
+    ok('3b.railgun pierces more than one body', hit >= 2, hit + '/' + mobs.length + ' damaged');
+  })();
+
+  (function () {
+    var r = rig('singularity'); if (!r) { ok('3b.singularity places', false, ''); return; }
+    var d = SIM.spawnDenizen('chitling', { dist: Math.max(0, r.laneD - 4) });
+    d.hp = d.maxHp = 900000; d.speed = 0;
+    var before = d.dist;
+    stepSim(3);
+    ok('3b.singularity pulls along the lane', Math.abs(d.dist - before) > 0.2,
+      'moved ' + (d.dist - before).toFixed(2));
+  })();
+
+  (function () {
+    /* Every tower must be placeable, upgradable exactly twice, and sellable.
+       A tower the player cannot fully interact with is broken however well it
+       shoots. */
+    var bad = [];
+    DATA.TOWER_ORDER.forEach(function (id) {
+      var g = reset();
+      g.gold = 999999;
+      var free = g.board.plots.slice().sort(function (a, b) { return a.dist - b.dist; });
+      var t = SIM.place(free[0].id, id);
+      if (!t) { bad.push(id + ':place'); return; }
+      if (!SIM.upgrade(t)) bad.push(id + ':up1');
+      if (!SIM.upgrade(t)) bad.push(id + ':up2');
+      if (SIM.upgrade(t)) bad.push(id + ':up3-should-fail');
+      var s2 = SIM.stats(t);
+      /* Every stat must be FINITE for every tower. A support tower legitimately
+         has zero damage and zero range; none may have NaN. */
+      if (!isFinite(s2.dps)) bad.push(id + ':dps=' + s2.dps);
+      if (!isFinite(s2.range)) bad.push(id + ':range=' + s2.range);
+      if (!isFinite(s2.fireRate)) bad.push(id + ':fireRate=' + s2.fireRate);
+      if (DATA.TOWERS[id].kind === 'support') {
+        if (!(s2.income > 0)) bad.push(id + ':income');
+      } else {
+        if (!(s2.dps > 0)) bad.push(id + ':dps<=0');
+        if (!(s2.range > 0)) bad.push(id + ':range<=0');
+      }
+      if (SIM.sell(t) <= 0) bad.push(id + ':sell');
+    });
+    ok('3b.all fourteen place, upgrade twice, cap and sell', bad.length === 0, bad.join(' '));
+  })();
+
   /* ---------- 4. every reaction fires ---------- */
   section('REACTIONS');
   reset();

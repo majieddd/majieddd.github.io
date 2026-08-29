@@ -48,6 +48,8 @@ const CHROME = process.env.CHROME_PATH ||
    two tools from colliding with EACH OTHER too, on top of not colliding with
    themselves. */
 const PORT = 9700 + Math.floor(Math.random() * 400);
+/* Flags: --coverage collects per-module V8 coverage; --bare prints only the
+   last eval's return value on stdout (errors go to stderr). */
 const [, , URL_, OUTDIR, STEPFILE] = process.argv;
 /* An OS temp dir, not a folder inside OUTDIR (owner audit, Session 32): the
    old USERDIR lived under the harness's own output directory and was never
@@ -212,8 +214,34 @@ async function main() {
       coverage = (cov.result || []).filter(e => /\/js\/[A-Za-z0-9_]+\.js(\?|$)/.test(e.url || ''));
       await send('Profiler.stopPreciseCoverage').catch(() => {});
     }
-    console.log(JSON.stringify({ results, consoleErrors: consoleErrors.slice(0, 20),
-                                 coverage }, null, 1));
+    /* --bare prints ONLY the last eval's return value, unwrapped, and sends
+       everything else to stderr.
+
+       WHY THIS FLAG EXISTS. The full JSON report is the right default for a
+       human reading a failure, and it is the wrong thing entirely for a
+       caller that wants one number. Every probe in this project was being
+       piped through a regex to dig its own result back out of that report,
+       and on this machine the shell collapses backslashes on the way into
+       python and node, so those regexes silently lost their escapes. Four
+       consecutive attempts to read a single measurement failed on quoting
+       rather than on anything about the game. A probe whose result is
+       expensive to READ does not get run.
+
+       consoleErrors still surface, on stderr, so --bare can never hide a page
+       that threw while producing a clean-looking number. */
+    const BARE = process.argv.includes('--bare');
+    if (BARE) {
+      if (consoleErrors.length) {
+        console.error('CONSOLE ERRORS (' + consoleErrors.length + '):');
+        consoleErrors.slice(0, 20).forEach(e => console.error('  ' + e));
+      }
+      const evals = results.filter(r => 'value' in r);
+      const last = evals.length ? evals[evals.length - 1].value : null;
+      console.log(typeof last === 'string' ? last : JSON.stringify(last));
+    } else {
+      console.log(JSON.stringify({ results, consoleErrors: consoleErrors.slice(0, 20),
+                                   coverage }, null, 1));
+    }
   } finally {
     if (ws) { try { ws.close(); } catch (e) { /* already closed */ } }
     await cleanup(chrome);
