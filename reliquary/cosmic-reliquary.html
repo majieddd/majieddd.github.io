@@ -7616,12 +7616,24 @@ var FX = (function () {
     var hh = board.halfH !== undefined ? board.halfH : 30;
     motes.bounds = { hw: hw * 1.15, hh: hh * 1.15, lo: 0.4, hi: 11.0 };
     /* Tinted toward the faction key so the air belongs to the same picture,
-       but desaturated hard: dust that reads as coloured reads as confetti. */
-    if (palette && palette.key) {
+       but desaturated hard: dust that reads as coloured reads as confetti.
+
+       MUST BE keyRgb, NOT key. palette.key is the hex STRING ("#38e8ff"),
+       kept on the object for CSS/UI code that wants it directly. Indexing a
+       string returns single hex-digit CHARACTERS: key[0] is "#", which
+       coerces to NaN, and key[1]/key[2] are numeral characters like "3" and
+       "8" that coerce to the small integers 3 and 8, not the fractions those
+       digits represent. That shipped in v1.3: red went NaN and green/blue
+       landed at 1.5 and 3.0, ten times over range. Every one of 190 additive,
+       partly-NaN motes blew out the bloom threshold, and the blur spread each
+       one into a wash big enough to cover the whole board. Confirmed by
+       reading a live particle slot: g=1.467, b=2.936, r=NaN, which is exactly
+       0.62 + "3"*0.30 and 0.62 + "8"*0.30 for the faction key "#38e8ff". */
+    if (palette && palette.keyRgb) {
       motes.tint = [
-        0.62 + palette.key[0] * 0.30,
-        0.62 + palette.key[1] * 0.30,
-        0.62 + palette.key[2] * 0.30
+        0.62 + palette.keyRgb[0] * 0.30,
+        0.62 + palette.keyRgb[1] * 0.30,
+        0.62 + palette.keyRgb[2] * 0.30
       ];
     }
     motes.want = 190;

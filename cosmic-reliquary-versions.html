@@ -11,7 +11,7 @@
   --void:#0a0e17; --panel:#131828; --raised:rgba(30,38,62,.9);
   --line:rgba(140,160,210,.16); --line-strong:rgba(150,175,230,.32);
   --text:#e8ecf8; --text-dim:#a8b4d0; --text-faint:#8492b0;
-  --on-accent:#0a1018;
+  --on-accent:#0a1018; --warn:#ffb454;
   --r-sm:6px; --r-md:10px; --r-lg:16px;
   --t-fast:110ms; --e-out:cubic-bezier(.22,.9,.28,1);
 }
@@ -25,7 +25,13 @@ body{
 .wrap{width:min(760px,100%)}
 h1{font-size:34px; font-weight:800; letter-spacing:.1em; margin:0 0 6px; line-height:1.05}
 h1 .thin{font-weight:300; color:var(--text-dim)}
-.sub{color:var(--text-dim); font-size:13.5px; max-width:62ch; margin:0 0 26px}
+.sub{color:var(--text-dim); font-size:13.5px; max-width:62ch; margin:0 0 20px}
+.note{
+  border:1px solid rgba(255,180,84,.35); background:rgba(255,180,84,.08);
+  border-radius:var(--r-md); padding:12px 16px; margin-bottom:22px;
+  color:var(--text-dim); font-size:12.5px;
+}
+.note strong{color:var(--warn)}
 .v{
   display:block; text-decoration:none; color:inherit;
   border:1px solid var(--line); border-radius:var(--r-md);
@@ -41,6 +47,7 @@ h1 .thin{font-weight:300; color:var(--text-dim)}
   background:rgba(56,232,255,.14); border:1px solid var(--accent); color:var(--accent);
 }
 .tag.old{background:rgba(140,160,210,.10); border-color:var(--line-strong); color:var(--text-faint)}
+.tag.fix{background:rgba(255,180,84,.14); border-color:var(--warn); color:var(--warn)}
 .vn{font-size:16px; font-weight:700; letter-spacing:.04em}
 .vd{color:var(--text-dim); font-size:12.5px; margin-top:7px}
 .vd ul{margin:6px 0 0; padding-left:18px}
@@ -56,12 +63,22 @@ h1 .thin{font-weight:300; color:var(--text-dim)}
 <body>
 <div class="wrap">
   <h1>COSMIC CONQUEST<br><span class="thin">RELIQUARY</span></h1>
-  <p class="sub">Every version is a single self-contained HTML file. Nothing is fetched at
-  runtime except the webfont, and the font stack falls back cleanly, so each one also
-  runs offline straight from disk.</p>
+  <p class="sub">Every version below is a single self-contained HTML file. Nothing is fetched at
+  runtime except the webfont, and the font stack falls back cleanly, so each one also runs
+  offline straight from disk.</p>
 
-  <a class="v" href="reliquary-v1.3.html">
-    <div class="vh"><span class="tag">LATEST</span><span class="vn">v1.3  Shading, shadows, dead features, and a mote colour bug</span></div>
+  <div class="note">
+    <strong>Why these live at the repo root.</strong> The <code>reliquary/</code> path on this
+    site is currently serving unrelated content and returning 404 for everything else in that
+    folder, on GitHub's side, not from anything in this repository (every other top-level path
+    matches its repo bytes exactly; only <code>reliquary/</code> does not, across multiple clean
+    deploys). Until that is sorted out, every version is mirrored here at the root, which is
+    verified reachable. The full source, the build tooling and every historical build still live
+    at <code>reliquary/</code> in the repository itself, untouched.
+  </div>
+
+  <a class="v" href="cosmic-reliquary-v1.3.html">
+    <div class="vh"><span class="tag">LATEST</span><span class="tag fix">FIXED</span><span class="vn">v1.3  Shading, shadows, dead features, and a mote colour bug</span></div>
     <div class="vd">
       <ul>
         <li><strong>Fixed after ship: ambient dust was painting the whole board.</strong>
@@ -73,15 +90,15 @@ h1 .thin{font-weight:300; color:var(--text-dim)}
         190 small, partly-NaN, roughly ten-times-over-range motes blew out the bloom threshold,
         and the blur spread each into a wash big enough that 190 overlapping washes covered
         nearly the whole board in a shifting colour haze, identically for all five factions.
-        Confirmed by reading a live particle straight off the GPU buffer, fixed at the source,
-        and gated: every faction's motes are checked finite and in range, with the original bug
-        planted back in to confirm the gate catches it (2,760 bad readings) before confirming
-        the fix clears it.</li>
+        Confirmed by reading a live particle straight off the GPU buffer (green landed at 1.467,
+        blue at 2.936, red at NaN), fixed at the source, and gated: every faction's motes are now
+        populated and checked finite and in range, with the original bug planted back in to
+        confirm the gate actually catches it (2,760 bad readings) before confirming the fix
+        clears it.</li>
         <li><strong>The wet specular was never running.</strong> Its exponent was 90 against a
         shader threshold of 0.35, which needs the half vector within 8.7 degrees of the surface
         normal. Every mesh here has flat per-face normals, so there is no gradient for a lobe
-        that narrow to land on. Switching the whole term off changed the frame by 0.0001. One of
-        the three pillars of the art direction had been invisible since the first build. Swept
+        that narrow to land on. Switching the whole term off changed the frame by 0.0001. Swept
         against v1.2 in one browser session: the picture is now 1.8% brighter, with 4.9% more
         micro-contrast and 41.6% more overall contrast, all at once.</li>
         <li><strong>Shadows are separate from form.</strong> They were being computed and then
@@ -90,66 +107,53 @@ h1 .thin{font-weight:300; color:var(--text-dim)}
         blended by a soft mask, with nine-tap rotated filtering and a shadow box fitted to the
         board rather than chasing the camera.</li>
         <li><strong>Paint has height.</strong> The texture atlas spent a quarter of itself
-        storing the number 255. That channel now carries an impasto ridge mask, folded out of the
-        high-frequency octave, and the sheen sits on the crests instead of floating over them.</li>
-        <li><strong>Soft particles.</strong> Every quad used to end in a hard straight line where
-        it met the ground. The fade reads the depth the opaque pass already writes.</li>
-        <li><strong>Air.</strong> A recycled pool of drifting motes, so the space between the
-        camera and the board is a place rather than a vacuum.</li>
-        <li><strong>Frustum culling.</strong> Zoomed in on a full board, 196 draws becomes 122,
-        and zero pixels differ from the unculled frame.</li>
-        <li><strong>Every tower is tested for what makes it different.</strong> Not just that it
-        deals damage: that cryo slows, that mortar cannot hit air, that flak does more to air than
-        ground, that maw executes, that railgun pierces. It found VAULT shipping a NaN.</li>
-        <li><strong>Turrets scan when idle, units breathe when held, and the dead collapse</strong>
-        rather than dissolving at attention.</li>
+        storing the number 255. That channel now carries an impasto ridge mask, and the sheen
+        sits on the crests instead of floating over them.</li>
+        <li><strong>Soft particles, ambient air, frustum culling.</strong> Every particle quad
+        now fades into what it meets instead of ending in a hard line; the space between camera
+        and board carries drifting dust; zoomed in on a full board, 196 draws becomes 122 with
+        zero pixels differing from the unculled frame.</li>
+        <li><strong>Every tower is tested for what makes it different,</strong> not just that it
+        deals damage. Found VAULT shipping a NaN in its own stat block, fixed the same way.</li>
       </ul>
     </div>
     <div class="meta">153 checks green</div>
   </a>
 
-  <a class="v" href="reliquary-v1.2.html">
+  <a class="v" href="cosmic-reliquary-v1.2.html">
     <div class="vh"><span class="tag old">v1.2</span><span class="vn">Performance and locomotion</span></div>
     <div class="vd">
       <ul>
-        <li><strong>Legs actually work.</strong> The IK euler conversion was a half turn out in two places. The errors cancel for axis-aligned directions, so bones pointing straight down looked right and nothing threw, but for any other direction the vertical component inverted. Measured on a strider whose whole leg is 2.88 units: the gap between the requested foot position and the delivered one was up to 5.01 units. The legs were not walking badly, they were in arbitrary poses. Now 0.000.</li>
-        <li><strong>Feet are nailed to the ground.</strong> The gait rate is derived from stride rather than hand-tuned, and a planted foot solves to the world point where it actually landed. Foot travel against body travel per frame went from 0.45 to 0.52 down to 0.00.</li>
-        <li><strong>Much faster.</strong> Draw time 5.62ms to 2.1ms: small units no longer redraw into the shadow map (151 shadow draws to 61), per-item uniforms packed into two vec4s, and tower stats cached instead of rebuilt 120 times a second each.</li>
-        <li><strong>Adaptive resolution.</strong> Device pixel ratio capped at 1.5 and the render scale walks itself toward a 60fps budget, so the post chain stops asking a 4K panel for four times the pixels.</li>
-        <li><strong>Brighter.</strong> The lit end of the ramp carries it rather than exposure, so the picture gains light and contrast at the same time instead of going grey.</li>
+        <li><strong>Legs actually work.</strong> The IK euler conversion was a half turn out in two places. Measured on a strider whose whole leg is 2.88 units: the gap between the requested foot position and the delivered one was up to 5.01 units. Now 0.000.</li>
+        <li><strong>Feet are nailed to the ground.</strong> Foot travel against body travel per frame went from 0.45-0.52 down to 0.00.</li>
+        <li><strong>Much faster.</strong> Draw time 5.62ms to 2.1ms.</li>
+        <li><strong>Adaptive resolution</strong> and a <strong>brighter</strong> lit ramp.</li>
       </ul>
     </div>
     <div class="meta">123 checks green</div>
   </a>
 
-  <a class="v" href="reliquary-v1.1.html">
+  <a class="v" href="cosmic-reliquary-v1.1.html">
     <div class="vh"><span class="tag old">v1.1</span><span class="vn">Polish pass</span></div>
     <div class="vd">
-      Everything in v1.0, plus:
-      <ul>
-        <li>Beams actually reach their target. The beam mesh was extruded along Y while the transform expected Z, so every beam, sweep, chain arc and hitscan trail drew a stub that stopped short and extended backward through its own tower.</li>
-        <li>Rebuilt particle system: velocity-stretched streaks, colour that cools over life, embers with turbulence, hard shards, and layered five-part impacts.</li>
-        <li>Dust kicks up under a foot on the frame it plants.</li>
-        <li>Denizens keep a reduced rim so they stay dark silhouettes instead of being flooded by the faction key light.</li>
-      </ul>
+      Everything in v1.0, plus: beams that actually reach their target, a rebuilt particle
+      system (velocity-stretched streaks, colour that cools over life, layered five-part
+      impacts), footfall dust, and denizens dark enough to read as silhouettes.
     </div>
     <div class="meta">106 checks green + 8 particle checks</div>
   </a>
 
-  <a class="v" href="reliquary-v1.0.html">
+  <a class="v" href="cosmic-reliquary-v1.0.html">
     <div class="vh"><span class="tag old">v1.0</span><span class="vn">First release</span></div>
     <div class="vd">
       The original build. 14 towers, 10 reactions, 20 waves, 3 boards, 5 commanders.
-      Beam visuals are the stub version described above, and the particle system is the
-      simpler four-kind one.
     </div>
     <div class="meta">106 checks green</div>
   </a>
 
   <div class="foot">
-    <a href="../">Play the current version</a> &middot;
-    <a href="../README.md">How it was built and verified</a> &middot;
-    <a href="../../narrative/">Narrative hub</a>
+    <a href="https://github.com/majieddd/majieddd.github.io/tree/main/reliquary">Full source and verification tooling</a> &middot;
+    <a href="https://github.com/majieddd/majieddd.github.io/blob/main/reliquary/README.md">How it was built and verified</a>
   </div>
 </div>
 </body>

@@ -1074,6 +1074,73 @@
     R.ART.grain = grainWas;
   })();
 
+  /* ---------- N. mote tint reads the RGB array, not the hex string ----------
+     THE CLASS OF BUG THIS CATCHES, shipped in the v1.3 build the owner is
+     playing right now: moteSetup read `palette.key`, which is the hex STRING
+     kept on the palette object for CSS ("#38e8ff"), not `palette.keyRgb`, the
+     0..1 array. Indexing a string returns single hex-digit CHARACTERS:
+     key[0] is "#", which coerces to NaN; key[1] and key[2] are numeral
+     characters like "3" and "8" that coerce to the INTEGERS 3 and 8, not the
+     fractions those hex digits stand for. The formula `0.62 + n * 0.30` then
+     produced red = NaN and green/blue landed at 1.5 and 3.0, roughly ten
+     times over range.
+
+     Nothing threw. NaN propagates silently through Float32Array storage and
+     WebGL blending, and a colour that is merely ten times too bright is not a
+     type error anywhere. It reached the screen as 190 small, partly-NaN,
+     wildly over-bright motes, additively blended, every one of them blowing
+     out the bloom threshold. The blur then spread each into a soft wash, and
+     190 overlapping washes covered nearly the whole board in a shifting
+     colour haze that read as "the ground is broken" when the ground itself
+     was fine. Every one of the five factions carries this same hex-string
+     `key` field, so this broke identically for all five, not just Humanity.
+
+     So every faction's motes are populated and every colour channel of every
+     live mote is checked: finite, and inside a range no legitimate tint
+     formula can exceed. */
+
+  (function () {
+    if (!FX.moteSetup || !FX.debugKindCounts) { ok('N.1 motes are checkable', false, 'FX debug hooks missing'); return; }
+    var bad = [];
+    Object.keys(PAINT.FACTIONS).forEach(function (fid) {
+      var g = reset();
+      FX.clear();
+      var pal = PAINT.FACTIONS[fid];
+      FX.moteSetup(g.board, pal);
+      for (var i = 0; i < 220; i++) FX.moteUpdate(1 / 60);
+      if (!GAME.renderOnce(1 / 60)) return;
+
+      var calls = [];
+      var orig = R.pushParticle;
+      R.pushParticle = function (x, y, z, r, gg, b, a, size, rot, kind, stretch, vx, vy, vz) {
+        if (kind === FX.KIND.MOTE) calls.push([r, gg, b]);
+        return orig.apply(R, arguments);
+      };
+      FX.submit();
+      R.pushParticle = orig;
+
+      if (!calls.length) { bad.push(fid + ':no-motes-submitted'); return; }
+      calls.forEach(function (c) {
+        for (var k = 0; k < 3; k++) {
+          var v = c[k];
+          if (!isFinite(v)) bad.push(fid + ':channel' + k + '=' + v);
+          /* moteSetup's own formula is 0.62 + keyRgb[n]*0.30 with keyRgb in
+             0..1, so the legitimate range is [0.62, 0.92]. A cooled end colour
+             (0.75x) and the birth ease can move it a little further; 1.3 is a
+             loose ceiling that the hex-string bug (which lands at 1.5+) still
+             clears easily, while ordinary tint math never approaches it. */
+          else if (v < 0 || v > 1.3) bad.push(fid + ':channel' + k + '=' + v.toFixed(3));
+        }
+      });
+    });
+    /* Cap how many distinct offending values are echoed: with the bug present
+       every one of ~190 motes across 5 factions fails, and printing all of
+       them would bury the one line that matters. */
+    ok('N.1 every faction\'s mote colour is finite and in range', bad.length === 0,
+      bad.length + ' bad readings' + (bad.length ? ', e.g. ' + bad.slice(0, 4).join(' ') : ''));
+    FX.clear();
+  })();
+
   /* ---------- W. feet stay planted ----------
      THE definitive measure of walk quality, and the one the eye notices even
      when it cannot name it. In a correct gait at least one foot is in stance

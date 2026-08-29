@@ -794,7 +794,6 @@ kbd {
     <button type="button" class="btn iconbtn" id="btn-speed" title="Cycle speed (Space)">1x</button>
     <button type="button" class="btn" id="btn-pause" title="Pause (P)">PAUSE</button>
     <button type="button" class="btn" id="btn-mute" title="Toggle sound">SOUND</button>
-    <button type="button" class="btn" id="btn-quality" title="Cycle graphics quality">HIGH</button>
     <button type="button" class="btn" id="btn-perf" title="Toggle performance readout">STATS</button>
   </div>
 
@@ -1395,33 +1394,6 @@ var GL = (function () {
     gl.enableVertexAttribArray(ATTR.aux);
     gl.vertexAttribPointer(ATTR.aux, 3, gl.FLOAT, false, stride, 9 * 4);
 
-    /* BOUNDING SPHERE, computed once at build time. Frustum culling needs a
-       cheap conservative volume per mesh, and the vertex data is right here and
-       never read again after the upload, so this is the only place where the
-       cost can be paid once rather than every frame. Centre of the AABB rather
-       than the centroid, because the radius is measured from it and the two
-       have to agree for the sphere to be as tight as an axis-aligned pass can
-       make it. */
-    var bMin0 = Infinity, bMin1 = Infinity, bMin2 = Infinity;
-    var bMax0 = -Infinity, bMax1 = -Infinity, bMax2 = -Infinity;
-    for (var vi = 0; vi < data.verts.length; vi += 12) {
-      var x = data.verts[vi], y = data.verts[vi + 1], z = data.verts[vi + 2];
-      if (x < bMin0) bMin0 = x; if (x > bMax0) bMax0 = x;
-      if (y < bMin1) bMin1 = y; if (y > bMax1) bMax1 = y;
-      if (z < bMin2) bMin2 = z; if (z > bMax2) bMax2 = z;
-    }
-    var bcx = 0, bcy = 0, bcz = 0, brad = 0;
-    if (isFinite(bMin0)) {
-      bcx = (bMin0 + bMax0) * 0.5; bcy = (bMin1 + bMax1) * 0.5; bcz = (bMin2 + bMax2) * 0.5;
-      var best = 0;
-      for (var vj = 0; vj < data.verts.length; vj += 12) {
-        var dx = data.verts[vj] - bcx, dy = data.verts[vj + 1] - bcy, dz = data.verts[vj + 2] - bcz;
-        var d2 = dx * dx + dy * dy + dz * dz;
-        if (d2 > best) best = d2;
-      }
-      brad = Math.sqrt(best);
-    }
-
     _live.mesh++;
     var ibo = null, count = 0, type = gl.UNSIGNED_SHORT;
     if (data.index) {
@@ -1438,7 +1410,6 @@ var GL = (function () {
     return {
       vao: vao, vbo: vbo, ibo: ibo, count: count, type: type,
       bounds: data.bounds || null,
-      bcx: bcx, bcy: bcy, bcz: bcz, radius: brad,
       draw: function () {
         gl.bindVertexArray(vao);
         if (ibo) gl.drawElements(gl.TRIANGLES, count, type, 0);
@@ -2269,28 +2240,14 @@ var SH = (function () {
        makes the picture brighter AND increases contrast at the same time,
        which is what "brighter" actually means for a painting whose drawing is
        carried by its darks. */
-    /* LIGHT MULTIPLIES ALBEDO, IT DOES NOT ADD TO IT.
-       The lit stop used mix(albedo, uLightColor, 0.17), which adds a FIXED
-       amount of the light colour no matter how dark the surface is. On a
-       near-black enemy hull that one term was several times the albedo itself,
-       so every lit denizen washed out and stopped being the dark silhouette
-       the entire enemy design depends on. Measured before this change: enemies
-       at luminance 114 against a ground of 87, which is backwards.
-
-       A mid-value board looked correct throughout, which is exactly why the
-       fault survived a brightness pass: it only misbehaves at the dark end.
-
-       Multiplying is both what light actually does and what preserves the
-       relationship the art direction needs. Dark things stay dark in the light
-       and bright things take the light's colour.
-
-       The earlier 1.42 multiplier is also gone: it drove the lane and the
-       ground past the top of the tonemap so both flattened against the ceiling
-       and rendered at luminance 153 and 152, identical. A ramp that clips
-       destroys the separation it exists to create. */
     '  vec3 deep = mix(uShadowColor, albedo * 0.24, uShadowLift);',
-    '  vec3 mid  = albedo * mix(vec3(1.0), uLightColor * 1.5, 0.35) * 0.80;',
-    '  vec3 lite = albedo * mix(vec3(1.0), uLightColor * 1.6, 0.55) * 1.34;',
+    '  vec3 mid  = albedo * 0.82;',
+    /* 1.42 CLIPPED. Measured on a lit board: the lane rendered luminance 153
+       and the ground 152, identical, because both albedos were driven past the
+       top of the tonemap and flattened against the ceiling. A ramp that clips
+       destroys exactly the separation it exists to create. 1.22 keeps the lit
+       band inside range so two different albedos stay two different values. */
+    '  vec3 lite = mix(albedo, uLightColor, 0.17) * 1.22;',
     '  return q < 0.5 ? mix(deep, mid, q * 2.0) : mix(mid, lite, (q - 0.5) * 2.0);',
     '}'
   ].join('\n');
@@ -2374,15 +2331,9 @@ var SH = (function () {
     'uniform sampler2DShadow uShadow;',
     'uniform float uShadowTexel;',
     'uniform float uShadowStrength;',
-    'uniform float uShadowBand;',   /* the band a shadowed surface collapses to */
-    'uniform float uShadowEdge;',   /* where the cel shadow edge sits in the PCF result */
-    'uniform float uShadowSoft;',   /* how wide that edge is */
-    'uniform float uShadowDepth;',
-    'uniform float uShadowTaps;',  /* how far spec and rim are killed in shadow */
     'uniform sampler2D uTooth;',
     'uniform float uToothScale;',
     'uniform float uToothStrength;',
-    'uniform float uToothTriplanar;',
     'uniform float uTime;',
     'uniform vec4 uItemA;',   /* flash, dissolve, explode, alpha */
     'uniform vec4 uItemB;',   /* tintMix, facetJitter, rimScale, debugMode */
@@ -2399,10 +2350,6 @@ var SH = (function () {
        gives bilinear filtering inside each tap, so five taps buys a soft edge
        that looks like about twenty. A wider kernel is wasted here because the
        shadow is going to be posterised into the ramp anyway. */
-    'const vec2 PCF_DISK[9] = vec2[9](',
-    '  vec2( 0.0,  0.0), vec2( 1.0,  0.0), vec2(-1.0,  0.0),',
-    '  vec2( 0.0,  1.0), vec2( 0.0, -1.0), vec2( 0.7,  0.7),',
-    '  vec2(-0.7,  0.7), vec2( 0.7, -0.7), vec2(-0.7, -0.7));',
     'float shadowVis(){',
     '  vec3 pc = vShadowCoord.xyz / vShadowCoord.w;',
     '  pc = pc * 0.5 + 0.5;',
@@ -2413,63 +2360,20 @@ var SH = (function () {
     '  float ndl = max(dot(vNormal, uLightDir), 0.0);',
     '  float bias = mix(0.0035, 0.0006, ndl);',
     '  float z = pc.z - bias;',
-    /* NINE TAPS ON A ROTATED GRID. The previous five-tap plus was too tight
-       for the map resolution and left the hard stair-stepped edges the shadow
-       debug channel showed. Rotating the kernel per pixel by a hash of the
-       screen position turns what is left of the aliasing into a fine dither
-       that the halftone and grain in post absorb, instead of a staircase the
-       eye follows. */
-    '  float ang = hash12(floor(gl_FragCoord.xy)) * 6.2831853;',
-    '  vec2 rot = vec2(cos(ang), sin(ang));',
-    '  float s = 0.0;',
-    '  int taps = int(uShadowTaps);',
-    /* A dynamic loop bound. GLSL ES 3.00 permits it, and it lets the quality
-       tier trade shadow softness for fill rate without a second shader. */
-    '  for (int i = 0; i < 9; i++){',
-    '    if (i >= taps) break;',
-    '    vec2 o = PCF_DISK[i];',
-    '    vec2 r = vec2(o.x * rot.x - o.y * rot.y, o.x * rot.y + o.y * rot.x);',
-    '    s += texture(uShadow, vec3(pc.xy + r * uShadowTexel * 1.7, z));',
-    '  }',
-    '  return s / float(taps);',
+    '  float s = texture(uShadow, vec3(pc.xy, z));',
+    '  s += texture(uShadow, vec3(pc.xy + vec2( uShadowTexel, 0.0), z));',
+    '  s += texture(uShadow, vec3(pc.xy + vec2(-uShadowTexel, 0.0), z));',
+    '  s += texture(uShadow, vec3(pc.xy + vec2(0.0,  uShadowTexel), z));',
+    '  s += texture(uShadow, vec3(pc.xy + vec2(0.0, -uShadowTexel), z));',
+    '  return s * 0.2;',
     '}',
     '',
     /* Triplanar so the tooth follows the surface without any UVs, which the
        procedural meshes do not have and would be a lot of code to give them.
        The blend weights are raised to a power so the seams between the three
        projections are narrow. */
-    /* TRIPLANAR COSTS THREE TEXTURE FETCHES ON EVERY LIT PIXEL, which on a
-       full-screen board is the single largest sampler cost in the frame. Above
-       the quality threshold it blends all three projections properly; below it
-       it takes only the DOMINANT axis. Every surface in this game is faceted,
-       so each facet has one strongly dominant normal component and the seam
-       the cheap path would show has nowhere to appear. One fetch instead of
-       three, for a difference that needs a paused screenshot to find. */
-    /* Returns tooth in .x and the impasto ridge mask in .y, from ONE fetch
-       apiece rather than two, because they live in different channels of the
-       same texel. */
-    'vec2 toothRidge(vec3 p, vec3 n){',
-    '  if (uToothTriplanar < 0.5){',
-    '    vec3 an = abs(n);',
-    '    vec2 uv = (an.y > an.x && an.y > an.z) ? p.xz : ((an.x > an.z) ? p.zy : p.xy);',
-    '    vec4 t = texture(uTooth, uv * uToothScale);',
-    '    return vec2(t.r, t.a);',
-    '  }',
-    '  vec3 bl = pow(abs(n), vec3(4.0));',
-    '  bl /= max(bl.x + bl.y + bl.z, 1e-4);',
-    '  vec4 tx = texture(uTooth, p.zy * uToothScale);',
-    '  vec4 ty = texture(uTooth, p.xz * uToothScale);',
-    '  vec4 tz = texture(uTooth, p.xy * uToothScale);',
-    '  return vec2(tx.r, tx.a) * bl.x + vec2(ty.r, ty.a) * bl.y + vec2(tz.r, tz.a) * bl.z;',
-    '}',
-
     'float toothSample(vec3 p, vec3 n){',
-    '  vec3 a = abs(n);',
-    '  if (uToothTriplanar < 0.5){',
-    '    vec2 uv = (a.y >= a.x && a.y >= a.z) ? p.xz : ((a.x >= a.z) ? p.zy : p.xy);',
-    '    return texture(uTooth, uv * uToothScale).r;',
-    '  }',
-    '  vec3 w = pow(a, vec3(4.0));',
+    '  vec3 w = pow(abs(n), vec3(4.0));',
     '  w /= max(w.x + w.y + w.z, 1e-4);',
     '  float x = texture(uTooth, p.zy * uToothScale).r;',
     '  float y = texture(uTooth, p.xz * uToothScale).r;',
@@ -2496,26 +2400,12 @@ var SH = (function () {
     '',
     '  float ndl = dot(N, L);',
     '  float sh = mix(1.0, shadowVis(), uShadowStrength);',
-    /* SHADOW IS A SEPARATE TERM FROM FORM, NOT A SCALE ON n dot l.
-       This used to read posterise(ndl * mix(0.25, 1.0, sh)), folding the
-       shadow into the lighting term before quantising. The consequence is that
-       a surface already sitting near the top of the ramp, which is exactly
-       what flat ground under an overhead sun is, drops by a quarter and STILL
-       quantises to the same band. The shadow map was computing correct
-       visibility and the shading was discarding it: the debug channel showed
-       large clear shadows while the rendered frame had none at all.
-
-       Form and shadow are now computed separately and composited. The form
-       band comes from geometry alone, the shadow picks the deep end of the
-       ramp for that same albedo, and a smoothstep across the PCF result gives
-       a cel edge whose width is art-directable rather than an accident of
-       where a band boundary happened to fall. */
-    '  float form = posterise(ndl, vSeed);',
-    '  vec3 litCol  = rampColor(form, vAlbedo);',
-    '  vec3 shadCol = rampColor(min(form, uShadowBand), vAlbedo);',
-    '  float shadMask = smoothstep(uShadowEdge, uShadowEdge + uShadowSoft, sh);',
-    '  vec3 col = mix(shadCol, litCol, shadMask);',
-    '  float lit = form * mix(uShadowDepth, 1.0, shadMask);',
+    /* The shadow is folded into the lighting term BEFORE quantising, so a
+       shadowed facet steps down a whole band rather than being darkened
+       smoothly. That keeps the cel edge intact inside shadows, which is where
+       most cel-shaded renderers give themselves away. */
+    '  float lit = posterise(ndl * mix(0.25, 1.0, sh), vSeed);',
+    '  vec3 col = rampColor(lit, vAlbedo);',
     '',
     /* Hemispheric ambient. Sky colour from above, bounce colour from below.
        Cheap, and it is what stops the unlit side reading as a hole rather
@@ -2527,45 +2417,22 @@ var SH = (function () {
     '',
     /* Paint tooth. Modulates value only, never hue, so it reads as the canvas
        under the paint rather than as dirt on top of it. */
-    '  vec2 tr = toothRidge(vWorld, N);',
-    '  float tooth = tr.x;',
-    '  float ridge = tr.y;',
+    '  float tooth = toothSample(vWorld, N);',
     '  col *= 1.0 + (tooth - 0.5) * uToothStrength * vTooth;',
-    /* Crests catch the key even away from the specular lobe, which is what
-       makes thick paint read as thick from any angle. Confined to the lit
-       side and to the shadow mask so it never lifts a form shadow. */
-    /* SCALED BY uToothStrength, because it is part of the same surface
-       treatment and must answer to the same control. It did not, and a gate
-       that plants toothStrength at 0.01 stayed green: the crest kept firing
-       with the tooth switched off, so one uniform was nominally in charge of
-       two independent effects. That is how a control ends up not controlling
-       the thing its name promises. */
-    '  col += vAlbedo * uLightColor * ridge * 0.24 * uToothStrength * lit * shadMask * vTooth;',
     '',
     /* The wet specular. Posterised to two steps: either the knife ridge
        catches the light or it does not. A smooth lobe here would drag the
        whole image back toward conventional 3D. */
     '  vec3 H = normalize(L + Vd);',
     '  float spec = pow(max(dot(N, H), 0.0), uSpecPower);',
-    '  spec = step(0.10, spec) * (0.55 + 0.45 * step(0.40, spec));',
-    /* BREAK THE HIGHLIGHT ON THE PAINT. A posterised specular with no spatial
-       term is a clean hard-edged blob, which is the one thing an oil surface
-       never produces: the wet sheen sits on the raised crests and skips the
-       troughs. Biasing toward the ridge mask keeps the highlight's shape and
-       position while destroying its smooth interior. */
-    /* The endpoints are chosen so the AVERAGE of this factor over the ridge
-       mask is 1.0, given the measured mean of that mask (86/255 = 0.337):
-       0.25 + 0.337 * (2.48 - 0.25) = 1.00. Modulating without normalising cut
-       total specular energy by 40% and darkened the whole frame 125.3 to
-       116.9, which is a lighting change smuggled in under a texture change. */
-    '  spec *= mix(0.25, 2.48, ridge);',
-    '  col += uLightColor * spec * uSpecStrength * shadMask;',
+    '  spec = step(0.35, spec) * (0.55 + 0.45 * step(0.75, spec));',
+    '  col += uLightColor * spec * uSpecStrength * sh;',
     '',
     /* Rim. Biased toward the light side so it reads as light wrapping around
        the form, not as a uniform outline glow. */
     '  float fres = pow(1.0 - clamp(dot(N, Vd), 0.0, 1.0), uRimPower);',
     '  float rimSide = clamp(dot(N, L) * 0.5 + 0.65, 0.0, 1.0);',
-    '  col += uRimColor * fres * rimSide * uRimStrength * uItemB.z * mix(0.35, 1.0, shadMask);',
+    '  col += uRimColor * fres * rimSide * uRimStrength * uItemB.z;',
     '',
     /* Emissive facets bypass the ramp entirely. */
     '  col = mix(col, vAlbedo * 1.9 + uRimColor * 0.35, vEmis);',
@@ -2963,7 +2830,6 @@ var SH = (function () {
     'out vec4 vColor;',
     'flat out float vKind;',
     'flat out float vStretch;',
-    'out float vViewDepth;',
     /* Six vertices per instance, built from gl_VertexID against a constant
        table. An earlier draft derived the corners with a chain of ternaries
        and got the winding wrong on the second triangle, which showed up as
@@ -3005,15 +2871,7 @@ var SH = (function () {
     '  float cs = cos(ang), sn = sin(ang);',
     '  vec2 rc = vec2(c2.x * cs - c2.y * sn, c2.x * sn + c2.y * cs);',
     '  vec3 world = iPos + uRight * rc.x + uUp * rc.y;',
-    '  vec4 vp = uView * vec4(world, 1.0);',
-    /* MUST MATCH how the opaque pass defines depth, which is length(vView),
-       the distance from the camera, NOT the view-space z component. The two
-       agree along the view axis and diverge toward the edges of the frame by
-       the cosine of the angle, so using -vp.z here would make the fade correct
-       in the middle of the screen and progressively wrong toward the corners:
-       the worst kind of error, because it looks right where you check it. */
-    '  vViewDepth = length(vp.xyz);',
-    '  gl_Position = uProj * vp;',
+    '  gl_Position = uProj * uView * vec4(world, 1.0);',
     '}'
   ].join('\n');
 
@@ -3024,10 +2882,6 @@ var SH = (function () {
     'in vec4 vColor;',
     'flat in float vKind;',
     'flat in float vStretch;',
-    'in float vViewDepth;',
-    'uniform sampler2D uSceneDepth;',
-    'uniform vec2 uRes;',
-    'uniform float uSoftness;',
     'out vec4 oColor;',
     NOISE,
     'void main(){',
@@ -3069,30 +2923,11 @@ var SH = (function () {
     '    float core = 1.0 - smoothstep(0.0, 0.30, d);',
     '    a = glow * 0.75 + core;',
     '    col += vec3(1.0, 0.92, 0.8) * core * 0.7;',
-    '  } else if (vKind < 6.5){',
+    '  } else {',
     /* SHARD: a sharp asymmetric chip, the debris that is not paint. */
     '    float tri = p.y + 1.0 - abs(p.x) * 1.9;',
     '    a = step(0.0, tri) * step(abs(p.x), 0.85);',
-    '  } else {',
-    /* MOTE: airborne dust. Almost nothing on its own, which is the point:
-       motes exist to give the air between the camera and the board something
-       to happen in, so the picture reads as a place with atmosphere rather
-       than as geometry floating in a void. A soft core with a faint ring
-       catches the key light the way real suspended dust does. */
-    '    float core = 1.0 - smoothstep(0.0, 0.42, d);',
-    '    float halo = (1.0 - smoothstep(0.35, 1.0, d)) * 0.30;',
-    '    a = core * 0.85 + halo;',
     '  }',
-    '  if (a <= 0.003) discard;',
-    /* SOFT PARTICLES. Without this every quad terminates in a hard straight
-       line wherever it intersects the ground or a tower, and nothing announces
-       a cheap particle system faster: real smoke has no edge where it meets a
-       surface. The opaque pass already writes linear view depth into
-       attachment 1, so the fade costs one texture fetch and a subtract. The
-       sky writes 1e5 there, so particles against open sky are untouched. */
-    '  float sceneZ = texture(uSceneDepth, gl_FragCoord.xy / uRes).a;',
-    '  float gap = sceneZ - vViewDepth;',
-    '  a *= clamp(gap / max(uSoftness, 0.001), 0.0, 1.0);',
     '  if (a <= 0.003) discard;',
     '  oColor = vec4(col, vColor.a * a);',
     '}'
@@ -3282,34 +3117,10 @@ var PAINT = (function () {
         /* B: long streaks for ground and large flat panels. */
         var s = U.sat(0.5 + (streak[i] - 0.5) * 2.3);
 
-        /* A: IMPASTO RIDGES. This channel was a constant 255 for the whole
-           life of the renderer, a quarter of a 512x512 texture spent storing
-           the number one. It now carries the single thing the surface was
-           most obviously missing: paint has HEIGHT, and a knife leaves crests
-           where two strokes overlap. Folding the noise about its midpoint
-           (1 - |2n - 1|) turns level sets into thin lines rather than blobs,
-           and raising that to a power thins them further, so the result is a
-           sparse web of crests instead of a second cloud layer.
-
-           DERIVED FROM THE HIGH-FREQUENCY OCTAVE, NOT THE LOW ONE. The first
-           version folded the same freq-8 tooth the albedo already uses, and
-           measurement killed it: pixels above 1.45x the frame mean went from
-           4.5% to 20.8% while high-frequency energy moved 4.029 to 4.171, a
-           rise of 3.5%. That is not texture, that is a brightness pass wearing
-           texture as a disguise, and it is the exact failure a previous pass
-           on this renderer already shipped once. Crests only read as crests
-           at a spatial frequency near the pixel, so the fold is taken on the
-           freq-32 octave and the exponents are high enough to leave a sparse
-           web rather than a second cloud layer. */
-        var fold = 1.0 - Math.abs(fine[i] * 2.0 - 1.0);
-        var ridge = Math.pow(U.sat(fold), 7.0);
-        var fold2 = 1.0 - Math.abs(tooth[i] * 2.0 - 1.0);
-        ridge = U.sat(ridge * 0.85 + Math.pow(U.sat(fold2), 9.0) * 0.40);
-
         d[o] = Math.round(t * 255);
         d[o + 1] = Math.round(weave * 255);
         d[o + 2] = Math.round(s * 255);
-        d[o + 3] = Math.round(ridge * 255);
+        d[o + 3] = 255;
       }
     }
     ctx.putImageData(img, 0, 0);
@@ -3442,46 +3253,7 @@ var R = (function () {
   var opaqueN = 0, transparentN = 0, particleN = 0;
 
   var pal = null;
-  /* QUALITY TIERS.
-     The renderer cannot measure the machine it will run on, and the adaptive
-     scaler can only trade resolution. A tier trades the things resolution
-     cannot: how many shadow taps every lit pixel pays for, how large the
-     shadow map is, and whether the bloom chain runs at all. Exposed in the HUD
-     because a player with a weak GPU should not have to wait for a heuristic
-     to notice. */
-  var TIERS = {
-    high:   { shadowTaps: 9, shadowSize: 2560, bloom: true,  ink: true, maxScale: 1.00, shadows: true,  triplanar: true },
-    medium: { shadowTaps: 4, shadowSize: 1536, bloom: true,  ink: true, maxScale: 0.85, shadows: true,  triplanar: false },
-    low:    { shadowTaps: 1, shadowSize: 1024, bloom: false, ink: true, maxScale: 0.70, shadows: true,  triplanar: false }
-  };
-  var quality = {
-    bloom: true, shadows: true, ink: true,
-    shadowSize: 2560, shadowTaps: 9, scale: 1.0, tier: 'high', triplanar: true
-  };
-
-  function setTier(name) {
-    var t = TIERS[name];
-    if (!t) return quality.tier;
-    quality.tier = name;
-    quality.shadowTaps = t.shadowTaps;
-    quality.bloom = t.bloom;
-    quality.ink = t.ink;
-    quality.shadows = t.shadows;
-    quality.triplanar = t.triplanar;
-    adapt.max = t.maxScale;
-    if (quality.scale > t.maxScale) quality.scale = t.maxScale;
-    if (quality.shadowSize !== t.shadowSize) {
-      quality.shadowSize = t.shadowSize;
-      if (rt.shadow) rt.shadow.dispose();
-      rt.shadow = GL.shadowTarget(t.shadowSize);
-    }
-    if (canvas) resize(adapt.cssW, adapt.cssH, DPR);
-    return quality.tier;
-  }
-  function cycleTier() {
-    var order = ['high', 'medium', 'low'];
-    return setTier(order[(order.indexOf(quality.tier) + 1) % order.length]);
-  }
+  var quality = { bloom: true, shadows: true, ink: true, shadowSize: 2048, scale: 1.0 };
 
   /* ---------- ART CONSTANTS ----------
      Every number that decides what the picture LOOKS like, in one block, so
@@ -3510,39 +3282,8 @@ var R = (function () {
     facetJitter: 0.19,
     shadowLift: 0.24,
     ambient: 0.30,
-    /* A BROAD LOBE, BECAUSE THE NORMALS ARE FLAT. specPower was 90, and the
-       shader thresholds the result at 0.35, which requires dot(N,H) > 0.9884:
-       a cone 8.7 degrees wide. Every mesh here is non-indexed with per-face
-       normals, so N is constant across a whole facet and there is no gradient
-       for a narrow lobe to slide along. The result was all-or-nothing per
-       facet and in practice nothing: zeroing the entire specular term changed
-       the measured frame by 0.0001 in coefficient of variation, which is to
-       say one of the three pillars of the palette-knife look was not running
-       at all. A wide lobe is what a faceted surface can actually satisfy, and
-       the spatial variety that a narrow lobe would have supplied now comes
-       from the impasto ridge mask instead, which is where it belongs.
-
-       BOTH NUMBERS ARE MEASURED, NOT CHOSEN. Widening the lobe to 22 was not
-       enough on its own: the ground normal is very close to +Y and the half
-       vector sits around dot 0.80, so 0.80^22 = 0.008 still failed the 0.10
-       threshold and the term stayed dead. Sweeping power against a fixed crop
-       of one deterministic frame, against the v1.2 build in the same session:
-
-         power   hfNorm    cv       meanLum
-         v1.2    0.03215   0.2632   125.3     (specular effectively off)
-         6       0.02664   0.2318   152.8     floods, brighter but flat
-         9       0.02776   0.2519   148.2     same trade
-         14      0.03433   0.3774   124.3     <- holds brightness, gains form
-         22      0.03622   0.4157   117.0     more contrast, too dark
-
-       Then strength at power 14: 0.30 gave 124.3, 0.38 gave 125.9, 0.46 gave
-       127.5. The last one is the only setting that beats v1.2 on all three at
-       once: 1.8% brighter, 4.9% more micro-contrast, 41.6% more overall
-       contrast. hfNorm and cv are both divided by the frame mean on purpose,
-       because an unnormalised contrast figure rises whenever the picture
-       merely darkens and will happily sell an exposure change as texture. */
-    specStrength: 0.46,
-    specPower: 14.0,
+    specStrength: 0.20,
+    specPower: 90.0,
     /* Rim at 1.25 with power 2.35 was wide enough to wash the whole grazing
        half of the board into a haze. A rim is meant to separate a silhouette,
        not to light a surface: tighter power, lower strength. */
@@ -3551,13 +3292,6 @@ var R = (function () {
     toothScale: 0.42,
     toothStrength: 0.46,
     fogDensity: 0.0040,
-    /* Shadow shaping. `band` is the ramp position a shadowed surface collapses
-       to, `edge` and `soft` place and widen the cel edge across the PCF
-       result, `depth` is how much of the specular and rim survive in shadow. */
-    shadowBand: 0.16,
-    shadowEdge: 0.30,
-    shadowSoft: 0.30,
-    shadowDepth: 0.30,
     bloomThreshold: 0.60,
     bloomStrength: 0.95,
     /* Exposure sits under 1.0 because the filmic curve lifts midtones by
@@ -3582,16 +3316,6 @@ var R = (function () {
     grain: 0.042,
     halftone: 0.62,
     canvas: 0.20,
-    /* How far, in world units, a particle fades as it approaches whatever is
-       behind it. Too small and the hard intersection line survives; too large
-       and smoke dissolves before it reaches the ground it is supposed to be
-       rolling along. */
-    /* Frustum culling on or off. A switch, not a tuning knob: it exists so a
-       harness can render the same frame both ways and prove the optimisation
-       changes the draw count and not the picture. An optimisation that alters
-       what is on screen is not an optimisation. */
-    cull: 1,
-    particleSoftness: 1.35,
     inkStrength: 0.95,
     inkNormalThreshold: 0.55,
     inkDepthThreshold: 0.85,
@@ -3603,7 +3327,7 @@ var R = (function () {
     pos: [0, 22, 26], target: [0, 0, 0], up: [0, 1, 0],
     fov: 0.72, near: 0.5, far: 260
   };
-  var sun = { dir: [0.42, 0.80, 0.44], distance: 90, extent: 46, centre: [0, 0, 0] };
+  var sun = { dir: [0.42, 0.80, 0.44], distance: 90, extent: 46 };
   var fx = {
     shake: 0, aberration: 0, flashWhite: 0, desaturate: 0,
     exposure: 1.0, timeScale: 1
@@ -3611,82 +3335,9 @@ var R = (function () {
 
   /* Per-frame counters. "It feels slow" is not actionable; a draw-call count
      and a per-pass millisecond split is. */
-  var prof = { draws: 0, shadowDraws: 0, culled: 0, culledShadow: 0, tris: 0, ms: {}, on: false };
-  /* PROFILING FORCES A SYNC, and it has to. GL calls only queue work, so
-     timing a pass by wall clock around its submission measures how long the
-     driver took to accept commands and nothing about how long they take to
-     run. The numbers that produced were not merely imprecise, they were
-     incoherent: one build reported the opaque pass rising from 35.1ms to
-     218.2ms while the total frame time it is part of moved 14.57 to 15.32.
-     gl.finish() drains the queue so each figure covers real work. It is a
-     heavy hammer and it is only ever swung when profiling is explicitly
-     switched on, which nothing in the game does. */
-  function markStart(k) { if (prof.on) { gl.finish(); prof.ms['_' + k] = U.nowMs(); } }
-  function markEnd(k) { if (prof.on) { gl.finish(); prof.ms[k] = U.nowMs() - prof.ms['_' + k]; } }
-
-  /* ---------- frustum culling ----------
-     Every mesh pushed used to be drawn, visible or not. On a board whose half
-     extents are 47.8 by 35.0 with a camera that zooms right in, that means
-     paying full vertex and shadow cost for geometry nowhere near the screen.
-
-     Gribb and Hartmann plane extraction: the six clip planes fall straight out
-     of the rows of the view-projection matrix, so there is nothing to maintain
-     and nothing that can drift out of sync with the camera. Each item is then
-     one dot product per plane against its bounding sphere.
-
-     CONSERVATIVE ON PURPOSE. A sphere around an axis-aligned box around the
-     mesh is loose, and a uniform-scale radius is looser still. Culling too
-     little costs a draw call; culling too much drops geometry the player can
-     see, and that is not a performance bug, it is a rendering bug. When the
-     two are in tension this errs toward drawing. */
-  var frustum = new Float32Array(24);
-  var lightFrustum = new Float32Array(24);
-
-  function extractFrustum(m, out) {
-    /* Column-major m, rows of the matrix are m[i], m[i+4], m[i+8], m[i+12]. */
-    var i, sign, o;
-    for (i = 0; i < 6; i++) {
-      var row = i >> 1;              /* 0 = x, 1 = y, 2 = z */
-      sign = (i & 1) ? -1 : 1;       /* left/right, bottom/top, near/far */
-      o = i * 4;
-      out[o]     = m[3]  + sign * m[row];
-      out[o + 1] = m[7]  + sign * m[row + 4];
-      out[o + 2] = m[11] + sign * m[row + 8];
-      out[o + 3] = m[15] + sign * m[row + 12];
-      var len = Math.sqrt(out[o] * out[o] + out[o + 1] * out[o + 1] + out[o + 2] * out[o + 2]);
-      if (len > 1e-8) { out[o] /= len; out[o + 1] /= len; out[o + 2] /= len; out[o + 3] /= len; }
-    }
-  }
-
-  /* World-space centre and radius of an item's mesh, under its model matrix.
-     Radius is scaled by the LARGEST axis scale, which is the only choice that
-     stays conservative under a non-uniform scale. */
-  function itemSphere(it, out) {
-    var m = it.model, ms = it.mesh;
-    if (!ms || !(ms.radius > 0)) return false;
-    var cx = ms.bcx, cy = ms.bcy, cz = ms.bcz;
-    out[0] = m[0] * cx + m[4] * cy + m[8] * cz + m[12];
-    out[1] = m[1] * cx + m[5] * cy + m[9] * cz + m[13];
-    out[2] = m[2] * cx + m[6] * cy + m[10] * cz + m[14];
-    var s0 = m[0] * m[0] + m[1] * m[1] + m[2] * m[2];
-    var s1 = m[4] * m[4] + m[5] * m[5] + m[6] * m[6];
-    var s2 = m[8] * m[8] + m[9] * m[9] + m[10] * m[10];
-    var sc = Math.sqrt(Math.max(s0, Math.max(s1, s2)));
-    /* The explode effect pushes facets outward along their normals, so a mesh
-       mid-shatter occupies far more space than its build-time bounds. */
-    out[3] = ms.radius * sc + (it.explode || 0) * 2.0 + 0.05;
-    return true;
-  }
-
-  var tmpSphere = new Float32Array(4);
-
-  function sphereInFrustum(planes, sx, sy, sz, r) {
-    for (var i = 0; i < 6; i++) {
-      var o = i * 4;
-      if (planes[o] * sx + planes[o + 1] * sy + planes[o + 2] * sz + planes[o + 3] < -r) return false;
-    }
-    return true;
-  }
+  var prof = { draws: 0, shadowDraws: 0, tris: 0, ms: {}, on: false };
+  function markStart(k) { if (prof.on) prof.ms['_' + k] = U.nowMs(); }
+  function markEnd(k) { if (prof.on) prof.ms[k] = U.nowMs() - prof.ms['_' + k]; }
 
   var WHITE3 = [1, 1, 1];
   var view = U.m4ident(), proj = U.m4ident(), viewProj = U.m4ident();
@@ -3742,11 +3393,8 @@ var R = (function () {
        changing what the image is MADE of, so a screenshot taken there still
        proves the art direction. Bloom and ink stay on for exactly that
        reason: they are the look, not a garnish. */
-    /* A software rasteriser renders correctly and slowly. Starting it on the
-       medium tier keeps the headless verifier usable without changing what the
-       image is MADE of, so a screenshot taken there still proves the art. */
     if (GL.caps.software) {
-      setTier('medium');
+      quality.shadowSize = 1024;
       quality.scale = 0.75;
     }
 
@@ -3947,9 +3595,7 @@ var R = (function () {
        texels and the contact shadows turn to mush; centring on what the player
        is looking at keeps them tight where it matters. */
     var L = U.V.norm(sun.dir);
-    /* The board is built around the origin, so the light box is too. Centring
-       it on cam.target made every shadow edge crawl as the camera moved. */
-    var centre = sun.centre || [0, 0, 0];
+    var centre = cam.target;
     var lightPos = U.V.add(centre, U.V.scale(L, sun.distance));
     var lv = U.m4look(lightPos, centre, [0, 1, 0]);
     var e = sun.extent;
@@ -3976,19 +3622,9 @@ var R = (function () {
 
     var p = prog.shadow.use();
     p.um4('uLightVP', lightVP);
-    extractFrustum(lightVP, lightFrustum);
     for (var i = 0; i < opaqueN; i++) {
       var it = opaque[i];
       if (!it.castShadow) continue;
-      /* Against the LIGHT's frustum, not the camera's: an object off screen can
-         still cast a shadow onto something on screen, so reusing the camera
-         planes here would delete exactly the shadows that matter at the edge
-         of the view. */
-      if (ART.cull && itemSphere(it, tmpSphere) &&
-          !sphereInFrustum(lightFrustum, tmpSphere[0], tmpSphere[1], tmpSphere[2], tmpSphere[3])) {
-        prof.culledShadow++;
-        continue;
-      }
       p.um4('uModel', it.model);
       p.u1f('uExplode', it.explode);
       it.mesh.draw();
@@ -4044,14 +3680,8 @@ var R = (function () {
     p.u1f('uShadowLift', ART.shadowLift);
     p.u1f('uShadowStrength', quality.shadows ? 1.0 : 0.0);
     p.u1f('uShadowTexel', 1.0 / rt.shadow.size);
-    p.u1f('uShadowBand', ART.shadowBand);
-    p.u1f('uShadowEdge', ART.shadowEdge);
-    p.u1f('uShadowSoft', ART.shadowSoft);
-    p.u1f('uShadowDepth', ART.shadowDepth);
-    p.u1f('uShadowTaps', quality.shadowTaps);
     p.u1f('uToothScale', ART.toothScale);
     p.u1f('uToothStrength', ART.toothStrength);
-    p.u1f('uToothTriplanar', quality.triplanar ? 1 : 0);
     p.u1f('uTime', time);
     p.u1f('uFogDensity', ART.fogDensity);
     p.u3v('uFogColor', pal.fog);
@@ -4061,11 +3691,6 @@ var R = (function () {
 
     for (var i = 0; i < opaqueN; i++) {
       var it = opaque[i];
-      if (ART.cull && itemSphere(it, tmpSphere) &&
-          !sphereInFrustum(frustum, tmpSphere[0], tmpSphere[1], tmpSphere[2], tmpSphere[3])) {
-        prof.culled++;
-        continue;
-      }
       p.um4('uModel', it.model);
       U.m3normalFromM4(it.model, tmpN);
       p.um3('uNormalMat', tmpN);
@@ -4120,13 +3745,6 @@ var R = (function () {
 
   function particlePass() {
     if (!particleN) return;
-    /* DETACH attachment 1 before sampling it. It holds the scene depth the
-       soft-particle fade needs, and a texture that is simultaneously attached
-       to the draw framebuffer and bound to a sampler is a feedback loop, which
-       WebGL leaves undefined even when that attachment is masked off by
-       drawBuffers. Detaching is two calls a frame and is the only way to read
-       it that is actually legal. */
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, null, 0);
     gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.NONE]);
     gl.enable(gl.DEPTH_TEST);
     gl.depthMask(false);
@@ -4145,15 +3763,10 @@ var R = (function () {
        camera without a per-particle lookAt. */
     p.u3f('uRight', view[0], view[4], view[8]);
     p.u3f('uUp', view[1], view[5], view[9]);
-    p.tex('uSceneDepth', 0, rt.main.textures[1]);
-    p.u2f('uRes', W, H);
-    p.u1f('uSoftness', ART.particleSoftness);
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, particleN);
 
     gl.bindVertexArray(null);
     gl.enable(gl.CULL_FACE);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D,
-                            rt.main.textures[1], 0);
     gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
   }
 
@@ -4241,10 +3854,9 @@ var R = (function () {
   function render(dt) {
     if (!gl || !rt.main) return;
     try {
-      prof.draws = 0; prof.shadowDraws = 0; prof.culled = 0; prof.culledShadow = 0;
+      prof.draws = 0; prof.shadowDraws = 0;
       time += dt;
       buildMatrices(dt);
-      extractFrustum(viewProj, frustum);
       markStart('shadow'); shadowPass(); markEnd('shadow');
 
       rt.main.bind();
@@ -4308,7 +3920,6 @@ var R = (function () {
     setPalette: setPalette, palette: palette,
     project: project, screenToGround: screenToGround,
     cam: cam, sun: sun, fx: fx, quality: quality, ART: ART,
-    setTier: setTier, cycleTier: cycleTier, TIERS: TIERS,
     get W() { return W; }, get H() { return H; },
     get time() { return time; },
     get gl() { return gl; },
@@ -4327,7 +3938,6 @@ var R = (function () {
     adaptive: adapt,
     stats: function () {
       return { draws: prof.draws, shadowDraws: prof.shadowDraws,
-        culled: prof.culled, culledShadow: prof.culledShadow,
                opaqueItems: opaqueN, transparentItems: transparentN,
                particles: particleN, ms: prof.ms };
     },
@@ -4671,7 +4281,6 @@ var TERRAIN = (function () {
       rockProto.push(rb.build({ jitter: 0.22 }));
     }
     var pieces = [];
-    var spirePieces = [];
     /* DECOR IS SCENERY, NOT SUBJECT. The first pass scattered 190 rocks at up
        to 3 units and they took over the frame: the board read as a quarry with
        a tower hidden in it. Scenery in this art direction exists to give the
@@ -4724,17 +4333,10 @@ var TERRAIN = (function () {
          below the rim instead, so they rise out of the void the plate floats
          in, which is what the board wants at its edge anyway. */
       var baseY = -3.2 - dr() * 2.0;
-      /* SPIRES ARE KEPT SEPARATE FROM THE SCATTER.
-         They stand outside the play area and are tall, so under a low sun they
-         throw enormous shadows straight across the board. Physically right and
-         visually ruinous: the debug channel showed most of the playfield under
-         a moving spire shadow. They belong to the horizon, so they render but
-         never cast. */
-      spirePieces.push(MESH.transform(sd, U.m4trs(sx, baseY, sz, 0, dr() * U.TAU, 0, 1, 1, 1)));
+      pieces.push(MESH.transform(sd, U.m4trs(sx, baseY, sz, 0, dr() * U.TAU, 0, 1, 1, 1)));
     }
 
     var decorData = pieces.length ? MESH.merge(pieces) : null;
-    var spireData = spirePieces.length ? MESH.merge(spirePieces) : null;
 
     return {
       id: def.id,
@@ -4746,7 +4348,6 @@ var TERRAIN = (function () {
       plots: plots,
       groundData: groundData,
       decorData: decorData,
-      spireData: spireData,
       spawn: pathAt(path, 0).pos,
       goal: pathAt(path, path.length).pos,
       pathAt: function (d) { return pathAt(path, d); },
@@ -4935,11 +4536,6 @@ var RIG = (function () {
         world: U.m4ident(),
         hidden: !!s.hidden,
         emissive: s.emissive || 0,
-        /* Whether this part goes into the shadow map. A creature only needs
-           its body and head there: the legs are thin enough that their cast
-           shadow is invisible at play distance, and they are eight of its ten
-           draws. */
-        cast: s.cast !== false,
         /* free-form per-part state for springs */
         v: [0, 0, 0],
         s: [0, 0, 0]
@@ -4987,16 +4583,10 @@ var RIG = (function () {
   /* Submit every visible part. `opts` is passed through to R.push so a whole
      creature can flash or dissolve as one. */
   function draw(rig, opts) {
-    var castAll = !opts || opts.castShadow !== false;
     for (var i = 0; i < rig.parts.length; i++) {
       var p = rig.parts[i];
       if (p.hidden || !p.mesh) continue;
-      /* Mutating the shared opts object per part would be a per-frame
-         allocation for every rig; the flag is written and restored instead. */
-      var prev = opts.castShadow;
-      opts.castShadow = castAll && p.cast;
       R.push(p.mesh, p.world, opts);
-      opts.castShadow = prev;
     }
   }
 
@@ -6302,8 +5892,6 @@ var MODELS = (function () {
           name: s.name,
           parent: s.parent || null,
           bind: s.bind,
-          /* Only the trunk goes in the shadow map. See RIG.draw. */
-          cast: /^(body|head)$/.test(s.name),
           mesh: GL.mesh(data),
           /* The raw vertex data is retained alongside the uploaded mesh so the
              death effect can read the model's own facets back out and throw
@@ -7117,7 +6705,7 @@ var FX = (function () {
   var bounce = new Float32Array(MAX);
   var count = 0;
 
-  var KIND = { SPARK: 0, SMOKE: 1, RING: 2, FLAKE: 3, STREAK: 4, EMBER: 5, SHARD: 6, MOTE: 7 };
+  var KIND = { SPARK: 0, SMOKE: 1, RING: 2, FLAKE: 3, STREAK: 4, EMBER: 5, SHARD: 6 };
 
   function spawn(o) {
     if (count >= MAX) return -1;
@@ -7593,121 +7181,8 @@ var FX = (function () {
     impactState.shake = impactState.stop = impactState.aberr = impactState.flash = 0;
   }
 
-  /* ---------- ambient motes ----------
-     Suspended dust drifting through the volume the camera looks into.
-
-     WHY A BOARD NEEDS THIS. Everything else in this renderer draws SURFACES.
-     Between the camera and the board there was nothing at all, so the air read
-     as vacuum and the scene as objects assembled in front of a backdrop rather
-     than as a place. A few hundred slow specks fix that for almost nothing,
-     because they are the only cue the eye has for depth in the empty half of
-     the frame.
-
-     They are a POOL, not a stream. Emitting motes continuously would fight the
-     impact particles for the same fixed budget, and a heavy wave would starve
-     the atmosphere exactly when the screen is busiest. Instead a fixed number
-     is kept alive and each one is recycled in place when it expires, so the
-     cost is constant and bounded whatever else is happening. */
-  var motes = { on: true, want: 0, bounds: null, tint: [0.82, 0.86, 1.0], t: 0 };
-
-  function moteSetup(board, palette) {
-    if (!board) { motes.bounds = null; return; }
-    var hw = board.halfW !== undefined ? board.halfW : 30;
-    var hh = board.halfH !== undefined ? board.halfH : 30;
-    motes.bounds = { hw: hw * 1.15, hh: hh * 1.15, lo: 0.4, hi: 11.0 };
-    /* Tinted toward the faction key so the air belongs to the same picture,
-       but desaturated hard: dust that reads as coloured reads as confetti.
-
-       MUST BE keyRgb, NOT key. palette.key is the hex STRING ("#38e8ff"),
-       kept on the object for CSS/UI code that wants it directly. Indexing a
-       string returns single hex-digit CHARACTERS: key[0] is "#", which
-       coerces to NaN, and key[1]/key[2] are numeral characters like "3" and
-       "8" that coerce to the small integers 3 and 8, not the fractions those
-       digits represent. That shipped in v1.3: red went NaN and green/blue
-       landed at 1.5 and 3.0, ten times over range. Every one of 190 additive,
-       partly-NaN motes blew out the bloom threshold, and the blur spread each
-       one into a wash big enough to cover the whole board. Confirmed by
-       reading a live particle slot: g=1.467, b=2.936, r=NaN, which is exactly
-       0.62 + "3"*0.30 and 0.62 + "8"*0.30 for the faction key "#38e8ff". */
-    if (palette && palette.keyRgb) {
-      motes.tint = [
-        0.62 + palette.keyRgb[0] * 0.30,
-        0.62 + palette.keyRgb[1] * 0.30,
-        0.62 + palette.keyRgb[2] * 0.30
-      ];
-    }
-    motes.want = 190;
-    motes.t = 0;
-  }
-
-  function moteSpawn(seedT) {
-    var b = motes.bounds; if (!b) return;
-    var a = rnd(), c = rnd(), e = rnd();
-    var i = spawn({
-      x: (a * 2 - 1) * b.hw,
-      y: b.lo + e * (b.hi - b.lo),
-      z: (c * 2 - 1) * b.hh,
-      vx: (rnd() - 0.5) * 0.55,
-      vy: 0.10 + rnd() * 0.28,
-      vz: (rnd() - 0.5) * 0.55,
-      r: motes.tint[0], g: motes.tint[1], b: motes.tint[2],
-      r1: motes.tint[0] * 0.75, g1: motes.tint[1] * 0.75, b1: motes.tint[2] * 0.80,
-      /* Long lives and staggered starts, so the field never pulses as a group. */
-      life: 7.5 + rnd() * 7.5,
-      size: 0.055 + rnd() * 0.075,
-      size1: 0.035 + rnd() * 0.05,
-      kind: KIND.MOTE,
-      alpha: 0.16 + rnd() * 0.20,
-      /* No gravity and heavy drag: these are suspended, not falling. */
-      grav: 0.0, drag: 0.55, turb: 0.35, bounce: 0
-    });
-    if (i >= 0 && seedT) life[i] = maxLife[i] * (0.15 + rnd() * 0.85);
-  }
-
-  function moteUpdate(dt) {
-    if (!motes.on || !motes.bounds || !motes.want) return;
-    /* Count what is alive rather than tracking it, because the shared pool can
-       recycle a mote's slot for an impact spark at any time and a stale count
-       would slowly starve the field. */
-    var alive = 0;
-    for (var i = 0; i < count; i++) if (kind[i] === KIND.MOTE) alive++;
-    var deficit = motes.want - alive;
-    if (deficit <= 0) return;
-    /* Refill gradually so a frame that clears the pool does not spend its
-       entire particle budget on dust. */
-    var n = Math.min(deficit, 12);
-    for (var k = 0; k < n; k++) moteSpawn(motes.t < 0.5);
-    motes.t += dt;
-  }
-
-  /* Introspection for the harness. Counting live particles by kind, and
-     asserting the mote field stays in its volume, both need the pooled arrays,
-     and a test that reaches into module internals is a test that breaks on
-     every refactor. These two functions are the supported way to ask. */
-  function debugKindCounts() {
-    var out = {};
-    for (var i = 0; i < count; i++) out[kind[i]] = (out[kind[i]] || 0) + 1;
-    return out;
-  }
-  function moteBoundsOk() {
-    var b = motes.bounds; if (!b) return false;
-    /* Generous on the upper bound: motes drift upward for their whole life by
-       design, so the test is that they are in the volume, not that they never
-       rise out of the slab they were seeded in. */
-    var hi = b.hi + 12, lim = 1.35;
-    for (var i = 0; i < count; i++) {
-      if (kind[i] !== KIND.MOTE) continue;
-      if (Math.abs(px[i]) > b.hw * lim) return false;
-      if (Math.abs(pz[i]) > b.hh * lim) return false;
-      if (py[i] < -1 || py[i] > hi) return false;
-    }
-    return true;
-  }
-
   return {
     KIND: KIND,
-    moteSetup: moteSetup, moteUpdate: moteUpdate, motes: motes,
-    debugKindCounts: debugKindCounts, moteBoundsOk: moteBoundsOk,
     spawn: spawn, update: update, submit: submit,
     burst: burst, smoke: smoke, shockRing: shockRing, muzzle: muzzle,
     impact: impact, dust: dust, trail: trail, hot: hot,
@@ -7856,14 +7331,7 @@ var SIM = (function () {
     if (t.__statsAt === statsStamp && t.__stats) return t.__stats;
     var d = DATA.TOWERS[t.id];
     var s = {
-      /* DEFAULTED, NOT ASSUMED PRESENT. VAULT is a support tower and carries no
-         dps or fireRate at all, so `d.dps` was undefined and every tier
-         multiplier below turned the whole field into NaN. Nothing read it,
-         because the support branch returns before firing, which is exactly why
-         a NaN sat in shipped state undetected until a test asked every tower
-         for a finite stat block. A latent NaN is a defect waiting for the first
-         feature that reads the field. */
-      dps: d.dps || 0, range: d.range || 0, fireRate: d.fireRate || 1,
+      dps: d.dps, range: d.range, fireRate: d.fireRate || 1,
       splash: d.splash || 0, projSpeed: d.projSpeed || 50,
       chains: d.chains || 0, chainRange: d.chainRange || 0,
       chainFalloff: d.chainFalloff || 0.7,
@@ -8847,35 +8315,9 @@ var SIM = (function () {
       }
 
       /* Everything else needs a target. */
-      /* RE-TARGET ON A CADENCE, NOT EVERY SUBSTEP.
-         A tower with no valid target used to scan every denizen on the board
-         120 times a second. With thirty towers and sixty denizens that is over
-         two hundred thousand range checks a second to discover, most of the
-         time, that there is still nothing in range. Keeping a valid target is
-         still checked every substep, so a tower never keeps shooting something
-         that has left its range; only the SEARCH is throttled, and an eighth
-         of a second is well under the fastest fire interval in the game. */
       var keep = t.target && inRange(t, t.target, s);
-      if (!keep) {
-        t.target = null;
-        t.retargetT = (t.retargetT || 0) - dt;
-        if (t.retargetT <= 0) {
-          t.retargetT = 0.12;
-          t.target = pickTarget(t, s);
-        }
-      }
+      if (!keep) t.target = pickTarget(t, s);
       var target = t.target;
-
-      if (!target) {
-        /* IDLE SCAN. A turret frozen at whatever angle it last fired at makes a
-           board between waves read as switched off. Sweeping slowly is the
-           cheapest possible signal that a machine is powered and looking, and
-           the per-tower phase offset stops thirty towers moving as one. The
-           sweep is driven off sim time, so it pauses with the game. */
-        t.idlePhase = (t.idlePhase === undefined) ? (t.uid * 0.7) % 6.283 : t.idlePhase;
-        var want = t.idlePhase + Math.sin(G.time * 0.34 + t.idlePhase) * 0.85;
-        t.yaw += U.angDiff(t.yaw, want) * Math.min(1, dt * 1.1);
-      }
 
       if (target) {
         var wantYaw = Math.atan2(target.pos[0] - t.pos[0], target.pos[2] - t.pos[2]);
@@ -9148,10 +8590,6 @@ var GAME = (function () {
      garbage collected on the JS side. Twenty restarts leaked twenty ground
      meshes and twenty decor meshes of GPU memory, which is invisible until it
      is not. */
-  /* One fixed sun for the whole game. A moving key light would mean recomputing
-     the shadow box and re-baking nothing, for no gameplay gain. */
-  var SUN_DIR = [0.34, 0.88, 0.42];
-
   var runMeshes = [];
   function trackMesh(m) { if (m) runMeshes.push(m); return m; }
   function disposeRunMeshes() {
@@ -9172,12 +8610,7 @@ var GAME = (function () {
     /* Board meshes, rebuilt per run because the board can change. */
     G.groundMesh = trackMesh(GL.mesh(G.board.groundData));
     G.decorMesh = G.board.decorData ? trackMesh(GL.mesh(G.board.decorData)) : null;
-    G.spireMesh = G.board.spireData ? trackMesh(GL.mesh(G.board.spireData)) : null;
     var pal = R.palette();
-    /* Seed the ambient dust from the board extents and the faction key, so the
-       air belongs to this board and this faction rather than being a generic
-       overlay. */
-    FX.moteSetup(G.board, pal);
     G.goalMesh = MODELS.goalMesh(pal.accent);
     G.spawnMesh = MODELS.spawnMesh(PAINT.FACTIONS[G.enemyFaction].accent);
     G.rangeRing = MODELS.ring(0.985, 1.0, 72, pal.accent);
@@ -9195,10 +8628,6 @@ var GAME = (function () {
        tan(fov/2). The 1.12 is real margin for the spires that sit outside the
        play area. */
     fitCamera();
-    /* Cover the plate plus the margin the rim decor sits in. */
-    R.sun.extent = Math.max(G.board.halfW, G.board.halfH) * 1.18;
-    R.sun.distance = R.sun.extent * 2.2;
-    R.sun.dir = SUN_DIR;
     G.status = 'play';
     G.waveTimer = 0;
     speed = 1;
@@ -9404,7 +8833,7 @@ var GAME = (function () {
     r = pool.pop();
     if (!r) {
       r = RIG.build(model.parts.map(function (p) {
-        return { name: p.name, parent: p.parent, bind: p.bind, mesh: p.mesh, cast: p.cast };
+        return { name: p.name, parent: p.parent, bind: p.bind, mesh: p.mesh };
       }));
     }
     /* The archetype is stamped on the rig so the release pass can put it back
@@ -9440,8 +8869,6 @@ var GAME = (function () {
 
   function poseDenizen(d, rig, dt) {
     RIG.rest(rig);
-    /* 0 while alive, rising to 1 across the death fade. */
-    var dyingT = (!d.alive && d.dying > 0) ? U.sat(1 - d.dying / 0.55) : 0;
     var body = rig.get('body');
     var moving = d.stun <= 0 && d.airborne <= 0;
     /* The creature's own facing, needed to place footfall dust in world space
@@ -9499,10 +8926,6 @@ var GAME = (function () {
       var phase = d.animPhase + phaseOff;
       var g = moving ? RIG.gait(phase, strideLen, lift, D.duty)
                      : { x: 0, y: 0, planted: true, t: 0 };
-      /* A dying creature stops walking and its legs give way outward. */
-      if (dyingT > 0) {
-        g = { x: g.x, y: 0, planted: false, t: 0 };
-      }
       if (g.planted) { plantedCount++; }
 
       /* DUST ON THE FRAME THE FOOT LANDS.
@@ -9523,12 +8946,6 @@ var GAME = (function () {
       /* The foot sits slightly outboard of the hip, which widens the stance
          and stops a four-legged walk reading as a tightrope. */
       var foot = [up.bind[0] * 1.10, g.y, up.bind[2] + g.x];
-      if (dyingT > 0) {
-        /* Splay outward and drop, so the silhouette breaks apart rather than
-           sinking as a rigid unit. */
-        foot = [up.bind[0] * (1.10 + dyingT * 1.5), -dyingT * 0.25,
-                up.bind[2] + g.x + (up.bind[2] >= 0 ? dyingT : -dyingT) * 0.6];
-      }
 
       /* WORLD-SPACE FOOT LOCK.
          Deriving the gait rate from the stride gets a foot CLOSE to stationary,
@@ -9548,7 +8965,7 @@ var GAME = (function () {
          The lock RELEASES if the point drifts out of reach, which happens when
          a creature turns sharply or is launched, because a leg stretched past
          its limit looks far worse than one that takes an extra step. */
-      if (g.planted && dyingT <= 0) {
+      if (g.planted) {
         if (!up.__planted) {
           var fw = localToWorld(foot, d, cosYaw, sinYaw);
           up.__plantW = fw;
@@ -9582,30 +8999,6 @@ var GAME = (function () {
       body.rot[2] = d.lean;
       body.rot[0] = moving ? Math.sin(bobT + 1.1) * 0.045 : 0;
       body.rot[1] = Math.sin(d.animPhase * U.TAU) * 0.06;
-
-      /* IDLE BREATH. A creature held still by a stun or a smokescreen used to
-         be perfectly rigid, which reads as a paused video rather than as a
-         living thing waiting. A slow swell on two axes, out of phase, costs two
-         sines and is the difference. */
-      if (!moving) {
-        var br = Math.sin(G.time * 1.15 + d.animPhase * 5.1);
-        body.scl[0] = 1 + br * 0.035;
-        body.scl[2] = 1 + br * 0.035;
-        body.scl[1] = 1 - br * 0.028;
-      }
-
-      /* DEATH COLLAPSE. Before this a body simply dissolved in place, still
-         standing to attention, which drained every kill of its payoff. It now
-         drops, pitches forward and splays as the dissolve takes it, so the
-         shatter has something to come apart FROM. */
-      if (dyingT > 0) {
-        var k = 1 - dyingT;                 /* 0 at the moment of death, 1 at the end */
-        var fall = U.ease.inQuad(k);
-        body.pos[1] -= fall * hipY * 0.72;
-        body.rot[0] += fall * 0.85;
-        body.rot[2] += fall * 0.45 * (d.uid % 2 ? 1 : -1);
-        body.scl[1] = 1 - fall * 0.25;
-      }
     }
     var head = rig.get('head');
     if (head) {
@@ -9681,11 +9074,7 @@ var GAME = (function () {
         flashColor: d.mark ? U.hex2rgb(DATA.ELEMENTS[d.mark].color) : [1, 0.85, 0.9],
         dissolve: dying ? U.sat(1 - d.dying / 0.55) * 0.9 : 0,
         rimScale: 0.34,
-        /* Units cast again. Restricting it to the trunk (see RIG.draw) makes
-           it one or two draws per creature instead of ten, which is what made
-           it too expensive before. A body without a cast shadow reads as
-           floating no matter how good the contact disc is. */
-        castShadow: true
+        castShadow: d.def.boss || d.scale >= 1.5
       };
       RIG.draw(rig, opts);
 
@@ -9858,7 +9247,6 @@ var GAME = (function () {
        towers in the read. With a brighter board and full rim they were as
        bright as the things the player is meant to be looking at. */
     if (G.decorMesh) R.push(G.decorMesh, U.m4ident(), { rimScale: 0.45 });
-    if (G.spireMesh) R.push(G.spireMesh, U.m4ident(), { rimScale: 0.40, castShadow: false });
 
     var pal = R.palette();
     var sp = G.board.spawn, gl = G.board.goal;
@@ -9946,7 +9334,6 @@ var GAME = (function () {
         }
         if (steps >= 40) accum = 0;
         FX.update(simDt);
-        FX.moteUpdate(simDt);
         FX.updateText(simDt);
 
         /* RETURN RIGS OF DEPARTED DENIZENS TO THE POOL.
@@ -10008,14 +9395,8 @@ var GAME = (function () {
       cam.focus[2] + Math.cos(cam.yaw) * cp * cam.dist
     ];
     R.cam.target = [cam.focus[0], cam.focus[1] + 1.5, cam.focus[2]];
-    /* THE SHADOW BOX IS FITTED TO THE BOARD, NOT THE CAMERA.
-       Recomputing it from cam.dist every frame meant the light frustum resized
-       and recentred whenever the player zoomed or panned, so every shadow edge
-       crawled across its own texels: the classic shadow swim. Fitting it once
-       to the play area makes the texel grid stationary in world space, which is
-       both stable and a known density (a 96 unit box at 2048 is under 5cm per
-       texel). Set in start(); the sun direction is constant. */
-    R.sun.dir = SUN_DIR;
+    R.sun.extent = Math.max(40, cam.dist * 0.72);
+    R.sun.dir = [0.34, 0.88, 0.42];
   }
 
   /* Draw exactly one frame, synchronously, without touching the simulation.
@@ -10055,9 +9436,6 @@ var GAME = (function () {
     get paused() { return paused; },
     set paused(v) { paused = v; },
     cam: cam, input: input, stats: stats,
-    /* Read by the culling gate, which has to restore the default framing
-       after zooming in to check that nothing is trimmed at full view. */
-    __fitCamera: function () { fitCamera(false); },
     errors: function () { return errors.slice(); }
   };
 })();
@@ -10299,15 +9677,6 @@ var UI = (function () {
       AUDIO.setMuted(on);
       mute.textContent = on ? 'MUTED' : 'SOUND';
     };
-    var qual = $('btn-quality');
-    if (qual) {
-      qual.textContent = R.quality.tier.toUpperCase();
-      qual.onclick = function () {
-        AUDIO.play('click');
-        qual.textContent = R.cycleTier().toUpperCase();
-        UI.toast('Graphics: ' + R.quality.tier.toUpperCase());
-      };
-    }
     var perf = $('btn-perf');
     if (perf) perf.onclick = function () {
       perfOn = !perfOn;
@@ -10660,8 +10029,7 @@ var UI = (function () {
         GAME.stats.frameMs.toFixed(1) + ' ms  ' +
         FX.count + ' particles  ' +
         G.denizens.length + ' units  ' +
-        G.towers.length + ' towers  ' +
-        R.quality.tier + ' @ ' + Math.round(R.quality.scale * 100) + '%';
+        G.towers.length + ' towers';
     }
 
     /* wave transitions produce their own banners */
