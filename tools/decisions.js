@@ -26,11 +26,11 @@ const src = f => { try { return fs.readFileSync(path.join(ROOT, f), 'utf8'); } c
    stale the moment a comment in the catalogue was edited.
    Returns null when artgen has never run here, so the row can say so
    instead of asserting a number it does not have. */
-function siriusProximaStale() {
+function planetStale(siFilter) {
   const p = path.join(ROOT, 'artgen', 'cache_krea', '.stale.json');
   let rec;
   try { rec = JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { return null; }
-  const mine = k => /^pcut_[34]\d_/.test(k);
+  const mine = k => new RegExp('^pcut_[' + siFilter + ']\\d_').test(k);
   return (rec.stale || []).filter(mine).length + (rec.missing || []).filter(mine).length;
 }
 
@@ -137,11 +137,26 @@ function build(G, artHas) {
        assembly in JavaScript. */
     { id: 'Proxima and Sirius plates re-rendered',
       why: 'Those two systems replaced Barnard and Tabby, and the art under the new text was still the old systems.',
-      check: () => siriusProximaStale() === 0,
-      got: () => { const n = siriusProximaStale();
+      check: () => planetStale('34') === 0,
+      got: () => { const n = planetStale('34');
                    return n === null ? 'no artgen run on this machine, so unknown'
                         : n === 0 ? 'all 350 plates match the current catalogue'
                         : n + ' of 350 plates still do not match the current catalogue'; } },
+
+    /* SUPERSEDES what used to be a hand-written TODO row in storyboard.js
+       ("Re-render the planet plates whose prompts moved") that had gone
+       wrong the same way twice: first with a hardcoded "502 of 875" that
+       stayed 502 forever, then with numbers computed at build time but still
+       filed under TODO after the count reached zero, because moving a row
+       out of TODO was never part of what made the text update. A row that
+       can only ever read IN or NOT YET cannot have that specific failure. */
+    { id: 'every planet plate matches its current prompt',
+      why: 'The prompt manifest exists so a plate rendered from a retired script cannot pass as current; this is that check for all 875 at once, not just the two renamed systems.',
+      check: () => planetStale('01234') === 0,
+      got: () => { const n = planetStale('01234');
+                   return n === null ? 'no artgen run on this machine, so unknown'
+                        : n === 0 ? 'all 875 plates match the current catalogue'
+                        : n + ' of 875 plates still do not match the current catalogue'; } },
 
     { id: 'the fifteen opening plates exist', why: 'Ten of them were only written this session.',
       check: () => intro('human').every(s => artHas(s.key + '.webp')),
