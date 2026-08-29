@@ -60,8 +60,43 @@ h1 .thin{font-weight:300; color:var(--text-dim)}
   runtime except the webfont, and the font stack falls back cleanly, so each one also
   runs offline straight from disk.</p>
 
+  <a class="v" href="reliquary-v1.3.html">
+    <div class="vh"><span class="tag">LATEST</span><span class="vn">v1.3  Shading, shadows and dead features</span></div>
+    <div class="vd">
+      <ul>
+        <li><strong>The wet specular was never running.</strong> Its exponent was 90 against a
+        shader threshold of 0.35, which needs the half vector within 8.7 degrees of the surface
+        normal. Every mesh here has flat per-face normals, so there is no gradient for a lobe
+        that narrow to land on. Switching the whole term off changed the frame by 0.0001. One of
+        the three pillars of the art direction had been invisible since the first build. Swept
+        against v1.2 in one browser session: the picture is now 1.8% brighter, with 4.9% more
+        micro-contrast and 41.6% more overall contrast, all at once.</li>
+        <li><strong>Shadows are separate from form.</strong> They were being computed and then
+        folded into the same posterise as the light ramp, so a shadowed surface quantised to the
+        band it was already on and the shadow vanished. Form and shadow are now two ramp lookups
+        blended by a soft mask, with nine-tap rotated filtering and a shadow box fitted to the
+        board rather than chasing the camera.</li>
+        <li><strong>Paint has height.</strong> The texture atlas spent a quarter of itself
+        storing the number 255. That channel now carries an impasto ridge mask, folded out of the
+        high-frequency octave, and the sheen sits on the crests instead of floating over them.</li>
+        <li><strong>Soft particles.</strong> Every quad used to end in a hard straight line where
+        it met the ground. The fade reads the depth the opaque pass already writes.</li>
+        <li><strong>Air.</strong> A recycled pool of drifting motes, so the space between the
+        camera and the board is a place rather than a vacuum.</li>
+        <li><strong>Frustum culling.</strong> Zoomed in on a full board, 196 draws becomes 122,
+        and zero pixels differ from the unculled frame.</li>
+        <li><strong>Every tower is tested for what makes it different.</strong> Not just that it
+        deals damage: that cryo slows, that mortar cannot hit air, that flak does more to air than
+        ground, that maw executes, that railgun pierces. It found VAULT shipping a NaN.</li>
+        <li><strong>Turrets scan when idle, units breathe when held, and the dead collapse</strong>
+        rather than dissolving at attention.</li>
+      </ul>
+    </div>
+    <div class="meta">152 checks green</div>
+  </a>
+
   <a class="v" href="reliquary-v1.2.html">
-    <div class="vh"><span class="tag">LATEST</span><span class="vn">v1.2  Performance and locomotion</span></div>
+    <div class="vh"><span class="tag old">v1.2</span><span class="vn">Performance and locomotion</span></div>
     <div class="vd">
       <ul>
         <li><strong>Legs actually work.</strong> The IK euler conversion was a half turn out in two places. The errors cancel for axis-aligned directions, so bones pointing straight down looked right and nothing threw, but for any other direction the vertical component inverted. Measured on a strider whose whole leg is 2.88 units: the gap between the requested foot position and the delivered one was up to 5.01 units. The legs were not walking badly, they were in arbitrary poses. Now 0.000.</li>

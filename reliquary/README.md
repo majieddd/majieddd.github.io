@@ -99,11 +99,55 @@ node tools/gate.js http://127.0.0.1:8742
 | **beam geometry** | the beam mesh axis matches the beam transform axis |
 | **css braces** | every CSS block closes |
 | build | the single-file bundle assembles and is genuinely self-contained |
-| **verify** (78 checks) | every tower deals damage, every reaction fires, wave 20 is reachable, a strong board wins, a bare board loses, the interface passes its geometry gates |
-| **adversarial** (40 checks) | resource leaks across restarts, NaN over a full run, hostile input, balance degeneracy, particle budget and stride, palette correctness across all five factions, determinism |
+| **verify** (91 checks) | every tower deals damage, every tower does the thing that makes it different, every reaction fires, wave 20 is reachable, a strong board wins, a bare board loses, the interface passes its geometry gates |
+| **adversarial** (61 checks) | resource leaks across restarts, NaN over a full run, hostile input, balance degeneracy, particle budget and stride, palette correctness across all five factions, determinism, foot slide and IK error, **no render term is dead**, **frustum culling removes work and nothing else** |
 
 Both harnesses run on their **own fresh page load**, because the adversarial
 one deliberately restarts the game a dozen times and corrupts state.
+
+### The gate that took four attempts to write, and why
+
+`tools/adversarial.js` switches each major render term off, re-renders, and
+measures the difference. A term whose removal is invisible is not a subtle
+term, it is an absent one.
+
+It exists because the **wet specular was never running**. `specPower` was 90
+against a shader threshold of 0.35, which requires the half vector within 8.7
+degrees of the surface normal. Every mesh here is non-indexed with per-face
+normals, so N is constant across a whole facet and there is no gradient for so
+narrow a lobe to land on. Zeroing the entire term changed the frame by 0.0001
+in coefficient of variation. The shader compiled, the uniform was set every
+frame, the constant looked deliberate, and reading the code told you the
+feature was there.
+
+Three versions of the gate PASSED on a build with that defect planted back in:
+
+| Statistic | Threshold | Verdict at specPower 90 |
+|---|---|---|
+| frame mean and spread | 0.35% of mean | passed |
+| share of pixels changed | 8% | passed (59.1% dead vs 64.1% alive) |
+| per-term max delta | per term | passed with the tooth at 0.01 |
+
+Each failure had the same cause and it was the instrument, not the code. The
+film grain is re-randomised every frame, so **two identical renders differ by a
+mean absolute luminance of 2.62**, and every term measured here contributes
+less than that. Coverage sounds like the right question and is not: bloom and
+the ink pass smear any difference across the whole picture, so a dead term and
+a live one both perturb about 60% of pixels.
+
+With grain off the null floor is 0.004 and the same measurements separate
+alive from dead by factors of 7 to 33:
+
+| Term | Alive | Planted dead |
+|---|---|---|
+| wet specular | 9.832 | 1.346 |
+| canvas tooth | 0.895 | 0.027 |
+| fresnel rim | 1.274 | 0.009 |
+| sobel ink | 1.702 | 0.029 |
+
+The gate now asserts its own null floor before trusting any verdict, and all
+four terms are verified by planting each one dead and confirming it is caught,
+with a green control after every restore.
 
 ### Three defects these gates caught that review did not
 
