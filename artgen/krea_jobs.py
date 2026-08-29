@@ -618,7 +618,7 @@ CUTSCENE_PLATES = [
     ('cut_human_intro_7', 'human', 'a city square at dusk filling with families and strung lights, everyone carrying chairs and blankets, looking up expectantly'),
     ('cut_human_intro_8', 'human', 'a packed city square at night seen from above, every face turned up, the white flash of an intercept blooming overhead, arms raised, celebration'),
     ('cut_human_intro_9', 'human', 'the same city square and the same upturned faces as the night sky above them fills with descending dark shapes trailing fire, cheering mouths and widening eyes together'),
-    ('cut_human_intro_10', 'human', 'the same city square at ground level, overturned chairs and strung lights torn down, tall dark shapes moving among scattering people, panic'),
+    ('cut_human_intro_10', 'human', 'the same city square at ground level, overturned chairs and strung lights torn down, people scattering in the foreground, and one towering non-human creature twice their height standing among them, too many limbs, carapace and wrong joints, lit hard from behind'),
     ('cut_human_intro_11', 'human', 'a shattered asteroid fragment opened like a hull in a city street, ramps down, its interior lit from inside'),
     ('cut_human_intro_12', 'human', 'a desert hangar in 1947 with a recovered disc under canvas and floodlights, soldiers posted at the doors'),
     ('cut_human_intro_13', 'human', 'a vast subterranean research hall under Antarctic ice, reverse-engineered alien components on gantries, flags of many nations on one wall'),
