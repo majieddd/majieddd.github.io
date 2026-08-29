@@ -130,6 +130,8 @@ var GAME = (function () {
 
     /* Board meshes, rebuilt per run because the board can change. */
     G.groundMesh = trackMesh(GL.mesh(G.board.groundData));
+    G.padMesh = G.board.padData ? trackMesh(GL.mesh(G.board.padData)) : null;
+    G.rimMesh = G.board.rimData ? trackMesh(GL.mesh(G.board.rimData)) : null;
     G.decorMesh = G.board.decorData ? trackMesh(GL.mesh(G.board.decorData)) : null;
     G.spireMesh = G.board.spireData ? trackMesh(GL.mesh(G.board.spireData)) : null;
     var pal = R.palette();
@@ -642,8 +644,9 @@ var GAME = (function () {
         rimScale: 0.34,
         /* Unit-scale detail: the atlas features must be much smaller in
            world units on a 2-unit body than on a 95-unit board, otherwise
-           one magnified cell is what a creature wears as its skin. */
-        detailScale: 1.5,
+           one magnified cell is what a creature wears as its skin. Fine
+           enough that a body reads as textured hide, not as machine grid. */
+        detailScale: 0.75,
         /* Units cast again. Restricting it to the trunk (see RIG.draw) makes
            it one or two draws per creature instead of ten, which is what made
            it too expensive before. A body without a cast shadow reads as
@@ -817,6 +820,11 @@ var GAME = (function () {
        look at something. Rim exists to separate a silhouette from its
        background; the ground IS the background. */
     R.push(G.groundMesh, U.m4ident(), { castShadow: false, facetJitter: 0.015, rimScale: 0.18, mat: 'ground' });
+    /* Paving slabs stand on the ground; give them their own quiet scale. */
+    if (G.padMesh) R.push(G.padMesh, U.m4ident(), { mat: 'ground', detailScale: 0.6, rimScale: 0.25, facetJitter: 0.015 });
+    /* The rim wall: stone, slightly stronger detail, no shadows (it catches
+       the key and reads as the plate's thickness). */
+    if (G.rimMesh) R.push(G.rimMesh, U.m4ident(), { mat: 'stone', detailScale: 0.35, castShadow: false, facetJitter: 0.02, rimScale: 0.3 });
     /* Scenery takes a reduced rim so the rocks and spires stay BEHIND the
        towers in the read. With a brighter board and full rim they were as
        bright as the things the player is meant to be looking at. */
@@ -846,7 +854,7 @@ var GAME = (function () {
         var isHover = input.hoverPlot === p;
         var col = afford ? (isHover ? pal.rim : pal.keyRgb) : [0.7, 0.25, 0.3];
         R.pushUnlit(G.plotRing,
-          U.m4trs(p.x, p.y + 0.12, p.z, 0, 0.4, 0, 1.5, 1, 1.5),
+          U.m4trs(p.x, p.y + 0.30, p.z, 0, 0.4, 0, 1.5, 1, 1.5),
           { tint: col, alpha: isHover ? 0.85 : 0.45, additive: true, pulse: isHover ? 0.5 : 0 });
       }
       /* Ghost preview at the hovered plot, including its range. */
@@ -856,7 +864,7 @@ var GAME = (function () {
         R.push(m.base, U.m4trs(hp.x, hp.y, hp.z, 0, 0, 0, 1, 1, 1),
           { dissolve: 0.45, castShadow: false, alpha: 0.6 });
         R.pushUnlit(G.rangeRing,
-          U.m4trs(hp.x, hp.y + 0.16, hp.z, 0, 0, 0, def.range, 1, def.range),
+          U.m4trs(hp.x, hp.y + 0.30, hp.z, 0, 0, 0, def.range, 1, def.range),
           { tint: afford ? pal.rim : [1, 0.3, 0.3], alpha: 0.5, additive: true, pulse: 0.3 });
       }
     }

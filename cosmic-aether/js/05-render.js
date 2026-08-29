@@ -773,6 +773,9 @@ var R = (function () {
            atlas fine. A single global scale turns a unit into one magnified
            cell, which is exactly the wrinkled rock the reviews flagged. */
         p.u1f('uDetailScale', it.detailScale || 0.14);
+        /* Object anchor: the model's world origin, so moving geometry wears
+           its texture instead of the texture staying glued to the world. */
+        p.u3f('uDetailAnchor', it.model[12], it.model[13], it.model[14]);
       }
       it.mesh.draw();
       prof.draws++;

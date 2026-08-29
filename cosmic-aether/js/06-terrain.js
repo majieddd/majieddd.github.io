@@ -182,7 +182,7 @@ var TERRAIN = (function () {
         /* The board falls away at its rim so it reads as a plate floating in
            space rather than as a cropped infinite plane. */
         var edge = Math.max(Math.abs(wx) / halfW, Math.abs(wz) / halfH);
-        h -= U.smoothstep(0.82, 1.02, edge) * 7.0;
+        h -= U.smoothstep(0.90, 1.00, edge) * 2.2;
         /* Carve the path: flatten toward zero within the ribbon, with a lip
            just outside it so the road reads as cut into the ground. */
         var carve = 1 - U.smoothstep(pathWidth * 0.55, pathWidth * 1.5, d);
@@ -201,6 +201,52 @@ var TERRAIN = (function () {
       var h00 = height[z0 * HW + x0], h10 = height[z0 * HW + x0 + 1];
       var h01 = height[(z0 + 1) * HW + x0], h11 = height[(z0 + 1) * HW + x0 + 1];
       return U.mix(U.mix(h00, h10, tx), U.mix(h01, h11, tx), tz);
+    }
+
+    /* ---------- plots (moved before the ground build so the terrain can be
+       flattened under every pad: paving only reads as ground when the ground
+       under it is ground-shaped). ---------- */
+    var plots = [];
+    var pr = U.rng('plots:' + seed);
+    for (j = 1; j < GH - 1; j++) {
+      for (i = 1; i < GW - 1; i++) {
+        var cx = -halfW + (i + 0.5) * CS, cz = -halfH + (j + 0.5) * CS;
+        var d2 = distToPath(path, cx, cz);
+        if (d2 < pathWidth * 1.25) continue;
+        if (d2 > (def.plotReach || 13)) continue;
+        var e2 = Math.max(Math.abs(cx) / halfW, Math.abs(cz) / halfH);
+        if (e2 > 0.80) continue;
+        /* Thin the plots so they do not tile the whole margin: a checker with
+           a jittered acceptance reads as deliberate emplacements. */
+        if (((i * 7 + j * 5) % 3) !== 0) continue;
+        if (pr() < 0.22) continue;
+        plots.push({
+          id: 'p' + i + '_' + j,
+          x: cx, z: cz,
+          y: heightAt(cx, cz),
+          gx: i, gz: j,
+          tower: null,
+          dist: d2
+        });
+      }
+    }
+    /* FLATTEN UNDER PAVING. A rigid slab dropped on a +/-0.72-relief surface
+       floats on downhill lips and pokes through uphill shoulders. Pull every
+       grid corner within a pad's footprint toward the plot height BEFORE the
+       ground mesh is built, so the pad sits in flat prepared ground. */
+    for (var pf = 0; pf < plots.length; pf++) {
+      var pl = plots[pf];
+      var px0 = pl.gx - 1, px1 = pl.gx + 1, pz0 = pl.gz - 1, pz1 = pl.gz + 1;
+      for (var py = pz0; py <= pz1; py++) {
+        for (var pxi = px0; pxi <= px1; pxi++) {
+          if (py < 0 || pxi < 0 || py >= HW || pxi >= HW) continue;
+          var wx = -halfW + pxi * CS, wz = -halfH + py * CS;
+          var d = Math.hypot(wx - pl.x, wz - pl.z);
+          var w = U.smoothstep(2.2 * CS, 0.8 * CS, d);
+          var idx = py * HW + pxi;
+          height[idx] = U.mix(height[idx], pl.y, w);
+        }
+      }
     }
 
     /* ---------- ground mesh ----------
@@ -235,7 +281,7 @@ var TERRAIN = (function () {
        luminance still read as the same material at a glance; a violet ground
        against a rose-warm road reads as two different things instantly, which
        is what a player scanning for the lane actually needs. */
-    var pathCols = def.pathCols || ['#7d4a73', '#88527e', '#6e4170', '#8f5c88'];
+    var pathCols = def.pathCols || ['#7d4a73', '#9a6288', '#6e4170', '#b06b9b'];
 
     var gb = MESH.builder('ground:' + seed);
     gb.tooth(1.0);
@@ -293,30 +339,87 @@ var TERRAIN = (function () {
        read as a designed position instead of a field, it removes a whole class
        of "tower half inside a rock" bugs, and it gives the UI something
        concrete to highlight on hover. */
-    var plots = [];
-    var pr = U.rng('plots:' + seed);
-    for (j = 1; j < GH - 1; j++) {
-      for (i = 1; i < GW - 1; i++) {
-        var cx = -halfW + (i + 0.5) * CS, cz = -halfH + (j + 0.5) * CS;
-        var d2 = distToPath(path, cx, cz);
-        if (d2 < pathWidth * 1.25) continue;
-        if (d2 > (def.plotReach || 13)) continue;
-        var e2 = Math.max(Math.abs(cx) / halfW, Math.abs(cz) / halfH);
-        if (e2 > 0.80) continue;
-        /* Thin the plots so they do not tile the whole margin: a checker with
-           a jittered acceptance reads as deliberate emplacements. */
-        if (((i * 7 + j * 5) % 3) !== 0) continue;
-        if (pr() < 0.22) continue;
-        plots.push({
-          id: 'p' + i + '_' + j,
-          x: cx, z: cz,
-          y: heightAt(cx, cz),
-          gx: i, gz: j,
-          tower: null,
-          dist: d2
-        });
+
+    /* ---------- PAVING ----------
+       Every build plot gets a machined hex slab so the collection of plots
+       reads as prepared emplacements, not as dots on the dirt. Clean stone
+       family, consistent height, no lattice: this is the paving the owner
+       asked for, baked into one merged mesh. */
+    var padData = null;
+    if (plots.length) {
+      var padB = MESH.builder('pads:' + seed);
+      var padCols = ['#2c2454', '#332a5f', '#241c45'];
+      for (var pi2 = 0; pi2 < plots.length; pi2++) {
+        var pp = plots[pi2];
+        padB.color(padCols[pi2 % padCols.length]).tooth(0.7);
+        /* Flush top (0.10 proud) and a flared skirt diving below the local
+           relief: the skirt is wider at the bottom, so no downhill lip can
+           show air and no uphill shoulder can poke through. */
+        padB.push();
+        padB.translate(pp.x, pp.y - 0.48, pp.z);
+        padB.prism(1.34, 1.28, 0.34, 6, 0, 0.24);
+        padB.pop();
+        padB.push();
+        padB.translate(pp.x, pp.y - 0.98, pp.z);
+        padB.prism(1.78, 1.34, 0.52, 6, 0, 0.5);
+        padB.pop();
       }
+      padData = padB.build({ jitter: 0.015 });
     }
+
+    /* ---------- RIM WALL ----------
+       The board is a floating plate; without a wall it is a sheet with a
+       cliff hole in it. Two-tone skirt around the whole boundary gives the
+       plate visible thickness and the rim a lit ceiling to read against:
+       a light cap band where the plateau meets the drop, and a dark body
+       falling to the void below. */
+    var rimB = MESH.builder('rim:' + seed);
+    var capCol = '#463a7c', bodyCol = '#0b0914';
+    var bottomY = -12.0;
+    function wallSeg(x0, z0, y0, x1, z1, y1) {
+      var topA = [x0, y0, z0], topB = [x1, y1, z1];
+      var midA = [x0, y0 - capH, z0], midB = [x1, y1 - capH, z1];
+      var botA = [x0, bottomY, z0], botB = [x1, bottomY, z1];
+      rimB.color(capCol).tooth(0.8);
+      rimB.quad(topA, topB, midB, midA);
+      rimB.color(bodyCol).tooth(0.9);
+      rimB.quad(midA, midB, botB, botA);
+    }
+    /* Perimeter: four sides traversed counter-clockwise when seen from
+       above. With quad(topA, topB, midB, midA) that traversal always yields
+       a wall facing OUTWARD (verified: +x traversal on the -z side gives -z
+       normal, -z traversal on the -x side gives -x normal, and so on). */
+    var capH = 1.8;
+    function wallSeg(x0, z0, y0, x1, z1, y1) {
+      var topA = [x0, y0, z0], topB = [x1, y1, z1];
+      var midA = [x0, y0 - capH, z0], midB = [x1, y1 - capH, z1];
+      var botA = [x0, bottomY, z0], botB = [x1, bottomY, z1];
+      rimB.color(capCol).tooth(0.8);
+      rimB.quad(topA, topB, midB, midA);
+      rimB.color(bodyCol).tooth(0.9);
+      rimB.quad(midA, midB, botB, botA);
+    }
+    /* z = -halfH edge, +x traversal (row 0 of the height grid). */
+    for (var xw = 0; xw < GW; xw++) {
+      wallSeg(-halfW + xw * CS, -halfH, height[xw * HW + 0],
+              -halfW + (xw + 1) * CS, -halfH, height[(xw + 1) * HW + 0]);
+    }
+    /* x = +halfW edge, +z traversal (last column of the grid). */
+    for (var zw = 0; zw < GH; zw++) {
+      wallSeg(halfW, -halfH + zw * CS, height[zw * HW + GW],
+              halfW, -halfH + (zw + 1) * CS, height[(zw + 1) * HW + GW]);
+    }
+    /* z = +halfH edge, -x traversal (last row of the grid). */
+    for (var xw2 = GW - 1; xw2 >= 0; xw2--) {
+      wallSeg(-halfW + (xw2 + 1) * CS, halfH, height[(xw2 + 1) * HW + (HH - 1)],
+              -halfW + xw2 * CS, halfH, height[xw2 * HW + (HH - 1)]);
+    }
+    /* x = -halfW edge, -z traversal (first column of the grid). */
+    for (var zw2 = GH - 1; zw2 >= 0; zw2--) {
+      wallSeg(-halfW, -halfH + zw2 * CS, height[zw2 * HW + 0],
+              -halfW, -halfH + (zw2 + 1) * CS, height[(zw2 + 1) * HW]);
+    }
+    var rimData = rimB.build({ jitter: 0.008 });
 
     /* ---------- scenery ----------
        Baked into a single merged mesh: it never moves, so there is no reason
@@ -328,7 +431,7 @@ var TERRAIN = (function () {
       var rb = MESH.builder('rockproto' + rp);
       rb.tooth(1.0);
       rb.color(groundCols[rp % groundCols.length]);
-      rb.ico(1.0, rp === 3 ? 1 : 0);
+      rb.ico(1.0, 1);
       rockProto.push(rb.build({ jitter: 0.22 }));
     }
     var pieces = [];
@@ -339,20 +442,20 @@ var TERRAIN = (function () {
        silhouette something to sit against, so the count is down and, more
        importantly, the size curve is much flatter. Anything large now has to
        earn its place as a spire on the rim instead. */
-    var attempts = def.decor === undefined ? 95 : def.decor;
+    var attempts = def.decor === undefined ? 52 : def.decor;
     for (var a = 0; a < attempts; a++) {
       var ang = dr() * U.TAU;
       var rad = Math.sqrt(dr()) * Math.min(halfW, halfH) * 1.02;
       var dx2 = Math.cos(ang) * rad * (halfW / Math.min(halfW, halfH));
       var dz2 = Math.sin(ang) * rad * (halfH / Math.min(halfW, halfH));
       if (Math.abs(dx2) > halfW * 0.97 || Math.abs(dz2) > halfH * 0.97) continue;
-      if (distToPath(path, dx2, dz2) < pathWidth * 1.15) continue;
+      if (distToPath(path, dx2, dz2) < pathWidth * 1.6) continue;
       var hy = heightAt(dx2, dz2);
       if (hy < -3) continue;
-      var s = 0.30 + dr() * dr() * 1.15;
-      var M = U.m4trs(dx2, hy + s * 0.28, dz2,
+      var s = 0.5 + dr() * dr() * 0.9;
+      var M = U.m4trs(dx2, hy + s * 0.12, dz2,
         dr() * 0.5 - 0.25, dr() * U.TAU, dr() * 0.5 - 0.25,
-        s * (0.75 + dr() * 0.6), s * (0.55 + dr() * 0.7), s * (0.75 + dr() * 0.6));
+        s * (0.75 + dr() * 0.6), s * (0.8 + dr() * 0.6), s * (0.75 + dr() * 0.6));
       pieces.push(MESH.transform(rockProto[Math.floor(dr() * rockProto.length) % rockProto.length], M));
       decor.push({ x: dx2, z: dz2, y: hy, s: s });
     }
@@ -360,31 +463,39 @@ var TERRAIN = (function () {
     /* Spires: a few tall silhouettes to break the horizon. The style law wants
        silhouette before detail, and a board that is entirely low scatter has
        no silhouette at all. */
-    /* Spires sit OUTSIDE the play area (radius 1.02 and beyond) so they frame
-       the board rather than clutter it, and they are dark so they read as
-       silhouette against the nebula instead of competing with the towers for
-       the eye. */
+    /* Spires sit ON the rim plateau now (radius 0.72..0.94 of the half
+       extents, inside the height grid), so they read as anchored structures
+       rising from the plate instead of sceptres floating in the void. They
+       still never cast: under a low sun they would throw enormous shadows
+       straight across the board and bury the towers. */
     var spireCols = def.spireCols || ['#0b0914', '#100c1d'];
-    for (var sp = 0; sp < (def.spires === undefined ? 11 : def.spires); sp++) {
+    var spiresPlaced = [];
+    for (var sp = 0; sp < (def.spires === undefined ? 7 : def.spires); sp++) {
       var sa = dr() * U.TAU;
-      var srad = Math.min(halfW, halfH) * (1.02 + dr() * 0.30);
+      var srad = Math.min(halfW, halfH) * (0.70 + dr() * 0.30);
       var sx = Math.cos(sa) * srad * (halfW / Math.min(halfW, halfH));
       var sz = Math.sin(sa) * srad * (halfH / Math.min(halfW, halfH));
+      if (Math.abs(sx) > halfW - CS * 0.5 || Math.abs(sz) > halfH - CS * 0.5) continue;
+      if (Math.max(Math.abs(sx) / halfW, Math.abs(sz) / halfH) > 0.80) continue;
       if (distToPath(path, sx, sz) < pathWidth * 2.0) continue;
+      var tooClose = false;
+      for (var spc = 0; spc < spiresPlaced.length; spc++) {
+        if (Math.hypot(spiresPlaced[spc][0] - sx, spiresPlaced[spc][1] - sz) < Math.min(halfW, halfH) * 0.12) tooClose = true;
+      }
+      if (tooClose) continue;
+      spiresPlaced.push([sx, sz]);
       var sb = MESH.builder('spire' + sp + seed);
       sb.tooth(1.0).color(spireCols[sp % spireCols.length]);
       var hgt = 6 + dr() * 16;
       var rad0 = 0.9 + dr() * 1.5;
+      /* A bedrock collar reads as the spire rising out of rock, not as a
+         pilaster balanced on the surface. */
+      sb.prism(rad0 * 1.55, rad0 * 0.9, 1.7, 5, -1.35, dr() * 3);
       sb.prism(rad0, rad0 * (0.15 + dr() * 0.3), hgt, 5 + (sp % 3), 0, dr() * 3);
       sb.color(spireCols[(sp + 1) % spireCols.length]);
       sb.prism(rad0 * 0.7, rad0 * 0.42, hgt * 0.34, 5, hgt * 0.55, dr() * 3);
       var sd = sb.build({ jitter: 0.10, warp: { freq: 0.22, amp: 0.42, phase: dr() * 6 } });
-      /* Spires stand outside the grid, where heightAt() correctly reports the
-         out-of-bounds sentinel rather than a surface. Reading that sentinel as
-         a ground height would sink every spire to y = -6. They are anchored
-         below the rim instead, so they rise out of the void the plate floats
-         in, which is what the board wants at its edge anyway. */
-      var baseY = -3.2 - dr() * 2.0;
+      var baseY = heightAt(sx, sz) - Math.max(1.0, rad0 * 0.55);
       /* SPIRES ARE KEPT SEPARATE FROM THE SCATTER.
          They stand outside the play area and are tall, so under a low sun they
          throw enormous shadows straight across the board. Physically right and
@@ -406,6 +517,8 @@ var TERRAIN = (function () {
       height: height, heightAt: heightAt,
       plots: plots,
       groundData: groundData,
+      padData: padData,
+      rimData: rimData,
       decorData: decorData,
       spireData: spireData,
       spawn: pathAt(path, 0).pos,

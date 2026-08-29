@@ -1099,15 +1099,24 @@ var SH = (function () {
     'uniform vec4 uMatData;',   /* rough, metal, sss, detailStrength */
     'uniform float uDetailScale;',
     'uniform float uDetailTriplanar;',
+    'uniform vec3 uDetailAnchor;',
     '',
+    /* Object-anchored triplanar. Static scenery passes anchor [0,0,0], so the
+       pattern is world-locked and never moves. A moving creature passes its
+       own model origin, so the pattern rides the body: without this the
+       texture stays glued to the world while the creature walks, and the
+       surface visibly swims under it. */
+    'vec3 ap(vec3 p){ return p - uDetailAnchor; }',
     'vec4 detailAt(vec3 p, vec3 n){',
     '  vec3 an = abs(n);',
-    '  vec2 uv = an.x > an.y && an.x > an.z ? p.zy : (an.y > an.z ? p.xz : p.xy);',
+    '  vec3 apl = ap(p);',
+    '  vec2 uv = an.x > an.y && an.x > an.z ? apl.zy : (an.y > an.z ? apl.xz : apl.xy);',
     '  return texture(uDetail, uv * uDetailScale * uMatRect.zw + uMatRect.xy);',
     '}',
     'vec3 detailNormal(vec3 p, vec3 n, float strength){',
     '  vec3 an = abs(n);',
-    '  vec2 uv = an.x > an.y && an.x > an.z ? p.zy : (an.y > an.z ? p.xz : p.xy);',
+    '  vec3 apl = ap(p);',
+    '  vec2 uv = an.x > an.y && an.x > an.z ? apl.zy : (an.y > an.z ? apl.xz : apl.xy);',
     /* Screen-constant world-space eps: the perturbation is a slope, and its
        strength has to be measured per world unit or the detail vanishes at
        one distance and explodes at another. */
