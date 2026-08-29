@@ -3603,7 +3603,18 @@ var R = (function () {
     vignette: 0.54,
     grain: 0.042,
     halftone: 0.62,
-    canvas: 0.20,
+    /* CANVAS WEAVE, OFF. It was a screen-space value-only texture applied
+       uniformly across the ENTIRE frame regardless of what is under it,
+       unlike halftone (confined to actual shadowed geometry, see the isScene
+       gate above) and unlike the mesh-space paint tooth (which moves with the
+       world). A screen-locked texture reads as exactly what it is: something
+       sitting on the glass rather than on the paint, and that is what was
+       reported: "a texture transparent overlay over the screen as a whole",
+       "doesn't move". Measured before disabling it: switching it off changed
+       full-frame local contrast by 0.26, about 16% of the frame's own texture
+       energy, uniformly, everywhere, confirming it was doing exactly what it
+       was reported to be doing. */
+    canvas: 0.0,
     /* How far, in world units, a particle fades as it approaches whatever is
        behind it. Too small and the hard intersection line survives; too large
        and smoke dissolves before it reaches the ground it is supposed to be

@@ -1224,6 +1224,20 @@
     R.ART.grain = grainWas; R.ART.halftone = haloWas;
   })();
 
+  (function () {
+    /* CANVAS WEAVE STAYS OFF BY DEFAULT. Reported directly and confirmed by
+       measurement: a screen-space value-only texture applied uniformly
+       across the whole frame, tracking nothing under it, reads as "a texture
+       transparent overlay over the screen as a whole" that "doesn't move".
+       Unlike halftone (now confined to actual shadowed geometry by T.1/T.2
+       above), there is no scene-aware version of this effect to fix; the
+       player asked for it gone, and it is a pure design constant, so the
+       permanent state is off. This just keeps a future change from silently
+       turning it back on. */
+    if (!('canvas' in R.ART)) { ok('T.3 canvas weave default', true, 'no ART.canvas, skipped'); return; }
+    ok('T.3 canvas weave defaults to off', R.ART.canvas === 0, 'ART.canvas = ' + R.ART.canvas);
+  })();
+
   /* ---------- W. feet stay planted ----------
      THE definitive measure of walk quality, and the one the eye notices even
      when it cannot name it. In a correct gait at least one foot is in stance
