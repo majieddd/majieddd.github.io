@@ -16,7 +16,7 @@ Usage:
     python krea_gen.py --force cmd_nyx # re-roll one key
     python krea_gen.py --pack          # write artpack.js from cache, no model
 """
-import argparse, base64, glob, io as _io, json, os, sys, time
+import argparse, base64, glob, hashlib, io as _io, json, os, sys, time
 
 from PIL import Image
 
@@ -48,6 +48,59 @@ ONDEMAND_CLASSES = {'cut', 'pcut'}
 ART_DIR = os.path.join(os.path.dirname(OUT), '..', 'art')
 CACHE = os.path.join(HERE, 'cache_krea')
 FALLBACK_CACHE = os.path.join(HERE, 'cache')      # the SDXL baseline
+
+# THE PROMPT MANIFEST, and the whole class of defect it exists to catch.
+#
+# The cache is keyed by KEY and the seed is FNV-1a of the KEY, both on purpose:
+# a resumed run reproduces, and a re-roll is explicit. The cost is that the
+# PROMPT is nowhere in that identity, so editing a prompt leaves the old image
+# cached under the same name and every later run skips it as "already done".
+# It fails silently and it fails invisibly, because the plate that comes back
+# is a perfectly good image of the wrong thing.
+#
+# Measured, twice, in one session:
+#   * All five human opening plates were still illustrating the retired
+#     five-slide script after the opening was rewritten to fifteen beats. Slide
+#     one showed what the new script wants at slide five; slide two showed
+#     slide four's content. The intro simply did not make sense, and nothing
+#     reported it.
+#   * 502 of 875 planet plates were rendering worlds that had been renamed
+#     (Barnard to Proxima Centauri, Tabby to Sirius) and re-authored. The
+#     storyboard had been carrying "350 panels still show outdated artwork" as
+#     a hand-written TODO for days, because a person had to notice it.
+#
+# Recording sha1(prompt) beside the image turns both into a computed answer.
+# A key is stale when the manifest disagrees with the prompt that is about to
+# be rendered, and stale keys are re-rendered exactly like missing ones.
+PROMPTS = os.path.join(CACHE, '.prompts.json')
+
+
+def prompt_hash(prompt):
+    return hashlib.sha1((prompt or '').encode('utf-8')).hexdigest()[:16]
+
+
+def load_manifest():
+    try:
+        with open(PROMPTS, encoding='utf-8') as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        # No manifest, or a truncated one from a killed run. Either way the
+        # honest answer is "nothing is known to be current", which makes every
+        # cached key stale and costs a re-render rather than shipping a plate
+        # nobody can vouch for.
+        return {}
+
+
+def save_manifest(man):
+    tmp = PROMPTS + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as f:
+        json.dump(man, f, indent=0, sort_keys=True)
+    os.replace(tmp, PROMPTS)     # atomic, so a kill cannot truncate the real file
+
+
+def is_stale(key, prompt, man):
+    """True when a cached plate was not made from the prompt now on file."""
+    return man.get(key) != prompt_hash(prompt)
 # The weights live in a plain directory rather than the hub cache: on Windows
 # the cache keeps a second full copy under blobs/ (no symlink support), which
 # for a 36GB model is 36GB wasted. `unsloth/Krea-2-Turbo` is the mirror to use
@@ -322,6 +375,10 @@ def main():
     ap.add_argument('--variant', type=int, default=0)
     ap.add_argument('--pack', action='store_true')
     ap.add_argument('--limit', type=int, default=0)
+    # Report which cached plates no longer match their prompt, and render
+    # nothing. Cheap enough to run before any batch, and it is the question
+    # "is what I am shipping actually what I wrote" asked as a command.
+    ap.add_argument('--stale', action='store_true')
     a = ap.parse_args()
 
     os.makedirs(CACHE, exist_ok=True)
@@ -338,7 +395,25 @@ def main():
             p = os.path.join(CACHE, j[0] + '.webp')
             if os.path.exists(p):
                 os.remove(p)
-    todo = [j for j in todo if not os.path.exists(os.path.join(CACHE, j[0] + '.webp'))]
+    # MISSING or STALE, not just missing. A cached plate whose prompt has moved
+    # since it was rendered is worth exactly as much as no plate at all, and it
+    # is worse than no plate, because nothing downstream can tell it is wrong.
+    man = load_manifest()
+    todo = [j for j in todo
+            if not os.path.exists(os.path.join(CACHE, j[0] + '.webp'))
+            or is_stale(j[0], j[1], man)]
+
+    if a.stale:
+        cached = [j for j in todo if os.path.exists(os.path.join(CACHE, j[0] + '.webp'))]
+        gone = [j for j in todo if not os.path.exists(os.path.join(CACHE, j[0] + '.webp'))]
+        print(f'{len(cached)} cached plates are STALE (prompt moved since render)')
+        print(f'{len(gone)} plates are MISSING')
+        for j in cached[:40]:
+            print('   stale  ', j[0])
+        if len(cached) > 40:
+            print(f'   ... and {len(cached) - 40} more')
+        return
+
     if a.limit:
         todo = todo[:a.limit]
 
@@ -370,6 +445,12 @@ def main():
         img = render(pipe, torch, prompt, gen_px, aspect, seed)
         fit(img, out_px, aspect).save(os.path.join(CACHE, key + '.webp'),
                                       'WEBP', quality=quality_for(key), method=6)
+        # Record the prompt this plate was actually made from, immediately
+        # after the plate exists. Flushed every time rather than once at the
+        # end: an eleven hour class run that is killed at hour ten must not
+        # lose the record of the plates it already got right.
+        man[key] = prompt_hash(prompt)
+        save_manifest(man)
         print(f'[{i+1}/{len(todo)}] {key:18s} {time.time()-t1:5.1f}s '
               f'(total {time.time()-t0:6.0f}s)', flush=True)
 

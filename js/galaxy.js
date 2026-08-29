@@ -218,6 +218,119 @@ const GX_SOL_ENCOUNTERS = {
        note: 'SATURN: the Hungry seat and their commander. The scavengers hit it at the same time, for the door.' },
 };
 
+/* THE OTHER FOUR ACTS ARE AUTHORED TOO.
+ *
+ * GX_SOL_ENCOUNTERS above made act one a designed sequence rather than a seed
+ * roll, and the storyboard has carried "the other four powers still need Acts
+ * 2 to 5 authored" ever since, with every one of those 28 worlds falling back
+ * to whatever the index happened to produce. An index-derived scenario is not
+ * wrong, it is just not ABOUT anything: it hands a tribunal floor the same
+ * encounter it hands a rendering yard.
+ *
+ * WHAT IS DIFFERENT FROM SOL, and why. This table does NOT set `owner`. Who
+ * garrisons these four systems is already a per-player answer (GX_V2_HOLDER
+ * just below: the holder is canonical unless that would be the player's own
+ * banner, in which case the story's occupier stands there instead). Authoring
+ * the owner here would overwrite that and put, for instance, the Federation
+ * in front of a Federation player. So what is authored is the SHAPE of the
+ * encounter -- which scenario, and who else is on the ground -- and the owner
+ * stays the answer GX_V2_HOLDER already gives.
+ *
+ * Each entry reads off the world's own ground line in js/planetcuts.js, so
+ * the encounter is about the place: the seed vaults get a swarm, the relay
+ * mast that every standing order comes down gets the Vigil, and the harbour
+ * that never asked anyone for papers is where the Hungry come for the holds.
+ *
+ * Applied in the same place and the same way as Sol: AFTER buildRoutes, after
+ * every draw, consuming no rnd() call, keyed on the system's IDENTITY rather
+ * than on si, because si is player-relative.
+ */
+const GX_ACT_ENCOUNTERS = {
+
+  /* THE PLEIADES. The power that ringed forty worlds and let none of them
+     rise, walked through its own certifying machinery in order. */
+  light: [
+    { scenario: 'assault',
+      note: 'MAIA: the hymn works, where every protection order in the cluster is cut. The choir does not stop when you land.' },
+    { scenario: 'assault',
+      note: 'ELECTRA: the registry. Forty protected worlds on light-etched shelves, and one page with Earth on it, deferred eighty times.' },
+    { scenario: 'overrun', contestedBy: 'pirate',
+      note: 'TAYGETA: the cable head. The scavengers are already cutting tethers for scrap while the Federation still holds the anchor.' },
+    { scenario: 'swarm',
+      note: 'MEROPE: the seed vaults. Something got into the terraces, and the wardens are fighting their own harvest.' },
+    { scenario: 'vigil',
+      note: 'CELAENO: the tribunal floor, benches empty, and old Weather routines coming down the same corridor at both of you.' },
+    { scenario: 'assault',
+      note: 'STEROPE: the deferral vaults. Every door down here is stamped, dated, and has never once been opened. You are opening them.' },
+    { scenario: 'assault', contestedBy: 'xeno',
+      note: 'ALCYONE: the Cathedral of Rings and the seat above it. The Hungry came for the same doors, and for what the deferrals were covering.' },
+  ],
+
+  /* ZETA RETICULI. The Harvest, taken apart in the order it processes: pens,
+     yards, vault, chorus, and the seat standing over a human settlement. */
+  xeno: [
+    { scenario: 'swarm',
+      note: 'ZETA-1 b: the pens. The pods run to the horizon and every one of them is waking at once.' },
+    { scenario: 'assault',
+      note: 'ZETA-1 c: the rendering yards, sloped floors the size of cities, run-off channels still brimming.' },
+    { scenario: 'assault', contestedBy: 'light',
+      note: 'ZETA-1 d: the gene vault. Every species they ever catalogued, banked, and a Federation column already inside taking what it can carry.' },
+    { scenario: 'overrun',
+      note: 'ZETA-2 b: the chorus spire, a column of fused bodies, and nothing on this ground answers to a commander.' },
+    { scenario: 'swarm',
+      note: 'ZETA-2 c: the furrows. Whatever is being grown here is out, and it does not care whose banner you fly.' },
+    { scenario: 'vigil',
+      note: 'ZETA-2 d: the ledger chamber, walls recording what was taken and from whom, and the Vigil arrives to audit it its own way.' },
+    { scenario: 'assault', contestedBy: 'pirate',
+      note: 'SERPO: human habs in alien sand, the seat standing over them, and scavengers working the same crates.' },
+  ],
+
+  /* PROXIMA CENTAURI. The Free Roads: everything here is a way through
+     somewhere, and the act ends at the one door that never asked for papers. */
+  pirate: [
+    { scenario: 'assault',
+      note: 'PROXIMA d: the breaking yards. A hundred builders’ hulls in sorted lanes, every one still holding something worth taking.' },
+    { scenario: 'assault',
+      note: 'PROXIMA b: the long town, on the only strip of ground that is neither burning nor frozen, running the whole way around.' },
+    { scenario: 'swarm',
+      note: 'PROXIMA c: the plume fields. The towers vent, it falls back as snow, and something is moving under it in numbers.' },
+    { scenario: 'vigil',
+      note: 'THE FLARE SHELTER: metres of rock over every head, and routines coming up the access corridor that do not read flags.' },
+    { scenario: 'assault', contestedBy: 'light',
+      note: 'THE NARROWS: one clear lane through a triple star’s debris, a toll gate across it, and a Federation cordon claiming the same lane.' },
+    { scenario: 'overrun',
+      note: 'THE DARK LOCKER: a vault cut into rock where the star is just another point, and nobody currently holds the door.' },
+    { scenario: 'assault', contestedBy: 'xeno',
+      note: 'PROXIMA GATE: sixty years of harbour built by whoever arrived with nowhere to be. The Hungry want the holds. The boom stays down.' },
+  ],
+
+  /* SIRIUS. The machines. The act walks up the chain of command until it
+     reaches the desk the orders are signed at, which is the campaign’s
+     own central question asked as a battle. */
+  robot: [
+    { scenario: 'swarm',
+      note: 'SIRIUS A I: the garden. Ten thousand dormant siblings in rows, and the queue has just filed them as available.' },
+    { scenario: 'assault',
+      note: 'SIRIUS A II: the casting halls, which have not stopped, turning out a part that appears in no maker assembly.' },
+    { scenario: 'overrun',
+      note: 'THE ASH FIELD: the outer body of a star thrown across the sky, and nothing standing on it answers to anyone.' },
+    { scenario: 'assault', contestedBy: 'light',
+      note: 'SIRIUS B I: the quarantine. Units flagged defective for failing to parse, and a Federation survey arrived to certify them.' },
+    { scenario: 'assault', contestedBy: 'pirate',
+      note: 'THE DIAMOND SHELF: carbon that will be crystal in an age nobody here will measure, and scavengers who intend to be paid this quarter.' },
+    { scenario: 'vigil',
+      note: 'THE COMPANION: every standing order in this system comes down that mast, and what is coming down it now is not deciding anything.' },
+    /* Challenger is the Federation, NOT the Hungry: GX_V2_HOLDER seats the
+       Hungry over Sirius for four of the five player factions, so authoring
+       them as the challenger too would have contested this seat against
+       itself in almost every campaign. The Federation also has the better
+       reason to be here, since who signs an order it cannot trace is its
+       own crisis in act five. */
+    { scenario: 'assault', contestedBy: 'light',
+      note: 'THE DOG STAR: tier upon tier of desks under the brightest star in anyone’s sky. The orders are signed here, and a Federation tribunal came to learn by whom.' },
+  ],
+};
+
 /* Who HOLDS each home system, per player faction. Row: universe system by its
    home faction. Column rule: the canonical holder, unless that would be the
    player's own faction, in which case the authored occupier of their story
@@ -664,25 +777,62 @@ function generateGalaxy(seed, playerFaction, mapPool, kindsW, gxv) {
      Overriding owner after generation leaves the world's BOON as it was rolled.
      That is deliberate: the boon is a reward, not an identity, and re-rolling
      it here would be a draw. */
-  if (v2 && typeof GX_SOL_ENCOUNTERS !== 'undefined' &&
-      typeof GX_HOME_SYSTEMS !== 'undefined') {
-    const solName = GX_HOME_SYSTEMS.human && GX_HOME_SYSTEMS.human.name;
-    const sol = systems.find(s => s.name === solName);
-    if (sol) sol.worlds.forEach(w => {
-      const a = GX_SOL_ENCOUNTERS[w.wi];
+  if (v2 && typeof GX_HOME_SYSTEMS !== 'undefined') {
+    /* systemName -> the table that authors it. Sol is the only one that also
+       authors OWNER; the other four leave that to GX_V2_HOLDER, which already
+       answers it per player. Built by identity, never by si. */
+    const authoredBy = {};
+    if (typeof GX_SOL_ENCOUNTERS !== 'undefined' && GX_HOME_SYSTEMS.human)
+      authoredBy[GX_HOME_SYSTEMS.human.name] = GX_SOL_ENCOUNTERS;
+    if (typeof GX_ACT_ENCOUNTERS !== 'undefined')
+      ['light', 'xeno', 'pirate', 'robot'].forEach(f => {
+        if (GX_HOME_SYSTEMS[f] && GX_ACT_ENCOUNTERS[f])
+          authoredBy[GX_HOME_SYSTEMS[f].name] = GX_ACT_ENCOUNTERS[f];
+      });
+    systems.forEach(sys => {
+      const table = authoredBy[sys.name];
+      if (!table) return;
+      sys.worlds.forEach(w => {
+      const a = table[w.wi];
       if (!a) return;
-      w.sol = true;                       /* read by worldScenarioOf */
+      w.authored = a;                     /* read by worldScenarioOf */
+      if (table === GX_SOL_ENCOUNTERS) w.sol = true;
       if (a.owner) w.owner = a.owner;
       /* Authored means AUTHORED. A world the table does not declare contested
          has its rolled contested flag cleared, so act one is byte-identical for
          every player and every seed. Without this the generator's own contested
          nomination lands somewhere inside the authored act and the teaching
          order the table exists to guarantee stops being guaranteed. */
-      if (a.contestedBy) { w.contested = true; w.contestedBy = [].concat(a.contestedBy); }
-      else { w.contested = false; w.contestedBy = null; }
+      /* [HOLDER, CHALLENGER], which is the shape the generator writes and the
+         shape every consumer reads. This was `[].concat(a.contestedBy)`, a
+         ONE element array, and ui.js:2179 takes the second contestant as
+         `w.contestedBy[1]`: undefined, so `FACTIONS[undefined]` fell through
+         to the `|| FACTIONS.pirate` default. Mars and Jupiter are authored
+         contested by the machines and both drew a PIRATE marker on the galaxy
+         map; Saturn was right only because its challenger is the pirates
+         anyway. The faction chip lists at ui.js:2906 and :3764 map over the
+         same array and were printing one contestant where there are two. */
+      if (a.contestedBy) {
+        /* A WORLD CANNOT BE CONTESTED AGAINST ITSELF. These four systems
+           author the challenger but leave the holder to GX_V2_HOLDER and to
+           the 20% raider squat, so the two can land on the same banner: with
+           the squat in play TAYGETA came out contested [pirate, pirate] and
+           the map drew a power fighting itself. Substitute the system's own
+           canonical power, then the first banner that is not the holder.
+           Index-derived, no draw, and it cannot loop. */
+        let ch = [].concat(a.contestedBy)[0];
+        if (ch === w.owner) {
+          const home = sys.faction || sys.homeFaction;
+          ch = (home && home !== w.owner && home !== 'robot') ? home
+             : ['light', 'xeno', 'pirate', 'human'].find(f => f !== w.owner);
+        }
+        w.contested = true;
+        w.contestedBy = [w.owner, ch];
+      } else { w.contested = false; w.contestedBy = null; }
       /* A world the fiction hands to somebody else cannot also be the
          renegade splinter of the player's own banner. */
       if (a.owner && a.owner !== playerFaction) w.renegade = false;
+      });
     });
   }
 
@@ -915,12 +1065,15 @@ function worldScenarioOf(w) {
   /* The Earth System is authored (GX_SOL_ENCOUNTERS): act one teaches the game
      in a deliberate order rather than whatever the index happens to produce.
      Index-derived like the rest of this function, so it takes no draw. */
-  if (w.sol && typeof GX_SOL_ENCOUNTERS !== 'undefined') {
-    const a = GX_SOL_ENCOUNTERS[w.wi];
-    if (a && a.scenario) {
-      const s = SCENARIOS.find(x => x.id === a.scenario);
-      if (s) return s;
-    }
+  /* `w.authored` is written by generateGalaxy for every authored system, Sol
+     included. The `w.sol` fallback stays for a galaxy restored from a save
+     written before the other four acts were authored: those worlds carry the
+     old flag and no record, so the table is consulted the old way. */
+  const a = w.authored ||
+    (w.sol && typeof GX_SOL_ENCOUNTERS !== 'undefined' ? GX_SOL_ENCOUNTERS[w.wi] : null);
+  if (a && a.scenario) {
+    const s = SCENARIOS.find(x => x.id === a.scenario);
+    if (s) return s;
   }
   const i = w.si * WORLDS_PER_SYSTEM + w.wi;
   if (i % SCENARIO_VARIANT_EVERY !== 0) return SCENARIOS[0];
