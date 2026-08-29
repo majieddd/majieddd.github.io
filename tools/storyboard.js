@@ -57,7 +57,25 @@ const has = k => { try { return fs.existsSync(path.join(ART, k + '.webp')); } ca
    no longer exist were set aside to art/_retired rather than deleted. So Sol
    no longer has any world showing the WRONG place; it has four showing NOTHING,
    which the missing-plate frame already reports honestly. */
-const staleWorld = key => key[0] === '3' || key[0] === '4';
+/* WHICH PLATES ARE STALE IS NOW MEASURED, not assumed by system index.
+   `key[0] === '3' || key[0] === '4'` was right when the whole of systems 3
+   and 4 was known-wrong, and it is wrong the moment they start being
+   re-rendered one plate at a time: it would keep stamping OLD ART on plates
+   that had just been fixed, and it would never clear by itself.
+   artgen/krea_gen.py publishes cache_krea/.stale.json on every run; that is
+   the only process that can compare a plate against the prompt that made it.
+   Falls back to the old rule when artgen has never run here, so a clone with
+   no caches still marks the systems it cannot vouch for. */
+const STALE_SET = (() => {
+  try {
+    const rec = JSON.parse(fs.readFileSync(
+      path.join(ROOT, 'artgen', 'cache_krea', '.stale.json'), 'utf8'));
+    return new Set([].concat(rec.stale || [], rec.missing || []));
+  } catch (e) { return null; }
+})();
+const staleWorld = (key, fac) => STALE_SET
+  ? [1, 2, 3, 4, 5].some(b => STALE_SET.has('pcut_' + key + '_' + fac + '_' + b))
+  : (key[0] === '3' || key[0] === '4');
 const plate = (k, stale) => has(k)
   ? '<img loading="lazy" src="../art/' + k + '.webp" alt="">' +
     (stale ? '<span class="stale">OLD ART &middot; NOT THIS PLACE</span>' : '')
@@ -385,7 +403,7 @@ function page(fac) {
       if (enc && enc.note) w('<p class="encnote">' + esc(enc.note) + '</p>');
       if (!e) { w('<p class="sub">No authored entry for this world yet.</p></div>'); return; }
       const k = b => 'pcut_' + key + '_' + fac + '_' + b;
-      const st = staleWorld(key);
+      const st = staleWorld(key, fac);
       w('<div class="strip">');
       w(panel(k(1), BEAT[0], wname + '. ' + (lines[0] || ''), false, st));
       w(panel(k(2), BEAT[1], e.ground, false, st));
@@ -433,7 +451,7 @@ function index() {
     for (let b = 1; b <= 5; b++) {
       panels++;
       const kk = 'pcut_' + key + '_' + fac + '_' + b;
-      if (!has(kk)) missing++; else if (staleWorld(key)) stale++;
+      if (!has(kk)) missing++; else if (staleWorld(key, fac)) stale++;
     }
   })));
   /* DECIDED vs SHIPPED. Every row runs a check against the code, so a decision
@@ -465,16 +483,10 @@ function index() {
     'verified against the code on every rebuild. Rows marked <b style="color:#ffd89b">TODO</b> ' +
     'are the work queue, in the order I would take it.</p>');
   const TODO = [
-    ['TODO', 'Render EARTH, MERCURY, JUPITER, SATURN',
-     'Four Earth System worlds have no plate at all. Earth needs the New York square from the opening, with emplacements rising.'],
-    ['TODO', 'Render the ten new opening slides',
-     'Slides 6 to 15. Eight, nine and ten are silent and must read as one continuous shot: same plaza, same crowd, same camera.'],
     ['TODO', 'Re-render the planet plates whose prompts moved',
      'Counted rather than estimated, by diffing the prompt catalogue against the revision that produced the cache: 502 of 875 are stale and 373 are provably unchanged. By system: Earth 150, Pleiades 5, Zeta 4, Proxima 169, Sirius 174. The Proxima and Sirius figures are the old "350 Barnard and Tabby panels" row, measured. `node artgen/krea_gen.py --stale` prints the live number.'],
     ['TODO', 'Re-baseline the balance pins IN A BROWSER',
      'Verified headlessly that no existing stat moved: 54 bodies unchanged, 15 added, 0 removed. But PINS is window.PINS and this project compares pins only inside one page session, so the A/B still needs a live build. See docs/BALANCE-BASELINE.md.'],
-    ['TODO', 'Art for the sixteen new intro slides',
-     'The four rewritten openings went from five slides to nine. Slides 6 to 9 already had prompts written for the new text; slides 1 to 5 were still illustrating the retired five-slide script and have now been rewritten. All of them still need rendering.'],
     ['LORE', 'The five bonus systems stay lore, by decision',
      'Kepler, Arcturus, Vega and the two demoted acts are NOT being built. They remain in the canon and in GALAXY-SCOPE-S42.md so the galaxy has edges the player can hear about, and nothing in the game promises them.'],
   ];

@@ -148,6 +148,31 @@ function build(G, artHas) {
       got: () => intro('human').filter(s => artHas(s.key + '.webp')).length + ' of ' +
                  intro('human').length + ' rendered' },
 
+    /* ALL FIVE OPENINGS, not just humanity's. The other four were rewritten
+       from five beats to nine and only the human row was ever checked, so
+       "the opening plates exist" could read green while four of the five
+       openings were missing their back half. */
+    { id: 'every power has all of its opening plates',
+      why: 'Four of the five openings were rewritten from five slides to nine, and only humanity had a row watching it.',
+      check: () => ['human', 'light', 'xeno', 'pirate', 'robot']
+        .every(f => intro(f).length && intro(f).every(s => artHas(s.key + '.webp'))),
+      got: () => ['human', 'light', 'xeno', 'pirate', 'robot']
+        .map(f => f + ' ' + intro(f).filter(s => artHas(s.key + '.webp')).length + '/' + intro(f).length)
+        .join(', ') },
+
+    /* The four Earth System worlds the storyboard listed as having no plate
+       at all. Counted off the pack rather than trusted, and named by their
+       world index so the row survives a rename. */
+    { id: 'Earth, Mercury, Jupiter and Saturn have plates',
+      why: 'Act one became a journey out to Saturn and four of its seven worlds had no art at all.',
+      check: () => ['0', '4', '5', '6'].every(wi =>
+        ['human', 'light', 'xeno', 'pirate', 'robot'].every(f =>
+          [1, 2, 3, 4, 5].every(b => artHas('pcut_0' + wi + '_' + f + '_' + b + '.webp')))),
+      got: () => { let n = 0;
+        ['0', '4', '5', '6'].forEach(wi => ['human', 'light', 'xeno', 'pirate', 'robot'].forEach(f =>
+          [1, 2, 3, 4, 5].forEach(b => { if (artHas('pcut_0' + wi + '_' + f + '_' + b + '.webp')) n++; })));
+        return n + ' of 100 plates present'; } },
+
     /* Was `check: () => false` with "drafted, none wired into the game yet".
        The draft turned out to be the seat worlds' own `order` lines, which
        already had the watching figure written into them; only the beat 5
