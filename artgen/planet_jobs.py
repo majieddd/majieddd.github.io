@@ -634,14 +634,15 @@ ORDER_OVERRIDE = {
     ('23', 'xeno'): 'the chorus spire repaired and whole, singing out across the plain as before',
     ('24', 'xeno'): 'the furrows sown with blight again and the spore-vent towers standing back up',
     ('25', 'xeno'): 'the chamber walls resealed and the living record whole and glowing again',
-    ('26', 'xeno'): 'the exchange compound rebuilt as a holding station, its records sealed inside it',
+    ('26', 'xeno'): 'the exchange compound rebuilt as a holding station, its records sealed inside it, '
+                    'one figure apart on the gantry above the rows watching them fill again',
     ('33', 'xeno'): 'the shelter doors working and shut, the warren below them run as a holding pen',
     ('34', 'xeno'): 'the toll gate re-crewed and standing across the lane, the toll still collected and the '
                     'collector changed',
     ('36', 'pirate'): 'the bay full again and the boom left down, every berth open and the first port out of Sol '
-                      'taking all comers',
+                      'taking all comers, one captain high on a catwalk watching the berths fill without them',
     ('36', 'xeno'): 'the sanctuary bay converted into a holding harbour, every berth accounted for and every hull '
-                    'logged',
+                    'logged, one figure apart on the high walkway watching the logging go on',
     ('40', 'xeno'): 'the dormant rows left exactly as they stand, unwoken and unasked, under guard',
 }
 
@@ -703,5 +704,29 @@ if __name__ == '__main__':
     keys = [k for k, *_ in js]
     assert len(keys) == 875, 'expected 875 jobs, got %d' % len(keys)
     assert len(set(keys)) == 875, 'duplicate keys in planet catalogue'
+
+    # THE WATCHER BEAT REFERS TO A FIGURE IT DOES NOT INTRODUCE, on purpose:
+    # the seat `order` lines were authored with one already, and adding a
+    # second gave Saturn two watchers. That makes "That lone figure is ..." a
+    # DANGLING REFERENCE the moment a seat order line has no figure in it,
+    # which is exactly what three ORDER_OVERRIDE rows did: the xeno and pirate
+    # endings for worlds those powers are RETAKING replace the whole line, and
+    # all three replacements had dropped the figure. Nothing would have failed;
+    # the plate would just have been a scene about nobody.
+    import re as _re
+    _fig = _re.compile(r'\b(figure|commander|captain|unit)\b', _re.I)
+    missing = []
+    for _si, _wi, _name, *_rest in WORLDS:
+        if _wi != SEAT_WI:
+            continue
+        _order = _rest[-1]
+        for _fac in FACTIONS:
+            _line = ORDER_OVERRIDE.get(('%d%d' % (_si, _wi), _fac), _order)
+            if not _fig.search(_line):
+                missing.append('%d%d/%s' % (_si, _wi, _fac))
+    assert not missing, ('the watcher beat says "That lone figure is" but these seat '
+                         'order lines contain no figure: ' + ', '.join(missing))
+    print('%d seat worlds x %d powers: every beat 5 order line names its watcher'
+          % (sum(1 for w in WORLDS if w[1] == SEAT_WI), len(FACTIONS)))
     print('%d worlds, %d plates, all keys distinct' % (len(WORLDS), len(keys)))
     print('intro %d, outro %d' % (len(WORLDS) * 5 * 3, len(WORLDS) * 5 * 2))

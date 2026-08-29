@@ -614,7 +614,7 @@ CUTSCENE_PLATES = [
     ('cut_human_intro_3', 'human', 'an observatory hall at night, tracking plots on every screen showing a curve bending inward, astronomers standing very still'),
     ('cut_human_intro_4', 'human', 'a silent crowd in a rain-soaked plaza staring up at a public screen, faces lit by its glow'),
     ('cut_human_intro_5', 'human', 'engineers of every nation around a holographic warship blueprint in a vast winter hangar, snow blowing through the open doors, families visible waiting outside'),
-    ('cut_human_intro_6', 'human', 'world leaders at a lit podium before a wall of national flags announcing a date, the date projected enormous behind them, jubilant crowds on screens to either side'),
+    ('cut_human_intro_6', 'human', 'world leaders standing shoulder to shoulder at a lit podium before a wall of national flags, arms raised together in celebration, vast jubilant crowds filling the screens to either side of them'),
     ('cut_human_intro_7', 'human', 'a city square at dusk filling with families and strung lights, everyone carrying chairs and blankets, looking up expectantly'),
     ('cut_human_intro_8', 'human', 'a packed city square at night seen from above, every face turned up, the white flash of an intercept blooming overhead, arms raised, celebration'),
     ('cut_human_intro_9', 'human', 'the same city square and the same upturned faces as the night sky above them fills with descending dark shapes trailing fire, cheering mouths and widening eyes together'),
@@ -631,7 +631,7 @@ CUTSCENE_PLATES = [
     ('cut_human_sys5',   'human', 'a human pilot fused into an alien cockpit, veins of light crawling up the arms, warning glyphs flashing'),
     ('cut_light_intro_1', 'light', 'a ringed council of luminous beings around a column of light in a cathedral of stars'),
     ('cut_light_intro_2', 'light', 'forty ringed worlds arrayed in tiers of gold light, each sealed inside its own shield lattice, supply barges moving between them, not one of them lit from within'),
-    ('cut_light_intro_3', 'light', 'a towering registry column of gold light listing one small blue world, the same review stamped and re-stamped down its entire height, robed archivists filing past without stopping'),
+    ('cut_light_intro_3', 'light', 'a towering golden archive column rising through a vaulted hall, one small blue world glowing alone in a single niche partway up it, robed archivists filing past without stopping'),
     ('cut_light_intro_4', 'light', 'a radiant tribunal in session around a projected dark rock on its approach curve, one hand closing a ledger, the chamber already rising to leave'),
     ('cut_light_intro_5', 'light', 'a gallery of tall fair watchers standing at a great observation window, faces lit from below, a small blue world far outside inside its ring, not one of them moving'),
     ('cut_light_intro_6', 'light', 'the same observation window seen from outside, a soundless white flash blooming on the night side of the small blue world beyond the glass, no ship leaving the ring'),
@@ -647,7 +647,7 @@ CUTSCENE_PLATES = [
     ('cut_xeno_intro_2', 'xeno', 'a wall of hard gold ring-light cutting straight across a violet harvest sky, hive barges halted along its whole length, feeding tubes severed mid-air'),
     ('cut_xeno_intro_3', 'xeno', 'a vast dark star map of unringed systems seen through a wet chitin lens, hive columns already pouring out toward the unmarked half of it'),
     ('cut_xeno_intro_4', 'xeno', 'a Federation delegation and a towering xeno matriarch facing each other across a slab of wet shell, a single document between them, nothing drawn'),
-    ('cut_xeno_intro_5', 'xeno', 'a sealed pact document pinned to a chitin desk under a Federation seal, ribbon and wax pressed into wet shell, a claw resting flat beside it'),
+    ('cut_xeno_intro_5', 'xeno', 'a folded pact bound in ribbon under a heavy Federation wax seal, resting on a slab of wet chitin, a claw laid flat beside it'),
     ('cut_xeno_intro_6','xeno','a towering living wall of violet ledger tissue, quota figures written, struck through and rewritten across it'),
     ('cut_xeno_intro_7', 'xeno', 'a Federation inspection barge turning away from a harvest moon with its scopes folded shut, the rendering yards below going straight back to full running'),
     ('cut_xeno_intro_8','xeno','a rendering yard running far past its stated quota, sloped floors overflowing, run-off channels brimming'),
@@ -660,7 +660,7 @@ CUTSCENE_PLATES = [
     ('cut_pirate_intro_1', 'pirate', 'four vast empire borderlines glowing across a starfield, a ragged convoy of mismatched galleons and scavenged hulls threading the dark seam between them'),
     ('cut_pirate_intro_2', 'pirate', 'a crowded transfer dock inside a hollowed asteroid, cargo pallets and weapon cases and huddled refugee families of several species all moving through the same gate under strung lights'),
     ('cut_pirate_intro_3', 'pirate', 'a cargo hold split by lamplight, medicine crates stacked on one side and an ominous unmarked sealed container on the other, a mixed-species crew deliberately turning away from both'),
-    ('cut_pirate_intro_4', 'pirate', 'the same cargo hold decades older, its walls layered in forty years of overlapping route stencils and paid-in-full chalk marks, the crew grown old around it'),
+    ('cut_pirate_intro_4', 'pirate', 'the same cargo hold many years later, its plating worn smooth and patched in mismatched metal, an ageing mixed-species crew sitting among the crates in the lamplight'),
     ('cut_pirate_intro_5', 'pirate', 'a lone corsair at a dark helm, a single unmarked container logged and cleared on the manifest beside them, the plotted route line running on toward a small blue world'),
     ('cut_pirate_intro_6','pirate','a single crate in a dim ship hold with routing marks stencilled on its side and a gloved hand resting flat across them'),
     ('cut_pirate_intro_7','pirate','a broken fragment hull lying in a city street with the same stencilled routing marks visible on its casing'),
@@ -837,8 +837,21 @@ def build_jobs():
                      f'{TOWER_PLATE_PALETTE[org]}. {desc}. {TOWER_PLATE_FRAME} {STYLE}',
                      1024, 224, 'square'))
     for key, fac, scene in CUTSCENE_PLATES:
+        # THE SAME LETTERING DEFENCE THE PLANET CLASS ALREADY HAD, and this
+        # class did not. planet_jobs.py asks for blank surfaces POSITIVELY
+        # ("Every surface blank and unlettered ...") because the Krea path
+        # passes no negative prompt at all, guidance is 0, and the only lever
+        # is what the prompt ASKS FOR. That was learned the expensive way when
+        # a plate came back with HUMAN MISSION FARM lettered across a flag.
+        #
+        # All 875 planet plates carried it. All 76 of these carried only the
+        # bare negation below plus {STYLE}'s "no text", and a plate written
+        # for a podium announcement came back with two feet of garbled
+        # capitals across the frame. Same fix, same wording, both classes.
         jobs.append((key, f'{scene}, {CUTSCENE_PALETTE.get(fac, "")}. '
-                     f'Wide cinematic composition, dramatic staging, no text anywhere. {STYLE}',
+                     f'Wide cinematic composition, dramatic staging. '
+                     f'Every surface blank and unlettered, no writing, no signage, '
+                     f'no numerals, no text anywhere. {STYLE}',
                      1024, 1920, 'wide'))
     # THE PLANET CUTSCENES (owner directive, Session 39). 875 plates: five
     # beats for each of 35 worlds for each of 5 factions, every one a distinct
