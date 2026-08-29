@@ -640,6 +640,10 @@ var GAME = (function () {
         flashColor: d.mark ? U.hex2rgb(DATA.ELEMENTS[d.mark].color) : [1, 0.85, 0.9],
         dissolve: dying ? U.sat(1 - d.dying / 0.55) * 0.9 : 0,
         rimScale: 0.34,
+        /* Unit-scale detail: the atlas features must be much smaller in
+           world units on a 2-unit body than on a 95-unit board, otherwise
+           one magnified cell is what a creature wears as its skin. */
+        detailScale: 1.5,
         /* Units cast again. Restricting it to the trunk (see RIG.draw) makes
            it one or two draws per creature instead of ten, which is what made
            it too expensive before. A body without a cast shadow reads as
@@ -693,7 +697,7 @@ var GAME = (function () {
 
       R.push(model.base,
         U.m4trs(t.pos[0], t.pos[1] + rise, t.pos[2], 0, 0, 0, bs, bs, bs),
-        { dissolve: (1 - b) * 0.55 });
+        { dissolve: (1 - b) * 0.55, detailScale: 0.85 });
 
       if (model.turret) {
         /* Recoil pushes the turret back along its own facing. */
@@ -704,7 +708,7 @@ var GAME = (function () {
         var spin = def.kind === 'support' ? t.spin : 0;
         R.push(model.turret,
           U.m4trs(tx, ty, tz, 0, t.yaw + spin, 0, bs, bs, bs),
-          { dissolve: (1 - b) * 0.55 });
+          { dissolve: (1 - b) * 0.55, detailScale: 1.0 });
         if (model.barrel) {
           /* The barrel recoils further than the turret, and CYCLONE's fan
              spins continuously instead. */
@@ -714,7 +718,7 @@ var GAME = (function () {
           var barrelSpin = t.id === 'cyclone' ? t.spin : 0;
           R.push(model.barrel,
             U.m4trs(bx, ty, bz, 0, t.yaw, barrelSpin, bs, bs, bs),
-            { dissolve: (1 - b) * 0.55 });
+            { dissolve: (1 - b) * 0.55, detailScale: 1.25 });
         }
       }
 
@@ -812,12 +816,12 @@ var GAME = (function () {
        camera dropped low, which is precisely when the player has zoomed in to
        look at something. Rim exists to separate a silhouette from its
        background; the ground IS the background. */
-    R.push(G.groundMesh, U.m4ident(), { castShadow: false, facetJitter: 0.26, rimScale: 0.18, mat: 'ground' });
+    R.push(G.groundMesh, U.m4ident(), { castShadow: false, facetJitter: 0.015, rimScale: 0.18, mat: 'ground' });
     /* Scenery takes a reduced rim so the rocks and spires stay BEHIND the
        towers in the read. With a brighter board and full rim they were as
        bright as the things the player is meant to be looking at. */
-    if (G.decorMesh) R.push(G.decorMesh, U.m4ident(), { rimScale: 0.45, mat: 'stone' });
-    if (G.spireMesh) R.push(G.spireMesh, U.m4ident(), { rimScale: 0.40, castShadow: false, mat: 'stone' });
+    if (G.decorMesh) R.push(G.decorMesh, U.m4ident(), { rimScale: 0.45, mat: 'stone', detailScale: 0.5 });
+    if (G.spireMesh) R.push(G.spireMesh, U.m4ident(), { rimScale: 0.40, castShadow: false, mat: 'stone', detailScale: 0.5 });
 
     var pal = R.palette();
     var sp = G.board.spawn, gl = G.board.goal;
@@ -843,7 +847,7 @@ var GAME = (function () {
         var col = afford ? (isHover ? pal.rim : pal.keyRgb) : [0.7, 0.25, 0.3];
         R.pushUnlit(G.plotRing,
           U.m4trs(p.x, p.y + 0.12, p.z, 0, 0.4, 0, 1.5, 1, 1.5),
-          { tint: col, alpha: isHover ? 0.85 : 0.32, additive: true, pulse: isHover ? 0.5 : 0 });
+          { tint: col, alpha: isHover ? 0.85 : 0.45, additive: true, pulse: isHover ? 0.5 : 0 });
       }
       /* Ghost preview at the hovered plot, including its range. */
       if (input.hoverPlot) {

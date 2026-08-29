@@ -95,26 +95,32 @@ var PAINT = (function () {
       return new Uint8ClampedArray(cell * cell * 4);
     }
 
-    /* Machined metal: panel joints, a subtle anisotropic grain, scratches. */
+    /* AETHER CLEAN: low-frequency art-directed surfaces. The first HD pass
+       used rich high-frequency noise in every cell and the board read as
+       TV static; AAA stylized materials are FLAT colour blocks with crisp
+       structural detail (seams, panels, ribs) at large scale, and nothing
+       else. Every generator below obeys that rule: broad shapes, smooth
+       interiors, albedo channel nearly flat at 1.0, roughness nearly flat at
+       0.5 modulated only by the structure it describes. */
+
+    /* Machined metal: big panel plates with crisp recessed seams. 64px
+       panels on a 256px cell, chamfered inner bevel, no grain. */
     function metal() {
       var px = emptyCell();
-      var n = fbmTile(cell, cell, 8, 3, 'det-metal');
-      var nf = fbmTile(cell, cell, 48, 2, 'det-metal-fine');
+      var n = fbmTile(cell, cell, 4, 2, 'det-metal-low');
       for (var y = 0; y < cell; y++) {
         for (var x = 0; x < cell; x++) {
           var i = y * cell + x, o = i * 4;
-          var v = 0.5 + (n[i] - 0.5) * 0.55 + (nf[i] - 0.5) * 0.18;
-          var mx = x % 64, my = y % 64;
+          var pvx = x % 64, pvy = y % 64;
           var seam = 0.0;
-          if (mx < 2 || my < 2) seam = -0.30;
-          else if (mx < 5 || my < 5) seam = -0.10;
-          var h = Math.max(0, Math.min(1, v + seam));
-          var rough = 0.5 + (nf[i] - 0.5) * 0.30 + seam * 0.4;
-          var alb = 1.0 + (nf[i] - 0.5) * 0.16 - (seam < 0 ? 0.10 : 0);
-          var ridge = 0;
-          if (seam < -0.2) ridge = 0.85;
-          else ridge = Math.pow(1.0 - Math.abs(nf[i] * 2 - 1), 9.0) * 0.55;
-          px[o] = Math.round(h * 255);
+          /* Recessed seam: deep at the border, beveled inset, flat interior. */
+          if (pvx < 6 || pvy < 6) seam = -0.18;
+          else if (pvx < 10 || pvy < 10) seam = -0.07;
+          var v = 0.55 + seam + (n[i] - 0.5) * 0.06;
+          var rough = 0.5 + (seam < -0.15 ? 0.12 : 0);
+          var alb = 1.0 + (n[i] - 0.5) * 0.05;
+          var ridge = (seam < -0.15) ? 0.35 : 0.0;
+          px[o] = Math.round(Math.min(1, Math.max(0, v)) * 255);
           px[o + 1] = Math.round(Math.min(1, rough) * 255);
           px[o + 2] = Math.round(Math.max(0, Math.min(1, alb)) * 255);
           px[o + 3] = Math.round(ridge * 255);
@@ -123,20 +129,21 @@ var PAINT = (function () {
       return px;
     }
 
-    /* Hull extrusion: vertical ribs + cap rails. */
+    /* Hull extrusion: broad ribs with soft valleys, plus cap rails. Low
+       frequency so the ribs read as structure, not as tweed. */
     function hullCell() {
       var px = emptyCell();
-      var n = fbmTile(cell, cell, 10, 3, 'det-hull');
-      var nf = fbmTile(cell, cell, 40, 2, 'det-hull-fine');
+      var n = fbmTile(cell, cell, 5, 2, 'det-hull-low');
       for (var y = 0; y < cell; y++) {
         for (var x = 0; x < cell; x++) {
           var i = y * cell + x, o = i * 4;
-          var rib = Math.cos((x % 32) / 32 * Math.PI * 2.0) * 0.5 + 0.5;
-          var rail = Math.pow(Math.max(0, 1.0 - Math.abs((y % 128) - 64) / 32), 2.0) * 0.22;
-          var v = 0.42 + rib * 0.18 + rail + (n[i] - 0.5) * 0.22 + (nf[i] - 0.5) * 0.10;
-          var rough = 0.5 + (1.0 - rib) * 0.28 + (nf[i] - 0.5) * 0.2;
-          var alb = 1.0 + (n[i] - 0.5) * 0.22;
-          var ridge = Math.pow(rib, 6.0) * 0.45;
+          var rib = Math.cos((x % 64) / 64 * Math.PI * 2.0) * 0.5 + 0.5;
+          rib = rib * rib * (3.0 - 2.0 * rib);
+          var rail = Math.pow(Math.max(0, 1.0 - Math.abs((y % 128) - 64) / 40), 2.0) * 0.25;
+          var v = 0.5 + (rib - 0.5) * 0.42 + rail + (n[i] - 0.5) * 0.05;
+          var rough = 0.5 + (1.0 - rib) * 0.10 + (n[i] - 0.5) * 0.05;
+          var alb = 1.0 + (n[i] - 0.5) * 0.05;
+          var ridge = Math.pow(rib, 5.0) * 0.4;
           px[o] = Math.round(Math.min(1, v) * 255);
           px[o + 1] = Math.round(Math.min(1, rough) * 255);
           px[o + 2] = Math.round(Math.max(0, Math.min(1, alb)) * 255);
@@ -146,21 +153,20 @@ var PAINT = (function () {
       return px;
     }
 
-    /* Stone: cracked plateau, fault lines. */
+    /* Stone: broad soft plateau patches, sparse fault lines, smooth. */
     function stoneCell() {
       var px = emptyCell();
-      var n = fbmTile(cell, cell, 7, 4, 'det-stone');
-      var nf = fbmTile(cell, cell, 36, 2, 'det-stone-fine');
+      var n = fbmTile(cell, cell, 3, 2, 'det-stone-low');
       for (var y = 0; y < cell; y++) {
         for (var x = 0; x < cell; x++) {
           var i = y * cell + x, o = i * 4;
           var crack = 0;
-          var cx = (x * 3 + y * 7) % 43;
-          if (cx < 2) crack = -0.34; else if (cx < 4) crack = -0.12;
-          var v = 0.45 + (n[i] - 0.5) * 0.72 + crack + (nf[i] - 0.5) * 0.16;
-          var rough = 0.85 + (nf[i] - 0.5) * 0.3;
-          var alb = 1.0 + (n[i] - 0.5) * 0.3 - (crack < -0.3 ? 0.12 : 0);
-          var ridge = Math.pow(1.0 - Math.abs(nf[i] * 2 - 1), 8.0) * 0.35 + (crack < -0.3 ? 0.5 : 0);
+          var cx = (x * 3 + y * 7) % 53;
+          if (cx < 2) crack = -0.16; else if (cx < 4) crack = -0.06;
+          var v = 0.5 + (n[i] - 0.5) * 0.34 + crack;
+          var rough = 0.55 + (n[i] - 0.5) * 0.10;
+          var alb = 1.0 + (n[i] - 0.5) * 0.10;
+          var ridge = (crack < -0.15) ? 0.3 : 0.0;
           px[o] = Math.round(Math.min(1, Math.max(0, v)) * 255);
           px[o + 1] = Math.round(Math.min(1, rough) * 255);
           px[o + 2] = Math.round(Math.max(0, Math.min(1, alb)) * 255);
@@ -170,21 +176,19 @@ var PAINT = (function () {
       return px;
     }
 
-    /* Organic: tiled scales with soft pits. */
+    /* Organic: soft fbm surface bumps. No lattice: on small units a regular
+       plate grid reads as target rings, which is exactly what the reviews
+       called out on the enemy closeup. */
     function organicCell() {
       var px = emptyCell();
-      var n = fbmTile(cell, cell, 6, 4, 'det-organic');
-      var nf = fbmTile(cell, cell, 24, 2, 'det-organic-fine');
+      var n = fbmTile(cell, cell, 5, 2, 'det-organic-low');
       for (var y = 0; y < cell; y++) {
         for (var x = 0; x < cell; x++) {
           var i = y * cell + x, o = i * 4;
-          var sx = Math.cos((x % 51) / 51 * 6.28318) * 0.5 + 0.5;
-          var sy = Math.cos((y % 43) / 43 * 6.28318) * 0.5 + 0.5;
-          var scale = Math.pow(sx * sy, 1.4);
-          var v = 0.30 + scale * 0.52 + (n[i] - 0.5) * 0.28 + (nf[i] - 0.5) * 0.12;
-          var rough = 0.55 + scale * 0.4 + (nf[i] - 0.5) * 0.2;
-          var alb = 0.9 + scale * 0.24 + (n[i] - 0.5) * 0.24;
-          var ridge = Math.pow(scale, 3.0) * 0.8;
+          var v = 0.40 + (n[i] - 0.5) * 0.42;
+          var rough = 0.55 + (n[i] - 0.5) * 0.12;
+          var alb = 0.97 + (n[i] - 0.5) * 0.08;
+          var ridge = 0.0;
           px[o] = Math.round(Math.min(1, v) * 255);
           px[o + 1] = Math.round(Math.min(1, rough) * 255);
           px[o + 2] = Math.round(Math.max(0, Math.min(1, alb)) * 255);
@@ -194,21 +198,21 @@ var PAINT = (function () {
       return px;
     }
 
-    /* Energy: hex weave, glowing nodes. */
+    /* Energy: large hex cells, clean bright nodes, no grain. */
     function energyCell() {
       var px = emptyCell();
-      var n = fbmTile(cell, cell, 5, 3, 'det-energy');
-      var nf = fbmTile(cell, cell, 30, 2, 'det-energy-fine');
+      var n = fbmTile(cell, cell, 3, 2, 'det-energy-low');
       for (var y = 0; y < cell; y++) {
         for (var x = 0; x < cell; x++) {
           var i = y * cell + x, o = i * 4;
           var pxv = (x % 64) - 32, pyv = (y % 64) - 32;
           var d0 = Math.sqrt(pxv * pxv + pyv * pyv);
-          var hex = Math.max(0, 1.0 - d0 / 30.0);
-          var v = 0.30 + hex * 0.62 + (n[i] - 0.5) * 0.16 + (nf[i] - 0.5) * 0.10;
-          var rough = 0.30 + (1.0 - hex) * 0.4;
-          var alb = 0.92 + hex * 0.2 + (n[i] - 0.5) * 0.2;
-          var ridge = Math.pow(hex, 4.0) * 0.9;
+          var hex = Math.max(0, 1.0 - d0 / 31.0);
+          hex = hex * hex * (3.0 - 2.0 * hex);
+          var v = 0.34 + hex * 0.56 + (n[i] - 0.5) * 0.04;
+          var rough = 0.4 + (1.0 - hex) * 0.2;
+          var alb = 0.92 + hex * 0.16;
+          var ridge = Math.pow(hex, 4.0) * 0.5;
           px[o] = Math.round(Math.min(1, v) * 255);
           px[o + 1] = Math.round(Math.min(1, rough) * 255);
           px[o + 2] = Math.round(Math.max(0, Math.min(1, alb)) * 255);
@@ -218,24 +222,25 @@ var PAINT = (function () {
       return px;
     }
 
-    /* Ground: pure high-frequency grit. No lattice, no regular structure:
-       any periodic element at that tiling scale reads as a net, and the
-       board is large enough that the net is the only thing left to see. */
+    /* Ground: the largest scale and the most afraid of noise. Nearly flat
+       plate with a slow, gentle value drift and NO ridge web at all; the
+       detail that survived the boardwide quilt cleanup was a fine web, and
+       at this tiling scale it reads as dirt. */
     function groundCell() {
       var px = emptyCell();
-      var n = fbmTile(cell, cell, 24, 3, 'det-ground');
-      var nf = fbmTile(cell, cell, 6, 3, 'det-ground-low');
+      var n = fbmTile(cell, cell, 3, 2, 'det-ground-low');
+      var nf = fbmTile(cell, cell, 9, 2, 'det-ground-mid');
       for (var y = 0; y < cell; y++) {
         for (var x = 0; x < cell; x++) {
           var i = y * cell + x, o = i * 4;
-          var v = 0.42 + (n[i] - 0.5) * 0.5 + (nf[i] - 0.5) * 0.42;
-          var rough = 0.9 + (nf[i] - 0.5) * 0.25;
-          var alb = 1.0 + (n[i] - 0.5) * 0.3 + (nf[i] - 0.5) * 0.34;
-          var ridge = Math.pow(1.0 - Math.abs(n[i] * 2 - 1), 8.0) * 0.12;
+          var v = 0.5 + (n[i] - 0.5) * 0.28 + (nf[i] - 0.5) * 0.10;
+          var rough = 0.6 + (n[i] - 0.5) * 0.08;
+          var alb = 1.0 + (n[i] - 0.5) * 0.08;
+          var ridge = 0.0;
           px[o] = Math.round(Math.min(1, Math.max(0, v)) * 255);
           px[o + 1] = Math.round(Math.min(1, rough) * 255);
           px[o + 2] = Math.round(Math.max(0, Math.min(1, alb)) * 255);
-          px[o + 3] = Math.round(Math.min(1, ridge) * 255);
+          px[o + 3] = Math.round(ridge * 255);
         }
       }
       return px;
@@ -270,12 +275,12 @@ var PAINT = (function () {
      and translucency the HD shader uses as its base. The shader reads these
      per draw, so a tower's hull is one material and its barrel another. */
   var MATERIALS = {
-    metal:   { rect: [0.00, 0.00, 0.25, 0.25], rough: 0.34, metal: 0.85, sss: 0.00, det: 1.10 },
-    hull:    { rect: [0.25, 0.00, 0.25, 0.25], rough: 0.52, metal: 0.45, sss: 0.00, det: 1.20 },
-    stone:   { rect: [0.50, 0.00, 0.25, 0.25], rough: 0.92, metal: 0.00, sss: 0.05, det: 0.85 },
-    organic: { rect: [0.75, 0.00, 0.25, 0.25], rough: 0.72, metal: 0.05, sss: 0.55, det: 0.60 },
-    energy:  { rect: [0.00, 0.25, 0.25, 0.25], rough: 0.16, metal: 0.00, sss: 1.00, det: 2.00 },
-    ground:  { rect: [0.25, 0.25, 0.25, 0.25], rough: 0.96, metal: 0.00, sss: 0.00, det: 0.34 }
+    metal:   { rect: [0.00, 0.00, 0.25, 0.25], rough: 0.36, metal: 0.85, sss: 0.00, det: 0.35 },
+    hull:    { rect: [0.25, 0.00, 0.25, 0.25], rough: 0.52, metal: 0.45, sss: 0.00, det: 0.40 },
+    stone:   { rect: [0.50, 0.00, 0.25, 0.25], rough: 0.88, metal: 0.00, sss: 0.05, det: 0.45 },
+    organic: { rect: [0.75, 0.00, 0.25, 0.25], rough: 0.70, metal: 0.05, sss: 0.55, det: 0.45 },
+    energy:  { rect: [0.00, 0.25, 0.25, 0.25], rough: 0.20, metal: 0.00, sss: 1.00, det: 0.60 },
+    ground:  { rect: [0.25, 0.25, 0.25, 0.25], rough: 0.95, metal: 0.00, sss: 0.00, det: 0.14 }
   };
 
   function buildAtlas(size) {
@@ -373,11 +378,11 @@ var PAINT = (function () {
       light: U.hsl2rgb([(hsl[0] + (opts.lightWarm || 0.06)) % 1, 0.38, 0.90]),
       rim: U.hsl2rgb([(hsl[0] + (opts.rimShift || 0.0)) % 1, 1.0, 0.66]),
       ambientSky: U.hsl2rgb([shadowHue - 0.06, 0.58, 0.30]),
-      ambientGround: U.hsl2rgb([shadowHue + 0.05, 0.62, 0.14]),
-      skyTop: U.hsl2rgb([shadowHue - 0.02, 0.78, 0.095]),
-      skyBottom: U.hsl2rgb([shadowHue + 0.06, 0.66, 0.185]),
-      nebulaA: U.hsl2rgb([(hsl[0] + (opts.nebA || 0.0)) % 1, 0.86, 0.42]),
-      nebulaB: U.hsl2rgb([(hsl[0] + (opts.nebB || 0.52)) % 1, 0.90, 0.52]),
+      ambientGround: U.hsl2rgb([shadowHue + 0.05, 0.62, 0.17]),
+      skyTop: U.hsl2rgb([shadowHue - 0.02, 0.78, 0.115]),
+      skyBottom: U.hsl2rgb([shadowHue + 0.06, 0.60, 0.215]),
+      nebulaA: U.hsl2rgb([(hsl[0] + (opts.nebA || 0.0)) % 1, 0.86, 0.32]),
+      nebulaB: U.hsl2rgb([(hsl[0] + (opts.nebB || 0.52)) % 1, 0.90, 0.40]),
       ink: U.hsl2rgb([shadowHue, 0.75, 0.035]),
       fog: U.hsl2rgb([shadowHue + 0.02, 0.62, 0.16])
     };

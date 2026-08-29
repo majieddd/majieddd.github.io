@@ -235,7 +235,7 @@ var TERRAIN = (function () {
        luminance still read as the same material at a glance; a violet ground
        against a rose-warm road reads as two different things instantly, which
        is what a player scanning for the lane actually needs. */
-    var pathCols = def.pathCols || ['#8c5a86', '#9b6494', '#7c4d76', '#a56e9c'];
+    var pathCols = def.pathCols || ['#7d4a73', '#88527e', '#6e4170', '#8f5c88'];
 
     var gb = MESH.builder('ground:' + seed);
     gb.tooth(1.0);

@@ -618,7 +618,7 @@ var MODELS = (function () {
          A collar is emissive, so it bypasses the lighting ramp and reads at
          any distance, in any faction palette, in shadow or out of it. */
       baseB.color(acc).tooth(0.05).emissive(1.0);
-      baseB.ring(2.00, 2.34, 6, 0.60);
+      baseB.ring(2.06, 2.44, 6, 0.86);
       baseB.emissive(0);
 
       var baseMesh = GL.mesh(baseB.build({ jitter: 0.028, mat: 'stone' }));
@@ -672,7 +672,7 @@ var MODELS = (function () {
             b.color('#191128').tooth(0.85);
             b.push(); b.translate(0, 0.16, -0.75); b.rotateX(-1.1); b.limb([0, 0, 0], [0, 0, 0.5], 0.10, 0.03, 4); b.pop();
           } },
-        { name: 'core', parent: 'body', bind: [0, 0.08, 0.74], build: function (b) {
+        { name: 'core', parent: 'body', bind: [0, 0.18, 1.32], build: function (b) {
             b.color(core).tooth(0.05).emissive(1.0);
             b.shard(0.26, 0.36, 0.3, 5, 0);
           } },
@@ -703,7 +703,7 @@ var MODELS = (function () {
             b.push(); b.translate(0, 0.4, -0.08); b.rotateX(-0.5); b.shard(0.09, 0.3, 0.16, 4, 0); b.pop();
             b.emissive(0);
           } },
-        { name: 'core', parent: 'head', bind: [0, 0.03, 0.44], build: function (b) {
+        { name: 'core', parent: 'head', bind: [0, 0.08, 0.66], build: function (b) {
             b.color(core).tooth(0.05).emissive(1.0);
             b.shard(0.23, 0.3, 0.24, 5, 0);
           } },
@@ -748,7 +748,7 @@ var MODELS = (function () {
               b.push(); b.translate(Math.sin(a) * 0.36, -0.2, 0.42); b.rotateX(1.4); b.cone(0.07, 0.4, 4, 0); b.pop();
             }
           } },
-        { name: 'core', parent: 'head', bind: [0, 0.18, 0.3], build: function (b) {
+        { name: 'core', parent: 'head', bind: [0, 0.22, 0.72], build: function (b) {
             b.color(core).tooth(0.05).emissive(1.0);
             b.shard(0.22, 0.3, 0.24, 6, 0);
           } },
@@ -782,7 +782,7 @@ var MODELS = (function () {
             b.extrude([[0, 0.3], [-0.9, 0.4], [-2.05, 0.25], [-1.7, -0.15], [0, -0.35]], 0.12, -0.06);
             b.pop();
           } },
-        { name: 'core', parent: 'body', bind: [0, -0.03, 0.8], build: function (b) {
+        { name: 'core', parent: 'body', bind: [0, 0.0, 1.45], build: function (b) {
             b.color(core).tooth(0.05).emissive(1.0);
             b.shard(0.24, 0.32, 0.26, 5, 0);
           } }

@@ -3391,7 +3391,7 @@ var SH = (function () {
     /* Screen-constant world-space eps: the perturbation is a slope, and its
        strength has to be measured per world unit or the detail vanishes at
        one distance and explodes at another. */
-    '  float e = 0.14;',
+    '  float e = 0.30;',
     '  float h0 = texture(uDetail, uv * uDetailScale * uMatRect.zw + uMatRect.xy).r;',
     '  float hx = texture(uDetail, (uv + vec2(e, 0.0)) * uDetailScale * uMatRect.zw + uMatRect.xy).r;',
     '  float hy = texture(uDetail, (uv + vec2(0.0, e)) * uDetailScale * uMatRect.zw + uMatRect.xy).r;',
@@ -3489,6 +3489,7 @@ var SH = (function () {
     '',
     'void main(){',
     '  vec3 N = normalize(vNormal);',
+    '  vec3 geoN = N;',
     '  vec3 Vd = normalize(uCamPos - vWorld);',
     '  vec3 L = normalize(uLightDir);',
     '',
@@ -3503,11 +3504,15 @@ var SH = (function () {
     '',
     '  vec3 albedo = mix(vAlbedo, uTint, uItemB.x);',
     '',
-    /* Material class from the draw's material block. */
-    '  float rough = clamp(uMatData.x, 0.03, 1.0);',
+    /* Material class from the draw's material block. The atlas is sampled
+       with the GEOMETRIC normal: roughness and albedo modulation describe
+       the surface itself, not the perturbed one. */
+    '  vec4 dt = detailAt(vWorld, geoN);',
+    '  float rough = clamp(uMatData.x * mix(1.0, dt.g, 0.30), 0.03, 1.0);',
     '  float metal = uMatData.y;',
     '  float sss = uMatData.z;',
     '  float detStr = uMatData.w;',
+    '  albedo *= mix(1.0, dt.b, 0.22);',
     '',
     /* THE DETAIL NORMAL. Perturbs the flat facet normal with the material
        atlas height, which is what makes a metal plate read as machined and
@@ -3515,9 +3520,14 @@ var SH = (function () {
        single biggest "it looks hi-fi" lever after MSAA. */
     '  float dW = detStr * vTooth;',
     '  if (dW > 0.001){',
-    '    N = detailNormal(vWorld, N, min(dW, 2.4));',
+    '    N = detailNormal(vWorld, N, min(dW, 0.9));',
     '    N = normalize(N);',
     '  }',
+    '',
+    /* The final post buffers must carry the GEOMETRIC normal, not the
+       perturbed one. SSAO and ink consume attachment 1 as "geometry";
+       writing the detail-perturbed normal let material grain inject itself
+       into the occlusion and edge passes. */
     '',
     /* HEMISPHERE + BEND AMBIENT. Sky from above, ground bounce from below,
        slightly stronger than the cel mode because the HD picture is
@@ -3547,10 +3557,10 @@ var SH = (function () {
        black). shadowLift is the mix toward the void; the two upper stops are
        albedo-dominant so faction colour is carried before anything else. */
     '  vec3 deep = mix(uShadowColor, albedo * 0.22, uShadowLift);',
-    '  vec3 mid  = albedo * mix(vec3(1.0), uLightColor * 1.4, 0.30) * (0.74 + band * 0.52);',
-    '  vec3 lite = albedo * mix(vec3(1.0), uLightColor * 1.6, 0.52) * 1.36;',
+    '  vec3 mid  = albedo * mix(vec3(1.0), uLightColor * 1.4, 0.30) * (0.72 + band * 0.42);',
+    '  vec3 lite = albedo * mix(vec3(1.0), uLightColor * 1.35, 0.30) * 1.26;',
     '  vec3 litCol = band < 0.34 ? mix(deep, mid, band / 0.34) : mix(mid, lite, (band - 0.34) / 0.66);',
-    '  litCol = mix(litCol, albedo * 0.9, uHdBandsA.w * 0.25);',
+    '  litCol = mix(litCol, albedo * 0.9, uHdBandsA.w * 0.35);',
     '',
     '  vec3 col = litCol * mix(uHdBandsB.z, 1.0, shadMask) + amb * albedo;',
     '',
@@ -3571,10 +3581,11 @@ var SH = (function () {
     '  col += uLightColor * spec * shadMask * NdL;',
     '',
     /* Wet sheen on brushed surfaces: the ridge mask from the atlas breaks up
-       the specular so it never reads as a clean plastic blob. */
-    '  vec4 dt = detailAt(vWorld, N);',
+       the specular so it never reads as a clean plastic blob. On rough
+       surfaces it contributes almost nothing (1 - rough), which is what
+       keeps stone matte and metal glassy. */
     '  float ridge = dt.a;',
-    '  col += uLightColor * spec * ridge * 1.6 * uHdSpec.x * shadMask;',
+    '  col += uLightColor * spec * ridge * 0.6 * (1.0 - rough) * uHdSpec.x * shadMask;',
     '',
     /* BACKLIT TRANSLUCENCY: energy cores, thin hulls and wings. When a
        surface turns its back to the sun the light leaks through its
@@ -3590,13 +3601,13 @@ var SH = (function () {
     '  col += uRimColor * fres * rimSide * uRimStrength * uItemB.z * (0.30 + 0.70 * shadMask);',
     '',
     /* Painterly tooth: value only, modulated by the draw's tooth weight. */
-    '  col *= 1.0 + (dt.r - 0.5) * 0.30 * vTooth;',
+    '  col *= 1.0 + (dt.r - 0.5) * 0.10 * detStr * vTooth;',
     '  col *= 1.0 + (uHdSpec.z - 0.5) * 0.0;',
     '',
     /* Emissive facets bypass the ramp entirely and take a hot boost so they
        feed bloom. The scale keeps an emissive clip-rate-independent from the
        exposure change. */
-    '  col = mix(col, albedo * (2.1 * uExposure + 0.25) + uRimColor * 0.42, vEmis);',
+    '  col = mix(col, albedo * (1.65 * uExposure + 0.32) + uRimColor * 0.36, vEmis);',
     '',
     /* Dissolve burn edge, damage flash, then fog. Identical contract to the
        cel path so gameplay reads stay the same across styles. */
@@ -3617,13 +3628,13 @@ var SH = (function () {
     '    else if (uItemB.w < 2.5) { oColor = vec4(vec3(band), 1.0); }',
     '    else if (uItemB.w < 3.5) { oColor = vec4(litCol, 1.0); }',
     '    else if (uItemB.w < 4.5) { oColor = vec4(vec3(sh), 1.0); }',
-    '    else                       { oColor = vec4(N * 0.5 + 0.5, 1.0); }',
-    '    oNormal = vec4(N * 0.5 + 0.5, depth);',
+    '    else                       { oColor = vec4(geoN * 0.5 + 0.5, 1.0); }',
+    '    oNormal = vec4(geoN * 0.5 + 0.5, depth);',
     '    return;',
     '  }',
     '',
     '  oColor = vec4(col, uItemA.w);',
-    '  oNormal = vec4(N * 0.5 + 0.5, depth);',
+    '  oNormal = vec4(geoN * 0.5 + 0.5, depth);',
     '}'
   ].join('\n');
 
@@ -3682,8 +3693,8 @@ var SH = (function () {
     '  float b3 = smoothstep(0.55, 0.85, n3) * 0.35;',
     '  vec3 nbA = uNebulaA * (0.85 + 0.35 * n2);',
     '  vec3 nbB = uNebulaB * (0.8 + 0.4 * n1);',
-    '  col = mix(col, nbA, b1 * 0.46 * smoothstep(-0.18, 0.55, dir.y));',
-    '  col = mix(col, nbB, b2 * 0.28 * smoothstep(-0.05, 0.7, dir.y));',
+    '  col = mix(col, nbA, b1 * 0.34 * smoothstep(-0.18, 0.55, dir.y));',
+    '  col = mix(col, nbB, b2 * 0.22 * smoothstep(-0.05, 0.7, dir.y));',
     '  col += nbB * b3 * 0.70 * smoothstep(-0.05, 0.75, dir.y);',
     '',
     /* GALACTIC BAND: a fixed plane with filament noise inside, so up-and-over
@@ -3768,20 +3779,21 @@ var SH = (function () {
     'uniform float uAOStrength;',
     'uniform float uAORadius;',
     NOISE,
-    'const vec2 AO_TAPS[8] = vec2[8](',
+    'const vec2 AO_TAPS[12] = vec2[12](',
     '  vec2( 0.89,  0.42), vec2(-0.74,  0.67), vec2( 0.18,  0.98), vec2(-0.96,  0.22),',
-    '  vec2( 0.55, -0.83), vec2(-0.28, -0.96), vec2( 0.99, -0.10), vec2(-0.66, -0.75));',
+    '  vec2( 0.55, -0.83), vec2(-0.28, -0.96), vec2( 0.99, -0.10), vec2(-0.66, -0.75),',
+    '  vec2( 0.42,  0.72), vec2(-0.85, -0.35), vec2( 0.07, -0.99), vec2(-0.44,  0.88));',
     'void main(){',
     '  vec4 cen = texture(uNormalDepth, vUV);',
     '  vec3 n = cen.rgb * 2.0 - 1.0;',
     '  float z = cen.a;',
     '  if (z > 1000.0){ oColor = vec4(1.0); return; }',
     '  float occ = 0.0;',
-    '  float range = uAORadius * max(z, 1.0) * 0.012 + 0.35;',
+    '  float range = uAORadius * max(z, 1.0) * 0.008 + 0.18;',
     '  float ang = hash12(vUV * 937.0) * 6.2831853;',
     '  vec2 rot = vec2(cos(ang), sin(ang));',
     '  float px = range * max(uRes.x, uRes.y) * 0.0012;',
-    '  for (int i = 0; i < 8; i++){',
+    '  for (int i = 0; i < 12; i++){',
     '    vec2 o = AO_TAPS[i];',
     '    vec2 r = vec2(o.x * rot.x - o.y * rot.y, o.x * rot.y + o.y * rot.x);',
     '    float w = 0.65 + 0.35 * hash12(vUV * 17.0 + float(i));',
@@ -3790,8 +3802,8 @@ var SH = (function () {
     '    vec3 nt = t.rgb * 2.0 - 1.0;',
     '    float dz = z - zt;',
     '    float dN = 1.0 - max(dot(n, nt), 0.0);',
-    '    if (dz > 0.0 && dz < range * 3.0){',
-    '      occ += (1.0 - dz / (range * 3.0)) * (0.35 + dN * 1.4);',
+    '    if (dz > 0.0 && dz < range * 2.0){',
+    '      occ += (1.0 - dz / (range * 2.0)) * (0.35 + dN * 1.4);',
     '    }',
     '  }',
     '  float ao = clamp(1.0 - occ * uAOStrength * 0.14, 0.0, 1.0);',
@@ -3940,7 +3952,7 @@ var SH = (function () {
     '    vec2 rp = vec2(hp.x * cos(ang) - hp.y * sin(ang), hp.x * sin(ang) + hp.y * cos(ang));',
     '    vec2 cell = fract(rp / 3.4) - 0.5;',
     '    float dotR = length(cell) * 2.0;',
-    '    float shadowMask = (1.0 - smoothstep(0.05, 0.40, lum)) * isScene;',
+    '    float shadowMask = (1.0 - smoothstep(0.03, 0.25, lum)) * isScene;',
     '    float screen = smoothstep(dotR - 0.35, dotR + 0.35, 0.35 + lum * 1.1);',
     '    col = mix(col, col * (0.88 + 0.12 * screen), shadowMask * uHalftone);',
     '  }',
@@ -3956,6 +3968,10 @@ var SH = (function () {
     '    col += g * uGrain;',
     '  }',
     '  col = mix(col, vec3(1.0), uFlashWhite);',
+    /* BLUE-NOISE DITHER before the final quantise to 8 bits. A smooth 8-bit
+       falloff (the board's radial gradient) posterises into contour rings;
+       one LSB of animated hash breaks them without being visible itself. */
+    '  col += (hash12(uv * uRes + fract(uTime) * 17.3) - 0.5) * (1.6 / 255.0);',
     '  oColor = vec4(clamp(col, 0.0, 1.0), 1.0);',
     '}'
   ].join('\n');
@@ -4078,26 +4094,32 @@ var PAINT = (function () {
       return new Uint8ClampedArray(cell * cell * 4);
     }
 
-    /* Machined metal: panel joints, a subtle anisotropic grain, scratches. */
+    /* AETHER CLEAN: low-frequency art-directed surfaces. The first HD pass
+       used rich high-frequency noise in every cell and the board read as
+       TV static; AAA stylized materials are FLAT colour blocks with crisp
+       structural detail (seams, panels, ribs) at large scale, and nothing
+       else. Every generator below obeys that rule: broad shapes, smooth
+       interiors, albedo channel nearly flat at 1.0, roughness nearly flat at
+       0.5 modulated only by the structure it describes. */
+
+    /* Machined metal: big panel plates with crisp recessed seams. 64px
+       panels on a 256px cell, chamfered inner bevel, no grain. */
     function metal() {
       var px = emptyCell();
-      var n = fbmTile(cell, cell, 8, 3, 'det-metal');
-      var nf = fbmTile(cell, cell, 48, 2, 'det-metal-fine');
+      var n = fbmTile(cell, cell, 4, 2, 'det-metal-low');
       for (var y = 0; y < cell; y++) {
         for (var x = 0; x < cell; x++) {
           var i = y * cell + x, o = i * 4;
-          var v = 0.5 + (n[i] - 0.5) * 0.55 + (nf[i] - 0.5) * 0.18;
-          var mx = x % 64, my = y % 64;
+          var pvx = x % 64, pvy = y % 64;
           var seam = 0.0;
-          if (mx < 2 || my < 2) seam = -0.30;
-          else if (mx < 5 || my < 5) seam = -0.10;
-          var h = Math.max(0, Math.min(1, v + seam));
-          var rough = 0.5 + (nf[i] - 0.5) * 0.30 + seam * 0.4;
-          var alb = 1.0 + (nf[i] - 0.5) * 0.16 - (seam < 0 ? 0.10 : 0);
-          var ridge = 0;
-          if (seam < -0.2) ridge = 0.85;
-          else ridge = Math.pow(1.0 - Math.abs(nf[i] * 2 - 1), 9.0) * 0.55;
-          px[o] = Math.round(h * 255);
+          /* Recessed seam: deep at the border, beveled inset, flat interior. */
+          if (pvx < 6 || pvy < 6) seam = -0.18;
+          else if (pvx < 10 || pvy < 10) seam = -0.07;
+          var v = 0.55 + seam + (n[i] - 0.5) * 0.06;
+          var rough = 0.5 + (seam < -0.15 ? 0.12 : 0);
+          var alb = 1.0 + (n[i] - 0.5) * 0.05;
+          var ridge = (seam < -0.15) ? 0.35 : 0.0;
+          px[o] = Math.round(Math.min(1, Math.max(0, v)) * 255);
           px[o + 1] = Math.round(Math.min(1, rough) * 255);
           px[o + 2] = Math.round(Math.max(0, Math.min(1, alb)) * 255);
           px[o + 3] = Math.round(ridge * 255);
@@ -4106,20 +4128,21 @@ var PAINT = (function () {
       return px;
     }
 
-    /* Hull extrusion: vertical ribs + cap rails. */
+    /* Hull extrusion: broad ribs with soft valleys, plus cap rails. Low
+       frequency so the ribs read as structure, not as tweed. */
     function hullCell() {
       var px = emptyCell();
-      var n = fbmTile(cell, cell, 10, 3, 'det-hull');
-      var nf = fbmTile(cell, cell, 40, 2, 'det-hull-fine');
+      var n = fbmTile(cell, cell, 5, 2, 'det-hull-low');
       for (var y = 0; y < cell; y++) {
         for (var x = 0; x < cell; x++) {
           var i = y * cell + x, o = i * 4;
-          var rib = Math.cos((x % 32) / 32 * Math.PI * 2.0) * 0.5 + 0.5;
-          var rail = Math.pow(Math.max(0, 1.0 - Math.abs((y % 128) - 64) / 32), 2.0) * 0.22;
-          var v = 0.42 + rib * 0.18 + rail + (n[i] - 0.5) * 0.22 + (nf[i] - 0.5) * 0.10;
-          var rough = 0.5 + (1.0 - rib) * 0.28 + (nf[i] - 0.5) * 0.2;
-          var alb = 1.0 + (n[i] - 0.5) * 0.22;
-          var ridge = Math.pow(rib, 6.0) * 0.45;
+          var rib = Math.cos((x % 64) / 64 * Math.PI * 2.0) * 0.5 + 0.5;
+          rib = rib * rib * (3.0 - 2.0 * rib);
+          var rail = Math.pow(Math.max(0, 1.0 - Math.abs((y % 128) - 64) / 40), 2.0) * 0.25;
+          var v = 0.5 + (rib - 0.5) * 0.42 + rail + (n[i] - 0.5) * 0.05;
+          var rough = 0.5 + (1.0 - rib) * 0.10 + (n[i] - 0.5) * 0.05;
+          var alb = 1.0 + (n[i] - 0.5) * 0.05;
+          var ridge = Math.pow(rib, 5.0) * 0.4;
           px[o] = Math.round(Math.min(1, v) * 255);
           px[o + 1] = Math.round(Math.min(1, rough) * 255);
           px[o + 2] = Math.round(Math.max(0, Math.min(1, alb)) * 255);
@@ -4129,21 +4152,20 @@ var PAINT = (function () {
       return px;
     }
 
-    /* Stone: cracked plateau, fault lines. */
+    /* Stone: broad soft plateau patches, sparse fault lines, smooth. */
     function stoneCell() {
       var px = emptyCell();
-      var n = fbmTile(cell, cell, 7, 4, 'det-stone');
-      var nf = fbmTile(cell, cell, 36, 2, 'det-stone-fine');
+      var n = fbmTile(cell, cell, 3, 2, 'det-stone-low');
       for (var y = 0; y < cell; y++) {
         for (var x = 0; x < cell; x++) {
           var i = y * cell + x, o = i * 4;
           var crack = 0;
-          var cx = (x * 3 + y * 7) % 43;
-          if (cx < 2) crack = -0.34; else if (cx < 4) crack = -0.12;
-          var v = 0.45 + (n[i] - 0.5) * 0.72 + crack + (nf[i] - 0.5) * 0.16;
-          var rough = 0.85 + (nf[i] - 0.5) * 0.3;
-          var alb = 1.0 + (n[i] - 0.5) * 0.3 - (crack < -0.3 ? 0.12 : 0);
-          var ridge = Math.pow(1.0 - Math.abs(nf[i] * 2 - 1), 8.0) * 0.35 + (crack < -0.3 ? 0.5 : 0);
+          var cx = (x * 3 + y * 7) % 53;
+          if (cx < 2) crack = -0.16; else if (cx < 4) crack = -0.06;
+          var v = 0.5 + (n[i] - 0.5) * 0.34 + crack;
+          var rough = 0.55 + (n[i] - 0.5) * 0.10;
+          var alb = 1.0 + (n[i] - 0.5) * 0.10;
+          var ridge = (crack < -0.15) ? 0.3 : 0.0;
           px[o] = Math.round(Math.min(1, Math.max(0, v)) * 255);
           px[o + 1] = Math.round(Math.min(1, rough) * 255);
           px[o + 2] = Math.round(Math.max(0, Math.min(1, alb)) * 255);
@@ -4153,21 +4175,19 @@ var PAINT = (function () {
       return px;
     }
 
-    /* Organic: tiled scales with soft pits. */
+    /* Organic: soft fbm surface bumps. No lattice: on small units a regular
+       plate grid reads as target rings, which is exactly what the reviews
+       called out on the enemy closeup. */
     function organicCell() {
       var px = emptyCell();
-      var n = fbmTile(cell, cell, 6, 4, 'det-organic');
-      var nf = fbmTile(cell, cell, 24, 2, 'det-organic-fine');
+      var n = fbmTile(cell, cell, 5, 2, 'det-organic-low');
       for (var y = 0; y < cell; y++) {
         for (var x = 0; x < cell; x++) {
           var i = y * cell + x, o = i * 4;
-          var sx = Math.cos((x % 51) / 51 * 6.28318) * 0.5 + 0.5;
-          var sy = Math.cos((y % 43) / 43 * 6.28318) * 0.5 + 0.5;
-          var scale = Math.pow(sx * sy, 1.4);
-          var v = 0.30 + scale * 0.52 + (n[i] - 0.5) * 0.28 + (nf[i] - 0.5) * 0.12;
-          var rough = 0.55 + scale * 0.4 + (nf[i] - 0.5) * 0.2;
-          var alb = 0.9 + scale * 0.24 + (n[i] - 0.5) * 0.24;
-          var ridge = Math.pow(scale, 3.0) * 0.8;
+          var v = 0.40 + (n[i] - 0.5) * 0.42;
+          var rough = 0.55 + (n[i] - 0.5) * 0.12;
+          var alb = 0.97 + (n[i] - 0.5) * 0.08;
+          var ridge = 0.0;
           px[o] = Math.round(Math.min(1, v) * 255);
           px[o + 1] = Math.round(Math.min(1, rough) * 255);
           px[o + 2] = Math.round(Math.max(0, Math.min(1, alb)) * 255);
@@ -4177,21 +4197,21 @@ var PAINT = (function () {
       return px;
     }
 
-    /* Energy: hex weave, glowing nodes. */
+    /* Energy: large hex cells, clean bright nodes, no grain. */
     function energyCell() {
       var px = emptyCell();
-      var n = fbmTile(cell, cell, 5, 3, 'det-energy');
-      var nf = fbmTile(cell, cell, 30, 2, 'det-energy-fine');
+      var n = fbmTile(cell, cell, 3, 2, 'det-energy-low');
       for (var y = 0; y < cell; y++) {
         for (var x = 0; x < cell; x++) {
           var i = y * cell + x, o = i * 4;
           var pxv = (x % 64) - 32, pyv = (y % 64) - 32;
           var d0 = Math.sqrt(pxv * pxv + pyv * pyv);
-          var hex = Math.max(0, 1.0 - d0 / 30.0);
-          var v = 0.30 + hex * 0.62 + (n[i] - 0.5) * 0.16 + (nf[i] - 0.5) * 0.10;
-          var rough = 0.30 + (1.0 - hex) * 0.4;
-          var alb = 0.92 + hex * 0.2 + (n[i] - 0.5) * 0.2;
-          var ridge = Math.pow(hex, 4.0) * 0.9;
+          var hex = Math.max(0, 1.0 - d0 / 31.0);
+          hex = hex * hex * (3.0 - 2.0 * hex);
+          var v = 0.34 + hex * 0.56 + (n[i] - 0.5) * 0.04;
+          var rough = 0.4 + (1.0 - hex) * 0.2;
+          var alb = 0.92 + hex * 0.16;
+          var ridge = Math.pow(hex, 4.0) * 0.5;
           px[o] = Math.round(Math.min(1, v) * 255);
           px[o + 1] = Math.round(Math.min(1, rough) * 255);
           px[o + 2] = Math.round(Math.max(0, Math.min(1, alb)) * 255);
@@ -4201,24 +4221,25 @@ var PAINT = (function () {
       return px;
     }
 
-    /* Ground: pure high-frequency grit. No lattice, no regular structure:
-       any periodic element at that tiling scale reads as a net, and the
-       board is large enough that the net is the only thing left to see. */
+    /* Ground: the largest scale and the most afraid of noise. Nearly flat
+       plate with a slow, gentle value drift and NO ridge web at all; the
+       detail that survived the boardwide quilt cleanup was a fine web, and
+       at this tiling scale it reads as dirt. */
     function groundCell() {
       var px = emptyCell();
-      var n = fbmTile(cell, cell, 24, 3, 'det-ground');
-      var nf = fbmTile(cell, cell, 6, 3, 'det-ground-low');
+      var n = fbmTile(cell, cell, 3, 2, 'det-ground-low');
+      var nf = fbmTile(cell, cell, 9, 2, 'det-ground-mid');
       for (var y = 0; y < cell; y++) {
         for (var x = 0; x < cell; x++) {
           var i = y * cell + x, o = i * 4;
-          var v = 0.42 + (n[i] - 0.5) * 0.5 + (nf[i] - 0.5) * 0.42;
-          var rough = 0.9 + (nf[i] - 0.5) * 0.25;
-          var alb = 1.0 + (n[i] - 0.5) * 0.3 + (nf[i] - 0.5) * 0.34;
-          var ridge = Math.pow(1.0 - Math.abs(n[i] * 2 - 1), 8.0) * 0.12;
+          var v = 0.5 + (n[i] - 0.5) * 0.28 + (nf[i] - 0.5) * 0.10;
+          var rough = 0.6 + (n[i] - 0.5) * 0.08;
+          var alb = 1.0 + (n[i] - 0.5) * 0.08;
+          var ridge = 0.0;
           px[o] = Math.round(Math.min(1, Math.max(0, v)) * 255);
           px[o + 1] = Math.round(Math.min(1, rough) * 255);
           px[o + 2] = Math.round(Math.max(0, Math.min(1, alb)) * 255);
-          px[o + 3] = Math.round(Math.min(1, ridge) * 255);
+          px[o + 3] = Math.round(ridge * 255);
         }
       }
       return px;
@@ -4253,12 +4274,12 @@ var PAINT = (function () {
      and translucency the HD shader uses as its base. The shader reads these
      per draw, so a tower's hull is one material and its barrel another. */
   var MATERIALS = {
-    metal:   { rect: [0.00, 0.00, 0.25, 0.25], rough: 0.34, metal: 0.85, sss: 0.00, det: 1.10 },
-    hull:    { rect: [0.25, 0.00, 0.25, 0.25], rough: 0.52, metal: 0.45, sss: 0.00, det: 1.20 },
-    stone:   { rect: [0.50, 0.00, 0.25, 0.25], rough: 0.92, metal: 0.00, sss: 0.05, det: 0.85 },
-    organic: { rect: [0.75, 0.00, 0.25, 0.25], rough: 0.72, metal: 0.05, sss: 0.55, det: 0.60 },
-    energy:  { rect: [0.00, 0.25, 0.25, 0.25], rough: 0.16, metal: 0.00, sss: 1.00, det: 2.00 },
-    ground:  { rect: [0.25, 0.25, 0.25, 0.25], rough: 0.96, metal: 0.00, sss: 0.00, det: 0.34 }
+    metal:   { rect: [0.00, 0.00, 0.25, 0.25], rough: 0.36, metal: 0.85, sss: 0.00, det: 0.35 },
+    hull:    { rect: [0.25, 0.00, 0.25, 0.25], rough: 0.52, metal: 0.45, sss: 0.00, det: 0.40 },
+    stone:   { rect: [0.50, 0.00, 0.25, 0.25], rough: 0.88, metal: 0.00, sss: 0.05, det: 0.45 },
+    organic: { rect: [0.75, 0.00, 0.25, 0.25], rough: 0.70, metal: 0.05, sss: 0.55, det: 0.45 },
+    energy:  { rect: [0.00, 0.25, 0.25, 0.25], rough: 0.20, metal: 0.00, sss: 1.00, det: 0.60 },
+    ground:  { rect: [0.25, 0.25, 0.25, 0.25], rough: 0.95, metal: 0.00, sss: 0.00, det: 0.14 }
   };
 
   function buildAtlas(size) {
@@ -4356,11 +4377,11 @@ var PAINT = (function () {
       light: U.hsl2rgb([(hsl[0] + (opts.lightWarm || 0.06)) % 1, 0.38, 0.90]),
       rim: U.hsl2rgb([(hsl[0] + (opts.rimShift || 0.0)) % 1, 1.0, 0.66]),
       ambientSky: U.hsl2rgb([shadowHue - 0.06, 0.58, 0.30]),
-      ambientGround: U.hsl2rgb([shadowHue + 0.05, 0.62, 0.14]),
-      skyTop: U.hsl2rgb([shadowHue - 0.02, 0.78, 0.095]),
-      skyBottom: U.hsl2rgb([shadowHue + 0.06, 0.66, 0.185]),
-      nebulaA: U.hsl2rgb([(hsl[0] + (opts.nebA || 0.0)) % 1, 0.86, 0.42]),
-      nebulaB: U.hsl2rgb([(hsl[0] + (opts.nebB || 0.52)) % 1, 0.90, 0.52]),
+      ambientGround: U.hsl2rgb([shadowHue + 0.05, 0.62, 0.17]),
+      skyTop: U.hsl2rgb([shadowHue - 0.02, 0.78, 0.115]),
+      skyBottom: U.hsl2rgb([shadowHue + 0.06, 0.60, 0.215]),
+      nebulaA: U.hsl2rgb([(hsl[0] + (opts.nebA || 0.0)) % 1, 0.86, 0.32]),
+      nebulaB: U.hsl2rgb([(hsl[0] + (opts.nebB || 0.52)) % 1, 0.90, 0.40]),
       ink: U.hsl2rgb([shadowHue, 0.75, 0.035]),
       fog: U.hsl2rgb([shadowHue + 0.02, 0.62, 0.16])
     };
@@ -4954,6 +4975,7 @@ var R = (function () {
        silhouettes whose only chroma is their own emissive core. */
     it.rimScale = (o && o.rimScale !== undefined) ? o.rimScale : 1;
     it.mat = (o && o.mat) || (mesh && mesh.mat) || null;
+    it.detailScale = (o && o.detailScale) || null;
     opaqueN++;
   }
 
@@ -5082,7 +5104,7 @@ var R = (function () {
       ph.u3v('uSkyBottom', pal.skyBottom);
       ph.u3v('uNebulaA', pal.nebulaA);
       ph.u3v('uNebulaB', pal.nebulaB);
-      ph.u1f('uStarDensity', 0.075);
+      ph.u1f('uStarDensity', 0.095);
       ph.um4('uInvViewProj', invViewProj);
       ph.u3v('uCamPos', cam.eyeActual || cam.pos);
       var Ln = U.V.norm(sun.dir);
@@ -5120,11 +5142,11 @@ var R = (function () {
     p.u3v('uLightDir', U.V.norm(sun.dir));
     p.u3v('uCamPos', cam.eyeActual || cam.pos);
     p.u3v('uRimColor', pal.rim);
-    p.u1f('uRimStrength', ART.rimStrength);
+    p.u1f('uRimStrength', hd ? ART.rimStrength * 0.8 : ART.rimStrength);
     p.u1f('uRimPower', ART.rimPower);
     p.u3v('uAmbientSky', pal.ambientSky);
     p.u3v('uAmbientGround', pal.ambientGround);
-    p.u1f('uAmbient', hd ? ART.ambient * 1.42 : ART.ambient);
+    p.u1f('uAmbient', hd ? ART.ambient * 1.15 : ART.ambient);
     p.u1f('uSpecStrength', ART.specStrength);
     p.u1f('uSpecPower', ART.specPower);
     p.u1f('uBands', ART.bands);
@@ -5132,7 +5154,7 @@ var R = (function () {
     p.u1f('uFacetJitter', ART.facetJitter);
     p.u3v('uShadowColor', pal.shadow);
     p.u3v('uLightColor', pal.light);
-    p.u1f('uShadowLift', ART.shadowLift);
+    p.u1f('uShadowLift', hd ? 0.20 : ART.shadowLift);
     p.u1f('uShadowStrength', quality.shadows ? 1.0 : 0.0);
     p.u1f('uShadowTexel', 1.0 / rt.shadow.size);
     p.u1f('uShadowBand', ART.shadowBand);
@@ -5144,23 +5166,23 @@ var R = (function () {
     p.u1f('uToothStrength', ART.toothStrength);
     p.u1f('uToothTriplanar', quality.triplanar ? 1 : 0);
     p.u1f('uTime', time);
-    p.u1f('uFogDensity', ART.fogDensity);
-    p.u3v('uFogColor', pal.fog);
+    p.u1f('uFogDensity', hd ? ART.fogDensity * 0.72 : ART.fogDensity);
+    p.u3v('uFogColor', hd ? [pal.fog[0] * 0.85, pal.fog[1] * 0.85, pal.fog[2] * 0.85] : pal.fog);
     p.u3v('uDissolveColor', pal.rim);
     p.tex('uShadow', 0, rt.shadow.tex);
     p.tex('uTooth', 1, toothTex);
     if (hd) {
-      /* AETHER HD tuning. These uniforms only exist on the HD program; a
-         missing name on the cel program is a no-op by design. */
-      p.u1f('uHdSoft', 0.34);
+      /* AETHER CLEAN R3 (merged 4-expert review): 9 soft bands keep a visible
+         value step between facets without a patchwork; ambient held just above
+         the cel value so the shadow mass survives; spec and detail stay calm. */
+      p.u1f('uHdSoft', 0.32);
       /* bands, rampGamma, facetJitter, hemi-lift */
-      p.u4f('uHdBandsA', 10.0, 1.12, 0.04, 0.16);
+      p.u4f('uHdBandsA', 9.0, 1.05, 0.015, 0.10);
       /* diffuse boost, light sat, shadow-to-lit sat, wrap */
-      p.u4f('uHdBandsB', 0.85, 0.62, 0.52, 0.12);
+      p.u4f('uHdBandsB', 0.80, 0.75, 0.52, 0.10);
       /* spec intensity, falloff, shade lift, dither */
-      p.u4f('uHdSpec', 0.26, 0.0, 0.0, 0.0);
+      p.u4f('uHdSpec', 0.16, 0.0, 0.0, 0.0);
       p.u1f('uExposure', fx.exposure * ART.exposure);
-      p.u1f('uDetailScale', 0.22);
       p.u1f('uDetailTriplanar', quality.triplanar ? 1 : 0);
       p.tex('uDetail', 2, detailTex);
     }
@@ -5189,6 +5211,10 @@ var R = (function () {
         if (!mat) mat = PAINT.MATERIALS.stone;
         p.u4f('uMatRect', mat.rect[0], mat.rect[1], mat.rect[2], mat.rect[3]);
         p.u4f('uMatData', mat.rough, mat.metal, mat.sss, mat.det);
+        /* Per-object texture scale: terrain tiles small, units wear the
+           atlas fine. A single global scale turns a unit into one magnified
+           cell, which is exactly the wrinkled rock the reviews flagged. */
+        p.u1f('uDetailScale', it.detailScale || 0.14);
       }
       it.mesh.draw();
       prof.draws++;
@@ -5294,7 +5320,10 @@ var R = (function () {
     rt.bright.bind();
     var b = prog.bright.use();
     b.tex('uColor', 0, (src || rt.ink).textures[0]);
-    b.u1f('uThreshold', ART.bloomThreshold);
+    /* HD holds the bright threshold above the emissive core value so the
+       cores keep their colour instead of clipping to white; cel keeps the
+       art value. */
+    b.u1f('uThreshold', style === 'hd' ? 0.78 : ART.bloomThreshold);
     b.u1f('uSoftKnee', 0.6);
     fsTri.draw();
 
@@ -5330,7 +5359,7 @@ var R = (function () {
     p.u2f('uTexel', 1 / rt.ao.w, 1 / rt.ao.h);
     p.u2f('uRes', W, H);
     p.u1f('uAOStrength', 1.0);
-    p.u1f('uAORadius', 1.0);
+    p.u1f('uAORadius', 0.5);
     fsTri.draw();
   }
 
@@ -5385,22 +5414,22 @@ var R = (function () {
       ph.tex('uTooth', 6, toothTex);
       ph.u2f('uRes', W, H);
       ph.u1f('uTime', time);
-      ph.u1f('uBloomStrength', quality.bloom ? ART.bloomStrength * 0.85 : 0.0);
-      ph.u1f('uExposure', fx.exposure * ART.exposure * 1.12);
-      ph.u1f('uSaturation', ART.saturation * 1.06);
-      ph.u1f('uContrast', ART.contrast * 0.98);
+      ph.u1f('uBloomStrength', quality.bloom ? ART.bloomStrength * 0.52 : 0.0);
+      ph.u1f('uExposure', fx.exposure * ART.exposure * 1.06);
+      ph.u1f('uSaturation', ART.saturation * 1.14);
+      ph.u1f('uContrast', ART.contrast * 1.04);
       ph.u3f('uLift', 0.008, -0.003, 0.018);
       ph.u3f('uGain', 1.03, 0.985, 1.05);
-      ph.u1f('uVignette', ART.vignette * 0.72);
-      ph.u1f('uGrain', ART.grain * 0.72);
-      ph.u1f('uHalftone', 0.10);
-      ph.u1f('uCanvas', 0.06);
+      ph.u1f('uVignette', ART.vignette * 0.52);
+      ph.u1f('uGrain', ART.grain * 0.36);
+      ph.u1f('uHalftone', 0.02);
+      ph.u1f('uCanvas', 0.02);
       ph.u1f('uAberration', fx.aberration);
       ph.u1f('uFlashWhite', fx.flashWhite);
       ph.u1f('uDesaturate', fx.desaturate);
       ph.u1f('uExposureAuto', quality.autoexp ? 1 : 0);
-      ph.u1f('uAOStrength', quality.ssao ? 0.92 : 0.0);
-      ph.u1f('uStreakStrength', quality.streak ? 0.50 : 0.0);
+      ph.u1f('uAOStrength', quality.ssao ? 0.55 : 0.0);
+      ph.u1f('uStreakStrength', quality.streak ? 0.15 : 0.0);
       fsTri.draw();
       return;
     }
@@ -5811,7 +5840,7 @@ var TERRAIN = (function () {
        luminance still read as the same material at a glance; a violet ground
        against a rose-warm road reads as two different things instantly, which
        is what a player scanning for the lane actually needs. */
-    var pathCols = def.pathCols || ['#8c5a86', '#9b6494', '#7c4d76', '#a56e9c'];
+    var pathCols = def.pathCols || ['#7d4a73', '#88527e', '#6e4170', '#8f5c88'];
 
     var gb = MESH.builder('ground:' + seed);
     gb.tooth(1.0);
@@ -7366,7 +7395,7 @@ var MODELS = (function () {
          A collar is emissive, so it bypasses the lighting ramp and reads at
          any distance, in any faction palette, in shadow or out of it. */
       baseB.color(acc).tooth(0.05).emissive(1.0);
-      baseB.ring(2.00, 2.34, 6, 0.60);
+      baseB.ring(2.06, 2.44, 6, 0.86);
       baseB.emissive(0);
 
       var baseMesh = GL.mesh(baseB.build({ jitter: 0.028, mat: 'stone' }));
@@ -7420,7 +7449,7 @@ var MODELS = (function () {
             b.color('#191128').tooth(0.85);
             b.push(); b.translate(0, 0.16, -0.75); b.rotateX(-1.1); b.limb([0, 0, 0], [0, 0, 0.5], 0.10, 0.03, 4); b.pop();
           } },
-        { name: 'core', parent: 'body', bind: [0, 0.08, 0.74], build: function (b) {
+        { name: 'core', parent: 'body', bind: [0, 0.18, 1.32], build: function (b) {
             b.color(core).tooth(0.05).emissive(1.0);
             b.shard(0.26, 0.36, 0.3, 5, 0);
           } },
@@ -7451,7 +7480,7 @@ var MODELS = (function () {
             b.push(); b.translate(0, 0.4, -0.08); b.rotateX(-0.5); b.shard(0.09, 0.3, 0.16, 4, 0); b.pop();
             b.emissive(0);
           } },
-        { name: 'core', parent: 'head', bind: [0, 0.03, 0.44], build: function (b) {
+        { name: 'core', parent: 'head', bind: [0, 0.08, 0.66], build: function (b) {
             b.color(core).tooth(0.05).emissive(1.0);
             b.shard(0.23, 0.3, 0.24, 5, 0);
           } },
@@ -7496,7 +7525,7 @@ var MODELS = (function () {
               b.push(); b.translate(Math.sin(a) * 0.36, -0.2, 0.42); b.rotateX(1.4); b.cone(0.07, 0.4, 4, 0); b.pop();
             }
           } },
-        { name: 'core', parent: 'head', bind: [0, 0.18, 0.3], build: function (b) {
+        { name: 'core', parent: 'head', bind: [0, 0.22, 0.72], build: function (b) {
             b.color(core).tooth(0.05).emissive(1.0);
             b.shard(0.22, 0.3, 0.24, 6, 0);
           } },
@@ -7530,7 +7559,7 @@ var MODELS = (function () {
             b.extrude([[0, 0.3], [-0.9, 0.4], [-2.05, 0.25], [-1.7, -0.15], [0, -0.35]], 0.12, -0.06);
             b.pop();
           } },
-        { name: 'core', parent: 'body', bind: [0, -0.03, 0.8], build: function (b) {
+        { name: 'core', parent: 'body', bind: [0, 0.0, 1.45], build: function (b) {
             b.color(core).tooth(0.05).emissive(1.0);
             b.shard(0.24, 0.32, 0.26, 5, 0);
           } }
@@ -11033,6 +11062,10 @@ var GAME = (function () {
         flashColor: d.mark ? U.hex2rgb(DATA.ELEMENTS[d.mark].color) : [1, 0.85, 0.9],
         dissolve: dying ? U.sat(1 - d.dying / 0.55) * 0.9 : 0,
         rimScale: 0.34,
+        /* Unit-scale detail: the atlas features must be much smaller in
+           world units on a 2-unit body than on a 95-unit board, otherwise
+           one magnified cell is what a creature wears as its skin. */
+        detailScale: 1.5,
         /* Units cast again. Restricting it to the trunk (see RIG.draw) makes
            it one or two draws per creature instead of ten, which is what made
            it too expensive before. A body without a cast shadow reads as
@@ -11086,7 +11119,7 @@ var GAME = (function () {
 
       R.push(model.base,
         U.m4trs(t.pos[0], t.pos[1] + rise, t.pos[2], 0, 0, 0, bs, bs, bs),
-        { dissolve: (1 - b) * 0.55 });
+        { dissolve: (1 - b) * 0.55, detailScale: 0.85 });
 
       if (model.turret) {
         /* Recoil pushes the turret back along its own facing. */
@@ -11097,7 +11130,7 @@ var GAME = (function () {
         var spin = def.kind === 'support' ? t.spin : 0;
         R.push(model.turret,
           U.m4trs(tx, ty, tz, 0, t.yaw + spin, 0, bs, bs, bs),
-          { dissolve: (1 - b) * 0.55 });
+          { dissolve: (1 - b) * 0.55, detailScale: 1.0 });
         if (model.barrel) {
           /* The barrel recoils further than the turret, and CYCLONE's fan
              spins continuously instead. */
@@ -11107,7 +11140,7 @@ var GAME = (function () {
           var barrelSpin = t.id === 'cyclone' ? t.spin : 0;
           R.push(model.barrel,
             U.m4trs(bx, ty, bz, 0, t.yaw, barrelSpin, bs, bs, bs),
-            { dissolve: (1 - b) * 0.55 });
+            { dissolve: (1 - b) * 0.55, detailScale: 1.25 });
         }
       }
 
@@ -11205,12 +11238,12 @@ var GAME = (function () {
        camera dropped low, which is precisely when the player has zoomed in to
        look at something. Rim exists to separate a silhouette from its
        background; the ground IS the background. */
-    R.push(G.groundMesh, U.m4ident(), { castShadow: false, facetJitter: 0.26, rimScale: 0.18, mat: 'ground' });
+    R.push(G.groundMesh, U.m4ident(), { castShadow: false, facetJitter: 0.015, rimScale: 0.18, mat: 'ground' });
     /* Scenery takes a reduced rim so the rocks and spires stay BEHIND the
        towers in the read. With a brighter board and full rim they were as
        bright as the things the player is meant to be looking at. */
-    if (G.decorMesh) R.push(G.decorMesh, U.m4ident(), { rimScale: 0.45, mat: 'stone' });
-    if (G.spireMesh) R.push(G.spireMesh, U.m4ident(), { rimScale: 0.40, castShadow: false, mat: 'stone' });
+    if (G.decorMesh) R.push(G.decorMesh, U.m4ident(), { rimScale: 0.45, mat: 'stone', detailScale: 0.5 });
+    if (G.spireMesh) R.push(G.spireMesh, U.m4ident(), { rimScale: 0.40, castShadow: false, mat: 'stone', detailScale: 0.5 });
 
     var pal = R.palette();
     var sp = G.board.spawn, gl = G.board.goal;
@@ -11236,7 +11269,7 @@ var GAME = (function () {
         var col = afford ? (isHover ? pal.rim : pal.keyRgb) : [0.7, 0.25, 0.3];
         R.pushUnlit(G.plotRing,
           U.m4trs(p.x, p.y + 0.12, p.z, 0, 0.4, 0, 1.5, 1, 1.5),
-          { tint: col, alpha: isHover ? 0.85 : 0.32, additive: true, pulse: isHover ? 0.5 : 0 });
+          { tint: col, alpha: isHover ? 0.85 : 0.45, additive: true, pulse: isHover ? 0.5 : 0 });
       }
       /* Ghost preview at the hovered plot, including its range. */
       if (input.hoverPlot) {

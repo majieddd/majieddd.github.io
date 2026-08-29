@@ -533,6 +533,7 @@ var R = (function () {
        silhouettes whose only chroma is their own emissive core. */
     it.rimScale = (o && o.rimScale !== undefined) ? o.rimScale : 1;
     it.mat = (o && o.mat) || (mesh && mesh.mat) || null;
+    it.detailScale = (o && o.detailScale) || null;
     opaqueN++;
   }
 
@@ -661,7 +662,7 @@ var R = (function () {
       ph.u3v('uSkyBottom', pal.skyBottom);
       ph.u3v('uNebulaA', pal.nebulaA);
       ph.u3v('uNebulaB', pal.nebulaB);
-      ph.u1f('uStarDensity', 0.075);
+      ph.u1f('uStarDensity', 0.095);
       ph.um4('uInvViewProj', invViewProj);
       ph.u3v('uCamPos', cam.eyeActual || cam.pos);
       var Ln = U.V.norm(sun.dir);
@@ -699,11 +700,11 @@ var R = (function () {
     p.u3v('uLightDir', U.V.norm(sun.dir));
     p.u3v('uCamPos', cam.eyeActual || cam.pos);
     p.u3v('uRimColor', pal.rim);
-    p.u1f('uRimStrength', ART.rimStrength);
+    p.u1f('uRimStrength', hd ? ART.rimStrength * 0.8 : ART.rimStrength);
     p.u1f('uRimPower', ART.rimPower);
     p.u3v('uAmbientSky', pal.ambientSky);
     p.u3v('uAmbientGround', pal.ambientGround);
-    p.u1f('uAmbient', hd ? ART.ambient * 1.42 : ART.ambient);
+    p.u1f('uAmbient', hd ? ART.ambient * 1.15 : ART.ambient);
     p.u1f('uSpecStrength', ART.specStrength);
     p.u1f('uSpecPower', ART.specPower);
     p.u1f('uBands', ART.bands);
@@ -711,7 +712,7 @@ var R = (function () {
     p.u1f('uFacetJitter', ART.facetJitter);
     p.u3v('uShadowColor', pal.shadow);
     p.u3v('uLightColor', pal.light);
-    p.u1f('uShadowLift', ART.shadowLift);
+    p.u1f('uShadowLift', hd ? 0.20 : ART.shadowLift);
     p.u1f('uShadowStrength', quality.shadows ? 1.0 : 0.0);
     p.u1f('uShadowTexel', 1.0 / rt.shadow.size);
     p.u1f('uShadowBand', ART.shadowBand);
@@ -723,23 +724,23 @@ var R = (function () {
     p.u1f('uToothStrength', ART.toothStrength);
     p.u1f('uToothTriplanar', quality.triplanar ? 1 : 0);
     p.u1f('uTime', time);
-    p.u1f('uFogDensity', ART.fogDensity);
-    p.u3v('uFogColor', pal.fog);
+    p.u1f('uFogDensity', hd ? ART.fogDensity * 0.72 : ART.fogDensity);
+    p.u3v('uFogColor', hd ? [pal.fog[0] * 0.85, pal.fog[1] * 0.85, pal.fog[2] * 0.85] : pal.fog);
     p.u3v('uDissolveColor', pal.rim);
     p.tex('uShadow', 0, rt.shadow.tex);
     p.tex('uTooth', 1, toothTex);
     if (hd) {
-      /* AETHER HD tuning. These uniforms only exist on the HD program; a
-         missing name on the cel program is a no-op by design. */
-      p.u1f('uHdSoft', 0.34);
+      /* AETHER CLEAN R3 (merged 4-expert review): 9 soft bands keep a visible
+         value step between facets without a patchwork; ambient held just above
+         the cel value so the shadow mass survives; spec and detail stay calm. */
+      p.u1f('uHdSoft', 0.32);
       /* bands, rampGamma, facetJitter, hemi-lift */
-      p.u4f('uHdBandsA', 10.0, 1.12, 0.04, 0.16);
+      p.u4f('uHdBandsA', 9.0, 1.05, 0.015, 0.10);
       /* diffuse boost, light sat, shadow-to-lit sat, wrap */
-      p.u4f('uHdBandsB', 0.85, 0.62, 0.52, 0.12);
+      p.u4f('uHdBandsB', 0.80, 0.75, 0.52, 0.10);
       /* spec intensity, falloff, shade lift, dither */
-      p.u4f('uHdSpec', 0.26, 0.0, 0.0, 0.0);
+      p.u4f('uHdSpec', 0.16, 0.0, 0.0, 0.0);
       p.u1f('uExposure', fx.exposure * ART.exposure);
-      p.u1f('uDetailScale', 0.22);
       p.u1f('uDetailTriplanar', quality.triplanar ? 1 : 0);
       p.tex('uDetail', 2, detailTex);
     }
@@ -768,6 +769,10 @@ var R = (function () {
         if (!mat) mat = PAINT.MATERIALS.stone;
         p.u4f('uMatRect', mat.rect[0], mat.rect[1], mat.rect[2], mat.rect[3]);
         p.u4f('uMatData', mat.rough, mat.metal, mat.sss, mat.det);
+        /* Per-object texture scale: terrain tiles small, units wear the
+           atlas fine. A single global scale turns a unit into one magnified
+           cell, which is exactly the wrinkled rock the reviews flagged. */
+        p.u1f('uDetailScale', it.detailScale || 0.14);
       }
       it.mesh.draw();
       prof.draws++;
@@ -873,7 +878,10 @@ var R = (function () {
     rt.bright.bind();
     var b = prog.bright.use();
     b.tex('uColor', 0, (src || rt.ink).textures[0]);
-    b.u1f('uThreshold', ART.bloomThreshold);
+    /* HD holds the bright threshold above the emissive core value so the
+       cores keep their colour instead of clipping to white; cel keeps the
+       art value. */
+    b.u1f('uThreshold', style === 'hd' ? 0.78 : ART.bloomThreshold);
     b.u1f('uSoftKnee', 0.6);
     fsTri.draw();
 
@@ -909,7 +917,7 @@ var R = (function () {
     p.u2f('uTexel', 1 / rt.ao.w, 1 / rt.ao.h);
     p.u2f('uRes', W, H);
     p.u1f('uAOStrength', 1.0);
-    p.u1f('uAORadius', 1.0);
+    p.u1f('uAORadius', 0.5);
     fsTri.draw();
   }
 
@@ -964,22 +972,22 @@ var R = (function () {
       ph.tex('uTooth', 6, toothTex);
       ph.u2f('uRes', W, H);
       ph.u1f('uTime', time);
-      ph.u1f('uBloomStrength', quality.bloom ? ART.bloomStrength * 0.85 : 0.0);
-      ph.u1f('uExposure', fx.exposure * ART.exposure * 1.12);
-      ph.u1f('uSaturation', ART.saturation * 1.06);
-      ph.u1f('uContrast', ART.contrast * 0.98);
+      ph.u1f('uBloomStrength', quality.bloom ? ART.bloomStrength * 0.52 : 0.0);
+      ph.u1f('uExposure', fx.exposure * ART.exposure * 1.06);
+      ph.u1f('uSaturation', ART.saturation * 1.14);
+      ph.u1f('uContrast', ART.contrast * 1.04);
       ph.u3f('uLift', 0.008, -0.003, 0.018);
       ph.u3f('uGain', 1.03, 0.985, 1.05);
-      ph.u1f('uVignette', ART.vignette * 0.72);
-      ph.u1f('uGrain', ART.grain * 0.72);
-      ph.u1f('uHalftone', 0.10);
-      ph.u1f('uCanvas', 0.06);
+      ph.u1f('uVignette', ART.vignette * 0.52);
+      ph.u1f('uGrain', ART.grain * 0.36);
+      ph.u1f('uHalftone', 0.02);
+      ph.u1f('uCanvas', 0.02);
       ph.u1f('uAberration', fx.aberration);
       ph.u1f('uFlashWhite', fx.flashWhite);
       ph.u1f('uDesaturate', fx.desaturate);
       ph.u1f('uExposureAuto', quality.autoexp ? 1 : 0);
-      ph.u1f('uAOStrength', quality.ssao ? 0.92 : 0.0);
-      ph.u1f('uStreakStrength', quality.streak ? 0.50 : 0.0);
+      ph.u1f('uAOStrength', quality.ssao ? 0.55 : 0.0);
+      ph.u1f('uStreakStrength', quality.streak ? 0.15 : 0.0);
       fsTri.draw();
       return;
     }

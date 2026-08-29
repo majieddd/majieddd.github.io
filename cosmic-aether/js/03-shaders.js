@@ -1111,7 +1111,7 @@ var SH = (function () {
     /* Screen-constant world-space eps: the perturbation is a slope, and its
        strength has to be measured per world unit or the detail vanishes at
        one distance and explodes at another. */
-    '  float e = 0.14;',
+    '  float e = 0.30;',
     '  float h0 = texture(uDetail, uv * uDetailScale * uMatRect.zw + uMatRect.xy).r;',
     '  float hx = texture(uDetail, (uv + vec2(e, 0.0)) * uDetailScale * uMatRect.zw + uMatRect.xy).r;',
     '  float hy = texture(uDetail, (uv + vec2(0.0, e)) * uDetailScale * uMatRect.zw + uMatRect.xy).r;',
@@ -1209,6 +1209,7 @@ var SH = (function () {
     '',
     'void main(){',
     '  vec3 N = normalize(vNormal);',
+    '  vec3 geoN = N;',
     '  vec3 Vd = normalize(uCamPos - vWorld);',
     '  vec3 L = normalize(uLightDir);',
     '',
@@ -1223,11 +1224,15 @@ var SH = (function () {
     '',
     '  vec3 albedo = mix(vAlbedo, uTint, uItemB.x);',
     '',
-    /* Material class from the draw's material block. */
-    '  float rough = clamp(uMatData.x, 0.03, 1.0);',
+    /* Material class from the draw's material block. The atlas is sampled
+       with the GEOMETRIC normal: roughness and albedo modulation describe
+       the surface itself, not the perturbed one. */
+    '  vec4 dt = detailAt(vWorld, geoN);',
+    '  float rough = clamp(uMatData.x * mix(1.0, dt.g, 0.30), 0.03, 1.0);',
     '  float metal = uMatData.y;',
     '  float sss = uMatData.z;',
     '  float detStr = uMatData.w;',
+    '  albedo *= mix(1.0, dt.b, 0.22);',
     '',
     /* THE DETAIL NORMAL. Perturbs the flat facet normal with the material
        atlas height, which is what makes a metal plate read as machined and
@@ -1235,9 +1240,14 @@ var SH = (function () {
        single biggest "it looks hi-fi" lever after MSAA. */
     '  float dW = detStr * vTooth;',
     '  if (dW > 0.001){',
-    '    N = detailNormal(vWorld, N, min(dW, 2.4));',
+    '    N = detailNormal(vWorld, N, min(dW, 0.9));',
     '    N = normalize(N);',
     '  }',
+    '',
+    /* The final post buffers must carry the GEOMETRIC normal, not the
+       perturbed one. SSAO and ink consume attachment 1 as "geometry";
+       writing the detail-perturbed normal let material grain inject itself
+       into the occlusion and edge passes. */
     '',
     /* HEMISPHERE + BEND AMBIENT. Sky from above, ground bounce from below,
        slightly stronger than the cel mode because the HD picture is
@@ -1267,10 +1277,10 @@ var SH = (function () {
        black). shadowLift is the mix toward the void; the two upper stops are
        albedo-dominant so faction colour is carried before anything else. */
     '  vec3 deep = mix(uShadowColor, albedo * 0.22, uShadowLift);',
-    '  vec3 mid  = albedo * mix(vec3(1.0), uLightColor * 1.4, 0.30) * (0.74 + band * 0.52);',
-    '  vec3 lite = albedo * mix(vec3(1.0), uLightColor * 1.6, 0.52) * 1.36;',
+    '  vec3 mid  = albedo * mix(vec3(1.0), uLightColor * 1.4, 0.30) * (0.72 + band * 0.42);',
+    '  vec3 lite = albedo * mix(vec3(1.0), uLightColor * 1.35, 0.30) * 1.26;',
     '  vec3 litCol = band < 0.34 ? mix(deep, mid, band / 0.34) : mix(mid, lite, (band - 0.34) / 0.66);',
-    '  litCol = mix(litCol, albedo * 0.9, uHdBandsA.w * 0.25);',
+    '  litCol = mix(litCol, albedo * 0.9, uHdBandsA.w * 0.35);',
     '',
     '  vec3 col = litCol * mix(uHdBandsB.z, 1.0, shadMask) + amb * albedo;',
     '',
@@ -1291,10 +1301,11 @@ var SH = (function () {
     '  col += uLightColor * spec * shadMask * NdL;',
     '',
     /* Wet sheen on brushed surfaces: the ridge mask from the atlas breaks up
-       the specular so it never reads as a clean plastic blob. */
-    '  vec4 dt = detailAt(vWorld, N);',
+       the specular so it never reads as a clean plastic blob. On rough
+       surfaces it contributes almost nothing (1 - rough), which is what
+       keeps stone matte and metal glassy. */
     '  float ridge = dt.a;',
-    '  col += uLightColor * spec * ridge * 1.6 * uHdSpec.x * shadMask;',
+    '  col += uLightColor * spec * ridge * 0.6 * (1.0 - rough) * uHdSpec.x * shadMask;',
     '',
     /* BACKLIT TRANSLUCENCY: energy cores, thin hulls and wings. When a
        surface turns its back to the sun the light leaks through its
@@ -1310,13 +1321,13 @@ var SH = (function () {
     '  col += uRimColor * fres * rimSide * uRimStrength * uItemB.z * (0.30 + 0.70 * shadMask);',
     '',
     /* Painterly tooth: value only, modulated by the draw's tooth weight. */
-    '  col *= 1.0 + (dt.r - 0.5) * 0.30 * vTooth;',
+    '  col *= 1.0 + (dt.r - 0.5) * 0.10 * detStr * vTooth;',
     '  col *= 1.0 + (uHdSpec.z - 0.5) * 0.0;',
     '',
     /* Emissive facets bypass the ramp entirely and take a hot boost so they
        feed bloom. The scale keeps an emissive clip-rate-independent from the
        exposure change. */
-    '  col = mix(col, albedo * (2.1 * uExposure + 0.25) + uRimColor * 0.42, vEmis);',
+    '  col = mix(col, albedo * (1.65 * uExposure + 0.32) + uRimColor * 0.36, vEmis);',
     '',
     /* Dissolve burn edge, damage flash, then fog. Identical contract to the
        cel path so gameplay reads stay the same across styles. */
@@ -1337,13 +1348,13 @@ var SH = (function () {
     '    else if (uItemB.w < 2.5) { oColor = vec4(vec3(band), 1.0); }',
     '    else if (uItemB.w < 3.5) { oColor = vec4(litCol, 1.0); }',
     '    else if (uItemB.w < 4.5) { oColor = vec4(vec3(sh), 1.0); }',
-    '    else                       { oColor = vec4(N * 0.5 + 0.5, 1.0); }',
-    '    oNormal = vec4(N * 0.5 + 0.5, depth);',
+    '    else                       { oColor = vec4(geoN * 0.5 + 0.5, 1.0); }',
+    '    oNormal = vec4(geoN * 0.5 + 0.5, depth);',
     '    return;',
     '  }',
     '',
     '  oColor = vec4(col, uItemA.w);',
-    '  oNormal = vec4(N * 0.5 + 0.5, depth);',
+    '  oNormal = vec4(geoN * 0.5 + 0.5, depth);',
     '}'
   ].join('\n');
 
@@ -1402,8 +1413,8 @@ var SH = (function () {
     '  float b3 = smoothstep(0.55, 0.85, n3) * 0.35;',
     '  vec3 nbA = uNebulaA * (0.85 + 0.35 * n2);',
     '  vec3 nbB = uNebulaB * (0.8 + 0.4 * n1);',
-    '  col = mix(col, nbA, b1 * 0.46 * smoothstep(-0.18, 0.55, dir.y));',
-    '  col = mix(col, nbB, b2 * 0.28 * smoothstep(-0.05, 0.7, dir.y));',
+    '  col = mix(col, nbA, b1 * 0.34 * smoothstep(-0.18, 0.55, dir.y));',
+    '  col = mix(col, nbB, b2 * 0.22 * smoothstep(-0.05, 0.7, dir.y));',
     '  col += nbB * b3 * 0.70 * smoothstep(-0.05, 0.75, dir.y);',
     '',
     /* GALACTIC BAND: a fixed plane with filament noise inside, so up-and-over
@@ -1488,20 +1499,21 @@ var SH = (function () {
     'uniform float uAOStrength;',
     'uniform float uAORadius;',
     NOISE,
-    'const vec2 AO_TAPS[8] = vec2[8](',
+    'const vec2 AO_TAPS[12] = vec2[12](',
     '  vec2( 0.89,  0.42), vec2(-0.74,  0.67), vec2( 0.18,  0.98), vec2(-0.96,  0.22),',
-    '  vec2( 0.55, -0.83), vec2(-0.28, -0.96), vec2( 0.99, -0.10), vec2(-0.66, -0.75));',
+    '  vec2( 0.55, -0.83), vec2(-0.28, -0.96), vec2( 0.99, -0.10), vec2(-0.66, -0.75),',
+    '  vec2( 0.42,  0.72), vec2(-0.85, -0.35), vec2( 0.07, -0.99), vec2(-0.44,  0.88));',
     'void main(){',
     '  vec4 cen = texture(uNormalDepth, vUV);',
     '  vec3 n = cen.rgb * 2.0 - 1.0;',
     '  float z = cen.a;',
     '  if (z > 1000.0){ oColor = vec4(1.0); return; }',
     '  float occ = 0.0;',
-    '  float range = uAORadius * max(z, 1.0) * 0.012 + 0.35;',
+    '  float range = uAORadius * max(z, 1.0) * 0.008 + 0.18;',
     '  float ang = hash12(vUV * 937.0) * 6.2831853;',
     '  vec2 rot = vec2(cos(ang), sin(ang));',
     '  float px = range * max(uRes.x, uRes.y) * 0.0012;',
-    '  for (int i = 0; i < 8; i++){',
+    '  for (int i = 0; i < 12; i++){',
     '    vec2 o = AO_TAPS[i];',
     '    vec2 r = vec2(o.x * rot.x - o.y * rot.y, o.x * rot.y + o.y * rot.x);',
     '    float w = 0.65 + 0.35 * hash12(vUV * 17.0 + float(i));',
@@ -1510,8 +1522,8 @@ var SH = (function () {
     '    vec3 nt = t.rgb * 2.0 - 1.0;',
     '    float dz = z - zt;',
     '    float dN = 1.0 - max(dot(n, nt), 0.0);',
-    '    if (dz > 0.0 && dz < range * 3.0){',
-    '      occ += (1.0 - dz / (range * 3.0)) * (0.35 + dN * 1.4);',
+    '    if (dz > 0.0 && dz < range * 2.0){',
+    '      occ += (1.0 - dz / (range * 2.0)) * (0.35 + dN * 1.4);',
     '    }',
     '  }',
     '  float ao = clamp(1.0 - occ * uAOStrength * 0.14, 0.0, 1.0);',
@@ -1660,7 +1672,7 @@ var SH = (function () {
     '    vec2 rp = vec2(hp.x * cos(ang) - hp.y * sin(ang), hp.x * sin(ang) + hp.y * cos(ang));',
     '    vec2 cell = fract(rp / 3.4) - 0.5;',
     '    float dotR = length(cell) * 2.0;',
-    '    float shadowMask = (1.0 - smoothstep(0.05, 0.40, lum)) * isScene;',
+    '    float shadowMask = (1.0 - smoothstep(0.03, 0.25, lum)) * isScene;',
     '    float screen = smoothstep(dotR - 0.35, dotR + 0.35, 0.35 + lum * 1.1);',
     '    col = mix(col, col * (0.88 + 0.12 * screen), shadowMask * uHalftone);',
     '  }',
@@ -1676,6 +1688,10 @@ var SH = (function () {
     '    col += g * uGrain;',
     '  }',
     '  col = mix(col, vec3(1.0), uFlashWhite);',
+    /* BLUE-NOISE DITHER before the final quantise to 8 bits. A smooth 8-bit
+       falloff (the board's radial gradient) posterises into contour rings;
+       one LSB of animated hash breaks them without being visible itself. */
+    '  col += (hash12(uv * uRes + fract(uTime) * 17.3) - 0.5) * (1.6 / 255.0);',
     '  oColor = vec4(clamp(col, 0.0, 1.0), 1.0);',
     '}'
   ].join('\n');
