@@ -848,6 +848,18 @@ def build_jobs():
         # bare negation below plus {STYLE}'s "no text", and a plate written
         # for a podium announcement came back with two feet of garbled
         # capitals across the frame. Same fix, same wording, both classes.
+        #
+        # THE OTHER TEN CLASSES DELIBERATELY DO NOT CARRY IT, and that is a
+        # decision rather than an oversight. Measured: 147 plates across foe,
+        # cmd, world, planet, abil, twr, fac, title, nebula and blackhole have
+        # no such clause. They are icons, crests, portraits and backdrops, and
+        # lettering is drawn to LETTERING SURFACES: flags, screens, documents,
+        # placards, the things only the two full-bleed narrative classes put in
+        # frame. Spot-checked fac_human, which is clean geometry. Adding the
+        # clause to all ten would invalidate 147 cached plates and cost about
+        # two and a half hours of card time on a defect with no evidence behind
+        # it. If a portrait or crest ever does come back lettered, the fix is
+        # this same line and the cost is known.
         jobs.append((key, f'{scene}, {CUTSCENE_PALETTE.get(fac, "")}. '
                      f'Wide cinematic composition, dramatic staging. '
                      f'Every surface blank and unlettered, no writing, no signage, '
