@@ -597,7 +597,7 @@ const COMMANDER_ROSTER = [
   {
     id: 'dregg', faction: 'pirate', name: 'DREGG', title: 'The Warlord',
     color: '#b91c1c', icon: '⛧',
-    blurb: 'Rules by being the largest thing in the room. +15% damage and +15% rate, paid for with 15% steeper price growth and taken back out of the enemy in tribute. <em>Every Captain negotiates. Dregg simply names the number first.</em>',
+    blurb: 'Rules by being the largest thing in the room, and prices every gun he fields a little steeper than the last. Every Captain negotiates. Dregg simply names the number first.',
     abilities: ['broadside', 'dampen'],
     /* WARLORD wants fewer, bigger guns. Bank the charge, release the nova, throw what survives skyward. */
     signature: { towers: ['capacitor', 'cyclone'], units: ['ironhulk', 'scrapjack'] },

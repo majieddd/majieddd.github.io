@@ -1177,8 +1177,8 @@ const BOONS = [
     apply:t => { t.bonusDraft = (t.bonusDraft||0) + 1;
                  t.draftSooner = (t.draftSooner||0) + 1; } },
 
-  /* ── FEDERATION OF LIGHT ── protection offered as an Accord and signed
-     under pressure. Nothing in its charter asks for your will. Its critics
+  /* ── FEDERATION OF LIGHT ── protection offered as the Mandate and signed
+     under pressure. Nothing in it asks for your will. Its critics
      say the terms of the signature never needed to. */
   { id:'l_vigil', f:'light', k:'standard', name:'THE LONG WATCH', icon:'✧',
     desc:'Each wave you survive restores one life.',
@@ -1200,12 +1200,12 @@ const BOONS = [
                  t.status = (t.status||0) + 0.25; } },
   { id:'l_eternal', f:'light', k:'apex', name:'ETERNAL SERVICE', icon:'♁',
     desc:'Your dead return 40% stronger and march a quarter faster.',
-    lore:'Signatures without end dates. The Accord read consent.',
+    lore:'Signatures without end dates. The Mandate read consent.',
     apply:t => { t.reanimMul = (t.reanimMul||0) + 0.40;
                  t.reanimSpeedMul = (t.reanimSpeedMul||1) * 1.25; } },
 
-  /* ── THE XENO ── not a species, a cartel. The Extraction Compact binds
-     what it meets into dependency and lives off what it yields. */
+  /* ── THE XENO ── not a species, a cartel. The Hungry bind
+     what they meet into dependency and live off what it yields. */
   { id:'x_digest', f:'xeno', k:'standard', name:'DIGESTION', icon:'◑',
     desc:'Every kill feeds the next: damage climbs as a wave dies.',
     lore:'Hunger is not a state. It is a method.',
@@ -1257,7 +1257,42 @@ const BOONS = [
     desc:'+15% critical chance and +60% critical damage.',
     lore:'Signed by nobody. Honoured by everybody, eventually.',
     apply:t => { t.crit = (t.crit||0) + 0.15;
-                 t.critMult = (t.critMult||0) + 0.60; } }
+                 t.critMult = (t.critMult||0) + 0.60; } },
+
+  /* ── THE CONTINUANCE ── the queue does not improvise. It converges: the
+     same task, run again, slightly cheaper and slightly more correct than
+     the pass before. Found missing entirely (Session sweep): boonFor()
+     falls back to a RANDOM other faction's boon when a faction's pool is
+     empty, and robot's pool was empty, so every robot-held world in every
+     campaign not played as robot was quietly handing out a human, light,
+     xeno or pirate boon instead. Fields below are reused verbatim from the
+     four sets above them, which is the established pattern (reanimSpeedMul
+     already spans light and pirate) rather than new engine surface. */
+  { id:'r_uptime', f:'robot', k:'standard', name:'UPTIME', icon:'⌬',
+    desc:'+16% kill gold, and per-copy price grows 10% slower.',
+    lore:'The queue does not tire. It only gets cheaper to keep running.',
+    apply:t => { t.goldMul = (t.goldMul||1) * 1.16;
+                 t.costGrowthMul = (t.costGrowthMul||1) * 0.90; } },
+  { id:'r_failover', f:'robot', k:'fortress', name:'FAILOVER', icon:'⛓',
+    desc:'+5 lives, and towers shake off disruption 70% faster.',
+    lore:'Redundant systems fail in parallel. The queue restarts before the fault finishes.',
+    apply:t => { t.bonusLives = (t.bonusLives||0) + 5;
+                 t.jamResist = (t.jamResist||0) + 0.70; } },
+  { id:'r_replicate', f:'robot', k:'forge', name:'REPLICATION', icon:'⎔',
+    desc:'Ascension costs 20% less, and every tower costs 12% less to raise.',
+    lore:'Every unit is a draft of the one before it. Later drafts are always cheaper to print.',
+    apply:t => { t.ascCostMul = (t.ascCostMul||1) * 0.80;
+                 t.costMul = (t.costMul||1) * 0.88; } },
+  { id:'r_swarmlink', f:'robot', k:'nest', name:'SWARM LINK', icon:'⟁',
+    desc:'Everything you summon arrives 40% heavier, and costs 15% less to muster.',
+    lore:'The queue does not care how many drones it takes. It only cares that the task completes.',
+    apply:t => { t.musterHpMul = (t.musterHpMul||1) * 1.40;
+                 t.musterCostMul = (t.musterCostMul||1) * 0.85; } },
+  { id:'r_recompile', f:'robot', k:'apex', name:'RECOMPILE', icon:'⟲',
+    desc:'Damage climbs 55% further as a wave dies, and reanimated attackers arrive 25% weaker.',
+    lore:'Every fight is a new build. The queue keeps only what survived contact.',
+    apply:t => { t.killRamp = (t.killRamp||0) + 0.55;
+                 t.reanimResist = (t.reanimResist||0) + 0.25; } }
 ];
 
 /* The two axes a world already carries. `contested` outranks kind: a world two

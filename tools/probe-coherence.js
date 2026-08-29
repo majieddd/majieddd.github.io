@@ -23,7 +23,7 @@ for (const f of ['config', 'lore', 'factions', 'towers2', 'roster', 'story',
 
 const G = vm.runInContext('({ STORY, STORY_ACTS, ACT_SCENARIOS, ACT_MORALS, CUTSCENES, ' +
   'PLANET_CUTS, PLANET_MOMENTS, GX_HOME_SYSTEMS, FACTIONS, COMMANDER_ROSTER, ' +
-  'LORE_CODEX, UNIT_TYPES })', ctx);
+  'LORE_CODEX, UNIT_TYPES, DIALOGUE, LORE, BOONS })', ctx);
 const FACS = ['human', 'light', 'xeno', 'pirate', 'robot'];
 
 /* Every string a player can read, with where it came from. */
@@ -50,6 +50,24 @@ Object.entries(G.PLANET_MOMENTS || {}).forEach(([kind, byFac]) =>
    could not see it because it only fires when both words share a cell. */
 (G.LORE_CODEX || []).forEach(e => add('codex/' + e.id, e.body));
 Object.values(G.UNIT_TYPES || {}).forEach(u => add('unit/' + u.id, u.desc));
+/* Found the same way LORE_CODEX was found: a live Compact/Accord leak (a
+   boon's lore: string, two comment headers) sat in towers2.js and a JSON
+   sync gap sat in the commander bios, both on surfaces COMMANDER_ROSTER and
+   DIALOGUE were already LOADED for but never actually scanned. Roster was
+   even sitting in G already, destructured and unused for cells. */
+(G.COMMANDER_ROSTER || []).forEach(c => add('roster/' + c.id + '/blurb', c.blurb));
+Object.values((G.LORE && G.LORE.commanders) || {}).forEach(c => {
+  add('lore/' + c.id + '/history', c.history);
+  add('lore/' + c.id + '/motive', c.motive);
+  add('lore/' + c.id + '/fracture', c.fracture);
+  add('lore/' + c.id + '/voice', c.voice);
+});
+(G.BOONS || []).forEach(b => add('boon/' + b.id, b.lore));
+Object.entries((G.DIALOGUE && G.DIALOGUE.openers) || {}).forEach(([id, t]) => add('dialogue/opener/' + id, t));
+Object.entries((G.DIALOGUE && G.DIALOGUE.answers) || {}).forEach(([id, t]) => add('dialogue/answer/' + id, t));
+Object.entries((G.DIALOGUE && G.DIALOGUE.stanceAnswers) || {}).forEach(([fac, byStance]) =>
+  Object.entries(byStance).forEach(([stance, arr]) =>
+    (arr || []).forEach((t, i) => add('dialogue/stanceAnswer/' + fac + '/' + stance + '/' + i, t))));
 
 const checks = [];
 function T(id, fn) {
@@ -207,6 +225,35 @@ T('CO.11 worldlore.js and missions.js carry no retired term or Vigil claim', () 
   });
   must(!bad.length, () => bad.join('; '));
   return 'no retired term, no retired world, no Vigil holding claim';
+});
+
+/* boonFor() (js/towers2.js) falls back to a RANDOM other faction's boon
+   whenever BOONS has no entry for the (faction, kind) it was asked for --
+   a graceful degrade written for old saves holding an owner or kind the
+   table has never heard of. It also, silently and correctly by its own
+   logic, degraded EVERY robot-held world in the game: BOONS had all 20
+   human/light/xeno/pirate entries and zero robot ones, so every one of
+   robot's five kinds (standard, fortress, forge, nest, apex) fell through.
+   robot is a rival for every other playable faction, so this fired on
+   ordinary campaigns, not just a robot playthrough. Caught only by
+   noticing the array stopped after pirate; nothing had ever asked "does
+   every faction have every kind" as a question. This asks it permanently,
+   for whichever five factions FACTIONS actually declares, not a
+   hand-written list that would itself go stale the next time a faction
+   is added or renamed. */
+T('CO.12 every faction has a boon for every kind', () => {
+  const KINDS = ['standard', 'fortress', 'forge', 'nest', 'apex'];
+  const facs = Object.keys(G.FACTIONS || {}).length ? Object.keys(G.FACTIONS) : FACS;
+  const bad = [];
+  facs.forEach(f => {
+    const have = new Set((G.BOONS || []).filter(b => b.f === f).map(b => b.k));
+    const missing = KINDS.filter(k => !have.has(k));
+    if (missing.length) bad.push(f + ' missing ' + missing.join('/'));
+  });
+  const ids = (G.BOONS || []).map(b => b.id);
+  if (new Set(ids).size !== ids.length) bad.push('duplicate boon id');
+  must(!bad.length, () => bad.join('; '));
+  return facs.length + ' factions, ' + KINDS.length + ' kinds, ' + (G.BOONS || []).length + ' boons, no gaps';
 });
 
 const fails = checks.filter(c => c.verdict === 'FAIL');

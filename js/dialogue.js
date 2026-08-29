@@ -351,7 +351,7 @@ const DIALOGUE = {
     halder:  'Come ahead. I have been broken against before. It is the one thing I am genuinely good at.',
     ashtar:  'I have given that speech, in that tone, to people who turned out to be right. Be very certain you are not one of them.',
 
-    /* THE COMPACT. Appetite as physics. They do not argue, they correct. */
+    /* THE HUNGRY. Appetite as physics. They do not argue, they correct. */
     sevra:   'My dead serve me twice. Yours will serve once and be grateful for the promotion.',
     mawlord: 'Bring all of it. I have never once finished a meal and I do not intend to begin with yours.',
     thrax:   'All of you is coming. Only one of you is thinking. We have counted, and we are patient.',

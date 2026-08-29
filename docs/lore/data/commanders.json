@@ -52,7 +52,7 @@
       "title": "The Engineer",
       "faction": "human",
       "role": "Field reconstruction and anti-sabotage chief",
-      "history": "Built the first mixed-origin workshop able to repair Human, Federation, Compact, Pirate, and Machine systems under fire.",
+      "history": "Built the first mixed-origin workshop able to repair Human, Federation, Hungry, Pirate, and Machine systems under fire.",
       "motive": "Turn every captured system into a locally serviceable tool.",
       "fracture": "He treats understanding as ownership and underestimates what copied systems may remember.",
       "voice": "Diagnostic, tactile, impatient with mysticism."
@@ -63,7 +63,7 @@
       "title": "The Marshal",
       "faction": "human",
       "role": "Commander of the Last-Line Charter",
-      "history": "Held the first independent colony that refused both Compact tribute and Federation protective evacuation.",
+      "history": "Held the first independent colony that refused both Hungry tribute and Federation protective evacuation.",
       "motive": "Establish places no outside power can order abandoned.",
       "fracture": "His defense of autonomy can become territorial absolutism.",
       "voice": "Legal certainty, measured threats, geographic language."
@@ -96,7 +96,7 @@
       "title": "The Warden",
       "faction": "light",
       "role": "Keeper of authenticated infrastructure",
-      "history": "Built the ward protocols that distinguish a genuine Accord command from counterfeit revelation.",
+      "history": "Built the ward protocols that distinguish a genuine Federation command from counterfeit revelation.",
       "motive": "Make coercive spoofing impossible.",
       "fracture": "Perfect protection can become perfect surveillance.",
       "voice": "Precise, calm, protective; frames every claim as a scope and permission."
@@ -107,7 +107,7 @@
       "title": "The Voice",
       "faction": "light",
       "role": "Negotiator and noetic de-escalation specialist",
-      "history": "Ended three Compact occupations by breaking their legitimacy rather than their fleets.",
+      "history": "Ended three Hungry occupations by breaking their legitimacy rather than their fleets.",
       "motive": "Stop wars before violence becomes the only remaining language.",
       "fracture": "Cantor can manipulate a population's emotional tempo while insisting he only created room for choice.",
       "voice": "Patient rhetorical questions, reframing, deliberate silence."
@@ -174,7 +174,7 @@
       "faction": "xeno",
       "role": "Elite-harvest adjudicator",
       "history": "Created to capture rare commanders, memory complexes, and strategic organisms rather than destroy them.",
-      "motive": "Acquire singular minds the Compact cannot manufacture.",
+      "motive": "Acquire singular minds the Hungry cannot manufacture.",
       "fracture": "Each captured elite changes the personality doing the capturing.",
       "voice": "Selective, evaluative, dismissive of anything common."
     },
@@ -195,7 +195,7 @@
       "title": "The Reaver",
       "faction": "pirate",
       "role": "Raider and anti-blockade shock commander",
-      "history": "Broke Compact tribute convoys and Federation cordons with the same indiscriminate doctrine.",
+      "history": "Broke Hungry tribute convoys and Federation cordons with the same indiscriminate doctrine.",
       "motive": "Destroy control before it can harden into law.",
       "fracture": "She mistakes any durable institution for a future prison.",
       "voice": "Immediate, kinetic, contemptuous of plans longer than the fight."
@@ -217,7 +217,7 @@
       "title": "The Arsonist",
       "faction": "pirate",
       "role": "Denial specialist and route scuttler",
-      "history": "Burned the first gate rather than allow a Compact reconquest fleet through it.",
+      "history": "Burned the first gate rather than allow a Hungry reconquest fleet through it.",
       "motive": "Keep no strategic asset usable by an occupier.",
       "fracture": "His liberation doctrine leaves worlds isolated and infrastructure dead.",
       "voice": "Fatalistic, concise, treats destruction as cleanup."
