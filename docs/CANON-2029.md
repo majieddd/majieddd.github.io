@@ -341,3 +341,35 @@ are presented as contested records, never verdicts; no real population is
 ever a secret nonhuman bloodline; fiction does not vindicate a source.
 Story beats stay short and in voice: this is a story the player plays
 through, not a dossier the player reads.
+
+## Humanity's act order is authored, not rotated
+
+Owner decision, Session 42. Every other power still opens at home and works
+outward through the universe order. Humanity does not, because its road is a
+story rather than a ring:
+
+| Act | System | Why it is here |
+|---|---|---|
+| 1 | THE EARTH SYSTEM | First contact, on your own ground, and you meet all four |
+| 2 | **PROXIMA CENTAURI** | The nearest star, and the one the door under Saturn opens onto. You follow the routing, and the routing belongs to the Free Captains |
+| 3 | ZETA RETICULI | The Hungry themselves, and how far this can be taken |
+| 4 | THE PLEIADES | The power that watched and did nothing, and the mirror: worlds you freed cannot leave |
+| 5 | SIRIUS | The Ancients, and how small all of it is |
+
+`GX_ACT_ORDER` in js/galaxy.js holds it, indexed by universe position. It
+changes no draw: the generator still walks all five systems in universe order
+and consumes exactly the same rnd() calls, and only the tier VALUE each system
+is stamped with changes. Verified field by field: owner, kind, map, arena, seat
+and contested are byte-identical, and the only other movement is `links` and
+`entry` (the route graph is derived from act adjacency) and the renegade
+world's `boon` (which cycles by act index by design, so all five stay
+reachable).
+
+## The bonus systems stay lore
+
+Owner decision, Session 42. Kepler, Arcturus, Vega and Lyra, and the demoted
+Barnard's Star and Tabby's Star are **not being built**. They remain in the
+canon and in `GALAXY-SCOPE-S42.md` so the galaxy has edges a player can hear
+about, and nothing in the game promises a door to them. A named place nobody
+can visit is atmosphere; a named place with a locked door on it is a bug
+report.

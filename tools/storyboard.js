@@ -65,16 +65,37 @@ const plate = (k, stale) => has(k)
 
 /* The five acts a given power plays, in order. Each power opens at home and
    rotates outward, which is campTier in js/galaxy.js. */
+/* READ THE ORDER, DO NOT ASSUME IT. This used to compute (home + t) % 5, which
+   was true only while every power rotated. Humanity's acts are authored now
+   (Earth, then PROXIMA CENTAURI, the nearest star and the one the door under
+   Saturn opens onto), so a page that assumed the rotation would have shown the
+   Pleiades as act two and quietly disagreed with the game. */
 function actsFor(fac) {
-  const home = SYSOF[fac];
-  const out = [];
-  for (let t = 0; t < 5; t++) {
-    const si = (home + t) % 5;
-    const owner = FACS[si];
-    out.push({ tier: t, si, sys: G.GX_HOME_SYSTEMS[owner].name,
-               worlds: G.GX_HOME_SYSTEMS[owner].worlds, homeOf: owner });
+  const byName = {};
+  FACS.forEach(f => { byName[G.GX_HOME_SYSTEMS[f].name] = f; });
+  try {
+    const gctx = { console, window: {}, document: undefined };
+    vm.createContext(gctx);
+    for (const f of ['config', 'lore', 'factions', 'towers2', 'roster', 'story'])
+      try { vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', f + '.js'), 'utf8'), gctx, { filename: f }); } catch (e) {}
+    vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', 'galaxy.js'), 'utf8'), gctx, { filename: 'galaxy.js' });
+    const g = vm.runInContext('generateGalaxy(20290413,"' + fac + '",0,1,2)', gctx);
+    return g.systems.map((sy, t) => {
+      const owner = byName[sy.name] || FACS[t];
+      return { tier: t, si: SYSOF[owner], sys: sy.name,
+               worlds: G.GX_HOME_SYSTEMS[owner].worlds, homeOf: owner };
+    });
+  } catch (e) {
+    console.log('  (act order unavailable, falling back to rotation: ' + String(e.message).slice(0, 60) + ')');
+    const home = SYSOF[fac];
+    const out = [];
+    for (let t = 0; t < 5; t++) {
+      const owner = FACS[(home + t) % 5];
+      out.push({ tier: t, si: (home + t) % 5, sys: G.GX_HOME_SYSTEMS[owner].name,
+                 worlds: G.GX_HOME_SYSTEMS[owner].worlds, homeOf: owner });
+    }
+    return out;
   }
-  return out;
 }
 
 const CSS = `
@@ -455,8 +476,8 @@ function index() {
      'The four rewritten openings went from five slides to nine. Prompts are written; the plates are not rendered.'],
     ['TODO', 'The other four powers still need Acts 2 to 5 authored',
      'Only the Earth System has authored garrisons. Every other act is the canon seed roll. Also OPEN: whether humanity act two becomes Proxima Centauri, which changes the act ORDER and is a structural call.'],
-    ['TODO', 'The five bonus systems',
-     'Kepler, Arcturus, Vega, and the two demoted acts. Scoped on paper, twelve worlds, not in the galaxy.'],
+    ['LORE', 'The five bonus systems stay lore, by decision',
+     'Kepler, Arcturus, Vega and the two demoted acts are NOT being built. They remain in the canon and in GALAXY-SCOPE-S42.md so the galaxy has edges the player can hear about, and nothing in the game promises them.'],
   ];
   w('<table class="dec">');
   rows.filter(r => r.ok).forEach(r => w('<tr class="y"><td>IN</td><td><b>' + esc(r.id) +

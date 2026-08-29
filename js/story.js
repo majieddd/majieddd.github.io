@@ -74,9 +74,9 @@ const STORY_FIGURES = {
 const ACT_MORALS = {
   human: [
     'Nobody is coming, and waiting is just a slower way of losing. There was a door in our own sky and not one of them mentioned it. A species this small stops being somebody else\'s schedule by going out and not stopping.',
-    'A secret kept by the powerful is a weapon pointed at whoever was not told. Publishing it is the only way to take the weapon away.',
-    'The grievance and the gift are one object. Every trait that keeps us alive out here was a line item in somebody else programme.',
     'Adaptation is not consent. Worlds we free start needing us, and needing us is how it began the last time.',
+    'The grievance and the gift are one object. Every trait that keeps us alive out here was a line item in somebody else programme.',
+    'A secret kept by the powerful is a weapon pointed at whoever was not told. Publishing it is the only way to take the weapon away.',
     'The governors were never limiting the machines. They were keeping the operator human, and we crossed that line to win.',
   ],
   light: [
@@ -125,9 +125,9 @@ const ACT_SCENARIOS = {
 
   human: [
     'The road out of our own system, in the order the solar system allows. Earth under the fall, then the Moon, then Mars, and then the belt turns you back, so you go INWARD to Venus and Mercury for the thing that opens it. Then Jupiter, and Saturn, where the Hungry keep a door. It ends inside a six-sided storm at the pole, on the machine they have been crossing by the whole time.',
-    'March into the machinery of the people who watched and did nothing. The hymn foundry that certifies a world as protected, the archive of the forty, the tribunal, and the sunken vaults where Earth\'s own file was stamped Deferred three times. Humanity arrives to read the paperwork and leaves having published all of it.',
-    'The Hungry\'s home, and the machinery of the harvest itself: the pens, the rendering yards, the gene vaults where every farmed species is filed, including ours. The hardest act to look at. It ends at Serpo, where twelve people were traded one way and never spoken of again, and where their names go up at the gate in letters a metre high.',
     'The free roads, which are not an empire but an absence of one. Wreck yards, an unlicensed refinery, an anchorage on no chart, a toll gate, a sanctuary that has never asked anyone for papers. Humanity came to liberate a network and finds that liberating it means deciding whose rules replace none at all. The Quartermaster prices the resupply and sees a fence.',
+    'The Hungry\'s home, and the machinery of the harvest itself: the pens, the rendering yards, the gene vaults where every farmed species is filed, including ours. The hardest act to look at. It ends at Serpo, where twelve people were traded one way and never spoken of again, and where their names go up at the gate in letters a metre high.',
+    'March into the machinery of the people who watched and did nothing. The hymn foundry that certifies a world as protected, the archive of the forty, the tribunal, and the sunken vaults where Earth\'s own file was stamped Deferred three times. Humanity arrives to read the paperwork and leaves having published all of it.',
     'A civilisation of machines executing orders no maker ever signed, around a star being slowly boxed in. Humanity finishes the swarm on its own plan, aims the relay back up the chain the orders came from, and decides where the light of a star goes. Undeniable, at last, and now answerable for it.',
   ],
 

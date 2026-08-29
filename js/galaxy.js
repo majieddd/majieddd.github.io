@@ -349,7 +349,33 @@ function generateGalaxy(seed, playerFaction, mapPool, kindsW, gxv) {
      (u - uHome + 5) % 5, so every faction opens at its own home and the
      universe itself never moves. */
   const uHome = Math.max(0, GX_UNIVERSE_ORDER.indexOf(playerFaction));
-  const campTier = u => (u - uHome + GX_UNIVERSE_ORDER.length) % GX_UNIVERSE_ORDER.length;
+  /* WHICH ACT A SYSTEM IS, for this player.
+   *
+   * The default is a rotation: you open at home and work outward through the
+   * universe order. HUMANITY IS AUTHORED INSTEAD (owner, Session 42), because
+   * its road is a story rather than a ring: Earth, then PROXIMA CENTAURI, which
+   * is the nearest star and the one the door under Saturn opens onto.
+   *
+   *   act 1  THE EARTH SYSTEM    first contact, on your own ground
+   *   act 2  PROXIMA CENTAURI    out of the system, following the routing
+   *   act 3  ZETA RETICULI       the Hungry themselves
+   *   act 4  THE PLEIADES        the power that watched, and the mirror
+   *   act 5  SIRIUS              the Ancients, and how small all of it is
+   *
+   * The table is indexed by UNIVERSE index and yields the act number, so
+   * humanity's [0, 3, 2, 1, 4] reads "the Pleiades (universe 1) is act 3".
+   *
+   * This changes no draw. The generation loop still walks si 0 to 4 in universe
+   * order and consumes exactly the same rnd() calls; only the tier VALUE each
+   * system is stamped with, and therefore the order they are presented in,
+   * changes. Verified field by field against the previous commit.
+   */
+  const GX_ACT_ORDER = { human: [0, 3, 2, 1, 4] };
+  const campTier = u => {
+    const authored = GX_ACT_ORDER[playerFaction];
+    if (authored && typeof authored[u] === 'number') return authored[u];
+    return (u - uHome + GX_UNIVERSE_ORDER.length) % GX_UNIVERSE_ORDER.length;
+  };
   const KW = KIND_WEIGHTS[kindsW] || KIND_WEIGHTS[1];
   const rnd = galaxyRng(seed);
   const rivals = rivalFactionsOf(playerFaction);
