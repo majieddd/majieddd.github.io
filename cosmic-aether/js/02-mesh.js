@@ -138,18 +138,49 @@ var MESH = (function () {
     /* A box with independent top and bottom scales: the single most useful
        shape for this art direction because a slight taper reads as carved and
        a strong taper reads as a plinth or a blade. */
-    B.frustum = function (bw, bd, tw, td, h, yOff) {
+    B.frustum = function (bw, bd, tw, td, h, yOff, flip) {
       var y0 = (yOff || 0), y1 = y0 + h;
       var b0 = [-bw / 2, y0, -bd / 2], b1 = [bw / 2, y0, -bd / 2],
           b2 = [bw / 2, y0, bd / 2], b3 = [-bw / 2, y0, bd / 2];
       var t0 = [-tw / 2, y1, -td / 2], t1 = [tw / 2, y1, -td / 2],
           t2 = [tw / 2, y1, td / 2], t3 = [-tw / 2, y1, td / 2];
-      quad(b0, t0, t1, b1);
-      quad(b1, t1, t2, b2);
-      quad(b2, t2, t3, b3);
-      quad(b3, t3, t0, b0);
+      /* The side winding below is correct when the top is smaller than the
+         base, which is the case every ordinary pedestal needs AND the case
+         the winding gate proves. A box whose top is WIDER (a chamfered upper
+         edge) must flip the side orders, and `flip` is that switch. The caps
+         keep their winding either way: the surface is closed either way. */
+      if (flip) {
+        quad(b0, t0, t1, b1);
+        quad(b3, t3, t0, b0);
+        quad(b2, t2, t3, b3);
+        quad(b1, t1, t2, b2);
+      } else {
+        quad(b0, t0, t1, b1);
+        quad(b1, t1, t2, b2);
+        quad(b2, t2, t3, b3);
+        quad(b3, t3, t0, b0);
+      }
       quad(t3, t2, t1, t0);
       quad(b0, b1, b2, b3);
+      return B;
+    };
+
+    /* Chamfered box: a box whose twelve edges are each cut into one flat
+       facet. A beveled silhouette reads as machined, a plain one as laser-cut
+       cardboard, so this is the difference between a gadget and a prop at
+       exactly the scale towers are seen at. 26 vertices, zero cost in use. */
+    B.bevel = function (w, h, d, cut) {
+      cut = Math.max(0.02, Math.min(cut === undefined ? 0.10 : cut,
+        Math.min(w, h, d) * 0.22));
+      /* A chamfered box: the six face RECESSES at full size, and the corner
+         wedges shaved. In profile that is a convex hexagon: narrow bottom
+         face, widening chamfer, full-size body, narrowing chamfer, narrow
+         top face. The three stacked frustums below are that hexagon. The
+         bottom one widens upward, so it carries the frustum flip flag; the
+         top one narrows upward, so it does not. */
+      B.frustum(w - cut * 2, d - cut * 2, w, d, cut, 0, true);
+      B.frustum(w, d, w, d, h - cut * 2, cut);
+      B.frustum(w, d, w - cut * 2, d - cut * 2, cut, h - cut);
       return B;
     };
 

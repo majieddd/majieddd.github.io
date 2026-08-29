@@ -103,6 +103,13 @@ function check(name, build, interior, opts) {
 console.log('winding audit');
 
 check('box', b => b.box(2, 2, 2), [0, 0, 0]);
+/* The bevel box is three frustums stacked, so the seams carry COINCIDENT
+   inner-facing caps: the top cap of the lower frustum is met face-to-face by
+   the bottom cap of the middle one. Both are hidden inside the solid, but the
+   strict test sees the inward-facing twin and flags it. allow=4 is the number
+   of those twin caps (two seams, two tris per cap). */
+check('bevel-straight', b => b.bevel(2, 2, 2, 0.1), [0, 0.35, 0], { allow: 4 });
+check('bevel-thin', b => b.bevel(3, 1, 2, 0.12), [0, 0.35, 0], { allow: 4 });
 check('frustum-straight', b => b.frustum(2, 2, 2, 2, 3, -1.5), [0, 0, 0]);
 check('frustum-taper', b => b.frustum(3, 3, 1, 1, 4, -2), [0, 0, 0]);
 check('prism', b => b.prism(2, 2, 3, 6, -1.5), [0, 0, 0]);

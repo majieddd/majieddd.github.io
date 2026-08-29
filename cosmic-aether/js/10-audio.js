@@ -32,6 +32,7 @@ var AUDIO = (function () {
   var ctx = null;
   var master = null, comp = null, limiter = null;
   var sfxGain = null, musicGain = null, uiGain = null, reverbSend = null;
+  var echoSend = null;
   var noiseBuf = null;
   var ready = false;
   var muted = false;
@@ -99,6 +100,24 @@ var AUDIO = (function () {
       reverbSend.gain.value = 0.22;
       reverbSend.connect(conv);
       conv.connect(sfxGain);
+
+      /* Feedback echo: the space between a reverb and a delay line. Music
+         plucks and upgrade arps run through it; the feedback adds depth the
+         convolution tail alone cannot give a synth piano. */
+      var echo = ctx.createDelay(1.2);
+      echo.delayTime.value = 0.28;
+      var echoFb = ctx.createGain();
+      echoFb.gain.value = 0.34;
+      var echoF = ctx.createBiquadFilter();
+      echoF.type = 'lowpass';
+      echoF.frequency.value = 2400;
+      echoSend = ctx.createGain();
+      echoSend.gain.value = 0.30;
+      echoSend.connect(echo);
+      echo.connect(echoFb);
+      echoFb.connect(echo);
+      echo.connect(echoF);
+      echoF.connect(sfxGain);
 
       sfxGain.connect(comp);
       musicGain.connect(comp);
@@ -243,6 +262,7 @@ var AUDIO = (function () {
     }
     out.connect(target);
     if (o.reverb && reverbSend) out.connect(reverbSend);
+    if (o.echo && echoSend) out.connect(echoSend);
   }
 
   /* ---------- SFX recipes ----------
@@ -303,6 +323,9 @@ var AUDIO = (function () {
     impact_small: function (o) {
       noise({ pan: o.pan, dur: 0.13, gain: 0.18, filter: 'bandpass',
               cutoff: 1500 * (1 + (J() - 0.5) * 0.3), cutoff1: 400, q: 1.1, decay: 0.05 });
+      /* The sub thump is what makes a hit FEEL like a hit at all. */
+      tone({ pan: o.pan, type: 'sine', f0: 96 * (1 + (J() - 0.5) * 0.1), f1: 42,
+             dur: 0.16, gain: 0.16, filter: 'lowpass', cutoff: 260, attack: 0.001 });
     },
     impact_splash: function (o) {
       var j = 1 + (J() - 0.5) * 0.16;
@@ -310,6 +333,8 @@ var AUDIO = (function () {
               cutoff: 1500 * j, cutoff1: 120, q: 0.6, attack: 0.001, decay: 0.2, reverb: true });
       tone({ pan: o.pan, type: 'sine', f0: 92 * j, f1: 34, dur: 0.5, gain: 0.34,
              filter: 'lowpass', cutoff: 400, attack: 0.002 });
+      tone({ pan: o.pan, type: 'sine', f0: 46 * j, f1: 22, dur: 0.7, gain: 0.24,
+             filter: 'lowpass', cutoff: 180, attack: 0.001, delay: 0.02, echo: true });
     },
     hit: function (o) {
       if (!noteVoice('hit')) return;
@@ -523,22 +548,50 @@ var AUDIO = (function () {
       var inten = music.intensity;
 
       /* PAD: one long low voice per bar. Always present, it is the floor of
-         the whole score. */
+         the whole score. Stereo spread: the two lower voices sit left and
+         right and the shimmer rings the middle, so the bed feels wide even
+         through a laptop speaker. */
       if (music.step % 8 === 0) {
         for (var v = 0; v < 3; v++) {
           var n = root + [0, 7, 12][v];
           tone({ bus: 'music', type: v === 2 ? 'triangle' : 'sawtooth',
                  f0: midiToHz(n), dur: spb * 4.2, gain: 0.045 - v * 0.008,
                  filter: 'lowpass', cutoff: 340 + inten * 900, q: 1.2,
-                 attack: 0.7, decay: spb * 2, delay: at - t, reverb: true });
+                 attack: 0.7, decay: spb * 2, delay: at - t, reverb: true,
+                 pan: v === 0 ? -0.35 : (v === 1 ? 0.35 : 0) });
         }
+        /* BASS DRONE: one octave below the root, the sub the speakers are
+           waiting for. It is what makes the score feel anchored. */
+        tone({ bus: 'music', type: 'sine', f0: midiToHz(root - 12),
+               dur: spb * 4.2, gain: 0.16, filter: 'lowpass', cutoff: 160,
+               attack: 0.5, decay: spb * 2, delay: at - t });
       }
-      /* PULSE: enters with intensity. This is the layer that tells the player
-         the board is getting dangerous, without a single new note. */
-      if (inten > 0.12 && music.step % 2 === 0) {
-        noise({ bus: 'music', dur: 0.16, gain: 0.03 + inten * 0.05,
-                filter: 'bandpass', cutoff: 120 + inten * 130, q: 1.6,
-                attack: 0.002, decay: 0.06, delay: at - t });
+      /* KICK: enters with the pulse. A pitched-down sine thump with a click
+         transient; without a kick the pulse layer is just noise and the wave
+         countdown loses its heartbeat. */
+      if (inten > 0.22 && music.step % 4 === 0) {
+        tone({ bus: 'music', type: 'sine', f0: 116 * (1 + inten * 0.2), f1: 40,
+               dur: 0.22, gain: 0.10 + inten * 0.06, filter: 'lowpass',
+               cutoff: 240, attack: 0.002, decay: 0.09, delay: at - t });
+        noise({ bus: 'music', dur: 0.05, gain: 0.05, filter: 'highpass',
+                cutoff: 3000, q: 1, attack: 0.001, decay: 0.03, delay: at - t });
+      }
+      /* MELODY: a sparse pluck that arrives earlier than the old arpeggio
+         (intensity 0.4 rather than 0.55) and runs through the echo, so the
+         pattern has a tail instead of a click. */
+      if (inten > 0.40 && (music.step % 8) === 6) {
+        var deg = SCALE[(music.step * 3) % SCALE.length];
+        tone({ bus: 'music', type: 'triangle', f0: midiToHz(root + 24 + deg),
+               dur: 0.5, gain: 0.035 + (inten - 0.4) * 0.07, attack: 0.008,
+               filter: 'bandpass', cutoff: 2000, q: 2, delay: at - t,
+               reverb: true, echo: true });
+      }
+      /* SHIMMER: the highest voice, only on the biggest moments. */
+      if (inten > 0.72 && music.step % 8 === 2) {
+        var dh = SCALE[(music.step + 2) % SCALE.length];
+        tone({ bus: 'music', type: 'sine', f0: midiToHz(root + 36 + dh),
+               dur: 1.6, gain: 0.038, attack: 0.04, decay: 1.0,
+               delay: at - t, reverb: true, pan: 0.5 });
       }
       /* ARPEGGIO: only at high intensity, and only on the off-beats, so it
          reads as agitation rather than as a melody. */

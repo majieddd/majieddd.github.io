@@ -84,13 +84,17 @@ var MODELS = (function () {
 
   /* A plinth every tower stands on, so the whole set shares a footprint and
      reads as one army. Tier adds rings to it, which is a cheap, legible
-     "this one has been upgraded" signal visible even at full zoom out. */
+     "this one has been upgraded" signal visible even at full zoom out.
+     AETHER: three tiers with a beveled crown and corner feet, so the
+     pedestal reads as machined stonework rather than as stacked discs. */
   function plinth(b, tier, r) {
     r = r || 2.15;
     b.color(HULL.dark).tooth(1.0);
-    b.prism(r, r * 0.92, 0.85, 6, 0);
+    b.prism(r * 1.06, r * 1.00, 0.5, 6, 0);
     b.color(HULL.mid);
-    b.prism(r * 0.86, r * 0.74, 0.42, 6, 0.85);
+    b.prism(r * 0.90, r * 0.76, 0.5, 6, 0.5);
+    b.color(HULL.light).tooth(0.85);
+    b.prism(r * 0.68, r * 0.62, 0.36, 6, 1.0);
     if (tier >= 1) {
       b.color(HULL.trim).tooth(0.6);
       b.ring(r * 0.95, r * 1.12, 6, 0.9);
@@ -101,7 +105,7 @@ var MODELS = (function () {
         var a = (i / 6) * U.TAU + 0.3;
         b.push();
         b.translate(Math.cos(a) * r * 1.02, 0.42, Math.sin(a) * r * 1.02);
-        b.box(0.26, 0.85, 0.26);
+        b.bevel(0.26, 0.5, 0.26, 0.05);
         b.pop();
       }
     }
@@ -652,6 +656,21 @@ var MODELS = (function () {
             b.push(); b.scale(1.0, 0.72, 1.35); b.ico(0.92, 0); b.pop();
             b.color('#1a1330');
             b.push(); b.translate(0, 0.26, -0.5); b.scale(0.8, 0.6, 0.7); b.ico(0.66, 0); b.pop();
+            /* Carapace plates: beveled slabs over the back, the detail that
+               turns a blob into a beetle. */
+            b.color('#221a38').tooth(0.85);
+            b.push(); b.translate(0, 0.16, -0.62); b.rotateX(-0.35); b.bevel(0.7, 0.16, 0.8, 0.05); b.pop();
+            b.color('#170f28').tooth(0.9);
+            b.push(); b.translate(0.34, 0.1, 0.28); b.rotateZ(-0.3); b.bevel(0.16, 0.1, 0.55, 0.04); b.pop();
+            b.push(); b.translate(-0.34, 0.1, 0.28); b.rotateZ(0.3); b.bevel(0.16, 0.1, 0.55, 0.04); b.pop();
+            /* Mandible claws at the front read "predator" at arm's length. */
+            b.color(core).tooth(0.2).emissive(0.8);
+            b.push(); b.translate(0.16, -0.02, 0.62); b.rotateX(1.2); b.shard(0.06, 0.22, 0.1, 4, 0); b.pop();
+            b.push(); b.translate(-0.16, -0.02, 0.62); b.rotateX(1.2); b.shard(0.06, 0.22, 0.1, 4, 0); b.pop();
+            b.emissive(0);
+            /* Tail spike. */
+            b.color('#191128').tooth(0.85);
+            b.push(); b.translate(0, 0.16, -0.75); b.rotateX(-1.1); b.limb([0, 0, 0], [0, 0, 0.5], 0.10, 0.03, 4); b.pop();
           } },
         { name: 'core', parent: 'body', bind: [0, 0.08, 0.74], build: function (b) {
             b.color(core).tooth(0.05).emissive(1.0);
@@ -670,10 +689,19 @@ var MODELS = (function () {
             b.push(); b.translate(0, 0.78, 0.14); b.scale(0.75, 0.55, 0.75); b.ico(0.72, 0); b.pop();
             b.color('#231a3d').tooth(0.85);
             b.push(); b.translate(0, -0.14, 0.78); b.box(1.05, 0.7, 0.4); b.pop();
+            /* Chest plate and shoulder pads: the infantry silhouette. */
+            b.color('#2a1e46').tooth(0.8);
+            b.push(); b.translate(0, 0.34, 0.9); b.rotateX(0.32); b.bevel(0.85, 0.18, 0.5, 0.05); b.pop();
+            b.push(); b.translate(0.64, 0.6, 0.52); b.rotateZ(-0.28); b.bevel(0.3, 0.12, 0.46, 0.04); b.pop();
+            b.push(); b.translate(-0.64, 0.6, 0.52); b.rotateZ(0.28); b.bevel(0.3, 0.12, 0.46, 0.04); b.pop();
           } },
         { name: 'head', parent: 'body', bind: [0, 1.22, 0.2], build: function (b) {
             b.color('#150f26').tooth(0.9);
             b.push(); b.scale(0.8, 0.7, 1.0); b.ico(0.52, 0); b.pop();
+            /* A crest fin: the creature reads "commander" rather than "ball". */
+            b.color(core).tooth(0.15).emissive(0.85);
+            b.push(); b.translate(0, 0.4, -0.08); b.rotateX(-0.5); b.shard(0.09, 0.3, 0.16, 4, 0); b.pop();
+            b.emissive(0);
           } },
         { name: 'core', parent: 'head', bind: [0, 0.03, 0.44], build: function (b) {
             b.color(core).tooth(0.05).emissive(1.0);
@@ -700,6 +728,16 @@ var MODELS = (function () {
               b.box(0.5, 0.14, 0.85);
               b.pop();
             }
+            /* Shoulder blades and a neck guard: mass at the shoulders is what
+               makes a strider read as a walking fortress. */
+            b.color('#2a1e46').tooth(0.8);
+            b.push(); b.translate(0.98, 0.5, 0.2); b.rotateZ(-0.42); b.bevel(0.14, 0.62, 0.92, 0.04); b.pop();
+            b.push(); b.translate(-0.98, 0.5, 0.2); b.rotateZ(0.42); b.bevel(0.14, 0.62, 0.92, 0.04); b.pop();
+            b.push(); b.translate(0, 0.66, 0.52); b.rotateX(-0.25); b.bevel(0.5, 0.14, 0.26, 0.04); b.pop();
+            /* A seam of light along the spine. */
+            b.color(core).tooth(0.1).emissive(0.85);
+            b.push(); b.translate(0, 0.86, 0.1); b.rotateX(-0.5); b.box(0.09, 0.5, 0.1); b.pop();
+            b.emissive(0);
           } },
         { name: 'head', parent: 'body', bind: [0, 0.35, 1.35], build: function (b) {
             b.color('#150f26').tooth(0.9);
@@ -725,14 +763,24 @@ var MODELS = (function () {
             b.push(); b.scale(1.25, 0.45, 1.5); b.ico(0.88, 0); b.pop();
             b.color('#1a1330').tooth(0.85);
             b.push(); b.translate(0, 0.22, -0.28); b.scale(0.7, 0.4, 0.7); b.ico(0.6, 0); b.pop();
+            /* Tail fin and an engine glow: the back reads thrust, not blob. */
+            b.color('#241a3d').tooth(0.8);
+            b.push(); b.translate(0, -0.06, -1.05); b.rotateX(0.5); b.bevel(0.5, 0.1, 0.7, 0.04); b.pop();
+            b.color(core).tooth(0.1).emissive(0.85);
+            b.push(); b.translate(0, -0.05, -1.15); b.rotateX(0.5); b.box(0.08, 0.04, 0.4); b.pop();
+            b.emissive(0);
           } },
         { name: 'vaneL', parent: 'body', bind: [0.88, 0.02, -0.14], build: function (b) {
             b.color('#231a3d').tooth(0.75);
-            b.push(); b.rotateZ(-0.25); b.box(1.6, 0.12, 0.86); b.pop();
+            b.push(); b.rotateZ(-0.16);
+            b.extrude([[0, -0.35], [1.7, -0.15], [2.05, 0.25], [0.9, 0.4], [0, 0.3]], 0.12, -0.06);
+            b.pop();
           } },
         { name: 'vaneR', parent: 'body', bind: [-0.88, 0.02, -0.14], build: function (b) {
             b.color('#231a3d').tooth(0.75);
-            b.push(); b.rotateZ(0.25); b.box(1.6, 0.12, 0.86); b.pop();
+            b.push(); b.rotateZ(0.16);
+            b.extrude([[0, 0.3], [-0.9, 0.4], [-2.05, 0.25], [-1.7, -0.15], [0, -0.35]], 0.12, -0.06);
+            b.pop();
           } },
         { name: 'core', parent: 'body', bind: [0, -0.03, 0.8], build: function (b) {
             b.color(core).tooth(0.05).emissive(1.0);
