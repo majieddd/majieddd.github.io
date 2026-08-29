@@ -31,7 +31,7 @@ for (const f of ['config', 'lore', 'factions', 'towers2', 'roster', 'story',
 const G = vm.runInContext(
   '({ GX_HOME_SYSTEMS, GX_UNIVERSE_ORDER, PLANET_CUTS, PLANET_MOMENTS, CUTSCENES, ' +
   'STORY, FACTIONS, COMMANDER_ROSTER, UNIT_TYPES, DIALOGUE, LORE, ' +
-  'ACT_MORALS, ACT_SCENARIOS, BOONS })', ctx);
+  'ACT_MORALS, ACT_SCENARIOS, BOONS, GX_SOL_ENCOUNTERS, GX_ACT_ENCOUNTERS })', ctx);
 
 const FACS = ['human', 'light', 'xeno', 'pirate', 'robot'];
 const SYSOF = { human: 0, light: 1, xeno: 2, pirate: 3, robot: 4 };
@@ -440,7 +440,8 @@ function index() {
      that never landed cannot sit here looking done. */
   let rows = [];
   try {
-    const gx2 = vm.runInContext('({ CUTSCENES, GX_HOME_SYSTEMS, PLANET_CUTS, UNIT_TYPES, LORE })', ctx);
+    const gx2 = vm.runInContext('({ CUTSCENES, GX_HOME_SYSTEMS, PLANET_CUTS, UNIT_TYPES, LORE, ' +
+                                'GX_SOL_ENCOUNTERS, GX_ACT_ENCOUNTERS })', ctx);
     rows = require('./decisions.js').build(gx2, k => has(k.replace(/\.webp$/, '')));
   } catch (e) { console.log('  (decisions unavailable: ' + e.message.split('\n')[0] + ')'); }
   if (rows.length) {
@@ -468,14 +469,12 @@ function index() {
      'Four Earth System worlds have no plate at all. Earth needs the New York square from the opening, with emplacements rising.'],
     ['TODO', 'Render the ten new opening slides',
      'Slides 6 to 15. Eight, nine and ten are silent and must read as one continuous shot: same plaza, same crowd, same camera.'],
-    ['TODO', 'Re-render Proxima Centauri and Sirius',
-     '350 panels still showing the Barnard and Tabby art underneath the new text.'],
+    ['TODO', 'Re-render the planet plates whose prompts moved',
+     'Counted rather than estimated, by diffing the prompt catalogue against the revision that produced the cache: 502 of 875 are stale and 373 are provably unchanged. By system: Earth 150, Pleiades 5, Zeta 4, Proxima 169, Sirius 174. The Proxima and Sirius figures are the old "350 Barnard and Tabby panels" row, measured. `node artgen/krea_gen.py --stale` prints the live number.'],
     ['TODO', 'Re-baseline the balance pins IN A BROWSER',
      'Verified headlessly that no existing stat moved: 54 bodies unchanged, 15 added, 0 removed. But PINS is window.PINS and this project compares pins only inside one page session, so the A/B still needs a live build. See docs/BALANCE-BASELINE.md.'],
     ['TODO', 'Art for the sixteen new intro slides',
-     'The four rewritten openings went from five slides to nine. Prompts are written; the plates are not rendered.'],
-    ['TODO', 'The other four powers still need Acts 2 to 5 authored',
-     'Only the Earth System has authored garrisons (Xeno swarm, then the Vigil, then Xeno and Parallel, Federation, Parallel, Federation and Parallel, Xeno seat with the Pirates). Every other act, for every power, is still the canon seed roll rather than a designed encounter.'],
+     'The four rewritten openings went from five slides to nine. Slides 6 to 9 already had prompts written for the new text; slides 1 to 5 were still illustrating the retired five-slide script and have now been rewritten. All of them still need rendering.'],
     ['LORE', 'The five bonus systems stay lore, by decision',
      'Kepler, Arcturus, Vega and the two demoted acts are NOT being built. They remain in the canon and in GALAXY-SCOPE-S42.md so the galaxy has edges the player can hear about, and nothing in the game promises them.'],
   ];

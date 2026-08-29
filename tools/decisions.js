@@ -128,6 +128,25 @@ function build(G, artHas) {
     { id: 'the five bonus systems exist', why: 'Kepler, Arcturus, Vega, and the two demoted acts.',
       check: () => !!(HOME.bonus || (G.GX_BONUS_SYSTEMS && G.GX_BONUS_SYSTEMS.length)),
       got: () => 'scoped on paper, 12 worlds, not in the galaxy' },
+
+    /* COUNTED, not asserted. The check reads the tables themselves and adds up
+       the worlds they actually author, so a half-written act reads as a half
+       written act rather than as done. */
+    { id: 'every act is authored, not rolled',
+      why: 'An index-derived scenario is not wrong, it is just not about anything: it hands a tribunal floor the same encounter it hands a rendering yard.',
+      check: () => {
+        const sol = G.GX_SOL_ENCOUNTERS ? Object.keys(G.GX_SOL_ENCOUNTERS).length : 0;
+        const acts = G.GX_ACT_ENCOUNTERS
+          ? Object.values(G.GX_ACT_ENCOUNTERS).reduce((n, a) => n + a.length, 0) : 0;
+        return sol + acts >= 35;
+      },
+      got: () => {
+        const sol = G.GX_SOL_ENCOUNTERS ? Object.keys(G.GX_SOL_ENCOUNTERS).length : 0;
+        const byFac = G.GX_ACT_ENCOUNTERS || {};
+        const acts = Object.values(byFac).reduce((n, a) => n + a.length, 0);
+        return (sol + acts) + ' of 35 worlds authored (Sol ' + sol + ', then ' +
+               Object.keys(byFac).map(f => f + ' ' + byFac[f].length).join(', ') + ')';
+      } },
   ];
 
   return D.map(d => {
