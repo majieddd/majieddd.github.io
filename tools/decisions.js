@@ -18,6 +18,22 @@ const fs = require('fs'), path = require('path');
 const ROOT = path.dirname(__dirname);
 const src = f => { try { return fs.readFileSync(path.join(ROOT, f), 'utf8'); } catch (e) { return ''; } };
 
+/* How many of the 350 Proxima/Sirius plates are not current.
+   Read from cache_krea/.stale.json, which artgen/krea_gen.py writes on every
+   run: it is the only process that can compare a plate against the prompt
+   that made it, because the prompt is assembled in Python. Reading its
+   published answer beats guessing from file times, which reported all 350
+   stale the moment a comment in the catalogue was edited.
+   Returns null when artgen has never run here, so the row can say so
+   instead of asserting a number it does not have. */
+function siriusProximaStale() {
+  const p = path.join(ROOT, 'artgen', 'cache_krea', '.stale.json');
+  let rec;
+  try { rec = JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { return null; }
+  const mine = k => /^pcut_[34]\d_/.test(k);
+  return (rec.stale || []).filter(mine).length + (rec.missing || []).filter(mine).length;
+}
+
 function build(G, artHas) {
   const CUT = G.CUTSCENES || {};
   const HOME = G.GX_HOME_SYSTEMS || {};
@@ -108,13 +124,24 @@ function build(G, artHas) {
       got: () => 'GX_ACT_ORDER.human = [0,3,2,1,4]: Earth, Proxima, Zeta, Pleiades, Sirius' },
 
     /* ---- decided, not yet built. These are the rows that matter. ---- */
-    { id: 'Proxima and Sirius plates re-rendered', why: 'The art is still Barnard and Tabby under the new text.',
-      check: () => { for (const f of ['human', 'light', 'xeno', 'pirate', 'robot'])
-                       for (const si of ['3', '4']) for (let wi = 0; wi < 7; wi++)
-                         for (let b = 1; b <= 5; b++)
-                           if (artHas('pcut_' + si + wi + '_' + f + '_' + b + '.NEW')) return true;
-                     return false; },
-      got: () => '350 plates still showing the old systems' },
+    /* THIS CHECK USED TO BE UNPASSABLE. It asked artHas() for keys with a
+       literal '.NEW' suffix, which no key has or can have, so it returned
+       false forever while looking like a measurement. That is worse than
+       `check: () => false`, which at least admits it.
+
+       What actually answers the question is whether the cached plate is
+       OLDER than the catalogue that describes it: a plate rendered before
+       planet_jobs.py last moved cannot have come from the current prompt.
+       Same reasoning the artgen prompt manifest uses, in the one form
+       available from here without re-implementing the Python prompt
+       assembly in JavaScript. */
+    { id: 'Proxima and Sirius plates re-rendered',
+      why: 'Those two systems replaced Barnard and Tabby, and the art under the new text was still the old systems.',
+      check: () => siriusProximaStale() === 0,
+      got: () => { const n = siriusProximaStale();
+                   return n === null ? 'no artgen run on this machine, so unknown'
+                        : n === 0 ? 'all 350 plates match the current catalogue'
+                        : n + ' of 350 plates still do not match the current catalogue'; } },
 
     { id: 'the fifteen opening plates exist', why: 'Ten of them were only written this session.',
       check: () => intro('human').every(s => artHas(s.key + '.webp')),

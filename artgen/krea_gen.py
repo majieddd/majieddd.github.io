@@ -403,6 +403,23 @@ def main():
             if not os.path.exists(os.path.join(CACHE, j[0] + '.webp'))
             or is_stale(j[0], j[1], man)]
 
+    # PUBLISH THE ANSWER, so a reader that cannot compute it does not guess.
+    # tools/decisions.js wants to report whether a class of plates is current
+    # and has no way to reach it: recomputing a prompt hash from JavaScript
+    # would mean reimplementing this catalogue's assembly in another language,
+    # and the mtime proxy it used instead reported all 350 Proxima and Sirius
+    # plates stale the moment a COMMENT in planet_jobs.py was edited. This is
+    # the only process that knows, so this is the process that writes it down.
+    try:
+        with open(os.path.join(CACHE, '.stale.json'), 'w', encoding='utf-8') as f:
+            json.dump({'stale': sorted(j[0] for j in todo
+                                       if os.path.exists(os.path.join(CACHE, j[0] + '.webp'))),
+                       'missing': sorted(j[0] for j in todo
+                                         if not os.path.exists(os.path.join(CACHE, j[0] + '.webp')))},
+                      f, indent=0)
+    except OSError:
+        pass          # reporting is best effort; never fail a render over it
+
     if a.stale:
         cached = [j for j in todo if os.path.exists(os.path.join(CACHE, j[0] + '.webp'))]
         gone = [j for j in todo if not os.path.exists(os.path.join(CACHE, j[0] + '.webp'))]

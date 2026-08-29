@@ -123,13 +123,20 @@ MARK = {
 #
 # The astronomy is real wherever the world is real, because the campaign is set
 # in 2029 and the places are places a player can look up: Mercury's Caloris
-# basin, Venus's fifty-kilometre haze deck, Ceres's Occator salt domes,
-# Europa's chaos terrain, Titan's methane lakes. The Pleiades, Zeta Reticuli,
-# Barnard's Star and Tabby's Star each keep their real character (young blue
-# reflection nebulae, a binary pair, a red flare dwarf, an irregularly dimming
-# star) and take their FUNCTION from the faction whose home they are, so that
-# seven worlds in one system read as seven different places rather than seven
-# rolls of the same place.
+# basin, Venus's fifty-kilometre haze deck, Mars's Valles Marineris, Jupiter's
+# cloud-deck banding, Saturn's north polar hexagon. The Pleiades, Zeta
+# Reticuli, Proxima Centauri and Sirius each keep their real character (young
+# blue reflection nebulae, a binary pair, a tidally locked red flare dwarf,
+# and a brilliant A star with a white dwarf companion) and take their FUNCTION
+# from the faction whose home they are, so that seven worlds in one system
+# read as seven different places rather than seven rolls of the same place.
+#
+# This paragraph cited Ceres, Europa and Titan until 2026-08-29, three worlds
+# that left the Earth System when act one became a journey out to Saturn, and
+# named systems 3 and 4 as Barnard's and Tabby's, which they have not been
+# since they were rewritten as Proxima and Sirius. A comment that describes a
+# world list is stale the moment the list moves and nothing renders it, so
+# nothing catches it.
 WORLDS = [
 
     # ---- si 0, THE EARTH SYSTEM. Humanity's home, held by the harvest. -----
