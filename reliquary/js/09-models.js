@@ -43,10 +43,38 @@ var MODELS = (function () {
      solid things on the field, with the denizens as the dark shapes moving
      through it. That ordering is what makes a glance tell you who is winning. */
   var HULL = {
-    dark: '#1c2436',
-    mid: '#2b3750',
-    light: '#415373',
-    trim: '#5a6d92'
+    dark: '#28324a',
+    mid: '#3a4a68',
+    light: '#54688e',
+    trim: '#7386ac'
+  };
+
+  /* ---------- RIG DIMENSIONS, IN ONE PLACE ----------
+     These were written twice, once in the leg builder and once in the pose
+     function, and the two had to agree by hand. They did not: the pose set the
+     hip at exactly upper + lower, which is FULL LEG EXTENSION, so the IK
+     solved every stance leg to a dead straight line. That is why the walks
+     read as stiff. A leg needs slack to bend, so the hip now sits at about
+     0.82 of the leg's total reach.
+
+     `stride` is derived from hip height rather than picked: a creature's step
+     is roughly proportional to how far off the ground it stands, and tying
+     them means a long-legged strider does not shuffle with the same stride as
+     a crawler. `duty` is the fraction of the cycle a foot is planted.
+
+     THE PHASE RATE FOLLOWS FROM THESE, it is not a free parameter. For a foot
+     to stay put on the ground during stance:
+         stride * scale = speed * duty * cycleTime
+     so  phaseRate = speed * duty / (stride * scale)
+     Any other rate slides the feet, which is the single loudest tell of cheap
+     locomotion. */
+  var RIG_DIMS = {
+    crawler: { spread: 0.60, upper: 0.54, lower: 0.60, hipY: 0.94, zOff: 0.45,
+               stride: 1.05, lift: 0.30, duty: 0.60, radius: 0.115 },
+    walker:  { spread: 0.62, upper: 1.10, lower: 1.06, hipY: 1.80, zOff: 0,
+               stride: 1.85, lift: 0.46, duty: 0.62, radius: 0.135 },
+    strider: { spread: 0.95, upper: 1.48, lower: 1.40, hipY: 2.40, zOff: 0.72,
+               stride: 2.55, lift: 0.62, duty: 0.66, radius: 0.165 }
   };
 
   function elementColor(el) {
@@ -629,7 +657,7 @@ var MODELS = (function () {
             b.color(core).tooth(0.05).emissive(1.0);
             b.shard(0.26, 0.36, 0.3, 5, 0);
           } },
-        legs(4, 0.60, 0.44, 0.50, '#171126')
+        legs('crawler', 4, '#171126')
       ].flat();
     },
     /* WALKER: bipedal-ish, mid weight, the line infantry. */
@@ -651,7 +679,7 @@ var MODELS = (function () {
             b.color(core).tooth(0.05).emissive(1.0);
             b.shard(0.23, 0.3, 0.24, 5, 0);
           } },
-        legs(2, 0.62, 0.92, 0.88, '#171126')
+        legs('walker', 2, '#171126')
       ].flat();
     },
     /* STRIDER: tall, heavy, four long legs. Bosses and elites. */
@@ -686,7 +714,7 @@ var MODELS = (function () {
             b.color(core).tooth(0.05).emissive(1.0);
             b.shard(0.22, 0.3, 0.24, 6, 0);
           } },
-        legs(4, 0.95, 1.25, 1.15, '#151024')
+        legs('strider', 4, '#151024')
       ].flat();
     },
     /* FLYER: no legs, a hovering hull with vanes. */
@@ -719,25 +747,30 @@ var MODELS = (function () {
      bone an absolute aim in the creature's local space and composing that
      through a parent would require inverting the parent every frame for no
      visual gain. See the note in 07-rig.js driveLeg. */
-  function legs(count, spread, upperLen, lowerLen, col) {
+  function legs(rigType, count, col) {
+    var D = RIG_DIMS[rigType];
     var out = [];
     for (var i = 0; i < count; i++) {
       var side = (i % 2) ? 1 : -1;
       var row = Math.floor(i / 2);
-      var zOff = count > 2 ? (row === 0 ? spread * 0.75 : -spread * 0.75) : 0;
+      var zOff = count > 2 ? (row === 0 ? D.zOff : -D.zOff) : 0;
       (function (idx, sx, sz) {
         out.push({
-          name: 'legU' + idx, bind: [spread * sx, upperLen + lowerLen, sz],
+          name: 'legU' + idx, bind: [D.spread * sx, D.hipY, sz],
           build: function (b) {
             b.color(col).tooth(0.8);
-            b.limb([0, 0, 0], [0, -upperLen, 0], 0.13, 0.10, 4);
+            b.limb([0, 0, 0], [0, -D.upper, 0], D.radius, D.radius * 0.78, 4);
           }
         });
         out.push({
-          name: 'legL' + idx, bind: [spread * sx, upperLen + lowerLen, sz],
+          name: 'legL' + idx, bind: [D.spread * sx, D.hipY, sz],
           build: function (b) {
             b.color(col).tooth(0.8);
-            b.limb([0, 0, 0], [0, -lowerLen, 0], 0.10, 0.07, 4);
+            b.limb([0, 0, 0], [0, -D.lower, 0], D.radius * 0.78, D.radius * 0.54, 4);
+            /* A foot. Without one the leg ends in a point and the contact with
+               the ground has nothing to read against. */
+            b.push(); b.translate(0, -D.lower, D.radius * 0.5);
+            b.box(D.radius * 2.0, D.radius * 0.9, D.radius * 3.0); b.pop();
           }
         });
       })(i, side, zOff);
@@ -892,6 +925,7 @@ var MODELS = (function () {
     spawnMesh: spawnMesh,
     elementColor: elementColor,
     HULL: HULL,
+    RIG_DIMS: RIG_DIMS,
     clearCache: clearCache
   };
 })();

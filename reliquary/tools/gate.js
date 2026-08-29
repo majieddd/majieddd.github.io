@@ -7,12 +7,13 @@
    ORDER MATTERS:
      1  parse      no point loading a page whose scripts do not parse
      2  em dash    a source-level rule, checked against SOURCES not output
-     3  winding    a mesh-level invariant that silently darkens the whole scene
-     4  beam geom  the beam mesh axis must match the beam transform axis
-     5  css brace  an unmatched brace is legal CSS and scopes everything after it
-     6  build      the single-file bundle must actually assemble
-     7  verify     does the game work, on a fresh page load
-     8  adversarial  what did verify fail to look at, on its own fresh load
+     3  shaders    every program compiles and links, reported in seconds
+     4  winding    a mesh-level invariant that silently darkens the whole scene
+     5  beam geom  the beam mesh axis must match the beam transform axis
+     6  css brace  an unmatched brace is legal CSS and scopes everything after it
+     7  build      the single-file bundle must actually assemble
+     8  verify     does the game work, on a fresh page load
+     9  adversarial  what did verify fail to look at, on its own fresh load
 
    Steps 6 and 7 each get their OWN page load. The adversarial harness restarts
    the game a dozen times and deliberately corrupts state; running verify after
@@ -92,28 +93,54 @@ step('2 no em dash', () => {
   return 'clean';
 });
 
-step('3 mesh winding', () => {
+step('3 shaders compile', () => {
+  /* A DEDICATED, FAST SHADER GATE.
+     Every shader compile failure is already fatal at boot and would be caught
+     by step 7, but that costs a full harness run to learn ONE line number. A
+     packed-uniform refactor produced three separate compile errors in a row
+     (a redefinition, then a uniform the shadow shader never declared, then one
+     an over-broad replace deleted from the unlit shader), and each round trip
+     was a minute. This reports the failing program and its first error line in
+     about two seconds. */
+  const out = runRaw('shaders.steps.cjs');
+  const m = out.match(/"value": ("(?:[^"\\]|\\.)*")/);
+  if (!m) throw new Error('no result from the shader probe: ' + out.slice(0, 700));
+  const d = JSON.parse(JSON.parse(m[1]));
+  if (!d.booted || d.glErrors.length) {
+    throw new Error(d.glErrors.length ? d.glErrors.join(' | ') : 'page did not boot');
+  }
+  return 'all programs link';
+});
+
+step('4 mesh winding', () => {
   const out = node('winding.js');
   if (!/0 failed/.test(out)) throw new Error(out);
   return out.trim().split('\n').pop();
 });
 
-step('4 beam geometry', () => {
+step('5 beam geometry', () => {
   const out = node('beamgeom.js');
   if (!/all beam geometry checks passed/.test(out)) throw new Error(out);
   return 'beams span source to target';
 });
 
-step('5 css braces', () => {
+step('6 css braces', () => {
   const out = node('cssbrace.js');
   if (!/all stylesheets balanced/.test(out)) throw new Error(out);
   return 'balanced';
 });
 
-step('6 build bundle', () => {
+step('7 build bundle', () => {
   const out = node('../build.js');
   return out.trim().split('\n').pop();
 });
+
+function runRaw(stepsFile) {
+  const outDir = path.join(ROOT, 'tools', 'out');
+  return execFileSync(process.execPath,
+    [path.join(__dirname, 'headless.js'), URL_, outDir, path.join(__dirname, stepsFile)],
+    { cwd: ROOT, encoding: 'utf8', maxBuffer: 1 << 26 });
+}
 
 function runHarness(label, stepsFile) {
   const outDir = path.join(ROOT, 'tools', 'out');
@@ -129,8 +156,8 @@ function runHarness(label, stepsFile) {
   return d.pass + '/' + d.total;
 }
 
-step('7 verify (fresh page)', () => runHarness('verify', 'full.steps.cjs'));
-step('8 adversarial (fresh page)', () => runHarness('adversarial', 'adv.steps.cjs'));
+step('8 verify (fresh page)', () => runHarness('verify', 'full.steps.cjs'));
+step('9 adversarial (fresh page)', () => runHarness('adversarial', 'adv.steps.cjs'));
 
 console.log(failed ? '\nGATE FAILED (' + failed + ' step(s))' : '\nGATE PASSED');
 process.exit(failed ? 1 : 0);

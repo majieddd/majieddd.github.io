@@ -233,18 +233,38 @@ var RIG = (function () {
     if (!upper || !lower) return null;
     var sol = ik2(hipLocal, footTarget, len1, len2, poleDir || [0, 0, 1]);
 
-    /* Convert the solved segment directions into the YXZ euler the transform
-       builder wants. A bone pointing along `d` from its root has
-         yaw   = atan2(d.x, d.z)
-         pitch = asin(-d.y) offset by 90 degrees because rest points down
-    */
+    /* AIM A BONE ALONG A DIRECTION, DERIVED RATHER THAN GUESSED.
+       A bone is modelled pointing along -Y. U.m4trs composes YXZ, so with
+       roll zero the transformed -Y axis works out to
+           (-sin(ry)sin(rx), -cos(rx), -cos(ry)sin(rx))
+       Setting that equal to the desired unit direction d gives
+           cos(rx) = -d.y        so  rx = acos(-d.y)
+           sin(ry) = -d.x/sin(rx)
+           cos(ry) = -d.z/sin(rx)   so  ry = atan2(-d.x, -d.z)
+
+       The previous version used atan2(d.x, d.z) with a pitch of
+       acos(-d.y) - PI. Those two errors are each a half turn and CANCEL for
+       axis-aligned directions, which is why straight-down and straight-forward
+       bones looked fine and nothing obviously broke. For a general direction
+       they do not cancel: aiming at a unit direction of (0.707, -0.707, 0)
+       produced (0.707, +0.707, 0), with the vertical component inverted.
+
+       Measured before the fix, on a strider whose entire leg is 2.88 units
+       long: the distance from where the IK asked for the foot to where the rig
+       actually put it was 1.86, 4.74, 3.83 and 5.01 units on its four legs.
+       The legs were not walking badly, they were in arbitrary poses, and no
+       amount of gait tuning above this could have helped. */
     function aim(from, to, part) {
       var d = V.norm(V.sub(to, from));
-      var yaw = Math.atan2(d[0], d[2]);
-      var pitch = Math.acos(U.clamp(-d[1], -1, 1));
-      part.rot[1] = yaw;
-      part.rot[0] = pitch - Math.PI;
-      return { yaw: yaw, pitch: pitch };
+      var rx = Math.acos(U.clamp(-d[1], -1, 1));
+      var sx = Math.sin(rx);
+      /* Degenerate when the bone points straight up or straight down: any yaw
+         gives the same axis, so keep the previous one rather than snapping. */
+      var ry = (sx > 1e-5) ? Math.atan2(-d[0], -d[2]) : part.rot[1];
+      part.rot[0] = rx;
+      part.rot[1] = ry;
+      part.rot[2] = 0;
+      return { yaw: ry, pitch: rx };
     }
     aim(hipLocal, sol.knee, upper);
     /* The lower bone is a child of the upper, so its rotation must be

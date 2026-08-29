@@ -228,14 +228,14 @@ var TERRAIN = (function () {
        law wants it: dark enough that a lit tower is the brightest thing in
        its neighbourhood, with the path a clear band above it. */
     var groundCols = def.groundCols || [
-      '#221a40', '#281e4b', '#1b1533', '#2e2358', '#241e45',
-      '#2a2150', '#171126', '#302554'
+      '#2a2150', '#31265e', '#231b44', '#382a6b', '#2e2458',
+      '#342866', '#1e173a', '#3a2c70'
     ];
     /* The path is pushed WARM as well as light. Two violets of different
        luminance still read as the same material at a glance; a violet ground
        against a rose-warm road reads as two different things instantly, which
        is what a player scanning for the lane actually needs. */
-    var pathCols = def.pathCols || ['#6d4468', '#7a4d74', '#5f3b5c', '#83557d'];
+    var pathCols = def.pathCols || ['#8c5a86', '#9b6494', '#7c4d76', '#a56e9c'];
 
     var gb = MESH.builder('ground:' + seed);
     gb.tooth(1.0);

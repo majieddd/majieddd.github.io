@@ -136,16 +136,16 @@ var PAINT = (function () {
       /* The shadow is the key colour dragged toward the void hue and crushed.
          Never neutral: the plates always have colour living in the blacks. */
       shadow: U.hsl2rgb([shadowHue, 0.62, 0.075]),
-      light: U.hsl2rgb([(hsl[0] + (opts.lightWarm || 0.06)) % 1, 0.32, 0.86]),
+      light: U.hsl2rgb([(hsl[0] + (opts.lightWarm || 0.06)) % 1, 0.38, 0.90]),
       rim: U.hsl2rgb([(hsl[0] + (opts.rimShift || 0.0)) % 1, 1.0, 0.66]),
-      ambientSky: U.hsl2rgb([shadowHue - 0.06, 0.55, 0.20]),
-      ambientGround: U.hsl2rgb([shadowHue + 0.05, 0.60, 0.085]),
-      skyTop: U.hsl2rgb([shadowHue - 0.02, 0.72, 0.055]),
-      skyBottom: U.hsl2rgb([shadowHue + 0.06, 0.60, 0.115]),
+      ambientSky: U.hsl2rgb([shadowHue - 0.06, 0.58, 0.30]),
+      ambientGround: U.hsl2rgb([shadowHue + 0.05, 0.62, 0.14]),
+      skyTop: U.hsl2rgb([shadowHue - 0.02, 0.78, 0.095]),
+      skyBottom: U.hsl2rgb([shadowHue + 0.06, 0.66, 0.185]),
       nebulaA: U.hsl2rgb([(hsl[0] + (opts.nebA || 0.0)) % 1, 0.86, 0.42]),
       nebulaB: U.hsl2rgb([(hsl[0] + (opts.nebB || 0.52)) % 1, 0.90, 0.52]),
       ink: U.hsl2rgb([shadowHue, 0.75, 0.035]),
-      fog: U.hsl2rgb([shadowHue + 0.02, 0.55, 0.075])
+      fog: U.hsl2rgb([shadowHue + 0.02, 0.62, 0.16])
     };
   }
 

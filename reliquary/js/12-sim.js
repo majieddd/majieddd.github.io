@@ -117,7 +117,18 @@ var SIM = (function () {
      Recomputed on demand rather than cached, because a cached stat block that
      forgets to invalidate is the classic source of a buff that never wears
      off, and this is nowhere near hot enough to need the cache. */
+  /* STATS ARE CACHED FOR THE LIFE OF A TICK.
+     This was recomputed from scratch for every tower on every 120Hz substep
+     AND again for every tower in the draw path: roughly 4000 fresh objects a
+     second on a full board, which is a GC sawtooth for no benefit, since
+     nothing that feeds it can change within a tick. The stamp is bumped
+     wherever a tower's inputs change (tier, ability, wave), so a stale block
+     is not reachable rather than merely unlikely. */
+  var statsStamp = 0;
+  function bumpStats() { statsStamp++; }
+
   function stats(t) {
+    if (t.__statsAt === statsStamp && t.__stats) return t.__stats;
     var d = DATA.TOWERS[t.id];
     var s = {
       dps: d.dps, range: d.range, fireRate: d.fireRate || 1,
@@ -174,6 +185,8 @@ var SIM = (function () {
     s.dps *= G.globalBuffs.damage;
     s.range *= G.globalBuffs.range;
     if (c.id === 'seraph' && G.abilities.q.active > 0 && d.element === 'radiant') s.dps *= 2;
+    t.__stats = s;
+    t.__statsAt = statsStamp;
     return s;
   }
 
@@ -233,6 +246,7 @@ var SIM = (function () {
     tower.invested += c;
     tower.tier++;
     tower.buildT = 0;
+    bumpStats();
     return true;
   }
 
@@ -818,6 +832,7 @@ var SIM = (function () {
     if (!G || G.status === 'won' || G.status === 'lost') return;
     try {
       G.time += dt;
+      bumpStats();
 
       /* abilities */
       var ab = G.abilities;
@@ -1010,7 +1025,20 @@ var SIM = (function () {
       d.lean = lr[0]; d.leanV = lr[1];
       d.yaw += dy * Math.min(1, dt * 7);
 
-      d.animPhase += dt * spd * (d.def.rig === 'crawler' ? 0.62 : 0.42) / Math.max(0.3, d.scale);
+      /* THE GAIT RATE IS DERIVED, NOT TUNED.
+         For a planted foot to stay put while the body moves over it:
+             stride * scale = speed * duty * cycleTime
+         so  phaseRate = speed * duty / (stride * scale)
+         The old constants (0.62 and 0.42) were picked by eye: near-right for
+         two rigs and wrong for the third, so feet crept along the ground.
+         Deriving it makes every rig, scale and speed modifier correct by
+         construction, including slows, stuns and the boss enrage. */
+      var rigDims = MODELS.RIG_DIMS[d.def.rig];
+      if (rigDims) {
+        d.animPhase += dt * spd * rigDims.duty / (rigDims.stride * Math.max(0.3, d.scale));
+      } else {
+        d.animPhase += dt * spd * 0.5 / Math.max(0.3, d.scale);
+      }
       G.denizens[w++] = d;
     }
     G.denizens.length = w;

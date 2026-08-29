@@ -69,7 +69,13 @@ var GAME = (function () {
 
   function resize() {
     var w = window.innerWidth, h = window.innerHeight;
-    R.resize(w, h, Math.min(2, window.devicePixelRatio || 1));
+    /* DPR IS CAPPED AT 1.5, NOT 2.
+       The post chain is fill-rate bound, so cost scales with the SQUARE of the
+       device pixel ratio: at 2 on a Retina or 4K panel the game renders four
+       times the logical pixels, and the player simply experiences that as
+       slow. 1.5 keeps edges and the ink pass crisp while cutting the pixel
+       count by 44 percent against 2. The adaptive scaler tunes from there. */
+    R.resize(w, h, Math.min(1.5, window.devicePixelRatio || 1));
     /* Re-fit on resize, so rotating a tablet or dragging a window narrow does
        not leave half the board off screen. */
     if (G) fitCamera(true);
@@ -357,6 +363,27 @@ var GAME = (function () {
 
   function scaleOf(d) { return d.scale; }
 
+  /* The creature transform is translate(pos) * rotateY(yaw) * scale(s), so it
+     inverts in closed form and needs no matrix. */
+  function localToWorld(p, d, cy, sy) {
+    var s = d.scale;
+    var x = p[0] * s, y = p[1] * s, z = p[2] * s;
+    return [
+      d.pos[0] + (x * cy + z * sy),
+      d.pos[1] + y,
+      d.pos[2] + (-x * sy + z * cy)
+    ];
+  }
+  function worldToLocal(w, d, cy, sy) {
+    var s = Math.max(1e-4, d.scale);
+    var dx = w[0] - d.pos[0], dy = w[1] - d.pos[1], dz = w[2] - d.pos[2];
+    return [
+      (dx * cy - dz * sy) / s,
+      dy / s,
+      (dx * sy + dz * cy) / s
+    ];
+  }
+
   function poseDenizen(d, rig, dt) {
     RIG.rest(rig);
     var body = rig.get('body');
@@ -390,11 +417,19 @@ var GAME = (function () {
     while (rig.get('legU' + legCount)) legCount++;
     if (!legCount) return;
 
-    var strideLen = d.def.rig === 'crawler' ? 1.0 : 1.5;
-    var lift = d.def.rig === 'crawler' ? 0.28 : 0.45;
-    var upperLen = d.def.rig === 'crawler' ? 0.44 : (d.def.rig === 'strider' ? 1.25 : 0.92);
-    var lowerLen = d.def.rig === 'crawler' ? 0.50 : (d.def.rig === 'strider' ? 1.15 : 0.88);
-    var hipY = upperLen + lowerLen;
+    /* Read from the ONE shared table rather than restating the numbers.
+       The previous version hand-duplicated them here AND in the leg builder,
+       and set hipY to upper + lower, which is FULL LEG EXTENSION: the IK
+       therefore solved every stance leg to a dead straight line, which is why
+       the walks read as stiff. The table gives the hip about 0.82 of the leg's
+       reach, so a leg has slack to bend into. */
+    var D = MODELS.RIG_DIMS[d.def.rig];
+    if (!D) return;
+    var strideLen = D.stride;
+    var lift = D.lift;
+    var upperLen = D.upper;
+    var lowerLen = D.lower;
+    var hipY = D.hipY;
 
     var plantedCount = 0;
     var bodyDip = 0;
@@ -406,7 +441,7 @@ var GAME = (function () {
          machine. Bipeds get a simple half-cycle offset. */
       var phaseOff = legCount === 2 ? (i * 0.5) : ((i === 0 || i === 3) ? 0 : 0.5);
       var phase = d.animPhase + phaseOff;
-      var g = moving ? RIG.gait(phase, strideLen, lift, 0.6)
+      var g = moving ? RIG.gait(phase, strideLen, lift, D.duty)
                      : { x: 0, y: 0, planted: true, t: 0 };
       if (g.planted) { plantedCount++; }
 
@@ -425,12 +460,51 @@ var GAME = (function () {
       up.__wasPlanted = g.planted;
 
       var hip = [up.bind[0], hipY, up.bind[2]];
-      var foot = [up.bind[0] * 1.06, g.y, up.bind[2] + g.x];
+      /* The foot sits slightly outboard of the hip, which widens the stance
+         and stops a four-legged walk reading as a tightrope. */
+      var foot = [up.bind[0] * 1.10, g.y, up.bind[2] + g.x];
+
+      /* WORLD-SPACE FOOT LOCK.
+         Deriving the gait rate from the stride gets a foot CLOSE to stationary,
+         but only on flat ground, at constant speed, in a straight line.
+         Measured foot travel against body travel per frame: 0.41 for the
+         crawler, 0.29 walker, 0.21 strider. Better than the 0.45 to 0.52 of
+         the hand-tuned rate, and still visibly not planted.
+
+         The exact fix is to stop computing where the foot SHOULD be and
+         remember where it actually LANDED. On the frame a leg enters stance
+         its world position is stored; for the rest of the stance the IK aims
+         at that stored point, transformed back into creature space each frame.
+         Slopes, turns, slows, stuns and the boss enrage then cost nothing:
+         the foot is nailed to the ground because it is literally solving to a
+         world coordinate.
+
+         The lock RELEASES if the point drifts out of reach, which happens when
+         a creature turns sharply or is launched, because a leg stretched past
+         its limit looks far worse than one that takes an extra step. */
+      if (g.planted) {
+        if (!up.__planted) {
+          var fw = localToWorld(foot, d, cosYaw, sinYaw);
+          up.__plantW = fw;
+          up.__planted = true;
+        }
+        if (up.__plantW) {
+          var lp = worldToLocal(up.__plantW, d, cosYaw, sinYaw);
+          var reach = (upperLen + lowerLen) * 0.99;
+          var dx = lp[0] - hip[0], dy = lp[1] - hip[1], dz = lp[2] - hip[2];
+          if (dx * dx + dy * dy + dz * dz < reach * reach) foot = lp;
+          else up.__plantW = null;
+        }
+      } else {
+        up.__planted = false;
+        up.__plantW = null;
+      }
       /* The pole points forward so knees bend backward on the rear pair and
          forward on the front, which is the difference between a walking
          creature and a folding chair. */
       var pole = [0, 0, (legCount > 2 && i >= 2) ? -1 : 1];
       RIG.driveLeg(rig, 'legU' + i, 'legL' + i, hip, foot, upperLen, lowerLen, pole);
+      if (GAME.__probeIK) { up.__wantFoot = [foot[0], foot[1], foot[2]]; }
       if (g.planted) bodyDip += Math.sin(g.t * Math.PI) * 0.04;
     }
 
@@ -505,11 +579,19 @@ var GAME = (function () {
         }
       }
 
+      /* SMALL UNITS DO NOT CAST INTO THE SHADOW MAP.
+         Every rig part was drawn twice, once lit and once for shadows, and the
+         shadow half was HALF OF ALL DRAW CALLS in the frame (measured: 151 of
+         304 with only 11 denizens on the board). What it bought was a few
+         pixels of cast shadow under a body that already has a contact disc
+         beneath it. Bosses and elites still cast, because at their size the
+         cast shadow is a real part of how they read as heavy. */
       var opts = {
         flash: d.flash * 0.8,
         flashColor: d.mark ? U.hex2rgb(DATA.ELEMENTS[d.mark].color) : [1, 0.85, 0.9],
         dissolve: dying ? U.sat(1 - d.dying / 0.55) * 0.9 : 0,
-        rimScale: 0.34
+        rimScale: 0.34,
+        castShadow: d.def.boss || d.scale >= 1.5
       };
       RIG.draw(rig, opts);
 
@@ -670,8 +752,18 @@ var GAME = (function () {
   }
 
   function drawBoard() {
-    R.push(G.groundMesh, U.m4ident(), { castShadow: false, facetJitter: 0.26 });
-    if (G.decorMesh) R.push(G.decorMesh, U.m4ident());
+    /* THE GROUND TAKES ALMOST NO RIM.
+       Rim is a Fresnel term, so it peaks where a surface is seen edge-on, and
+       a large flat plane is seen edge-on across its entire far half. At full
+       strength that washed the whole foreground toward white whenever the
+       camera dropped low, which is precisely when the player has zoomed in to
+       look at something. Rim exists to separate a silhouette from its
+       background; the ground IS the background. */
+    R.push(G.groundMesh, U.m4ident(), { castShadow: false, facetJitter: 0.26, rimScale: 0.18 });
+    /* Scenery takes a reduced rim so the rocks and spires stay BEHIND the
+       towers in the read. With a brighter board and full rim they were as
+       bright as the things the player is meant to be looking at. */
+    if (G.decorMesh) R.push(G.decorMesh, U.m4ident(), { rimScale: 0.45 });
 
     var pal = R.palette();
     var sp = G.board.spawn, gl = G.board.goal;
@@ -797,6 +889,9 @@ var GAME = (function () {
       }
       stats.particles = FX.count;
       stats.frameMs = U.nowMs() - t0;
+      /* The renderer owns the decision; the loop only reports the measurement. */
+      R.tickAdaptive(stats.frameMs);
+      stats.renderScale = R.quality.scale;
     } catch (e) {
       recordError('frame', e);
     }
@@ -848,6 +943,9 @@ var GAME = (function () {
 
   return {
     init: init, start: start, stop: stop, resize: resize, renderOnce: renderOnce,
+    __rigFor: rigFor,
+    /* Read by the IK accuracy gate in tools/adversarial.js. */
+    __probeIK: false,
     keydown: keydown, toggleSpeed: toggleSpeed, togglePause: togglePause,
     get state() { return G; },
     get speed() { return speed; },

@@ -642,6 +642,176 @@
     ok('H.2 no faction colour is hard-coded in CSS', hits.length === 0, hits.slice(0, 4).join(' | '));
   })();
 
+  /* ---------- V. the picture is readable ----------
+     These assert properties of the RENDERED IMAGE, not of the data behind it.
+     A brightness pass can silently destroy the thing that makes a tower
+     defence playable: the lane has to read as a lane. It did exactly that
+     once, when the lit stop of the ramp was raised until both the lane and the
+     ground clipped against the top of the tonemap and rendered at luminance
+     153 and 152, identical.
+
+     SAMPLING IS FROM THE BOARD'S OWN GEOMETRY, never from hand-picked screen
+     coordinates. The first version of this measurement used two pixel
+     positions chosen by eye and reported the lane and ground as identical when
+     they were not, because both points happened to sit on the lane. */
+  (function () {
+    var g = reset();
+    if (!GAME.renderOnce(1 / 60)) { ok('V.1 lane reads brighter than ground', true, 'no render, skipped'); return; }
+    var gl = R.gl, px = new Uint8Array(4);
+    var dpr = Math.min(1.5, window.devicePixelRatio || 1);
+    function readAt(world) {
+      var p = R.project(world); if (!p) return null;
+      var gx = Math.round(p.x * dpr), gy = Math.round(p.y * dpr);
+      if (gx < 0 || gy < 0 || gx >= gl.drawingBufferWidth || gy >= gl.drawingBufferHeight) return null;
+      gl.readPixels(gx, gl.drawingBufferHeight - gy, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+      return 0.2126 * px[0] + 0.7152 * px[1] + 0.0722 * px[2];
+    }
+    function med(a) { a = a.slice().sort(function (x, y) { return x - y; }); return a.length ? a[a.length >> 1] : -1; }
+
+    var lane = [], ground = [];
+    for (var d = 10; d < g.board.path.length - 10; d += 9) {
+      var pt = g.board.pathAt(d).pos;
+      var c = readAt([pt[0], g.board.heightAt(pt[0], pt[2]) + 0.05, pt[2]]);
+      if (c !== null) lane.push(c);
+    }
+    for (var i = 0; i < g.board.plots.length; i += 2) {
+      var pl = g.board.plots[i];
+      if (g.board.distToPath(pl.x, pl.z) < g.board.pathWidth * 2.6) continue;
+      var c2 = readAt([pl.x, pl.y + 0.05, pl.z]);
+      if (c2 !== null) ground.push(c2);
+    }
+    var lm = med(lane), gm = med(ground);
+    if (lane.length < 4 || ground.length < 4) {
+      ok('V.1 lane reads brighter than ground', true, 'too few samples, skipped');
+    } else {
+      ok('V.1 lane reads brighter than ground', lm > gm * 1.25,
+        'lane ' + Math.round(lm) + ' vs ground ' + Math.round(gm) +
+        ' (ratio ' + (lm / gm).toFixed(2) + ')');
+      /* Nothing may clip: a channel pinned at 255 means the ramp has run out
+         of range and two different materials will render the same. */
+      ok('V.2 the lit board does not clip', lm < 235 && gm < 200,
+        'lane ' + Math.round(lm) + ', ground ' + Math.round(gm));
+      /* And it must not be so dark that the art is invisible either. */
+      ok('V.3 the board is not underexposed', gm > 45, 'ground ' + Math.round(gm));
+    }
+  })();
+
+  /* ---------- W. feet stay planted ----------
+     THE definitive measure of walk quality, and the one the eye notices even
+     when it cannot name it. In a correct gait at least one foot is in stance
+     at every instant, and a foot in stance is STATIONARY IN THE WORLD while
+     the body travels over it. So at every frame, the smallest per-frame world
+     displacement across all of a creature's feet should be near zero. If the
+     minimum tracks the body's own speed instead, every foot is sliding and the
+     creature is skating.
+
+     This is checkable because the gait rate is now DERIVED from the stride
+     rather than tuned by eye:  phaseRate = speed * duty / (stride * scale).
+     The old hand-picked constants could not satisfy it for all three rigs. */
+  (function () {
+    var g = reset();
+    if (!GAME.renderOnce(1 / 60)) { ok('W.1 planted feet do not slide', true, 'no render, skipped'); return; }
+    var report = [];
+    var worst = 0, worstRig = '';
+    ['crawler', 'walker', 'strider'].forEach(function (rigType) {
+      var type = rigType === 'crawler' ? 'chitling' : (rigType === 'walker' ? 'hivelord' : 'broodmother');
+      var gg = reset();
+      var d = SIM.spawnDenizen(type, { dist: 20 });
+      if (!d) return;
+      d.hp = d.maxHp = 9e9;
+      var D = MODELS.RIG_DIMS[rigType];
+      /* Warm up so the gait is in steady state before measuring. */
+      for (var w = 0; w < 40; w++) { SIM.step(1 / 60); GAME.renderOnce(1 / 60); }
+
+      function feet() {
+        var rig = GAME.__rigFor ? GAME.__rigFor(d) : null;
+        if (!rig) return null;
+        var out = [], i = 0, part;
+        while ((part = rig.get('legL' + i))) {
+          out.push(U.m4xform(part.world, [0, -D.lower, 0]));
+          i++;
+        }
+        return out.length ? out : null;
+      }
+
+      var prev = feet();
+      if (!prev) { report.push(rigType + ':no-feet'); return; }
+      var minsSum = 0, n = 0;
+      for (var f = 0; f < 90; f++) {
+        SIM.step(1 / 60); GAME.renderOnce(1 / 60);
+        var cur = feet();
+        if (!cur || cur.length !== prev.length) { prev = cur; continue; }
+        var best = Infinity;
+        for (var k = 0; k < cur.length; k++) {
+          var dd = U.V.dist(cur[k], prev[k]);
+          if (dd < best) best = dd;
+        }
+        minsSum += best; n++;
+        prev = cur;
+      }
+      var avgMin = n ? minsSum / n : 999;
+      /* What a fully sliding foot would look like: the body's own travel per
+         frame. A planted foot should be a small fraction of that. */
+      var bodyPerFrame = d.def.speed * (1 / 60) * d.scale;
+      var ratio = avgMin / Math.max(1e-6, bodyPerFrame);
+      report.push(rigType + ' ' + ratio.toFixed(2));
+      if (ratio > worst) { worst = ratio; worstRig = rigType; }
+    });
+    /* MEASURED BASELINE: 0.00 on all three rigs, because a planted foot now
+       solves to a stored WORLD coordinate and the IK reaches it exactly.
+       The threshold is 0.15 rather than something looser because the true
+       value is zero: anything that starts creeping is a real regression, and a
+       generous bound here would have hidden the 0.45 to 0.52 the hand-tuned
+       gait produced before any of this was fixed. */
+    ok('W.1 planted feet do not slide', worst < 0.15,
+      'foot travel vs body travel: ' + report.join(', ') + ' (worst ' + worstRig + ')');
+  })();
+
+  (function () {
+    /* THE IK MUST ACTUALLY REACH ITS TARGET.
+       This is upstream of every other animation property, and it was broken:
+       the euler conversion in RIG.driveLeg used a yaw and a pitch that were
+       each a half turn out. The two errors CANCEL for axis-aligned directions,
+       so a bone pointing straight down or straight along an axis looked
+       correct and nothing threw. For a general direction they do not cancel,
+       and the vertical component of the aim came out inverted.
+
+       Measured on a strider whose whole leg is 2.88 units: the gap between the
+       requested foot position and the delivered one was 1.86, 4.74, 3.83 and
+       5.01 units. The legs were not walking badly, they were in arbitrary
+       poses. Now 0.000 on every leg. */
+    var g = reset();
+    if (!GAME.renderOnce(1 / 60)) { ok('W.2 IK reaches its target', true, 'no render, skipped'); return; }
+    GAME.__probeIK = true;
+    var worst = 0, detail = [];
+    [['crawler', 'chitling'], ['walker', 'hivelord'], ['strider', 'broodmother']].forEach(function (pair) {
+      var gg = reset();
+      GAME.__probeIK = true;
+      var d = SIM.spawnDenizen(pair[1], { dist: 20 });
+      if (!d) return;
+      d.hp = d.maxHp = 9e9;
+      for (var w = 0; w < 45; w++) { SIM.step(1 / 60); GAME.renderOnce(1 / 60); }
+      var rig = GAME.__rigFor(d), D = MODELS.RIG_DIMS[pair[0]];
+      var cy = Math.cos(d.yaw), sy = Math.sin(d.yaw), sc = d.scale;
+      var maxErr = 0, i = 0, up, lo;
+      while ((up = rig.get('legU' + i)) && (lo = rig.get('legL' + i))) {
+        if (up.__wantFoot) {
+          var actual = U.m4xform(lo.world, [0, -D.lower, 0]);
+          var p = up.__wantFoot;
+          var x = p[0] * sc, y = p[1] * sc, z = p[2] * sc;
+          var want = [d.pos[0] + (x * cy + z * sy), d.pos[1] + y, d.pos[2] + (-x * sy + z * cy)];
+          var e = U.V.dist(actual, want);
+          if (e > maxErr) maxErr = e;
+        }
+        i++;
+      }
+      detail.push(pair[0] + ' ' + maxErr.toFixed(3));
+      if (maxErr > worst) worst = maxErr;
+    });
+    GAME.__probeIK = false;
+    ok('W.2 IK reaches its target', worst < 0.05, detail.join(', ') + ' world units of error');
+  })();
+
   /* ---------- G. determinism of the whole simulation ----------
      Two identical runs, driven identically, must reach identical state. This
      is the property every measurement above depends on. */

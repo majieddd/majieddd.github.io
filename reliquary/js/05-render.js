@@ -68,8 +68,8 @@ var R = (function () {
     rampGamma: 1.28,
     facetJitter: 0.19,
     shadowLift: 0.24,
-    ambient: 0.20,
-    specStrength: 0.14,
+    ambient: 0.30,
+    specStrength: 0.20,
     specPower: 90.0,
     /* Rim at 1.25 with power 2.35 was wide enough to wash the whole grazing
        half of the board into a haze. A rim is meant to separate a silhouette,
@@ -77,13 +77,13 @@ var R = (function () {
     rimStrength: 0.85,
     rimPower: 3.4,
     toothScale: 0.42,
-    toothStrength: 0.34,
-    fogDensity: 0.0055,
-    bloomThreshold: 0.68,
-    bloomStrength: 0.85,
+    toothStrength: 0.46,
+    fogDensity: 0.0040,
+    bloomThreshold: 0.60,
+    bloomStrength: 0.95,
     /* Exposure sits under 1.0 because the filmic curve lifts midtones by
        roughly 1.6x on its own, which fights a deliberately dark palette. */
-    exposure: 0.80,
+    exposure: 0.94,
     /* SATURATE THE SOURCE, NOT THE OUTPUT.
        This sat at 1.46 with contrast 1.22 and the measured result was that the
        ground rendered [16,6,52] before post and [3,0,60] after: post drove the
@@ -97,9 +97,9 @@ var R = (function () {
        shadow mass comes from the RAMP, which can make a considered decision
        per facet, not from a curve that cannot tell a shadow from a dark
        albedo. */
-    saturation: 1.16,
+    saturation: 1.24,
     contrast: 1.10,
-    vignette: 0.66,
+    vignette: 0.54,
     grain: 0.042,
     halftone: 0.62,
     canvas: 0.20,
@@ -120,6 +120,13 @@ var R = (function () {
     exposure: 1.0, timeScale: 1
   };
 
+  /* Per-frame counters. "It feels slow" is not actionable; a draw-call count
+     and a per-pass millisecond split is. */
+  var prof = { draws: 0, shadowDraws: 0, tris: 0, ms: {}, on: false };
+  function markStart(k) { if (prof.on) prof.ms['_' + k] = U.nowMs(); }
+  function markEnd(k) { if (prof.on) prof.ms[k] = U.nowMs() - prof.ms['_' + k]; }
+
+  var WHITE3 = [1, 1, 1];
   var view = U.m4ident(), proj = U.m4ident(), viewProj = U.m4ident();
   var invViewProj = U.m4ident(), lightVP = U.m4ident();
   var tmpM = U.m4ident(), tmpN = new Float32Array(9);
@@ -209,8 +216,42 @@ var R = (function () {
   }
   function palette() { return pal; }
 
+  /* ADAPTIVE RESOLUTION.
+     The post chain (ink, bright, six blur draws, composite) is fill-rate bound,
+     so its cost scales with the square of the render scale. On a 4K or a
+     Retina panel a devicePixelRatio of 2 asks for FOUR times the pixels of the
+     logical size, and the player experiences that as a game that is simply
+     slow, with no way to tell why. Rather than pick a number for one machine,
+     the renderer measures its own frame time and walks the scale toward
+     whatever holds the target, between a floor that still looks right and a
+     ceiling that never wastes work. */
+  var adapt = {
+    on: true, target: 1000 / 60, avg: 16.7, cooldown: 0,
+    min: 0.62, max: 1.0, cssW: 1, cssH: 1
+  };
+
+  function tickAdaptive(frameMs) {
+    if (!adapt.on || !canvas) return;
+    /* An exponential average, so one hitched frame does not drop the scale and
+       one fast frame does not raise it. */
+    adapt.avg = adapt.avg * 0.88 + frameMs * 0.12;
+    adapt.cooldown -= 1;
+    if (adapt.cooldown > 0) return;
+    var s = quality.scale;
+    if (adapt.avg > adapt.target * 1.25 && s > adapt.min) {
+      quality.scale = Math.max(adapt.min, s - 0.08);
+      adapt.cooldown = 45;
+      resize(adapt.cssW, adapt.cssH, DPR);
+    } else if (adapt.avg < adapt.target * 0.72 && s < adapt.max) {
+      quality.scale = Math.min(adapt.max, s + 0.05);
+      adapt.cooldown = 90;
+      resize(adapt.cssW, adapt.cssH, DPR);
+    }
+  }
+
   function resize(w, h, dpr) {
-    DPR = dpr || 1;
+    DPR = dpr || DPR || 1;
+    adapt.cssW = w; adapt.cssH = h;
     W = Math.max(2, Math.round(w * DPR * quality.scale));
     H = Math.max(2, Math.round(h * DPR * quality.scale));
     canvas.width = Math.max(2, Math.round(w * DPR));
@@ -374,6 +415,7 @@ var R = (function () {
       p.um4('uModel', it.model);
       p.u1f('uExplode', it.explode);
       it.mesh.draw();
+      prof.shadowDraws++;
     }
     gl.cullFace(gl.BACK);
   }
@@ -439,17 +481,17 @@ var R = (function () {
       p.um4('uModel', it.model);
       U.m3normalFromM4(it.model, tmpN);
       p.um3('uNormalMat', tmpN);
-      p.u3v('uTint', it.tint || [1, 1, 1]);
-      p.u1f('uTintMix', it.tintMix);
-      p.u1f('uFlash', it.flash);
-      p.u3v('uFlashColor', it.flashColor || [1, 1, 1]);
-      p.u1f('uDissolve', it.dissolve);
-      p.u1f('uExplode', it.explode);
-      p.u1f('uAlpha', it.alpha);
-      p.u1f('uFacetJitter', it.facetJitter >= 0 ? it.facetJitter : ART.facetJitter);
-      p.u1f('uDebugMode', ART.debugMode || 0);
-      p.u1f('uRimScale', it.rimScale);
+      /* Eight separate uniform1f calls per draw became two vec4s. At several
+         hundred draws a frame the saving is in the JS to GL boundary crossings,
+         which is where a WebGL renderer actually spends its CPU. */
+      p.u3v('uTint', it.tint || WHITE3);
+      p.u3v('uFlashColor', it.flashColor || WHITE3);
+      p.u4f('uItemA', it.flash, it.dissolve, it.explode, it.alpha);
+      p.u4f('uItemB', it.tintMix,
+        it.facetJitter >= 0 ? it.facetJitter : ART.facetJitter,
+        it.rimScale, ART.debugMode || 0);
       it.mesh.draw();
+      prof.draws++;
     }
   }
 
@@ -599,21 +641,21 @@ var R = (function () {
   function render(dt) {
     if (!gl || !rt.main) return;
     try {
+      prof.draws = 0; prof.shadowDraws = 0;
       time += dt;
       buildMatrices(dt);
-      shadowPass();
+      markStart('shadow'); shadowPass(); markEnd('shadow');
 
       rt.main.bind();
       gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-      skyPass();
-      opaquePass();
-      transparentPass();
-      particlePass();
-
-      inkPass();
-      bloomPass();
-      compositePass();
+      markStart('sky'); skyPass(); markEnd('sky');
+      markStart('opaque'); opaquePass(); markEnd('opaque');
+      markStart('transparent'); transparentPass(); markEnd('transparent');
+      markStart('particles'); particlePass(); markEnd('particles');
+      markStart('ink'); inkPass(); markEnd('ink');
+      markStart('bloom'); bloomPass(); markEnd('bloom');
+      markStart('composite'); compositePass(); markEnd('composite');
     } catch (e) {
       /* Reported, never swallowed. A throw inside a pass would otherwise
          abandon the rest of the frame silently and leave a stale image on
@@ -677,6 +719,15 @@ var R = (function () {
       return Array.prototype.slice.call(partData, i * PART_STRIDE, (i + 1) * PART_STRIDE);
     },
     particleCount: function () { return particleN; },
+    prof: prof,
+    setProfiling: function (v) { prof.on = !!v; },
+    tickAdaptive: tickAdaptive,
+    adaptive: adapt,
+    stats: function () {
+      return { draws: prof.draws, shadowDraws: prof.shadowDraws,
+               opaqueItems: opaqueN, transparentItems: transparentN,
+               particles: particleN, ms: prof.ms };
+    },
     caps: function () { return GL.caps; }
   };
 })();

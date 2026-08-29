@@ -76,7 +76,11 @@ var SH = (function () {
   var RAMP = [
     'uniform float uBands;',
     'uniform float uRampGamma;',
-    'uniform float uFacetJitter;',
+    /* uItemB (tintMix, facetJitter, rimScale, debugMode) is declared by the
+       shader that INCLUDES this chunk, not here. Declaring it in both places
+       is a GLSL redefinition error, and since this chunk is only ever
+       concatenated into MESH_FS the declaration above it is always in scope. */
+
     'uniform vec3  uShadowColor;',
     'uniform vec3  uLightColor;',
     'uniform float uShadowLift;',
@@ -89,7 +93,7 @@ var SH = (function () {
     '  t = pow(clamp(t, 0.0, 1.0), uRampGamma);',
     /* The per-facet band offset. Centred on zero so the mean brightness of a
        surface is unchanged and only its internal break-up varies. */
-    '  t += (seed - 0.5) * uFacetJitter;',
+    '  t += (seed - 0.5) * uItemB.y;',
     '  t = clamp(t, 0.0, 0.9999);',
     '  return floor(t * uBands) / max(1.0, uBands - 1.0);',
     '}',
@@ -116,9 +120,20 @@ var SH = (function () {
        plates are dark AND saturated at the same time, which is only possible
        if the lit band is the albedo's own colour with a little light in it,
        not a march toward white. */
-    '  vec3 deep = mix(uShadowColor, albedo * 0.22, uShadowLift);',
-    '  vec3 mid  = albedo * 0.62;',
-    '  vec3 lite = mix(albedo, uLightColor, 0.11) * 1.07;',
+    /* BRIGHTNESS LIVES IN THE LIT STOP, NOT IN EXPOSURE.
+       Lifting exposure raises the shadows too and flattens the whole image
+       toward grey. Raising the lit and mid stops while leaving `deep` alone
+       makes the picture brighter AND increases contrast at the same time,
+       which is what "brighter" actually means for a painting whose drawing is
+       carried by its darks. */
+    '  vec3 deep = mix(uShadowColor, albedo * 0.24, uShadowLift);',
+    '  vec3 mid  = albedo * 0.82;',
+    /* 1.42 CLIPPED. Measured on a lit board: the lane rendered luminance 153
+       and the ground 152, identical, because both albedos were driven past the
+       top of the tonemap and flattened against the ceiling. A ramp that clips
+       destroys exactly the separation it exists to create. 1.22 keeps the lit
+       band inside range so two different albedos stay two different values. */
+    '  vec3 lite = mix(albedo, uLightColor, 0.17) * 1.22;',
     '  return q < 0.5 ? mix(deep, mid, q * 2.0) : mix(mid, lite, (q - 0.5) * 2.0);',
     '}'
   ].join('\n');
@@ -136,13 +151,14 @@ var SH = (function () {
     'uniform mat4 uProj, uView, uModel, uLightVP;',
     'uniform mat3 uNormalMat;',
     'uniform vec3 uTint;',
-    'uniform float uTintMix;',
+    /* uItemB.x is tintMix. Packed with the other per-item scalars so a draw
+       costs two vec4 uploads instead of eight scalar ones. */
+    'uniform vec4 uItemB;',
     /* Dissolve drives both the spawn-in and the death burn. Kept in the vertex
        stage as well as the fragment stage because the facet also PUSHES along
        its normal as it burns, which is what makes a unit come apart into
        strokes rather than simply fade. */
-    'uniform float uDissolve;',
-    'uniform float uExplode;',
+    'uniform vec4 uItemA;',   /* flash, dissolve, explode, alpha */
     '',
     'out vec3 vWorld;',
     'out vec3 vView;',
@@ -155,11 +171,11 @@ var SH = (function () {
     '',
     'void main(){',
     '  vec3 nrm = normalize(uNormalMat * aNrm);',
-    '  vec3 pos = aPos + aNrm * uExplode;',
+    '  vec3 pos = aPos + aNrm * uItemA.z;',
     '  vec4 world = uModel * vec4(pos, 1.0);',
     '  vWorld = world.xyz;',
     '  vNormal = nrm;',
-    '  vAlbedo = mix(aCol, uTint, uTintMix);',
+    '  vAlbedo = mix(aCol, uTint, uItemB.x);',
     '  vSeed = aAux.x;',
     '  vTooth = aAux.y;',
     '  vEmis = aAux.z;',
@@ -191,7 +207,7 @@ var SH = (function () {
     'uniform vec3 uCamPos;',
     'uniform vec3 uRimColor;',
     'uniform float uRimStrength;',
-    'uniform float uRimScale;',
+
     'uniform float uRimPower;',
     'uniform vec3 uAmbientSky;',
     'uniform vec3 uAmbientGround;',
@@ -205,14 +221,13 @@ var SH = (function () {
     'uniform float uToothScale;',
     'uniform float uToothStrength;',
     'uniform float uTime;',
-    'uniform float uFlash;',
+    'uniform vec4 uItemA;',   /* flash, dissolve, explode, alpha */
+    'uniform vec4 uItemB;',   /* tintMix, facetJitter, rimScale, debugMode */
     'uniform vec3 uFlashColor;',
-    'uniform float uDissolve;',
     'uniform vec3 uDissolveColor;',
     'uniform float uFogDensity;',
     'uniform vec3 uFogColor;',
-    'uniform float uAlpha;',
-    'uniform float uDebugMode;',
+
     '',
     NOISE,
     RAMP,
@@ -264,9 +279,9 @@ var SH = (function () {
        evaluated this same fbm twice per fragment, which is four octaves of
        noise paid for and thrown away on every lit pixel in the scene. */
     '  float dNoise = 0.0;',
-    '  if (uDissolve > 0.0){',
+    '  if (uItemA.y > 0.0){',
     '    dNoise = fbm(vWorld.xz * 3.1 + vWorld.y * 2.0) * 0.7 + vSeed * 0.3;',
-    '    if (dNoise < uDissolve) discard;',
+    '    if (dNoise < uItemA.y) discard;',
     '  }',
     '',
     '  float ndl = dot(N, L);',
@@ -303,15 +318,15 @@ var SH = (function () {
        the form, not as a uniform outline glow. */
     '  float fres = pow(1.0 - clamp(dot(N, Vd), 0.0, 1.0), uRimPower);',
     '  float rimSide = clamp(dot(N, L) * 0.5 + 0.65, 0.0, 1.0);',
-    '  col += uRimColor * fres * rimSide * uRimStrength * uRimScale;',
+    '  col += uRimColor * fres * rimSide * uRimStrength * uItemB.z;',
     '',
     /* Emissive facets bypass the ramp entirely. */
     '  col = mix(col, vAlbedo * 1.9 + uRimColor * 0.35, vEmis);',
     '',
     /* Damage flash and the dissolve burn edge. */
-    '  col = mix(col, uFlashColor, uFlash);',
-    '  if (uDissolve > 0.0){',
-    '    float edge = 1.0 - smoothstep(uDissolve, uDissolve + 0.16, dNoise);',
+    '  col = mix(col, uFlashColor, uItemA.x);',
+    '  if (uItemA.y > 0.0){',
+    '    float edge = 1.0 - smoothstep(uItemA.y, uItemA.y + 0.16, dNoise);',
     '    col += uDissolveColor * edge * 0.85;',
     '  }',
     '',
@@ -329,17 +344,17 @@ var SH = (function () {
        output directly is what turns that from an argument into a measurement.
        uDebugMode is 0 in every normal frame and the branch is uniform, so it
        costs nothing real. */
-    '  if (uDebugMode > 0.5){',
-    '    if (uDebugMode < 1.5)      { oColor = vec4(vAlbedo, 1.0); }',
-    '    else if (uDebugMode < 2.5) { oColor = vec4(vec3(lit), 1.0); }',
-    '    else if (uDebugMode < 3.5) { oColor = vec4(rampColor(lit, vAlbedo), 1.0); }',
-    '    else if (uDebugMode < 4.5) { oColor = vec4(vec3(ndl * 0.5 + 0.5), 1.0); }',
-    '    else if (uDebugMode < 5.5) { oColor = vec4(vec3(sh), 1.0); }',
+    '  if (uItemB.w > 0.5){',
+    '    if (uItemB.w < 1.5)      { oColor = vec4(vAlbedo, 1.0); }',
+    '    else if (uItemB.w < 2.5) { oColor = vec4(vec3(lit), 1.0); }',
+    '    else if (uItemB.w < 3.5) { oColor = vec4(rampColor(lit, vAlbedo), 1.0); }',
+    '    else if (uItemB.w < 4.5) { oColor = vec4(vec3(ndl * 0.5 + 0.5), 1.0); }',
+    '    else if (uItemB.w < 5.5) { oColor = vec4(vec3(sh), 1.0); }',
     '    else                       { oColor = vec4(N * 0.5 + 0.5, 1.0); }',
     '    oNormal = vec4(N * 0.5 + 0.5, depth);',
     '    return;',
     '  }',
-    '  oColor = vec4(col, uAlpha);',
+    '  oColor = vec4(col, uItemA.w);',
     /* Attachment 1 carries the surface normal and the linear view depth for
        the ink pass. WORLD space normals are correct here even though the edge
        detection is done in screen space: Sobel compares a normal against its
@@ -360,6 +375,11 @@ var SH = (function () {
     'layout(location=0) in vec3 aPos;',
     'layout(location=1) in vec3 aNrm;',
     'uniform mat4 uLightVP, uModel;',
+    /* The shadow pass keeps its OWN scalar uExplode rather than the packed
+       uItemA the mesh pass uses. It is a different program with a different
+       uniform set, and an earlier edit replaced the shared source line in both
+       shaders at once, leaving this one referencing a uniform it never
+       declares. Kept explicit so the two cannot be confused again. */
     'uniform float uExplode;',
     'void main(){',
     '  vec3 pos = aPos + aNrm * uExplode;',
@@ -835,8 +855,9 @@ var SH = (function () {
     'layout(location=0) out vec4 oColor;',
     'layout(location=1) out vec4 oNormal;',
     'uniform vec3 uTint;',
+    /* The unlit program keeps its own scalar uAlpha. It is a separate program
+       from the mesh pass and shares none of that pass's packed uniforms. */
     'uniform float uAlpha;',
-    'uniform float uDebugMode;',
     'uniform float uTime;',
     'uniform float uPulse;',
     'uniform vec3 uCamPos;',
