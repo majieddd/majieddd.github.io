@@ -176,6 +176,18 @@ function staticGates() {
   if (ll.code === 0) say('module live-load: ' + ll.out.trim());
   else fail('module live-load: ' + ll.out.trim());
 
+  /* CONTESTED WORLDS NAME TWO REAL, DIFFERENT POWERS, in [holder, challenger]
+     order. ui.js reads the challenger as `w.contestedBy[1]` and falls back to
+     `|| FACTIONS.pirate` when it is missing, so a one element array does not
+     throw: it silently draws the WRONG POWER on the galaxy map. That shipped.
+     Mars and Jupiter are both authored contested by the machines and both
+     drew a pirate marker, because the authored path wrote a one element
+     array. Nothing was watching the shape, so this watches it. */
+  const ct = run(process.execPath, ['tools/probe-contest.js']);
+  const ctLines = ct.out.trim().split(/\r?\n/);
+  if (ct.code === 0) say('contested worlds: ' + ctLines[0]);
+  else fail('contested worlds: ' + ctLines.slice(-3).join(' | '));
+
   /* GEOMETRY PROPERTIES of every procedural board, in node because they are
      pure functions of (family, seed) and need no browser. Determinism is the
      one that matters for duels: both clients build the board from the same
