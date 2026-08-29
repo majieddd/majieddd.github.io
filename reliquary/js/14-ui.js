@@ -84,6 +84,9 @@ var UI = (function () {
     s.setProperty('--accent-2', pal.accent2);
     s.setProperty('--accent-dim', 'rgba(' + r + ',' + g + ',' + b + ',0.18)');
     s.setProperty('--accent-glow', 'rgba(' + r + ',' + g + ',' + b + ',0.42)');
+    /* The transparent end of the same hue, so keyframes can fade to it without
+       naming a literal colour that would be wrong on four of five factions. */
+    s.setProperty('--accent-glow-0', 'rgba(' + r + ',' + g + ',' + b + ',0)');
   }
 
   /* ---------- start screen ---------- */

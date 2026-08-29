@@ -805,10 +805,18 @@ var MODELS = (function () {
     return memo('beam:' + colorHex, function () {
       var b = MESH.builder('beam:' + colorHex);
       b.color(colorHex).tooth(0).emissive(1.0);
-      /* A unit-length box along +Z, scaled per draw. Built as a thin prism so
-         it has a little volume from the side and does not vanish edge-on the
-         way a flat quad would. */
-      b.prism(0.5, 0.5, 1.0, 4, 0, Math.PI / 4);
+      /* A UNIT BEAM FROM THE ORIGIN TO (0,0,1), ALONG +Z.
+         The axis is load bearing. GAME.drawBeam builds a matrix whose THIRD
+         column carries the beam direction and its length, so the mesh's long
+         axis has to be Z. This was authored with prism(), which extrudes along
+         +Y, and the mismatch mapped the mesh's long axis onto the perpendicular
+         and its cross-section radius onto the length. Measured with
+         tools/beamgeom.js: on a 20 unit beam the geometry stopped 12.93 units
+         short of the target and extended 7.07 units BACKWARD through the tower.
+         Every beam, sweep, chain arc and hitscan trail in the game was drawing
+         a stub. limb() takes explicit endpoints, so the axis cannot drift
+         again, and beamgeom.js asserts the primitive as well as the result. */
+      b.limb([0, 0, 0], [0, 0, 1], 0.5, 0.5, 4);
       return GL.mesh(b.build({ jitter: 0 }));
     });
   }

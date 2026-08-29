@@ -629,9 +629,12 @@ var SIM = (function () {
           applyHit(p, d, p.dmg * falloff);
           hitAny = true;
         }
-        FX.burst(at, col, { count: 16, speed: 10, life: 0.5, size: 0.4 });
+        /* The direction the shell ARRIVED from, so the spray throws back along
+           its path rather than spherically. p.dir is set every step while the
+           projectile is in flight. */
+        FX.impact(at, p.dir || [0, -1, 0], col, U.clamp(p.splash * 0.34, 0.8, 2.2));
         FX.shockRing(at, col, p.splash * 1.9, 0.36);
-        FX.smoke(at, [0.4, 0.32, 0.55], 4, p.splash * 0.35);
+        FX.smoke(at, [0.4, 0.32, 0.55], 5, p.splash * 0.35);
         AUDIO.play('impact_splash', { pan: panOf(at) });
         FX.hit(0.35);
       } else {
@@ -648,10 +651,13 @@ var SIM = (function () {
         }
         if (best && bestD < 2.6) {
           applyHit(p, best, p.dmg);
-          FX.burst(at, col, { count: 7, speed: 7, life: 0.3, size: 0.26 });
+          FX.impact(at, p.dir || [0, -1, 0], col, 0.62);
           AUDIO.play('impact_small', { pan: panOf(at) });
         } else {
-          FX.burst(at, col, { count: 4, speed: 5, life: 0.22, size: 0.2 });
+          /* A clean miss still shows something, or a shot that hits nothing
+             looks like the projectile was deleted rather than that it landed
+             short. Smaller, and no shards. */
+          FX.impact(at, p.dir || [0, -1, 0], col, 0.34);
         }
       }
     } catch (e) {
@@ -705,7 +711,7 @@ var SIM = (function () {
       case 'shell': {
         fireProjectile(t, s, muzzleWorld, target, def);
         var dir = V.norm(V.sub(target.pos, muzzleWorld));
-        FX.muzzle(muzzleWorld, dir, accent);
+        FX.muzzle(muzzleWorld, dir, accent, 1 + t.tier * 0.28);
         AUDIO.playShot(def.kind === 'shell' ? 'shell' : 'bullet', { pan: pan });
         t.recoil = 1;
         FX.hit(def.kind === 'shell' ? 0.10 : 0.03, { aberr: false });
@@ -734,7 +740,7 @@ var SIM = (function () {
           t.arcs = t.arcs || [];
           t.arcs.push({ a: prev.slice(), b: [hd.pos[0], hd.pos[1] + 0.8 * hd.scale, hd.pos[2]], life: 0.16 });
           prev = [hd.pos[0], hd.pos[1] + 0.8 * hd.scale, hd.pos[2]];
-          FX.burst(prev, accent, { count: 5, speed: 6, life: 0.25, size: 0.22 });
+          FX.impact(prev, V.norm(V.sub(prev, muzzleWorld)), accent, 0.45);
         }
         AUDIO.playShot('chain', { pan: pan });
         t.recoil = 0.6;
@@ -797,7 +803,7 @@ var SIM = (function () {
           b: [t.pos[0] + dirH[0] * s.range * 1.4, muzzleWorld[1], t.pos[2] + dirH[2] * s.range * 1.4],
           life: 0.22, width: 0.5
         });
-        FX.muzzle(muzzleWorld, dirH, accent);
+        FX.muzzle(muzzleWorld, dirH, accent, 1.5 + t.tier * 0.35);
         AUDIO.playShot('hitscan', { pan: pan });
         t.recoil = 1.4;
         FX.hit(0.4, { stop: 0.02 });
@@ -909,9 +915,15 @@ var SIM = (function () {
         damage(d, d.burn * dt, { element: null, source: d.burnSrc });
         if (!d.alive) { G.denizens[w++] = d; continue; }
         if (Math.random() < dt * 8) {
-          FX.spawn({ x: d.pos[0] + (Math.random() - 0.5), y: d.pos[1] + Math.random() * 1.5, z: d.pos[2] + (Math.random() - 0.5),
-            vx: 0, vy: 2.4, vz: 0, r: 1, g: 0.45, b: 0.3, life: 0.5, size: 0.3, size1: 0.05,
-            rot: 0, rotv: 3, kind: FX.KIND.SPARK, drag: 1.5, grav: 3, alpha: 0.9 });
+          FX.spawn({
+            x: d.pos[0] + (Math.random() - 0.5) * d.scale,
+            y: d.pos[1] + Math.random() * 1.4 * d.scale,
+            z: d.pos[2] + (Math.random() - 0.5) * d.scale,
+            vx: (Math.random() - 0.5) * 1.2, vy: 2.2 + Math.random(), vz: (Math.random() - 0.5) * 1.2,
+            r: 1, g: 0.72, b: 0.42, r1: 0.55, g1: 0.12, b1: 0.10,
+            life: 0.45 + Math.random() * 0.4, size: 0.22, size1: 0.04,
+            rot: 0, rotv: 3, kind: FX.KIND.EMBER, drag: 1.4, grav: 2.6,
+            turb: 6.0, alpha: 0.85 });
         }
       }
       if (d.poisonT > 0 && d.poisonStacks > 0) {
@@ -1099,8 +1111,8 @@ var SIM = (function () {
           if (!t.voice && AUDIO.isReady()) t.voice = AUDIO.beamVoice();
           if (t.voice) t.voice.set(t.beamOn, panOf(t.pos), t.beamRamp / Math.max(0.01, s.rampMax));
           if (Math.random() < dt * 22) {
-            FX.burst([target.pos[0], target.pos[1] + 0.9 * target.scale, target.pos[2]],
-              MODELS.tower(t.id, t.tier).accent, { count: 2, speed: 5, life: 0.28, size: 0.2 });
+            var bp = [target.pos[0], target.pos[1] + 0.9 * target.scale, target.pos[2]];
+            FX.impact(bp, V.norm(V.sub(bp, t.pos)), MODELS.tower(t.id, t.tier).accent, 0.28);
           }
         } else {
           t.beamOn = Math.max(0, t.beamOn - dt * 5);

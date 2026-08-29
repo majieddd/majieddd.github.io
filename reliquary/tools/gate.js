@@ -8,10 +8,11 @@
      1  parse      no point loading a page whose scripts do not parse
      2  em dash    a source-level rule, checked against SOURCES not output
      3  winding    a mesh-level invariant that silently darkens the whole scene
-     4  css brace  an unmatched brace is legal CSS and scopes everything after it
-     5  build      the single-file bundle must actually assemble
-     6  verify     does the game work, on a fresh page load
-     7  adversarial  what did verify fail to look at, on its own fresh load
+     4  beam geom  the beam mesh axis must match the beam transform axis
+     5  css brace  an unmatched brace is legal CSS and scopes everything after it
+     6  build      the single-file bundle must actually assemble
+     7  verify     does the game work, on a fresh page load
+     8  adversarial  what did verify fail to look at, on its own fresh load
 
    Steps 6 and 7 each get their OWN page load. The adversarial harness restarts
    the game a dozen times and deliberately corrupts state; running verify after
@@ -97,13 +98,19 @@ step('3 mesh winding', () => {
   return out.trim().split('\n').pop();
 });
 
-step('4 css braces', () => {
+step('4 beam geometry', () => {
+  const out = node('beamgeom.js');
+  if (!/all beam geometry checks passed/.test(out)) throw new Error(out);
+  return 'beams span source to target';
+});
+
+step('5 css braces', () => {
   const out = node('cssbrace.js');
   if (!/all stylesheets balanced/.test(out)) throw new Error(out);
   return 'balanced';
 });
 
-step('5 build bundle', () => {
+step('6 build bundle', () => {
   const out = node('../build.js');
   return out.trim().split('\n').pop();
 });
@@ -122,8 +129,8 @@ function runHarness(label, stepsFile) {
   return d.pass + '/' + d.total;
 }
 
-step('6 verify (fresh page)', () => runHarness('verify', 'full.steps.cjs'));
-step('7 adversarial (fresh page)', () => runHarness('adversarial', 'adv.steps.cjs'));
+step('7 verify (fresh page)', () => runHarness('verify', 'full.steps.cjs'));
+step('8 adversarial (fresh page)', () => runHarness('adversarial', 'adv.steps.cjs'));
 
 console.log(failed ? '\nGATE FAILED (' + failed + ' step(s))' : '\nGATE PASSED');
 process.exit(failed ? 1 : 0);

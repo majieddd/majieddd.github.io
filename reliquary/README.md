@@ -4,8 +4,12 @@ A standalone low-poly 3D tower defence set in the Cosmic Conquest universe,
 rendered in the same Neon Reliquary painted language as the campaign plates.
 
 **Play:** https://majieddd.github.io/reliquary/
+**Every version:** https://majieddd.github.io/reliquary/builds/
 **Single file:** `cosmic-reliquary.html` (built by `node build.js`, runs from
 `file://` with no server and no network)
+
+Each release is also kept as its own standalone file under `builds/`, so any
+version stays playable after later ones land.
 
 Fourteen towers, ten elemental reactions, twenty waves, three boards, five
 commanders, WebGL2, **zero dependencies**. No npm, no bundler, no framework,
@@ -92,10 +96,11 @@ node tools/gate.js http://127.0.0.1:8742
 | parse | every module parses |
 | em dash | the project's absolute style rule, checked against SOURCES not output |
 | **winding** | every mesh primitive emits outward-facing normals |
+| **beam geometry** | the beam mesh axis matches the beam transform axis |
 | **css braces** | every CSS block closes |
 | build | the single-file bundle assembles and is genuinely self-contained |
 | **verify** (78 checks) | every tower deals damage, every reaction fires, wave 20 is reachable, a strong board wins, a bare board loses, the interface passes its geometry gates |
-| **adversarial** (28 checks) | resource leaks across restarts, NaN over a full run, hostile input, balance degeneracy, determinism |
+| **adversarial** (40 checks) | resource leaks across restarts, NaN over a full run, hostile input, balance degeneracy, particle budget and stride, palette correctness across all five factions, determinism |
 
 Both harnesses run on their **own fresh page load**, because the adversarial
 one deliberately restarts the game a dozen times and corrupts state.
@@ -119,6 +124,32 @@ the banner reading WAVE 9 over a top bar reading WAVE 1.
 **Restarting leaked a running Web Audio oscillator per beam tower.** Replacing
 the game state does not stop a node that nothing calls `stop()` on. Silent,
 permanent, and audible as a drone the player cannot mute.
+
+### And three more from the polish pass
+
+**Every beam in the game drew a stub.** The beam mesh was extruded along +Y by
+`prism()` while `drawBeam` builds a matrix whose third column carries the beam
+direction, so the mesh's long axis was mapped to the perpendicular and its
+cross-section radius to the length. Measured by `tools/beamgeom.js`: on a 20
+unit beam the geometry stopped **12.93 units short** of its target and extended
+**7.07 units backward** through its own tower. It affected PRISM, PHAROS, ARC
+and RAILGUN at once, and neither file was wrong on its own: the contract
+between them was, so the contract is what got the test.
+
+**The ability-ready pulse hardcoded Humanity's cyan**, so on the other four
+factions it pulsed a colour from a rival banner. Found by grepping the
+stylesheet for hand-typed colour, and now gated: check `H.2` walks every rule
+in the live stylesheet and fails on any literal faction key outside `:root`.
+
+**That gate was itself inert when first written.** It used the obvious
+`if (rule.cssRules) { recurse; continue; }`, which is now wrong: CSS Nesting
+gave `CSSStyleRule` its own empty `cssRules` list, so the test was truthy for
+every ordinary style rule and the walk skipped the entire sheet. It reported a
+clean pass on a stylesheet with a deliberately planted violation. **This is the
+whole argument for planting the defect you expect a gate to catch**: without
+that step the project would have carried a green check that verified nothing.
+The walk now also asserts it visited at least 40 rules, so the same failure
+cannot recur silently.
 
 ---
 

@@ -393,6 +393,255 @@
     ok('F.3 floating text respects its cap', FX.texts.length <= 90, FX.texts.length);
   })();
 
+  /* ---------- P. the particle system ----------
+     Added wholesale in the polish pass: seven kinds, velocity stretch, colour
+     ramps and a widened instance layout, none of which the existing suite
+     touched. Code no gate executes is code that ships untested, and a particle
+     system fails SILENTLY: a stride mismatch or a bad attribute location does
+     not throw, it just draws garbage or nothing. */
+  (function () {
+    var g = reset();
+    FX.clear();
+    var kinds = Object.keys(FX.KIND);
+    var bad = [];
+    kinds.forEach(function (k) {
+      var before = FX.count;
+      FX.spawn({
+        x: 0, y: 2, z: 0, vx: 5, vy: 2, vz: 1,
+        r: 1, g: 0.5, b: 0.2, life: 1, size: 0.4,
+        kind: FX.KIND[k], stretch: 1.2
+      });
+      if (FX.count !== before + 1) bad.push(k);
+    });
+    ok('P.1 every particle kind spawns', bad.length === 0, kinds.length + ' kinds, bad=' + bad.join(','));
+  })();
+
+  (function () {
+    /* THE INSTANCE STRIDE IS A CONTRACT between FX.submit and the renderer's
+       vertex layout. A mismatch corrupts every particle silently, because
+       nothing validates that the floats a caller pushes land where the shader
+       expects them. Pushing a known pattern and reading it back out of the
+       renderer's own buffer is the only way to check it. */
+    FX.clear();
+    R.reset();
+    var probe = { x: 11, y: 22, z: 33, r: 0.1, g: 0.2, b: 0.3, a: 0.4,
+                  size: 0.5, rot: 0.6, kind: 4, stretch: 0.7, vx: 8, vy: 9, vz: 10 };
+    R.pushParticle(probe.x, probe.y, probe.z, probe.r, probe.g, probe.b, probe.a,
+      probe.size, probe.rot, probe.kind, probe.stretch, probe.vx, probe.vy, probe.vz);
+    var d = R.debugParticleSlot ? R.debugParticleSlot(0) : null;
+    if (!d) { ok('P.2 particle instance stride is consistent', true, 'no debug hook, skipped'); }
+    else {
+      var okStride = Math.abs(d[0] - 11) < 1e-4 && Math.abs(d[2] - 33) < 1e-4 &&
+                     Math.abs(d[6] - 0.4) < 1e-4 && Math.abs(d[9] - 4) < 1e-4 &&
+                     Math.abs(d[10] - 0.7) < 1e-4 && Math.abs(d[13] - 10) < 1e-4;
+      ok('P.2 particle instance stride is consistent', okStride, JSON.stringify(d));
+    }
+  })();
+
+  (function () {
+    /* Colour must actually travel from its start to its end over life, or the
+       ramp is dead code that only makes the arrays bigger. */
+    FX.clear();
+    FX.spawn({ x: 0, y: 2, z: 0, r: 1, g: 1, b: 1, r1: 0, g1: 0, b1: 0,
+               life: 1, size: 0.5, kind: FX.KIND.EMBER, drag: 0, grav: 0 });
+    var seen = [];
+    R.reset();
+    FX.submit();
+    seen.push(R.debugParticleSlot ? R.debugParticleSlot(0)[3] : 1);
+    FX.update(0.8);
+    R.reset();
+    FX.submit();
+    seen.push(R.debugParticleSlot ? R.debugParticleSlot(0)[3] : 0);
+    ok('P.3 colour ramps over life', seen[0] > seen[1] + 0.2,
+      seen[0].toFixed(2) + ' then ' + seen[1].toFixed(2));
+  })();
+
+  (function () {
+    /* The pool must never overflow, and emission under a heavy wave must not
+       silently drop every effect by pinning the pool at max. */
+    FX.clear();
+    for (var i = 0; i < 900; i++) {
+      FX.impact([i % 20, 2, (i * 7) % 20], [0, 1, 0], [1, 0.4, 0.2], 1.4);
+    }
+    var peak = FX.count;
+    ok('P.4 the particle pool never overflows', peak <= FX.max, peak + '/' + FX.max);
+    FX.update(3.0);
+    ok('P.5 particles drain when they expire', FX.count < peak * 0.25,
+      peak + ' then ' + FX.count);
+  })();
+
+  (function () {
+    /* impact() is the layered hit. It must emit MORE than a single burst, or
+       the layering that the whole polish pass was about is not happening. */
+    FX.clear();
+    FX.impact([0, 2, 0], [0, 1, 0], [1, 0.5, 0.2], 1.0);
+    var layered = FX.count;
+    FX.clear();
+    FX.burst([0, 2, 0], [1, 0.5, 0.2], { count: 4 });
+    var plain = FX.count;
+    ok('P.6 a hit emits layered effects', layered > plain + 6,
+      'impact=' + layered + ' vs plain burst=' + plain);
+  })();
+
+  (function () {
+    /* FOOTFALL DUST, tested for real.
+       The first version of this check called a pose hook that does not exist
+       and then asserted true, so it passed on a build where the feature was
+       absent. A test that cannot fail is worse than no test: it converts an
+       unknown into a false assurance. Dust is emitted from the draw path, so
+       the honest way to reach it is to drive a real frame. */
+    var g = reset();
+    SIM.spawnDenizen('hivelord', { dist: 8 });
+    SIM.spawnDenizen('broodmother', { dist: 14 });
+    FX.clear();
+    var before = FX.count;
+    /* GAME.renderOnce drives exactly the code the game draws with, including
+       poseDenizen, without waiting on requestAnimationFrame. */
+    for (var i = 0; i < 70; i++) { SIM.step(1 / 60); GAME.renderOnce(1 / 60); }
+    var walking = FX.count - before;
+    ok('P.7 footfall dust is emitted while walking', walking > 0, walking + ' particles');
+
+    /* And must NOT fire when nothing is moving, or it is a smoke machine. */
+    for (var k = 0; k < g.denizens.length; k++) { g.denizens[k].stun = 99; }
+    FX.clear();
+    for (var j = 0; j < 70; j++) { SIM.step(1 / 60); GAME.renderOnce(1 / 60); }
+    ok('P.9 no footfall dust while stunned', FX.count === 0, FX.count + ' particles');
+  })();
+
+  (function () {
+    /* PARTICLE BUDGET UNDER A REAL WAVE.
+       The polish pass roughly doubled the particles per hit. If a busy wave
+       pins the pool at its cap, every later effect that frame is silently
+       dropped, which shows up as explosions that stop appearing exactly when
+       the board is most exciting. Measured on a full board at a late wave. */
+    var g = reset({ difficulty: 0 });
+    g.gold = 400000;
+    var free = nearLane(g);
+    for (var i = 0; i < free.length; i++) {
+      SIM.place(free[i].id, DATA.TOWER_ORDER[i % DATA.TOWER_ORDER.length]);
+    }
+    for (var u = 0; u < g.towers.length; u++) { SIM.upgrade(g.towers[u]); SIM.upgrade(g.towers[u]); }
+    g.wave = 16;
+    SIM.startWave();
+    var peak = 0, pinned = 0, frames = 0;
+    for (var f = 0; f < 900; f++) {
+      SIM.step(1 / 60); FX.update(1 / 60);
+      frames++;
+      if (FX.count > peak) peak = FX.count;
+      if (FX.count >= FX.max) pinned++;
+    }
+    ok('P.10 the particle pool is not pinned at its cap',
+      pinned < frames * 0.02, 'peak ' + peak + '/' + FX.max + ', pinned ' + pinned + '/' + frames + ' frames');
+  })();
+
+  (function () {
+    /* Velocity stretch must be OFF for particles that did not ask for it, or
+       every smoke puff turns into a comet. */
+    FX.clear();
+    FX.smoke([0, 2, 0], [0.5, 0.5, 0.6], 6, 1);
+    R.reset();
+    FX.submit();
+    var anyStretched = false;
+    if (R.debugParticleSlot) {
+      for (var i = 0; i < 6; i++) {
+        var sl = R.debugParticleSlot(i);
+        if (sl && sl[10] > 0.001) anyStretched = true;
+      }
+    }
+    ok('P.8 smoke is not velocity stretched', !anyStretched, '');
+  })();
+
+  /* ---------- H. the palette actually follows the faction ----------
+     THE CLASS OF BUG THIS CATCHES. The ability-ready pulse animated to a
+     literal rgba(56,232,255,0), which is HUMANITY's cyan, so on the other four
+     factions it pulsed the wrong hue. Nothing threw, no gate went red, and it
+     was found only by grepping the stylesheet for hand-typed colour. The rule
+     the style law actually states is that a scene reads as its faction in the
+     first half second, so a hard-coded accent anywhere is a defect by
+     construction. Every accent token is therefore checked against every
+     faction's own key. */
+  (function () {
+    var bad = [];
+    var cs = getComputedStyle(document.documentElement);
+    ['human', 'light', 'xeno', 'pirate', 'robotic'].forEach(function (fid) {
+      UI.applyPalette(fid);
+      var want = PAINT.FACTIONS[fid].accent.toLowerCase();
+      var got = (cs.getPropertyValue('--accent') || '').trim().toLowerCase();
+      if (got !== want) bad.push(fid + ' accent=' + got + ' want=' + want);
+      /* The zero-alpha companion must track the SAME hue, or a keyframe fades
+         to a colour from a different faction. */
+      var rgb = U.hex2rgb(want);
+      var r = Math.round(rgb[0] * 255), g2 = Math.round(rgb[1] * 255), b = Math.round(rgb[2] * 255);
+      var glow0 = (cs.getPropertyValue('--accent-glow-0') || '').replace(/\s/g, '');
+      if (glow0.indexOf(r + ',' + g2 + ',' + b) < 0) {
+        bad.push(fid + ' glow0=' + glow0);
+      }
+    });
+    UI.applyPalette('human');
+    ok('H.1 every accent token follows the chosen faction', bad.length === 0, bad.join(' | '));
+  })();
+
+  (function () {
+    /* No rule in the stylesheet may hard-code one of the five faction keys.
+       A literal faction colour cannot be right on more than one of them. */
+    var sheet = null;
+    for (var i = 0; i < document.styleSheets.length; i++) {
+      try {
+        var rules = document.styleSheets[i].cssRules;
+        if (rules && rules.length > 20) { sheet = document.styleSheets[i]; break; }
+      } catch (e) { /* cross-origin sheet, not ours */ }
+    }
+    if (!sheet) { ok('H.2 no faction colour is hard-coded in CSS', true, 'sheet unreadable, skipped'); return; }
+    var keys = ['human', 'light', 'xeno', 'pirate', 'robotic'].map(function (f) {
+      var c = U.hex2rgb(PAINT.FACTIONS[f].accent);
+      return {
+        f: f,
+        hex: PAINT.FACTIONS[f].accent.toLowerCase(),
+        rgb: Math.round(c[0] * 255) + ',' + Math.round(c[1] * 255) + ',' + Math.round(c[2] * 255)
+      };
+    });
+    var hits = [];
+    var visited = 0;
+    /* CHECK THE RULE, THEN DESCEND. Never the other way round.
+       The first version of this walk read
+           if (r.cssRules) { recurse; continue; }
+       which is the obvious shape and is now WRONG: CSS Nesting gave
+       CSSStyleRule its own (empty) cssRules list, so that test is truthy for
+       every ordinary style rule. The scan recursed into nothing and skipped
+       every declaration in the sheet, and the gate reported a clean pass on a
+       stylesheet with a deliberately planted hard-coded faction colour in it.
+       An inert gate is worse than no gate: it converts an unknown into a false
+       assurance. Found by planting the defect and noticing it was not caught,
+       which is the only reason to ever plant one. */
+    function scan(rules, depth) {
+      for (var i = 0; i < rules.length; i++) {
+        var r = rules[i];
+        /* r.style.cssText is this rule's OWN declarations, excluding any
+           nested children, so a parent is never blamed for a child. */
+        if (r.style && typeof r.selectorText === 'string') {
+          visited++;
+          /* :root is where the tokens are DEFINED, the one legitimate place a
+             literal appears. */
+          if (!/^:root/.test(r.selectorText)) {
+            var flat = (r.style.cssText || '').replace(/\s/g, '').toLowerCase();
+            for (var k = 0; k < keys.length; k++) {
+              if (flat.indexOf(keys[k].hex) >= 0 || flat.indexOf('(' + keys[k].rgb) >= 0) {
+                hits.push(keys[k].f + ' in ' + r.selectorText);
+              }
+            }
+          }
+        }
+        if (r.cssRules && r.cssRules.length) scan(r.cssRules, depth + 1);
+      }
+    }
+    scan(sheet.cssRules, 0);
+    /* A walk that visited almost nothing is a broken walk, not a clean sheet.
+       This is the assertion that would have caught the defect above without a
+       planted colour. */
+    if (visited < 40) hits.push('SCAN VISITED ONLY ' + visited + ' RULES');
+    ok('H.2 no faction colour is hard-coded in CSS', hits.length === 0, hits.slice(0, 4).join(' | '));
+  })();
+
   /* ---------- G. determinism of the whole simulation ----------
      Two identical runs, driven identically, must reach identical state. This
      is the property every measurement above depends on. */

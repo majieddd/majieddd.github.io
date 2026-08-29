@@ -128,8 +128,14 @@ var R = (function () {
   /* Instanced particle buffer. Sized once for the worst case rather than
      grown, because a resize mid-combat is a frame hitch exactly when the
      player is most likely to notice. */
-  var MAX_PARTICLES = 4096;
-  var partData = new Float32Array(MAX_PARTICLES * 10);
+  /* 14 floats per instance: pos3, rgba4, params4 (size, rot, kind, stretch),
+     vel3. Velocity is uploaded so the VERTEX SHADER can stretch the quad along
+     the particle's own motion; doing that on the CPU would need the camera
+     basis here and a per-particle atan, and would still be wrong the moment
+     the camera moved between the update and the draw. */
+  var PART_STRIDE = 14;
+  var MAX_PARTICLES = 6000;
+  var partData = new Float32Array(MAX_PARTICLES * PART_STRIDE);
   var partVBO = null, partVAO = null;
 
   var errors = [];
@@ -177,7 +183,7 @@ var R = (function () {
     partVBO = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, partVBO);
     gl.bufferData(gl.ARRAY_BUFFER, partData.byteLength, gl.DYNAMIC_DRAW);
-    var stride = 10 * 4;
+    var stride = PART_STRIDE * 4;
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 3, gl.FLOAT, false, stride, 0);
     gl.vertexAttribDivisor(0, 1);
@@ -185,8 +191,11 @@ var R = (function () {
     gl.vertexAttribPointer(1, 4, gl.FLOAT, false, stride, 3 * 4);
     gl.vertexAttribDivisor(1, 1);
     gl.enableVertexAttribArray(2);
-    gl.vertexAttribPointer(2, 3, gl.FLOAT, false, stride, 7 * 4);
+    gl.vertexAttribPointer(2, 4, gl.FLOAT, false, stride, 7 * 4);
     gl.vertexAttribDivisor(2, 1);
+    gl.enableVertexAttribArray(3);
+    gl.vertexAttribPointer(3, 3, gl.FLOAT, false, stride, 11 * 4);
+    gl.vertexAttribDivisor(3, 1);
     gl.bindVertexArray(null);
 
     rt.shadow = GL.shadowTarget(quality.shadowSize);
@@ -256,6 +265,16 @@ var R = (function () {
        clear that threshold to break into patches; a tower at 40 triangles
        needs to stay well under it or it reads as static rather than as paint. */
     it.facetJitter = (o && o.facetJitter !== undefined) ? o.facetJitter : -1;
+    /* PER-DRAW RIM STRENGTH.
+       Rim light is scene light, so its COLOUR is the defender's key on every
+       surface: the style law forbids two faction colours sharing a frame. Its
+       STRENGTH is a different question. A denizen is small, dark and mostly
+       seen at a grazing angle, so a rim tuned for a tower floods the whole
+       body and turns a black hull into a glowing one. Measured on a Federation
+       board: a column of stockmen rendered solid gold and read as friendly.
+       Denizens therefore take a fraction of the rim, which keeps them dark
+       silhouettes whose only chroma is their own emissive core. */
+    it.rimScale = (o && o.rimScale !== undefined) ? o.rimScale : 1;
     opaqueN++;
   }
 
@@ -276,12 +295,14 @@ var R = (function () {
   /* Particles are pushed as flat numbers rather than objects: this is called
      up to a few thousand times a frame and an object per particle per frame is
      the difference between a smooth frame and a visible GC pause. */
-  function pushParticle(x, y, z, r, g, b, a, size, rot, kind) {
+  function pushParticle(x, y, z, r, g, b, a, size, rot, kind, stretch, vx, vy, vz) {
     if (particleN >= MAX_PARTICLES) return;
-    var o = particleN * 10;
+    var o = particleN * PART_STRIDE;
     partData[o] = x; partData[o + 1] = y; partData[o + 2] = z;
     partData[o + 3] = r; partData[o + 4] = g; partData[o + 5] = b; partData[o + 6] = a;
     partData[o + 7] = size; partData[o + 8] = rot; partData[o + 9] = kind;
+    partData[o + 10] = stretch || 0;
+    partData[o + 11] = vx || 0; partData[o + 12] = vy || 0; partData[o + 13] = vz || 0;
     particleN++;
   }
 
@@ -427,6 +448,7 @@ var R = (function () {
       p.u1f('uAlpha', it.alpha);
       p.u1f('uFacetJitter', it.facetJitter >= 0 ? it.facetJitter : ART.facetJitter);
       p.u1f('uDebugMode', ART.debugMode || 0);
+      p.u1f('uRimScale', it.rimScale);
       it.mesh.draw();
     }
   }
@@ -477,7 +499,7 @@ var R = (function () {
 
     gl.bindVertexArray(partVAO);
     gl.bindBuffer(gl.ARRAY_BUFFER, partVBO);
-    gl.bufferSubData(gl.ARRAY_BUFFER, 0, partData, 0, particleN * 10);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, partData, 0, particleN * PART_STRIDE);
 
     var p = prog.particle.use();
     p.um4('uProj', proj);
@@ -647,6 +669,14 @@ var R = (function () {
     get time() { return time; },
     get gl() { return gl; },
     errors: function () { return errors.slice(); },
+    /* Read one instance slot back out of the particle buffer. Exists so the
+       harness can prove the CPU side and the vertex layout agree about the
+       stride: a mismatch there corrupts every particle and throws nothing. */
+    debugParticleSlot: function (i) {
+      if (i < 0 || i >= particleN) return null;
+      return Array.prototype.slice.call(partData, i * PART_STRIDE, (i + 1) * PART_STRIDE);
+    },
+    particleCount: function () { return particleN; },
     caps: function () { return GL.caps; }
   };
 })();

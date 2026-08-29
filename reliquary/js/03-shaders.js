@@ -191,6 +191,7 @@ var SH = (function () {
     'uniform vec3 uCamPos;',
     'uniform vec3 uRimColor;',
     'uniform float uRimStrength;',
+    'uniform float uRimScale;',
     'uniform float uRimPower;',
     'uniform vec3 uAmbientSky;',
     'uniform vec3 uAmbientGround;',
@@ -302,7 +303,7 @@ var SH = (function () {
        the form, not as a uniform outline glow. */
     '  float fres = pow(1.0 - clamp(dot(N, Vd), 0.0, 1.0), uRimPower);',
     '  float rimSide = clamp(dot(N, L) * 0.5 + 0.65, 0.0, 1.0);',
-    '  col += uRimColor * fres * rimSide * uRimStrength;',
+    '  col += uRimColor * fres * rimSide * uRimStrength * uRimScale;',
     '',
     /* Emissive facets bypass the ramp entirely. */
     '  col = mix(col, vAlbedo * 1.9 + uRimColor * 0.35, vEmis);',
@@ -687,12 +688,14 @@ var SH = (function () {
     /* instance attributes */
     'layout(location=0) in vec3 iPos;',
     'layout(location=1) in vec4 iColor;',
-    'layout(location=2) in vec3 iParams;',  /* size, rotation, kind */
+    'layout(location=2) in vec4 iParams;',  /* size, rot, kind, stretch */
+    'layout(location=3) in vec3 iVel;',
     'uniform mat4 uProj, uView;',
     'uniform vec3 uRight, uUp;',
     'out vec2 vUV;',
     'out vec4 vColor;',
     'flat out float vKind;',
+    'flat out float vStretch;',
     /* Six vertices per instance, built from gl_VertexID against a constant
        table. An earlier draft derived the corners with a chain of ternaries
        and got the winding wrong on the second triangle, which showed up as
@@ -707,9 +710,32 @@ var SH = (function () {
     '  vUV = corner * 0.5 + 0.5;',
     '  vColor = iColor;',
     '  vKind = iParams.z;',
-    '  float s = iParams.x, rot = iParams.y;',
-    '  float cs = cos(rot), sn = sin(rot);',
-    '  vec2 rc = vec2(corner.x * cs - corner.y * sn, corner.x * sn + corner.y * cs) * s;',
+    '  float size = iParams.x;',
+    '  float ang = iParams.y;',
+    '  float stretchAmt = iParams.w;',
+    '',
+    /* VELOCITY STRETCH, computed in the vertex shader rather than on the CPU.
+       A spark that does not elongate along its own motion is the loudest tell
+       of a cheap particle system: real sparks are motion-blurred streaks, and
+       a round dot moving fast reads as a bug crawling across the screen.
+       The velocity is projected onto the camera basis, so the streak is
+       correct from any angle and costs two dot products. Doing it here also
+       means the CPU never has to know where the camera is. */
+    '  float sy = 1.0;',
+    '  if (stretchAmt > 0.001){',
+    '    vec2 sv = vec2(dot(iVel, uRight), dot(iVel, uUp));',
+    '    float sp = length(sv);',
+    '    if (sp > 0.02){',
+    '      ang = atan(sv.x, sv.y);',
+    '      sy = 1.0 + stretchAmt * min(sp * 0.055, 5.0);',
+    '    }',
+    '  }',
+    '  vStretch = sy;',
+    /* Scale along the local Y BEFORE rotating, so the elongation lands on the
+       velocity axis and not on the screen axis. */
+    '  vec2 c2 = vec2(corner.x, corner.y * sy) * size;',
+    '  float cs = cos(ang), sn = sin(ang);',
+    '  vec2 rc = vec2(c2.x * cs - c2.y * sn, c2.x * sn + c2.y * cs);',
     '  vec3 world = iPos + uRight * rc.x + uUp * rc.y;',
     '  gl_Position = uProj * uView * vec4(world, 1.0);',
     '}'
@@ -721,12 +747,14 @@ var SH = (function () {
     'in vec2 vUV;',
     'in vec4 vColor;',
     'flat in float vKind;',
+    'flat in float vStretch;',
     'out vec4 oColor;',
     NOISE,
     'void main(){',
     '  vec2 p = vUV * 2.0 - 1.0;',
     '  float d = length(p);',
     '  float a = 0.0;',
+    '  vec3 col = vColor.rgb;',
     '  if (vKind < 0.5){',
     /* SPARK: a hard-edged diamond, not a soft round blob. Round soft sprites
        are the fastest way to make a stylised game look like a 2009 particle
@@ -742,12 +770,32 @@ var SH = (function () {
     '  } else if (vKind < 2.5){',
     /* RING: an expanding shock annulus. */
     '    a = smoothstep(0.55, 0.78, d) * (1.0 - smoothstep(0.9, 1.0, d));',
-    '  } else {',
+    '  } else if (vKind < 3.5){',
     /* FLAKE: a rotated hard square, the paint-chip debris. */
     '    a = (abs(p.x) < 0.72 && abs(p.y) < 0.72) ? 1.0 : 0.0;',
+    '  } else if (vKind < 4.5){',
+    /* STREAK: a tapered capsule along the stretched axis, with a hot core.
+       The taper is what makes it read as motion rather than as a stick. */
+    '    float across = abs(p.x);',
+    '    float along = abs(p.y);',
+    '    float body = (1.0 - smoothstep(0.0, 1.0, across)) * (1.0 - smoothstep(0.35, 1.0, along));',
+    '    a = body;',
+    '    float core = (1.0 - smoothstep(0.0, 0.34, across)) * (1.0 - smoothstep(0.1, 0.8, along));',
+    '    col += vec3(0.9, 0.85, 0.75) * core * 0.85;',
+    '  } else if (vKind < 5.5){',
+    /* EMBER: a soft glow with a hard bright centre. The two-part falloff is
+       what makes a small bright thing read as HOT rather than as a dot. */
+    '    float glow = pow(1.0 - clamp(d, 0.0, 1.0), 2.4);',
+    '    float core = 1.0 - smoothstep(0.0, 0.30, d);',
+    '    a = glow * 0.75 + core;',
+    '    col += vec3(1.0, 0.92, 0.8) * core * 0.7;',
+    '  } else {',
+    /* SHARD: a sharp asymmetric chip, the debris that is not paint. */
+    '    float tri = p.y + 1.0 - abs(p.x) * 1.9;',
+    '    a = step(0.0, tri) * step(abs(p.x), 0.85);',
     '  }',
     '  if (a <= 0.003) discard;',
-    '  oColor = vec4(vColor.rgb, vColor.a * a);',
+    '  oColor = vec4(col, vColor.a * a);',
     '}'
   ].join('\n');
 

@@ -355,10 +355,18 @@ var GAME = (function () {
     return r;
   }
 
+  function scaleOf(d) { return d.scale; }
+
   function poseDenizen(d, rig, dt) {
     RIG.rest(rig);
     var body = rig.get('body');
     var moving = d.stun <= 0 && d.airborne <= 0;
+    /* The creature's own facing, needed to place footfall dust in world space
+       from a hip offset authored in local space. */
+    var cosYaw = Math.cos(d.yaw), sinYaw = Math.sin(d.yaw);
+    /* Dust takes the BOARD's colour, not the creature's: it is ground being
+       kicked up, and tinting it to the unit would read as an emission. */
+    var dustColor = R.palette().ambientSky;
 
     if (d.def.rig === 'flyer') {
       /* Flyers bank into the turn and bob on a slow sine. The vanes counter
@@ -401,6 +409,20 @@ var GAME = (function () {
       var g = moving ? RIG.gait(phase, strideLen, lift, 0.6)
                      : { x: 0, y: 0, planted: true, t: 0 };
       if (g.planted) { plantedCount++; }
+
+      /* DUST ON THE FRAME THE FOOT LANDS.
+         The gait function already knows precisely when a leg crosses from
+         swing into stance, and that transition is the one moment a footfall
+         can be sold. Tracking the previous state per leg on the rig part costs
+         one boolean and turns a sliding walk into one with weight. Gated on
+         real movement and on the foot being near the ground, so a stationary
+         or airborne unit does not smoke. */
+      if (moving && g.planted && !up.__wasPlanted && d.airborne <= 0 && !d.flying) {
+        var fx0 = d.pos[0] + (up.bind[0] * cosYaw + (up.bind[2] + g.x) * sinYaw) * scaleOf(d);
+        var fz0 = d.pos[2] + (-up.bind[0] * sinYaw + (up.bind[2] + g.x) * cosYaw) * scaleOf(d);
+        FX.dust([fx0, d.pos[1], fz0], 0.55 + d.scale * 0.45, dustColor);
+      }
+      up.__wasPlanted = g.planted;
 
       var hip = [up.bind[0], hipY, up.bind[2]];
       var foot = [up.bind[0] * 1.06, g.y, up.bind[2] + g.x];
@@ -486,7 +508,8 @@ var GAME = (function () {
       var opts = {
         flash: d.flash * 0.8,
         flashColor: d.mark ? U.hex2rgb(DATA.ELEMENTS[d.mark].color) : [1, 0.85, 0.9],
-        dissolve: dying ? U.sat(1 - d.dying / 0.55) * 0.9 : 0
+        dissolve: dying ? U.sat(1 - d.dying / 0.55) * 0.9 : 0,
+        rimScale: 0.34
       };
       RIG.draw(rig, opts);
 
@@ -636,16 +659,12 @@ var GAME = (function () {
       R.push(mesh, U.m4trs(p.pos[0], p.pos[1], p.pos[2], pitch, yaw, p.spin, sc, sc, sc),
         { castShadow: false });
       /* A short trail, emitted rather than drawn, so it inherits the paint
-         particle look instead of being a stripe. */
-      if (Math.random() < 0.75) {
+         particle look instead of being a stripe. Given the projectile's own
+         velocity so each segment stretches along the flight path. */
+      if (Math.random() < 0.9) {
         var c = U.hex2rgb(col);
-        FX.spawn({
-          x: p.pos[0], y: p.pos[1], z: p.pos[2],
-          vx: 0, vy: 0, vz: 0, r: c[0], g: c[1], b: c[2],
-          life: 0.20, size: sc * 0.30, size1: 0.02,
-          rot: Math.random() * 6, rotv: 0,
-          kind: FX.KIND.SPARK, drag: 6, grav: 0, alpha: 0.85
-        });
+        var pv = p.dir ? [p.dir[0] * p.speed, p.dir[1] * p.speed, p.dir[2] * p.speed] : [0, 0, 0];
+        FX.trail(p.pos, pv, c, sc);
       }
     }
   }
@@ -802,8 +821,33 @@ var GAME = (function () {
     R.sun.dir = [0.34, 0.88, 0.42];
   }
 
+  /* Draw exactly one frame, synchronously, without touching the simulation.
+     Exists so a harness can exercise the DRAW path (poses, footfall dust,
+     beams, the whole submit chain) which requestAnimationFrame otherwise makes
+     unreachable from a test. The project law is that code no gate executes is
+     code that ships untested, and before this the entire animation layer was
+     in that category. */
+  function renderOnce(dt) {
+    if (!G) return false;
+    dt = dt || (1 / 60);
+    try {
+      updateCamera(dt);
+      R.reset();
+      drawBoard();
+      drawTowers();
+      drawDenizens();
+      drawProjectiles();
+      FX.submit();
+      R.render(dt);
+      return true;
+    } catch (e) {
+      recordError('renderOnce', e);
+      return false;
+    }
+  }
+
   return {
-    init: init, start: start, stop: stop, resize: resize,
+    init: init, start: start, stop: stop, resize: resize, renderOnce: renderOnce,
     keydown: keydown, toggleSpeed: toggleSpeed, togglePause: togglePause,
     get state() { return G; },
     get speed() { return speed; },

@@ -6,11 +6,17 @@
      VISUAL_DENSITY 6     gold, lives, wave, cooldowns and fourteen towers have
                           to coexist without a scroll
 
-   ACCENT POLICY (gate G3). ONE accent: --accent, which is set from the chosen
-   faction at runtime, so a Federation run is gold throughout and a Humanity
-   run is cyan throughout. Exactly one second hue exists, --danger, and it has
-   a single named semantic job: cannot afford, or about to lose. It never
-   appears decoratively.
+   ACCENT POLICY (gate G3), stated in full because three hues need a stated
+   hierarchy or they are just three accents:
+     --accent   PRIMARY. Set from the chosen faction at runtime, so a Federation
+                run is gold throughout and a Humanity run is cyan throughout.
+     --danger   SEMANTIC. Cannot afford, or about to lose. Never decorative.
+     --gold     SEMANTIC. Currency, and only currency. It is the same hex as the
+                Federation accent by coincidence of the locked palette, which is
+                why it is a separate token: on a Federation run the two must
+                stay independently tunable.
+     --magenta  Reserved. The universal key light of this universe, allowed on
+                any palette, currently used only for the boss health bar.
 
    GROUND POLICY (gate G5). No #000 and no #fff anywhere. Every surface is
    tinted toward --void, the same hued near-black the renderer paints its
@@ -23,9 +29,22 @@
   --accent-2: #7dd3fc;
   --accent-dim: rgba(56, 232, 255, 0.18);
   --accent-glow: rgba(56, 232, 255, 0.42);
+  /* The same hue at zero alpha. A keyframe cannot fade a colour to transparent
+     without naming the transparent end, and writing that end literally is how
+     the ability pulse ended up animating to cyan on every faction including
+     the gold and crimson ones. Both are set together by UI.applyPalette. */
+  --accent-glow-0: rgba(56, 232, 255, 0);
 
   --danger: #ff5470;
+  --danger-2: #ff8fa3;
+  /* ART-BIBLE section 2: magenta is the universal vaporwave key, not a faction
+     colour, so it is allowed across every palette and is named here once. */
+  --magenta: #ff2fd6;
   --gold: #fbbf24;
+  /* Text that sits ON the accent, which is always a bright fill. Near-black
+     tinted toward the ground hue rather than pure black, per the surface
+     policy above. */
+  --on-accent: #0a1018;
 
   --void: #0a0e17;
   --ground: #0d1220;
@@ -144,7 +163,7 @@ html, body {
 .btn-primary {
   background: linear-gradient(180deg, var(--accent) 0%, var(--accent-2) 100%);
   border-color: transparent;
-  color: #0a1018;
+  color: var(--on-accent);
   font-weight: 700;
 }
 .btn-primary:hover { filter: brightness(1.1); background: linear-gradient(180deg, var(--accent) 0%, var(--accent-2) 100%); }
@@ -297,12 +316,17 @@ html, body {
 .ability.ready .key { box-shadow: 0 0 0 0 var(--accent-glow); animation: readyPulse 2.4s ease-out infinite; }
 @keyframes readyPulse {
   0% { box-shadow: 0 0 0 0 var(--accent-glow); }
-  70% { box-shadow: 0 0 0 9px rgba(56, 232, 255, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(56, 232, 255, 0); }
+  70% { box-shadow: 0 0 0 9px var(--accent-glow-0); }
+  100% { box-shadow: 0 0 0 0 var(--accent-glow-0); }
 }
 
 /* ---------- tower dock ---------- */
 
+/* THE DOCK FITS FOURTEEN CARDS AT 1280 AND SCROLLS BELOW THAT.
+   At 92px per card it overflowed even a 1400px window, so the last tower was
+   clipped mid-word behind a scrollbar: the reading is not "there is more here"
+   but "this is broken". At 80px the full set fits the common desktop widths,
+   and where it genuinely cannot, the edge fade says so without a scrollbar. */
 #dock {
   margin: 0 12px 12px;
   padding: 10px;
@@ -311,16 +335,18 @@ html, body {
   align-items: stretch;
   overflow-x: auto;
   overflow-y: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
 }
-#dock::-webkit-scrollbar { height: 6px; }
-#dock::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
+#dock::-webkit-scrollbar { display: none; }
 
 .card {
   position: relative;
   flex: none;
-  width: 92px;
+  width: 80px;
+  scroll-snap-align: start;
   padding: 8px 8px 9px;
   border-radius: var(--r-sm);
   border: 1px solid var(--line);
@@ -366,7 +392,7 @@ html, body {
   text-overflow: ellipsis;
 }
 .card .rl {
-  font-size: 9.5px;
+  font-size: 9px;
   color: var(--text-faint);
   line-height: 1.25;
   height: 24px;
@@ -446,7 +472,7 @@ html, body {
   font-weight: 800;
   letter-spacing: 0.14em;
   line-height: 1;
-  text-shadow: 0 0 34px var(--accent-glow), 0 4px 20px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 2px 4px rgba(5, 7, 14, 0.92), 0 8px 26px rgba(5, 7, 14, 0.75);
 }
 #banner .small {
   font-size: 13px;
@@ -466,7 +492,7 @@ html, body {
   font-size: 13px;
   white-space: nowrap;
   transform: translate(-50%, -50%);
-  text-shadow: 0 2px 6px rgba(4, 6, 14, 0.95);
+  text-shadow: 0 2px 5px rgba(5, 7, 14, 0.95), 0 0 2px rgba(5, 7, 14, 0.9);
   will-change: transform, opacity;
 }
 .float.reaction {
@@ -498,12 +524,12 @@ html, body {
   transform-origin: left center;
   background: linear-gradient(90deg, var(--accent-2), var(--accent));
 }
-.hpbar.crit > i { background: linear-gradient(90deg, #ff8fa3, var(--danger)); }
+.hpbar.crit > i { background: linear-gradient(90deg, var(--danger-2), var(--danger)); }
 .hpbar.boss {
   height: 7px;
   border-color: rgba(255, 120, 160, 0.55);
 }
-.hpbar.boss > i { background: linear-gradient(90deg, #ff2fd6, var(--danger)); }
+.hpbar.boss > i { background: linear-gradient(90deg, var(--magenta), var(--danger)); }
 
 /* ---------- screens (start, pause, end) ---------- */
 
@@ -515,7 +541,7 @@ html, body {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: radial-gradient(120% 90% at 50% 0%, rgba(22, 12, 40, 0.86) 0%, rgba(6, 8, 16, 0.95) 70%);
+  background: rgba(7, 9, 18, 0.90);
   backdrop-filter: blur(9px);
   -webkit-backdrop-filter: blur(9px);
   opacity: 0;
@@ -702,7 +728,7 @@ kbd {
   .stat { min-width: 52px; padding: 0 7px; }
   .stat .v { font-size: 16px; }
   #dock { margin: 0 8px 8px; padding: 8px; }
-  .card { width: 80px; }
+  .card { width: 74px; }
   #inspector { width: calc(100vw - 24px); right: 12px; top: auto; bottom: 150px; }
   #abilities { bottom: auto; top: 74px; left: 8px; flex-direction: row; }
   .ability { width: auto; }
