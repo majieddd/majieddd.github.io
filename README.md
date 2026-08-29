@@ -336,3 +336,12 @@ chart slowly inward for as long as the screen is watched.
 calling the same `draw_*` routine the battlefield uses, on a lightweight stub
 posed mid-animation, so the loadout grid, the shop, the tooltips, the talent
 trees and the soul shop all show real artwork rather than an icon font.
+
+
+## Cosmic Conquest — Poly Protocol (3D TD demo)
+
+A self-contained medium/low-poly WebGL2 tower defense using the **Neon Reliquary**
+art register (painted skybox, toon bands, posterized grain). Custom micro-engine,
+zero runtime deps. See [polytd/README.md](polytd/README.md).
+
+Served live at **https://majieddd.github.io/polytd/**.
