@@ -22,7 +22,8 @@ for (const f of ['config', 'lore', 'factions', 'towers2', 'roster', 'story',
   catch (e) {}
 
 const G = vm.runInContext('({ STORY, STORY_ACTS, ACT_SCENARIOS, ACT_MORALS, CUTSCENES, ' +
-  'PLANET_CUTS, PLANET_MOMENTS, GX_HOME_SYSTEMS, FACTIONS, COMMANDER_ROSTER })', ctx);
+  'PLANET_CUTS, PLANET_MOMENTS, GX_HOME_SYSTEMS, FACTIONS, COMMANDER_ROSTER, ' +
+  'LORE_CODEX, UNIT_TYPES })', ctx);
 const FACS = ['human', 'light', 'xeno', 'pirate', 'robot'];
 
 /* Every string a player can read, with where it came from. */
@@ -42,6 +43,13 @@ Object.entries(G.PLANET_CUTS).forEach(([k, e]) => {
 });
 Object.entries(G.PLANET_MOMENTS || {}).forEach(([kind, byFac]) =>
   Object.entries(byFac).forEach(([f, t]) => add('moment ' + kind + '/' + f, t)));
+/* LORE_CODEX is the Field Manual: the game's own comment on it calls this
+   "the ONE screen a new player learns the game from." It went unscanned for a
+   whole session, during which it kept describing THE PARALLEL as "the Vigil"
+   throughout, the exact conflation this file's CO.8 exists to catch, and CO.8
+   could not see it because it only fires when both words share a cell. */
+(G.LORE_CODEX || []).forEach(e => add('codex/' + e.id, e.body));
+Object.values(G.UNIT_TYPES || {}).forEach(u => add('unit/' + u.id, u.desc));
 
 const checks = [];
 function T(id, fn) {
@@ -146,6 +154,27 @@ T('CO.8 the Vigil is never conflated with the Parallel', () => {
   const bad = CELLS.filter(c => /\bVigil\b/i.test(c.text) && /\bParallel\b/i.test(c.text));
   must(!bad.length, () => bad.map(b => b.where).join(', '));
   return 'no cell treats them as one body';
+});
+
+/* ---- 8b. the Vigil never does the Parallel's specific narrative work ---- */
+T('CO.8b the Vigil is never described holding worlds or built by the Ancients', () => {
+  /* The narrower version of CO.8: a cell can say "Vigil" alone (correctly, it
+     is a real separate thing) and never say "Parallel" at all, and STILL be
+     wrong if it hands the Vigil the Parallel's own established facts: built by
+     the Ancients, recovered prime directives, holding worlds/seats, or the verb
+     CONTINUE (the Parallel's signature verb in the five-ways-to-conquer set).
+     Found live: the Field Manual's "order" and "verbs" and "ancients" entries
+     all did exactly this, undetected for a session because nothing scanned
+     LORE_CODEX at all and CO.8 only fires on CO-occurrence. */
+  const bad = CELLS.filter(c => /\bVigil\b/i.test(c.text) && (
+    /\bVigil\b[^.!?]{0,60}\b(hold|holds|holding|own|owns|belong|belongs)\b/i.test(c.text) ||
+    /\b(stand|stands)\b[^.!?]{0,30}\bthe Vigil\b/i.test(c.text) ||
+    /\bVigil\b[^.!?]{0,40}\bCONTINUE/i.test(c.text) ||
+    /\bAncients\b[^.!?]{0,60}\bVigil\b|\bVigil\b[^.!?]{0,60}\bAncients\b/i.test(c.text) ||
+    /\bVigil\b[^.!?]{0,60}\bprime directive/i.test(c.text)
+  ));
+  must(!bad.length, () => bad.map(b => b.where).join(', '));
+  return 'no cell hands the Vigil the Parallel\'s origin, directives or claim to worlds';
 });
 
 /* ---- 9. the Xeno is never written as a species ---- */

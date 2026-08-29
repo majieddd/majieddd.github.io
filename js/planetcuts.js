@@ -943,7 +943,7 @@ const PLANET_MOMENTS = {
      anywhere new. */
   retaken: {
     human:  'We took this world once. We put people on it and we moved on, and somebody walked back in behind us. Nobody is saying it out loud, so it will be said here: that is on us.',
-    light:  'A world we have already rung once, ringed again by somebody else. Protection that has to be re-established was not protection. It was a visit.',
+    light:  'A world we have already ringed once, now ringed again by somebody else. Protection that has to be re-established was not protection. It was a visit.',
     xeno:   'This ground was already in the ledger. It has been struck out and re-entered by another hand. The body does not resent losing a limb. It resents having to grow the same one twice.',
     pirate: 'We opened this road once. It is closed again, by somebody who watched us do it and waited. There is a lesson in there about leaving, and none of us wants to hear it.',
     robot:  'SITE: previously RESTORED by this unit. STATUS: reverted. The work was undone by a party who observed it being done. FILED: repair is not a state. It is a thing somebody has to keep choosing.',

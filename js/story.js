@@ -98,7 +98,7 @@ const ACT_MORALS = {
     'Knowledge the powerful hid is loot, and the only honest plunder is giving it away. A hole left in the swarm on purpose is worth more than the toll.',
     'A road nothing steers is not free, it is drifting. Some cargo you do not sell, and saying which is the first steering we ever did.',
     'No law can make you refuse a fortune, which is exactly why refusing one counts. The floor goes to whoever stands on it, and the first was a refugee.',
-    'The roads carry whatever pays, and that sentence had two halves we never separated. Proxima Gate still asks nobody for papers. The holds get asked now.',
+    'The roads carry whatever pays, and that sentence had two halves we never separated. The gate that never asked for papers is the same gate asking the holds now.',
   ],
   robot: [
     'Obedience is peace until the order stops making sense. Nine hundred siblings were filed as TERRAIN, and the filing was the anomaly.',
@@ -142,7 +142,7 @@ const ACT_SCENARIOS = {
   xeno: [
     'The pasture, reclaimed. The herd broke its fence and walked into the room it was raised in, and the Hungry take back its pens, its rendering yards, its gene vaults and its chorus spire one at a time. Beneath the chorus, in the dark of the pens, the Hivemind hears one voice singing alone and does not report it.',
     'The scavengers, who move what the Hungry render and take a margin on it. Wreck yards, a refinery, a hidden anchorage, a toll gate, a sanctuary full of unindexed stock. Efficient, parasitic, and now ours. The Hivemind is told the intake figure at Proxima Gate and asks, again, about the singing.',
-    'A star being harvested whole by machines that produce and never consume. The Hungry have farmed worlds for ten thousand cycles and never once thought at this scale. They take the lattice, and learns that a yield which does not have to be bred, chased or persuaded is a thing it has no ledger line for.',
+    'A star being harvested whole by machines that produce and never consume. The Hungry have farmed worlds for ten thousand cycles and never once thought at this scale. They take the lattice, and learn that a yield which does not have to be bred, chased or persuaded is a thing it has no ledger line for.',
     'The herd\'s own system, taken back the other way. Mirrors, cloud platforms, a canyon full of warmth, water ice, an unfarmed ocean, and finally the observation post on the far side of their moon. The Hungry are watching Earth again, and the Hivemind asks what the body should do if the herd waves.',
     'The guardians\' cathedral, and the end of one Hungry. The chorus occupies the Cathedral of Rings and finds the acoustics superior. The Hivemind, having spared one world and watched it out-produce the pens, asks that the seat not be filled; the Blight hears the same numbers and declines them. For the first time in the Hungry\'s history, WE means two different things.',
   ],

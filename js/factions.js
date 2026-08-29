@@ -255,7 +255,7 @@ const FACTION_ENEMY_TYPES = {
                  desc:'Collects. Not a soldier and never has been, which is why it walks toward you at exactly the same pace throughout.' },
   stockman:    { id:'stockman', faction:'xeno', name:'Stockman', hp:300, speed:0.9, armor:7, bounty:36, lives:2, radius:13,
                  color:'#a855f7', shape:'warden',
-                 desc:'Counts what is left standing and adjusts the figure. The Hungry do not steal. The Hungry contracts.' },
+                 desc:'Counts what is left standing and adjusts the figure. The Hungry do not steal. The Hungry contract.' },
   graft:       { id:'graft', faction:'xeno', name:'Graft', hp:180, speed:1.05, armor:4, bounty:26, lives:2, radius:11,
                  color:'#d8b4fe', shape:'hex', elemResist:{ venom:0.5 },
                  desc:'Two lineages fused at the seam because the ledger said the yield would improve. It did.' },
@@ -1046,30 +1046,28 @@ const LORE_CODEX = [
           'begins on this day, from Earth, and the first system on the map is our own.' },
   { id: 'order', title: 'The Old Order',
     body: 'Nothing out there is empty. The Federation of Light rings worlds it claims ' +
-          'to protect. The Xeno Hungry farms worlds it claims to preserve, and ' +
-          'humanity was one of its herds. The Pirates hold the roads between, owned by ' +
-          'no one and indispensable to everyone. Above all of it stand the Vigil, ' +
+          'to protect. The Hungry farm worlds they claim to preserve, and ' +
+          'humanity was one of their herds. The Pirates hold the roads between, owned by ' +
+          'no one and indispensable to everyone. Above all of it stand the Parallel, ' +
           'automatons of a civilization no living power has ever met. Every world you ' +
           'will fight on already belongs to one of them.' },
   { id: 'verbs', title: 'Five Ways To Take A World',
     body: 'Every banner conquers, and none of them conquer alike. Humanity SETTLES: ' +
           'presence that cannot be erased again. The Federation RINGS: defence around ' +
-          'a world it will not rule. The Xeno HARVESTS: bodies, ground, and ' +
+          'a world it will not rule. The Hungry HARVEST: bodies, ground, and ' +
           'consciousness into the yield. The Pirates ROUTE: access, salvage, sanctuary, ' +
-          'movement. The Vigil CONTINUE: the standing tasks, executed without a living ' +
+          'movement. The Parallel CONTINUES: the standing tasks, executed without a living ' +
           'author. One world can carry all five claims at once.' },
   { id: 'vigil', title: 'The Vigil',
-    body: 'The Vigil is not a sixth power. It is the machine ecology the Ancients ' +
-          'left behind, and its recovered prime directives contain no offensive verb: ' +
-          'defend, repair, heal, quarantine. Something overwrote them. The Vigil now ' +
-          'attacks on a galactic scale, it does not read flags, and it comes down the ' +
-          'same corridor at both commanders in the same numbers. Nothing out there is ' +
-          'fighting for you.' },
+    body: 'The Vigil is not a sixth power. Old Weather routines that never ' +
+          'stopped running, attached to no living author and deciding nothing: ' +
+          'it does not read flags, and it comes down the same corridor at both ' +
+          'commanders in the same numbers. Nothing out there is fighting for you.' },
   { id: 'ancients', title: 'The Ancients',
     body: 'Older than the Federation, older than the Hungry, and gone in a way that ' +
           'is not dying: the Ancients shed physical form entirely. A mind that is ' +
           'everywhere has no location, no enemy, and no mouth, and a mind with no ' +
-          'mouth issues no commands. Which is the whole mystery of the Vigil: whatever ' +
+          'mouth issues no commands. Which is the whole mystery of the Parallel: whatever ' +
           'is signing its hostile orders, it is not the silence that built it.' },
   { id: 'garrisons', title: 'Who Is Actually Standing There',
     body: 'The banner on a world names its claim. The garrison is who fights you for ' +
