@@ -165,6 +165,17 @@ function staticGates() {
   if (ft.code === 0) say('commander signatures: ' + ft.out.trim().replace(/^facts check OK: /, ''));
   else fail('commander signatures: ' + ft.out.trim().split('\n').slice(1).map(l => l.trim()).join('; '));
 
+  /* THE GAME LOADS WITHOUT THROWING. js/game.js:229 calls
+     assertBoonKeysAreLive() at module top level -- a real, already-written
+     check that a boon's apply() never writes a key BOON_FOLD does not know
+     -- and nothing in this gate ever loaded far enough to trigger it, because
+     facts.js stops at DATA_END on purpose (browser-only modules past it).
+     Five new robot boons landed this session verified against BOON_FOLD by
+     hand, once; this is that same check, permanent. */
+  const ll = run(process.execPath, ['tools/probe-liveload.js']);
+  if (ll.code === 0) say('module live-load: ' + ll.out.trim());
+  else fail('module live-load: ' + ll.out.trim());
+
   /* GEOMETRY PROPERTIES of every procedural board, in node because they are
      pure functions of (family, seed) and need no browser. Determinism is the
      one that matters for duels: both clients build the board from the same
