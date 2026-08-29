@@ -475,7 +475,7 @@ function index() {
     ['TODO', 'Art for the sixteen new intro slides',
      'The four rewritten openings went from five slides to nine. Prompts are written; the plates are not rendered.'],
     ['TODO', 'The other four powers still need Acts 2 to 5 authored',
-     'Only the Earth System has authored garrisons. Every other act is the canon seed roll. Also OPEN: whether humanity act two becomes Proxima Centauri, which changes the act ORDER and is a structural call.'],
+     'Only the Earth System has authored garrisons (Xeno swarm, then the Vigil, then Xeno and Parallel, Federation, Parallel, Federation and Parallel, Xeno seat with the Pirates). Every other act, for every power, is still the canon seed roll rather than a designed encounter.'],
     ['LORE', 'The five bonus systems stay lore, by decision',
      'Kepler, Arcturus, Vega and the two demoted acts are NOT being built. They remain in the canon and in GALAXY-SCOPE-S42.md so the galaxy has edges the player can hear about, and nothing in the game promises them.'],
   ];

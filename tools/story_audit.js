@@ -57,6 +57,8 @@ const FINITE = new RegExp('\\b(' + [
   'cut|cuts|climbs?|climbed|rises?|rose|strips?|stripped|banks?|banked',
   'tries|tried|moors?|moored|spins?|spun|feeds?|fed|fires?|fired',
   'covers?|covered|seals?|sealed|guards?|guarded|never',
+  'survives?|survived|reads?|filled|fills?|drains?|drained|pours?|poured',
+  'crosses?|crossed|passes?|passed|hangs?|throws?|strings?|strung',
 ].join('|') + ')\\b', 'i');
 
 function firstClause(s) {

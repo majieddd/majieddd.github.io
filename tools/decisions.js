@@ -24,7 +24,7 @@ function build(G, artHas) {
   const P = G.PLANET_CUTS || {};
   const U = G.UNIT_TYPES || {};
   const LORE = G.LORE || {};
-  const ui = src('js/ui.js'), cm = src('js/commanders.js');
+  const ui = src('js/ui.js'), cm = src('js/commanders.js'), gx = src('js/galaxy.js');
 
   const intro = f => (CUT[f] && CUT[f].intro) || [];
   const yearOf = d => {
@@ -102,6 +102,10 @@ function build(G, artHas) {
     { id: 'the intro hands straight into the first battle', why: 'Four menus between the panic and the fight throw the opening away.',
       check: () => /coldOpen\s*\(\)\s*\{/.test(ui) && /coldOpen\(\)/.test(ui),
       got: () => 'Ui.coldOpen defined and wired' },
+
+    { id: 'humanity opens Earth then Proxima Centauri', why: 'Its road is a story, not a rotation: the nearest star is the one the Saturn door opens onto.',
+      check: () => /human:\s*\[0,\s*3,\s*2,\s*1,\s*4\]/.test(gx),
+      got: () => 'GX_ACT_ORDER.human = [0,3,2,1,4]: Earth, Proxima, Zeta, Pleiades, Sirius' },
 
     /* ---- decided, not yet built. These are the rows that matter. ---- */
     { id: 'Proxima and Sirius plates re-rendered', why: 'The art is still Barnard and Tabby under the new text.',
