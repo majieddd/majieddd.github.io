@@ -58,7 +58,7 @@ Out of scope (deliberately):
 
 ## Files changed (in the existing tree)
 
-- `narrative/index.html` — added one new card linking to `td_lowpoly.html` in the
+- `narrative/index.html`, added one new card linking to `td_lowpoly.html` in the
   existing `.cards` row. No other markup touched. Verified with
   `git diff --stat HEAD narrative/index.html` → `1 file changed, 1 insertion(+)`,
   and `git diff HEAD narrative/index.html` shows the single added anchor line.

@@ -1,4 +1,4 @@
-# PLAN-LOWPOLY-3D — Cosmic Conquest: LOWPOLY (3D tower defence)
+# PLAN-LOWPOLY-3D, Cosmic Conquest: LOWPOLY (3D tower defence)
 
 **Status: FROZEN SPEC. Completion criteria at the bottom are write-once.**
 Author: Hermes (agent session). Branch: `lowpoly/td3d`. Touch radius: `lowpoly/**`,
@@ -8,10 +8,10 @@ this file, and the OWNER-NOTES change doc. No existing 2D game file is edited.
 
 A medium/low-poly **3D tower defence** variant of Cosmic Conquest, in the same
 universe and mechanics DNA, with a **new art direction**: the illustrative
-wet-oil-painting look of the world plates (Neon Reliquary — bold flat brushwork,
+wet-oil-painting look of the world plates (Neon Reliquary, bold flat brushwork,
 hard shapes, hued shadows, halftone grain) rendered onto faceted low-poly
 geometry. Art, audio and UI are all **different from the 2D game's** procedural
-sprites — nothing is reused from `js/artpack.js`.
+sprites, nothing is reused from `js/artpack.js`.
 
 AAA bar: high-fidelity synthesized audio, juice (hit-stop, screen shake, bloom,
 particles, shatter), modern glass UI, and full unit/tower animation.
@@ -21,7 +21,7 @@ particles, shatter), modern glass UI, and full unit/tower animation.
 - **three.js r128 UMD**, vendored at `aegis-3d/vendor/` (no CDN at runtime, works
   from any static host). Classic `<script>` tags, zero build step to play.
 - **Painterly textures generated at runtime** from seeded PRNG on canvas 2D
-  (`aegis-3d/js/paint.js`) — deterministic, zero assets on disk.
+  (`aegis-3d/js/paint.js`), deterministic, zero assets on disk.
 - **Web Audio** synthesised everything (`aegis-3d/js/audio.js`): adaptive music,
   SFX, ambience, spatial panning, master limiter. No sample files.
 - Folder served from the repo root; GitHub Pages URL: `/aegis-3d/`.
@@ -88,7 +88,7 @@ Full 39-tower roster · multiplayer net.js · campaign galaxy · reanimation ·
 touch-only layout · offline SDXL/Krea artgen (3D paints procedurally instead).
 No existing 2D file is modified.
 
-## Completion criteria (FROZEN — write-once)
+## Completion criteria (FROZEN, write-once)
 
 1. `aegis-3d/` runs over plain HTTP with **no console errors**; ≥55 fps at 1080p
    on the dev machine during a mid-game wave.

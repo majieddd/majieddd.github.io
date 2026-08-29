@@ -106,7 +106,7 @@ ok('MODELS.beam builds along +Z with limb()',
   /* Match an actual CALL, not the word. The comment beside the fix explains
      the defect and therefore contains the name of the primitive that caused
      it, so a bare substring search reports its own documentation. */
-  /b\.prism\(/.test(beamFn) ? 'still CALLS b.prism(), which extrudes along +Y' : '');
+  /\bb\.prism\(/.test(beamFn) ? 'still CALLS b.prism(), which extrudes along +Y' : '');
 
 console.log(fail ? fail + ' failed' : 'all beam geometry checks passed');
 process.exit(fail ? 1 : 0);
