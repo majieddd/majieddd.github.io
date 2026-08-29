@@ -69,7 +69,7 @@ const FACTIONS = {
     tagline: 'Houses that take yield, not ground. Whatever needs them, they already own.',
     crest: '<svg viewBox="0 0 40 40" fill="currentColor"><path d="M20 4l6 3.5v7L20 18l-6-3.5v-7z"/><path d="M11 20l6 3.5v7L11 34l-6-3.5v-7z" opacity=".8"/><path d="M29 20l6 3.5v7L29 34l-6-3.5v-7z" opacity=".8"/></svg>',
     blurb:
-      'Not a species, a compact. The Severed Houses lost their share of an older ' +
+      'Not a species, a cartel. The Severed Houses lost their share of an older ' +
       'network and rebuilt on captive flows instead: labour, minerals, genetics, ' +
       'memory, devotion, fear. A world is theirs the moment its choices run ' +
       'through something they own. They sign treaties constantly and break them ' +

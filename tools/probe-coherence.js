@@ -63,6 +63,11 @@ Object.values((G.LORE && G.LORE.commanders) || {}).forEach(c => {
   add('lore/' + c.id + '/voice', c.voice);
 });
 (G.BOONS || []).forEach(b => add('boon/' + b.id, b.lore));
+Object.values(G.FACTIONS || {}).forEach(f => {
+  add('faction/' + f.id + '/creed', f.creed);
+  add('faction/' + f.id + '/tagline', f.tagline);
+  add('faction/' + f.id + '/blurb', f.blurb);
+});
 Object.entries((G.DIALOGUE && G.DIALOGUE.openers) || {}).forEach(([id, t]) => add('dialogue/opener/' + id, t));
 Object.entries((G.DIALOGUE && G.DIALOGUE.answers) || {}).forEach(([id, t]) => add('dialogue/answer/' + id, t));
 Object.entries((G.DIALOGUE && G.DIALOGUE.stanceAnswers) || {}).forEach(([fac, byStance]) =>
@@ -168,8 +173,16 @@ T('CO.7 every opening exists and closes on its own banner', () => {
 });
 
 /* ---- 8. the Vigil is never the Parallel ---- */
+/* Blunt co-occurrence was the whole check until faction/robot/blurb joined
+   the corpus: "The Vigil still runs the jurisdiction it was handed... The
+   Parallel is what diverged from it." Correct, load-bearing lore, flagged
+   anyway, because the original rule could not tell EXPLAINING the split
+   from ERASING it. A cell that says the two are different is not the
+   defect this check exists to catch; only a cell that says or implies
+   they are the same one is. */
 T('CO.8 the Vigil is never conflated with the Parallel', () => {
-  const bad = CELLS.filter(c => /\bVigil\b/i.test(c.text) && /\bParallel\b/i.test(c.text));
+  const DIFFERENTIATES = /\bdiverged?\b|\bdivergence\b|\bis not\b|\bare not\b|\bunlike\b|\bseparate from\b|\bdistinct from\b|\bused to be\b|\bno longer\b|\bbroke from\b|\bfork(?:ed)?\b/i;
+  const bad = CELLS.filter(c => /\bVigil\b/i.test(c.text) && /\bParallel\b/i.test(c.text) && !DIFFERENTIATES.test(c.text));
   must(!bad.length, () => bad.map(b => b.where).join(', '));
   return 'no cell treats them as one body';
 });
