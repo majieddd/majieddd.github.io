@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Cosmic Conquest | Low-Poly Tower Defense</title>
+<meta name="description" content="A low/medium-poly Tower Defense rendered in the same Neon Reliquary illustrative style as Cosmic Conquest. Standalone technical demo.">
+<style>
+:root{
+  --void:#0a0e17; --void2:#070a10;
+  --ink:#e2e8f0;  --dim:#94a3b8;  --line:rgba(148,163,184,.22);
+  --cyan:#38e8ff; --gold:#fbbf24; --violet:#7c3aed; --crimson:#ef4444;
+  --chrome:#cbd5e1; --magenta:#ff2fd6; --slate:#475569; --ok:#22c55e;
+  --hp:#fbbf24; --hp-bg:#0a0e17;
+  --b-glow:0 0 12px rgba(56,232,255,.45), 0 0 2px rgba(56,232,255,.9);
+  --b-tap:0 0 0 1px rgba(56,232,255,.6), 0 0 14px rgba(56,232,255,.3) inset;
+  --e-enter:cubic-bezier(.2,.7,.2,1);
+  --e-pop:cubic-bezier(.34,1.56,.64,1);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--void);color:var(--ink);
+  font:14px/1.45 ui-sans-serif,system-ui,"Segoe UI",Inter,Roboto,sans-serif;
+  overflow:hidden;user-select:none;-webkit-user-select:none}
+canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+/* HUD root lives above the canvas; the canvas paints everything except UI overlays */
+#stage{position:fixed;inset:0;z-index:0;background:linear-gradient(180deg,#070a10 0%,#0a0e17 40%,#0c1220 100%)}
+#ui{position:fixed;inset:0;z-index:5;pointer-events:none;font-variant-numeric:tabular-nums}
+#ui .pane{pointer-events:auto}
+#ui button{font:inherit;color:var(--ink);background:rgba(10,14,23,.72);
+  border:1px solid var(--line);border-radius:8px;padding:8px 12px;
+  letter-spacing:.04em;cursor:pointer;transition:transform .14s var(--e-pop),
+  border-color .14s var(--e-enter),color .14s var(--e-enter),box-shadow .14s var(--e-enter)}
+#ui button:hover{color:var(--cyan);border-color:var(--cyan);
+  box-shadow:0 0 0 1px var(--cyan),0 0 18px rgba(56,232,255,.18) inset}
+#ui button:active{transform:translateY(1px) scale(.98)}
+#ui button[aria-pressed="true"]{color:var(--cyan);border-color:var(--cyan);
+  box-shadow:var(--b-tap)}
+#ui .ico{width:18px;height:18px;display:inline-block;vertical-align:-3px;margin-right:6px}
+/* Soft text shadow used by every floating label so the painted scene stays readable */
+.text-glow{text-shadow:0 1px 0 rgba(0,0,0,.85),0 0 12px rgba(56,232,255,.18)}
+/* Top wave bar */
+#topbar{position:absolute;top:0;left:0;right:0;height:48px;
+  display:flex;align-items:center;gap:14px;padding:0 16px;
+  background:linear-gradient(180deg,rgba(7,10,16,.92),rgba(7,10,16,.45) 80%,transparent);
+  border-bottom:1px solid var(--line)}
+#topbar .brand{font-weight:700;letter-spacing:.18em;font-size:13px;color:var(--cyan);
+  text-shadow:var(--b-glow);margin-right:6px}
+#topbar .pill{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;
+  border:1px solid var(--line);border-radius:99px;background:rgba(10,14,23,.6);
+  font-size:12px;color:var(--dim);letter-spacing:.04em}
+#topbar .pill b{color:var(--ink);font-weight:600}
+#topbar .spacer{flex:1}
+#topbar .ctrls{display:flex;gap:6px}
+#topbar .ctrls button{height:28px;padding:0 10px;font-size:12px;border-radius:99px}
+/* Right tower dock */
+#dock{position:absolute;top:64px;right:14px;bottom:84px;width:228px;
+  display:flex;flex-direction:column;gap:8px;padding:10px;
+  background:linear-gradient(180deg,rgba(10,14,23,.86),rgba(10,14,23,.72));
+  border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(6px)}
+#dock .title{font-size:11px;letter-spacing:.16em;color:var(--dim);margin:2px 0 4px}
+#dock .towers{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;flex:1;align-content:start}
+.tcard{position:relative;display:flex;flex-direction:column;align-items:stretch;
+  padding:8px;border:1px solid var(--line);border-radius:9px;background:rgba(7,10,16,.55);
+  cursor:pointer;transition:transform .14s var(--e-pop),border-color .14s var(--e-enter),
+  box-shadow .14s var(--e-enter),background .14s var(--e-enter)}
+.tcard .row{display:flex;align-items:center;gap:6px}
+.tcard .key{font-size:10px;letter-spacing:.1em;color:var(--dim);
+  width:18px;height:18px;border:1px solid var(--line);border-radius:5px;
+  display:grid;place-items:center}
+.tcard .ico{margin:0}
+.tcard .nm{font-size:12px;font-weight:600;color:var(--ink);letter-spacing:.02em;flex:1;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tcard .cost{margin-top:6px;font-size:11px;color:var(--gold);
+  letter-spacing:.04em;display:flex;align-items:center;gap:4px}
+.tcard .cost::before{content:"";width:6px;height:6px;border-radius:50%;
+  background:var(--gold);box-shadow:0 0 6px var(--gold)}
+.tcard.afford{border-color:rgba(251,191,36,.55)}
+.tcard.afford .nm{color:var(--ink)}
+.tcard.sel{border-color:var(--cyan);box-shadow:var(--b-tap);
+  background:rgba(56,232,255,.06);transform:translateY(-1px)}
+.tcard.disabled{opacity:.45;cursor:not-allowed}
+.tcard:hover:not(.disabled){border-color:var(--cyan);transform:translateY(-1px)}
+/* Bottom econ bar */
+#econ{position:absolute;left:14px;right:14px;bottom:14px;height:64px;
+  display:flex;align-items:stretch;gap:10px;padding:8px 12px;
+  background:linear-gradient(0deg,rgba(7,10,16,.94),rgba(7,10,16,.7));
+  border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(6px)}
+#econ .stat{display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}
+#econ .stat .lbl{font-size:10px;letter-spacing:.14em;color:var(--dim)}
+#econ .stat .val{font-size:18px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+#econ .stat.gold .val{color:var(--gold);text-shadow:0 0 8px rgba(251,191,36,.35)}
+#econ .stat.lives .val{color:var(--crimson);text-shadow:0 0 8px rgba(239,68,68,.4)}
+#econ .stat.wave .val{color:var(--cyan)}
+#econ .stat.score .val{color:var(--ok)}
+#econ .bar{flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0}
+#econ .bar .lbl{font-size:10px;letter-spacing:.14em;color:var(--dim)}
+#econ .bar .track{position:relative;height:8px;background:rgba(148,163,184,.12);
+  border:1px solid var(--line);border-radius:99px;overflow:hidden}
+#econ .bar .fill{position:absolute;top:0;left:0;bottom:0;width:0%;
+  background:linear-gradient(90deg,var(--cyan),var(--magenta));
+  box-shadow:0 0 10px rgba(56,232,255,.5);transition:width .25s var(--e-enter)}
+/* Center toast */
+#toast{position:absolute;left:50%;top:62px;transform:translateX(-50%);
+  padding:8px 14px;border-radius:8px;background:rgba(7,10,16,.92);
+  border:1px solid var(--cyan);color:var(--ink);font-size:12px;letter-spacing:.04em;
+  pointer-events:none;opacity:0;transition:opacity .2s var(--e-enter),transform .2s var(--e-pop);
+  box-shadow:var(--b-tap)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* Modal screens (intro, victory, defeat) */
+.modal{position:absolute;inset:0;display:grid;place-items:center;
+  background:radial-gradient(ellipse at center,rgba(10,14,23,.78),rgba(7,10,16,.96) 70%);
+  pointer-events:auto;animation:fade .35s var(--e-enter)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal .card{width:min(560px,86vw);padding:24px 28px;
+  background:linear-gradient(180deg,rgba(7,10,16,.96),rgba(10,14,23,.92));
+  border:1px solid var(--line);border-radius:14px;
+  box-shadow:0 0 0 1px rgba(56,232,255,.18),0 30px 80px rgba(0,0,0,.6);
+  text-align:center;position:relative;overflow:hidden}
+.modal .card::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 20% 0%,rgba(56,232,255,.12),transparent 40%),
+             radial-gradient(circle at 80% 100%,rgba(255,47,214,.10),transparent 45%);
+  pointer-events:none}
+.modal h1{margin:0 0 4px;font-size:28px;letter-spacing:.18em;color:var(--cyan);
+  text-shadow:var(--b-glow);position:relative}
+.modal h2{margin:0 0 6px;font-size:22px;letter-spacing:.14em;color:var(--gold);
+  text-shadow:0 0 12px rgba(251,191,36,.45);position:relative}
+.modal h3{margin:0 0 6px;font-size:18px;letter-spacing:.12em;color:var(--crimson);
+  text-shadow:0 0 12px rgba(239,68,68,.45);position:relative}
+.modal .sub{color:var(--dim);font-size:13px;letter-spacing:.06em;margin:0 0 16px;position:relative}
+.modal .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 18px;position:relative}
+.modal .meta .cell{padding:10px;border:1px solid var(--line);border-radius:8px;background:rgba(7,10,16,.7)}
+.modal .meta .lbl{font-size:10px;letter-spacing:.14em;color:var(--dim)}
+.modal .meta .val{font-size:18px;font-weight:700;color:var(--ink)}
+.modal .meta .cell.g .val{color:var(--gold)}
+.modal .meta .cell.k .val{color:var(--crimson)}
+.modal .meta .cell.s .val{color:var(--ok)}
+.modal .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;position:relative}
+.modal .row button{min-width:140px}
+/* Floating text damage numbers */
+.floater{position:absolute;pointer-events:none;font-weight:700;
+  text-shadow:0 1px 0 rgba(0,0,0,.85),0 0 8px currentColor;will-change:transform,opacity}
+/* Banner row for faction */
+#banner{position:absolute;left:50%;top:62px;transform:translateX(-50%);
+  display:flex;gap:6px;align-items:center}
+#banner .chip{padding:4px 10px;border:1px solid var(--line);border-radius:99px;
+  font-size:11px;letter-spacing:.12em;color:var(--dim);background:rgba(10,14,23,.6)}
+#banner .chip.on{color:var(--cyan);border-color:var(--cyan);background:rgba(56,232,255,.06);
+  box-shadow:var(--b-tap)}
+/* First-run consent / pause overlay */
+#pause{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+  background:rgba(7,10,16,.7);pointer-events:auto}
+#pause.show{display:flex}
+#pause .box{padding:14px 22px;border:1px solid var(--cyan);border-radius:10px;
+  background:rgba(7,10,16,.92);color:var(--cyan);letter-spacing:.18em;font-size:14px;
+  box-shadow:var(--b-tap)}
+/* Help line */
+#help{position:absolute;left:14px;top:60px;font-size:11px;color:var(--dim);
+  letter-spacing:.04em;line-height:1.7;max-width:230px;pointer-events:none}
+#help kbd{font:11px ui-monospace,Consolas,monospace;border:1px solid var(--line);
+  border-radius:4px;padding:1px 5px;color:var(--ink);background:rgba(7,10,16,.6)}
+/* mobile fallback */
+@media (max-width:760px){
+  #dock{width:180px}
+  #econ .stat .val{font-size:15px}
+  #topbar .brand{font-size:11px}
+}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="ui">
+  <div id="topbar" class="pane">
+    <div class="brand text-glow">COSMIC CONQUEST</div>
+    <div class="pill"><span>FACTION</span><b id="tbFaction">HUMANITY</b></div>
+    <div class="pill"><span>MAP</span><b id="tbMap">OPEN FIELD</b></div>
+    <div class="pill"><span>WAVE</span><b id="tbWave">0 / 12</b></div>
+    <div class="spacer"></div>
+    <div class="ctrls">
+      <button id="btnPause" title="Pause (P)">PAUSE</button>
+      <button id="btnSpeed" title="Speed (Space)">x1</button>
+      <button id="btnHelp"  title="Help (H)">?</button>
+    </div>
+  </div>
+
+  <div id="help" style="display:none">
+    <b style="color:var(--cyan);letter-spacing:.14em">CONTROLS</b><br>
+    <kbd>1</kbd>..<kbd>8</kbd> pick a tower &middot; <kbd>Click</kbd> place<br>
+    <kbd>U</kbd> upgrade selected &middot; <kbd>S</kbd> sell<br>
+    <kbd>P</kbd> pause &middot; <kbd>Space</kbd> speed &middot; <kbd>H</kbd> help
+  </div>
+
+  <div id="dock" class="pane">
+    <div class="title">TOWER DOCK</div>
+    <div class="towers" id="towers"></div>
+  </div>
+
+  <div id="econ" class="pane">
+    <div class="stat gold"><div class="lbl">CREDITS</div><div class="val" id="vGold">120</div></div>
+    <div class="stat lives"><div class="lbl">CORE INTEGRITY</div><div class="val" id="vLives">20</div></div>
+    <div class="stat wave"><div class="lbl">NEXT WAVE IN</div><div class="val" id="vNext">0:08</div></div>
+    <div class="bar">
+      <div class="lbl">WAVE PROGRESS</div>
+      <div class="track"><div class="fill" id="progFill"></div></div>
+    </div>
+    <div class="stat score"><div class="lbl">SCORE</div><div class="val" id="vScore">0</div></div>
+  </div>
+
+  <div id="banner"></div>
+  <div id="toast"></div>
+  <div id="pause"><div class="box">PAUSED</div></div>
+</div>
+
+<script>
+"use strict";
+// 0a. Error collector. Every check the verifier runs first asserts it is empty.
+window.__ERRORS=[]; window.__BOOT_ERROR=null;
+window.addEventListener("error",e=>{__ERRORS.push({m:e.message,s:e.filename||"?",l:e.lineno||0,c:e.colno||0});__BOOT_ERROR=e.error||e.message;});
+window.addEventListener("unhandledrejection",e=>{const r=e.reason;__ERRORS.push({m:(r&&r.message)||String(r),s:"promise"});__BOOT_ERROR=r;});
+// 0b. Build a top-level namespace shared across modules. No globals leak beyond it.
+window.LP={cfg:{},rng:null,now:()=>performance.now()};
+</script>

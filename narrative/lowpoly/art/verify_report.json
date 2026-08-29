@@ -1,0 +1,33 @@
+{
+  "pre": {
+    "ready": true,
+    "errors": 0,
+    "hasIntro": true,
+    "lp": {
+      "gold": 120,
+      "lives": 20,
+      "enemies": 0,
+      "wave": 0,
+      "towers": 0,
+      "status": "intro"
+    }
+  },
+  "after_place": {
+    "gold": 9459,
+    "lives": 20,
+    "enemies": 0,
+    "wave": 0,
+    "towers": 6,
+    "status": "play"
+  },
+  "after_step": {
+    "gold": 9461,
+    "lives": 20,
+    "enemies": 6,
+    "wave": 0,
+    "towers": 6,
+    "status": "play"
+  },
+  "errors": [],
+  "pass": true
+}
