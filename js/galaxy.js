@@ -72,10 +72,16 @@ function galaxyRng(seed) {
    faction starts somewhere different: humanity in THE EARTH SYSTEM with our
    actual solar system as its worlds, the Federation in the Pleiades of the
    contactee mythos, the Xeno at Zeta Reticuli off the Hill star map, the
-   Pirates at Barnard's Star, the Vigil at Tabby's Star, the one the
-   megastructure hypothesis was written about. Later systems draw from real
-   neighbours, and Sol itself appears in NON-human campaigns with Earth as
-   its seat.
+   Pirates at Proxima Centauri, the nearest star to our own and therefore the
+   first road anyone builds, and the machines at Sirius, the brightest star in
+   anyone's sky. Later systems draw from real neighbours, and Sol itself
+   appears in NON-human campaigns with Earth as its seat.
+
+   NOT THE VIGIL. This paragraph read "the Vigil at Tabby's Star" for the
+   whole life of the file, and both halves of that were wrong: the fifth home
+   belongs to the machines, and the Vigil is not a power and holds nothing
+   anywhere. Barnard's and Tabby's were demoted to bonus systems (see the
+   note below); the Vigil never had a home to demote.
 
    STREAM SAFETY, which is the whole design. The old tables were consumed by
    pure index arithmetic and never by rnd(), so naming draws NOTHING today
@@ -280,7 +286,7 @@ const GX_ACT_ENCOUNTERS = {
     { scenario: 'swarm',
       note: 'ZETA-2 c: the furrows. Whatever is being grown here is out, and it does not care whose banner you fly.' },
     { scenario: 'vigil',
-      note: 'ZETA-2 d: the ledger chamber, walls recording what was taken and from whom, and the Vigil arrives to audit it its own way.' },
+      note: 'ZETA-2 d: the ledger chamber, walls recording what was taken and from whom, and old routines come through it on a schedule nobody set.' },
     { scenario: 'assault', contestedBy: 'pirate',
       note: 'SERPO: human habs in alien sand, the seat standing over them, and scavengers working the same crates.' },
   ],
@@ -335,17 +341,16 @@ const GX_ACT_ENCOUNTERS = {
    home faction. Column rule: the canonical holder, unless that would be the
    player's own faction, in which case the authored occupier of their story
    (the harvest holds Earth, the broken fence lets the xeno into the Pleiades,
-   the shattered pods put a human fleet over Zeta, a human crackdown blockades
-   Barnard's, and the jagged alien knot has the Veil). 'robot' never appears
-   as a holder: seating Parallel commanders in front of a player who has not
-   unlocked the faction would spoil it, so the corrupted machines of Tabby's
-   Star read as what corrupted them. */
+   the shattered pods put a human fleet over Zeta, a human crackdown closes
+   Proxima Gate, and the machines of Sirius read as what corrupted them).
+   'robot' never appears as a holder: seating Parallel commanders in front of
+   a player who has not unlocked the faction would spoil it. */
 const GX_V2_HOLDER = {
   /* system EARTH   */ human:  { human: 'xeno',   light: 'xeno',   xeno: 'human',  pirate: 'xeno',   robot: 'xeno' },
   /* system PLEIADES*/ light:  { human: 'light',  light: 'xeno',   xeno: 'light',  pirate: 'light',  robot: 'light' },
   /* system ZETA    */ xeno:   { human: 'xeno',   light: 'xeno',   xeno: 'human',  pirate: 'xeno',   robot: 'xeno' },
-  /* system BARNARD */ pirate: { human: 'pirate', light: 'pirate', xeno: 'pirate', pirate: 'human',  robot: 'pirate' },
-  /* system TABBY   */ robot:  { human: 'xeno',   light: 'xeno',   xeno: 'pirate', pirate: 'xeno',   robot: 'xeno' },
+  /* system PROXIMA */ pirate: { human: 'pirate', light: 'pirate', xeno: 'pirate', pirate: 'human',  robot: 'pirate' },
+  /* system SIRIUS  */ robot:  { human: 'xeno',   light: 'xeno',   xeno: 'pirate', pirate: 'xeno',   robot: 'xeno' },
 };
 /* GX_V2_HOLDER[homeFaction][playerFaction] = who garrisons that system in
    that player's campaign. Every diagonal case (you at your own home) resolves
