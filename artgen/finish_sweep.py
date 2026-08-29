@@ -45,10 +45,16 @@ def krea_running():
             capture_output=True, text=True, timeout=60).stdout
     except Exception:
         return True          # cannot tell: assume busy, never race the card
-    # `--stale` returns before the model is ever loaded and holds nothing, so
-    # a reporting call must not read as a render. Verified against the live
-    # sweep: the detector saw it, and saw the difference.
-    return any('krea_gen.py' in ln and '--stale' not in ln for ln in out.splitlines())
+    # `--stale` and `--pack` both return before the model is ever loaded and
+    # hold nothing, so neither reads as a render. `--pack` was added to this
+    # exclusion after the fact: artgen/watch_and_publish.py calls it every
+    # five minutes to keep art/ in step with cache_krea/ while this script is
+    # ALSO polling, and without the exclusion this function would see that
+    # call's own command line, conclude a render was still running, and wait
+    # forever -- including forever past the point the real render finished.
+    NOT_A_RENDER = ('--stale', '--pack')
+    return any('krea_gen.py' in ln and not any(f in ln for f in NOT_A_RENDER)
+              for ln in out.splitlines())
 
 
 def stale_count():
