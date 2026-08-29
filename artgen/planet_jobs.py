@@ -214,7 +214,7 @@ WORLDS = [
      'the hexagon stalled and broken open, three of its six emitters dark and the standing wave '
      'collapsing into ordinary cloud',
      'the hexagon turning again at full phase, its centre showing a starfield that does not belong '
-     'to this sky'),
+     'to this sky, one small figure alone on a gantry far below watching it turn'),
 
     # ---- si 1, THE PLEIADES. The Federation's home: young blue stars in ----
     # reflection nebulosity, and a cathedral culture that gives each world a
@@ -279,7 +279,7 @@ WORLDS = [
      'an empty central floor',
      'ring-tier batteries and layered hard-light choirs turning slowly around the seat',
      'the concentric rings broken out of true and sagging, the central floor open to the sky',
-     'the rings re-trued around a floor that now holds a table instead of a seat'),
+     'the rings re-trued around a floor that now holds a table instead of a seat, one commander standing well back in the colonnade and not approaching it'),
 
     # ---- si 2, ZETA RETICULI. The Compact's home: a wide binary pair, and ---
     # the machinery of a harvest.
@@ -343,7 +343,7 @@ WORLDS = [
      'sand, long abandoned',
      'compound perimeter batteries and buried membrane nests around the habs',
      'the prefabricated habs blown flat and the sand around them fused to glass',
-     'the exchange settlement rebuilt and its records of who was traded here posted openly'),
+     'the exchange settlement rebuilt and its records of who was traded here posted openly, one figure apart at the wire reading the same page over'),
 
     # ---- si 3, BARNARD'S STAR. The pirate home: a red flare dwarf, the ------
     # fastest-moving star in our sky, and a road that was never founded.
@@ -415,7 +415,7 @@ WORLDS = [
      'the boom cut and the harbour burning, moored ships adrift and the rock roof holed through to '
      'the stars',
      'the sanctuary bay under new colours, the boom restrung across the mouth and every berth logged '
-     'and numbered'),
+     'and numbered, one captain high on a catwalk watching the banner go up without them'),
 
     # ---- si 4, TABBY'S STAR. The Parallel's home: a star that dims at ------
     # irregular intervals, and a garden tended for a maker who is not coming.
@@ -478,7 +478,7 @@ WORLDS = [
      'the tiers broken through one after another, desks scattered and the instruction gates torn off '
      'their tracks',
      'the tiers restored and the desks realigned, the orders still issuing and the chairs still '
-     'empty'),
+     'empty, one unit standing alone at the back of the hall'),
 ]
 
 # --------------------------------------------------------------------------

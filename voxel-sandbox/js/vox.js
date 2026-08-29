@@ -65,13 +65,18 @@ var Vox = (function () {
 
   /* Six cube faces as corner offsets, with the lighting ramp baked in. Face
      order does not matter because they are backface culled per angle. */
+  /* Lighting ramp. The floor is deliberately high: these palettes put
+     near-black (#0a0e17) at index 0, so a steep ramp multiplies an already
+     dark colour toward invisible and the model reads as a silhouette with no
+     internal form. Measured by eye at 74px, 0.55 is about where the side faces
+     stop disappearing into the board. */
   var FACES = [
-    { c: [[0,1,0],[1,1,0],[1,1,1],[0,1,1]], lum: 1.00 },  /* top    */
-    { c: [[0,0,1],[1,0,1],[1,0,0],[0,0,0]], lum: 0.26 },  /* bottom */
-    { c: [[1,0,0],[1,0,1],[1,1,1],[1,1,0]], lum: 0.63 },
-    { c: [[0,0,1],[0,0,0],[0,1,0],[0,1,1]], lum: 0.42 },
-    { c: [[0,0,1],[0,1,1],[1,1,1],[1,0,1]], lum: 0.80 },
-    { c: [[1,0,0],[1,1,0],[0,1,0],[0,0,0]], lum: 0.52 }
+    { c: [[0,1,0],[1,1,0],[1,1,1],[0,1,1]], lum: 1.15 },  /* top    */
+    { c: [[0,0,1],[1,0,1],[1,0,0],[0,0,0]], lum: 0.50 },  /* bottom */
+    { c: [[1,0,0],[1,0,1],[1,1,1],[1,1,0]], lum: 0.80 },
+    { c: [[0,0,1],[0,0,0],[0,1,0],[0,1,1]], lum: 0.62 },
+    { c: [[0,0,1],[0,1,1],[1,1,1],[1,0,1]], lum: 0.95 },
+    { c: [[1,0,0],[1,1,0],[0,1,0],[0,0,0]], lum: 0.70 }
   ];
 
   function shade(hex, f) {

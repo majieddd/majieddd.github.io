@@ -261,3 +261,45 @@ median of 31 is a long match, and the standing rule is that rounds end
 promptly. If it is to come down, the honest lever is the post-wave-20 ramp
 `RAMP_PRESETS` and the health curve, rather than the rites, which have now
 been measured and are not the cause.
+
+---
+
+## Session 42: fifteen units added, pins NOT re-taken
+
+**Status: OPEN. The pins need a browser A/B and did not get one.**
+
+`tools/balance-pins.js` is `window.PINS`: it needs a live page, and this
+project's own rule is that pins compare only inside ONE browser session, run
+back to back. A headless number here would be worse than no number, so none was
+invented.
+
+**What changed.** Three units per power, fifteen in all, appended:
+
+| Power | Added |
+| --- | --- |
+| Humanity | Tic Tac, Fluxliner, Phoenix Lights |
+| Galactic Federation of Light | Arbiter, Deferral, Sealbearer |
+| The Xeno | Tither, Stockman, Graft |
+| The Pirates | Tollman, Runner, Powderhand |
+| The Parallel | Erratum, Addendum, Precedent |
+
+**What was verified headlessly, and it is the part that matters for an additive
+change.** Every existing body was diffed field by field against the previous
+commit across hp, speed, armor, bounty, lives, radius, faction, flying and
+stealth:
+
+```
+existing bodies: 54   new: 15   removed: 0
+NO existing stat moved: the change is purely additive
+```
+
+So the risk is NOT that the existing ladders shifted, because they did not. The
+risk is the placement of the fifteen new bodies within them, and specifically
+the four that carry a `countMul` talent above 1.30 (Phoenix Lights at 1.45,
+Erratum at 1.40, Powderhand at 1.35, Graft at 1.30), because count multipliers
+compound with wave scaling harder than flat stat adds.
+
+**What the next session should do.** Serve the build, run PINS on this commit
+and on the commit before the units landed, in the same page, and compare median
+wave of LOSS runs. Wins reported separately, tier 0, loadout pinned to
+`bolt/cryo/mortar/flak/beacon`, as the Session 21 seeded baseline below.

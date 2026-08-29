@@ -15,8 +15,15 @@
   --pass:#4ade80; --fail:#f87171;
 }
 *{box-sizing:border-box}
-html,body{height:100%}
+/* A height:100% chain from html down is fragile: anywhere the chain is broken
+   or the document lays out at zero (a background tab, an embedded pane, an
+   iframe sized after load) every descendant collapses and the canvas ends up
+   with a backing store full of pixels and a CSS box of 0x0, which looks
+   exactly like a renderer that does not work. Viewport units do not depend on
+   the ancestor chain, and min-height keeps it usable if the pane is short. */
+html{height:100%}
 body{margin:0;background:var(--ground);color:var(--ink);
+  min-height:100vh;height:100dvh;
   font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
   display:flex;flex-direction:column;overflow:hidden}
 h1,h2,h3{font-family:"Chakra Petch",ui-sans-serif,sans-serif;margin:0}

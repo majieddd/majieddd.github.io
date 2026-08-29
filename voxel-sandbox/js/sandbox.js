@@ -16,7 +16,7 @@ var Sandbox = (function () {
 
   /* ---- board ---------------------------------------------------------- */
 
-  var TILE_W = 76, TILE_H = 38;        /* isometric diamond, 2:1 */
+  var TILE_W = 92, TILE_H = 46;        /* isometric diamond, 2:1 */
   var COLS = 9, ROWS = 9;
 
   /* The lane, as grid coordinates. Enemies walk this in order. Hand authored
@@ -90,7 +90,7 @@ var Sandbox = (function () {
     } catch (err) { return false; }
   })();
 
-  var cv, ctx, W, H, sprites = {}, ready = false;
+  var cv, ctx, W, H, sprites = {}, ready = false, laidOut = false;
   var state = null, lastTs = 0, running = false;
   var hover = null, selectedTower = 'bolt';
   var onChange = function () {};
@@ -137,17 +137,58 @@ var Sandbox = (function () {
     cv.addEventListener('pointermove', onMove);
     cv.addEventListener('pointerleave', function () { hover = null; });
     cv.addEventListener('click', onClick);
+
+    /* Re-measure whenever the box actually changes, which covers the case the
+       first measure happened before layout existed. Without this the board is
+       stuck at whatever it saw at init, forever. */
+    if (typeof ResizeObserver === 'function') {
+      var ro = new ResizeObserver(function () { resize(); draw(); });
+      ro.observe(cv.parentNode || cv);
+    }
+    window.addEventListener('load', function () { resize(); draw(); });
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) { resize(); draw(); }
+    });
+
+    /* Timed retries, and they are not redundant. The loop's own retry runs
+       inside requestAnimationFrame, which a browser does not service while the
+       document is hidden, so a page that loads in a background tab or a pane
+       that is not compositing would never recover and would look permanently
+       broken. setTimeout is throttled in that state but it still fires, so
+       this is the path that actually gets us a real size. Stops as soon as
+       layout is real. */
+    [0, 60, 200, 600, 1500, 3000].forEach(function (ms) {
+      setTimeout(function () { if (!laidOut) { resize(); draw(); } }, ms);
+    });
+
     running = true;
     requestAnimationFrame(loop);
     draw();
     onChange();
   }
 
+  /* Measure the canvas, falling back through progressively less specific
+     sources. The canvas own rect is right once layout has settled; before that
+     it can be 0, and clamping a 0 to a 320x280 floor silently locks the board
+     to a size the page never actually shows. */
+  function measure() {
+    var r = cv.getBoundingClientRect();
+    if (r.width > 1 && r.height > 1) return [r.width, r.height];
+    var host = cv.parentNode && cv.parentNode.getBoundingClientRect
+             ? cv.parentNode.getBoundingClientRect() : null;
+    if (host && host.width > 1 && host.height > 1) return [host.width, host.height];
+    var vw = window.innerWidth || 0, vh = window.innerHeight || 0;
+    if (vw > 1 && vh > 1) return [Math.max(320, vw - 262), Math.max(280, vh - 46)];
+    return [0, 0];                       /* genuinely no layout yet */
+  }
+
   function resize() {
-    var rect = cv.getBoundingClientRect();
+    var m = measure();
+    if (!m[0] || !m[1]) { laidOut = false; return; }   /* try again later */
+    laidOut = true;
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    W = Math.max(320, Math.round(rect.width));
-    H = Math.max(280, Math.round(rect.height));
+    W = Math.max(320, Math.round(m[0]));
+    H = Math.max(280, Math.round(m[1]));
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     originX = W / 2;
@@ -483,6 +524,9 @@ var Sandbox = (function () {
     var dt = lastTs ? Math.min(0.05, (ts - lastTs) / 1000) : 0;
     if (dt > 0) fpsAvg = fpsAvg * 0.92 + (1 / dt) * 0.08;
     lastTs = ts;
+    /* If we have never had a real layout, keep trying. Cheap, and it is the
+       difference between recovering and showing a blank page forever. */
+    if (!laidOut) resize();
     step(dt);
     draw();
     requestAnimationFrame(loop);
