@@ -180,6 +180,11 @@ var R = (function () {
     grain: 0.042,
     halftone: 0.62,
     canvas: 0.20,
+    /* How far, in world units, a particle fades as it approaches whatever is
+       behind it. Too small and the hard intersection line survives; too large
+       and smoke dissolves before it reaches the ground it is supposed to be
+       rolling along. */
+    particleSoftness: 1.35,
     inkStrength: 0.95,
     inkNormalThreshold: 0.55,
     inkDepthThreshold: 0.85,
@@ -620,6 +625,13 @@ var R = (function () {
 
   function particlePass() {
     if (!particleN) return;
+    /* DETACH attachment 1 before sampling it. It holds the scene depth the
+       soft-particle fade needs, and a texture that is simultaneously attached
+       to the draw framebuffer and bound to a sampler is a feedback loop, which
+       WebGL leaves undefined even when that attachment is masked off by
+       drawBuffers. Detaching is two calls a frame and is the only way to read
+       it that is actually legal. */
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, null, 0);
     gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.NONE]);
     gl.enable(gl.DEPTH_TEST);
     gl.depthMask(false);
@@ -638,10 +650,15 @@ var R = (function () {
        camera without a per-particle lookAt. */
     p.u3f('uRight', view[0], view[4], view[8]);
     p.u3f('uUp', view[1], view[5], view[9]);
+    p.tex('uSceneDepth', 0, rt.main.textures[1]);
+    p.u2f('uRes', W, H);
+    p.u1f('uSoftness', ART.particleSoftness);
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, particleN);
 
     gl.bindVertexArray(null);
     gl.enable(gl.CULL_FACE);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D,
+                            rt.main.textures[1], 0);
     gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
   }
 

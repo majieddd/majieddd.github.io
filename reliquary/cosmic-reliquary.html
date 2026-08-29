@@ -2935,6 +2935,7 @@ var SH = (function () {
     'out vec4 vColor;',
     'flat out float vKind;',
     'flat out float vStretch;',
+    'out float vViewDepth;',
     /* Six vertices per instance, built from gl_VertexID against a constant
        table. An earlier draft derived the corners with a chain of ternaries
        and got the winding wrong on the second triangle, which showed up as
@@ -2976,7 +2977,15 @@ var SH = (function () {
     '  float cs = cos(ang), sn = sin(ang);',
     '  vec2 rc = vec2(c2.x * cs - c2.y * sn, c2.x * sn + c2.y * cs);',
     '  vec3 world = iPos + uRight * rc.x + uUp * rc.y;',
-    '  gl_Position = uProj * uView * vec4(world, 1.0);',
+    '  vec4 vp = uView * vec4(world, 1.0);',
+    /* MUST MATCH how the opaque pass defines depth, which is length(vView),
+       the distance from the camera, NOT the view-space z component. The two
+       agree along the view axis and diverge toward the edges of the frame by
+       the cosine of the angle, so using -vp.z here would make the fade correct
+       in the middle of the screen and progressively wrong toward the corners:
+       the worst kind of error, because it looks right where you check it. */
+    '  vViewDepth = length(vp.xyz);',
+    '  gl_Position = uProj * vp;',
     '}'
   ].join('\n');
 
@@ -2987,6 +2996,10 @@ var SH = (function () {
     'in vec4 vColor;',
     'flat in float vKind;',
     'flat in float vStretch;',
+    'in float vViewDepth;',
+    'uniform sampler2D uSceneDepth;',
+    'uniform vec2 uRes;',
+    'uniform float uSoftness;',
     'out vec4 oColor;',
     NOISE,
     'void main(){',
@@ -3028,11 +3041,30 @@ var SH = (function () {
     '    float core = 1.0 - smoothstep(0.0, 0.30, d);',
     '    a = glow * 0.75 + core;',
     '    col += vec3(1.0, 0.92, 0.8) * core * 0.7;',
-    '  } else {',
+    '  } else if (vKind < 6.5){',
     /* SHARD: a sharp asymmetric chip, the debris that is not paint. */
     '    float tri = p.y + 1.0 - abs(p.x) * 1.9;',
     '    a = step(0.0, tri) * step(abs(p.x), 0.85);',
+    '  } else {',
+    /* MOTE: airborne dust. Almost nothing on its own, which is the point:
+       motes exist to give the air between the camera and the board something
+       to happen in, so the picture reads as a place with atmosphere rather
+       than as geometry floating in a void. A soft core with a faint ring
+       catches the key light the way real suspended dust does. */
+    '    float core = 1.0 - smoothstep(0.0, 0.42, d);',
+    '    float halo = (1.0 - smoothstep(0.35, 1.0, d)) * 0.30;',
+    '    a = core * 0.85 + halo;',
     '  }',
+    '  if (a <= 0.003) discard;',
+    /* SOFT PARTICLES. Without this every quad terminates in a hard straight
+       line wherever it intersects the ground or a tower, and nothing announces
+       a cheap particle system faster: real smoke has no edge where it meets a
+       surface. The opaque pass already writes linear view depth into
+       attachment 1, so the fade costs one texture fetch and a subtract. The
+       sky writes 1e5 there, so particles against open sky are untouched. */
+    '  float sceneZ = texture(uSceneDepth, gl_FragCoord.xy / uRes).a;',
+    '  float gap = sceneZ - vViewDepth;',
+    '  a *= clamp(gap / max(uSoftness, 0.001), 0.0, 1.0);',
     '  if (a <= 0.003) discard;',
     '  oColor = vec4(col, vColor.a * a);',
     '}'
@@ -3522,6 +3554,11 @@ var R = (function () {
     grain: 0.042,
     halftone: 0.62,
     canvas: 0.20,
+    /* How far, in world units, a particle fades as it approaches whatever is
+       behind it. Too small and the hard intersection line survives; too large
+       and smoke dissolves before it reaches the ground it is supposed to be
+       rolling along. */
+    particleSoftness: 1.35,
     inkStrength: 0.95,
     inkNormalThreshold: 0.55,
     inkDepthThreshold: 0.85,
@@ -3962,6 +3999,13 @@ var R = (function () {
 
   function particlePass() {
     if (!particleN) return;
+    /* DETACH attachment 1 before sampling it. It holds the scene depth the
+       soft-particle fade needs, and a texture that is simultaneously attached
+       to the draw framebuffer and bound to a sampler is a feedback loop, which
+       WebGL leaves undefined even when that attachment is masked off by
+       drawBuffers. Detaching is two calls a frame and is the only way to read
+       it that is actually legal. */
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, null, 0);
     gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.NONE]);
     gl.enable(gl.DEPTH_TEST);
     gl.depthMask(false);
@@ -3980,10 +4024,15 @@ var R = (function () {
        camera without a per-particle lookAt. */
     p.u3f('uRight', view[0], view[4], view[8]);
     p.u3f('uUp', view[1], view[5], view[9]);
+    p.tex('uSceneDepth', 0, rt.main.textures[1]);
+    p.u2f('uRes', W, H);
+    p.u1f('uSoftness', ART.particleSoftness);
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, particleN);
 
     gl.bindVertexArray(null);
     gl.enable(gl.CULL_FACE);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D,
+                            rt.main.textures[1], 0);
     gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
   }
 
@@ -6945,7 +6994,7 @@ var FX = (function () {
   var bounce = new Float32Array(MAX);
   var count = 0;
 
-  var KIND = { SPARK: 0, SMOKE: 1, RING: 2, FLAKE: 3, STREAK: 4, EMBER: 5, SHARD: 6 };
+  var KIND = { SPARK: 0, SMOKE: 1, RING: 2, FLAKE: 3, STREAK: 4, EMBER: 5, SHARD: 6, MOTE: 7 };
 
   function spawn(o) {
     if (count >= MAX) return -1;
@@ -7421,8 +7470,109 @@ var FX = (function () {
     impactState.shake = impactState.stop = impactState.aberr = impactState.flash = 0;
   }
 
+  /* ---------- ambient motes ----------
+     Suspended dust drifting through the volume the camera looks into.
+
+     WHY A BOARD NEEDS THIS. Everything else in this renderer draws SURFACES.
+     Between the camera and the board there was nothing at all, so the air read
+     as vacuum and the scene as objects assembled in front of a backdrop rather
+     than as a place. A few hundred slow specks fix that for almost nothing,
+     because they are the only cue the eye has for depth in the empty half of
+     the frame.
+
+     They are a POOL, not a stream. Emitting motes continuously would fight the
+     impact particles for the same fixed budget, and a heavy wave would starve
+     the atmosphere exactly when the screen is busiest. Instead a fixed number
+     is kept alive and each one is recycled in place when it expires, so the
+     cost is constant and bounded whatever else is happening. */
+  var motes = { on: true, want: 0, bounds: null, tint: [0.82, 0.86, 1.0], t: 0 };
+
+  function moteSetup(board, palette) {
+    if (!board) { motes.bounds = null; return; }
+    var hw = board.halfW !== undefined ? board.halfW : 30;
+    var hh = board.halfH !== undefined ? board.halfH : 30;
+    motes.bounds = { hw: hw * 1.15, hh: hh * 1.15, lo: 0.4, hi: 11.0 };
+    /* Tinted toward the faction key so the air belongs to the same picture,
+       but desaturated hard: dust that reads as coloured reads as confetti. */
+    if (palette && palette.key) {
+      motes.tint = [
+        0.62 + palette.key[0] * 0.30,
+        0.62 + palette.key[1] * 0.30,
+        0.62 + palette.key[2] * 0.30
+      ];
+    }
+    motes.want = 190;
+    motes.t = 0;
+  }
+
+  function moteSpawn(seedT) {
+    var b = motes.bounds; if (!b) return;
+    var a = rnd(), c = rnd(), e = rnd();
+    var i = spawn({
+      x: (a * 2 - 1) * b.hw,
+      y: b.lo + e * (b.hi - b.lo),
+      z: (c * 2 - 1) * b.hh,
+      vx: (rnd() - 0.5) * 0.55,
+      vy: 0.10 + rnd() * 0.28,
+      vz: (rnd() - 0.5) * 0.55,
+      r: motes.tint[0], g: motes.tint[1], b: motes.tint[2],
+      r1: motes.tint[0] * 0.75, g1: motes.tint[1] * 0.75, b1: motes.tint[2] * 0.80,
+      /* Long lives and staggered starts, so the field never pulses as a group. */
+      life: 7.5 + rnd() * 7.5,
+      size: 0.055 + rnd() * 0.075,
+      size1: 0.035 + rnd() * 0.05,
+      kind: KIND.MOTE,
+      alpha: 0.16 + rnd() * 0.20,
+      /* No gravity and heavy drag: these are suspended, not falling. */
+      grav: 0.0, drag: 0.55, turb: 0.35, bounce: 0
+    });
+    if (i >= 0 && seedT) life[i] = maxLife[i] * (0.15 + rnd() * 0.85);
+  }
+
+  function moteUpdate(dt) {
+    if (!motes.on || !motes.bounds || !motes.want) return;
+    /* Count what is alive rather than tracking it, because the shared pool can
+       recycle a mote's slot for an impact spark at any time and a stale count
+       would slowly starve the field. */
+    var alive = 0;
+    for (var i = 0; i < count; i++) if (kind[i] === KIND.MOTE) alive++;
+    var deficit = motes.want - alive;
+    if (deficit <= 0) return;
+    /* Refill gradually so a frame that clears the pool does not spend its
+       entire particle budget on dust. */
+    var n = Math.min(deficit, 12);
+    for (var k = 0; k < n; k++) moteSpawn(motes.t < 0.5);
+    motes.t += dt;
+  }
+
+  /* Introspection for the harness. Counting live particles by kind, and
+     asserting the mote field stays in its volume, both need the pooled arrays,
+     and a test that reaches into module internals is a test that breaks on
+     every refactor. These two functions are the supported way to ask. */
+  function debugKindCounts() {
+    var out = {};
+    for (var i = 0; i < count; i++) out[kind[i]] = (out[kind[i]] || 0) + 1;
+    return out;
+  }
+  function moteBoundsOk() {
+    var b = motes.bounds; if (!b) return false;
+    /* Generous on the upper bound: motes drift upward for their whole life by
+       design, so the test is that they are in the volume, not that they never
+       rise out of the slab they were seeded in. */
+    var hi = b.hi + 12, lim = 1.35;
+    for (var i = 0; i < count; i++) {
+      if (kind[i] !== KIND.MOTE) continue;
+      if (Math.abs(px[i]) > b.hw * lim) return false;
+      if (Math.abs(pz[i]) > b.hh * lim) return false;
+      if (py[i] < -1 || py[i] > hi) return false;
+    }
+    return true;
+  }
+
   return {
     KIND: KIND,
+    moteSetup: moteSetup, moteUpdate: moteUpdate, motes: motes,
+    debugKindCounts: debugKindCounts, moteBoundsOk: moteBoundsOk,
     spawn: spawn, update: update, submit: submit,
     burst: burst, smoke: smoke, shockRing: shockRing, muzzle: muzzle,
     impact: impact, dust: dust, trail: trail, hot: hot,
@@ -8889,6 +9039,10 @@ var GAME = (function () {
     G.decorMesh = G.board.decorData ? trackMesh(GL.mesh(G.board.decorData)) : null;
     G.spireMesh = G.board.spireData ? trackMesh(GL.mesh(G.board.spireData)) : null;
     var pal = R.palette();
+    /* Seed the ambient dust from the board extents and the faction key, so the
+       air belongs to this board and this faction rather than being a generic
+       overlay. */
+    FX.moteSetup(G.board, pal);
     G.goalMesh = MODELS.goalMesh(pal.accent);
     G.spawnMesh = MODELS.spawnMesh(PAINT.FACTIONS[G.enemyFaction].accent);
     G.rangeRing = MODELS.ring(0.985, 1.0, 72, pal.accent);
@@ -9657,6 +9811,7 @@ var GAME = (function () {
         }
         if (steps >= 40) accum = 0;
         FX.update(simDt);
+        FX.moteUpdate(simDt);
         FX.updateText(simDt);
 
         /* RETURN RIGS OF DEPARTED DENIZENS TO THE POOL.

@@ -60,7 +60,7 @@ var FX = (function () {
   var bounce = new Float32Array(MAX);
   var count = 0;
 
-  var KIND = { SPARK: 0, SMOKE: 1, RING: 2, FLAKE: 3, STREAK: 4, EMBER: 5, SHARD: 6 };
+  var KIND = { SPARK: 0, SMOKE: 1, RING: 2, FLAKE: 3, STREAK: 4, EMBER: 5, SHARD: 6, MOTE: 7 };
 
   function spawn(o) {
     if (count >= MAX) return -1;
@@ -536,8 +536,109 @@ var FX = (function () {
     impactState.shake = impactState.stop = impactState.aberr = impactState.flash = 0;
   }
 
+  /* ---------- ambient motes ----------
+     Suspended dust drifting through the volume the camera looks into.
+
+     WHY A BOARD NEEDS THIS. Everything else in this renderer draws SURFACES.
+     Between the camera and the board there was nothing at all, so the air read
+     as vacuum and the scene as objects assembled in front of a backdrop rather
+     than as a place. A few hundred slow specks fix that for almost nothing,
+     because they are the only cue the eye has for depth in the empty half of
+     the frame.
+
+     They are a POOL, not a stream. Emitting motes continuously would fight the
+     impact particles for the same fixed budget, and a heavy wave would starve
+     the atmosphere exactly when the screen is busiest. Instead a fixed number
+     is kept alive and each one is recycled in place when it expires, so the
+     cost is constant and bounded whatever else is happening. */
+  var motes = { on: true, want: 0, bounds: null, tint: [0.82, 0.86, 1.0], t: 0 };
+
+  function moteSetup(board, palette) {
+    if (!board) { motes.bounds = null; return; }
+    var hw = board.halfW !== undefined ? board.halfW : 30;
+    var hh = board.halfH !== undefined ? board.halfH : 30;
+    motes.bounds = { hw: hw * 1.15, hh: hh * 1.15, lo: 0.4, hi: 11.0 };
+    /* Tinted toward the faction key so the air belongs to the same picture,
+       but desaturated hard: dust that reads as coloured reads as confetti. */
+    if (palette && palette.key) {
+      motes.tint = [
+        0.62 + palette.key[0] * 0.30,
+        0.62 + palette.key[1] * 0.30,
+        0.62 + palette.key[2] * 0.30
+      ];
+    }
+    motes.want = 190;
+    motes.t = 0;
+  }
+
+  function moteSpawn(seedT) {
+    var b = motes.bounds; if (!b) return;
+    var a = rnd(), c = rnd(), e = rnd();
+    var i = spawn({
+      x: (a * 2 - 1) * b.hw,
+      y: b.lo + e * (b.hi - b.lo),
+      z: (c * 2 - 1) * b.hh,
+      vx: (rnd() - 0.5) * 0.55,
+      vy: 0.10 + rnd() * 0.28,
+      vz: (rnd() - 0.5) * 0.55,
+      r: motes.tint[0], g: motes.tint[1], b: motes.tint[2],
+      r1: motes.tint[0] * 0.75, g1: motes.tint[1] * 0.75, b1: motes.tint[2] * 0.80,
+      /* Long lives and staggered starts, so the field never pulses as a group. */
+      life: 7.5 + rnd() * 7.5,
+      size: 0.055 + rnd() * 0.075,
+      size1: 0.035 + rnd() * 0.05,
+      kind: KIND.MOTE,
+      alpha: 0.16 + rnd() * 0.20,
+      /* No gravity and heavy drag: these are suspended, not falling. */
+      grav: 0.0, drag: 0.55, turb: 0.35, bounce: 0
+    });
+    if (i >= 0 && seedT) life[i] = maxLife[i] * (0.15 + rnd() * 0.85);
+  }
+
+  function moteUpdate(dt) {
+    if (!motes.on || !motes.bounds || !motes.want) return;
+    /* Count what is alive rather than tracking it, because the shared pool can
+       recycle a mote's slot for an impact spark at any time and a stale count
+       would slowly starve the field. */
+    var alive = 0;
+    for (var i = 0; i < count; i++) if (kind[i] === KIND.MOTE) alive++;
+    var deficit = motes.want - alive;
+    if (deficit <= 0) return;
+    /* Refill gradually so a frame that clears the pool does not spend its
+       entire particle budget on dust. */
+    var n = Math.min(deficit, 12);
+    for (var k = 0; k < n; k++) moteSpawn(motes.t < 0.5);
+    motes.t += dt;
+  }
+
+  /* Introspection for the harness. Counting live particles by kind, and
+     asserting the mote field stays in its volume, both need the pooled arrays,
+     and a test that reaches into module internals is a test that breaks on
+     every refactor. These two functions are the supported way to ask. */
+  function debugKindCounts() {
+    var out = {};
+    for (var i = 0; i < count; i++) out[kind[i]] = (out[kind[i]] || 0) + 1;
+    return out;
+  }
+  function moteBoundsOk() {
+    var b = motes.bounds; if (!b) return false;
+    /* Generous on the upper bound: motes drift upward for their whole life by
+       design, so the test is that they are in the volume, not that they never
+       rise out of the slab they were seeded in. */
+    var hi = b.hi + 12, lim = 1.35;
+    for (var i = 0; i < count; i++) {
+      if (kind[i] !== KIND.MOTE) continue;
+      if (Math.abs(px[i]) > b.hw * lim) return false;
+      if (Math.abs(pz[i]) > b.hh * lim) return false;
+      if (py[i] < -1 || py[i] > hi) return false;
+    }
+    return true;
+  }
+
   return {
     KIND: KIND,
+    moteSetup: moteSetup, moteUpdate: moteUpdate, motes: motes,
+    debugKindCounts: debugKindCounts, moteBoundsOk: moteBoundsOk,
     spawn: spawn, update: update, submit: submit,
     burst: burst, smoke: smoke, shockRing: shockRing, muzzle: muzzle,
     impact: impact, dust: dust, trail: trail, hot: hot,

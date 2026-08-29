@@ -820,6 +820,7 @@ var SH = (function () {
     'out vec4 vColor;',
     'flat out float vKind;',
     'flat out float vStretch;',
+    'out float vViewDepth;',
     /* Six vertices per instance, built from gl_VertexID against a constant
        table. An earlier draft derived the corners with a chain of ternaries
        and got the winding wrong on the second triangle, which showed up as
@@ -861,7 +862,15 @@ var SH = (function () {
     '  float cs = cos(ang), sn = sin(ang);',
     '  vec2 rc = vec2(c2.x * cs - c2.y * sn, c2.x * sn + c2.y * cs);',
     '  vec3 world = iPos + uRight * rc.x + uUp * rc.y;',
-    '  gl_Position = uProj * uView * vec4(world, 1.0);',
+    '  vec4 vp = uView * vec4(world, 1.0);',
+    /* MUST MATCH how the opaque pass defines depth, which is length(vView),
+       the distance from the camera, NOT the view-space z component. The two
+       agree along the view axis and diverge toward the edges of the frame by
+       the cosine of the angle, so using -vp.z here would make the fade correct
+       in the middle of the screen and progressively wrong toward the corners:
+       the worst kind of error, because it looks right where you check it. */
+    '  vViewDepth = length(vp.xyz);',
+    '  gl_Position = uProj * vp;',
     '}'
   ].join('\n');
 
@@ -872,6 +881,10 @@ var SH = (function () {
     'in vec4 vColor;',
     'flat in float vKind;',
     'flat in float vStretch;',
+    'in float vViewDepth;',
+    'uniform sampler2D uSceneDepth;',
+    'uniform vec2 uRes;',
+    'uniform float uSoftness;',
     'out vec4 oColor;',
     NOISE,
     'void main(){',
@@ -913,11 +926,30 @@ var SH = (function () {
     '    float core = 1.0 - smoothstep(0.0, 0.30, d);',
     '    a = glow * 0.75 + core;',
     '    col += vec3(1.0, 0.92, 0.8) * core * 0.7;',
-    '  } else {',
+    '  } else if (vKind < 6.5){',
     /* SHARD: a sharp asymmetric chip, the debris that is not paint. */
     '    float tri = p.y + 1.0 - abs(p.x) * 1.9;',
     '    a = step(0.0, tri) * step(abs(p.x), 0.85);',
+    '  } else {',
+    /* MOTE: airborne dust. Almost nothing on its own, which is the point:
+       motes exist to give the air between the camera and the board something
+       to happen in, so the picture reads as a place with atmosphere rather
+       than as geometry floating in a void. A soft core with a faint ring
+       catches the key light the way real suspended dust does. */
+    '    float core = 1.0 - smoothstep(0.0, 0.42, d);',
+    '    float halo = (1.0 - smoothstep(0.35, 1.0, d)) * 0.30;',
+    '    a = core * 0.85 + halo;',
     '  }',
+    '  if (a <= 0.003) discard;',
+    /* SOFT PARTICLES. Without this every quad terminates in a hard straight
+       line wherever it intersects the ground or a tower, and nothing announces
+       a cheap particle system faster: real smoke has no edge where it meets a
+       surface. The opaque pass already writes linear view depth into
+       attachment 1, so the fade costs one texture fetch and a subtract. The
+       sky writes 1e5 there, so particles against open sky are untouched. */
+    '  float sceneZ = texture(uSceneDepth, gl_FragCoord.xy / uRes).a;',
+    '  float gap = sceneZ - vViewDepth;',
+    '  a *= clamp(gap / max(uSoftness, 0.001), 0.0, 1.0);',
     '  if (a <= 0.003) discard;',
     '  oColor = vec4(col, vColor.a * a);',
     '}'

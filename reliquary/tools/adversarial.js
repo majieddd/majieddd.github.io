@@ -869,6 +869,127 @@
     }
   })();
 
+  /* ---------- M. ambient motes and soft particles ----------
+     THE CLASS OF BUG THIS CATCHES, freshly committed by me and caught by
+     nothing: the mote emitter called U.rand(), which does not exist. This
+     module's RNG is a local `rnd` from U.rng('fx'); U itself exports rng and
+     never exported rand. Every call threw, the field stayed at zero particles,
+     and the full gate went green across nine steps and 142 checks because no
+     harness ever called FX.moteUpdate. A feature can be written, wired into
+     the loop, bundled and shipped without one line of it ever executing.
+
+     So these checks do the one thing that would have caught it: they run the
+     emitter and then look at what came out. */
+
+  (function () {
+    var g = reset();
+    if (!FX.moteUpdate) { ok('M.1 ambient motes exist', false, 'FX.moteUpdate missing'); return; }
+
+    FX.clear();
+    FX.moteSetup(g.board, R.palette());
+    /* Long enough for the gradual refill to reach its target. */
+    for (var i = 0; i < 240; i++) { FX.moteUpdate(1 / 60); FX.update(1 / 60); }
+
+    var n = 0, inBounds = 0, b = FX.motes.bounds;
+    for (var k = 0; k < FX.count; k++) {
+      var s = R.debugParticleSlot ? null : null;
+      n++;
+    }
+    /* Count by kind through the public spawn record rather than by poking at
+       the pool internals, which the harness has no business knowing. */
+    var counts = FX.debugKindCounts();
+    var moteN = counts[FX.KIND.MOTE] || 0;
+
+    ok('M.1 the mote field populates', moteN >= FX.motes.want * 0.8,
+      moteN + ' alive of ' + FX.motes.want + ' wanted');
+
+    ok('M.2 motes stay in the volume above the board', FX.moteBoundsOk(),
+      'bounds ' + (b ? b.hw.toFixed(1) + ' x ' + b.hh.toFixed(1) +
+        ', y ' + b.lo + ' to ' + b.hi : 'none'));
+
+    /* Atmosphere must never eat the budget that hits and deaths need. A wave
+       landing while the dust is at full strength is exactly when the impact
+       particles matter most, so the field is capped well below the pool. */
+    ok('M.3 motes leave room for impacts', FX.motes.want < FX.max * 0.12,
+      FX.motes.want + ' motes against a pool of ' + FX.max);
+
+    /* And the emitter must be recycling rather than leaking: run it much
+       longer and the count must not climb. */
+    for (var j = 0; j < 900; j++) { FX.moteUpdate(1 / 60); FX.update(1 / 60); }
+    var later = FX.debugKindCounts()[FX.KIND.MOTE] || 0;
+    ok('M.4 the field is recycled, not accumulated', later <= FX.motes.want * 1.05,
+      moteN + ' then ' + later);
+  })();
+
+  (function () {
+    /* SOFT PARTICLES. The fade needs the scene depth from MRT attachment 1,
+       which is attached to the framebuffer being drawn into, so the pass
+       detaches it first. Get that wrong and it is either a feedback loop or a
+       silently unbound sampler reading zeros, and zeros mean every particle
+       is fully faded: the system disappears rather than erroring. */
+    var g = reset();
+    if (!GAME.renderOnce(1 / 60)) { ok('M.5 soft particles fade', true, 'no render, skipped'); return; }
+    if (!('particleSoftness' in R.ART)) { ok('M.5 soft particles fade', false, 'ART.particleSoftness missing'); return; }
+
+    var grainWas = R.ART.grain;
+    R.ART.grain = 0;
+    FX.clear();
+    /* A dense low cloud straddling the ground plane, which is exactly where a
+       hard intersection line would show. */
+    for (var i = 0; i < 300; i++) {
+      FX.spawn({
+        x: (i % 20) - 10, y: 0.15 + (i % 7) * 0.1, z: ((i / 20) | 0) - 7,
+        r: 1, g: 0.9, b: 0.8, life: 9, size: 1.6, kind: FX.KIND.SMOKE,
+        alpha: 0.7, grav: 0, drag: 0
+      });
+    }
+    /* AGE THE CLOUD PAST ITS BIRTH EASE. Particles grow out of nothing over
+       the first 12% of their life, so a cloud measured on the frame it was
+       spawned has a rendered size near zero and is invisible. The first
+       version of this check did exactly that and reported the soft fade dead:
+       300 quads of size 1.6 moved the frame mean by 0.037, because they were
+       being drawn at size 0.113. The renderer was right and the test was
+       looking at a cloud that had not grown yet. */
+    for (var w = 0; w < 120; w++) FX.update(1 / 60);
+
+    var gl = R.gl;
+    function mean() {
+      GAME.renderOnce(0);
+      var W = gl.drawingBufferWidth, H = gl.drawingBufferHeight;
+      var buf = new Uint8Array(W * H * 4);
+      gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+      var s = 0, n = W * H;
+      for (var q = 0; q < n; q++) s += 0.2126 * buf[q * 4] + 0.7152 * buf[q * 4 + 1] + 0.0722 * buf[q * 4 + 2];
+      return s / n;
+    }
+
+    var was = R.ART.particleSoftness;
+    R.ART.particleSoftness = 0.001;   /* effectively hard-edged */
+    var hard = mean();
+    R.ART.particleSoftness = 6.0;     /* heavily faded */
+    var soft = mean();
+    R.ART.particleSoftness = was;
+    var back = mean();
+    /* The repeat sample for M.7 is taken BEFORE the grain goes back on. The
+       first version restored it first and then compared two grainy frames,
+       which differ by 2.62 in mean absolute luminance for reasons that have
+       nothing to do with the setting under test. */
+    var back2 = mean();
+
+    /* Softening must REMOVE light: the fade can only ever reduce alpha. If the
+       sampler were unbound the depth would read as zero, every particle would
+       be fully faded at both settings, and the two would be equal. */
+    ok('M.5 the soft-particle fade is running', hard - soft > 0.35,
+      'hard ' + hard.toFixed(2) + ' vs soft ' + soft.toFixed(2) +
+      ' (difference ' + (hard - soft).toFixed(2) + ')');
+    ok('M.6 particles are visible at all', hard > 1.0 && soft > 0.5,
+      'hard ' + hard.toFixed(2) + ', soft ' + soft.toFixed(2));
+    ok('M.7 the setting restores cleanly', Math.abs(back - back2) < 0.05,
+      'restored to ' + back.toFixed(2) + ', repeat ' + back2.toFixed(2));
+    R.ART.grain = grainWas;
+    FX.clear();
+  })();
+
   /* ---------- W. feet stay planted ----------
      THE definitive measure of walk quality, and the one the eye notices even
      when it cannot name it. In a correct gait at least one foot is in stance

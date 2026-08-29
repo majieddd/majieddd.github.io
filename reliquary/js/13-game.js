@@ -133,6 +133,10 @@ var GAME = (function () {
     G.decorMesh = G.board.decorData ? trackMesh(GL.mesh(G.board.decorData)) : null;
     G.spireMesh = G.board.spireData ? trackMesh(GL.mesh(G.board.spireData)) : null;
     var pal = R.palette();
+    /* Seed the ambient dust from the board extents and the faction key, so the
+       air belongs to this board and this faction rather than being a generic
+       overlay. */
+    FX.moteSetup(G.board, pal);
     G.goalMesh = MODELS.goalMesh(pal.accent);
     G.spawnMesh = MODELS.spawnMesh(PAINT.FACTIONS[G.enemyFaction].accent);
     G.rangeRing = MODELS.ring(0.985, 1.0, 72, pal.accent);
@@ -901,6 +905,7 @@ var GAME = (function () {
         }
         if (steps >= 40) accum = 0;
         FX.update(simDt);
+        FX.moteUpdate(simDt);
         FX.updateText(simDt);
 
         /* RETURN RIGS OF DEPARTED DENIZENS TO THE POOL.
