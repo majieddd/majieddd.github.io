@@ -453,6 +453,69 @@ void main(){
 }
 `;
 
+
+const SKIN_VS = `#version 300 es
+layout(location=0) in vec3 aPos;
+layout(location=1) in vec3 aNrm;
+layout(location=2) in vec4 aCol;   // rgb = albedo, a = facet seed
+layout(location=3) in float aJoint;
+layout(location=4) in vec3 aW;     // x,y,z weights (weight0 dominant)
+uniform mat4 uProj, uView, uModel;
+uniform mat4 uBones[48];
+uniform vec2 uJit;
+uniform float uTime;
+out vec3 vN; out vec4 vC; out vec3 vW; out float vSeed;
+void main(){
+  // dominant-joint rigid skin (weight0=1 in our export)
+  mat4 bm = uBones[int(aJoint+0.5)];
+  vec4 pos = bm * vec4(aPos, 1.0);
+  vec3 nrm = normalize((bm * vec4(aNrm, 0.0)).xyz);
+  vec4 wp = uModel * pos;
+  vW = wp.xyz;
+  vN = nrm;
+  vC = aCol;
+  vSeed = aCol.a;
+  vec3 j = vec3(
+    fract(sin(dot(aPos.xy + vec2(aJoint), vec2(12.9898,78.233)) + uJit.x)*43758.5)-.5,
+    fract(sin(dot(aPos.yz, vec2(39.346,11.135)) + uJit.y)*24634.6)-.5,
+    fract(sin(dot(aPos.xz, vec2(53.731,17.891)) + uJit.x)*91187.2)-.5) * 0.012;
+  gl_Position = uProj * uView * vec4(wp.xyz + j, 1.0);
+}`;
+
+const SKIN_FS = `#version 300 es
+precision highp float;
+in vec3 vN; in vec4 vC; in vec3 vW; in float vSeed;
+uniform vec3 uCam;
+uniform vec3 uLightDir, uLightColor, uShadowColor;
+uniform float uRampGamma, uBands, uShadowLift;
+uniform vec2 uFog; uniform vec3 uFogCol;
+uniform float uPaint;
+out vec4 o;
+float bandRamp(vec3 n, vec3 l){
+  float ndl = dot(n, l);
+  float t = ndl * 0.5 + 0.5;
+  t = pow(clamp(t, 0.0, 1.0), uRampGamma);
+  t += (vSeed - 0.5) * 0.06;
+  t = clamp(t, 0.0, 0.9999);
+  return floor(t * uBands) / max(1.0, uBands - 1.0);
+}
+vec3 rampColor(float q, vec3 albedo){
+  vec3 deep = mix(uShadowColor, albedo * 0.26, uShadowLift);
+  vec3 mid  = albedo * mix(vec3(1.0), uLightColor * 1.5, 0.32) * 0.82;
+  vec3 lite = albedo * mix(vec3(1.0), uLightColor * 1.6, 0.52) * 1.36;
+  return q < 0.5 ? mix(deep, mid, q * 2.0) : mix(mid, lite, (q - 0.5) * 2.0);
+}
+void main(){
+  vec3 n = normalize(vN);
+  float q = bandRamp(n, normalize(uLightDir));
+  vec3 alb = clamp(vC.rgb, 0.0, 1.0);
+  vec3 lit = rampColor(q, alb);
+  float dist = length(uCam - vW);
+  float fog = smoothstep(uFog.x, uFog.y, dist);
+  lit = mix(lit, uFogCol, fog * 0.55);
+  o = vec4(lit, 1.0);
+}`;
+
 /* ── a painterly particle pool (additive billboards) ───────────────── */
 class Pool {
   constructor(gl, max){
@@ -536,6 +599,29 @@ class Engine {
     this.bill=program(gl,BILL_VS,BILL_FS);
     this.post=program(gl,POST_VS,POST_FS);
     this.sky=program(gl,SKY_VS,SKY_FS);
+    this.skin=program(gl,SKIN_VS,SKIN_FS);
+    gl.useProgram(this.skin);
+    const sl={
+      uLightDir:gl.getUniformLocation(this.skin,'uLightDir'),
+      uLightColor:gl.getUniformLocation(this.skin,'uLightColor'),
+      uShadowColor:gl.getUniformLocation(this.skin,'uShadowColor'),
+      uRampGamma:gl.getUniformLocation(this.skin,'uRampGamma'),
+      uBands:gl.getUniformLocation(this.skin,'uBands'),
+      uShadowLift:gl.getUniformLocation(this.skin,'uShadowLift'),
+      uFog:gl.getUniformLocation(this.skin,'uFog'),
+      uFogCol:gl.getUniformLocation(this.skin,'uFogCol'),
+      uPaint:gl.getUniformLocation(this.skin,'uPaint'),
+      uJit:gl.getUniformLocation(this.skin,'uJit') };
+    if(sl.uLightDir) gl.uniform3f(sl.uLightDir, 0.55, 0.75, 0.30);
+    if(sl.uLightColor) gl.uniform3f(sl.uLightColor, 1.0, 0.94, 0.86);
+    if(sl.uShadowColor) gl.uniform3f(sl.uShadowColor, 0.05, 0.04, 0.10);
+    if(sl.uRampGamma) gl.uniform1f(sl.uRampGamma, 1.6);
+    if(sl.uBands) gl.uniform1f(sl.uBands, 3.0);
+    if(sl.uShadowLift) gl.uniform1f(sl.uShadowLift, 0.55);
+    if(sl.uFog) gl.uniform2f(sl.uFog, 14, 34);
+    if(sl.uFogCol) gl.uniform3f(sl.uFogCol, 0.12, 0.07, 0.14);
+    if(sl.uJit) gl.uniform2f(sl.uJit, 0.0, 0.0);
+    this._skinLoc=sl;
     this._skyLoc={ uSky:gl.getUniformLocation(this.sky,'uSky'),
       uVRot:gl.getUniformLocation(this.sky,'uVRot'),
       uTanFov:gl.getUniformLocation(this.sky,'uTanFov'),
@@ -669,7 +755,7 @@ class Engine {
     gl.viewport(0,0,W,H);
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
-    gl.clearColor(0.012,0.010,0.02,1);
+    gl.clearColor(0.03,0.025,0.05,1);
     gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
     // sky
     if(this.skyTex){ this._sky(); }
@@ -707,6 +793,8 @@ class Engine {
     gl.disable(gl.CULL_FACE);
     // billboards (pool)
     this.pool.draw(gl, this.bill, this.proj, this.view);
+    // skinned units (inside pass 1 so post treats them as scene)
+    this.drawSkins();
     // ---- pass 2: post to screen ----
     this._postPass();
   }
@@ -744,6 +832,48 @@ class Engine {
     gl.uniform1f(l.uAspect, this.canvas.width/this.canvas.height);
     gl.drawArrays(gl.TRIANGLES,0,3);
     gl.enable(gl.DEPTH_TEST);
+  }
+
+  // ---------- skinned units ----------
+  addSkin(skinUnit){
+    if(!this.skinUnits) this.skinUnits=[];
+    this.skinUnits.push(skinUnit);
+  }
+  drawSkins(){
+    if(!this.skinUnits || !this.skinUnits.length) return;
+    // ground contact shadows: dark discs under each unit
+    if(!this._shadowGeo){
+      const sg=new POLY.Geo();
+      // octagonal contact disc
+      for(let k=0;k<8;k++){
+        const a0=k/8*Math.PI*2, a1=(k+1)/8*Math.PI*2;
+        sg.tri([0,0.021,0],[Math.cos(a0)*0.5,0.021,Math.sin(a0)*0.5],[Math.cos(a1)*0.5,0.021,Math.sin(a1)*0.5],
+          [0.05,0.035,0.075],[0,1,0]);
+      }
+      this._shadowGeo=sg;
+      this._shadowMesh=sg.build(this.gl);
+    }
+    gl.useProgram(this.prog);
+    gl.uniform1f(this.uni.uEmis, 0); gl.uniform1f(this.uni.uGlow, 0);
+    gl.bindVertexArray(this._shadowMesh.vao);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._shadowMesh.ib);
+    for(const su of this.skinUnits){
+      gl.uniformMatrix4fv(this.uni.uModel, false, su.shadowM || su.model);
+      gl.drawElements(gl.TRIANGLES, this._shadowMesh.count, gl.UNSIGNED_INT, 0);
+    }
+    gl.bindVertexArray(null);
+    const gl=this.gl;
+    const u=this._skinLoc;
+    gl.useProgram(this.skin);
+    if(u.uLightDir) gl.uniform3f(u.uLightDir, 0.55, 0.75, 0.30);
+    if(u.uLightColor) gl.uniform3f(u.uLightColor, 1.0, 0.94, 0.86);
+    if(u.uShadowColor) gl.uniform3f(u.uShadowColor, 0.05, 0.04, 0.10);
+    if(u.uRampGamma) gl.uniform1f(u.uRampGamma, 1.6);
+    if(u.uBands) gl.uniform1f(u.uBands, 3.0);
+    if(u.uShadowLift) gl.uniform1f(u.uShadowLift, 0.55);
+    if(u.uFog) gl.uniform2f(u.uFog, 14, 34);
+    if(u.uFogCol) gl.uniform3f(u.uFogCol, 0.12, 0.07, 0.14);
+    for(const su of this.skinUnits){ su.draw(gl, this.skin, this.proj, this.view); }
   }
 
   _postPass(){

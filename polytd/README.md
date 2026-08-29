@@ -37,6 +37,23 @@ Open `http://localhost:8080/` (or whatever port) → **DEPLOY → THE AEGIS → 
 - **Depth**: cycle speed, pause, sell/upgrade, prism strike (nuke), overclock (fire-rate haste).
 - **Boards**: Orrery (humanity cyan), Crown (gold), Maelstrom (magenta) — each its own road layout.
 
+## Blender asset pipeline
+
+Units are authored in **Blender** (headless, via `bpy`) with real armatures and baked
+animation clips, then rasterized into the engine as GPU-skinned meshes:
+
+- `tools/blender/mk_crawler.py` — quadruped xeno machine: 12-bone skeleton, walk/attack/death
+- `tools/blender/mk_sprinter.py` — bipedal runner: 12-bone skeleton, run/attack/death
+- `tools/blender/lib_asset.py` — shared exporter: bakes poses, skips evaluated modifiers,
+  writes `skin_asset_v1` (JSON manifest + Float32 .bin, stride 14: pos3 nrm3 col3 joint weight ×3)
+- `js/skin.js` — runtime: loads assets, replays clips through the joint hierarchy
+  (restLocal × poseLocal, skin = world × invBind), uploads a bone palette to the GPU
+- `js/gl.js` SKIN_VS/SKIN_FS — GPU skinning with the Neon Reliquary toon ramp
+  (multiplicative albedo lights, per-facet band offsets, biquantized deep/mid/lite stops)
+
+Rebuild an asset: `blender -b -P tools/blender/mk_crawler.py` (bakes to `assets/*`).
+Enemies fall back to procedural meshes if the .skin files aren't served (file://).
+
 ## Tools
 
 `tools/poly_headless.js` — CDP-driven smoke test: boots the page, clicks through screens,

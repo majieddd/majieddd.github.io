@@ -25,6 +25,7 @@ class App {
     this.buildMode=null;
     this.abilityAim=null;
     this._wire();
+    this._loadSkinAssets();
     this.ui=new POLY.UI(this);
     this._resize();
     this._bindResize();
@@ -91,6 +92,16 @@ class App {
   togglePause(){ this.paused=!this.paused;
     document.getElementById('hud-pause').textContent=this.paused?'\u25b6':'\u2759\u2759';
     this.ui.toast(this.paused?'PAUSED':'UNPAUSED','',0.9);
+  }
+  async _loadSkinAssets(){
+    if(!window.POLY.Skin) return;
+    try{
+      for(const name of ['crawler','sprinter']){
+        const asset=await POLY.Skin.load('assets/'+name);
+        this.skinAssets[name]=asset;
+        this.skinMeshes[name]=new POLY.Skin.SkinMesh(this.eng.gl, asset);
+      }
+    }catch(e){ /* procedural fallback stays */ }
   }
   /* ── screens/flow ───────────────────────────────────────────────── */
   startBattle(){

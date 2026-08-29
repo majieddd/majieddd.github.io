@@ -12,7 +12,7 @@ http.createServer((req,res)=>{
   fs.createReadStream(fp).pipe(res);
 }).listen(PORT);
 
-const PAGESCRIPT = "(async ()=>{\n  const A=window.__poly;\n  const S='STATEHERE';\n  if(S==='title'){ return 't'; }\n  A.ui.briefing();\n  await new Promise(r=>setTimeout(r,250));\n  if(S==='briefing') return 'b';\n  A.mapId=(window.__mapSel||'orrery'); A.startBattle();\n  const b=A.battle;\n  b.gold=9000; A.ui.refreshGold();\n  (function(){\n    const pathCell=(c,r)=>b.cells.find(cl=>cl.c===c&&cl.r===r&&cl.path);\n    const adj=[]; b.cells.forEach(cl=>{ if(cl.path)return;\n      const n=[[cl.c-1,cl.r],[cl.c+1,cl.r],[cl.c,cl.r-1],[cl.c,cl.r+1],[cl.c-1,cl.r-1],[cl.c+1,cl.r+1]];\n      if(n.some(p=>pathCell(p[0],p[1]))) adj.push(cl); });\n    adj.sort((a,b2)=>Math.abs(a.z-0.2)-Math.abs(b2.z-0.2));\n    const loadout=['bolt','cryo','bolt','mortar','arc','toxin','pyre','nullfield','railgun'];\n    loadout.forEach((tid,i)=>{ const cl=adj[i%adj.length]; if(cl && POLY.DATA.TOWERS[tid]) b.place(tid, cl); });\n  })();\n  A.cam.yaw=0; A.cam.pitch=0.66; A.cam.dist=16.5; A.cam.target=[0,0.8,0.6];\n  A.speedMul=1;\n  if(S==='built'){ return 'built'; }\n  b.beginNext();\n  if(S==='wave1'){\n    let t=0; while(t<7 && b.state!=='lost'){ await new Promise(r=>setTimeout(r,100)); t+=0.1; }\n    return 'wave1';\n  }\n  A.speedMul=4;\n  let guard=0;\n  while(b.waveNo<5 && b.state==='wave' && guard<140){ await new Promise(r=>setTimeout(r,200)); guard++; }\n  return b.state==='wave'?'wave5':'end';\n})()";
+const PAGESCRIPT = "(async ()=>{\n  const A=window.__poly;\n  const S='STATEHERE';\n  if(S==='title'){ return 't'; }\n  A.ui.briefing();\n  await new Promise(r=>setTimeout(r,250));\n  if(S==='briefing') return 'b';\n  A.mapId=(window.__mapSel||'orrery'); A.startBattle();\n  const b=A.battle;\n  b.gold=9000; A.ui.refreshGold();\n  (function(){\n    const pathCell=(c,r)=>b.cells.find(cl=>cl.c===c&&cl.r===r&&cl.path);\n    const adj=[]; b.cells.forEach(cl=>{ if(cl.path)return;\n      const n=[[cl.c-1,cl.r],[cl.c+1,cl.r],[cl.c,cl.r-1],[cl.c,cl.r+1],[cl.c-1,cl.r-1],[cl.c+1,cl.r+1]];\n      if(n.some(p=>pathCell(p[0],p[1]))) adj.push(cl); });\n    adj.sort((a,b2)=>Math.abs(a.z-0.2)-Math.abs(b2.z-0.2));\n    const loadout=['bolt','cryo','bolt','mortar','arc','toxin','pyre','nullfield','railgun'];\n    loadout.forEach((tid,i)=>{ const cl=adj[i%adj.length]; if(cl && POLY.DATA.TOWERS[tid]) b.place(tid, cl); });\n  })();\n  A.cam.yaw=0; A.cam.pitch=0.66; A.cam.dist=16.5; A.cam.target=[0,0.8,0.6];\n  A.speedMul=1;\n  if(S==='built'){ return 'built'; }\n  b.beginNext();\n  if(S==='wave1'){\n    let t=0; while(t<1.4 && b.state!=='lost'){ await new Promise(r=>setTimeout(r,100)); t+=0.1; }\n    return 'wave1';\n  }\n  A.speedMul=4;\n  let guard=0;\n  while(b.waveNo<5 && b.state==='wave' && guard<140){ await new Promise(r=>setTimeout(r,200)); guard++; }\n  return b.state==='wave'?'wave5':'end';\n})()";
 
 async function main(){
   const state=process.argv[2]||'board'; const out=process.argv[3]||'state.png';
@@ -51,7 +51,7 @@ async function main(){
   try{ result=await ev(script); }catch(e){ result='ER:'+e.message; }
   await sleep(600);
   if(process.argv[4]==='zoom'){
-    await ev('(function(){ const A=window.__poly; A.cam.dist=6.4; A.cam.pitch=0.32; A.cam.target=[1.2,0.9,-2.3]; return 1; })()');
+    await ev('(function(){ const A=window.__poly; A.cam.dist=7.5; A.cam.pitch=0.55; A.cam.target=[0.2,0.4,-1.8]; return 1; })()');
     await sleep(500);
   }
   if(process.argv[4]==='slices15'){

@@ -257,11 +257,20 @@ class Battle {
   }
   _spawnEnemy(id, hpMul, boss){
     const def=D.ENEMIES[id];
-    const m=POLY.buildEnemyModel(this.env.eng, id);
+    // Blender-skinned model when available; procedural fallback otherwise
+    let m=null, skin=null;
+    const app=this.env;
+    if(app.skinMeshes && app.skinMeshes[id]){
+      skin=new POLY.Skin.SkinUnit(app.skinMeshes[id]);
+      skin.setClip('run');
+      app.eng.addSkin(skin);
+    } else {
+      m=POLY.buildEnemyModel(this.env.eng, id);
+    }
     const e={
       id, def, hp:def.hp*hpMul, maxHp:def.hp*hpMul, pos:[...this.path[0]],
       pathT:0, speed:def.speed, armor:def.armor, kind:def.kind,
-      rig:m.rig, radius:m.radius, flyY:m.flyY??0, boss:!!def.boss,
+      rig:m?m.rig:null, skin, radius:m?m.radius:0.4, flyY:m?m.flyY??0:0, boss:!!def.boss,
       slowT:0, slowP:0, burn:0, burnT:0, burnCol:[1,0.6,0.2],
       poison:0, poisonT:0, marks:{}, markSeq:[],
       stunT:0, spawnT:0.7, dead:false, leak:false,
@@ -304,6 +313,8 @@ class Battle {
   _updateEnemies(dt){
     for(let i=this.enemies.length-1;i>=0;i--){
       const e=this.enemies[i];
+      if(e.dying){ if(e.skin){ e.skin.update(dt); }
+        continue; }
       if(e.spawnT>0){ e.spawnT-=dt;
         e.spawnScale=1-Math.max(0,e.spawnT)/0.7; continue; }
       // statuses
@@ -335,7 +346,20 @@ class Battle {
       // lean/rotate visuals
       const yaw=Math.atan2(d[0],d[2]);
       e.yaw=Math.atan2(d[0],d[2]);
-      this._poseEnemy(e, dt);
+      if(e.skin){
+        e.skin.setClip(e.stunT>0?'attack':'run');
+        e.skin.update(dt);
+        // face along path: +X bone-forward → yaw around Y. M4 rotation: R_y(yaw).
+        // unit model ~1.7u tall; scale to read clearly (min 0.6), feet to ground
+        const sc=0.60*(e.radius/0.42);
+        e.skin.model=POLY.M4.mul(POLY.M4.trans(e.pos[0], e.pos[1]-0.04, e.pos[2]),
+          POLY.M4.mul(POLY.M4.trs(0,0,0, 0, yaw+Math.PI/2, 0, sc,sc,sc),
+            POLY.M4.trans(0,-0.85,0)));
+        e.skin.shadowM=POLY.M4.mul(POLY.M4.trans(e.pos[0], 0.022, e.pos[2]),
+          POLY.M4.trs(0,0,0, 0, 0, 0, sc*1.4, 1, sc*1.25));
+      } else {
+        this._poseEnemy(e, dt);
+      }
     }
   }
   _leak(e){
@@ -354,6 +378,11 @@ class Battle {
   _removeEnemy(e){
     const i=this.enemies.indexOf(e);
     if(i>=0) this.enemies.splice(i,1);
+    if(e.skin){
+      const arr=this.env.eng.skinUnits||[];
+      const k=arr.indexOf(e.skin);
+      if(k>=0) arr.splice(k,1);
+    }
     // mark plates dead: set model scale 0 via hidden flag
     e.hidden=true;
     const plates=this.env.eng.plates;
@@ -435,8 +464,16 @@ class Battle {
     this.kills++;
     this.env.audio?.sfx('kill');
     this._fxKill(e);
-    this._removeEnemy(e);
-    this.env.ui?.onKill(e, b);
+    if(e.skin){
+      // death animation: play clip, remove after it ends
+      e.dying=true; e.deadT=0;
+      e.skin.setClip('death');
+      this.env.ui?.onKill(e, b);
+      setTimeout(()=>{ this._removeEnemy(e); }, 900);
+    } else {
+      this._removeEnemy(e);
+      this.env.ui?.onKill(e, b);
+    }
   }
   /* ── towers ─────────────────────────────────────────────────────── */
   _inRange(t, e){
