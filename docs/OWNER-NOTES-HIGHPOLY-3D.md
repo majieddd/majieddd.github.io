@@ -122,3 +122,18 @@ P1-5 (info, VALIDATED): shader KIND ordering, shatter() post-loop refs,
 budget arithmetic (FX 6300 < render 7168), FOV punch consistency, load order
 and export references all checked and confirmed sound. The audit verdict:
 no critical runtime defects.
+
+## Shipped (2026-08-29)
+
+Pushed to main (30e6543, rebased onto the owners' reliquary v1.1/v1.2
+commits, which touch only reliquary/** and never this folder). Live at:
+
+https://majieddd.github.io/aegis-3d-highpoly/
+
+Verified from the PUBLIC URL with the live smoke harness: HTTP 200, title
+correct, all modules served, boot-ok, match starts (wave 0, 340 gold, 20
+lives), screenshot qa/live-start.png (1.8MB, real WebGL), consoleErrors = 0.
+Isolation: this folder shares no code with the main game (repo root), the
+2D variant (js/), aegis-3d/ lowpoly, or reliquary/; deleting or updating any
+of those cannot affect this variant and vice versa. Single-file build:
+cosmic-highpoly.html (and narrative/td_highpoly.html).
