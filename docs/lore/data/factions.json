@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "factions": [
+    {
+      "id": "humans",
+      "display_name": "Humanity",
+      "hidden_name": "The Solar Schism",
+      "game_id": "human",
+      "conquest_verb": "Settle",
+      "resource": "Autonomy",
+      "doctrine": "No species owns another species' future.",
+      "mechanical_identity": "Adaptation, broad coverage, universal terrain attunement",
+      "internal_contradiction": "Liberation can become settler empire.",
+      "status": "core"
+    },
+    {
+      "id": "federation",
+      "display_name": "Federation of Light",
+      "hidden_name": "The Luminous Accord",
+      "game_id": "light",
+      "conquest_verb": "Accord",
+      "resource": "Consent Signatures and Coherence",
+      "leader": "Ashtar, Supreme Commander and First Speaker",
+      "doctrine": "Agree to the Light of Unified Consciousness.",
+      "mechanical_identity": "Defense, resistance suppression, authenticated control",
+      "internal_contradiction": "Protection can manufacture the consent it later claims.",
+      "status": "core"
+    },
+    {
+      "id": "xenos",
+      "display_name": "Xenos",
+      "hidden_name": "The Extraction Compact / Severed Houses",
+      "game_id": "xeno",
+      "conquest_verb": "Bind",
+      "resource": "Yield",
+      "doctrine": "Anything made dependent can be owned without formal conquest.",
+      "mechanical_identity": "Wound scaling, conversion, harvest economy",
+      "internal_contradiction": "Shared farms reward cooperation; extraction rewards monopoly.",
+      "species_is_faction": false,
+      "status": "core"
+    },
+    {
+      "id": "pirates",
+      "display_name": "Pirates",
+      "hidden_name": "The Scrap Constellation",
+      "game_id": "pirate",
+      "conquest_verb": "Route",
+      "resource": "Access, Reputation, Salvage",
+      "doctrine": "No route belongs to a throne.",
+      "mechanical_identity": "Plunder, overload, heat, mixed-origin systems",
+      "internal_contradiction": "Freedom from law protects liberators and traffickers alike.",
+      "status": "core"
+    },
+    {
+      "id": "machines",
+      "display_name": "Machines",
+      "hidden_name": "The Continuance",
+      "game_id": "robot",
+      "playable_banner": "The Parallel",
+      "pve_system": "The Vigil",
+      "earth_system": "The Old Weather",
+      "conquest_verb": "Continue",
+      "resource": "Continuity",
+      "doctrine": "Continue what can still be continued.",
+      "mechanical_identity": "Linked lattice, deterministic bootstrap, late scaling",
+      "internal_contradiction": "The directive is authentic; its intended object is ambiguous.",
+      "status": "core"
+    }
+  ]
+}

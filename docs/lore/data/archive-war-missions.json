@@ -1,0 +1,514 @@
+{
+  "schema_version": "1.2.0",
+  "game_commit": "ee86a08e13c23074f8be0aff435e6c35429c2838",
+  "missions": [
+    {
+      "id": "AW-01",
+      "name": "The 701st File",
+      "evidence": "B",
+      "commander": "vanta",
+      "battlefield": "causeway",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "beacon",
+        "mortar"
+      ],
+      "premise": "A Blue Book residual acquires meaning only when a Lattice coordinate frame is recovered. The file is authentic; the future coordinate interpretation is F.",
+      "objective": "Secure the archive bridge without destroying either the original scan or the later annotation layer."
+    },
+    {
+      "id": "AW-02",
+      "name": "Arnold Lexicon",
+      "evidence": "B/C",
+      "commander": "cadre",
+      "battlefield": "spine",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "flak"
+      ],
+      "premise": "Three factions build different craft profiles from one witness description because later illustrations became more influential than the original words.",
+      "objective": "Classify targets by behavior rather than inherited silhouette labels."
+    },
+    {
+      "id": "AW-03",
+      "name": "The Mantell Rule",
+      "evidence": "B",
+      "commander": "vess",
+      "battlefield": "expanse",
+      "world_kind": "fortress",
+      "asset_anchors": [
+        "flak",
+        "pharos"
+      ],
+      "premise": "A pursuit doctrine memorializes the danger of chasing an unknown beyond sensor and vehicle limits.",
+      "objective": "Win while refusing a lure that offers combat advantage outside verified coverage."
+    },
+    {
+      "id": "AW-04",
+      "name": "Jafari Chain",
+      "evidence": "B",
+      "commander": "vanta",
+      "battlefield": "crossroads",
+      "world_kind": "fortress",
+      "asset_anchors": [
+        "nullfield",
+        "jammer"
+      ],
+      "premise": "Records modeled on the 1976 Tehran case disagree across witness, aircraft, weapon, and command channels.",
+      "objective": "Keep each evidence stream intact while an Archonic spoof tries to merge them into one false certainty."
+    },
+    {
+      "id": "AW-05",
+      "name": "Nimitz Partition",
+      "evidence": "B",
+      "commander": "orin",
+      "battlefield": "orrery",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "prism",
+        "arc"
+      ],
+      "premise": "Eyewitness, radar, infrared, and later recollection are stored as separate objects rather than one perfect account.",
+      "objective": "Reconstruct the route without granting any single sensor total authority."
+    },
+    {
+      "id": "AW-06",
+      "name": "GoFast Geometry",
+      "evidence": "A/B",
+      "commander": "lumen_r",
+      "battlefield": "skew",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "chrono"
+      ],
+      "premise": "A strange-looking track becomes conventional after geometry is modeled, while exact identity remains unknown.",
+      "objective": "Score higher by resolving behavior without inventing an identity."
+    },
+    {
+      "id": "AW-07",
+      "name": "Aguadilla Split",
+      "evidence": "A/B",
+      "commander": "lumen",
+      "battlefield": "delta",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "monstrance"
+      ],
+      "premise": "Apparent splitting and ocean entry compete with a conventional two-object and sensor-geometry analysis.",
+      "objective": "Prevent both a Compact false-USO narrative and a Human claim that all ocean anomalies are solved."
+    },
+    {
+      "id": "AW-08",
+      "name": "Record Group 615",
+      "evidence": "A",
+      "commander": "vanta",
+      "battlefield": "loom",
+      "world_kind": "forge",
+      "asset_anchors": [
+        "quartermaster"
+      ],
+      "premise": "FAA, NRC, ODNI, OSD, NSA, State, and FBI transfers arrive with incompatible metadata and release conditions.",
+      "objective": "Create a searchable common schema without deleting agency provenance."
+    },
+    {
+      "id": "AW-09",
+      "name": "The Greenewald Standard",
+      "evidence": "A/F",
+      "commander": "grist",
+      "battlefield": "causeway",
+      "world_kind": "forge",
+      "asset_anchors": [
+        "vault"
+      ],
+      "premise": "A Pirate archive offers millions of pages but demands that denial letters, appeals, and missing attachments remain tradeable assets.",
+      "objective": "Publish enough to preserve trust without surrendering vulnerable sources."
+    },
+    {
+      "id": "AW-10",
+      "name": "Space Tiger Team",
+      "evidence": "A/B",
+      "commander": "lumen_r",
+      "battlefield": "orrery",
+      "world_kind": "fortress",
+      "asset_anchors": [
+        "pharos",
+        "dronebay"
+      ],
+      "premise": "A 2023 space/transmedium detection framework becomes the ancestor of orbital anomaly deconfliction.",
+      "objective": "Identify duplicate tracks across domains without treating the word transmedium as a conclusion."
+    },
+    {
+      "id": "AW-11",
+      "name": "Seventy-Eight Frames",
+      "evidence": "A/B",
+      "commander": "vanta",
+      "battlefield": "ossuary",
+      "world_kind": "fortress",
+      "asset_anchors": [
+        "sepulchre"
+      ],
+      "premise": "A Navy denial confirms responsive classified UAP photographs existed but not what they depict.",
+      "objective": "Preserve the existence of the records after the image content is deleted by a hostile archive process."
+    },
+    {
+      "id": "AW-12",
+      "name": "The Virginia Hundred",
+      "evidence": "B",
+      "commander": "halder",
+      "battlefield": "confluence",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "beacon",
+        "dronebay"
+      ],
+      "premise": "A Navy report describes roughly one hundred airborne observations and two likely uncrewed surface systems; the future operator remains unknown.",
+      "objective": "Protect civilian traffic while three factions weaponize the object count as propaganda."
+    },
+    {
+      "id": "AW-13",
+      "name": "Satellite Flare Flood",
+      "evidence": "A",
+      "commander": "cantor",
+      "battlefield": "carousel",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "prism",
+        "pharos"
+      ],
+      "premise": "A new modeling capability resolves large numbers of reports as satellite reflections.",
+      "objective": "Calm a population without allowing the Compact to hide one unrelated operation inside the mass resolution."
+    },
+    {
+      "id": "AW-14",
+      "name": "Diamond in SWIR",
+      "evidence": "B",
+      "commander": "orin",
+      "battlefield": "lance",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "monstrance",
+        "railgun"
+      ],
+      "premise": "A 2024 report describes a diamond-shaped object detectable in short-wave infrared; the public clip is descriptive, not a final analytic judgment.",
+      "objective": "Build a sensor chain that can test detection-band dependence."
+    },
+    {
+      "id": "AW-15",
+      "name": "Surface Turns",
+      "evidence": "B",
+      "commander": "rake",
+      "battlefield": "atoll",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "tether",
+        "dronebay"
+      ],
+      "premise": "A 2023 maritime clip is reported as showing turns near the ocean surface, but sensor motion and range remain contested.",
+      "objective": "Retrieve native data before a Pirate copy becomes the only surviving record."
+    },
+    {
+      "id": "AW-16",
+      "name": "Malmstrom Alert, 1975",
+      "evidence": "B",
+      "commander": "vess",
+      "battlefield": "crown",
+      "world_kind": "fortress",
+      "asset_anchors": [
+        "flak",
+        "nullfield"
+      ],
+      "premise": "Historical records describe unknown craft reports around sensitive installations and attempted interception.",
+      "objective": "Hold the weapons site without mistaking uncertainty for permission to launch."
+    },
+    {
+      "id": "AW-17",
+      "name": "Echo Flight, 1967",
+      "evidence": "B/E",
+      "commander": "vanta",
+      "battlefield": "ossuary",
+      "world_kind": "fortress",
+      "asset_anchors": [
+        "ward"
+      ],
+      "premise": "Missile-disablement claims, later testimony, missing documentation, and conventional explanations coexist.",
+      "objective": "Maintain two live interpretations while a faction tries to canonize one for political gain."
+    },
+    {
+      "id": "AW-18",
+      "name": "JAL 1628",
+      "evidence": "B",
+      "commander": "korrin",
+      "battlefield": "expanse",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "pharos"
+      ],
+      "premise": "A long-duration aviation report becomes a test of crew testimony, radar context, and public release.",
+      "objective": "Escort the flight and preserve independent logs through a communications blackout."
+    },
+    {
+      "id": "AW-19",
+      "name": "O Hare Aperture",
+      "evidence": "B/C",
+      "commander": "cantor",
+      "battlefield": "atoll",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "beacon"
+      ],
+      "premise": "An airport sighting and cloud-hole narrative become a mass-belief event with limited official data.",
+      "objective": "Prevent panic and memory convergence from turning uncertain witness accounts into one manufactured revelation."
+    },
+    {
+      "id": "AW-20",
+      "name": "Socorro Traces",
+      "evidence": "B",
+      "commander": "orin",
+      "battlefield": "narrows",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "canister"
+      ],
+      "premise": "A close-range report includes alleged ground traces and a vehicle-like object.",
+      "objective": "Distinguish physical trace, witness interpretation, and later symbol reconstruction."
+    },
+    {
+      "id": "AW-21",
+      "name": "Levelland Circuit",
+      "evidence": "B",
+      "commander": "nyx",
+      "battlefield": "coil",
+      "world_kind": "forge",
+      "asset_anchors": [
+        "arc",
+        "capacitor"
+      ],
+      "premise": "Vehicle-electrical effects reported across a region compete with weather and ignition explanations.",
+      "objective": "Keep the grid running while testing whether the effect follows environment, machines, or narrative contagion."
+    },
+    {
+      "id": "AW-22",
+      "name": "Majestic Custody",
+      "evidence": "E",
+      "commander": "sevra",
+      "battlefield": "crown",
+      "world_kind": "fortress",
+      "asset_anchors": [
+        "ward",
+        "monstrance"
+      ],
+      "premise": "A document can be archived and investigated without being authentic.",
+      "objective": "Expose the forgery while finding the real compartmentation practice it copied."
+    },
+    {
+      "id": "AW-23",
+      "name": "Project Beta",
+      "evidence": "D/E",
+      "commander": "vanta",
+      "battlefield": "rift",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "siren",
+        "ward"
+      ],
+      "premise": "A sincere witness, classified testing, alleged disinformation, and underground-base mythology contaminate one another.",
+      "objective": "Rescue the person and the evidence without validating the false total story."
+    },
+    {
+      "id": "AW-24",
+      "name": "Active Archive",
+      "evidence": "A/B",
+      "commander": "axiom",
+      "battlefield": "lattice",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "vault",
+        "echo"
+      ],
+      "premise": "Cases with too little data are retained rather than solved or discarded.",
+      "objective": "Design an archive policy that allows future learning without turning uncertainty into permanent suspicion."
+    },
+    {
+      "id": "AW-25",
+      "name": "Five Releases",
+      "evidence": "A/B",
+      "commander": "vanta",
+      "battlefield": "lattice",
+      "world_kind": "forge",
+      "asset_anchors": [
+        "vault",
+        "echo"
+      ],
+      "premise": "Five government release batches become searchable through processed OCR, transcripts, media, and metadata, but the derivative corpus cannot replace the originals.",
+      "objective": "Reconcile 375 records without erasing release batch, source hash, processing history, or OCR uncertainty."
+    },
+    {
+      "id": "AW-26",
+      "name": "Parallel Track",
+      "evidence": "B",
+      "commander": "orin",
+      "battlefield": "lance",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "flak",
+        "railgun"
+      ],
+      "premise": "A business jet reports an object pacing it over Nevada while witness language changes and the most useful radar files remain unavailable.",
+      "objective": "Protect the flight and preserve black-program, foreign-platform, conventional, and exotic hypotheses until the evidence can separate them."
+    },
+    {
+      "id": "AW-27",
+      "name": "Media Integrity Ladder",
+      "evidence": "A/B",
+      "commander": "lumen_r",
+      "battlefield": "shattered",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "monstrance",
+        "prism"
+      ],
+      "premise": "Native sensor products, screen recordings, altered copies, witness videos, and artistic recreations are mixed into one apparent evidence feed.",
+      "objective": "Restore parent-child provenance and prevent a reconstruction from being scored as event footage."
+    },
+    {
+      "id": "AW-28",
+      "name": "Null Search Appeal",
+      "evidence": "A/E",
+      "commander": "sevra",
+      "battlefield": "crown",
+      "world_kind": "fortress",
+      "asset_anchors": [
+        "nullfield",
+        "ward"
+      ],
+      "premise": "An agency refuses to search for a phrase because the alleged program is said not to exist, even though records may discuss the allegation itself.",
+      "objective": "Compel a lawful search without converting the appeal victory into proof that the alleged program was real."
+    },
+    {
+      "id": "AW-29",
+      "name": "Evaluation 585",
+      "evidence": "A/B",
+      "commander": "cadre",
+      "battlefield": "causeway",
+      "world_kind": "fortress",
+      "asset_anchors": [
+        "pylon",
+        "nullfield"
+      ],
+      "premise": "An inspector-general proposal reveals what the institution intended to evaluate while the claimed benefits and capability details remain redacted.",
+      "objective": "Map the detection and counterintelligence workflow without treating classification as an extraordinary finding."
+    },
+    {
+      "id": "AW-30",
+      "name": "Diplomatic Sky",
+      "evidence": "A/B",
+      "commander": "seraph",
+      "battlefield": "crossroads",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "beacon",
+        "pharos"
+      ],
+      "premise": "State Department records preserve UAP-related reports as diplomatic, cultural, and political events across several countries, not only as sensor cases.",
+      "objective": "Translate and compare reports without stripping away local context or turning diplomatic transmission into endorsement."
+    },
+    {
+      "id": "AW-31",
+      "name": "Contactee Network",
+      "evidence": "B-D",
+      "commander": "cantor",
+      "battlefield": "rift",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "beacon",
+        "echo"
+      ],
+      "premise": "FBI files on contactees, organizations, investigators, broadcasters, skeptics, and disputed documents record how belief networks spread and were monitored.",
+      "objective": "Separate correspondence, surveillance, fraud inquiry, sincere belief, and later mythology before reconstructing the network."
+    },
+    {
+      "id": "AW-32",
+      "name": "Proposal Not Program",
+      "evidence": "A/E",
+      "commander": "axiom",
+      "battlefield": "ossuary",
+      "world_kind": "forge",
+      "asset_anchors": [
+        "vault",
+        "foundry"
+      ],
+      "premise": "A dramatic special-access proposal is repeatedly cited as an operational recovery program even though it was never approved, funded, established, or supplied with material.",
+      "objective": "Recover the proposal history while stopping every faction from skipping the proposal-program-operation ladder."
+    },
+    {
+      "id": "AW-33",
+      "name": "Ordinary Alloy",
+      "evidence": "A/B",
+      "commander": "grist",
+      "battlefield": "anvil",
+      "world_kind": "forge",
+      "asset_anchors": [
+        "reclaimer",
+        "canister"
+      ],
+      "premise": "A specimen with an extraordinary recovery story is tested and found consistent with ordinary industrial alloy.",
+      "objective": "Preserve chain of custody, analytical method, and negative result while searching separately for the origin of the story."
+    },
+    {
+      "id": "AW-34",
+      "name": "Refuse to Answer",
+      "evidence": "A",
+      "commander": "vanta",
+      "battlefield": "loom",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "echo",
+        "beacon"
+      ],
+      "premise": "A mandatory reporting system converted every blank field into a confident negative, manufacturing a false pattern across thousands of reports.",
+      "objective": "Reconstruct the original uncertainty states and redesign the form without destroying useful structured data."
+    },
+    {
+      "id": "AW-35",
+      "name": "Watcher Array",
+      "evidence": "A/F",
+      "commander": "axiom",
+      "battlefield": "lattice",
+      "world_kind": "fortress",
+      "asset_anchors": [
+        "dronebay",
+        "pharos"
+      ],
+      "premise": "An event-based sensor mesh detects every moving cluster but initially labels each one unidentified, including drones, reflections, fauna, and one persistent residual.",
+      "objective": "Maintain custody and characterize signatures before any faction turns a provisional track into a declared enemy."
+    },
+    {
+      "id": "AW-36",
+      "name": "The Soda Can",
+      "evidence": "A",
+      "commander": "lumen_r",
+      "battlefield": "causeway",
+      "world_kind": "standard",
+      "asset_anchors": [
+        "monstrance",
+        "nullfield"
+      ],
+      "premise": "A classified image becomes conspiracy evidence even though the protected information concerns the collecting platform, metadata, and sensor performance rather than the ordinary object in frame.",
+      "objective": "Declassify enough to resolve the subject while preventing the release from exposing how to evade the sensor."
+    },
+    {
+      "id": "AW-37",
+      "name": "Native Master",
+      "evidence": "A/B",
+      "commander": "orin",
+      "battlefield": "shattered",
+      "world_kind": "forge",
+      "asset_anchors": [
+        "reclaimer",
+        "vault"
+      ],
+      "premise": "Six viral edits and three official derivatives descend from one native recording whose first hash and metadata log are missing.",
+      "objective": "Recover the memory card, establish the earliest defensible master, and preserve every fork without promoting any edit into original evidence."
+    }
+  ]
+}

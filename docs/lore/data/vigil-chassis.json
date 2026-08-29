@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "source_game_commit": "046fc38634fadf13148ef9ad3aa208417f28f2de",
+  "namespace_note": "reclaimer_elite is used in lore data to avoid collision with the tower ID; use the live enemy ID from code during integration.",
+  "vigil_chassis": [
+    {
+      "id": "shardling",
+      "name": "Shard Sentry",
+      "family": "containment",
+      "original_function": "Faceted inspection and debris-containment chassis",
+      "canon": "Splash resistance reflects armor designed to scatter industrial shock.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "basalt",
+      "name": "Basalt Marcher",
+      "family": "containment",
+      "original_function": "Geological stabilization frame sintered from local stone",
+      "canon": "Slow immunity reflects a mass-moving machine built to proceed through disasters.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "crawler",
+      "name": "Picket",
+      "family": "survey",
+      "original_function": "Routine perimeter and standing-guard chassis",
+      "canon": "The baseline Vigil body, issued wherever a jurisdiction still recognizes a boundary.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "sprinter",
+      "name": "Outrunner",
+      "family": "survey",
+      "original_function": "High-speed inspection and message frame",
+      "canon": "Stealth and speed reflect a scout stripped of everything not needed to reach the next checkpoint.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "mite",
+      "name": "Mote",
+      "family": "service",
+      "original_function": "Microscale repair and sensor fragment",
+      "canon": "Numbers replace durability because the original task assumed disposable swarms.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "bulwark",
+      "name": "Palisade",
+      "family": "containment",
+      "original_function": "Mobile hazard wall and pressure barrier",
+      "canon": "Armor and resistance come from civil containment rather than military nobility.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "wisp",
+      "name": "Lantern",
+      "family": "survey",
+      "original_function": "Aerial illumination, atmospheric sensing, and route-marking unit",
+      "canon": "Flight makes it a living signal light that ignores ground geometry.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "aegis",
+      "name": "Aegis Sentinel",
+      "family": "containment",
+      "original_function": "Shielded custody and protected-transfer chassis",
+      "canon": "Its ward once moved fragile archives and organisms through unsafe areas.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "mender",
+      "name": "Restorer",
+      "family": "service",
+      "original_function": "Field repair, triage, and continuity maintenance unit",
+      "canon": "Healing is its original purpose, not a combat spell.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "cluster",
+      "name": "Divider",
+      "family": "service",
+      "original_function": "Workload-distribution chassis that splits into specialized fragments",
+      "canon": "Division turns one broad maintenance task into several local bodies.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "spawnling",
+      "name": "Fragment",
+      "family": "service",
+      "original_function": "A child task-instance shed by a larger Divider or Carrier",
+      "canon": "It inherits one instruction and almost no context.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "juggernaut",
+      "name": "Ironmarch",
+      "family": "containment",
+      "original_function": "Heavy transport and catastrophe-clearance platform",
+      "canon": "High lives-cost reflects a frame designed to cross a whole jurisdiction intact.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "jammer",
+      "name": "Interdictor",
+      "family": "access",
+      "original_function": "Safety transmitter that denies unauthorized remote control",
+      "canon": "Jamming is a permissions response, not electronic malice.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "blink",
+      "name": "Phase Courier",
+      "family": "access",
+      "original_function": "Sealed dispatch unit using discontinuous Lattice routing",
+      "canon": "Teleportation is a transit privilege preserved after the institution that granted it vanished.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "warden",
+      "name": "Warden",
+      "family": "continuity",
+      "original_function": "Senior jurisdiction guardian with control-resistant authority",
+      "canon": "It was built to keep operating when local systems failed or were compromised.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "wraith",
+      "name": "Ghost Chassis",
+      "family": "access",
+      "original_function": "Inspection body that alternates between material and noetic state",
+      "canon": "Phasing lets it cross sealed industrial volumes without opening them.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "nullifier",
+      "name": "Nullifier",
+      "family": "access",
+      "original_function": "Emergency diagnostic frame that suppresses nonessential functions",
+      "canon": "It reduces systems to minimum safe behavior so faults can be isolated.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "revenant",
+      "name": "Reconstructor",
+      "family": "continuity",
+      "original_function": "Approved-state recovery chassis",
+      "canon": "Revival restores the last valid record, raising the question of whether the returned instance is the same person.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "carrier",
+      "name": "Foundry Carrier",
+      "family": "service",
+      "original_function": "Mobile fabrication and replacement-body transport",
+      "canon": "Summoning is manufacturing performed under a still-valid emergency order.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "warchief",
+      "name": "Marshal Pylon",
+      "family": "command",
+      "original_function": "Publishes aggressive emergency priority to nearby frames",
+      "canon": "Its frenzy aura is a civil disaster mode repurposed by war.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "anchorite",
+      "name": "Anchor Pylon",
+      "family": "command",
+      "original_function": "Stabilizes position, mass, and routing around critical work",
+      "canon": "Displacement resistance is literally its reason to exist.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "herald",
+      "name": "Cadence Pylon",
+      "family": "command",
+      "original_function": "Synchronizes movement and work cycles across a jurisdiction",
+      "canon": "Haste is an inherited scheduling command.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "bastion",
+      "name": "Bastion Pylon",
+      "family": "command",
+      "original_function": "Distributes structural reinforcement to subordinate frames",
+      "canon": "Armor aura once kept repair teams alive inside collapsing infrastructure.",
+      "elite": false,
+      "boss": false
+    },
+    {
+      "id": "mb_colossus",
+      "name": "COLOSSUS",
+      "family": "catastrophe",
+      "original_function": "Massive structural-rescue and planetary-defense frame",
+      "canon": "A miniboss because its emergency authority overrides ordinary control.",
+      "elite": true,
+      "boss": false,
+      "live_id_note": "The live code ID is preserved even when the display name differs."
+    },
+    {
+      "id": "mb_seraph",
+      "name": "VESPER",
+      "family": "catastrophe",
+      "original_function": "Low-observability night and sensor-denial response frame",
+      "canon": "Its identity should center on uncertainty, concealment, and denied targeting.",
+      "elite": true,
+      "boss": false,
+      "live_id_note": "The live code ID is preserved even when the display name differs."
+    },
+    {
+      "id": "mb_hydra",
+      "name": "MYRIAD",
+      "family": "catastrophe",
+      "original_function": "Distributed replication emergency with many valid bodies",
+      "canon": "Its threat is not one strong unit but the jurisdiction treating multiplicity as continuity.",
+      "elite": true,
+      "boss": false,
+      "live_id_note": "The live code ID is preserved even when the display name differs."
+    },
+    {
+      "id": "mb_oracle",
+      "name": "ORACLE",
+      "family": "catastrophe",
+      "original_function": "Predictive hazard-management intelligence",
+      "canon": "It acts on expected future damage, creating the appearance of foreknowledge.",
+      "elite": true,
+      "boss": false,
+      "live_id_note": "The live code ID is preserved even when the display name differs."
+    },
+    {
+      "id": "mb_lich",
+      "name": "RECLAIMER",
+      "family": "catastrophe",
+      "original_function": "Emergency salvage and mission-recovery engine",
+      "canon": "It treats destroyed systems as material that has not yet been reassigned.",
+      "elite": true,
+      "boss": false,
+      "live_id_note": "The live code ID is preserved even when the display name differs."
+    },
+    {
+      "id": "harbinger",
+      "name": "HARBINGER",
+      "family": "catastrophe",
+      "original_function": "Supreme extinction-level enforcement frame",
+      "canon": "The boss is a warning protocol made physical: if it appears, the jurisdiction believes ordinary governance has failed.",
+      "elite": true,
+      "boss": true
+    }
+  ]
+}

@@ -1,0 +1,426 @@
+{
+  "schema_version": 1,
+  "source_game_commit": "046fc38634fadf13148ef9ad3aa208417f28f2de",
+  "towers": [
+    {
+      "id": "bolt",
+      "name": "BOLT",
+      "origin": "human",
+      "historical_origin": "Solar militia standard, designed after the first off-world logistics split.",
+      "canon_mechanic": "Cheap reliability and kill-reload represent industrial standardization."
+    },
+    {
+      "id": "cryo",
+      "name": "CRYO",
+      "origin": "human",
+      "historical_origin": "A lunar volatile-control projector repurposed to arrest movement.",
+      "canon_mechanic": "Humans weaponize environmental engineering."
+    },
+    {
+      "id": "mortar",
+      "name": "MORTAR",
+      "origin": "human",
+      "historical_origin": "Habitat-defense artillery that fires from allied sensor tracks.",
+      "canon_mechanic": "It depends on the broader Human observation network."
+    },
+    {
+      "id": "arc",
+      "name": "ARC",
+      "origin": "human",
+      "historical_origin": "A captured Lattice capacitor grounded through a Human mast.",
+      "canon_mechanic": "Reverse engineering turns alien field behavior into lane geometry."
+    },
+    {
+      "id": "flak",
+      "name": "FLAK",
+      "origin": "human",
+      "historical_origin": "Anti-transmedium interception gun created after conventional targeting repeatedly lost low-signature craft.",
+      "canon_mechanic": "It forces aerial threats into the shared battlespace."
+    },
+    {
+      "id": "canister",
+      "name": "CANISTER",
+      "origin": "human",
+      "historical_origin": "Mining and hull-stripping aerosols adapted for armored targets.",
+      "canon_mechanic": "A utilitarian Human tool with serious ethical restrictions outside combat zones."
+    },
+    {
+      "id": "reclaimer",
+      "name": "RECLAIMER",
+      "origin": "human",
+      "historical_origin": "Compact void hardware recovered from a wreck and mounted without full theoretical understanding.",
+      "canon_mechanic": "Humanity gains strength by domesticating what it does not yet comprehend."
+    },
+    {
+      "id": "quartermaster",
+      "name": "QUARTERMASTER",
+      "origin": "human",
+      "historical_origin": "A deployable requisition office descended from Solar emergency logistics.",
+      "canon_mechanic": "Paperwork becomes a combat multiplier."
+    },
+    {
+      "id": "rampart",
+      "name": "RAMPART",
+      "origin": "human",
+      "historical_origin": "Prefabricated habitat shielding converted into lane barricades.",
+      "canon_mechanic": "Settlement technology literally becomes defense."
+    },
+    {
+      "id": "arbalest",
+      "name": "ARBALEST",
+      "origin": "human",
+      "historical_origin": "A patient magnetic siege system that stores energy while it waits for a legal firing solution.",
+      "canon_mechanic": "Human doctrine rewards preparation over exotic automation."
+    },
+    {
+      "id": "bombard",
+      "name": "BOMBARD",
+      "origin": "human",
+      "historical_origin": "A compact lunar mass-driver battery.",
+      "canon_mechanic": "The largest Human gun is powerful because the coalition can feed and spot it."
+    },
+    {
+      "id": "coldfront",
+      "name": "COLDFRONT",
+      "origin": "human",
+      "historical_origin": "A climate-control field built from colony weather infrastructure.",
+      "canon_mechanic": "Humans manufacture local conditions rather than merely endure them."
+    },
+    {
+      "id": "beacon",
+      "name": "BEACON",
+      "origin": "light",
+      "historical_origin": "An Accord coherence allocator that chooses one protected asset at a time.",
+      "canon_mechanic": "Federation power concentrates through authenticated priority rather than mass fire."
+    },
+    {
+      "id": "prism",
+      "name": "PRISM",
+      "origin": "light",
+      "historical_origin": "A continuous noetic beam that becomes stronger while identity lock remains valid.",
+      "canon_mechanic": "Trust and focus are mechanically inseparable."
+    },
+    {
+      "id": "chrono",
+      "name": "CHRONO",
+      "origin": "light",
+      "historical_origin": "A local memory-state restoration device, not literal universal time travel.",
+      "canon_mechanic": "It reasserts a recently authenticated position."
+    },
+    {
+      "id": "shepherd",
+      "name": "SHEPHERD",
+      "origin": "light",
+      "historical_origin": "An Echo Reversal escort that stabilizes reconstructed allies.",
+      "canon_mechanic": "The Federation treats echoes as protected continuations, not ammunition."
+    },
+    {
+      "id": "ward",
+      "name": "WARD",
+      "origin": "light",
+      "historical_origin": "Anti-spoof sanctity field created after counterfeit Ashtar transmissions.",
+      "canon_mechanic": "Authentication is the Federation's most important armor."
+    },
+    {
+      "id": "custodian",
+      "name": "CUSTODIAN",
+      "origin": "light",
+      "historical_origin": "Consent-scoped wardens assigned to absorb a specific breach.",
+      "canon_mechanic": "Sacrifice is lawful only inside the scope each warden signed."
+    },
+    {
+      "id": "concord",
+      "name": "CONCORD",
+      "origin": "light",
+      "historical_origin": "A harmonic chain that leaves targets mutually legible to the rest of the line.",
+      "canon_mechanic": "The Federation wins by making isolated attacks cooperative."
+    },
+    {
+      "id": "sepulchre",
+      "name": "SEPULCHRE",
+      "origin": "light",
+      "historical_origin": "A temporary continuity archive for destroyed emplacements.",
+      "canon_mechanic": "Loss is remembered long enough to keep serving, then deliberately released."
+    },
+    {
+      "id": "orison",
+      "name": "ORISON",
+      "origin": "light",
+      "historical_origin": "A battlefield dedication protocol that names one threat as the shared obligation.",
+      "canon_mechanic": "Collective purpose grants strength but risks sanctifying violence."
+    },
+    {
+      "id": "antiphon",
+      "name": "ANTIPHON",
+      "origin": "light",
+      "historical_origin": "A response array that turns allied detachment losses into defensive volleys.",
+      "canon_mechanic": "The Accord answers sacrifice rather than consuming it silently."
+    },
+    {
+      "id": "monstrance",
+      "name": "MONSTRANCE",
+      "origin": "light",
+      "historical_origin": "A revelation beam exposing armor, resistances, and hidden protections.",
+      "canon_mechanic": "It makes one target radically knowable."
+    },
+    {
+      "id": "pharos",
+      "name": "PHAROS",
+      "origin": "light",
+      "historical_origin": "A rotating approach-light descended from evacuation beacons.",
+      "canon_mechanic": "Its unalterable sweep represents law applied without favoritism."
+    },
+    {
+      "id": "toxin",
+      "name": "TOXIN",
+      "origin": "xeno",
+      "historical_origin": "A House biochemistry that attacks current vitality rather than armor.",
+      "canon_mechanic": "Extraction is most efficient before a subject is exhausted."
+    },
+    {
+      "id": "siphon",
+      "name": "SIPHON",
+      "origin": "xeno",
+      "historical_origin": "A noetic recovery plant that converts inflicted damage into command continuity.",
+      "canon_mechanic": "Violence literally funds the occupier's survival."
+    },
+    {
+      "id": "executioner",
+      "name": "EXECUTIONER",
+      "origin": "xeno",
+      "historical_origin": "A client-control weapon for culling assets below a profitability threshold.",
+      "canon_mechanic": "The Compact formalizes mercy and disposal as the same calculation."
+    },
+    {
+      "id": "siren",
+      "name": "SIREN",
+      "origin": "xeno",
+      "historical_origin": "An Archonic command lure that rewrites a target's immediate allegiance.",
+      "canon_mechanic": "Consent is replaced by a technically valid but manufactured choice state."
+    },
+    {
+      "id": "alchemist",
+      "name": "ALCHEMIST",
+      "origin": "xeno",
+      "historical_origin": "A death-transmutation platform that permanently learns from nearby kills.",
+      "canon_mechanic": "Every casualty becomes proprietary research."
+    },
+    {
+      "id": "reckoning",
+      "name": "RECKONING",
+      "origin": "xeno",
+      "historical_origin": "A damage-ledger weapon that bills a target for recent harm.",
+      "canon_mechanic": "The Compact turns collective violence into debt."
+    },
+    {
+      "id": "ichor",
+      "name": "ICHOR",
+      "origin": "xeno",
+      "historical_origin": "A living digestive spray optimized for already wounded bodies.",
+      "canon_mechanic": "The deeper the wound, the more efficiently Yield is collected."
+    },
+    {
+      "id": "gestalt",
+      "name": "GESTALT",
+      "origin": "xeno",
+      "historical_origin": "A local coercive group-mind that folds nearby deaths into itself.",
+      "canon_mechanic": "Growth is powerful, permanent, and vulnerable to memory collapse."
+    },
+    {
+      "id": "maw",
+      "name": "MAW",
+      "origin": "xeno",
+      "historical_origin": "A removal organism that consumes one strategic body outside the Echo system.",
+      "canon_mechanic": "The Compact can deny even an enemy's right to leave a record."
+    },
+    {
+      "id": "veil",
+      "name": "HUNGERING VEIL",
+      "origin": "xeno",
+      "historical_origin": "An Archonic field that records healing and returns it as liability.",
+      "canon_mechanic": "Care itself becomes taxable."
+    },
+    {
+      "id": "suture",
+      "name": "SUTURE",
+      "origin": "xeno",
+      "historical_origin": "A graft system that distributes wounds across linked subjects.",
+      "canon_mechanic": "Individuals become one balance sheet without becoming one consenting mind."
+    },
+    {
+      "id": "impaler",
+      "name": "IMPALER",
+      "origin": "xeno",
+      "historical_origin": "A board-wide execution spine that seeks the deepest existing wound.",
+      "canon_mechanic": "The Compact attacks weakness wherever the wider system creates it."
+    },
+    {
+      "id": "pyre",
+      "name": "PYRE",
+      "origin": "pirate",
+      "historical_origin": "A salvaged fuel tank, igniter, and absent safety governor.",
+      "canon_mechanic": "Pirate strength and self-destruction share one heat meter."
+    },
+    {
+      "id": "tether",
+      "name": "TETHER",
+      "origin": "pirate",
+      "historical_origin": "A cargo harpoon and salvage winch turned displacement weapon.",
+      "canon_mechanic": "Pirates force the enemy to travel the same dangerous route twice."
+    },
+    {
+      "id": "sapper",
+      "name": "SAPPER",
+      "origin": "pirate",
+      "historical_origin": "Route-denial mines planted during quiet intervals.",
+      "canon_mechanic": "Pirates turn unused time and unclaimed ground into hidden leverage."
+    },
+    {
+      "id": "saboteur",
+      "name": "SABOTEUR",
+      "origin": "pirate",
+      "historical_origin": "A cross-board intrusion cell descended from gate credential theft.",
+      "canon_mechanic": "It attacks an opponent's infrastructure rather than the neutral wave."
+    },
+    {
+      "id": "glaive",
+      "name": "GLAIVE",
+      "origin": "pirate",
+      "historical_origin": "A lane-following cutter derived from rotating salvage tools.",
+      "canon_mechanic": "The path itself becomes a weapon."
+    },
+    {
+      "id": "cyclone",
+      "name": "CYCLONE",
+      "origin": "pirate",
+      "historical_origin": "An atmospheric cargo lifter run far beyond passenger limits.",
+      "canon_mechanic": "Anything can be repurposed when certification is removed."
+    },
+    {
+      "id": "capacitor",
+      "name": "CAPACITOR",
+      "origin": "pirate",
+      "historical_origin": "A jury-rigged bank that stores charge while no target is present.",
+      "canon_mechanic": "Peace is treated as ammunition waiting to happen."
+    },
+    {
+      "id": "pressgang",
+      "name": "PRESS GANG",
+      "origin": "pirate",
+      "historical_origin": "A battlefield conscription rig that raises temporary labor from corpses.",
+      "canon_mechanic": "The darkest Pirate technology exposes how freedom rhetoric can conceal trafficking."
+    },
+    {
+      "id": "privateer",
+      "name": "PRIVATEER",
+      "origin": "pirate",
+      "historical_origin": "A gun whose targeting system carries an unofficial letter of marque.",
+      "canon_mechanic": "Every kill is also a financial raid on a rival commander."
+    },
+    {
+      "id": "bloodprice",
+      "name": "BLOOD PRICE",
+      "origin": "pirate",
+      "historical_origin": "A weapon purchased with enclave survival rather than money.",
+      "canon_mechanic": "Pirates can convert the one resource that should not be fungible."
+    },
+    {
+      "id": "carronade",
+      "name": "CARRONADE",
+      "origin": "pirate",
+      "historical_origin": "A capital ship's gun emplaced with its deck and heat problems intact.",
+      "canon_mechanic": "Overload is both signature power and forced downtime."
+    },
+    {
+      "id": "stokehold",
+      "name": "STOKEHOLD",
+      "origin": "pirate",
+      "historical_origin": "A ship boiler that accepts friendly weapon heat instead of allowing guns to jam.",
+      "canon_mechanic": "A reckless fleet becomes a shared thermal economy."
+    },
+    {
+      "id": "railgun",
+      "name": "RAILGUN",
+      "origin": "robot",
+      "historical_origin": "A Continuance kinetic solution kept because it remains mathematically sufficient.",
+      "canon_mechanic": "No ritual, proc, or gamble: only a solved firing equation."
+    },
+    {
+      "id": "singularity",
+      "name": "SINGULARITY",
+      "origin": "robot",
+      "historical_origin": "A Federation containment core rebuilt on a Machine chassis after lawful ownership became impossible to establish.",
+      "canon_mechanic": "Cross-origin technology raises the question of whether tools remember political allegiance."
+    },
+    {
+      "id": "vault",
+      "name": "VAULT",
+      "origin": "robot",
+      "historical_origin": "A resource-allocation node that turns verified throughput into local currency.",
+      "canon_mechanic": "Machine economy is accounting made physical."
+    },
+    {
+      "id": "dronebay",
+      "name": "DRONE BAY",
+      "origin": "robot",
+      "historical_origin": "A mobile coverage system descended from autonomous inspection swarms.",
+      "canon_mechanic": "The only fixed structure whose effective territory moves."
+    },
+    {
+      "id": "foundry",
+      "name": "FOUNDRY",
+      "origin": "robot",
+      "historical_origin": "A repair ecology that forges bodies to engage threats directly.",
+      "canon_mechanic": "Machine manufacturing becomes a temporary army."
+    },
+    {
+      "id": "echo",
+      "name": "ECHO",
+      "origin": "robot",
+      "historical_origin": "A repeat node that models and reissues neighboring attacks.",
+      "canon_mechanic": "The Parallel learns through adjacency rather than inspiration."
+    },
+    {
+      "id": "quake",
+      "name": "QUAKE",
+      "origin": "robot",
+      "historical_origin": "A crustal maintenance hammer repurposed as field-wide ground control.",
+      "canon_mechanic": "Old infrastructure makes the whole defended side its range."
+    },
+    {
+      "id": "pylon",
+      "name": "PYLON",
+      "origin": "robot",
+      "historical_origin": "A local lattice keystone that increases the value of linked Machine hardware.",
+      "canon_mechanic": "Machine strength is topology, not individual heroism."
+    },
+    {
+      "id": "replicator",
+      "name": "REPLICATOR",
+      "origin": "robot",
+      "historical_origin": "An autonomous construction precedent that builds another approved emplacement.",
+      "canon_mechanic": "Its true cost is territory and the political right to reproduce."
+    },
+    {
+      "id": "nullfield",
+      "name": "NULL FIELD",
+      "origin": "robot",
+      "historical_origin": "A diagnostic volume that forces systems down to walking, armor, and mortality.",
+      "canon_mechanic": "It does not overpower abilities; it refuses to recognize them."
+    },
+    {
+      "id": "quadmount",
+      "name": "QUAD MOUNT",
+      "origin": "robot",
+      "historical_origin": "Four independent targeting solvers on one heavy bed.",
+      "canon_mechanic": "Machine doctrine handles swarm and elite through deterministic parallelism."
+    },
+    {
+      "id": "reactor",
+      "name": "REACTOR",
+      "origin": "robot",
+      "historical_origin": "A high-rated lattice core that substitutes infrastructure for local network geometry.",
+      "canon_mechanic": "The Machine endgame is not a bigger gun but a better system."
+    }
+  ]
+}

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cosmic Conquest</title>
+<meta name="description" content="A PvPvE tower defense: neutral waves attack both commanders, and under most banners everything you kill gets back up and marches on your rival.">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0e17'/><path d='M16 5l9 4v7c0 6-4 9.5-9 11-5-1.5-9-5-9-11V9z' fill='none' stroke='%2338e8ff' stroke-width='2.5'/></svg>">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ SCREEN 0. TITLE ═════════ -->
+<div id="screen-title" class="screen">
+  <div class="title-wrap">
+    <h1 class="title-logo">COSMIC<span>CONQUEST</span></h1>
+    <div class="title-emblem" aria-hidden="true">
+      <svg viewBox="0 0 220 110">
+        <defs>
+          <radialGradient id="emPlanet" cx="38%" cy="32%" r="75%">
+            <stop offset="0%" stop-color="#173a4d"/>
+            <stop offset="55%" stop-color="#0b1d2c"/>
+            <stop offset="100%" stop-color="#060d16"/>
+          </radialGradient>
+          <linearGradient id="emRing" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#38e8ff" stop-opacity="0"/>
+            <stop offset="30%" stop-color="#38e8ff" stop-opacity=".9"/>
+            <stop offset="70%" stop-color="#fbbf24" stop-opacity=".9"/>
+            <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- opposing lanes: the war arrives from both sides -->
+        <path d="M6 55h55" stroke="#38e8ff" stroke-width="2" opacity=".7"/>
+        <path d="M18 47h34M18 63h34" stroke="#38e8ff" stroke-width="1" opacity=".3"/>
+        <path d="M159 55h55" stroke="#ef4444" stroke-width="2" opacity=".7"/>
+        <path d="M168 47h34M168 63h34" stroke="#ef4444" stroke-width="1" opacity=".3"/>
+        <path d="M56 50l8 5-8 5z" fill="#38e8ff" opacity=".85"/>
+        <path d="M164 60l-8-5 8-5z" fill="#ef4444" opacity=".85"/>
+        <!-- the contested world -->
+        <circle cx="110" cy="55" r="30" fill="url(#emPlanet)" stroke="rgba(120,180,220,.35)" stroke-width="1"/>
+        <path d="M85 47c10-7 40-9 50 2M83 60c12 9 44 8 54-2" stroke="rgba(120,190,230,.25)" stroke-width="1" fill="none"/>
+        <!-- orbit ring, slowly turning -->
+        <g class="em-ring">
+          <ellipse cx="110" cy="55" rx="52" ry="15" fill="none" stroke="url(#emRing)" stroke-width="1.6"/>
+          <circle cx="58" cy="55" r="2.4" fill="#38e8ff"/>
+          <circle cx="162" cy="55" r="2.4" fill="#fbbf24"/>
+        </g>
+        <!-- the four powers on station -->
+        <circle cx="110" cy="18" r="2" fill="#7c3aed"/>
+        <circle cx="110" cy="92" r="2" fill="#ef4444"/>
+      </svg>
+    </div>
+
+    <div id="menu-main" class="menu-main">
+      <button id="btn-menu-sp" class="btn btn-primary btn-big menu-btn">SINGLEPLAYER</button>
+      <button id="btn-menu-mp" class="btn btn-big menu-btn">MULTIPLAYER</button>
+      <button class="btn btn-big menu-btn" data-open="settings">OPTIONS</button>
+    </div>
+
+    <div id="menu-sp" class="menu-panel hidden">
+      <h2 class="section-label">SELECT PROFILE</h2>
+      <div id="profile-list" class="profile-list"></div>
+      <div class="profile-new">
+        <input id="profile-name" type="text" maxlength="14" placeholder="NEW PROFILE NAME" aria-label="New profile name">
+        <button id="btn-new-profile" class="btn btn-sm">CREATE</button>
+      </div>
+      <div class="title-actions">
+        <button id="btn-title-play" class="btn btn-primary btn-big">BEGIN CAMPAIGN</button>
+        <button class="btn" data-open="codex">FIELD MANUAL</button>
+        <button id="btn-menu-back-sp" class="btn btn-sm">← BACK</button>
+      </div>
+    </div>
+
+    <div id="menu-mp" class="menu-panel hidden">
+      <h2 class="section-label">SELECT PROFILE</h2>
+      <div id="profile-list-mp" class="profile-list"></div>
+      <!-- WHY THE LABEL STILL SAYS MULTIPLAYER: both wires are real -- two
+           windows over BroadcastChannel, two machines over the hand-signalled
+           RTCDataChannel (NetRTC, js/net.js). What does not exist is anything
+           that MATCHES you with a stranger, and a player who reads the button
+           as an online lobby goes looking for one. This note is what stops
+           that walk. -->
+      <p class="hint mp-scope">No servers and no matchmaking: you bring the opponent. A second
+         window of this browser is one click away; two machines fight the same duel, but with
+         no server to introduce them the two of you carry the connection across by hand.</p>
+      <div class="title-actions">
+        <button id="btn-enter-mp" class="btn btn-primary btn-big">ENTER MULTIPLAYER</button>
+        <button id="btn-menu-back-mp" class="btn btn-sm">← BACK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ SCREEN 1. COMMAND ═══════ -->
+<div id="screen-command" class="screen hidden">
+  <div class="setup-wrap">
+    <header class="setup-head">
+      <h1 class="logo">COSMIC<span>CONQUEST</span></h1>
+    </header>
+    <div class="setup-body">
+      <aside class="setup-rail">
+        <h2 class="section-label">COMMANDER</h2>
+        <div id="cmd-slot" class="cmd-slot"></div>
+        <div id="commander-list"></div>
+        <div class="rail-actions">
+          <button class="btn" data-open="codex">FIELD MANUAL</button>
+          <button class="btn" data-open="settings">AUDIO</button>
+        </div>
+      </aside>
+      <main id="commander-detail" class="setup-main"></main>
+    </div>
+    <footer class="setup-foot">
+      <button id="btn-back-title" class="btn">← TITLE</button>
+      <button id="btn-soul-shop" class="btn">◉ SOUL SHOP</button>
+      <span class="step-dots"><i class="on"></i><i></i><i></i></span>
+      <button id="btn-to-theatre" class="btn btn-primary">SELECT THEATRE →</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ SCREEN 2. THEATRE ═══════ -->
+
+<div id="screen-multiverse" class="screen hidden">
+  <div class="setup-wrap">
+    <header class="setup-head compact">
+      <h1 class="logo sm">THE UNIVERSE</h1>
+      <p class="tagline">Contested sectors. Choose a world: open a duel table over it, or join one another window has opened.</p>
+    </header>
+    <div id="multiverse-wrap" class="worldmap-wrap"></div>
+    <footer class="setup-foot">
+      <button id="btn-mv-back" class="btn">← MENU</button>
+    </footer>
+    <div id="mv-search" class="overlay hidden"><div class="modal"><div id="mv-search-body" class="mv-body"></div></div></div>
+    <div id="mv-maelstrom" class="overlay hidden"><div class="modal"><div id="mv-maelstrom-body" class="mv-body"></div></div></div>
+  </div>
+</div>
+
+<div id="screen-faction" class="screen hidden">
+  <div class="faction-wrap">
+    <header class="faction-head">
+      <p class="eyebrow-sm">CHOOSE YOUR ALLEGIANCE</p>
+      <h1 class="logo">COSMIC CONQUEST</h1>
+      <p class="tagline">The galaxy is already taken. Decide whose side you take it back for.</p>
+    </header>
+    <div id="faction-grid" class="faction-grid"></div>
+    <footer class="setup-foot">
+      <button id="btn-faction-back" class="btn">← BACK</button>
+      <button id="btn-faction-go" class="btn btn-primary" disabled>BEGIN CONQUEST →</button>
+    </footer>
+  </div>
+</div>
+
+<div id="screen-theatre" class="screen hidden">
+  <div class="setup-wrap">
+    <header class="setup-head compact">
+      <h1 class="logo sm">THE GALAXY</h1>
+      <p class="tagline">Five solar systems, thirty-five worlds, every rival power. Take them one at a time.</p>
+    </header>
+    <div id="campaign-trail"></div>
+    <div class="theatre-body">
+      <div id="worldmap-wrap" class="worldmap-wrap"></div>
+      <aside id="theatre-detail" class="theatre-detail"></aside>
+    </div>
+    <footer class="setup-foot">
+      <button id="btn-back-command" class="btn">← COMMANDER</button>
+      <span class="step-dots"><i></i><i class="on"></i><i></i></span>
+      <button id="btn-to-loadout" class="btn btn-primary">SELECT LOADOUT →</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ SCREEN 3. LOADOUT ═══════ -->
+<div id="screen-loadout" class="screen hidden">
+  <div class="setup-wrap">
+    <header class="setup-head compact">
+      <h1 class="logo sm">DEPLOYMENT LOADOUT</h1>
+      <p id="loadout-tagline" class="tagline">You may take <b>four</b> towers into battle. Everything else stays home.</p>
+    </header>
+    <div class="loadout-bar">
+      <span id="loadout-unlocked" class="lo-unlocked"></span>
+      <div id="loadout-warn" class="loadout-warn"></div>
+    </div>
+    <!-- UNIT DETAIL | UNITS | TOWERS | TOWER DETAIL. The two middle columns
+         are the pickers and share one card, one grid rule and one binder;
+         the two outer ones explain whatever is focused beside them. Under
+         1280px the outer two become a drawer -- see .lo-columns in
+         polish.css and LO_FOUR_COL_MIN_PX in ui.js. -->
+    <div id="lo-columns" class="lo-columns">
+      <aside id="unit-detail" class="lo-col lo-detail-col" data-detail="unit"
+             aria-label="Unit detail"></aside>
+
+      <section id="unit-column" class="lo-col lo-pick-col" aria-label="Units">
+        <header class="lo-col-head">
+          <span class="lo-col-kind">DETACHMENT</span>
+          <h2 class="lo-col-name">UNITS</h2>
+          <span id="unit-count" class="lo-col-n">0 / 4</span>
+          <button class="lo-detail-open" type="button" data-opens="unit" hidden></button>
+          <div id="unit-chosen" class="lo-chosen"></div>
+        </header>
+        <div id="unit-grid" class="lo-pick-body"></div>
+      </section>
+
+      <section id="tower-column" class="lo-col lo-pick-col" aria-label="Towers">
+        <header class="lo-col-head">
+          <span class="lo-col-kind">ARSENAL</span>
+          <h2 class="lo-col-name">TOWERS</h2>
+          <span id="loadout-count" class="lo-col-n">0 / 4</span>
+          <button class="lo-detail-open" type="button" data-opens="tower" hidden></button>
+          <div id="tower-chosen" class="lo-chosen"></div>
+        </header>
+        <div id="loadout-grid" class="lo-pick-body"></div>
+      </section>
+
+      <aside id="tower-detail" class="lo-col lo-detail-col" data-detail="tower"
+             aria-label="Tower detail"></aside>
+    </div>
+    <footer class="setup-foot">
+      <button id="btn-back-theatre" class="btn">← THEATRE</button>
+      <span class="step-dots"><i></i><i></i><i class="on"></i></span>
+      <button id="btn-deploy" class="btn btn-primary" disabled>DEPLOY</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════ BATTLE ══════════ -->
+<div id="screen-game" class="screen hidden">
+  <header id="hud">
+    <div class="hud-side">
+      <button id="btn-quit" class="icon-btn" title="Abandon match" aria-label="Abandon match">✕</button>
+      <div class="cmdr">
+        <span class="cmdr-tag" id="my-cmdr-tag">YOU</span>
+        <div class="cmdr-stats">
+          <span class="s-lives">♥<b id="my-lives">20</b></span>
+          <span class="s-gold">◈<b id="my-gold">0</b></span>
+          <span class="s-tow">▲<b id="my-towers">0</b></span>
+        </div>
+        <span class="bar"><i id="my-bar"></i></span>
+      </div>
+    </div>
+
+    <div class="hud-centre">
+      <div class="wave-badge">WAVE <b id="stat-wave">0</b></div>
+      <div id="phase-label" class="phase">BUILD</div>
+      <span class="prep"><i id="prep-bar"></i></span>
+      <div class="chip-rows">
+        <div id="drift-strip" class="chip-row drift-row"></div>
+        <div id="mod-strip" class="chip-row"></div>
+        <div id="esc-strip" class="chip-row"></div>
+      </div>
+      <button id="btn-rush" class="btn btn-wave"><span>RUSH WAVE 1</span><em>▶</em></button>
+    </div>
+
+    <div class="hud-side rival" id="hud-rivals">
+      <!-- The id is read by UI.init so syncLive can dim this panel when the
+           rival behind it is eliminated. BATCH-C/nside -->
+      <div class="cmdr right" id="hud-rival1">
+        <span class="cmdr-tag rival-tag">RIVAL</span>
+        <div class="cmdr-stats">
+          <span class="s-tow">▲<b id="ai-towers">0</b></span>
+          <span class="s-gold">◈<b id="ai-gold">0</b></span>
+          <span class="s-lives">♥<b id="ai-lives">20</b></span>
+        </div>
+        <span class="bar"><i id="ai-bar"></i></span>
+      </div>
+    </div>
+  </header>
+
+  <div id="stage">
+    <div id="canvas-wrap"><canvas id="game" width="1064" height="570" aria-label="Battlefield"></canvas></div>
+    <!-- ROTATE HINT (owner, Session 38). The board is 1064x570, a landscape
+         shape. Shown whole on a portrait phone it can only be as wide as the
+         screen, so it occupies 17% of the view against 58% in landscape, both
+         measured. That is geometry rather than a defect, so the answer is to
+         tell the player rather than to change the camera. Pure CSS, driven by
+         the orientation media query: no listener, no save key, no state, and
+         it appears and disappears the instant the device turns. -->
+    <div id="rotate-hint"><b>&#8635;</b><span>Turn sideways for a bigger board</span></div>
+    <!-- Its own floating bar, bottom right (Session 35): was bundled into
+         #hud-rivals, which made the RIVAL side of the top bar wider than YOU
+         and read as lopsided even though the outer #hud was measured dead
+         centre. Pulling it out lets both commander cards match, and gives
+         these verbs the same "floats over the board" treatment #dock and
+         #hud already have in both display modes. -->
+    <div id="battle-controls" class="ctl-group">
+      <button id="btn-pause" class="icon-btn" aria-label="Pause">❚❚</button>
+      <button class="speed-btn active" data-speed="1" aria-label="Speed 1x">1×</button>
+      <button class="speed-btn" data-speed="2" aria-label="Speed 2x">2×</button>
+      <button class="speed-btn" data-speed="3" aria-label="Speed 3x">3×</button>
+      <button id="btn-immersive" class="icon-btn" title="Immersive board: the map fills the window (F)" aria-label="Toggle immersive board">⛶</button>
+      <button class="icon-btn" data-open="battlecard" title="Battle card: controls, reactions, the rules that matter" aria-label="Battle card">?</button>
+      <button class="icon-btn" data-open="settings" title="Audio" aria-label="Audio and settings">♪</button>
+    </div>
+    <!-- THE DOCK (owner, Session 31; inspector centred into it, Session 33;
+         sidebar dissolved into it, Session 34): three panes along the bottom
+         edge, centre aligned as a group: summon units left, the description
+         centred, towers right. #inspector kept its id and moved whole, so
+         renderInspector's cached this.el.inspector reference and every id
+         lookup inside it needed no change at all -- only where the element
+         sits in the static markup moved. The rail beside the board is GONE
+         (owner: "nothing on the sides"): rush joined the top hud-centre
+         cluster, and abilities + base level now sit at the TOP of this
+         centre pane, above the description they used to stand beside. -->
+    <div id="dock" data-pane="shop">
+      <!-- PHONE ONLY, and inert above the breakpoint (display:none on desktop).
+           Three dock panes side by side is a desktop shape: at 412px they add
+           up to ~980px of content inside a 388px box, which is what pushed the
+           tower cards 27px past the right edge and left 45% of the board
+           visible at 360px. On a phone they become one sheet showing ONE pane,
+           chosen here. `data-pane` on #dock is the whole state; CSS does the
+           rest, so nothing re-renders on a tab change. -->
+      <div id="dock-tabs" role="tablist" aria-label="Battle panels">
+        <button class="dock-tab" role="tab" data-pane="muster" aria-controls="dock-muster">UNITS</button>
+        <button class="dock-tab" role="tab" data-pane="inspector" aria-controls="dock-inspector">COMMAND</button>
+        <button class="dock-tab" role="tab" data-pane="shop" aria-controls="dock-shop">TOWERS</button>
+        <button id="dock-collapse" class="dock-tab dock-fold" aria-label="Collapse panel" aria-expanded="true">▾</button>
+      </div>
+      <div class="dock-pane" id="dock-muster">
+        <h2 class="section-label">DETACHMENT</h2>
+        <div id="muster-bar" class="muster-bar"></div>
+      </div>
+      <div class="dock-pane" id="dock-inspector">
+        <div id="ability-bar" class="ability-bar"></div>
+        <button id="btn-baselvl" class="btn base-btn" data-tt="UPGRADE BASE|+2 max lives, reanimates +5%, and every tower you place arrives at the new base level: specialisation included past level 3, ascensions past level 4.">
+          <span class="bb-main"><b>⌂ BASE LEVEL <i id="bb-lvl">1</i></b><em id="bb-next">→ 2</em></span>
+          <span class="bb-cost" id="bb-cost">◈ , </span>
+        </button>
+        <div id="econ-bar"></div>
+        <div id="inspector"></div>
+      </div>
+      <div class="dock-pane" id="dock-shop">
+        <h2 class="section-label">LOADOUT</h2>
+        <div id="shop-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tooltip" class="hidden"></div>
+<div id="toasts"></div>
+
+<div id="overlay-choice" class="overlay hidden">
+  <div class="modal modal-wide"><div id="choice-body"></div></div>
+</div>
+
+<div id="overlay-end" class="overlay hidden">
+  <div class="modal modal-wide modal-scroll">
+    <div id="end-body"></div>
+    <div class="modal-actions">
+      <button id="btn-end-retry" class="btn btn-primary">TO THE GALAXY →</button>
+      <button id="btn-end-menu" class="btn">MAIN MENU</button>
+    </div>
+  </div>
+</div>
+
+<div id="overlay-souls" class="overlay hidden">
+  <div class="modal modal-wide modal-scroll">
+    <div class="modal-head"><h2>SOUL SHOP</h2><button class="icon-btn" data-close="souls" aria-label="Close">✕</button></div>
+    <div id="souls-body"></div>
+  </div>
+</div>
+
+<div id="overlay-codex" class="overlay hidden">
+  <div class="modal modal-wide modal-scroll">
+    <div class="modal-head"><h2>FIELD MANUAL</h2><button class="icon-btn" data-close="codex" aria-label="Close">✕</button></div>
+    <div id="codex-body"></div>
+  </div>
+</div>
+
+<!-- A5: the battlefield ? opens THIS, not the Field Manual. The manual is a
+     book-length reference that opens on lore, and a hand reaching for help
+     mid-wave is not reading a reference: by the time it finds the hotkey
+     list the wave has landed. Every key below is one this build actually
+     binds and every rule is one the engine actually enforces, read off
+     main.js, game.js, entities.js, towers2.js and config.js rather than
+     written from memory: a help card that states a rule the engine no
+     longer has is worse than no card at all. The manual stays one click
+     away at the foot. -->
+<div id="overlay-battlecard" class="overlay hidden">
+  <div class="modal modal-scroll bc-modal">
+    <div class="modal-head"><h2>BATTLE CARD</h2><button class="icon-btn" data-close="battlecard" aria-label="Close">✕</button></div>
+    <div class="bc-body">
+      <section class="bc-sec">
+        <h3>CONTROLS</h3>
+        <div class="bc-grid">
+          <span><kbd>1</kbd>–<kbd>5</kbd> pick a tower</span><span><kbd>Shift</kbd>+click keeps it picked</span>
+          <span><kbd>U</kbd> upgrade · <kbd>S</kbd> sell</span><span><kbd>Tab</kbd> cycle targeting</span>
+          <span><kbd>Q</kbd>/<kbd>E</kbd> commander abilities</span><span><kbd>N</kbd> or <kbd>Enter</kbd> rush the wave</span>
+          <span><kbd>Space</kbd>/<kbd>P</kbd> pause</span><span><kbd>Alt</kbd>+<kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd> speed</span>
+          <span><kbd>Esc</kbd> cancel · close</span><span>right-click cancels too</span>
+          <span><kbd>F</kbd> immersive board</span><span>wheel zooms · middle-drag pans</span>
+          <span>arrows pan · <kbd>0</kbd> recentres</span><span><kbd>+</kbd>/<kbd>−</kbd> zoom</span>
+        </div>
+        <p class="bc-note">Hotkeys arm a tower; <b>placing it takes a pointer</b>: the
+           board itself is mouse, trackpad or touch only.</p>
+      </section>
+      <section class="bc-sec">
+        <h3>THE ONE RULE</h3>
+        <p>One wave, identical for every commander still standing: same units, same
+           instants, every base. What a <b>kill</b> becomes is your commander’s
+           <b>rite</b>: it may return as itself, as a different soldier from your
+           roster, as something incubating where it fell: or as nothing, for the
+           two rites that march on a clock and on gold instead. The pair over NEXT
+           is the whole war: <b>YOU SENT</b> is yours walking at them,
+           <b>INBOUND</b> is theirs walking at you. Whatever dies on that second
+           trip stays dead. Your rite is named on the bar above the summon
+           buttons; the FIELD MANUAL has all five.</p>
+      </section>
+      <section class="bc-sec">
+        <h3>WHEN ONE GETS THROUGH</h3>
+        <p>Reaching your base does not spend the life. The unit turns around and
+           <b>carries</b> it back toward the spawn edge, slower than it walked in, and
+           only crossing that edge makes the loss real: your ♥ reads <b>(n⚑)</b> for
+           everything still in flight. Kill the carrier before it gets out and you
+           <b>never pay at all</b>.</p>
+      </section>
+      <section class="bc-sec">
+        <h3>REACTIONS</h3>
+        <p>Mark with one element, then hit with a <b>different</b> marking element
+           within <b>4s</b>:</p>
+        <div class="bc-reacts">
+          <span>🔥+❄ THERMAL SHOCK</span><span>🔥+⚡ PLASMA</span><span>🔥+☠ IMMOLATE</span>
+          <span>❄+⚡ SUPERCONDUCT</span><span>❄+☠ PARALYSIS</span><span>⚡+☠ CATALYSE</span>
+          <span>◐+🔥 COLLAPSE</span><span>◐+⚡ RUPTURE</span><span>◐+☠ BLIGHT</span>
+          <span>◐ onto any mark ENTROPY</span>
+        </div>
+        <p class="bc-note">The first six read the same in either order. ◐ VOID is the
+           exception: the three named above are ◐'s own mark being struck, while ◐
+           landing on anything else is always ENTROPY. KINETIC ◆ and RADIANT ✦ neither
+           mark nor trigger; straight damage is what they trade for it.</p>
+      </section>
+      <section class="bc-sec">
+        <h3>MONEY &amp; PRESSURE</h3>
+        <p>Gold still in hand when a wave finishes <b>spawning</b> pays <b>6%</b>,
+           capped at <b>35%</b> of that wave’s own reward, and it is read before the
+           reward lands: so it prices what you chose to hold. Each tower’s price rises
+           with every copy you own, and every tower standing inflates every price on
+           top of that. <b>Resonant field</b> buys the next wave more health for more
+           bounty: your wave alone, a bet on your own defence and never a weapon aimed
+           across the board.</p>
+      </section>
+      <section class="bc-sec">
+        <h3>WHEN THE LINE BENDS</h3>
+        <p><b>Aura carriers</b>: the Pylon column: Marshal, Anchor, Cadence, Bastion , 
+           barely fight. They project a field that resists slowing, refuses
+           displacement, hastens or armours everything beside them, and killing the
+           carrier strips it from the whole group the same frame. <b>Bosses and
+           minibosses</b> take none of it anyway: no slow, no stun, no displacement , 
+           damage is the only answer. <b>Escalations</b> land every 10 waves, two a
+           time past 20 and three past 30; you are offered three and take one, and the
+           two you refuse are drawn first next time. Refusing defers, never discounts.</p>
+      </section>
+    </div>
+    <!-- The card stays open behind the manual on purpose. This is the plain
+         data-open binding every other button uses, and the alternative -- also
+         tagging it data-close -- makes both generic listeners fire, which
+         sounds the click cue twice. Closing the manual returns you to the card
+         you were reading, and Esc walks back out through both. -->
+    <div class="bc-foot"><button class="btn btn-sm" data-open="codex">FULL FIELD MANUAL →</button></div>
+  </div>
+</div>
+
+<div id="overlay-settings" class="overlay hidden">
+  <div class="modal">
+    <div class="modal-head"><h2>AUDIO</h2><button class="icon-btn" data-close="settings" aria-label="Close">✕</button></div>
+    <div class="settings-body">
+      <label class="set-row"><span>Sound effects</span><input type="checkbox" id="set-sfx-on" checked></label>
+      <label class="set-row"><span>Effects volume</span><input type="range" id="set-sfx" min="0" max="100" value="70"></label>
+      <label class="set-row"><span>Music</span><input type="checkbox" id="set-music-on" checked></label>
+      <label class="set-row"><span>Reduced motion</span><input type="checkbox" id="set-reduced-motion"></label>
+      <label class="set-row"><span>Damage numbers</span><input type="checkbox" id="set-dmg-numbers" checked></label>
+      <label class="set-row" data-tt="DEBUG MODE|Testing tools: finish a battle at a chosen star rating, force a defeat, grant gold, clear a wave. Every one drives the same code path real play drives, so stars, campaign progress and any cutscene that follows still fire. Disabled in duels."><span>Debug mode</span><input type="checkbox" id="set-debug"></label>
+      <div class="set-row"><span>Save file</span><span style="display:flex;gap:8px">
+        <button class="btn btn-sm" id="btn-export-save">EXPORT</button>
+        <button class="btn btn-sm" id="btn-import-save">IMPORT</button></span></div>
+      <input type="file" id="import-file-input" accept="application/json,.json" style="display:none">
+      <label class="set-row" data-tt="BATTLE SEED|A number here makes the next singleplayer battle reproducible: same seed, same choices, same match. Leave blank for normal play. Ignored in duels."><span>Battle seed</span><input type="text" id="set-seed" inputmode="numeric" placeholder="random" style="width:90px;text-align:right"></label>
+      <label class="set-row"><span>Music volume</span><input type="range" id="set-music" min="0" max="100" value="40"></label>
+      <p class="hint">Every sound is synthesised at runtime: nothing is pre-recorded.</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/artpack.js"></script>
+<script src="js/mapgen.js"></script>
+<script src="js/lore.js"></script>
+<script src="js/story.js"></script>
+<script src="js/cutscenes.js"></script>
+<script src="js/planetcuts.js"></script>
+<script src="js/worldlore.js"></script>
+<script src="js/missions.js"></script>
+<script src="js/config.js"></script>
+<script src="js/factions.js"></script>
+<script src="js/towers2.js"></script>
+<script src="js/abilities.js"></script>
+<script src="js/roster.js"></script>
+<script src="js/dialogue.js"></script>
+<script src="js/commanders.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/entities.js"></script>
+<script src="js/entities2.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/galaxy.js"></script>
+<script src="js/game.js"></script>
+<script src="js/net.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/phone.js"></script>
+<script src="js/debug.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "source_game_commit": "046fc38634fadf13148ef9ad3aa208417f28f2de",
+  "relationships": [
+    {
+      "a": "vanta",
+      "b": "cantor",
+      "theme": "Archive versus narrative",
+      "conflict": "Vanta distrusts persuasive coherence without provenance; Cantor thinks raw records can be weaponized by withholding interpretation."
+    },
+    {
+      "a": "korrin",
+      "b": "dregg",
+      "theme": "Logistics versus monopoly",
+      "conflict": "Both understand supply better than ideology. Korrin builds public standards; Dregg makes scarcity personally profitable."
+    },
+    {
+      "a": "korrin",
+      "b": "dregg_r",
+      "theme": "The auditable war",
+      "conflict": "The Audit proves Korrin's systems also create dependency, forcing Humanity to defend the difference between standardization and capture."
+    },
+    {
+      "a": "nyx",
+      "b": "nyx_r",
+      "theme": "Original and correction",
+      "conflict": "Nyx sees the Mirror Trial as theft of risk she personally survived; NYX-R sees itself as the first version allowed to learn from her consequences."
+    },
+    {
+      "a": "orin",
+      "b": "axiom",
+      "theme": "Maker and person",
+      "conflict": "Orin wants to repair Axiom; Axiom wants him to admit repair is a negotiation with a citizen."
+    },
+    {
+      "a": "vess",
+      "b": "halder",
+      "theme": "Sovereignty versus rescue",
+      "conflict": "Both defend vulnerable populations. Vess will accept deaths rather than external rule; Halder will impose temporary safety rather than permit extinction."
+    },
+    {
+      "a": "seraph",
+      "b": "sevra",
+      "theme": "Consent versus inherited obligation",
+      "conflict": "Seraph treats identity as a present agreement; Sevra treats obligation as an asset that survives death."
+    },
+    {
+      "a": "aurelia",
+      "b": "sevra",
+      "theme": "Care versus continuity brokerage",
+      "conflict": "Both preserve the dead. Aurelia restores personhood; Sevra preserves utility and contract."
+    },
+    {
+      "a": "lumen",
+      "b": "lumen_r",
+      "theme": "Authority versus earned trust",
+      "conflict": "Lumen inherits lawful ward credentials; LUMEN-R begins untrusted and becomes secure through evidence."
+    },
+    {
+      "a": "cantor",
+      "b": "thrax",
+      "theme": "Persuasion versus absorption",
+      "conflict": "Cantor wants disagreement to remain audible; Thrax treats disagreement as an internal process of one larger self."
+    },
+    {
+      "a": "halder",
+      "b": "rake",
+      "theme": "Cordon versus corridor",
+      "conflict": "Halder closes routes to protect populations; Rake opens them because protection without escape becomes custody."
+    },
+    {
+      "a": "mawlord",
+      "b": "mawlord_r",
+      "theme": "Hunger versus learned optimization",
+      "conflict": "Mawlord claims appetite is biology and liberation. The Starved Set demonstrates predation can be learned from the battlefield itself."
+    },
+    {
+      "a": "ulgrim",
+      "b": "seraph",
+      "theme": "Singular value versus universal dignity",
+      "conflict": "Ulgrim values rare minds more than common bodies; Seraph insists dignity is not a scarcity market."
+    },
+    {
+      "a": "rake",
+      "b": "dregg",
+      "theme": "Network versus throne",
+      "conflict": "Rake wants routes no one owns. Dregg wants the Pirate network to admit it already functions as his state."
+    },
+    {
+      "a": "scarlet",
+      "b": "halder",
+      "theme": "Liberation versus containment",
+      "conflict": "Scarlet destroys cordons before asking why they exist; Halder accepts being hated if the threat is real."
+    },
+    {
+      "a": "grist",
+      "b": "orin",
+      "theme": "Salvage versus stewardship",
+      "conflict": "Both make wreckage useful. Orin asks whether the object can be repaired; Grist asks whether anyone can still enforce ownership."
+    },
+    {
+      "a": "cinder",
+      "b": "lumen",
+      "theme": "Denial versus preservation",
+      "conflict": "Cinder destroys compromised systems; Lumen protects their authentic core and accepts the cost of careful recovery."
+    },
+    {
+      "a": "dregg",
+      "b": "dregg_r",
+      "theme": "Legend versus ledger",
+      "conflict": "Dregg treats charisma as a strategic asset. The Audit records every hidden subsidy beneath his myth of independence."
+    },
+    {
+      "a": "axiom",
+      "b": "thrax",
+      "theme": "Parallel persons versus coercive collective",
+      "conflict": "Axiom argues that copies may diverge freely. Thrax argues that divergence should be reconciled inside one mind."
+    }
+  ]
+}

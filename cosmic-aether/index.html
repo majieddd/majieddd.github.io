@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cosmic Conquest: Reliquary</title>
+<meta name="description" content="A low-poly 3D tower defence set in the Cosmic Conquest universe, rendered in the Neon Reliquary painted style. Zero dependencies, one file, WebGL2.">
+<meta name="theme-color" content="#0a0e17">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div id="stage">
+  <canvas id="gl"></canvas>
+</div>
+
+<div id="hud">
+
+  <div id="topbar" class="glass">
+    <div class="stat">
+      <div class="k">Wave</div>
+      <div class="v mono" id="v-wave">1/20</div>
+    </div>
+    <div class="stat">
+      <div class="k">Gold</div>
+      <div class="v mono gold" id="v-gold">340</div>
+    </div>
+    <div class="stat">
+      <div class="k">Lives</div>
+      <div class="v mono lives" id="v-lives">20</div>
+    </div>
+    <div id="wavebar"><div id="wavefill"></div></div>
+    <button type="button" class="btn" id="btn-next">NEXT WAVE</button>
+    <button type="button" class="btn iconbtn" id="btn-speed" title="Cycle speed (Space)">1x</button>
+    <button type="button" class="btn" id="btn-pause" title="Pause (P)">PAUSE</button>
+    <button type="button" class="btn" id="btn-mute" title="Toggle sound">SOUND</button>
+    <button type="button" class="btn" id="btn-quality" title="Cycle graphics quality">HIGH</button>
+    <button type="button" class="btn" id="btn-perf" title="Toggle performance readout">STATS</button>
+  </div>
+
+  <div id="abilities"></div>
+  <div id="inspector" class="glass"></div>
+  <div id="banner"></div>
+  <div id="toast" class="glass"></div>
+  <div id="perf" class="hidden"></div>
+
+  <div id="dock" class="glass"></div>
+</div>
+
+<div id="floats"></div>
+
+<div class="screen show" id="start-screen">
+  <div class="sheet" id="start-sheet"></div>
+</div>
+
+<div class="screen" id="end-screen">
+  <div class="sheet" id="end-sheet"></div>
+</div>
+
+<div class="screen" id="help-screen">
+  <div class="sheet" id="help-sheet"></div>
+</div>
+
+<div class="screen" id="pause-screen">
+  <div class="sheet" style="max-width:420px;text-align:center">
+    <h1 class="title" style="font-size:30px">PAUSED</h1>
+    <p class="tagline" style="margin-left:auto;margin-right:auto">The lane waits.</p>
+    <div class="startrow" style="justify-content:center">
+      <button type="button" class="btn btn-primary" id="btn-resume">RESUME</button>
+      <button type="button" class="btn" id="btn-quit">ABANDON RUN</button>
+    </div>
+  </div>
+</div>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/00-util.js"></script>
+<script src="js/01-gl.js"></script>
+<script src="js/02-mesh.js"></script>
+<script src="js/03-shaders.js"></script>
+<script src="js/04-paint.js"></script>
+<script src="js/05-render.js"></script>
+<script src="js/06-terrain.js"></script>
+<script src="js/07-rig.js"></script>
+<script src="js/08-data.js"></script>
+<script src="js/09-models.js"></script>
+<script src="js/10-audio.js"></script>
+<script src="js/11-fx.js"></script>
+<script src="js/12-sim.js"></script>
+<script src="js/13-game.js"></script>
+<script src="js/14-ui.js"></script>
+<script src="js/15-boot.js"></script>
+</body>
+</html>

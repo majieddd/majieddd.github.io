@@ -1,0 +1,813 @@
+/* ==========================================================================
+   COSMIC CONQUEST, Interface Styling
+   Cyan is yours, rose is the rival's. That pairing is used everywhere so
+   ownership never needs a label.
+   ========================================================================== */
+
+:root {
+  --e-tap:     cubic-bezier(0.22, 0.90, 0.30, 1);
+  --bg:        #05080e;
+  --panel:     rgba(14, 20, 32, 0.86);
+  --panel-2:   rgba(20, 28, 44, 0.94);
+  --line:      rgba(96, 150, 190, 0.20);
+  --line-2:    rgba(96, 150, 190, 0.38);
+  --text:      #e2eefa;
+  --text-dim:  #a8bdd0;
+  --text-mute: #7e94aa;
+  --cyan:      #38e8ff;
+  --rose:      #ff6b9d;
+  --gold:      #fbbf24;
+  --green:     #4ade80;
+  --red:       #ef4444;
+  /* THE FONT FLIP. The whole interface was set in monospace via this one
+     alias, which is what made it read like a terminal dump. `--mono` now
+     resolves to a real UI text face; `--num` keeps genuine monospace for
+     tabular numbers; `--display` is the condensed military voice reserved
+     for headings, wordmarks and labels. */
+  --mono: 'Segoe UI', 'Segoe UI Variable Text', system-ui, -apple-system, Roboto, 'Helvetica Neue', sans-serif;
+  --num: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
+  --display: 'Bahnschrift SemiCondensed', 'Bahnschrift', 'Avenir Next Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --sans: var(--display);
+
+  /* 4px spacing scale (design digest: build all spacing on one base).
+     STATE OF THE WORLD, recorded in DESIGN.md and not endorsed: these seven
+     are read by ZERO rules. Every spacing value in both sheets is hand-typed.
+     A token nobody reads is this project's signature bug wearing a different
+     hat, so it is written down rather than quietly left alone. */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px;
+
+  --r: 10px;
+
+  /* ---- TYPE SCALE. Ten steps, every font-size lands on one, tolerance
+     0.5px. Measured before it was declared: the rendered interface was using
+     29 DISTINCT sizes across the screens, eleven of them between 8.5px and
+     13.5px, which is half-pixel drift rather than a scale. The scale stops at
+     9px because nothing in this game is set smaller than 9px as text; a
+     decorative mark drawn with a font is not text and does not get a step. */
+  --t-micro:   9px;    /* pips, lock stamps, chart axis marks */
+  --t-caption: 10px;   /* badge text, sub-labels */
+  --t-label:   11px;   /* section labels, chips, tags */
+  --t-body-sm: 12px;   /* dense body: card blurbs, stat rows */
+  --t-body:    13px;   /* body copy in panels */
+  --t-ui:      14px;   /* button labels, control text */
+  --t-title:   17px;   /* card titles */
+  --t-head:    22px;   /* panel headings */
+  --t-display: 28px;   /* screen headings */
+  --t-hero:    52px;   /* the wordmark, and nothing else */
+
+  /* ---- RADIUS SCALE. Five steps. The CEILING on a content container is
+     14px: wide radii read as generated, and the sheets had drifted to 18
+     distinct radii topping out at 20px. --r is the legacy name for --r-3 and
+     is kept because 25 rules read it. --r-pill is for chips and tags only,
+     where the shape IS the affordance. */
+  --r-1: 4px;
+  --r-2: 8px;
+  --r-3: 10px;
+  --r-4: 14px;
+  --r-pill: 999px;
+
+  /* ---- BRAND HUES that existed only in docs/BRAND.md. The art identity
+     names seven colours; the interface had CSS tokens for five of them, so
+     any rule wanting Xeno violet or neon magenta had to hand-type it. */
+  --violet:  #7c3aed;   /* THE XENO. Faction identity, matches FACTIONS.xeno.color */
+  --magenta: #ff2fd6;   /* Neon Reliquary key light. Art-side only, never chrome */
+
+  /* ---- THE INK RULE, and both numbers in it are measured, not chosen.
+     An identity hue is picked to be SATURATED, because its job is to be
+     recognisable on a map at 40% zoom. A saturated hue is a poor text colour
+     on a dark ground, and that was measured rather than assumed: Xeno violet
+     #7c3aed set as 9.5px label text on the soul-shop panel returned 2.88:1
+     against a required 4.5:1, and Pirate crimson #ef4444 returned 4.36:1.
+
+     So an identity hue splits by size:
+       FILL tier, raw hue: fills, strokes, borders, rings, bars, map dots.
+       INK tier, lifted toward --text first:
+         color: color-mix(in srgb, var(--fc) var(--ink-mix), var(--text));
+
+     --ink-mix is 58% because at 58% the DARKEST hue in the catalogue,
+     #6d28d9, lands at 5.04:1 and at 68% it lands at 4.13:1 and fails. Raise
+     it and the bug comes back. --ink-mix-lg is the gentler lift for a glyph
+     mark at 18.66px or over, which is a UI component needing 3:1 rather than
+     text needing 4.5:1; #6d28d9 lands at 3.83:1 there. */
+  --ink-mix:    58%;
+  --ink-mix-lg: 72%;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 15.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+body {
+  background-image:
+    radial-gradient(ellipse at 8% 40%,  rgba(56,232,255,0.09), transparent 46%),
+    radial-gradient(ellipse at 92% 60%, rgba(255,107,157,0.09), transparent 46%);
+}
+
+.hidden { display: none !important; }
+/* THE MOBILE URL BAR, and why this is two declarations rather than one.
+   On a phone browser 100vh is the LARGE viewport: the height the page would
+   have if the URL bar were hidden. While that bar is on screen, which is most
+   of the time and in every screenshot the owner sent, 100vh is TALLER than
+   what the player can actually see. A full-screen box then extends below the
+   visible area, and anything pinned to its bottom edge (a sticky setup
+   footer, an absolutely positioned map footer) is pinned off screen.
+
+   That is the whole of the "I can't see the deploy button" report. It also
+   explains why three rounds of fixes measured clean: headless Chrome has no
+   URL bar, so there 100vh EQUALS innerHeight and the defect cannot appear.
+   The harness was structurally blind to it.
+
+   100dvh is the DYNAMIC viewport height: what is actually visible right now,
+   tracking the bar as it shows and hides. The bare vh line stays first as the
+   fallback for anything that does not support dvh. */
+.screen { height: 100vh; height: 100dvh; width: 100vw; }
+
+kbd { display:inline-block; padding:1px 6px; border:1px solid var(--line-2); border-bottom-width:2px;
+      border-radius:4px; background:rgba(255,255,255,0.06); font-size:12px; }
+
+/* ------------------------------------------------------------- buttons -- */
+
+.btn {
+  font-family: var(--mono); font-size: 14px; letter-spacing: 0.07em;
+  color: var(--text); background: var(--panel-2);
+  border: 1px solid var(--line-2); border-radius: var(--r);
+  padding: 13px 22px; cursor: pointer;
+  transition: background .13s var(--e-tap), border-color .13s var(--e-tap), transform .08s var(--e-tap);
+}
+.btn:hover:not(:disabled) { background: rgba(56,232,255,0.14); border-color: var(--cyan); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: 0.38; cursor: not-allowed; }
+.btn-primary {
+  background: linear-gradient(180deg, rgba(56,232,255,0.24), rgba(56,232,255,0.09));
+  border-color: var(--cyan); color: #eafcff; font-weight: 700;
+}
+.icon-btn {
+  font-family: var(--mono); width: 32px; height: 32px; display: grid; place-items: center;
+  color: var(--text-dim); background: rgba(255,255,255,0.05); border: 1px solid var(--line);
+  border-radius: 8px; cursor: pointer; font-size: 14px; transition: background-color, border-color, color, box-shadow, transform, opacity, filter .13s var(--e-tap); flex-shrink: 0;
+}
+.icon-btn:hover { color: var(--cyan); border-color: var(--cyan); background: rgba(56,232,255,0.12); }
+
+.section-label { font-size: 11px; letter-spacing: 0.2em; color: var(--text-mute); margin-bottom: 9px; font-weight: 700; }
+.section-label.gold { color: var(--gold); }
+/* MEASURE. Audited at 1600px: .hint ran to 138 characters a line and
+   .cd-blurb to 147, against the 65 to 75 the detector asks for. Past about
+   75 the eye loses the line it is returning to, and these are the two
+   longest prose blocks in the game.
+
+   65ch, NOT 72ch, and the difference is measured. The CSS ch unit is the
+   advance width of the digit ZERO, which in this face is 7.28px at 13.5px
+   while the average lowercase glyph is 6.55px. So a 72ch cap renders 524px
+   and holds about 80 real characters, not 72. 65ch lands at roughly 72
+   characters, which is inside the 65 to 75 band. Anyone implementing a
+   measure cap from a ch number straight out of a style guide will overshoot
+   by about a tenth. */
+.hint { color: var(--text-mute); font-size: 12.5px; line-height: 1.65;
+        max-width: 65ch; }
+.hint b { color: var(--text-dim); }
+.tag { font-size: 11px; letter-spacing: .12em; color: var(--text-mute); border: 1px solid var(--line);
+       border-radius: 20px; padding: 3px 10px; }
+
+/* ============================================================ TITLE ===== */
+
+#screen-title { overflow-y: auto; display: grid; place-items: center; padding: 30px 20px; }
+.title-wrap { max-width: 620px; width: 100%; text-align: center; }
+
+/* Two lanes converging on a contested core, the game in one image. */
+.title-art { position: relative; height: 78px; margin-bottom: 6px; display: grid; place-items: center; }
+.ta-lane { position: absolute; top: 50%; width: 40%; height: 3px; border-radius: 2px; }
+.ta-l { left: 0;  background: linear-gradient(90deg, transparent, var(--cyan)); }
+.ta-r { right: 0; background: linear-gradient(270deg, transparent, var(--rose)); }
+.ta-core { width: 46px; height: 46px; border-radius: 50%; border: 2px solid #c4b5fd;
+           box-shadow: 0 0 34px rgba(196,181,253,.55), inset 0 0 22px rgba(196,181,253,.35);
+           background: radial-gradient(circle, rgba(196,181,253,.35), transparent 70%);
+           animation: corePulse 3.2s ease-in-out infinite; }
+@keyframes corePulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .ta-core { animation: none; } }
+
+.title-logo { font-size: clamp(38px, 8vw, 68px); font-weight: 800; letter-spacing: .16em; line-height: 1;
+              text-shadow: 0 0 40px rgba(56,232,255,.45); }
+.title-logo span { display: block; font-size: .4em; letter-spacing: .5em; color: var(--cyan);
+                   margin-top: 10px; text-shadow: 0 0 22px rgba(56,232,255,.7); }
+.title-sub { margin-top: 14px; font-size: 15px; letter-spacing: .62em; color: var(--rose);
+             text-shadow: 0 0 18px rgba(255,107,157,.6); }
+.title-tag { color: var(--text-dim); margin-top: 14px; font-size: 13px; line-height: 1.75; }
+
+.title-panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+               padding: 16px; margin: 24px 0 20px; text-align: left; }
+.profile-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.profile-row { position: relative; font-family: var(--mono); display: flex; flex-direction: column;
+               align-items: flex-start; gap: 2px; text-align: left;
+               background: rgba(255,255,255,.035); border: 1px solid var(--line);
+               border-left: 4px solid var(--line-2); border-radius: 8px; padding: 9px 12px;
+               color: var(--text); cursor: pointer; transition: background-color, border-color, color, box-shadow, transform, opacity, filter .13s var(--e-tap); }
+.profile-row:hover { background: rgba(255,255,255,.07); }
+.profile-row.active { border-left-color: var(--cyan); background: rgba(56,232,255,.11);
+                      box-shadow: 0 0 0 1px rgba(56,232,255,.35); }
+.pr-name { font-size: 14px; font-weight: 700; letter-spacing: .1em; }
+.pr-meta { font-size: 11px; color: var(--text-mute); }
+.pr-del { position: absolute; top: 8px; right: 10px; font-size: 12px; color: var(--text-mute); padding: 2px 5px; }
+.pr-del:hover { color: var(--red); }
+.profile-new { display: flex; gap: 7px; }
+#profile-name { flex: 1; font-family: var(--mono); font-size: 13px; letter-spacing: .08em;
+                background: rgba(0,0,0,.35); border: 1px solid var(--line-2); border-radius: 8px;
+                padding: 10px 12px; color: var(--text); }
+#profile-name::placeholder { color: var(--text-mute); }
+#profile-name:focus { outline: none; border-color: var(--cyan); }
+
+.title-actions { display: flex; gap: 9px; justify-content: center; flex-wrap: wrap; }
+/* The MP scope note hangs above a centred column of buttons. Left-ragged text
+   at full panel measure under them reads as a stray paragraph from some other
+   panel, which is how a disclosure gets skipped rather than read. */
+.hint.mp-scope { max-width: 400px; margin: 0 auto; text-align: center; }
+.btn-big { padding: 16px 44px; font-size: 15px; }
+
+.td-trait { font-size: 11.5px; letter-spacing: .08em; color: var(--cyan); margin-bottom: 8px; }
+.hint.campaign { border-top: 1px solid var(--line); padding-top: 9px; margin-top: 9px; }
+.wm-node.locked text { pointer-events: none; }
+.unlock-banner { text-align: center; font-size: 13px; letter-spacing: .12em; color: var(--gold);
+                 background: rgba(251,191,36,.1); border: 1px solid rgba(251,191,36,.45);
+                 border-radius: 9px; padding: 10px; margin-bottom: 16px; }
+
+/* ========================================================= SETUP SCREENS = */
+
+#screen-command, #screen-theatre, #screen-loadout,
+#screen-faction, #screen-multiverse { overflow-y: auto; }
+.setup-wrap { max-width: 1400px; margin: 0 auto; padding: 26px 24px 20px;
+              min-height: 100vh; min-height: 100dvh;
+              display: flex; flex-direction: column; gap: 18px; }
+
+.setup-head { text-align: center; }
+.setup-head.compact { margin-bottom: -4px; }
+.logo { font-size: clamp(30px, 5.4vw, 52px); font-weight: 800; letter-spacing: 0.15em; line-height: 1;
+        text-shadow: 0 0 34px rgba(56,232,255,0.42); }
+.logo.sm { font-size: clamp(20px, 3vw, 28px); letter-spacing: 0.22em; }
+.logo span { display: block; font-size: 0.4em; letter-spacing: 0.5em; color: var(--cyan); margin-top: 9px;
+             text-shadow: 0 0 22px rgba(56,232,255,0.7); }
+.tagline { color: var(--text-dim); margin-top: 10px; font-size: 13.5px; }
+
+.setup-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px;
+              padding-top: 8px; margin-top: auto; }
+.setup-foot .btn-primary { padding: 14px 36px; }
+/* B3: DEPLOY now states its own shortfall ("SELECT 4 MORE TOWERS"), a label
+   three times the width of "DEPLOY". Without a wrap the wide button shoved
+   .step-dots -- whose bars are a fixed 26px and cannot shrink -- off the right
+   edge of a phone-width footer. Only this screen's footer carries a variable
+   label, so only this one is allowed to wrap. */
+#screen-loadout .setup-foot { flex-wrap: wrap; row-gap: 10px; }
+.step-dots { display: flex; gap: 8px; margin: 0 auto; }
+.step-dots i { width: 26px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.14); }
+.step-dots i.on { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+
+/* ---- commander screen ---- */
+.setup-body { display: grid; grid-template-columns: 300px 1fr; gap: 16px; flex: 1; }
+@media (max-width: 900px) { .setup-body { grid-template-columns: 1fr; } }
+.setup-rail { display: flex; flex-direction: column; gap: 10px; }
+#commander-list { display: flex; flex-direction: column; gap: 7px; }
+.rail-actions { display: flex; gap: 7px; margin-top: auto; }
+.rail-actions .btn { flex: 1; padding: 11px 8px; font-size: 12px; }
+
+.cmd-card {
+  font-family: var(--mono); display: flex; align-items: center; gap: 12px; text-align: left;
+  background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--cc);
+  border-radius: var(--r); padding: 12px 14px; color: var(--text); cursor: pointer; transition: background-color, border-color, color, box-shadow, transform, opacity, filter .14s var(--e-tap);
+}
+.cmd-card:hover { background: var(--panel-2); border-color: var(--cc); }
+.cmd-card.active { background: color-mix(in srgb, var(--cc) 16%, transparent);
+                   box-shadow: 0 0 0 1px var(--cc), 0 8px 26px rgba(0,0,0,.4); }
+.cmd-icon { font-size: 26px; color: var(--cc); width: 44px; flex: 0 0 44px;
+            text-align: center; line-height: 0; }
+.cmd-body { display: flex; flex-direction: column; gap: 1px; }
+.cmd-name { font-size: 16px; font-weight: 800; letter-spacing: .1em; }
+.cmd-title { font-size: 12px; color: var(--text-mute); }
+.cmd-lvl { font-size: 11px; color: var(--text-dim); letter-spacing: .1em; }
+.cmd-lvl b { color: var(--gold); }
+
+/* THE STANDING ORDER. The slot answers "who deploys?" at a glance; the badge
+   marks the same commander in the rail; the EQUIP button writes it. */
+.cmd-slot { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px;
+            border: 1px solid var(--gold); border-radius: var(--r);
+            background: color-mix(in srgb, var(--gold) 8%, transparent); }
+.cmd-slot > b { font-size: 10px; letter-spacing: .18em; color: var(--gold); }
+.cmd-slot .cs-name { font-size: 15px; font-weight: 800; letter-spacing: .1em; color: var(--cc, var(--text)); }
+.cmd-slot .cs-none, .cmd-slot em { font-size: 11px; font-style: normal; color: var(--text-mute); }
+.cmd-eq-badge { font-size: 9px; font-style: normal; letter-spacing: .12em;
+                color: var(--gold); border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+                border-radius: 3px; padding: 1px 5px; vertical-align: 2px; }
+.cd-equip { display: block; width: 100%; margin-bottom: 18px; }
+.cd-equipped { text-align: center; font-size: 12.5px; letter-spacing: .1em; color: var(--gold);
+               border: 1px dashed color-mix(in srgb, var(--gold) 55%, transparent);
+               border-radius: 9px; padding: 10px 12px; margin-bottom: 18px; }
+
+.setup-main { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; }
+.cd-head { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center;
+           padding-bottom: 14px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+.cd-icon { font-size: 44px; line-height: 0; color: var(--cc); text-shadow: 0 0 26px var(--cc); }
+.cd-name { font-size: 26px; font-weight: 800; letter-spacing: .12em; }
+.cd-title { font-size: 13px; color: var(--text-mute); }
+.cd-level { text-align: right; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+.cd-level b { font-size: 15px; color: var(--gold); }
+.xpbar { display: block; width: 180px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+.xpbar i { display: block; height: 100%; background: var(--gold); }
+.xp-num { font-size: 11px; color: var(--text-mute); }
+.cd-blurb { font-size: 13.5px; color: var(--text-dim); margin-bottom: 14px;
+            max-width: 65ch; }
+.cd-trait { background: color-mix(in srgb, var(--cc) 12%, transparent); border: 1px solid var(--cc);
+            border-radius: 9px; padding: 12px 14px; margin-bottom: 18px; }
+.cd-trait b { display: block; color: var(--cc); font-size: 13px; letter-spacing: .13em; margin-bottom: 5px; }
+.cd-trait span { font-size: 13px; color: var(--text-dim); }
+
+/* THE DOSSIER (lore 0.5.0). Deliberately quieter than .cd-trait above it:
+   the trait is a mechanic the player is choosing, this is the reason the
+   character exists. Same radius and padding so the two read as one column,
+   a dashed left rule rather than a full border so it recedes, and the label
+   column is fixed-width so HISTORY / MOTIVE / FRACTURE line up as a table
+   the eye can scan rather than three paragraphs. */
+.cd-dossier { border-left: 2px dashed color-mix(in srgb, var(--cc) 55%, transparent);
+              padding: 2px 0 2px 13px; margin: 0 0 18px; }
+/* The HISTORY/MOTIVE/FRACTURE rows this block once carried are gone with
+   their markup (canon 2029: the beats tell the story, the card does not),
+   so only the single role line keeps a rule. */
+.cdo-role { font-size: 12.5px; font-style: italic; color: color-mix(in srgb, var(--cc) 40%, var(--text));
+            margin: 0; line-height: 1.5; }
+
+.cd-techhead { display: flex; justify-content: space-between; align-items: baseline; }
+.pts { font-size: 12px; color: var(--text-mute); }
+.pts.has { color: var(--gold); font-weight: 700; }
+
+/* ---- talent tree (commander): rows gated by points, vertical arrows ---- */
+.talent-tree { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px;
+               background: rgba(0,0,0,.28); border: 1px solid var(--line);
+               border-radius: 10px; padding: 12px; }
+.tal-row { display: grid; grid-template-columns: 58px 1fr; gap: 10px; align-items: start; }
+.tal-row.row-locked { opacity: .45; }
+.tal-gate { font-size: 10px; letter-spacing: .12em; color: var(--text-mute); text-align: right;
+            padding-top: 22px; border-right: 1px solid var(--line); padding-right: 8px; }
+.tal-cells { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.tal-cell { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px;
+            padding-top: 12px; text-align: center; }
+.tal-cell.empty { visibility: hidden; }
+.tal-arrow { position: absolute; top: -2px; font-size: 11px; color: var(--line-2); }
+.tal-arrow.lit { color: var(--gold); text-shadow: 0 0 8px var(--gold); }
+
+.tal-node {
+  position: relative; font-family: var(--mono); width: 52px; height: 52px;
+  display: grid; place-items: center; cursor: pointer;
+  background: #0b1220; border: 2px solid #33405a;
+  border-radius: 8px; color: var(--text); transition: background-color, border-color, color, box-shadow, transform, opacity, filter .13s var(--e-tap);
+}
+.tal-node.can { border-color: var(--cc); box-shadow: 0 0 0 1px color-mix(in srgb, var(--cc) 40%, transparent); }
+.tal-node.can:hover { background: color-mix(in srgb, var(--cc) 24%, transparent); transform: translateY(-2px); }
+.tal-node.owned { border-color: var(--gold); background: color-mix(in srgb, var(--cc) 22%, transparent);
+                  box-shadow: 0 0 14px -2px var(--gold); }
+.tal-node.locked { opacity: .38; cursor: not-allowed; filter: grayscale(1); }
+.tal-icon { font-size: 22px; color: var(--cc); }
+.tal-node.owned .tal-icon { color: #fff; }
+.tal-rank { position: absolute; bottom: -7px; right: -7px; font-size: 10px; font-weight: 700;
+            background: #0b1220; border: 1px solid var(--line-2); border-radius: 5px; padding: 0 4px; color: var(--gold); }
+.tal-node.owned .tal-rank { border-color: var(--gold); color: var(--gold); }
+.tal-name { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; margin-top: 4px; }
+.tal-desc { font-size: 10px; color: var(--text-mute); line-height: 1.4; max-width: 150px; }
+.cd-foot { display: flex; justify-content: space-between; align-items: center; gap: 14px; }
+.btn-sm { padding: 8px 14px; font-size: 11px; }
+.icon-btn.sm { width: 22px; height: 22px; font-size: 11px; }
+
+/* ---- tower talent trees on the loadout screen ---- */
+.loadout-split { display: grid; grid-template-columns: 1fr 380px; gap: 14px; align-items: start; }
+@media (max-width: 1200px) { .loadout-split { grid-template-columns: 1fr; } }
+.talent-panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+                padding: 14px; max-height: 62vh; overflow-y: auto; }
+#tower-talents { display: flex; flex-direction: column; gap: 12px; }
+.tt-tree { border: 1px solid var(--line); border-left: 4px solid var(--tc); border-radius: 9px; padding: 10px; }
+.tt-head-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tt-head-row b { flex: 1; font-size: 13px; letter-spacing: .09em; color: var(--tc); }
+.tt-stock { font-size: 9.5px; color: var(--text-mute); border: 1px dashed var(--line-2);
+            border-radius: 20px; padding: 1px 7px; }
+.tt-pts { font-size: 11px; color: var(--text-mute); }
+.tt-pts.full { color: var(--gold); font-weight: 700; }
+/* Columns come from the ROW, not from a fixed two: RAMPART's middle row has
+   three talents and the third wrapped onto a line of its own. Edited in place
+   rather than overridden later -- a late rule that resizes one axis of a box
+   this rule already sized is how two overlap bugs shipped. */
+.tt-row { display: grid; grid-template-columns: repeat(var(--tt-cols, 2), 1fr);
+          gap: 6px; margin-bottom: 6px; }
+.tt-row.row-locked { opacity: .4; }
+.tt-cell.empty { visibility: hidden; }
+.tal-node.sm { width: 100%; height: auto; min-height: 58px; display: flex; flex-direction: column;
+               align-items: flex-start; justify-content: center; gap: 2px; padding: 7px 9px; text-align: left; }
+.tal-tname { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; }
+.tal-tdesc { font-size: 9.5px; color: var(--text-mute); line-height: 1.35; }
+.tal-node.sm .tal-rank { top: 5px; right: 5px; bottom: auto; }
+.chip.roll { border-color: rgba(125,211,252,.5); color: #7dd3fc; background: rgba(125,211,252,.09); }
+
+/* ---- theatre screen ---- */
+.theatre-body { display: grid; grid-template-columns: 1fr 360px; gap: 16px; flex: 1; min-height: 0; }
+@media (max-width: 1000px) { .theatre-body { grid-template-columns: 1fr; } }
+.worldmap-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+                 padding: 8px; display: grid; place-items: center; min-height: 340px; }
+.wm-node text { pointer-events: none; }
+.wm-node:hover circle:first-of-type { fill: #1b4a63; }
+
+.theatre-detail { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; }
+.td-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.td-head h2 { font-size: 20px; letter-spacing: .12em; }
+.td-thumb { background: #0b1018; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
+.td-thumb svg { display: block; width: 100%; height: auto; }
+.td-blurb { font-size: 13px; color: var(--text-dim); margin-bottom: 12px; }
+.td-stats { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+.td-stats > div { display: flex; justify-content: space-between; font-size: 12.5px; }
+.td-stats span { color: var(--text-mute); }
+
+.diff-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+@media (max-width: 760px) { .diff-row { grid-template-columns: 1fr; } }
+.diff-pill {
+  font-family: var(--mono); text-align: left; background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--r); padding: 12px 14px; color: var(--text); cursor: pointer; transition: background-color, border-color, color, box-shadow, transform, opacity, filter .14s var(--e-tap);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.diff-pill:hover { border-color: var(--line-2); }
+.diff-pill.active { border-color: var(--cyan); background: rgba(56,232,255,0.11); box-shadow: 0 0 0 1px rgba(56,232,255,.4); }
+.diff-pill b { font-size: 14px; letter-spacing: .12em; }
+.diff-pill span { font-size: 12px; color: var(--text-dim); }
+.diff-pill em { font-style: normal; font-size: 11px; color: var(--text-mute); }
+
+/* ---- loadout screen ---- */
+.loadout-bar { display: flex; align-items: center; gap: 16px; }
+.lo-count { font-size: 22px; font-weight: 800; color: var(--text-mute); letter-spacing: .08em; }
+.lo-count.ready { color: var(--green); text-shadow: 0 0 18px rgba(74,222,128,.5); }
+.loadout-warn { flex: 1; display: flex; flex-wrap: wrap; gap: 8px; }
+.lo-warn { font-size: 12px; color: #fca5a5; background: rgba(239,68,68,.1);
+           border: 1px solid rgba(239,68,68,.35); border-radius: 7px; padding: 6px 11px; }
+.lo-ok { font-size: 12px; color: var(--green); background: rgba(74,222,128,.1);
+         border: 1px solid rgba(74,222,128,.35); border-radius: 7px; padding: 6px 11px; }
+
+.loadout-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 1150px) { .loadout-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 820px)  { .loadout-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* PROGRESSIVE CARDS. The grid lays out SLOTS, never cards. A slot is a box of
+   exactly the resting height and the card is positioned inside it, so a card
+   that grows leaves the flow entirely and cannot push a neighbour. Both axes
+   of the slot are settled right here -- width from the grid track, height from
+   the one constant in config.js -- so no later rule has to resize half of it. */
+.lo-slot { position: relative; height: var(--lo-rest-h, 72px); }
+.lo-slot.open { z-index: 30; }
+.lo-card {
+  font-family: var(--mono); text-align: left; display: flex; flex-direction: column; gap: 0;
+  background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--tc);
+  border-radius: var(--r); padding: 10px 12px; color: var(--text); cursor: pointer; transition: background-color, border-color, color, box-shadow, transform, opacity, filter .14s var(--e-tap);
+}
+/* The card is lifted OUT of the slot's flow, so growing it cannot reach the
+   grid at all. BOTH axes are pinned in this one rule -- left/right to the
+   slot's width, top/bottom to its top edge -- and the child combinator is
+   deliberate rather than decorative: the machined-corner block further down
+   polish.css sets `position: relative` on every card surface in the game, and
+   a bare `.lo-card` selector would lose to it on source order. */
+.lo-slot > .lo-card {
+  position: absolute; left: 0; right: 0; top: 0; bottom: auto;
+  min-height: var(--lo-rest-h, 72px);
+}
+/* Anchored to the BOTTOM of its slot once it has been flipped to open upward. */
+.lo-slot.up > .lo-card { top: auto; bottom: 0; }
+.lo-card:hover { background: var(--panel-2); border-color: var(--tc); }
+.lo-card.on { background: color-mix(in srgb, var(--tc) 16%, transparent); box-shadow: 0 0 0 1px var(--tc); }
+/* Pinned to the icon rather than the card corner: the machined clip-path on
+   the card surface cuts away anything drawn outside the border box, which is
+   precisely where this badge used to sit. */
+.lo-num { position: absolute; top: -7px; right: -7px; width: 20px; height: 20px; border-radius: 50%;
+          background: var(--tc); color: #04121a; display: grid; place-items: center;
+          font-size: 11px; font-weight: 800; box-shadow: 0 0 16px var(--tc); }
+/* Name on its own line, price down with the origin mark. Sharing one line
+   with the price left the longest names (QUARTERMASTER, EXECUTIONER) clipped
+   at the four-column width the screen actually ships at. */
+.lo-top { display: flex; min-width: 0; }
+/* The resting row is a fixed height, so a name too long even for its own line
+   is ellipsised rather than allowed to wrap the card into overhanging the one
+   beneath it. */
+.lo-top b { font-size: 13px; letter-spacing: .06em;
+            color: color-mix(in srgb, var(--tc) var(--ink-mix), var(--text));
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lo-meta { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+.lo-meta em { font-style: normal; font-size: 12px; color: var(--gold); flex-shrink: 0; }
+.lo-role { font-size: 11.5px; color: var(--text-mute); letter-spacing: .05em; }
+.lo-desc { font-size: 12px; color: var(--text-dim); line-height: 1.55; }
+
+/* ============================================================== BATTLE == */
+
+#screen-game { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+
+/* Centre aligned in BOTH modes (owner, Session 31): auto columns justified to
+   the centre, not 1fr rails that pin the two side cards to the edges. */
+#hud { display: grid; grid-template-columns: auto auto auto; justify-content: center;
+       gap: 14px; padding: 9px 14px;
+       align-items: center; background: var(--panel); border-bottom: 1px solid var(--line); flex-shrink: 0; }
+.hud-side { display: flex; align-items: center; gap: 10px; }
+.hud-side.rival { justify-content: flex-end; }
+
+.cmdr { display: flex; flex-direction: column; gap: 4px; background: rgba(255,255,255,0.04);
+        border: 1px solid var(--line); border-left: 4px solid var(--cyan); border-radius: 9px;
+        padding: 7px 13px; min-width: 232px; }
+.cmdr.right { border-left: none; border-right: 4px solid var(--rose); align-items: flex-end; }
+.cmdr-tag { font-size: 10px; letter-spacing: .22em; color: var(--cyan); font-weight: 700; }
+.cmdr.right .cmdr-tag { color: var(--rose); }
+.cmdr-stats { display: flex; gap: 14px; align-items: baseline; }
+.cmdr-stats b { font-size: 19px; font-weight: 800; margin-left: 3px; }
+.s-lives { color: var(--red); } .s-lives b { color: var(--text); }
+.s-gold  { color: var(--gold); } .s-gold b { color: var(--text); }
+.s-tow   { color: var(--text-mute); } .s-tow b { color: var(--text-dim); font-size: 15px; }
+/* THE HUD BARS SCALE, THEY DO NOT RESIZE. `syncHUD` runs every UI tick and
+   these three fills used to take `style.width`, so every tick forced layout
+   on them. `transform: scaleX()` is compositor-only and animates the same
+   way. transform-origin is pinned left so the fill still drains rightward. */
+.bar { display: block; width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 100%; background: var(--cyan);
+         transform-origin: left center; transform: scaleX(1);
+         transition: transform .25s var(--e-tap); }
+.cmdr.right .bar i { background: var(--rose); }
+@keyframes goldflash { 0%,100% { background: transparent; } 30% { background: rgba(239,68,68,.4); } }
+.s-gold.flash { animation: goldflash .45s ease; }
+
+.hud-centre { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 300px; }
+.wave-badge { font-size: 11px; letter-spacing: .2em; color: var(--text-mute); }
+.wave-badge b { font-size: 24px; color: var(--text); letter-spacing: 0; margin-left: 5px; }
+.phase { font-size: 12px; letter-spacing: .14em; color: var(--gold); font-weight: 700; }
+.prep { display: block; width: 290px; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+.prep i { display: block; height: 100%; width: 100%; background: var(--gold);
+          transform-origin: left center; transform: scaleX(1);
+          transition: transform .2s linear; }
+.prep i.running { background: var(--red); }
+
+.chip-rows { display: flex; flex-direction: column; gap: 3px; align-items: center; }
+.chip-row { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
+.chip { font-size: 11px; padding: 2px 8px; border-radius: 20px; border: 1px solid var(--line);
+        color: var(--text-dim); white-space: nowrap; }
+.chip.sm { font-size: 10.5px; }
+.chip.good { border-color: rgba(74,222,128,.5); color: var(--green); background: rgba(74,222,128,.09); }
+.chip.bad { border-color: rgba(239,68,68,.5); color: #fca5a5; background: rgba(239,68,68,.09); }
+.chip.empty { color: var(--text-mute); opacity: .5; border-style: dashed; }
+
+.ctl-group { display: flex; gap: 4px; align-items: center; }
+.speed-btn { font-family: var(--mono); font-size: 12px; width: 32px; height: 32px;
+             background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 8px;
+             color: var(--text-dim); cursor: pointer; transition: background-color, border-color, color, box-shadow, transform, opacity, filter .13s var(--e-tap); }
+.speed-btn.active { color: #eafcff; border-color: var(--cyan); background: rgba(56,232,255,.18); }
+
+/* ---- stage: canvas-wrap is the only flex item since the rail was removed
+   (Session 34), so it simply takes the whole row -- "nothing on the sides". */
+
+#stage { flex: 1; min-height: 0; display: flex; gap: 10px; padding: 8px 10px; align-items: stretch; }
+#canvas-wrap { flex: 1; min-width: 0; display: grid; place-items: center; }
+/* touch-action belongs in the ORIGINAL rule, not a later override: the ring's
+   drag is a pointer gesture, and without this a finger scrolls the page and
+   the browser cancels the gesture halfway through. */
+#game { display: block; max-width: 100%; max-height: 100%; touch-action: none;
+        border: 1px solid var(--line-2); border-radius: var(--r);
+        box-shadow: 0 22px 70px rgba(0,0,0,.7); background: #05080e; }
+
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; }
+
+.btn-wave { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-shrink: 0;
+            background: linear-gradient(180deg, rgba(74,222,128,.22), rgba(74,222,128,.07));
+            border-color: rgba(74,222,128,.6); font-weight: 700; padding: 13px 18px; }
+.btn-wave:hover:not(:disabled) { background: rgba(74,222,128,.3); border-color: var(--green); }
+.btn-wave em { font-style: normal; color: var(--gold); font-size: 12.5px; }
+/* Rush lives in .hud-centre now (Session 34: the side rail is gone), whose
+   flex column centres children to their own content width -- without an
+   explicit width it would hug its own text instead of reading as part of
+   the centred stack above it. Matched to .prep's 290px so the wave bar and
+   the rush button share one edge. */
+.hud-centre .btn-wave { width: 290px; }
+
+/* ---- shop: five entries, so they can be full-width and legible ---- */
+#shop-list { display: flex; flex-direction: column; gap: 5px; }
+.tower-card { font-family: var(--mono); display: flex; align-items: center; gap: 9px; width: 100%;
+              text-align: left; background: rgba(255,255,255,0.035); border: 1px solid var(--line);
+              border-left: 4px solid var(--tc); border-radius: 7px; padding: 8px 10px;
+              color: var(--text); cursor: pointer; transition: background-color, border-color, color, box-shadow, transform, opacity, filter .12s var(--e-tap); }
+.tower-card:hover { background: rgba(255,255,255,.08); border-color: var(--tc); }
+.tower-card.active { background: color-mix(in srgb, var(--tc) 20%, transparent);
+                     border-color: var(--tc); box-shadow: 0 0 0 1px var(--tc); }
+.tower-card.poor { opacity: .42; }
+.tc-key { font-size: 11px; color: var(--text-mute); border: 1px solid var(--line); border-radius: 4px;
+          width: 19px; height: 19px; display: grid; place-items: center; flex-shrink: 0; }
+.tc-swatch { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; background: var(--tc); box-shadow: 0 0 9px var(--tc); }
+.tc-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+/* overflow/ellipsis: HUNGERING VEIL and PRESS GANG are real tower names at
+   14 chars, and the 2-column dock card (Session 33) only ever had ~35px left
+   for this column after the key, the icon and the cost -- without this, a
+   long name simply painted over .tc-cost instead of shrinking, since neither
+   a flex item nor an inline span clips by default. Session 36 gave the dock
+   card its own two-row #dock .tower-card layout (polish.css) with a full-width
+   name row, which is what actually closed the ellipsis; this class stays
+   because .tc-name is still the selector that layout targets. .tc-role sat
+   here too until Session 36: it printed a role line no card layout has shown
+   since (towerTooltip carries the role now, as .tt-role, not this class), and
+   nothing in js/ui.js emits .tc-role any more. Removed as dead CSS rather
+   than left to be measured against a card it no longer describes. */
+.tc-name { display: block; font-size: 14px; font-weight: 700; letter-spacing: .08em;
+           white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tc-cost { font-size: 13.5px; color: var(--gold); font-weight: 700; flex-shrink: 0; }
+
+/* ---- inspector ---- */
+.insp { display: flex; flex-direction: column; gap: 10px; }
+.insp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.insp-name { font-size: 19px; font-weight: 800; letter-spacing: .1em; color: var(--tc);
+             text-shadow: 0 0 16px color-mix(in srgb, var(--tc) 50%, transparent); }
+.rival-tag { font-style: normal; font-size: 10px; letter-spacing: .18em; color: var(--rose); }
+.insp-tier { font-size: 12px; color: var(--text-mute); letter-spacing: .09em; margin-top: 2px; }
+.tier-pips { display: flex; gap: 3px; padding-top: 5px; align-items: center; flex-shrink: 0; }
+.tier-pips i { width: 13px; height: 5px; border-radius: 2px; background: rgba(255,255,255,.14); }
+.tier-pips i.on { background: var(--tc); box-shadow: 0 0 8px var(--tc); }
+.asc-badge { font-size: 12px; color: var(--gold); margin-left: 4px; }
+
+.aura-flag, .warn-flag { font-size: 11.5px; border-radius: 7px; padding: 6px 9px; }
+.aura-flag { color: var(--gold); background: rgba(251,191,36,.1); border: 1px solid rgba(251,191,36,.35); }
+.warn-flag { color: var(--red); background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3); }
+
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line);
+             border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.stat-grid > div { background: rgba(10,15,26,.96); padding: 6px 9px; display: flex; flex-direction: column; }
+.stat-grid span { font-size: 10.5px; color: var(--text-mute); letter-spacing: .05em; }
+.stat-grid b { font-size: 14px; font-weight: 700; }
+.stat-grid .hl b { color: var(--gold); }
+
+.perf { display: flex; gap: 6px; }
+.perf > div { flex: 1; background: rgba(255,255,255,.035); border: 1px solid var(--line);
+              border-radius: 7px; padding: 6px 9px; display: flex; flex-direction: column; }
+.perf span { font-size: 10.5px; color: var(--text-mute); }
+.perf b { font-size: 14px; }
+
+.mode-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
+.mode-btn { font-family: var(--mono); font-size: 10px; padding: 7px 1px; cursor: pointer;
+            background: rgba(255,255,255,.035); border: 1px solid var(--line); border-radius: 5px;
+            color: var(--text-mute); transition: background-color, border-color, color, box-shadow, transform, opacity, filter .12s var(--e-tap); }
+.mode-btn.active { color: #eafcff; background: color-mix(in srgb, var(--tc) 24%, transparent); border-color: var(--tc); }
+
+.tech-offer { display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--gold);
+              background: rgba(251,191,36,.07); border-radius: 9px; padding: 10px; }
+.tech-btn { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 10px 12px;
+            border-color: var(--gold); background: rgba(251,191,36,.1); }
+.tech-btn:hover { background: rgba(251,191,36,.22); }
+.tb-desc { font-size: 11.5px; color: var(--text-dim); font-weight: 400; letter-spacing: 0; }
+
+.upgrade-zone { display: flex; flex-direction: column; gap: 6px; }
+.upgrade-btn, .branch-btn { display: flex; justify-content: space-between; align-items: center; width: 100%;
+  padding: 11px 13px; background: linear-gradient(180deg, color-mix(in srgb, var(--tc) 22%, transparent), transparent);
+  border-color: var(--tc); }
+.asc-btn { background: linear-gradient(180deg, rgba(251,191,36,.24), transparent); border-color: var(--gold); }
+.ub-title { font-weight: 700; font-size: 13px; letter-spacing: .06em; }
+.ub-cost { color: var(--gold); font-weight: 700; font-size: 13.5px; }
+.poor { opacity: .42; cursor: not-allowed; }
+.branch-title { font-size: 11px; letter-spacing: .13em; color: var(--gold); text-align: center; padding: 3px 0; }
+.branch-note { font-size: 11.5px; color: var(--text-mute); line-height: 1.55; padding: 0 2px 3px; }
+.surge-note { color: var(--gold); }
+.sell-btn { font-size: 12.5px; padding: 10px; border-color: rgba(239,68,68,.35); color: #fca5a5; }
+.sell-btn:hover { background: rgba(239,68,68,.16); border-color: var(--red); }
+
+/* ---- wave preview ---- */
+.wave-info { display: flex; flex-direction: column; gap: 10px; }
+.attrition { display: grid; grid-template-columns: 1fr auto 1fr; gap: 6px; align-items: center;
+             background: rgba(255,255,255,.035); border: 1px solid var(--line); border-radius: 9px; padding: 9px; }
+.att-cell { display: flex; flex-direction: column; align-items: center; }
+.att-cell b { font-size: 22px; font-weight: 800; }
+.att-cell span { font-size: 10px; letter-spacing: .1em; color: var(--text-mute); }
+.att-cell.out b { color: var(--cyan); } .att-cell.in b { color: var(--rose); }
+.att-arrow { color: var(--text-mute); font-size: 17px; }
+
+.wave-name { font-size: 17px; font-weight: 800; letter-spacing: .08em; color: var(--cyan); }
+.wave-name.boss { color: var(--red); text-shadow: 0 0 16px rgba(239,68,68,.6); }
+.wave-name.mini { color: var(--gold); text-shadow: 0 0 14px rgba(251,191,36,.5); }
+/* ICON + COUNT CHIPS (Session 35), not one full-width row per mob type: name,
+   traits and per-body HP all moved into the tooltip (same pattern as the
+   muster and shop cards), so several types now share one line instead of
+   each claiming a row to itself. flex-wrap is the whole point -- a short
+   wave reads as one line, a long one wraps instead of growing the pane. */
+.roster { display: flex; flex-wrap: wrap; gap: 5px; }
+.mob-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px;
+  background: rgba(255,255,255,.035); border: 1px solid var(--line); border-radius: 8px; }
+.mob-chip b { font-size: 11px; font-weight: 700; color: var(--text-dim); }
+
+/* ------------------------------------------------------------ tooltip -- */
+#tooltip { position: fixed; z-index: 200; width: 320px; pointer-events: none;
+  background: rgba(8,13,22,.98); border: 1px solid var(--line-2); border-radius: var(--r);
+  padding: 13px; box-shadow: 0 20px 60px rgba(0,0,0,.8); }
+.tt-head { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 800; letter-spacing: .1em; }
+.tt-cost { color: var(--gold); font-size: 13px; }
+.tt-role { font-size: 11px; color: var(--text-mute); letter-spacing: .08em; margin: 4px 0 8px; }
+.tt-desc { font-size: 12px; color: var(--text-dim); line-height: 1.6; margin-bottom: 9px; }
+.tt-stats { display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; }
+.tt-stats > div { display: flex; justify-content: space-between; font-size: 11.5px; }
+.tt-stats span { color: var(--text-mute); } .tt-stats b { color: var(--text); }
+.tt-warn { font-size: 11px; color: var(--red); margin-bottom: 5px; }
+.tt-foot { font-size: 11px; color: var(--text-mute); border-top: 1px solid var(--line); padding-top: 7px; }
+.tt-foot b { color: var(--text-dim); }
+
+/* ----------------------------------------------------------- overlays -- */
+.overlay { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center;
+           background: rgba(3,6,11,.86); backdrop-filter: blur(7px); padding: 24px; }
+.modal { width: 100%; max-width: 520px; background: var(--panel-2); border: 1px solid var(--line-2);
+         border-radius: 14px; padding: 22px; box-shadow: 0 30px 90px rgba(0,0,0,.85); }
+.modal-wide { max-width: 900px; }
+.modal-scroll { max-height: 86vh; overflow-y: auto; }
+.modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+              padding-bottom: 11px; border-bottom: 1px solid var(--line); }
+.modal-head h2 { font-size: 15px; letter-spacing: .2em; font-weight: 700; }
+.modal-actions { display: flex; gap: 9px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+.settings-body { display: flex; flex-direction: column; gap: 14px; }
+.set-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; font-size: 13.5px; }
+.set-row input[type="range"] { width: 200px; accent-color: var(--cyan); }
+.set-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--cyan); cursor: pointer; }
+
+/* ---- command upgrade draft ---- */
+.choice-head { text-align: center; margin-bottom: 20px; }
+.choice-head h2 { font-size: 25px; letter-spacing: .2em; font-weight: 800; color: var(--green);
+                  text-shadow: 0 0 26px rgba(74,222,128,.5); }
+.choice-head p { font-size: 13px; color: var(--text-dim); margin-top: 8px; }
+.choice-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); }
+.choice-grid.n4 { grid-template-columns: repeat(4, 1fr); }
+.choice-grid.n5 { grid-template-columns: repeat(5, 1fr); }
+@media (max-width: 780px) { .choice-grid, .choice-grid.n4, .choice-grid.n5 { grid-template-columns: 1fr 1fr; } }
+.choice-card { position: relative; font-family: var(--mono); display: flex; flex-direction: column;
+  align-items: center; gap: 8px; padding: 20px 12px; cursor: pointer; text-align: center;
+  background: rgba(74,222,128,.05); border: 1px solid rgba(74,222,128,.3); border-radius: 12px;
+  color: var(--text); transition: background-color, border-color, color, box-shadow, transform, opacity, filter .15s var(--e-tap); }
+.choice-card:hover { background: rgba(74,222,128,.17); border-color: var(--green); transform: translateY(-3px); }
+.cc-key { position: absolute; top: 8px; left: 9px; font-size: 11px; color: var(--text-mute); }
+.cc-icon { font-size: 28px; color: var(--green); }
+.cc-name { font-size: 13.5px; font-weight: 800; letter-spacing: .09em; }
+.cc-desc { font-size: 12px; color: var(--text-dim); line-height: 1.55; }
+.cc-stack { font-size: 10.5px; color: var(--gold); }
+
+/* ---- toasts ---- */
+#toasts { position: fixed; top: 92px; right: 20px; z-index: 250; display: flex; flex-direction: column; gap: 8px; }
+.toast { background: rgba(20,8,10,.97); border: 1px solid rgba(239,68,68,.55); border-left: 4px solid var(--red);
+         border-radius: 9px; padding: 11px 15px; max-width: 340px; box-shadow: 0 14px 40px rgba(0,0,0,.7);
+         animation: toastIn .3s ease; display: flex; flex-direction: column; gap: 4px; }
+.toast b { font-size: 11px; letter-spacing: .13em; color: var(--red); }
+.toast span { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+.toast.out { animation: toastOut .6s ease forwards; }
+@keyframes toastIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: none; } }
+@keyframes toastOut { to { opacity: 0; transform: translateX(30px); } }
+@media (prefers-reduced-motion: reduce) {
+  .toast, .choice-card, .btn { animation: none; transition: none; }
+  .choice-card:hover { transform: none; }
+}
+
+/* ---- end screen ---- */
+.end-title { font-size: 34px; font-weight: 800; letter-spacing: .15em; text-align: center; margin-bottom: 8px; }
+.end-title.win { color: var(--green); text-shadow: 0 0 34px rgba(74,222,128,.5); }
+.end-title.lose { color: var(--red); text-shadow: 0 0 34px rgba(239,68,68,.5); }
+.end-sub { text-align: center; color: var(--text-dim); font-size: 13.5px; margin-bottom: 18px; }
+.xp-panel { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center;
+            background: color-mix(in srgb, var(--cc) 10%, transparent); border: 1px solid var(--cc);
+            border-radius: 10px; padding: 13px 16px; margin-bottom: 18px; }
+.xp-left b { color: var(--cc); font-size: 15px; letter-spacing: .1em; }
+.xp-left span { display: block; font-size: 11px; color: var(--text-mute); }
+.xp-mid { display: flex; flex-direction: column; gap: 4px; }
+.xp-mid .xpbar { width: 100%; }
+.xp-right { font-size: 13px; color: var(--gold); font-weight: 700; }
+.end-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-bottom: 20px; }
+@media (max-width: 560px) { .end-stats { grid-template-columns: repeat(2, 1fr); } }
+.end-stats > div { background: rgba(255,255,255,.035); border: 1px solid var(--line); border-radius: 9px;
+                   padding: 12px; text-align: center; }
+.end-stats b { display: block; font-size: 23px; color: var(--cyan); margin-bottom: 3px; }
+.end-stats span { font-size: 11px; color: var(--text-mute); letter-spacing: .06em; }
+.dmg-list { display: flex; flex-direction: column; gap: 6px; }
+.dmg-row { display: grid; grid-template-columns: 10px 190px 1fr 78px; gap: 10px; align-items: center; font-size: 12px; }
+.dmg-row .dot { width: 9px; height: 9px; border-radius: 50%; }
+.dr-name em { font-style: normal; color: var(--text-mute); font-size: 10.5px; }
+.dr-bar { height: 7px; background: rgba(255,255,255,.07); border-radius: 4px; overflow: hidden; }
+.dr-bar i { display: block; height: 100%; border-radius: 4px; }
+.dr-val { text-align: right; color: var(--text-dim); }
+
+/* ---- field manual ---- */
+#codex-body section { margin-bottom: 24px; }
+#codex-body h3 { font-size: 13px; letter-spacing: .15em; color: var(--cyan); margin-bottom: 11px;
+                 padding-bottom: 7px; border-bottom: 1px solid var(--line); }
+.codex-note { display: flex; flex-direction: column; gap: 8px; }
+.codex-note p { font-size: 13px; color: var(--text-dim); line-height: 1.7; }
+.codex-note b { color: var(--text); }
+.codex-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+@media (max-width: 680px) { .codex-grid { grid-template-columns: 1fr; } }
+.codex-entry { background: rgba(255,255,255,.035); border: 1px solid var(--line);
+               border-left: 4px solid var(--tc); border-radius: 9px; padding: 11px; }
+.ce-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.ce-head b { color: var(--tc); font-size: 13px; letter-spacing: .08em; }
+.ce-head span { font-size: 10.5px; color: var(--text-mute); text-align: right; }
+.codex-entry p { font-size: 11.5px; color: var(--text-dim); line-height: 1.6; }
+.ce-branches { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line);
+               display: flex; flex-direction: column; gap: 5px; font-size: 11px; color: var(--text-mute); }
+.ce-branches b { color: var(--text-dim); }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(96,150,190,.25); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(96,150,190,.45); }

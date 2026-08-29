@@ -1,0 +1,20 @@
+Provider style test, generator-agnostic. Generate these two on whichever
+candidate is being judged (Higgsfield, Leonardo, ModelsLab, Firefly),
+and put each beside the local plate named under COMPARE TO. Do NOT ingest
+them: these keys already have shipped art. This is a judgement, not a render.
+
+======================================================================
+KEY         : cut_human_sys1
+COMPARE TO  : TowerDefense/art/cut_human_sys1.webp
+DELIVERS AT : 1920x1080 (wide)
+GENERATE AT : 2688x1536, the widest landscape Firefly offers
+PROMPT      :
+human soldiers planting a banner on grey lunar regolith beside a half-buried alien relay dish, Earth rising behind, painted in steel blue and neon cyan with warm highlights. Wide cinematic composition, dramatic staging, no text anywhere. stylised painted game cutscene illustration, bold flat expressive brushwork, hard-edged graphic shapes, strong silhouette, gothic engraved linework, ornamental filigree, screen-print texture, limited palette, cyberpunk science fiction, vaporwave neon palette of magenta cyan violet and chrome, holographic glow, retrofuturist technology, no text, no watermark, no signature
+
+======================================================================
+KEY         : cut_xeno_sys1
+COMPARE TO  : TowerDefense/art/cut_xeno_sys1.webp
+DELIVERS AT : 1920x1080 (wide)
+GENERATE AT : 2688x1536, the widest landscape Firefly offers
+PROMPT      :
+a vast dark pen of sleeping captives, and one small figure awake, singing, lit by its own faint glow, painted in violet and magenta with iridescent chitin. Wide cinematic composition, dramatic staging, no text anywhere. stylised painted game cutscene illustration, bold flat expressive brushwork, hard-edged graphic shapes, strong silhouette, gothic engraved linework, ornamental filigree, screen-print texture, limited palette, cyberpunk science fiction, vaporwave neon palette of magenta cyan violet and chrome, holographic glow, retrofuturist technology, no text, no watermark, no signature

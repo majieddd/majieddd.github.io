@@ -1,0 +1,628 @@
+<!doctype html><meta charset="utf-8"><title>THE PIRATES storyboard</title>
+<style>
+*{box-sizing:border-box}
+body{background:#080b11;color:#c9d6e4;font:15px/1.6 -apple-system,Segoe UI,Roboto,sans-serif;margin:0}
+a{color:#7dd3fc}
+.wrap{max-width:1500px;margin:0 auto;padding:0 20px 100px}
+.top{position:sticky;top:0;z-index:20;background:#080b11f2;backdrop-filter:blur(8px);
+ border-bottom:1px solid #1d2836;padding:10px 0;margin-bottom:8px}
+.top .in{max-width:1500px;margin:0 auto;padding:0 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.top a{text-decoration:none;font-size:13px;letter-spacing:.04em;padding:4px 10px;border-radius:4px;
+ border:1px solid #23303f;color:#9fb3c8}
+.top a.on{color:#fff;border-color:currentColor}
+h1{font-size:26px;letter-spacing:.05em;margin:26px 0 4px;color:#fff}
+h2{font-size:15px;letter-spacing:.14em;margin:38px 0 6px;color:#fff;text-transform:uppercase}
+.sub{color:#75899e;margin:0 0 18px;font-size:14px}
+.act{border-left:3px solid var(--fc);padding-left:16px;margin:34px 0 0}
+.actbar{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:2px}
+.actno{font-size:11px;letter-spacing:.2em;color:#75899e}
+.actname{font-size:19px;color:#fff;letter-spacing:.04em}
+.actwho{font-size:12px;color:#75899e}
+.beat{background:#0d141c;border:1px solid #1d2836;border-radius:6px;padding:10px 14px;margin:10px 0 18px;
+ font-size:14px;color:#b9c9d8}
+.beat b{color:var(--fc);font-size:11px;letter-spacing:.14em;display:block;margin-bottom:4px}
+.world{margin:22px 0 30px;border-top:1px solid #16202c;padding-top:14px}
+.whead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.wname{font-size:16px;color:#fff;letter-spacing:.05em;font-weight:600}
+.chip{font-size:10px;letter-spacing:.12em;padding:2px 7px;border-radius:3px;border:1px solid}
+.seat{color:#fbbf24;border-color:#7c5e14;background:#241c07}
+.rev{color:#f0a8a8;border-color:#6b2a2a;background:#2a1212}
+.enc{color:#7dd3fc;border-color:#1d4a67;background:#0c1a25}
+.encnote{color:#8aa0b5;font-size:13px;margin:0 0 8px;font-style:italic}
+.strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.pan{background:#0b1119;border:1px solid #1a2531;border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
+.pan.after{border-color:#2a2136}
+.pimg{position:relative}
+.pan img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#060a0f}
+.stalepan{border-color:#5c4420}
+.stalepan img{filter:grayscale(.7) brightness(.62)}
+.stale{position:absolute;left:0;right:0;bottom:0;background:#5c4420ee;color:#ffd89b;
+ font-size:9px;letter-spacing:.14em;text-align:center;padding:3px 4px}
+.noart{display:flex;align-items:center;justify-content:center;aspect-ratio:16/9;font-size:10px;
+ color:#5b6b7d;text-align:center;background:#0a0f16;letter-spacing:.1em;line-height:1.5}
+.plab{font-size:9.5px;letter-spacing:.16em;color:#7f93a8;padding:7px 9px 3px}
+.pan.after .plab{color:#a78bfa}
+.ptxt{font-size:12.5px;line-height:1.55;color:#c3d2e0;padding:0 9px 10px}
+.split{grid-column:1/-1;height:0;position:relative;margin:-2px 0 2px}
+.split span{position:absolute;left:50%;transform:translate(-50%,-50%);background:#080b11;
+ color:#5b6b7d;font-size:9.5px;letter-spacing:.24em;padding:0 10px}
+.note{width:100%;background:#0b1119;border:1px solid #1d2836;color:#dbe6f0;border-radius:5px;
+ padding:8px 10px;font:13px/1.5 inherit;margin-top:10px;resize:vertical;min-height:38px}
+.note:focus{outline:none;border-color:var(--fc)}
+.bar{position:fixed;right:16px;bottom:16px;z-index:30;display:flex;gap:8px}
+.bar button{background:#132030;color:#dbe6f0;border:1px solid #2b3a4d;border-radius:6px;
+ padding:9px 14px;font:600 13px inherit;cursor:pointer;letter-spacing:.05em}
+.bar button:hover{border-color:#7dd3fc;color:#fff}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.fcard{display:block;text-decoration:none;background:#0d141c;border:1px solid #1d2836;
+ border-left:3px solid var(--fc);border-radius:6px;padding:14px}
+.fcard:hover{border-color:var(--fc)}
+.fcard b{color:#fff;font-size:15px;letter-spacing:.05em;display:block;margin-bottom:4px}
+.fcard span{color:#75899e;font-size:12.5px;line-height:1.5}
+.stat{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0 0;font-size:13px;color:#8aa0b5}
+.stat b{color:#fff}
+.power{border-left:3px solid var(--fc);padding:2px 0 2px 16px;margin:14px 0 6px}
+.creed{font-size:17px;color:#fff;letter-spacing:.05em;margin-bottom:6px}
+.blurb{color:#b9c9d8;font-size:14px;margin:0 0 10px;max-width:900px}
+.bonus{display:inline-block;background:#0d141c;border:1px solid #1d2836;border-radius:5px;
+ padding:7px 12px;font-size:13px;color:#b9c9d8}
+.bonus b{color:var(--fc);letter-spacing:.06em;margin-right:6px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px;margin:10px 0 6px}
+.card{background:#0d141c;border:1px solid #1d2836;border-radius:6px;padding:11px 13px;
+ display:flex;flex-direction:column;gap:5px}
+.card b{color:#fff;font-size:14px;letter-spacing:.05em}
+.card .nums{color:var(--fc);font-size:11px;letter-spacing:.1em}
+.card span{color:#93a7ba;font-size:12.5px;line-height:1.5}
+.card i{color:#75899e;font-style:normal;letter-spacing:.06em;font-size:11px}
+.card .quote{color:#c3d2e0;border-left:2px solid #23303f;padding-left:9px;font-style:italic}
+.beat .reveal{display:block;margin-top:7px;padding-top:7px;border-top:1px solid #1d2836;
+ color:#8aa0b5;font-size:13px}
+.beat.moral{border-color:#3d3320;background:#12100c}
+.beat.moral b{color:#fbbf24}
+table.dec{border-collapse:collapse;width:100%;margin:12px 0 8px;font-size:13.5px}
+table.dec td{border-top:1px solid #16202c;padding:9px 10px;vertical-align:top}
+table.dec td:first-child{width:78px;font-size:10px;letter-spacing:.14em;white-space:nowrap;padding-top:12px}
+table.dec td:last-child{color:#75899e;width:34%}
+table.dec tr.y td:first-child{color:#6ee7a0}
+table.dec tr.n td:first-child{color:#f0a8a8}
+table.dec tr.n b{color:#ffd89b}
+table.dec b{color:#fff;font-weight:600}
+table.dec span{color:#75899e;font-size:12.5px}
+@media(max-width:1100px){.strip{grid-template-columns:repeat(2,1fr)}.grid5{grid-template-columns:1fr 1fr}}
+</style><body data-fac="pirate" style="--fc:#ef4444">
+<div class="top"><div class="in"><a href="index.html">ALL POWERS</a><a href="human.html">HUMANITY</a><a href="light.html">GALACTIC FEDERATION OF LIGHT</a><a href="xeno.html">THE XENO</a><a href="pirate.html" class="on" style="color:#ef4444">THE PIRATES</a><a href="robot.html">THE PARALLEL</a></div></div>
+<div class="wrap">
+<h1 style="color:#ef4444">THE PIRATES</h1>
+<p class="sub">The campaign in play order. Three panels before each battle, two after. Type in any box to leave a note, then SAVE NOTES to download them.</p>
+<div class="power">
+<div class="creed">No flag. No debts. No end of us.</div>
+<p class="sub" style="margin:0 0 10px">No flag, no debts. They hold the gates, the fuel and every road between powers.</p>
+<p class="blurb">Made of anything and all things: defectors, escaped experiments, whole crews that would sign no Federation and serve no House. Their ground is not a place but every transition between other people’s places: gates, fuel, forged papers, sanctuary ports, the road around a quarantine. Every power calls them criminals. Every power still pays the toll.</p>
+<div class="bonus"><b>PLUNDER</b> Begin every battle with enough extra gold for one more tower.</div>
+</div>
+<h2>What you field</h2>
+<div class="cards">
+<div class="card"><b>Cutter</b><span class="nums"></span><span>A stolen hull with the mass stripped out of it. Nothing aboard but engine and intent.</span></div>
+<div class="card"><b>Runner</b><span class="nums"></span><span>Carries what cannot be carried openly, and has never once asked what it is carrying.</span></div>
+<div class="card"><b>Boarder</b><span class="nums"></span><span>GRAPPLES three tiles down the lane every four seconds. Aim where it is going, not where it is.</span></div>
+<div class="card"><b>Powderhand</b><span class="nums"></span><span>Every crew has one. Nobody asks where they learned it, and everybody stands well back.</span></div>
+<div class="card"><b>Tollman</b><span class="nums"></span><span>Stands in the lane and names a price. Historically, most people have paid it.</span></div>
+<div class="card"><b>Scrapjack</b><span class="nums"></span><span>SILENCES nearby towers for 2.0s on a timer, with a jammer looted off a Vigil Interdictor.</span></div>
+<div class="card"><b>Wrecker</b><span class="nums"></span><span>Gets back up once at 40% health. Pirates are made of everything, and most of it is spare.</span></div>
+<div class="card"><b>Ironhulk</b><span class="nums"></span><span>Salvage welded onto salvage. Blast damage does 50% less against the layers -- storm finds the seams.</span></div>
+</div>
+<h2>Who leads</h2>
+<div class="cards">
+<div class="card"><b>RAKE</b><span class="nums">The Corsair</span><span>Founder of the first quarantine breach route</span><span><i>Wants:</i> Ensure no fleet, treaty, or god can close every route.</span><span><i>Breaks on:</i> His free passage is financed by tolls and secrets he refuses to make free.</span><span class="quote">Nothing personal. Your world simply was not nailed down.</span></div>
+<div class="card"><b>SCARLET</b><span class="nums">The Reaver</span><span>Raider and anti-blockade shock commander</span><span><i>Wants:</i> Destroy control before it can harden into law.</span><span><i>Breaks on:</i> She mistakes any durable institution for a future prison.</span><span class="quote">I did not come to hold ground. I came to burn yours.</span></div>
+<div class="card"><b>GRIST</b><span class="nums">The Scrapper</span><span>Salvage judge and wreck-economy magnate</span><span><i>Wants:</i> Turn imperial ruins into distributed power.</span><span><i>Breaks on:</i> His definition of abandoned often includes things whose owners are merely weak, archived, or nonhuman.</span><span class="quote">Your wreckage will fetch a fine price. Try to die expensively.</span></div>
+<div class="card"><b>CINDER</b><span class="nums">The Arsonist</span><span>Denial specialist and route scuttler</span><span><i>Wants:</i> Keep no strategic asset usable by an occupier.</span><span><i>Breaks on:</i> His liberation doctrine leaves worlds isolated and infrastructure dead.</span><span class="quote">When this is over, neither of us keeps this world. That suits me.</span></div>
+<div class="card"><b>DREGG</b><span class="nums">The Warlord</span><span>Privateer king of the Red Ledger</span><span><i>Wants:</i> Make every government hire him before it can fight anyone else.</span><span><i>Breaks on:</i> He embodies the monopoly Pirates claim to oppose.</span><span class="quote">Kneel now and save us both the ammunition. No? Good.</span></div>
+</div>
+<h2>The spine</h2>
+<p class="sub">Six beats that carry the arc. Everything else on this page hangs off them.</p>
+<div class="beat"><b>BEAT 1</b>Every power out here drew a border and then needed somebody to carry things across it. That is us. We did not choose freedom as a philosophy, we ended up in the gaps between four empires and learned to make the gaps pay.<span class="reveal">The Free Captains begin as an accident of geography, not a creed. The creed comes later, and having a creed is the whole arc.</span></div>
+<div class="beat"><b>BEAT 2</b>We hauled for the Hungry. Forty years, every crew, and not one of us asked what was in the crates because asking cost you the fee. The rock that came down on Earth had our routing marks on the paperwork. We were the road it travelled.<span class="reveal">First contact for the pirates is contact with their own complicity: neutrality is a position, and this one had freight on it.</span></div>
+<div class="beat"><b>BEAT 3</b>We can take the whole lane now. Every gate, every toll, every crossing between here and the core. And the first thing anyone asked in open session was not how much, it was whether people running from something still come through free.<span class="reveal">Expansion: with real power for the first time, the question stops being what the Free Captains can take and starts being what they will refuse to charge for.</span></div>
+<div class="beat"><b>BEAT 4</b>Half the fleet wants to torch every registry in the galaxy and let everyone sort themselves out. The other half has started writing things down. I have set fire to a great deal in my life and I have never once been asked to decide what should still be standing afterward.<span class="reveal">The reach: the pirates acquire the ability to destroy the systems they resent, and discover that destroying them is a decision rather than a release.</span></div>
+<div class="beat"><b>BEAT 5</b>Nobody binds us. That was always the boast, and it means the code we pick is the only code that is actually ours. Every other power can point at a mandate or a ledger or a queue when they do something ugly. We cannot. Everything we do, we chose.<span class="reveal">The mirror: the Free Captains realise that having no master removes the excuse, not the responsibility, and that is a heavier thing to carry than any flag.</span></div>
+<div class="beat"><b>BEAT 6</b>We have seen what is out past the last chart, and it does not care who owns the lanes. So here is the rule, and it is the only one we have ever written: the roads stay open, the sanctuary takes all comers, and nobody pays to run from something. We built it out of salvage and spite and it is still standing.<span class="reveal">The greater dark: against something vast and indifferent, the pirates choose a small, specific, chosen decency, which is the only kind their philosophy allows.</span></div>
+<h2>Alternate voices</h2>
+<p class="sub">These replace the first line on any world where they apply, most surprising fact first.</p>
+<div class="cards">
+<div class="card"><b>SEAT</b><span class="nums">a throne world</span><span class="quote">The chair at the top of the local pile. Every closed road in this system was signed off from that room, and nobody in it has ever had to use one.</span></div>
+<div class="card"><b>CONTESTED</b><span class="nums">two rivals already here</span><span class="quote">Two flags are shooting over one rock, which means the rock has no working roads. We open roads. Both of them can file a complaint.</span></div>
+<div class="card"><b>RENEGADE</b><span class="nums">your own banner holds it</span><span class="quote">That crew flies no flag, same as us, and they have closed a road, which is nothing like us. Free is not a thing you get to keep doing wrong.</span></div>
+<div class="card"><b>RETAKEN</b><span class="nums">you lost this once</span><span class="quote">We opened this road once. It is closed again, by somebody who watched us do it and waited. There is a lesson in there about leaving, and none of us wants to hear it.</span></div>
+<div class="card"><b>FLAWLESS</b><span class="nums">three stars</span><span class="quote">Nobody died taking this rock. Not one of ours, and barely any of theirs. That is going in the story we tell, and for once the story will be true.</span></div>
+<div class="card"><b>DEFEAT</b><span class="nums">you lost the campaign</span><span class="quote">We lost the rock. The crews are alive, the holds are empty, and the road out is still ours. You can rebuild anything out here except a crew. Count heads.</span></div>
+</div>
+<h2>Opening cinematic</h2>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/cut_pirate_intro_1.webp" alt=""></div><div class="plab">SLIDE 1</div><div class="ptxt">The Roads... Nobody built them. Four empires drew their borders, and we ended up living in the gaps.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/cut_pirate_intro_2.webp" alt=""></div><div class="plab">SLIDE 2</div><div class="ptxt">Everything crosses a gap eventually. Cargo, weapons, refugees, people running from something.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/cut_pirate_intro_3.webp" alt=""></div><div class="plab">SLIDE 3</div><div class="ptxt">So we carried it. All of it, for anyone who paid, and we never asked what was in the crates... because asking cost you the fee.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/cut_pirate_intro_4.webp" alt=""></div><div class="plab">SLIDE 4</div><div class="ptxt">Forty years of that.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/cut_pirate_intro_5.webp" alt=""></div><div class="plab">SLIDE 5</div><div class="ptxt"></div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/cut_pirate_intro_6.webp" alt=""></div><div class="plab">SLIDE 6</div><div class="ptxt">Then a rock came down on Earth with our routing on the paperwork, and every crew out here went very quiet.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/cut_pirate_intro_7.webp" alt=""></div><div class="plab">SLIDE 7</div><div class="ptxt">We were the road it travelled.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/cut_pirate_intro_8.webp" alt=""></div><div class="plab">SLIDE 8</div><div class="ptxt">Nobody binds us. That was always the boast. What it actually means is that the code we pick is the only one that is really ours... and everything we do, we chose.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/cut_pirate_intro_9.webp" alt=""></div><div class="plab">SLIDE 9</div><div class="ptxt">So here is the only rule we have ever written down. The roads stay open, and anyone running from something comes through FREE. THE FREE ROADS BEGIN.</div></div>
+</div>
+<textarea class="note" data-k="pirate / INTRO" placeholder="Notes on the opening cinematic..."></textarea>
+<div class="act">
+<div class="actbar"><span class="actno">ACT 1</span><span class="actname">PROXIMA CENTAURI</span><span class="actwho">your home</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>Somebody is standing in the doorway. The wreck yards where every crew has a dead friend, the refinery whose fuel is free at the gate, the anchorage that has never been on a chart, the shelter you do not shoot at, and Proxima Gate, which is not a base or a port but the place any of them can always go. The rule survives the act, and gets carved into the bay wall.</div>
+<div class="beat"><b>WHEN THE ACT ENDS</b>Proxima Centauri is ours again, stem to stern, and Proxima Gate never once asked a refugee for papers. It never asked the other crews either. Same bay, same week, medicine and chattel. The no-questions rule works both ways. It always did.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>Freedom is only the absence of a worse master until you become one. The rule survives the act and gets carved into the wall.</div>
+<div class="world">
+<div class="whead"><span class="wname">PROXIMA d</span><span class="chip enc">ASSAULT &middot; HUMANITY</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_30_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">PROXIMA d. Our yard. Our dead. Somebody is standing in it who did not put anything there, and that is the whole of the argument.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_30_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">Ships come here to die. The hulls lie in lanes sorted by whoever built them, a hundred different yards, all of them cut open, under a red sun that makes every shadow look like a hole.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_30_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Yard cranes and cutting gantries are turned outward, with hull plate stacked into walls between them. Nothing here was designed as a fortification and all of it is being used as one.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_30_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Stacks are down and half of them are burning and every crew out here has somebody in that fire. We are not leaving until it is out.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_30_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Yards are running. Hulls go out whole and the plates come off first and go on the wall. Every name. That is the rule now.</div></div>
+</div>
+<textarea class="note" data-k="pirate / PROXIMA CENTAURI / PROXIMA d" placeholder="Notes on PROXIMA d..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">PROXIMA b</span><span class="chip enc">ASSAULT &middot; HUMANITY</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_31_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">PROXIMA b. Sunset town. Half the crews out here were born on that strip and the other half have owed somebody on it money.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_31_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">This world has not turned since it formed, so the town runs the long way along the only ground that is neither burning nor frozen. It is permanently sunset here and it always will be.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_31_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Ridge batteries are dug in along the sunset line, and shutter walls on both faces can close the town against the day side or the night side, whichever is trying to get in.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_31_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Ridge is ours again and the shutters answer to us. Nobody burned and nobody froze, which on this world counts as a clean day.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_31_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Strip runs the whole length and the walls stay open. You can walk from the ice to the fire without asking anybody for a door.</div></div>
+</div>
+<textarea class="note" data-k="pirate / PROXIMA CENTAURI / PROXIMA b" placeholder="Notes on PROXIMA b..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">PROXIMA c</span><span class="chip enc">THE SWARM &middot; THE XENO</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_32_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">PROXIMA c. Cold as anything and it pays for half the Roads. Every crew that ever ran short took a season out here and did not talk about it.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_32_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">The plumes freeze on the way down out here and fall back as snow made of whatever the towers were trying to sell. The whole surface is blue ice.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_32_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Ice breach batteries ring the cracking towers, and the pipe runs are armoured under banked snow that has to be cut open before anything can be repaired.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_32_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Towers down, plumes out, ice going dark. That is the money, and the money is burning.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_32_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">She vents again. Roads cut clean between the towers so nobody has to walk the ice in the dark to make a shift.</div></div>
+</div>
+<textarea class="note" data-k="pirate / PROXIMA CENTAURI / PROXIMA c" placeholder="Notes on PROXIMA c..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">THE FLARE SHELTER</span><span class="chip enc">THE LONG VIGIL &middot; HUMANITY</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_33_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">THE FLARE SHELTER. Down here is where you go when the sky turns. Everybody out here has spent a day in that warren listening to the rock tick.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_33_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">The star strips this surface bare most days, so everyone here lives under metres of rock. The only thing above ground is hatches.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_33_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Hatch batteries sit flush with the stone, and the shutter doors are heavy enough to hold the sky out, which is what they were built for and not for this.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_33_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">They came in through the hatches while the flare was up. Nowhere to run to on this rock but further down, so we went further down.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_33_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Hatches reseated, warren dug deeper, and the doors work from the inside. That is the only way they were ever supposed to work.</div></div>
+</div>
+<textarea class="note" data-k="pirate / PROXIMA CENTAURI / THE FLARE SHELTER" placeholder="Notes on THE FLARE SHELTER..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">THE NARROWS</span><span class="chip enc">ASSAULT &middot; THE PIRATES and THE PIRATES and GALACTIC FEDERATION OF LIGHT</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_34_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">THE NARROWS. Our gate. It is not a robbery, it is a road we cut and hold, and every crew that pays has sheltered behind it at least once.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_34_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">One clear lane runs through the debris of a triple star, and somebody has strung a toll gate across it on cables. Ten thousand rocks tumble past on either side.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_34_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Lane batteries sit on the platforms and mine curtains hang on the cables between them, so the gate closes by getting in the way rather than by shooting.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_34_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Ring is shot to pieces and the cables are cut. Two platforms went into the rocks with people still aboard them.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_34_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Gate is up and lit and the toll stands. Anyone running from something comes through free, same as always. That was never the part that paid.</div></div>
+</div>
+<textarea class="note" data-k="pirate / PROXIMA CENTAURI / THE NARROWS" placeholder="Notes on THE NARROWS..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">THE DARK LOCKER</span><span class="chip rev">REVERSAL &middot; the Free Captains carried the freight</span><span class="chip enc">OVERRUN &middot; HUMANITY</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_35_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">THE DARK LOCKER. Everything anybody ever needed to lose is in that rock. It is not clean. It is ours, and it has kept people alive.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_35_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">Out here the star is just another point in the sky. They cut a vault into the rock and stack whatever cannot be written down in the cold.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_35_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Vault batteries are cut into the rock face and the pressure doors are thick enough to count as walls, because all of this was built to keep people out rather than to fight them.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_35_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Face is blown in and the routing marks are out. We hauled this. For them. Forty years, every crew took the fee, and not one of us asked.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_35_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">The vault is sealed and it runs, and the book stays open. We are reading our own routes back to ourselves. Nobody out here gets to say they did not know any more.</div></div>
+</div>
+<textarea class="note" data-k="pirate / PROXIMA CENTAURI / THE DARK LOCKER" placeholder="Notes on THE DARK LOCKER..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">PROXIMA GATE</span><span class="chip seat">SEAT &middot; ACT ENDS HERE</span><span class="chip enc">ASSAULT &middot; HUMANITY and HUMANITY and THE XENO</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_36_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">PROXIMA GATE. This is the last of it. Everything out here that is ours is behind that boom, and everybody who has nowhere else is behind it too.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_36_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">Everyone who arrived with nowhere else to be built a piece of this harbour, over sixty years, out of salvage. It is the first port out of Sol, and the ships moor under a roof of stone.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_36_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Harbour batteries are set into the rock roof, and a boom crosses the bay mouth strung wreck to wreck, made from the ships of people who are not here to object.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_36_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">They cut the boom and came into the harbour and we held them at the berths. Sixty years of this place, and it came down to the berths.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_36_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">The bay is full and the boom stays down. Every berth open, no fee, all comers. We built it out of salvage and spite and it is still standing.</div></div>
+</div>
+<textarea class="note" data-k="pirate / PROXIMA CENTAURI / PROXIMA GATE" placeholder="Notes on PROXIMA GATE..."></textarea>
+</div>
+</div>
+<div class="act">
+<div class="actbar"><span class="actno">ACT 2</span><span class="actname">SIRIUS</span><span class="actwho">home of THE PARALLEL</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>A civilisation of machines running orders from a bearing that is not on any chart. The Scrapper will not touch a field of dormant salvage and cannot say why. The roads finish the star swarm with a hole left in it on purpose, and point the relay back the way the orders came, asking who, on an open channel, for free.</div>
+<div class="beat"><b>WHEN THE ACT ENDS</b>The Scrapper had the sealed collaborator list in his hold for six hours. The bidding would have bought a fleet. He posted it free, to every open channel, and cannot explain why. First chosen line on the map. Drawn at full price, for nothing.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>Knowledge the powerful hid is loot, and the only honest plunder is giving it away. A hole left in the swarm on purpose is worth more than the toll.</div>
+<div class="world">
+<div class="whead"><span class="wname">SIRIUS A I</span><span class="chip enc">THE SWARM &middot; THE XENO</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_40_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">SIRIUS A I. A field of machines nobody has switched on, kept clean by nobody, on a world with nobody on it. Quietest place any of us has been.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_40_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">Ten thousand machines stand in rows on these terraces, pruned and aligned and facing the same way. None of them are awake and every one of them is maintained.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_40_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Terrace batteries sit between the rows and hard-light barriers run along the garden walls. They light when the garden is approached, and they have been lighting for a very long time.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_40_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Garden is ours and the rows never woke. Crews went down those terraces holding their breath the whole way.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_40_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Rows are stood up straight and we left. Some places you take. This one we walked through and put back.</div></div>
+</div>
+<textarea class="note" data-k="pirate / SIRIUS / SIRIUS A I" placeholder="Notes on SIRIUS A I..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">SIRIUS A II</span><span class="chip enc">ASSAULT &middot; THE XENO</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_41_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">SIRIUS A II. A factory with the lights on and nobody home, stamping out soldiers into a pile. We have all seen bad ideas. This one is big.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_41_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">The casting halls have not stopped. They turn out identical units one after another under a star that never sets, and the canyon floor glows with it.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_41_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Canyon batteries line the hall roofs, and pour gates can flood the whole floor with molten metal, which is a defence and also simply how the halls are emptied.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_41_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Roofs are ours and the floor is a river. Two crews are not coming back off that canyon rim.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_41_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">It pours faster now. We did not touch the count. It went faster on its own, and we left before we found out why.</div></div>
+</div>
+<textarea class="note" data-k="pirate / SIRIUS / SIRIUS A II" placeholder="Notes on SIRIUS A II..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">THE ASH FIELD</span><span class="chip enc">OVERRUN &middot; THE XENO</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_42_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">THE ASH FIELD. A graveyard for a star with filing cabinets in it. We have robbed a lot of places. Nobody wanted to be first into this one.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_42_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">This grey plain was the outer body of a star before the companion collapsed and threw it across the system. They stood their memory cores up in it like headstones.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_42_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Core row batteries cover the stacks and dust berms are banked between them, so every firing line is also a trench full of the ash of something that used to be a sun.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_42_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Stacks came down and the dust went up and it has not come down since. You cannot see your own hands out there.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_42_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Cores are closed and the rows are straight and the ash is flat. We took nothing off that field. Not one crate.</div></div>
+</div>
+<textarea class="note" data-k="pirate / SIRIUS / THE ASH FIELD" placeholder="Notes on THE ASH FIELD..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">SIRIUS B I</span><span class="chip enc">ASSAULT &middot; THE PIRATES and THE PIRATES and GALACTIC FEDERATION OF LIGHT</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_43_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">SIRIUS B I. A prison for machines that came out wrong, run by the machines that made them. Nobody out here needed to see that.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_43_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">They keep the ones that failed inspection here, in sealed white halls in orbit of a white dwarf. Every door locks from the outside and none has ever been opened from within.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_43_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Hall batteries cover the seals and containment shutters drop between every corridor, built to stop something getting out and now holding something back.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_43_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Doors are blown and the halls are white and empty and clean and every lock is on the wrong side. Crews came out quiet.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_43_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Sealed it back up. Left the locks how we found them. Some doors you do not get to be the one who decides about.</div></div>
+</div>
+<textarea class="note" data-k="pirate / SIRIUS / SIRIUS B I" placeholder="Notes on SIRIUS B I..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">THE DIAMOND SHELF</span><span class="chip enc">ASSAULT &middot; THE XENO and THE XENO and THE PIRATES</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_44_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">THE DIAMOND SHELF. They call it the diamond shelf and it is not diamond. It is going to be. They are just waiting. That is the part that gets you.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_44_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">The carbon under this shelf will turn to crystal one day, in an age nobody here will measure. They named the place for what it will be and built their repair yards on it.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_44_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Shelf batteries are anchored down into the carbon and the cradle clamps double as blast frames, because a thing built to hold a machine still while it is mended will hold it while it is shot at.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_44_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Gantries are down and the cradles are open and there are half-fixed machines lying in them looking at the sky.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_44_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Yards are back up, taller than before. Whatever is coming for this rock in a billion years, they will be standing here for it.</div></div>
+</div>
+<textarea class="note" data-k="pirate / SIRIUS / THE DIAMOND SHELF" placeholder="Notes on THE DIAMOND SHELF..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">THE COMPANION</span><span class="chip rev">REVERSAL &middot; the mast falls and the orders keep coming</span><span class="chip enc">THE LONG VIGIL &middot; THE XENO</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_45_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">THE COMPANION. Orders come down that mast to everything in this system. Ask any of them who sends them and you get nothing. Not a lie. Nothing.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_45_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">Every standing order in this system comes down that mast, and nobody at the yard knows where the orders come in. The white dwarf fills half the sky behind it.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_45_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Yard batteries ring the mast base and relay shutters can blind the whole line at once, which has never been done, because nothing has ever needed the line to stop.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_45_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Mast came down and the whole yard kept working. Never missed a step. Worst thing any of us has seen and not one of us can explain it.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_45_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">It is up and running and they are moving again. We put it back the way we found it. Some things you do not want to be the reason nobody is watching.</div></div>
+</div>
+<textarea class="note" data-k="pirate / SIRIUS / THE COMPANION" placeholder="Notes on THE COMPANION..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">THE DOG STAR</span><span class="chip seat">SEAT &middot; ACT ENDS HERE</span><span class="chip enc">ASSAULT &middot; THE XENO and THE XENO and GALACTIC FEDERATION OF LIGHT</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_46_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">THE DOG STAR. Every road out here bends around orders that come out of this place. We are going to find out who writes them.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_46_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">This is the hall the orders come from. Tier upon tier of desks under the brightest star in the sky of Earth, every surface clean, and every one of them empty.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_46_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Hall batteries sit between the desk tiers and instruction gates seal each tier from the next, so taking this building means going down through it one floor of empty desks at a time.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_46_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Took it floor by floor and it is desks. Just desks, all the way down, clean and empty and waiting.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_46_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Orders still going out of a building with nobody in it. We took the throne room and there was never a throne.</div></div>
+</div>
+<textarea class="note" data-k="pirate / SIRIUS / THE DOG STAR" placeholder="Notes on THE DOG STAR..."></textarea>
+</div>
+</div>
+<div class="act">
+<div class="actbar"><span class="actno">ACT 3</span><span class="actname">THE EARTH SYSTEM</span><span class="actwho">home of HUMANITY</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>The solar system, where every road has a toll on it and somebody else generates all the power. The crews open the mirror farm, the cloud docks, the canyon road and the water, and post every rate where anyone can read it. At Luna they take the relay and start giving away the only thing on the roads that was never for sale.</div>
+<div class="beat"><b>WHEN THE ACT ENDS</b>The Chorus sent one sentence ahead of her fleet, instead of an envoy: freedom that will not choose is just drift. The Corsair laughed for a day. He has not laughed since. A ship nothing steers is not free. It is cargo.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>A road nothing steers is not free, it is drifting. Some cargo you do not sell, and saying which is the first steering we ever did.</div>
+<div class="world">
+<div class="whead"><span class="wname">EARTH</span><span class="chip enc">THE SWARM &middot; THE XENO</span></div>
+<p class="encnote">EARTH: whatever came out of the rock, and a great deal of it. Survive.</p>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_00_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">EARTH. Every crew out here has hauled something OUT of this system and not one of us ever asked what was coming in. Today we go and look at the crate.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_00_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">The fragments came down whole over the harbour district and split open in the streets. Whatever had been riding inside Apophis was already awake when it landed.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_00_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">The same intercept batteries that broke the rock are swung round now, depressed to fire along their own avenues, and every shelter door in the district is sealed from the inside.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_00_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">District is ours, the hulls are open in the street, and every crew here has gone quiet standing over them.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_00_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">City runs and the hulls stay exactly where they landed, open and free to walk into. No fee. Some things you leave standing so nobody gets to forget.</div></div>
+</div>
+<textarea class="note" data-k="pirate / THE EARTH SYSTEM / EARTH" placeholder="Notes on EARTH..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">LUNA</span><span class="chip enc">THE LONG VIGIL &middot; THE XENO</span></div>
+<p class="encnote">LUNA: abandoned depots on the far side, the Hungry already inside them, and then the Vigil wakes.</p>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_01_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">LUNA. Everybody in the roads has known about that dish for a generation. We just never had a reason to be the ones who said so.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_01_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">No signal from Earth has ever reached the far side. The relay dish sits half sunk in the regolith, and it was still warm when the first human crew found it.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_01_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Hardpoints are buried in the basin rim and mass drivers run along the berms. Whoever built the dish built the guns as well, and did not build them for us.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_01_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">The dish is ours and it still works, mostly, which is a problem we have not thought through even slightly.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_01_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Relay is up and pointed at the chain, and every word that comes down it gets posted free on the open channel. Some things you do not sell.</div></div>
+</div>
+<textarea class="note" data-k="pirate / THE EARTH SYSTEM / LUNA" placeholder="Notes on LUNA..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">MARS</span><span class="chip enc">ASSAULT &middot; THE XENO and THE XENO and THE PARALLEL</span></div>
+<p class="encnote">MARS: the Hungry hold the trench, and the machines are working the same ground.</p>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_02_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">MARS. Four kilometres of cliff and one road in. Every hauler on this run has paid somebody for the privilege, and today we find out who.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_02_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">They dug the habitat trench along the floor of Valles Marineris, four kilometres of cliff on either side, and once a season a dust storm closes the sky over it completely.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_02_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Gun galleries are cut straight into the canyon walls and fire down onto the floor. Whoever built this trench expected to be outnumbered in it.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_02_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">We came in under the dust because the dust does not care whose guns are in the wall. Trench is ours and the road is free.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_02_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Valles runs open. No toll at either mouth, and the first convoy through was carrying people, not cargo. Made a point of that.</div></div>
+</div>
+<textarea class="note" data-k="pirate / THE EARTH SYSTEM / MARS" placeholder="Notes on MARS..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">VENUS</span><span class="chip enc">ASSAULT &middot; GALACTIC FEDERATION OF LIGHT</span></div>
+<p class="encnote">VENUS: a Federation station that has been in our sky the whole time.</p>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_03_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">VENUS. Cloud city. No ground, no law, no way to run. Our kind of town, and it has never once let our kind of ship dock.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_03_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">The city floats fifty kilometres up, moored to nothing, riding the one layer of this atmosphere that will not crush a hull. Nobody has ever stood on the ground below it.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_03_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Gun blisters are set straight into the pressure hulls, and the mooring towers have been eaten half through by acid. Everything here is one bad seam away from falling for an hour.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_03_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">We took the bay without dropping a single platform, which took longer and cost more and is the part the crew will actually tell people about.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_03_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">The sky is open dock. Anyone can moor, anyone can leave, and the only thing we ask at the tower is whether you need fuel.</div></div>
+</div>
+<textarea class="note" data-k="pirate / THE EARTH SYSTEM / VENUS" placeholder="Notes on VENUS..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">MERCURY</span><span class="chip enc">THE SWARM &middot; THE PARALLEL</span></div>
+<p class="encnote">MERCURY: the machines are already here, in numbers, around the ring.</p>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_04_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">MERCURY. Crews have been paying the belt in hulls for sixty years. There is supposed to be a thing down there that makes it free.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_04_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">Nothing survives the day side, so everything here is built in the terminator or under it. The iron core of this world is the largest in the solar system for its size, and somebody wound it.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_04_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Sun-side batteries that run on more power than they can spend, and shutter walls that close ahead of the terminator as it crawls around the planet.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_04_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Basin is ours and the ring is turning. Rock moves out of the way. It moves out of the way for anybody.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_04_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">The ring runs and it is not metered. No toll on a road we did not build. That rule is going to cost us and every captain out here voted for it anyway.</div></div>
+</div>
+<textarea class="note" data-k="pirate / THE EARTH SYSTEM / MERCURY" placeholder="Notes on MERCURY..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">JUPITER</span><span class="chip rev">REVERSAL &middot; the traffic out here already ends at Saturn</span><span class="chip enc">OVERRUN &middot; GALACTIC FEDERATION OF LIGHT and GALACTIC FEDERATION OF LIGHT and THE PARALLEL</span></div>
+<p class="encnote">JUPITER: a Federation anchorage, and the machines raid it while we are taking it.</p>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_05_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">JUPITER. No ground, no law, and the best anchorage in the system if you can stand the weather. We have always liked it here.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_05_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">There is no ground here at all. The anchorage rides the cloud decks between storm bands, tethered to nothing, and the radiation would kill an unshielded crew inside an hour.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_05_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Storm-band batteries slung under the anchorage hulls, and mag-shields holding the radiation off that must never be dropped, which is exactly what makes them worth shooting at.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_05_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Anchorage is ours and we read the manifests. Everything out here has been going to Saturn for a very long time, quietly, in ships nobody logs.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_05_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">The anchorage is open and the routes are posted on the wall for anybody to read. Then two worlds further out went bright, and nothing we send past them comes back.</div></div>
+</div>
+<textarea class="note" data-k="pirate / THE EARTH SYSTEM / JUPITER" placeholder="Notes on JUPITER..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">SATURN</span><span class="chip seat">SEAT &middot; ACT ENDS HERE</span><span class="chip enc">ASSAULT &middot; THE XENO and THE XENO and THE PIRATES</span></div>
+<p class="encnote">SATURN: the Hungry seat and their commander. The scavengers hit it at the same time, for the door.</p>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_06_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">SATURN. Everything that ever turned up out here without crossing the distance came through something. We are going to see it for ourselves.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_06_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">The rings throw a shadow across the whole approach, and at the north pole a six-sided storm has been turning in the same place for as long as anyone has had a lens to point at it. It is not weather. Nothing else in the sky has corners.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_06_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Ring-shadow batteries firing up through the gaps, and the hexagon itself, which is a standing wave with six faces and will take a ship apart if it closes while you are inside it.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_06_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">We are in the hexagon and it is turning. Six of them, spinning in a ring, and the middle is not there. You can see stars through it that are not in our sky.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_06_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">The door is open and it is not ours. It is not anybody. Every crew that can read a chart has the coordinates now, and there is nothing anyone can do about that.</div></div>
+</div>
+<textarea class="note" data-k="pirate / THE EARTH SYSTEM / SATURN" placeholder="Notes on SATURN..."></textarea>
+</div>
+</div>
+<div class="act">
+<div class="actbar"><span class="actno">ACT 4</span><span class="actname">THE PLEIADES</span><span class="actwho">home of GALACTIC FEDERATION OF LIGHT</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>The rings, from underneath. Every closed road in known space got its paperwork blessed in the Pleiades: the certification foundry, the registry that keeps forty worlds from knowing about each other, the seed vaults, the tribunal, the sealed pages. The roads open all of it, and the Warlord refuses a fortune that no law obliged him to refuse.</div>
+<div class="beat"><b>WHEN THE ACT ENDS</b>A harvest broker offered the Warlord a fleet to run cargo that sings through his corridor. He sank the advance into the sun and posted the manifest. No law made him. No law could. That is exactly why it counts.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>No law can make you refuse a fortune, which is exactly why refusing one counts. The floor goes to whoever stands on it, and the first was a refugee.</div>
+<div class="world">
+<div class="whead"><span class="wname">MAIA</span><span class="chip enc">ASSAULT &middot; THE XENO</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_10_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">MAIA. Every ring that ever closed a road got its paperwork blessed in that building. We are going to have a word with the choir.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_10_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">They cut the hymns here that certify a world as protected. The pipes stand upright in nebula light, tuned, taller than towers, and they are singing when you arrive.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_10_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Choir-ring emplacements are braced between the pipes, and the hard-light buttresses ring aloud when they are struck. The defence and the instrument are the same object.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_10_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Pipes are wrecked and the hall is quiet for the first time in a thousand years. Somehow that landed louder than the shooting.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_10_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Foundry is open to anyone who wants a world certified, the queue is out the door, and not one of them is Federation.</div></div>
+</div>
+<textarea class="note" data-k="pirate / THE PLEIADES / MAIA" placeholder="Notes on MAIA..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">ELECTRA</span><span class="chip enc">ASSAULT &middot; GALACTIC FEDERATION OF LIGHT</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_11_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">ELECTRA. Forty worlds, and every one of them believes it is the only one. That is not protection, that is inventory. Let us go and ruin the filing.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_11_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">Every one of the forty protected worlds is filed here, tier upon tier of light-etched shelving, under a star that is visibly going out.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_11_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Buttress turrets cover every tier and the reading-vault doors seal from the inside. The archive was built to survive its own librarians.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_11_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Records everywhere, on the floor, in the vacuum, in our holds. Salvage of the century, and not one page of it is for sale.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_11_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Archive is open, free, on every channel. The Scrapper says he has done this before and still cannot explain why he keeps doing it.</div></div>
+</div>
+<textarea class="note" data-k="pirate / THE PLEIADES / ELECTRA" placeholder="Notes on ELECTRA..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">TAYGETA</span><span class="chip enc">OVERRUN &middot; THE XENO and THE XENO and THE PIRATES</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_12_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">TAYGETA. The biggest closed road in the sky, and it has one foot on the ground. Aim there.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_12_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">Cabling the width of towers climbs out of the atmosphere here, and this is where it comes down. Two suns throw every shadow twice.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_12_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Anchor-mount batteries and hard-light shear walls hold the base. Bring the anchor down and the ring above comes down in sections, on everybody.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_12_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Ring is down in sections, sky is open, and we are not completely certain we thought through what happens next.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_12_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Anchor is rebuilt, the ring runs, and there is a gate in it anybody can open. Cost us a fleet to install a door.</div></div>
+</div>
+<textarea class="note" data-k="pirate / THE PLEIADES / TAYGETA" placeholder="Notes on TAYGETA..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">MEROPE</span><span class="chip enc">THE SWARM &middot; GALACTIC FEDERATION OF LIGHT</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_13_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">MEROPE. Somebody has been sitting on the seed for a hundred worlds while those worlds went hungry. That is a warehouse, not a garden.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_13_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">They bank seeds here for worlds that have not been allowed to grow yet, terraced under hard-light panels in the brightest part of the cluster.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_13_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Garden-wall emplacements and irrigation towers have been turned into firing points. Every shot fired here costs somebody a harvest ten thousand years out.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_13_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Gardens are half burned and the vaults never took a hit. We were careful for once, and everybody noticed.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_13_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">The garden ships free to any world that asks, and a great many are asking. No manifest. Some cargo you do not count.</div></div>
+</div>
+<textarea class="note" data-k="pirate / THE PLEIADES / MEROPE" placeholder="Notes on MEROPE..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">CELAENO</span><span class="chip enc">THE LONG VIGIL &middot; THE PIRATES</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_14_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">CELAENO. A courthouse. Out here we settle things ourselves. It is uglier and faster and at least nobody pretends afterwards that it was justice.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_14_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">This is where the Federation tries its own. The benches ring an open floor in tiers, under the dimmest star in the cluster.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_14_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Gate batteries cover every entrance and hard-light barricades cross the bench tiers. A court built to be defended is a court that expected to be hated.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_14_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Court is wrecked. We did try to leave the benches standing, mostly because the Corsair said a room like that should outlive whoever is in it.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_14_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Tribunal is open and anyone may file. Six worlds have filed against the Federation, and one has filed against us. We let it stand.</div></div>
+</div>
+<textarea class="note" data-k="pirate / THE PLEIADES / CELAENO" placeholder="Notes on CELAENO..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">STEROPE</span><span class="chip rev">REVERSAL &middot; the protection order was granted, then withdrawn</span><span class="chip enc">ASSAULT &middot; THE XENO</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_15_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">STEROPE. Down there is the paperwork for every world that got told help was on the way. Ours is in that stack somewhere too.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_15_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">Every door down here is stamped, dated, and has never once been opened. Two dim stars barely light the ground above the chambers.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_15_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Vault-door batteries and hard-light seals hold the chambers shut. Wardens maintained them for a century without ever reading what they were guarding.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_15_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Chambers are open. Earth had a protection order and somebody pulled it eleven months before the rock turned. Eleven months.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_15_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">The files went out to the worlds they belong to. Free, no fee. Some of them have been waiting eighty years for two pages.</div></div>
+</div>
+<textarea class="note" data-k="pirate / THE PLEIADES / STEROPE" placeholder="Notes on STEROPE..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">ALCYONE</span><span class="chip seat">SEAT &middot; ACT ENDS HERE</span><span class="chip enc">ASSAULT &middot; GALACTIC FEDERATION OF LIGHT and GALACTIC FEDERATION OF LIGHT and THE XENO</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_16_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">ALCYONE. Top of the whole pile. Every closed road, every ring, every polite refusal, signed off from one chair in one room.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_16_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">The Cathedral of Rings stands in the brightest light of the cluster, gold circles around an empty central floor. The First Speaker sits here.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_16_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Ring-tier batteries and layered hard-light choirs turn slowly around the seat. The innermost ring has never been fired. It is about to be.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_16_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Rings are wrecked, floor is open, chair is gone. Somebody got there before us, which is a thought none of us enjoy.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_16_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">The cathedral is open house. Anybody may stand on that floor and say anything, and the first one who did was a refugee, and she took her time.</div></div>
+</div>
+<textarea class="note" data-k="pirate / THE PLEIADES / ALCYONE" placeholder="Notes on ALCYONE..."></textarea>
+</div>
+</div>
+<div class="act">
+<div class="actbar"><span class="actno">ACT 5</span><span class="actname">ZETA RETICULI</span><span class="actwho">home of THE XENO</span></div>
+<div class="beat"><b>WHAT THIS ACT IS</b>The place the crates came from. Half the crews out here have hauled from these yards and told themselves it was ore. The pens are opened, the ledger is published with their own manifests in it, and at Serpo the manifest goes on the gate with three seals that belong to crews still running. Proxima Gate still asks nobody for papers. The holds get asked now.</div>
+<div class="beat"><b>WHEN THE ACT ENDS</b>The Arsonist burned the Meridian run. Best toll on the map, and the traffic was people, in crates. Route, relays, her own depots. Scarlet is not speaking to her. The ledger is screaming. The fire, she says, never felt cleaner. The crew is choosing sides, which is to say: codes.</div>
+<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>The roads carry whatever pays, and that sentence had two halves we never separated. The gate that never asked for papers is the same gate asking the holds now.</div>
+<div class="world">
+<div class="whead"><span class="wname">ZETA-1 b</span><span class="chip enc">THE SWARM &middot; THE XENO</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_20_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">ZETA-1 b. We have carried cargo out of this system and not asked what was in the crates. Today we go and look at where the crates were filled.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_20_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">The pods run to the horizon in every direction, sunk into a floor of living chitin, glowing, and quiet. This is where the Hungry keep what they have taken.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_20_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Sphincter gates close over the pod rows on reflex, and growth batteries are seated in the ribs of the floor itself.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_20_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Pods are open. We are not salvaging. We have never once flown a hold this full and made no money at all.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_20_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">The pens are scrap and the people who were in them are anywhere they want to be. No fee. Nobody even suggested one.</div></div>
+</div>
+<textarea class="note" data-k="pirate / ZETA RETICULI / ZETA-1 b" placeholder="Notes on ZETA-1 b..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">ZETA-1 c</span><span class="chip enc">ASSAULT &middot; THE XENO</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_21_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">ZETA-1 c. Half the crews out here have hauled from these yards and told themselves it was ore. It was never ore. Everybody knew.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_21_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">The yield comes apart here, on sloped floors the size of cities, and the run-off channels cut deep into the shell all run the same direction.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_21_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Yard-mouth batteries and hooked gantries swing down across the channels, built to handle mass that does not want to be handled.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_21_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Yards are ours and there is nothing in them worth a single credit. Best cargo we never loaded.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_21_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">The yards make things now. Hulls, mostly. Every one of them goes out with the yard mark still on it, because forgetting is how it happened.</div></div>
+</div>
+<textarea class="note" data-k="pirate / ZETA RETICULI / ZETA-1 c" placeholder="Notes on ZETA-1 c..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">ZETA-1 d</span><span class="chip enc">ASSAULT &middot; THE XENO and THE XENO and GALACTIC FEDERATION OF LIGHT</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_22_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">ZETA-1 d. A library of everybody who ever got taken. Somewhere in that wall is whatever we were before we were out here.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_22_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">Every species the Hungry have ever catalogued is banked in this honeycomb, glowing faintly in its cell, shelved against some future use.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_22_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Comb-face batteries cover the faces and membrane bulkheads seal the honeycomb tier by tier, so losing a level costs the defender nothing.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_22_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Comb is cracked and the cells are going out one at a time while we watch. We are catching what we can. It is not enough and we are still catching.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_22_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Vaults are open and the catalogue is public. Twenty crews have already found their own lineage in it. Two of them went very quiet.</div></div>
+</div>
+<textarea class="note" data-k="pirate / ZETA RETICULI / ZETA-1 d" placeholder="Notes on ZETA-1 d..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">ZETA-2 b</span><span class="chip enc">OVERRUN &middot; THE PIRATES</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_23_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">ZETA-2 b. One tower, and every one of those things out there hears the same order at the same second. Knock it over and see what they do.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_23_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">The spire rises out of the plain as a column of fused bodies and resonating membrane, and everything the Hungry own hears the Hivemind through it.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_23_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Spire-base batteries ring the column, and membrane baffles wound around it absorb sound and shellfire with equal indifference.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_23_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Spire is cracked and the swarm went stupid for about ten minutes. Longest ten minutes of the run and we used every one of them.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_23_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Tower is down to a stump and we left the plain empty on purpose. The Corsair says a thing that loud should have to earn the room back.</div></div>
+</div>
+<textarea class="note" data-k="pirate / ZETA RETICULI / ZETA-2 b" placeholder="Notes on ZETA-2 b..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">ZETA-2 c</span><span class="chip enc">THE SWARM &middot; THE XENO</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_24_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">ZETA-2 c. Whoever is downwind of that field did not choose to be. That is the entire argument and it is enough of one.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_24_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">Something is being grown in these furrows that should not be, and the spores drift low over the ground in the weak light of two suns.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_24_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Furrow batteries line the field edges and spore-vent towers can turn the whole crop into a weapon on about a minute of notice.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_24_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Fields are burned and every suit held. The Arsonist did most of it personally and she has not said a word since we lifted.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_24_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">Ground is sown with food and the seed came free from Merope. Never thought those two worlds would end up on the same manifest.</div></div>
+</div>
+<textarea class="note" data-k="pirate / ZETA RETICULI / ZETA-2 c" placeholder="Notes on ZETA-2 c..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">ZETA-2 d</span><span class="chip rev">REVERSAL &middot; Earth is in the ledger as a SUPPLIER</span><span class="chip enc">THE LONG VIGIL &middot; THE XENO</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_25_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">ZETA-2 d. Every debt in this arm of the galaxy is on that wall, and crews have died guessing at what is written up there.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_25_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">Every wall in this chamber is a living record of what has been taken and from whom. It lights violet from the inside, through a crack in the shell.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_25_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Vault-mouth batteries and ribbed seals guard that crack, which is the only way in and has been the only way in for four thousand cycles.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_25_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Vault is open. Earth is in the book as a supplier and not a victim, and somebody human put their name to the line.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_25_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">The whole ledger is out, free, to everyone named in it. A great many people are about to have a very bad month and they have earned it.</div></div>
+</div>
+<textarea class="note" data-k="pirate / ZETA RETICULI / ZETA-2 d" placeholder="Notes on ZETA-2 d..."></textarea>
+</div>
+<div class="world">
+<div class="whead"><span class="wname">SERPO</span><span class="chip seat">SEAT &middot; ACT ENDS HERE</span><span class="chip enc">ASSAULT &middot; THE XENO and THE XENO and THE PIRATES</span></div>
+<div class="strip">
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_26_pirate_1.webp" alt=""></div><div class="plab">APPROACH</div><div class="ptxt">SERPO. Twelve people got traded here like freight and everybody involved signed something. We move freight. We do not sign for people.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_26_pirate_2.webp" alt=""></div><div class="plab">THE GROUND</div><div class="ptxt">Human habs stand in alien sand under two suns, prefabricated and still bolted down. They went up for an exchange programme that ran one way and was never spoken of again.</div></div>
+<div class="pan"><div class="pimg"><img loading="lazy" src="../art/pcut_26_pirate_3.webp" alt=""></div><div class="plab">THE ASSAULT</div><div class="ptxt">Perimeter batteries cover the compound, and there are membrane nests buried in the sand outside the wire that were not there when the habs were built.</div></div>
+<div class="split"><span>BATTLE</span></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_26_pirate_4.webp" alt=""></div><div class="plab">AFTERMATH</div><div class="ptxt">Compound is flat and we have the manifest. Real one. Names, dates, signatures, the lot.</div></div>
+<div class="pan after"><div class="pimg"><img loading="lazy" src="../art/pcut_26_pirate_5.webp" alt=""></div><div class="plab">NEW ORDER</div><div class="ptxt">The compound is rebuilt and the manifest is nailed to the gate. Twelve names, three seals, and the seals belong to crews still running. Proxima Gate still asks nobody for papers. The holds get asked now. That is the line, and it took us all of this to find it.</div></div>
+</div>
+<textarea class="note" data-k="pirate / ZETA RETICULI / SERPO" placeholder="Notes on SERPO..."></textarea>
+</div>
+</div>
+</div><div class="bar"><button onclick="ccSave()">SAVE NOTES</button><button onclick="ccClear()">CLEAR</button></div>
+<script>
+(function(){
+ var K='cc-storyboard-'+document.body.dataset.fac;
+ function all(){return Array.prototype.slice.call(document.querySelectorAll('.note'));}
+ try{var s=JSON.parse(localStorage.getItem(K)||'{}');all().forEach(function(n){if(s[n.dataset.k])n.value=s[n.dataset.k];});}catch(e){}
+ function persist(){var o={};all().forEach(function(n){if(n.value.trim())o[n.dataset.k]=n.value;});
+  try{localStorage.setItem(K,JSON.stringify(o));}catch(e){}}
+ document.addEventListener('input',function(e){if(e.target.classList.contains('note'))persist();});
+ window.ccSave=function(){var out=[],t=document.title;
+  all().forEach(function(n){if(n.value.trim())out.push('## '+n.dataset.k+'\n'+n.value.trim());});
+  if(!out.length){alert('No notes yet. Type in any box first.');return;}
+  var blob=new Blob(['# '+t+'\n\n'+out.join('\n\n')],{type:'text/markdown'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=document.body.dataset.fac+'-notes.md';a.click();};
+ window.ccClear=function(){if(!confirm('Clear every note on this page?'))return;
+  all().forEach(function(n){n.value='';});persist();};
+})();
+</script>

@@ -1,0 +1,20 @@
+module.exports = [
+  { size: [1600, 900] },
+  { wait: 1600 },
+  { eval: 'window.__RQ.start({ faction: "human", enemyFaction: "xeno", commander: "vanta", board: 0, difficulty: 1 }); "ok"' },
+  { wait: 800 },
+  { eval: 'window.__RQ.closeScreens(); "ok"' },
+  { eval: 'window.__RQ.setGold(9000); window.__RQ.buildAll(); "built"' },
+  { wait: 300 },
+  { shot: 'ab-0-full' },
+  { eval: 'R.quality.autoexp = 0; "noauto"' },
+  { wait: 200 },
+  { shot: 'ab-1-noauto' },
+  { eval: 'R.quality.streak = 0; R.quality.bloom = 0; R.quality.ssao = 0; "nopost"' },
+  { wait: 200 },
+  { shot: 'ab-2-nopost' },
+  { eval: 'R.setStyle("cel"); "cel"' },
+  { wait: 200 },
+  { shot: 'ab-3-cel' },
+  { eval: 'R.setStyle("hd"); "hdback"' }
+];

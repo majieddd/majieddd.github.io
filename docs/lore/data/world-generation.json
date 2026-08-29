@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "source_game_commit": "046fc38634fadf13148ef9ad3aa208417f28f2de",
+  "systems_per_galaxy": 5,
+  "worlds_per_system": 7,
+  "contested_per_system": 2,
+  "system_registry_names": [
+    "CORVUS",
+    "ARDENT",
+    "TALLOW REACH",
+    "THE SPINDLE",
+    "BLACKGLASS",
+    "HELIX",
+    "MOURNE",
+    "VAST"
+  ],
+  "world_registry_roots": [
+    "Kerath",
+    "Vell",
+    "Ashkar",
+    "Ordos",
+    "Myrren",
+    "Tessaly",
+    "Cauldron",
+    "Hollow",
+    "Ninefold",
+    "Brack",
+    "Solace",
+    "Ixion",
+    "Tarsis",
+    "Umber",
+    "Perrin",
+    "Vaunt",
+    "Cinderfall",
+    "Quill",
+    "Sabre",
+    "Threnody",
+    "Gallow",
+    "Wexen",
+    "Orrery",
+    "Lume"
+  ],
+  "world_kinds": [
+    {
+      "id": "standard",
+      "label": "Civil Node",
+      "canon": "A populated or strategic jurisdiction whose main value is ordinary continuity."
+    },
+    {
+      "id": "fortress",
+      "label": "Charter Fortress",
+      "canon": "A defensive and legal seat whose registry can support a system commander."
+    },
+    {
+      "id": "forge",
+      "label": "Industrial Forge",
+      "canon": "A production jurisdiction where matter, energy, and labor can be converted into campaign tempo."
+    },
+    {
+      "id": "nest",
+      "label": "Vigil Nest",
+      "canon": "A legacy Old Weather enforcement site that recognizes mission rules rather than faction banners."
+    }
+  ],
+  "interpretation": "Names are survey registry names. Ownership is a current controlling claim, not the worlds native identity."
+}
