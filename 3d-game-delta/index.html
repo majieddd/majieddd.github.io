@@ -14,8 +14,8 @@
   #gl{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:grab}
   #gl.dragging{cursor:grabbing}
   #uic{position:fixed;inset:0;pointer-events:none;z-index:10}
-  .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(ellipse at 50% 40%,rgba(10,26,30,.72),rgba(4,7,14,.94));opacity:0;transition:opacity .45s}
-  .screen.on{opacity:1;pointer-events:auto}
+  .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(ellipse at 50% 40%,rgba(10,26,30,.72),rgba(4,7,14,.94));opacity:0;visibility:hidden;transition:opacity .45s,visibility .45s}
+  .screen.on{opacity:1;visibility:visible;pointer-events:auto}
   .panel{pointer-events:auto;background:linear-gradient(160deg,var(--panel),#0c121c);border:3px solid var(--ink);outline:3px solid rgba(63,224,216,.55);box-shadow:0 0 0 6px rgba(13,19,31,.85),0 18px 60px rgba(0,0,0,.7);padding:34px 46px;border-radius:14px}
   h1.title{font-size:54px;letter-spacing:6px;color:var(--paper);text-shadow:0 4px 0 var(--ink),0 0 26px rgba(63,224,216,.65)}
   h1.title em{font-style:normal;color:var(--teal)}
@@ -45,6 +45,9 @@
   #hint{position:absolute;bottom:86px;left:50%;transform:translateX(-50%);font-size:12px;letter-spacing:2px;color:#9fb3c8;font-family:"Segoe UI",sans-serif;font-weight:700;text-shadow:0 2px 0 #000;opacity:.85}
   #fps{position:absolute;top:10px;right:12px;font-size:11px;color:var(--teal);font-family:Consolas,monospace;letter-spacing:1px;pointer-events:none;opacity:.9}
   #vignette{position:fixed;inset:0;pointer-events:none;z-index:5;background:radial-gradient(ellipse at 50% 46%,transparent 52%,rgba(3,6,12,.55) 100%)}
+  /* pointer-events contract: ONLY interactive chrome captures clicks; the rest passes to the canvas */
+  #uic,#uic *{pointer-events:none!important}
+  #uic .btn,#uic .buildbtn,#uic .bar .cell,#buildmenu.on,#buildmenu.on *{pointer-events:auto!important}
   .spin{width:16px;height:16px;border:3px solid rgba(63,224,216,.25);border-top-color:var(--teal);border-radius:50%;display:inline-block;animation:sp 1s linear infinite;vertical-align:middle}
   @keyframes sp{to{transform:rotate(360deg)}}
 </style>
@@ -82,7 +85,7 @@ window.addEventListener('error', function (e) {
       <div class="sub">SIEGE OF THE AVALON YARD</div>
       <div class="lede">The yard is half-built and the Nihil are coming. Build the six turrets
       of the Avalon line, hold the ring, and let every battle paint its own story in ink.</div>
-      <div class="sub" style="margin-top:14px;font-size:11px;color:#7d94ac">BUILD v1.3</div>
+      <div class="sub" style="margin-top:14px;font-size:11px;color:#7d94ac">BUILD v1.4</div>
       <button class="btn" id="btn-start" onclick="window.__bootStart && window.__bootStart()">IGNITE THE CORE</button>
     </div>
   </div>
@@ -217,40 +220,38 @@ function lerpVec3(v, target, l, dt) { v.x = damp(v.x, target.x, l, dt); v.y = da
 'use strict';
 const SH = {};
 const _MATS = []; /* registry of materials needing camera-position sync */
-/* ---- planet bend: flat (x,z) -> colatitude on the planet; +Y becomes radial offset.
-   Uniform objects are SHARED, so one update drives every program. ---- */
-const BEND = { C: new THREE.Vector3(0, -33.8, 0), R: 34 };
+/* ---- planet bend v2: flat strip -> equatorial belt on the planet.
+   flat x = arc length along the equator (wraps every 2*PI*R), flat z = latitude arc,
+   flat y = radial offset above the surface. Planet centered at world origin,
+   north pole up. The battle wraps the ENTIRE planet. ---- */
+const BEND = { R: 34 };
+const BEND_LEN = Math.PI * 2 * BEND.R;
 function bendToWorld(p) {
-  const rH = Math.sqrt(p.x * p.x + p.z * p.z);
-  if (rH < 1e-4) return new THREE.Vector3(p.x, p.y, p.z);
-  const phi = rH / BEND.R, s = Math.sin(phi), c = Math.cos(phi);
+  const lam = p.x / BEND.R, lat = p.z / BEND.R;
   const rad = BEND.R + p.y;
-  return new THREE.Vector3(BEND.C.x + rad * s * (p.x / rH), BEND.C.y + rad * c, BEND.C.z + rad * s * (p.z / rH));
+  const cl = Math.cos(lat);
+  return new THREE.Vector3(rad * cl * Math.cos(lam), rad * Math.sin(lat), rad * cl * Math.sin(lam));
 }
 const BEND_GLSL = `
-  uniform vec3 uPlanetC; uniform float uPlanetR; uniform float uBend;
+  uniform float uPlanetR; uniform float uBend;
   vec3 bendPos(vec3 p) {
     if (uBend < 0.5) return p;
-    float rH = sqrt(p.x * p.x + p.z * p.z);
-    if (rH < 0.0001) return p;
-    float phi = rH / uPlanetR;
-    float s = sin(phi); float c = cos(phi);
+    float lam = p.x / uPlanetR;
+    float lat = p.z / uPlanetR;
     float rad = uPlanetR + p.y;
-    return uPlanetC + vec3(rad * s * (p.x / rH), rad * c, rad * s * (p.z / rH));
+    float cl = cos(lat);
+    return vec3(rad * cl * cos(lam), rad * sin(lat), rad * cl * sin(lam));
   }
   mat3 bendFrame(vec3 p) {
-    float rH = sqrt(p.x * p.x + p.z * p.z);
-    vec3 dirH = rH > 0.0001 ? vec3(p.x / rH, 0.0, p.z / rH) : vec3(1.0, 0.0, 0.0);
-    float phi = rH / uPlanetR;
-    float s = sin(phi); float c = cos(phi);
-    return mat3(vec3(c * dirH.x, -s, c * dirH.z),
-                vec3(s * dirH.x, c, s * dirH.z),
-                vec3(-dirH.z, 0.0, dirH.x));
+    float lam = p.x / uPlanetR; float lat = p.z / uPlanetR;
+    return mat3(vec3(-sin(lam), 0.0, cos(lam)),
+                vec3(cos(lat) * cos(lam), sin(lat), cos(lat) * sin(lam)),
+                vec3(-sin(lat) * cos(lam), cos(lat), -sin(lat) * sin(lam)));
   }
   vec3 bendPosN(vec3 p, vec3 n) { return bendFrame(p) * n; }
 `;
 function bendUniforms() {
-  return { uPlanetC: { value: BEND.C }, uPlanetR: { value: BEND.R }, uBend: { value: 1 } };
+  return { uPlanetR: { value: BEND.R }, uBend: { value: 1 } };
 }
 
 /* ---- painterly toon surface (shared by hulls, towers, deck, enemies) ---- */
@@ -795,108 +796,106 @@ const TEX = {};
 })();
 
 /* ===== 04_buildings.js ===== */
-/* INKFALL 04_buildings.js - Avalon Yard: ring deck, reactor core, pads, gate, asteroids */
+/* INKFALL 04_buildings.js - Avalon Yard: equatorial belt deck, twin pad rows, gate, core */
 'use strict';
 const BOARD = {
-  R_OUT: 26, R_IN: 11, LANE_R: 18.5, LANE_Y: 2.2,
-  PADS: 18, PAD_R1: 14.5, PAD_R2: 21.5,
-  CORE_HP: 20, GATE_ANG: 0
+  R: BEND.R, LEN: BEND_LEN,
+  LANE_Y: 2.2,
+  GATE_X: 2, CORE_X: 5, CORE_Z: 13.5,
+  PAD_DX: BEND_LEN / 20, PAD_Z: [-7.2, 7.2],
+  CORE_HP: 20
 };
 function buildYard(scene) {
   const g = new THREE.Group();
-  /* --- planet globe under the bent battle cap (painterly toon ball) --- */
+  /* --- planet globe under the belt (painterly toon ball, real geometry) --- */
   const globeMat = makeToon({ map: TEX.planet(), key: 0xfff0d8, ambient: 0x5a7a85, specAmt: 0.25, rim: 0x37e8c8, rimPow: 2.8, fog: 0.002, bend: 0 });
   const globe = new THREE.Mesh(new THREE.SphereGeometry(BEND.R - 0.2, 48, 32), globeMat);
-  globe.position.copy(BEND.C);
   globe.frustumCulled = false;
   g.add(globe);
-  /* thin atmosphere rim (additive fresnel shell, no bend: real sphere) */
+  /* thin atmosphere rim (additive fresnel shell) */
   const atmoMat = new THREE.ShaderMaterial({
     uniforms: Object.assign({ uColor: { value: new THREE.Color(0x35e0cf) } }, bendUniforms()),
     vertexShader: `varying vec3 vN; void main(){ vN = normalize(mat3(viewMatrix * modelMatrix) * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
     fragmentShader: `uniform vec3 uColor; varying vec3 vN;
-      void main(){ float fr = pow(1.0 - abs(vN.z), 3.0); gl_FragColor = vec4(uColor, fr * 0.55); }`,
+      void main(){ float fr = pow(1.0 - abs(vN.z), 3.0); gl_FragColor = vec4(uColor, fr * 0.5); }`,
     side: THREE.BackSide, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
   });
   atmoMat.uniforms.uBend.value = 0;
   const atmo = new THREE.Mesh(new THREE.SphereGeometry(BEND.R + 0.6, 40, 24), atmoMat);
-  atmo.position.copy(BEND.C);
   atmo.frustumCulled = false;
   g.add(atmo);
   const deckTex = TEX.deck();
-  /* --- deck ring top --- */
-  const ringGeo = new THREE.RingGeometry(BOARD.R_IN, BOARD.R_OUT, 48, 1);
-  ringGeo.rotateX(-Math.PI / 2);
-  const dm = makeToon({ map: deckTex, key: 0xffe9c4, ambient: 0x6d81a0, fog: 0.008 });
-  dm.userData.uFogDense.value = 0.009;
-  const deck = new THREE.Mesh(ringGeo, dm);
-  deck.position.y = 0;
-  g.add(deck);
-
-  /* --- deck rim and inner wall --- */
-  const wallMat = makeToon({ color: 0x39445a, key: 0xffefd0, ambient: 0x6a80a3 });
-  const rim = new THREE.Mesh(new THREE.CylinderGeometry(BOARD.R_OUT + 0.6, BOARD.R_OUT + 0.6, 2.2, 48, 1, true), wallMat);
-  rim.position.y = -1.1; g.add(rim);
-  const rimIn = new THREE.Mesh(new THREE.CylinderGeometry(BOARD.R_IN - 0.4, BOARD.R_IN - 0.4, 2.2, 48, 1, true), wallMat);
-  rimIn.position.y = -1.1; g.add(rimIn);
-
-  /* --- orange warning lamps along outer rail (reference homage) --- */
+  /* --- deck: REAL sphere band around the whole equator (no seams, no z-fight) --- */
+  const bandMat = makeToon({ map: deckTex, key: 0xffe9c4, ambient: 0x6d81a0, fog: 0.008, bend: 0, side: THREE.DoubleSide });
+  const band = new THREE.Mesh(new THREE.SphereGeometry(BEND.R + 0.03, 120, 8, 0, Math.PI * 2, Math.PI / 2 - 0.47, 0.94), bandMat);
+  band.frustumCulled = false;
+  g.add(band);
+  /* --- belt rims: real torus rails at the band edges (lat +-0.47) --- */
+  const rimMat = makeToon({ color: 0x39445a, key: 0xffefd0, ambient: 0x6a80a3, bend: 0 });
+  for (const sg of [1, -1]) {
+    const y = BEND.R * Math.sin(0.47 * sg);
+    const rr = BEND.R * Math.cos(0.47);
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(rr + 0.25, 0.5, 8, 140), rimMat);
+    rim.position.y = y;
+    g.add(rim);
+  }
+  /* --- orange warning lamps along both rails (reference homage) --- */
   const lampMat = makeToon({ color: 0xff7a2e, emissive: 0xff7a2e, glow: 2.4, rim: 0xffb36e, key: 0xfff2dd, specAmt: 0.1 });
   const lampGeo = new THREE.BoxGeometry(0.5, 0.42, 0.9);
   const lamps = [];
-  for (let i = 0; i < 34; i++) {
-    const a = (i / 34) * TAU;
-    const lm = new THREE.Mesh(lampGeo, lampMat);
-    lm.position.set(Math.cos(a) * (BOARD.R_OUT + 0.62), 0.28, Math.sin(a) * (BOARD.R_OUT + 0.62));
-    lm.lookAt(0, 0.28, 0); lm.rotateY(Math.PI / 2);
-    g.add(lm); lamps.push(lm);
+  const N_LAMP = 36;
+  for (let i = 0; i < N_LAMP; i++) {
+    for (const sg of [1, -1]) {
+      const a = (i / N_LAMP) * TAU;
+      const y = BEND.R * Math.sin(0.47 * sg);
+      const rr = BEND.R * Math.cos(0.47) + 0.6;
+      const lm = new THREE.Mesh(lampGeo, lampMat);
+      lm.position.set(Math.cos(a) * rr, y + 0.2, Math.sin(a) * rr);
+      lm.lookAt(0, y, 0); lm.rotateY(Math.PI / 2);
+      g.add(lm); lamps.push(lm);
+    }
   }
-
-  /* --- reactor core: pedestal + floating octahedron crystal --- */
-  const ped = new THREE.Mesh(new THREE.CylinderGeometry(7.2, 8.6, 2.0, 12), makeToon({ color: 0x333c4e, key: 0xffe9c4, ambient: 0x5c7192 }));
-  ped.position.y = 1.0; g.add(ped);
-  const ped2 = new THREE.Mesh(new THREE.CylinderGeometry(4.6, 5.6, 1.6, 8), makeToon({ color: 0x273043, key: 0xffe9c4, ambient: 0x55688a }));
-  ped2.position.y = 2.6; g.add(ped2);
-  const coreMat = makeToon({ color: 0x4fd8d0, emissive: 0x2bd0c8, glow: 2.6, key: 0xeafffa, ambient: 0x2b7c88, rim: 0x9ffff2, fog: 0.006 });
-  const core = new THREE.Mesh(new THREE.OctahedronGeometry(3.4, 0), coreMat);
-  core.position.y = 7.0; g.add(core);
-  const coreRing = new THREE.Mesh(new THREE.TorusGeometry(4.6, 0.22, 8, 40), makeToon({ color: 0x1c5a60, emissive: 0x35e0cf, glow: 1.2, key: 0xccfff8, ambient: 0x1e4a50 }));
-  coreRing.position.y = 7.0; coreRing.rotation.x = Math.PI / 2 - 0.28; g.add(coreRing);
-  const coreGlow = makeGlowSprite(0x2fe8dc, 14, 0.5);
-  coreGlow.position.y = 7.0; g.add(coreGlow);
-  const coreHalo = makeGlowSprite(0xffffff, 5.2, 0.22);
-  coreHalo.position.y = 7.0; g.add(coreHalo);
-
-  /* --- hardpoint pads (hexagon plates) --- */
+  /* --- twin hardpoint pad rows flanking the lane on BOTH sides (40 pads) --- */
   const padMat = makeToon({ color: 0x3b4555, key: 0xffe9c4, ambient: 0x60778f, specAmt: 0.2 });
   const padEdgeMat = makeToon({ color: 0x272f3d, key: 0xffe9c4, ambient: 0x4d5f7a });
   const pads = [];
-  for (let i = 0; i < BOARD.PADS; i++) {
-    const ang = (i / BOARD.PADS) * TAU;
-    const r = (i % 2 === 0) ? BOARD.PAD_R1 : BOARD.PAD_R2;
-    const px = Math.cos(ang) * r, pz = Math.sin(ang) * r;
-    const hex = new THREE.Mesh(new THREE.CylinderGeometry(2.05, 2.3, 0.5, 6), padMat);
-    hex.position.set(px, 0.25, pz);
-    g.add(hex);
-    const edge = new THREE.Mesh(new THREE.CylinderGeometry(2.45, 2.6, 0.34, 6), padEdgeMat);
-    edge.position.set(px, 0.12, pz);
-    g.add(edge);
-    pads.push({ i, ang, r, pos: new THREE.Vector3(px, 0.6, pz), occupied: null, edge, hex });
+  for (let i = 0; i < 20; i++) {
+    const x = BOARD.GATE_X + (i + 0.5) * BOARD.PAD_DX + 1.2;
+    for (let j = 0; j < 2; j++) {
+      const z = BOARD.PAD_Z[j];
+      const hex = new THREE.Mesh(new THREE.CylinderGeometry(2.05, 2.3, 0.5, 6), padMat);
+      hex.position.set(x, 0.25, z);
+      g.add(hex);
+      const edge = new THREE.Mesh(new THREE.CylinderGeometry(2.45, 2.6, 0.34, 6), padEdgeMat);
+      edge.position.set(x, 0.12, z);
+      g.add(edge);
+      pads.push({ i: pads.length, x, z, r: Math.abs(z), ang: ((x / BOARD.LEN) * TAU), pos: new THREE.Vector3(x, 0.6, z), occupied: null, edge, hex });
+    }
   }
-
-  /* --- approach gate at angle 0 --- */
-  const gy = 4.6;
+  /* --- approach gate arch over the lane at the prime meridian --- */
   const gp = makeToon({ color: 0x3d4759, key: 0xffe9c4, ambient: 0x62799b });
   const pylonGeo = new THREE.BoxGeometry(1.8, 9, 1.8);
-  const p1 = new THREE.Mesh(pylonGeo, gp); p1.position.set(20, gy, 3.0); g.add(p1);
-  const p2 = new THREE.Mesh(pylonGeo, gp); p2.position.set(20, gy, -3.0); g.add(p2);
-  const barGeo = new THREE.BoxGeometry(1.6, 1.8, 7.4);
-  const bar = new THREE.Mesh(barGeo, gp); bar.position.set(20, gy + 4.6, 0); g.add(bar);
+  const p1 = new THREE.Mesh(pylonGeo, gp); p1.position.set(BOARD.GATE_X, 4.6, -5.0); g.add(p1);
+  const p2 = new THREE.Mesh(pylonGeo, gp); p2.position.set(BOARD.GATE_X, 4.6, 5.0); g.add(p2);
+  const bar = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.8, 11.8), gp); bar.position.set(BOARD.GATE_X, 9.4, 0); g.add(bar);
   const glowStripMat = makeToon({ color: 0xff7a2e, emissive: 0xff7a2e, glow: 2.2 });
-  const gl1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 6.4), glowStripMat); gl1.position.set(20, gy + 3.6, 0); g.add(gl1);
-  const gateGlow = makeGlowSprite(0xffa050, 5, 0.28); gateGlow.position.set(20, gy, 0); g.add(gateGlow);
-
-  /* --- asteroids (painterly rocks, parallax) --- */
+  const gl1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 10.4), glowStripMat); gl1.position.set(BOARD.GATE_X, 8.4, 0); g.add(gl1);
+  const gateGlow = makeGlowSprite(0xffa050, 5, 0.28); gateGlow.position.set(BOARD.GATE_X, 4.6, 0); g.add(gateGlow);
+  /* --- reactor core station on the north rim just past the seam --- */
+  const ped = new THREE.Mesh(new THREE.CylinderGeometry(4.6, 5.8, 2.0, 10), makeToon({ color: 0x333c4e, key: 0xffe9c4, ambient: 0x5c7192 }));
+  ped.position.set(BOARD.CORE_X, 1.0, BOARD.CORE_Z); g.add(ped);
+  const ped2 = new THREE.Mesh(new THREE.CylinderGeometry(2.9, 3.6, 1.6, 8), makeToon({ color: 0x273043, key: 0xffe9c4, ambient: 0x55688a }));
+  ped2.position.set(BOARD.CORE_X, 2.6, BOARD.CORE_Z); g.add(ped2);
+  const coreMat = makeToon({ color: 0x4fd8d0, emissive: 0x2bd0c8, glow: 2.6, key: 0xeafffa, ambient: 0x2b7c88, rim: 0x9ffff2, fog: 0.006 });
+  const core = new THREE.Mesh(new THREE.OctahedronGeometry(3.0, 0), coreMat);
+  core.position.set(BOARD.CORE_X, 6.4, BOARD.CORE_Z); g.add(core);
+  const coreRing = new THREE.Mesh(new THREE.TorusGeometry(4.2, 0.22, 8, 40), makeToon({ color: 0x1c5a60, emissive: 0x35e0cf, glow: 1.2, key: 0xccfff8, ambient: 0x1e4a50 }));
+  coreRing.position.set(BOARD.CORE_X, 6.4, BOARD.CORE_Z); coreRing.rotation.x = Math.PI / 2 - 0.28; g.add(coreRing);
+  const coreGlow = makeGlowSprite(0x2fe8dc, 12, 0.42);
+  coreGlow.position.set(BOARD.CORE_X, 6.4, BOARD.CORE_Z); g.add(coreGlow);
+  const coreHalo = makeGlowSprite(0xffffff, 4.8, 0.2);
+  coreHalo.position.set(BOARD.CORE_X, 6.4, BOARD.CORE_Z); g.add(coreHalo);
+  /* --- asteroids (painterly rocks, orbit debris around the belt) --- */
   const rockMat1 = makeToon({ color: 0x4d5866, key: 0xffefd0, ambient: 0x607890, fog: 0.006 });
   const rockMat2 = makeToon({ color: 0x3f4a62, key: 0xffefd0, ambient: 0x58718f, fog: 0.006 });
   const rng = rng32(4242);
@@ -908,8 +907,8 @@ function buildYard(scene) {
     }
     geo.computeVertexNormals();
     const m = new THREE.Mesh(geo, mat);
-    const a = rng() * TAU, rr = 34 + rng() * 55, y = 2 + rng() * 26;
-    m.position.set(Math.cos(a) * rr, y, Math.sin(a) * rr);
+    const x = -30 + rng() * (BOARD.LEN + 60), y = 4 + rng() * 24, z = -20 + rng() * 40;
+    m.position.set(x, y, z);
     m.rotation.set(rng() * 3, rng() * 3, rng() * 3);
     return m;
   }
@@ -918,37 +917,27 @@ function buildYard(scene) {
     const rk = asteroid(0.9 + rng() * rng() * 2.6, i % 2 ? rockMat1 : rockMat2);
     g.add(rk); rocks.push(rk);
   }
-
-  /* --- painterly nebula wash cards (Everspace-like depth layers) --- */
+  /* --- painterly nebula wash cards (world space, unbent) --- */
   const wash = [
     { p: [150, 40, -280], s: 330, c: 0x2fae7f, o: 0.16 },
     { p: [-260, 60, -90], s: 380, c: 0x1d6a55, o: 0.13 },
     { p: [-140, -50, 250], s: 300, c: 0x3fd0a0, o: 0.10 }
   ];
   for (const w of wash) {
-    const spr = makeGlowSprite(w.c, w.s, w.o, null, 0); /* nebula washes stay world-space (unbent) */
+    const spr = makeGlowSprite(w.c, w.s, w.o, null, 0);
     spr.position.set(w.p[0], w.p[1], w.p[2]);
     spr.frustumCulled = false;
     g.add(spr);
   }
-
-  /* --- subtle under-deck glow ring (Everspace soft wash) --- */
-  const deckGlow = makeGlowSprite(0x2f9e77, 56, 0.16);
-  deckGlow.position.y = -0.4; g.add(deckGlow);
-
   scene.add(g);
   return {
     group: g, pads, core, coreRing, coreGlow, coreHalo, lamps, rocks,
-    deckMat: dm, coreMat, update(t) {
+    deckMat: bandMat, coreMat, update(t) {
       core.rotation.y += 0.0032; core.rotation.x = Math.sin(t * 0.4) * 0.12;
       coreRing.rotation.z += 0.006;
       const pulse = 1.4 + Math.sin(t * 2.1) * 0.45;
       coreMat.userData.uEmissiveGlow.value = pulse;
-      coreGlow.material.opacity = 0.4 + Math.sin(t * 2.1) * 0.12;
-      for (let i = 0; i < lamps.length; i++) {
-        const lm = lamps[i];
-        lm.material = lm.material; /* shared, skip per-lamp work */
-      }
+      coreGlow.material.opacity = 0.36 + Math.sin(t * 2.1) * 0.1;
       for (let i = 0; i < rocks.length; i++) {
         rocks[i].rotation.x += 0.0004; rocks[i].rotation.y += 0.0006;
       }
@@ -961,27 +950,27 @@ function buildYard(scene) {
 'use strict';
 const TOWER_DEFS = {
   rail: {
-    name: 'RAIL LANCE', short: 'RAIL', cost: 90, up: 54, range: 17, dmg: 52, rate: 0.9,
+    name: 'RAIL LANCE', short: 'RAIL', cost: 90, up: 54, range: 19, dmg: 60, rate: 0.9,
     windup: 0.30, splash: 0, desc: 'Charged hyper-rail, single heavy shot.', color: 0x3fe0d8
   },
   plasma: {
-    name: 'PLASMA PELT', short: 'PLASMA', cost: 70, up: 42, range: 13.5, dmg: 28, rate: 1.1,
+    name: 'PLASMA PELT', short: 'PLASMA', cost: 70, up: 42, range: 14, dmg: 32, rate: 1.1,
     windup: 0.16, splash: 2.4, desc: 'Green plasma balls, small area burst.', color: 0x8dff57
   },
   tesla: {
-    name: 'TESLA ZEPHYR', short: 'TESLA', cost: 85, up: 51, range: 11.5, dmg: 22, rate: 1.4,
+    name: 'TESLA ZEPHYR', short: 'TESLA', cost: 85, up: 51, range: 12, dmg: 26, rate: 1.4,
     windup: 0.10, chain: 3, desc: 'Arc lightning jumps through up to 3 foes.', color: 0x6fe0ff
   },
   forge: {
-    name: 'FORGE MORTAR', short: 'FORGE', cost: 100, up: 60, range: 19, dmg: 36, rate: 0.7,
+    name: 'FORGE MORTAR', short: 'FORGE', cost: 100, up: 60, range: 20, dmg: 42, rate: 0.7,
     windup: 0.34, splash: 3.6, desc: 'Lobbed ember shell, huge splat.', color: 0xff7a2e
   },
   beacon: {
-    name: 'BEACON SENTINEL', short: 'BEACON', cost: 60, up: 36, range: 10, dmg: 2, rate: 1.2,
+    name: 'BEACON SENTINEL', short: 'BEACON', cost: 60, up: 36, range: 11, dmg: 2, rate: 1.2,
     windup: 0, slow: 0.35, aura: true, desc: 'Slows foes in range, sonar ping.', color: 0x59b8ff
   },
   saw: {
-    name: 'SAW KITE', short: 'SAW', cost: 75, up: 45, range: 10.5, dmg: 4.5, rate: 6.0,
+    name: 'SAW KITE', short: 'SAW', cost: 75, up: 45, range: 11, dmg: 5.2, rate: 6.0,
     windup: 0.05, desc: 'Rapid twin tracers, spinning blade rotor.', color: 0xffd54a
   }
 };
@@ -1106,17 +1095,14 @@ function TOWERS(scene, fx, snd) {
      The rendered world is bent; aim in flat space must be rotated by the pad's
      surface frame so barrels point where the beams actually curve to. */
   function padFrameInv(pad) {
-    const rH = Math.sqrt(pad.pos.x * pad.pos.x + pad.pos.z * pad.pos.z) || 0.0001;
-    const phi = rH / BEND.R;
-    const s = Math.sin(phi), c = Math.cos(phi);
-    const dhx = pad.pos.x / rH, dhz = pad.pos.z / rH;
-    /* frame F maps flat dir -> rendered dir at the pad: columns [south, radial, east].
-       We need F^T (rendered -> flat) for aim correction. */
-    /* F^T in THREE row-major constructor order (rows of F^T) */
+    /* flat strip pad -> lat/lon surface frame; F^T in THREE row-major order */
+    const lam = pad.pos.x / BEND.R, lat = pad.pos.z / BEND.R;
+    const sl = Math.sin(lam), cl = Math.cos(lam);
+    const sp = Math.sin(lat), cp = Math.cos(lat);
     return new THREE.Matrix3(
-      c * dhx, -s, c * dhz,
-      s * dhx, c, s * dhz,
-      -dhz, 0, dhx
+      -sl, 0, cl,
+      cp * cl, sp, cp * sl,
+      -sp * cl, cp, -sp * sl
     );
   }
   function build(type, pad) {
@@ -1231,11 +1217,11 @@ function TOWERS(scene, fx, snd) {
 /* INKFALL 06_enemies.js - the Nihil fleet: 5 enemy types with rigs, paths, shields */
 'use strict';
 const ENEMY_DEFS = {
-  gnat:    { hp: 55,  speed: 7.4, dmg: 2,  value: 12, laps: 1.0, scale: 1.7, desc: 'Fast weaver dart' },
-  borer:   { hp: 170, speed: 3.3, dmg: 4,  value: 30, armor: 4, laps: 1.25, scale: 1.9, desc: 'Armored drill' },
-  vaal:    { hp: 95,  speed: 5.6, dmg: 3,  value: 24, shield: 65, shRecharge: 9, shDelay: 2.5, laps: 1.0, scale: 1.7, desc: 'Gyro drone' },
-  gullwing:{ hp: 380, speed: 4.4, dmg: 7,  value: 55, laps: 1.5, scale: 2.2, desc: 'Frigate, splits on death' },
-  carrion: { hp: 1900, speed: 1.7, dmg: 12, value: 200, shield: 300, shRecharge: 6, shDelay: 3.5, laps: 1.0, scale: 4.3, desc: 'Boss bioship', boss: true },
+  gnat:    { hp: 55,  speed: 11.6, dmg: 2,  value: 12, laps: 1.0, scale: 1.7, desc: 'Fast weaver dart' },
+  borer:   { hp: 170, speed: 5.3, dmg: 4,  value: 30, armor: 4, laps: 1.2, scale: 1.9, desc: 'Armored drill' },
+  vaal:    { hp: 95,  speed: 8.9, dmg: 3,  value: 24, shield: 65, shRecharge: 9, shDelay: 2.5, laps: 1.0, scale: 1.7, desc: 'Gyro drone' },
+  gullwing: { hp: 380, speed: 7.0, dmg: 7,  value: 55, laps: 1.5, scale: 2.2, desc: 'Frigate, splits on death' },
+  carrion: { hp: 1900, speed: 2.9, dmg: 12, value: 200, shield: 300, shRecharge: 6, shDelay: 3.5, laps: 1.0, scale: 3.1, boss: true, desc: 'Boss bioship' },
   brood:   { hp: 640, speed: 2.6, dmg: 8,  value: 90, laps: 0.7, scale: 2.7, desc: 'Carrion split' }
 };
 const E_PAL = {
@@ -1407,9 +1393,10 @@ function ENEMIES(scene, fx, snd, yard) {
     }
   };
   /* ---------- enemy instance ---------- */
-  const APPROACH = 26;
-  const SPAWN = new THREE.Vector3(Math.cos(-0.42) * 46, 5.2, Math.sin(-0.42) * 46);
-  const GATE = new THREE.Vector3(20, 4.0, 0);
+  const APPROACH = 14;
+  const SPAWN = new THREE.Vector3(-12, 6.5, 0);
+  const GATE = new THREE.Vector3(BOARD.GATE_X, 4.0, 0);
+  const CORE_T = new THREE.Vector3(BOARD.GATE_X + BOARD.LEN + 2.5, 0.9, BOARD.CORE_Z);
   function build(type, wave) {
     const def = ENEMY_DEFS[type];
     const rig = rigs[type]();
@@ -1470,11 +1457,9 @@ function ENEMIES(scene, fx, snd, yard) {
           ax = SPAWN.x + (GATE.x - SPAWN.x) * k; az = SPAWN.z + (GATE.z - SPAWN.z) * k;
           ay = SPAWN.y + (GATE.y - SPAWN.y) * k;
         } else {
-          const R = BOARD.LANE_R;
-          const th2 = (ahead - APPROACH) / R;
-          const w2 = Math.sin(th2 * this.weaveF + this.phase) * this.weave;
-          const rr2 = R + w2;
-          ax = Math.cos(th2) * rr2; az = Math.sin(th2) * rr2;
+          const lxA = GATE.x + (ahead - APPROACH);
+          ax = lxA;
+          az = Math.sin(lxA * 0.42 + this.phase) * this.weave;
           ay = BOARD.LANE_Y + Math.sin(ahead * 0.9 + this.phase) * 0.42;
         }
         if (this.u < APPROACH) {
@@ -1483,26 +1468,21 @@ function ENEMIES(scene, fx, snd, yard) {
           this.grp.lookAt(ax, ay, az);
           this.grp.rotation.z = 0;
         } else {
-          const R = BOARD.LANE_R;
-          const orbit = (this.u - APPROACH);
-          const theta = orbit / R;
-          const weave = Math.sin(theta * this.weaveF + this.phase) * this.weave;
-          const rr = R + weave;
-          let px = Math.cos(theta) * rr;
-          let pz = Math.sin(theta) * rr;
-          const py = BOARD.LANE_Y + Math.sin(this.u * 0.9 + this.phase) * 0.42;
-          if (theta >= TAU * this.laps) {
+          const lx = GATE.x + (this.u - APPROACH);
+          const laneLen = BOARD.LEN * (this.laps || 1);
+          if (this.u - APPROACH >= laneLen) {
+            /* dive: veer north off the lane to the core station */
             this.diveK = Math.min(1, this.diveK + dt * 1.05);
             const kk = smooth(this.diveK);
-            b.set(lerp(px, 0, kk), lerp(py, 5.2, kk), lerp(pz, 0, kk));
-            this.grp.lookAt(0, 2.0, 0);
+            b.set(lerp(lx, CORE_T.x, kk), lerp(BOARD.LANE_Y, 1.2, kk), lerp(Math.sin(lx * 0.42 + this.phase) * this.weave, CORE_T.z, kk));
+            this.grp.lookAt(CORE_T.x, 2.0, CORE_T.z);
             this.grp.rotation.z = Math.sin(this.diveK * 10) * 0.5 * (1 - this.diveK);
             if (this.diveK >= 1) { game.coreHit(this.def.dmg, this); this.alive = false; this.grp.visible = false; this.marker.visible = false; return; }
           } else {
-            b.set(px, py, pz);
+            b.set(lx, BOARD.LANE_Y + Math.sin(this.u * 0.9 + this.phase) * 0.42, Math.sin(lx * 0.42 + this.phase) * this.weave);
             this.grp.lookAt(ax, ay, az);
             /* bank into the weave (roll follows weave phase) so flight reads 3D */
-            const bankRoll = 0.32 + Math.sin(theta * this.weaveF + this.phase + Math.PI * 0.5) * 0.2;
+            const bankRoll = 0.32 + Math.sin(lx * 0.42 + this.phase + Math.PI * 0.5) * 0.2;
             this.grp.rotation.z = bankRoll * ((this.type === 'carrion' || this.type === 'brood') ? 0.55 : 1);
             this.grp.rotation.x = Math.sin(this.u * 2.1 + this.phase) * 0.07;
           }
@@ -1517,8 +1497,7 @@ function ENEMIES(scene, fx, snd, yard) {
         if (p.thr) { p.thr.scale.setScalar(0.8 + Math.sin(tt * 31 + this.phase) * 0.25); }
         if (this.bodyGlow) { this.bodyGlow.material.opacity = 0.22 + Math.sin(tt * 5 + this.phase) * 0.08; }
         /* ground marker tracks the ship on the deck */
-        const md = Math.sqrt(b.x * b.x + b.z * b.z);
-        this.marker.visible = this.alive && md > BOARD.R_IN + 0.6 && md < BOARD.R_OUT - 0.3;
+        this.marker.visible = this.alive && this.diveK < 0.05;
         if (this.marker.visible) {
           this.marker.position.set(b.x, 0.05, b.z);
           const ms = (this.def.boss || this.type === 'brood') ? 3.6 : 2.1;
@@ -1612,7 +1591,7 @@ const WAVES = [
       { t: 9.0, type: 'borer', n: 4, every: 3.0 },
       { t: 20.0, type: 'gnat', n: 4, every: 1.2 },
       { t: 26.0, type: 'borer', n: 2, every: 2.6 }
-    ], bonus: 80
+    ], bonus: 140
   },
   {
     name: 'WAVE II - SCREECH LINE', sub: 'VAAL GYROS AND A GULLWING VANGUARD',
@@ -1622,7 +1601,7 @@ const WAVES = [
       { t: 14.0, type: 'gullwing', n: 3, every: 4.0 },
       { t: 18.0, type: 'borer', n: 6, every: 2.2 },
       { t: 26.0, type: 'vaal', n: 3, every: 1.8 }
-    ], bonus: 120
+    ], bonus: 190
   },
   {
     name: 'WAVE III - THE CARRION', sub: 'THE BROODMOTHER CARRIES THE FLEET',
@@ -1633,7 +1612,7 @@ const WAVES = [
       { t: 10.0, type: 'borer', n: 6, every: 2.4 },
       { t: 16.0, type: 'gullwing', n: 5, every: 3.2 },
       { t: 30.0, type: 'gullwing', n: 3, every: 2.8 }
-    ], bonus: 200
+    ], bonus: 320
   }
 ];
 function makeWaveController() {
@@ -1714,8 +1693,7 @@ function makeFX(scene, game) {
   }
   const rngS = rng32(2024);
   function splatAt(pos, scale, alpha) {
-    const d = Math.sqrt(pos.x * pos.x + pos.z * pos.z);
-    if (d < BOARD.R_IN + 0.7 || d > BOARD.R_OUT - 0.4) return;
+    if (Math.abs(pos.z) > 14.5) return;
     const m = splats[splatIdx]; splatIdx = (splatIdx + 1) % SPLAT_N;
     m.visible = true;
     m.position.set(pos.x, 0.035 + (splatIdx % 4) * 0.002, pos.z);
@@ -2351,29 +2329,29 @@ function GAME(root) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.1, 900);
   const game = {
-    time: 0, state: 'title', coins: 260, lives: BOARD.CORE_HP, maxLives: BOARD.CORE_HP,
+    time: 0, state: 'title', coins: 400, lives: BOARD.CORE_HP, maxLives: BOARD.CORE_HP,
     kills: 0, wave: 0, freezeT: 0, simSpeed: 1, paused: false, bossActive: false,
     camera: camera, scene: scene, renderer: renderer,
-    camTarget: null, camAng: 0.6, camPitch: 0.42, camDist: 46, camCur: null,
-    focus: new THREE.Vector3(0, 3, 0), combatFocus: new THREE.Vector3(),
+    camTarget: null, camAng: 0.6, camPitch: 0.85, camDist: 46, camCur: null,
+    focus: new THREE.Vector3(0, 6, 0), combatFocus: new THREE.Vector3(),
     shake: 0, lastHitT: 0, selected: null, spawns: 0,
     /* systems set by init */
     yard: null, fx: null, en: null, tw: null, waves: null, cam: null, onRound: null
   };
   /* ---------- camera control ---------- */
   const cam = {
-    auto: true, yaw: 0.6, pitch: 0.5, dist: 38, target: new THREE.Vector3(0, 3, 0),
-    desired: new THREE.Vector3(0, 3, 0),
+    auto: true, yaw: 0.6, pitch: 0.85, dist: 46, target: new THREE.Vector3(0, 6, 0),
+    desired: new THREE.Vector3(0, 6, 0),
     orbitVel: 0.05,
     dragging: false, px: 0, py: 0,
     onDown(x, y) { this.dragging = true; this.px = x; this.py = y; canvas.classList.add('dragging'); },
     onMove(x, y) {
       if (!this.dragging) return;
-      this.yaw -= (x - this.px) * 0.005; this.pitch = clamp(this.pitch + (y - this.py) * 0.004, 0.12, 1.35);
+      this.yaw -= (x - this.px) * 0.005; this.pitch = clamp(this.pitch + (y - this.py) * 0.004, 0.55, 1.38);
       this.px = x; this.py = y;
     },
     onUp() { this.dragging = false; canvas.classList.remove('dragging'); },
-    onWheel(d) { this.dist = clamp(this.dist * (d > 0 ? 1.12 : 0.89), 14, 90); },
+    onWheel(d) { this.dist = clamp(this.dist * (d > 0 ? 1.12 : 0.89), 34, 95); },
     lerpT(l, dt) {
       this.target.x = damp(this.target.x, this.desired.x, l, dt);
       this.target.y = damp(this.target.y, this.desired.y, l, dt);
@@ -2432,7 +2410,7 @@ function GAME(root) {
     let best = null, bestScore = -1e9;
     for (const e of game.en.list) {
       if (!e.alive || e.diveK > 0.2) continue;
-      const d = e.pos.distanceTo(pos);
+      const d = flatDist(e.pos, pos);
       if (d <= range) {
         const score = e.laneDist * 0.35 - e.hp * 0.001 + (1 - d / range) * 2;
         if (score > bestScore) { bestScore = score; best = e; }
@@ -2445,7 +2423,7 @@ function GAME(root) {
     let best = null, bd = 1e9;
     for (const o of game.en.list) {
       if (!o.alive || o === e || o.diveK > 0.5) continue;
-      const d = o.pos.distanceTo(e.pos);
+      const d = flatDist(o.pos, e.pos);
       if (d < 7 && d < bd) { bd = d; best = o; }
     }
     return best;
@@ -2459,7 +2437,7 @@ function GAME(root) {
   function areaHit(pos, radius, dmg, src) {
     for (const e of game.en.list) {
       if (!e.alive) continue;
-      if (e.pos.distanceTo(pos) <= radius) hit(e, dmg, src);
+      if (flatDist(e.pos, pos) <= radius) hit(e, dmg, src);
     }
   }
   function coreHit(dmg, e) {
@@ -2573,7 +2551,7 @@ function GAME(root) {
       if (tw.type !== 'beacon') continue;
       for (const e of game.en.list) {
         if (!e.alive || slowed.has(e)) continue;
-        if (e.pos.distanceTo(tw.group.position) <= tw.def.range) {
+        if (flatDist(e.pos, tw.group.position) <= tw.def.range) {
           slowed.add(e);
           e.slowK = e.slowK || 1;
           e.slowK = clamp(tw.def.slow, 0.3, 0.9);
@@ -2615,27 +2593,34 @@ function GAME(root) {
     mouseNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
     mouseNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(mouseNDC, camera);
-    /* the rendered deck is bent onto a planet: pick via ray-vs-sphere, map back to flat polar */
+    /* rendered deck is the planet belt: ray-vs-sphere, then unwrap to strip arcs */
     const o = raycaster.ray.origin, d = raycaster.ray.direction;
-    const L = o.clone().sub(BEND.C);
     const Rs = BEND.R + 0.06;
+    const L = o.clone();
     const b = L.dot(d), c = L.dot(L) - Rs * Rs;
     const disc = b * b - c;
     if (disc < 0) return null;
     const t0 = -b - Math.sqrt(disc);
     if (!isFinite(t0) || t0 < 0) return null;
-    const n = o.clone().addScaledVector(d, t0).sub(BEND.C).normalize();
-    const phi = Math.acos(clamp(n.y, -1, 1));
+    const n = o.clone().addScaledVector(d, t0).normalize();
+    const lat = Math.asin(clamp(n.y, -1, 1));
     const lam = Math.atan2(n.z, n.x);
-    const rFlat = phi * BEND.R;
-    const ang = ((lam % TAU) + TAU) % TAU;
+    const xF = (((lam % TAU) + TAU) % TAU) / TAU * BOARD.LEN;
+    const zF = lat * BEND.R;
     let best = null, bd = 1e9;
     for (const p of game.yard.pads) {
-      let da = Math.abs(ang - p.ang); da = Math.min(da, TAU - da);
-      const sc = da * 6 + Math.abs(rFlat - p.r) * 0.35;
+      let dx = Math.abs(xF - p.x); dx = Math.min(dx, BOARD.LEN - dx);
+      const dz = Math.abs(zF - p.z);
+      const sc = dx * 0.5 + dz * 0.5;
       if (sc < bd) { bd = sc; best = p; }
     }
-    return (best && bd < 1.8) ? best.i : null;
+    return (best && bd < 2.4) ? best.i : null;
+  }
+  /* flat strip distance with seam wrap (arc distances, not chords) */
+  function flatDist(a, b) {
+    let dx = Math.abs(a.x - b.x); dx = Math.min(dx, BOARD.LEN - dx);
+    const dy = a.y - b.y, dz = a.z - b.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
   }
   function bindInput() {
     canvas.addEventListener('mousedown', (e) => {
@@ -2698,9 +2683,9 @@ function GAME(root) {
         camera.lookAt(t);
       },
       snapR: (dist, fx, fy, fz) => {
-        /* camera along the surface normal of the focus point (radially outside the planet) */
+        /* camera along the surface normal of the focus point (planet centered at origin) */
         const t = new THREE.Vector3(fx || 0, fy || 3, fz || 0);
-        const n = t.clone().sub(BEND.C).normalize();
+        const n = t.clone().normalize();
         game.focus.copy(t); cam.desired.copy(t); cam.target.copy(t);
         game.focusLock = true;
         camera.position.copy(t).addScaledVector(n, dist);
@@ -2721,7 +2706,7 @@ function GAME(root) {
     }
     game.tw.list.length = 0;
     for (const p of game.yard.pads) p.occupied = null;
-    game.coins = 260; game.lives = BOARD.CORE_HP; game.kills = 0; game.wave = 0;
+    game.coins = 400; game.lives = BOARD.CORE_HP; game.kills = 0; game.wave = 0;
     game.state = 'wave'; game.bossActive = false;
     UI.updateCoins(game.coins); UI.updateLives(game.lives);
     SND.ensure(); SND.resume();

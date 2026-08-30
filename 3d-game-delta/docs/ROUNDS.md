@@ -71,6 +71,31 @@ Measured facts: draw calls in the win-run at 15 towers: 654 max; fps 91-92 on He
 - screenshots in tools/: shot_00_title, shot_01_wave1, shot_02_wave2, shot_03_end.
 - Final artifact (v1.1): play.html 1575 KB, single file, file:// double-click, no network.
 
+## ROUND 8 - PLANET-WIDE BELT + TWO-SIDED DEFENSE + GLITCH FIXES (2026-08-29)
+USER: "still glitchy"; "tower defense involves two sides"; "make it span the entire planet".
+REBUILD (bend v2): flat strip -> EQUATORIAL BELT around the whole planet (flat x = arc
+length along the equator, z = latitude, y = radial). The deck is now a REAL sphere band
+(no seams/z-fighting); props still bend per-vertex (identical math, exact fit).
+- Full-lap path: enemies spawn in space, fly through the gate arch, circle the ENTIRE
+  planet (213.6 units), then veer north to the core station at the prime meridian.
+- TWO SIDES: twin 20-pad rows flanking the lane (z +-7.2, 40 pads total) - towers on
+  both sides of the path, classic TD form.
+- GLITCH ROOT CAUSE #1 (user-facing): an invisible end-screen panel covered the canvas -
+  clicks landed on the overlay, never the game (pad menu never opened for real mice).
+  Fixed with a pointer-events contract: ONLY interactive chrome captures clicks;
+  screens now use visibility (blocks hit-testing) instead of opacity alone.
+- GLITCH ROOT CAUSE #2: flat-plate deck had a wrap seam (z-fighting phantom); replaced
+  by a real latitudinal sphere band.
+- Targeting/picking rebuilt for the wrap: ray-vs-sphere -> (lambda, lat) -> strip pad
+  index; flatDist() wraps arcs so towers shoot around the corner, never through the
+  planet; tower aim compensated via the lat/lon pad frame.
+- Balance for the long belt: start coins 400, wave bonuses 140/190/320, tower DPS +15%,
+  speeds +~60% (lap ~18s for gnats).
+Verified: BOOTED 0 errors; real CDP click -> menu -> RAIL build (400->310) -> sell (378);
+5/5 enemy types 2-frame motion proofs on the belt; WIN 119 kills / lives 4 / 0 errors /
+140 fps; wave-1 survival with a 6-tower spread; zero-error long run. Published as BUILD
+v1.4 at https://majieddd.github.io/3d-game-delta/.
+
 ## ROUND 7 - PLANET BATTLEFIELD + FLIGHT FACING (user-requested, 2026-08-29)
 USER REPORT: enemies sometimes fly backwards/sideways; wants the flat disk turned into a
 planet (fight on a curved section, going around it).
