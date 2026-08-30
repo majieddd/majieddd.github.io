@@ -82,7 +82,7 @@ window.addEventListener('error', function (e) {
       <div class="sub">SIEGE OF THE AVALON YARD</div>
       <div class="lede">The yard is half-built and the Nihil are coming. Build the six turrets
       of the Avalon line, hold the ring, and let every battle paint its own story in ink.</div>
-      <div class="sub" style="margin-top:14px;font-size:11px;color:#7d94ac">BUILD v1.2</div>
+      <div class="sub" style="margin-top:14px;font-size:11px;color:#7d94ac">BUILD v1.3</div>
       <button class="btn" id="btn-start" onclick="window.__bootStart && window.__bootStart()">IGNITE THE CORE</button>
     </div>
   </div>
@@ -217,14 +217,52 @@ function lerpVec3(v, target, l, dt) { v.x = damp(v.x, target.x, l, dt); v.y = da
 'use strict';
 const SH = {};
 const _MATS = []; /* registry of materials needing camera-position sync */
+/* ---- planet bend: flat (x,z) -> colatitude on the planet; +Y becomes radial offset.
+   Uniform objects are SHARED, so one update drives every program. ---- */
+const BEND = { C: new THREE.Vector3(0, -33.8, 0), R: 34 };
+function bendToWorld(p) {
+  const rH = Math.sqrt(p.x * p.x + p.z * p.z);
+  if (rH < 1e-4) return new THREE.Vector3(p.x, p.y, p.z);
+  const phi = rH / BEND.R, s = Math.sin(phi), c = Math.cos(phi);
+  const rad = BEND.R + p.y;
+  return new THREE.Vector3(BEND.C.x + rad * s * (p.x / rH), BEND.C.y + rad * c, BEND.C.z + rad * s * (p.z / rH));
+}
+const BEND_GLSL = `
+  uniform vec3 uPlanetC; uniform float uPlanetR; uniform float uBend;
+  vec3 bendPos(vec3 p) {
+    if (uBend < 0.5) return p;
+    float rH = sqrt(p.x * p.x + p.z * p.z);
+    if (rH < 0.0001) return p;
+    float phi = rH / uPlanetR;
+    float s = sin(phi); float c = cos(phi);
+    float rad = uPlanetR + p.y;
+    return uPlanetC + vec3(rad * s * (p.x / rH), rad * c, rad * s * (p.z / rH));
+  }
+  mat3 bendFrame(vec3 p) {
+    float rH = sqrt(p.x * p.x + p.z * p.z);
+    vec3 dirH = rH > 0.0001 ? vec3(p.x / rH, 0.0, p.z / rH) : vec3(1.0, 0.0, 0.0);
+    float phi = rH / uPlanetR;
+    float s = sin(phi); float c = cos(phi);
+    return mat3(vec3(c * dirH.x, -s, c * dirH.z),
+                vec3(s * dirH.x, c, s * dirH.z),
+                vec3(-dirH.z, 0.0, dirH.x));
+  }
+  vec3 bendPosN(vec3 p, vec3 n) { return bendFrame(p) * n; }
+`;
+function bendUniforms() {
+  return { uPlanetC: { value: BEND.C }, uPlanetR: { value: BEND.R }, uBend: { value: 1 } };
+}
 
 /* ---- painterly toon surface (shared by hulls, towers, deck, enemies) ---- */
 const TOON_VERT = `
+  ${BEND_GLSL}
   varying vec3 vN; varying vec3 vWorld; varying vec2 vUv;
   void main(){
     vUv = uv;
     vN = normalize(mat3(modelMatrix) * normal);
     vec4 wp = modelMatrix * vec4(position, 1.0);
+    wp.xyz = bendPos(wp.xyz);
+    vN = bendPosN(wp.xyz, vN);
     vWorld = wp.xyz;
     gl_Position = projectionMatrix * viewMatrix * wp;
   }
@@ -289,10 +327,12 @@ function makeToon(opts) {
     uFogDense: { value: opts.fog !== undefined ? opts.fog : 0.011 }
   };
   const m = new THREE.ShaderMaterial({
-    uniforms: u, vertexShader: TOON_VERT, fragmentShader: TOON_FRAG,
+    uniforms: Object.assign({}, u, bendUniforms()),
+    vertexShader: TOON_VERT, fragmentShader: TOON_FRAG,
     side: opts.side || THREE.FrontSide, transparent: !!opts.transparent
   });
   m.userData = u;
+  m.uniforms.uBend.value = opts.bend !== undefined ? opts.bend : 1;
   _MATS.push(m);
   return m;
 }
@@ -300,10 +340,13 @@ function applyToonCam(mat, camPos) { if (mat.userData && mat.userData.uCamPos) m
 
 /* ---- inverted-ink outline shell ---- */
 const OUTLINE_VERT = `
+  ${BEND_GLSL}
   varying vec3 vN; varying vec3 vWorld; varying vec2 vUv;
   void main(){
     vUv = uv; vN = mat3(modelMatrix) * normal;
     vec4 wp = modelMatrix * vec4(position, 1.0);
+    wp.xyz = bendPos(wp.xyz);
+    vN = bendPosN(wp.xyz, vN);
     vWorld = wp.xyz;
     gl_Position = projectionMatrix * viewMatrix * wp;
   }
@@ -327,8 +370,9 @@ function makeOutline(opts) {
     uFogColor: { value: new THREE.Color(opts.fogColor || 0x0a2622) },
     uFogDense: { value: opts.fog !== undefined ? opts.fog : 0.011 }
   };
-  const m = new THREE.ShaderMaterial({ uniforms: u, vertexShader: OUTLINE_VERT, fragmentShader: OUTLINE_FRAG, side: THREE.BackSide });
+  const m = new THREE.ShaderMaterial({ uniforms: Object.assign({}, u, bendUniforms()), vertexShader: OUTLINE_VERT, fragmentShader: OUTLINE_FRAG, side: THREE.BackSide });
   m.userData = u;
+  m.uniforms.uBend.value = opts.bend !== undefined ? opts.bend : 1;
   _MATS.push(m);
   return m;
 }
@@ -406,15 +450,84 @@ function makeGlowTex(size, inner, outer) {
   const tex = new THREE.CanvasTexture(c);
   return tex;
 }
-function makeGlowSprite(color, scale, opacity, tex) {
-  const mat = new THREE.SpriteMaterial({
-    map: tex || makeGlowTex(64), color: new THREE.Color(color),
-    blending: THREE.AdditiveBlending, depthWrite: false, transparent: true,
-    opacity: opacity !== undefined ? opacity : 0.85
+function makeGlowSprite(color, scale, opacity, tex, bend) {
+  /* billboard quad with the planet bend (bend=0 keeps it in world space, e.g. nebula washes) */
+  const mat = new THREE.ShaderMaterial({
+    uniforms: Object.assign({
+      uMap: { value: tex || makeGlowTex(64) },
+      uColor: { value: new THREE.Color(color) },
+      uOpacity: { value: opacity !== undefined ? opacity : 0.85 }
+    }, bendUniforms()),
+    vertexShader: `
+      ${BEND_GLSL}
+      varying vec2 vUv;
+      void main(){
+        vUv = uv;
+        vec4 wp = modelMatrix * vec4(position, 1.0);
+        wp.xyz = bendPos(wp.xyz);
+        float s = length((modelMatrix * vec4(1.0, 0.0, 0.0)).xyz - (modelMatrix * vec4(0.0, 0.0, 0.0)).xyz);
+        vec4 vsC = viewMatrix * wp;
+        gl_Position = projectionMatrix * vec4(vsC.xy + position.xy * s, vsC.z + position.z * s * 0.45, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D uMap; uniform vec3 uColor; uniform float uOpacity;
+      varying vec2 vUv;
+      void main(){
+        vec4 t = texture2D(uMap, vUv);
+        gl_FragColor = vec4(t.rgb * uColor, t.a * uOpacity);
+      }
+    `,
+    blending: THREE.AdditiveBlending, depthWrite: false, transparent: true
   });
-  const s = new THREE.Sprite(mat);
+  /* keep the old SpriteMaterial surface: color / opacity / map */
+  Object.defineProperty(mat, 'color', { get() { return mat.uniforms.uColor.value; }, set(v) { mat.uniforms.uColor.value = v; } });
+  Object.defineProperty(mat, 'opacity', { get() { return mat.uniforms.uOpacity.value; }, set(v) { mat.uniforms.uOpacity.value = v; } });
+  Object.defineProperty(mat, 'map', { get() { return mat.uniforms.uMap.value; }, set(v) { mat.uniforms.uMap.value = v; } });
+  mat.uniforms.uBend.value = bend !== undefined ? bend : 1;
+  const s = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
   s.scale.setScalar(scale || 2);
+  s.frustumCulled = false;
   return s;
+}
+/* bendable MeshBasicMaterial equivalent (markers, rings, beams, shadows) */
+function makeBasicBend(opts) {
+  opts = opts || {};
+  const m = new THREE.ShaderMaterial({
+    uniforms: Object.assign({
+      uMap: { value: opts.map || null },
+      uHasMap: { value: opts.map ? 1 : 0 },
+      uColor: { value: new THREE.Color(opts.color !== undefined ? opts.color : 0xffffff) },
+      uOpacity: { value: opts.opacity !== undefined ? opts.opacity : 1 }
+    }, bendUniforms()),
+    vertexShader: `
+      ${BEND_GLSL}
+      varying vec2 vUv;
+      void main(){
+        vUv = uv;
+        vec4 wp = modelMatrix * vec4(position, 1.0);
+        wp.xyz = bendPos(wp.xyz);
+        gl_Position = projectionMatrix * viewMatrix * wp;
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D uMap; uniform float uHasMap; uniform vec3 uColor; uniform float uOpacity;
+      varying vec2 vUv;
+      void main(){
+        vec3 c = uColor; float a = uOpacity;
+        if (uHasMap > 0.5) { vec4 t = texture2D(uMap, vUv); c *= t.rgb; a = t.a * uOpacity; }
+        gl_FragColor = vec4(c, a);
+      }
+    `,
+    side: opts.side || THREE.FrontSide, transparent: true,
+    depthWrite: opts.depthWrite !== undefined ? opts.depthWrite : false,
+    blending: opts.blending !== undefined ? opts.blending : THREE.NormalBlending
+  });
+  Object.defineProperty(m, 'color', { get() { return m.uniforms.uColor.value; }, set(v) { m.uniforms.uColor.value = v; } });
+  Object.defineProperty(m, 'opacity', { get() { return m.uniforms.uOpacity.value; }, set(v) { m.uniforms.uOpacity.value = v; } });
+  Object.defineProperty(m, 'map', { get() { return m.uniforms.uMap.value; }, set(v) { m.uniforms.uMap.value = v; m.uniforms.uHasMap.value = v ? 1 : 0; } });
+  m.uniforms.uBend.value = opts.bend !== undefined ? opts.bend : 1;
+  return m;
 }
 
 /* ---- fullscreen grain + vignette + faint halftone (painterly finish, drawn last) ---- */
@@ -443,9 +556,13 @@ function makeOverlay() {
   const m = new THREE.ShaderMaterial({
     uniforms: { uTime: { value: 0 }, uGrain: { value: 0.035 }, uVig: { value: 0.32 }, uHalftone: { value: 0.5 } },
     vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.9999, 1.0); }`,
-    fragmentShader: OVER_FRAG, depthTest: false, depthWrite: false
+    fragmentShader: OVER_FRAG, depthTest: false, depthWrite: false,
+    blending: THREE.MultiplyBlending
   });
-  return {};
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), m);
+  mesh.frustumCulled = false;
+  mesh.renderOrder = 99;
+  return { mesh, mat: m };
 }
 /* health bar quad (toon) */
 function makeHpBar() {
@@ -453,9 +570,10 @@ function makeHpBar() {
   const geo = new THREE.PlaneGeometry(w, h);
   const mat = new THREE.ShaderMaterial({
     transparent: true, depthWrite: false,
-    uniforms: { uP: { value: 1 }, uCol: { value: new THREE.Color(0x8dff57) } },
+    uniforms: Object.assign({ uP: { value: 1 }, uCol: { value: new THREE.Color(0x8dff57) } }, bendUniforms()),
     vertexShader: `
-      varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+      ${BEND_GLSL}
+      varying vec2 vUv; void main(){ vUv = uv; vec4 wp = modelMatrix * vec4(position, 1.0); wp.xyz = bendPos(wp.xyz); gl_Position = projectionMatrix * viewMatrix * wp; }
     `,
     fragmentShader: `
       uniform float uP; uniform vec3 uCol; varying vec2 vUv;
@@ -626,7 +744,50 @@ const TEX = {};
     }
     return tex(fallbackFn(size), wrap);
   }
+  /* --- planet globe: painterly ocean, land, clouds, polar caps --- */
+  function planetCanvas(size) {
+    const r = rng32(9091);
+    return bake((ctx, s) => {
+      ctx.fillStyle = '#123c38'; ctx.fillRect(0, 0, s, s);
+      /* ocean depth bands */
+      for (let i = 0; i < 9; i++) {
+        ctx.fillStyle = `rgba(20,${64 + i * 7},${60 + i * 8},0.28)`;
+        ctx.fillRect(0, i * s / 9, s, s / 9 + 2);
+      }
+      /* landmasses: blobby organic splotches */
+      for (let i = 0; i < 26; i++) {
+        const cx = r() * s, cy = r() * s * 0.8 + s * 0.1, n = 3 + Math.floor(r() * 4);
+        ctx.fillStyle = i % 3 === 0 ? 'rgba(52,84,58,0.85)' : i % 3 === 1 ? 'rgba(64,74,50,0.8)' : 'rgba(74,86,52,0.75)';
+        ctx.beginPath();
+        ctx.moveTo(cx + n * 9, cy);
+        for (let k = 0; k <= n; k++) {
+          const a = (k / n) * Math.PI * 2, rad = 9 + r() * 22;
+          ctx.lineTo(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad * 0.72);
+        }
+        ctx.closePath(); ctx.fill();
+      }
+      /* cloud streaks */
+      for (let i = 0; i < 34; i++) {
+        const cy = r() * s, cx = r() * s, w = 26 + r() * 84, h = 3 + r() * 7;
+        ctx.fillStyle = `rgba(226,238,240,${0.10 + r() * 0.16})`;
+        ctx.beginPath(); ctx.ellipse(cx, cy, w, h, 0, 0, 7); ctx.fill();
+      }
+      /* polar caps */
+      const g1 = ctx.createRadialGradient(s / 2, -s * 0.05, 0, s / 2, -s * 0.05, s * 0.34);
+      g1.addColorStop(0, 'rgba(226,240,242,0.9)'); g1.addColorStop(1, 'rgba(226,240,242,0)');
+      ctx.fillStyle = g1; ctx.fillRect(0, 0, s, s * 0.5);
+      const g2 = ctx.createRadialGradient(s / 2, s * 1.05, 0, s / 2, s * 1.05, s * 0.34);
+      g2.addColorStop(0, 'rgba(226,240,242,0.9)'); g2.addColorStop(1, 'rgba(226,240,242,0)');
+      ctx.fillStyle = g2; ctx.fillRect(0, s * 0.5, s, s * 0.5);
+      /* subtle grime/weather noise */
+      for (let i = 0; i < 300; i++) {
+        ctx.fillStyle = `rgba(8,26,26,${r() * 0.16})`;
+        ctx.fillRect(r() * s, r() * s, 2 + r() * 7, 1 + r() * 3);
+      }
+    }, size);
+  }
   TEX.deck = function () { return loadBaked('deck', deckCanvas, 512, true); };
+  TEX.planet = function () { return tex(planetCanvas(512), true); };
   TEX.splat = function () { return loadBaked('splats', splatCanvas, 512, false); };
   TEX.smoke = function () { return tex(smokeCanvas(128), true); };
   TEX.spark = function () { return tex(sparkCanvas(32), false); };
@@ -643,6 +804,25 @@ const BOARD = {
 };
 function buildYard(scene) {
   const g = new THREE.Group();
+  /* --- planet globe under the bent battle cap (painterly toon ball) --- */
+  const globeMat = makeToon({ map: TEX.planet(), key: 0xfff0d8, ambient: 0x5a7a85, specAmt: 0.25, rim: 0x37e8c8, rimPow: 2.8, fog: 0.002, bend: 0 });
+  const globe = new THREE.Mesh(new THREE.SphereGeometry(BEND.R - 0.2, 48, 32), globeMat);
+  globe.position.copy(BEND.C);
+  globe.frustumCulled = false;
+  g.add(globe);
+  /* thin atmosphere rim (additive fresnel shell, no bend: real sphere) */
+  const atmoMat = new THREE.ShaderMaterial({
+    uniforms: Object.assign({ uColor: { value: new THREE.Color(0x35e0cf) } }, bendUniforms()),
+    vertexShader: `varying vec3 vN; void main(){ vN = normalize(mat3(viewMatrix * modelMatrix) * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+    fragmentShader: `uniform vec3 uColor; varying vec3 vN;
+      void main(){ float fr = pow(1.0 - abs(vN.z), 3.0); gl_FragColor = vec4(uColor, fr * 0.55); }`,
+    side: THREE.BackSide, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+  });
+  atmoMat.uniforms.uBend.value = 0;
+  const atmo = new THREE.Mesh(new THREE.SphereGeometry(BEND.R + 0.6, 40, 24), atmoMat);
+  atmo.position.copy(BEND.C);
+  atmo.frustumCulled = false;
+  g.add(atmo);
   const deckTex = TEX.deck();
   /* --- deck ring top --- */
   const ringGeo = new THREE.RingGeometry(BOARD.R_IN, BOARD.R_OUT, 48, 1);
@@ -728,7 +908,7 @@ function buildYard(scene) {
     }
     geo.computeVertexNormals();
     const m = new THREE.Mesh(geo, mat);
-    const a = rng() * TAU, rr = 34 + rng() * 55, y = -8 + rng() * 30;
+    const a = rng() * TAU, rr = 34 + rng() * 55, y = 2 + rng() * 26;
     m.position.set(Math.cos(a) * rr, y, Math.sin(a) * rr);
     m.rotation.set(rng() * 3, rng() * 3, rng() * 3);
     return m;
@@ -746,7 +926,7 @@ function buildYard(scene) {
     { p: [-140, -50, 250], s: 300, c: 0x3fd0a0, o: 0.10 }
   ];
   for (const w of wash) {
-    const spr = makeGlowSprite(w.c, w.s, w.o);
+    const spr = makeGlowSprite(w.c, w.s, w.o, null, 0); /* nebula washes stay world-space (unbent) */
     spr.position.set(w.p[0], w.p[1], w.p[2]);
     spr.frustumCulled = false;
     g.add(spr);
@@ -922,12 +1102,30 @@ function TOWERS(scene, fx, snd) {
     return gl;
   }
   /* ---------------- runtime instance ---------------- */
+  /* ---------- tower aim compensation (pad pose frame) ----------
+     The rendered world is bent; aim in flat space must be rotated by the pad's
+     surface frame so barrels point where the beams actually curve to. */
+  function padFrameInv(pad) {
+    const rH = Math.sqrt(pad.pos.x * pad.pos.x + pad.pos.z * pad.pos.z) || 0.0001;
+    const phi = rH / BEND.R;
+    const s = Math.sin(phi), c = Math.cos(phi);
+    const dhx = pad.pos.x / rH, dhz = pad.pos.z / rH;
+    /* frame F maps flat dir -> rendered dir at the pad: columns [south, radial, east].
+       We need F^T (rendered -> flat) for aim correction. */
+    /* F^T in THREE row-major constructor order (rows of F^T) */
+    return new THREE.Matrix3(
+      c * dhx, -s, c * dhz,
+      s * dhx, c, s * dhz,
+      -dhz, 0, dhx
+    );
+  }
   function build(type, pad) {
     const def = TOWER_DEFS[type];
     const parts = builders[type]();
     const group = new THREE.Group();
     group.add(parts.g);
     group.position.copy(pad.pos);
+    pad.frameInv = pad.frameInv || padFrameInv(pad);
     /* aim pivot: yaw at group root, pitch at tur */
     const outline = addOutline(parts.g, 1.02, { opacity: 0.75 });
     scene.add(group);
@@ -947,7 +1145,10 @@ function TOWERS(scene, fx, snd) {
         if (pivot) {
           if (this.target) {
             const tp = this.target.pos;
-            const local = this.group.worldToLocal(tp.clone());
+            /* aim = bent-space direction from pad to target, rotated back to flat */
+            const dR = bendToWorld(tp).sub(bendToWorld(this.group.position));
+            const dF = dR.applyMatrix3(this.pad.frameInv).normalize().multiplyScalar(10);
+            const local = dF;
             const yaw = Math.atan2(local.x, local.z);
             pivot.rotation.y = angDamp(pivot.rotation.y, yaw, 10, dt);
             const barrel = this.parts.barrel;
@@ -1225,11 +1426,11 @@ function ENEMIES(scene, fx, snd, yard) {
     grp.scale.setScalar(def.scale);
     /* blob shadow + ground marker ring (TD readability) */
     const sh = new THREE.Mesh(new THREE.PlaneGeometry(1.6 * def.scale, 1.6 * def.scale),
-      new THREE.MeshBasicMaterial({ map: TEX.glow(), color: 0x000000, transparent: true, opacity: 0.42, depthWrite: false }));
+      makeBasicBend({ map: TEX.glow(), color: 0x000000, opacity: 0.42, depthWrite: false }));
     sh.rotation.x = -Math.PI / 2; sh.position.y = 0.03; grp.add(sh);
-    const markerMat = new THREE.MeshBasicMaterial({
-      map: ENEMY_MARK_TEX, transparent: true, depthWrite: false,
-      blending: THREE.AdditiveBlending, opacity: 0.8,
+    const markerMat = makeBasicBend({
+      map: ENEMY_MARK_TEX, opacity: 0.8,
+      blending: THREE.AdditiveBlending,
       color: (type === 'carrion' || type === 'brood') ? 0xff6a3a : 0x8dff57, side: THREE.DoubleSide
     });
     const marker = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), markerMat);
@@ -1261,10 +1462,25 @@ function ENEMIES(scene, fx, snd, yard) {
         if (!this.alive) return;
         this.u += this.speed * dt;
         const b = this.pos;
+        /* path sampling for lookahead: face the true direction of travel (ALL phases) */
+        const ahead = this.u + 1.1;
+        let ax, ay, az;
+        if (ahead < APPROACH) {
+          const k = ahead / APPROACH;
+          ax = SPAWN.x + (GATE.x - SPAWN.x) * k; az = SPAWN.z + (GATE.z - SPAWN.z) * k;
+          ay = SPAWN.y + (GATE.y - SPAWN.y) * k;
+        } else {
+          const R = BOARD.LANE_R;
+          const th2 = (ahead - APPROACH) / R;
+          const w2 = Math.sin(th2 * this.weaveF + this.phase) * this.weave;
+          const rr2 = R + w2;
+          ax = Math.cos(th2) * rr2; az = Math.sin(th2) * rr2;
+          ay = BOARD.LANE_Y + Math.sin(ahead * 0.9 + this.phase) * 0.42;
+        }
         if (this.u < APPROACH) {
           const k = this.u / APPROACH;
           b.lerpVectors(this.start, GATE, k);
-          this.grp.lookAt(GATE.x * 2, 4.0, GATE.z * 2);
+          this.grp.lookAt(ax, ay, az);
           this.grp.rotation.z = 0;
         } else {
           const R = BOARD.LANE_R;
@@ -1284,8 +1500,7 @@ function ENEMIES(scene, fx, snd, yard) {
             if (this.diveK >= 1) { game.coreHit(this.def.dmg, this); this.alive = false; this.grp.visible = false; this.marker.visible = false; return; }
           } else {
             b.set(px, py, pz);
-            const aheadTheta = (this.u + 1.2 - APPROACH) / R;
-            this.grp.lookAt(Math.cos(aheadTheta) * R, py, Math.sin(aheadTheta) * R);
+            this.grp.lookAt(ax, ay, az);
             /* bank into the weave (roll follows weave phase) so flight reads 3D */
             const bankRoll = 0.32 + Math.sin(theta * this.weaveF + this.phase + Math.PI * 0.5) * 0.2;
             this.grp.rotation.z = bankRoll * ((this.type === 'carrion' || this.type === 'brood') ? 0.55 : 1);
@@ -1470,12 +1685,15 @@ function makeFX(scene, game) {
   const splatTex = TEX.splat();
   const splatMat = (offset) => new THREE.ShaderMaterial({
     transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2,
-    uniforms: {
+    uniforms: Object.assign({
       uMap: { value: splatTex },
       uOff: { value: new THREE.Vector2(offset % 2, Math.floor(offset / 2)) },
       uAlpha: { value: 0.92 }
-    },
-    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+    }, bendUniforms()),
+    vertexShader: `
+      ${BEND_GLSL}
+      varying vec2 vUv; void main(){ vUv = uv; vec4 wp = modelMatrix * vec4(position, 1.0); wp.xyz = bendPos(wp.xyz); gl_Position = projectionMatrix * viewMatrix * wp; }
+    `,
     fragmentShader: `
       uniform sampler2D uMap; uniform vec2 uOff; uniform float uAlpha; varying vec2 vUv;
       void main(){
@@ -1569,8 +1787,8 @@ function makeFX(scene, game) {
   const ringTex = new THREE.CanvasTexture(ringTexC);
   const rings = [];
   for (let i = 0; i < 14; i++) {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({
-      map: ringTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.9
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), makeBasicBend({
+      map: ringTex, blending: THREE.AdditiveBlending, opacity: 0.9
     }));
     m.rotation.x = -Math.PI / 2; m.visible = false; m.renderOrder = 3;
     scene.add(m);
@@ -1584,10 +1802,10 @@ function makeFX(scene, game) {
     p.m.material.opacity = 0.9; p.size = size; p.life = 0; p.max = 0.38;
   }
   /* ---------- beams (hitscan tracers) ---------- */
-  const beamMat = new THREE.MeshBasicMaterial({ color: 0xbff7ff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
+  const beamMat = makeBasicBend({ color: 0xbff7ff, opacity: 0.9, blending: THREE.AdditiveBlending });
   const beams = [];
   for (let i = 0; i < 24; i++) {
-    const m = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.12, 1, 6, 1, true), beamMat.clone());
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.12, 1, 6, 8, true), makeBasicBend({ color: 0xbff7ff, opacity: 0.9, blending: THREE.AdditiveBlending }));
     m.visible = false; scene.add(m);
     beams.push({ m, alive: false, life: 0, max: 0.12, len: 1 });
   }
@@ -1650,12 +1868,12 @@ function makeFX(scene, game) {
     }
     const SEG_N = 4;
     const grp = new THREE.Group();
-    const bmat = new THREE.MeshBasicMaterial({ color: 0x9ff2ff, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false });
+    const bmat = makeBasicBend({ color: 0x9ff2ff, opacity: 0.95, blending: THREE.AdditiveBlending });
     for (const sgm of segs) {
       const d = sgm[1].clone().sub(sgm[0]);
       const L = d.length();
       for (let i = 0; i < SEG_N; i++) {
-        const m = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1, 5, 1, true), bmat);
+        const m = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1, 5, 4, true), bmat);
         m.scale.set(1, L, 1);
         m.position.copy(sgm[0]).addScaledVector(d, 0.5);
         m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize());
@@ -1758,7 +1976,7 @@ function makeFX(scene, game) {
     const s = makeGlowSprite(0x8dff57, 3.4, 0.9);
     s.position.copy(e.pos); scene.add(s);
     setTimeout(() => { scene.remove(s); s.material.dispose(); }, 220);
-    ringAt(e.pos, 4.5, -6, 0x8dff57);
+    ringAt(e.pos, 4.5, 0.12, 0x8dff57);
   };
   fx.impact = function (pos, splash, dmg, color, game, tower) {
     /* AoE damage + visual splash on ground */
@@ -2172,6 +2390,8 @@ function GAME(root) {
   game.en = ENEMIES(scene, game.fx, SND, game.yard);
   game.tw = TOWERS(scene, game.fx, SND);
   game.waves = makeWaveController();
+  game.overlay = makeOverlay();
+  scene.add(game.overlay.mesh);
   /* ---------- economy / build ---------- */
   function canAfford(cost) { return game.coins >= cost; }
   function buildTower(type, padIdx, free) {
@@ -2313,6 +2533,7 @@ function GAME(root) {
     /* sky + yard anim */
     sky.material.uniforms.uTime.value = t;
     sky.material.uniforms.uCamPos.value.copy(camera.position);
+    game.overlay.mat.uniforms.uTime.value = t;
     game.yard.update(t);
     /* camera: cinematic auto-focus */
     const focusL = 1.4;
@@ -2394,14 +2615,27 @@ function GAME(root) {
     mouseNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
     mouseNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(mouseNDC, camera);
-    const meshes = [];
-    for (const p of game.yard.pads) meshes.push(p.hex);
-    const hits = raycaster.intersectObjects(meshes, false);
-    if (hits.length) {
-      const idx = game.yard.pads.findIndex((p) => p.hex === hits[0].object);
-      return idx >= 0 ? idx : null;
+    /* the rendered deck is bent onto a planet: pick via ray-vs-sphere, map back to flat polar */
+    const o = raycaster.ray.origin, d = raycaster.ray.direction;
+    const L = o.clone().sub(BEND.C);
+    const Rs = BEND.R + 0.06;
+    const b = L.dot(d), c = L.dot(L) - Rs * Rs;
+    const disc = b * b - c;
+    if (disc < 0) return null;
+    const t0 = -b - Math.sqrt(disc);
+    if (!isFinite(t0) || t0 < 0) return null;
+    const n = o.clone().addScaledVector(d, t0).sub(BEND.C).normalize();
+    const phi = Math.acos(clamp(n.y, -1, 1));
+    const lam = Math.atan2(n.z, n.x);
+    const rFlat = phi * BEND.R;
+    const ang = ((lam % TAU) + TAU) % TAU;
+    let best = null, bd = 1e9;
+    for (const p of game.yard.pads) {
+      let da = Math.abs(ang - p.ang); da = Math.min(da, TAU - da);
+      const sc = da * 6 + Math.abs(rFlat - p.r) * 0.35;
+      if (sc < bd) { bd = sc; best = p; }
     }
-    return null;
+    return (best && bd < 1.8) ? best.i : null;
   }
   function bindInput() {
     canvas.addEventListener('mousedown', (e) => {
@@ -2463,8 +2697,18 @@ function GAME(root) {
         camera.position.copy(cp);
         camera.lookAt(t);
       },
+      snapR: (dist, fx, fy, fz) => {
+        /* camera along the surface normal of the focus point (radially outside the planet) */
+        const t = new THREE.Vector3(fx || 0, fy || 3, fz || 0);
+        const n = t.clone().sub(BEND.C).normalize();
+        game.focus.copy(t); cam.desired.copy(t); cam.target.copy(t);
+        game.focusLock = true;
+        camera.position.copy(t).addScaledVector(n, dist);
+        camera.lookAt(t);
+      },
       unlock: () => { game.focusLock = false; },
       focus: () => camera.position.toArray().map((v) => +v.toFixed(2)),
+      bend: (x, y, z) => bendToWorld(new THREE.Vector3(x, y, z)).toArray().map((v) => +v.toFixed(2)),
       game
     };
   }

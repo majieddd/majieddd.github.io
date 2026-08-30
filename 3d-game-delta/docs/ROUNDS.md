@@ -71,6 +71,32 @@ Measured facts: draw calls in the win-run at 15 towers: 654 max; fps 91-92 on He
 - screenshots in tools/: shot_00_title, shot_01_wave1, shot_02_wave2, shot_03_end.
 - Final artifact (v1.1): play.html 1575 KB, single file, file:// double-click, no network.
 
+## ROUND 7 - PLANET BATTLEFIELD + FLIGHT FACING (user-requested, 2026-08-29)
+USER REPORT: enemies sometimes fly backwards/sideways; wants the flat disk turned into a
+planet (fight on a curved section, going around it).
+FLIGHT FACING FIX: approach phase used a hardcoded lookAt(GATE*2) - as enemies neared the
+gate that point was BEHIND them (backwards flight!). Replaced with path-sampled lookahead
+(posAt(u+1.1)) for ALL phases (approach + orbit); dive keeps pole-facing dive vector.
+PLANET CONVERSION (inventive approach): all game math stays FLAT (physics, targeting,
+waves, economy unchanged); the RENDERED world is bent onto a sphere in the vertex shader
+(flat x,z -> colatitude; +Y -> radial offset; normals rotated by the local frame).
+- Shared BEND uniforms + bendPos/bendFrame GLSL; applied to toon, outline, glow-sprite,
+  hpbar, marker, shadow, splat, ring, beam shaders (beams now arc across the dome,
+  heightSegments=8 so tracers follow the curve).
+- Patch: planet globe (painterly canvas: ocean bands, land blobs, clouds, polar caps,
+  toon-shaded) + view-space fresnel atmosphere rim; asteroids re-Y'd so they orbit above
+  the surface as debris; nebula washes unbent.
+- Pad picking rebuilt as ray-vs-planet-sphere -> (colatitude, longitude) -> flat polar
+  pad index; REAL-CLICK E2E verified (pad0 -> menu -> RAIL built 260->170 -> sell 238).
+- Tower aim compensation: pad surface frame F^T applied to the rendered aim so barrels
+  point where bent beams actually curve (barrel tilt error 24-39 degrees eliminated).
+- Bug fixed en route: the grain/vignette overlay material was never attached (returned {}
+  in makeOverlay); when attached it rendered OPAQUE WHITE (missing MultiplyBlending) -
+  caught by verification, fixed.
+Verified: BOOTED 0 errors; pad E2E build/sell; 5/5 enemy types 2-frame motion proofs on
+the planet; WIN 123 kills / lives 4 / 0 errors / 144 fps / 1018 calls; audio running.
+Published as BUILD v1.3 at https://majieddd.github.io/3d-game-delta/.
+
 ## ROUND 6 - ENEMY 3D & ANIMATION (user-requested, 2026-08-29)
 CRITICAL BUG FOUND: enemy group positions were never synced to the path - game logic
 (e.pos, damage, markers, turret targeting) all ran on the real path, but the visible
