@@ -52,7 +52,7 @@ const G = vm.runInContext(
   'ELEMENTS, COMBOS, ABILITIES, PLAYER_MODS, ENEMY_MODS, SUMMON_DOCTRINES, ' +
   'MACHINE_HOST, originKeyOf, ARTPACK, ' +
   'MAPS, SCENARIOS, ARENA_MODS, TARGET_MODES, LEVEL_ROLLS, SECRET_FACTIONS, LORE_CODEX, ' +
-  'WORLD_MAPS, WORLD_MAP_BY_NAME, TERRA_VOCAB })', ctx);
+  'WORLD_MAPS, WORLD_MAP_BY_NAME, TERRA_VOCAB, FAMILY_REFERENCE, FAMILY_REFERENCE_BY_ID })', ctx);
 
 const FACS = ['human', 'light', 'xeno', 'pirate', 'robot'];
 const SYSOF = { human: 0, light: 1, xeno: 2, pirate: 3, robot: 4 };
@@ -278,6 +278,59 @@ function laneTilesOf(lane) {
   }
   return out;
 }
+/* THE THREE-WAY GROUNDS. Tri boards are authored in ABSOLUTE coordinates
+   with one lane per commander and no mirror axis at all (buildTriField never
+   mirrors anything), which is why the duo renderer below refused them and
+   why they showed as blank entries for their whole life. */
+function triSVG(m) {
+  const T = 10, W = m.cols * T, H = m.rows * T;
+  const SEAT = ['rgba(125,211,252,0.34)', 'rgba(240,168,168,0.34)', 'rgba(196,181,253,0.34)'];
+  const EDGE = ['#7dd3fc', '#f0a8a8', '#c4b5fd'];
+  const r = [];
+  const rect = (x, y, wd, ht, fill, rx) =>
+    r.push('<rect x="' + x + '" y="' + y + '" width="' + wd + '" height="' + ht +
+           '" fill="' + fill + '"' + (rx ? ' rx="' + rx + '"' : '') + '/>');
+  rect(0, 0, W, H, '#0a0f16');
+  for (const [x0, y0, x1, y1] of (m.blocks || []))
+    rect(x0 * T, y0 * T, (x1 - x0 + 1) * T, (y1 - y0 + 1) * T, '#26313f', 2);
+  for (const [x0, y0, x1, y1] of (m.walls || []))
+    rect(x0 * T, y0 * T, (x1 - x0 + 1) * T, (y1 - y0 + 1) * T, '#5c4420', 2);
+  (m.triLanes || []).forEach((lane, i) => {
+    for (const [x, y] of laneTilesOf(lane)) rect(x * T, y * T, T, T, SEAT[i % SEAT.length]);
+    const b = lane[lane.length - 1];
+    rect(b[0] * T - 1, b[1] * T - 1, T + 2, T + 2, EDGE[i % EDGE.length], 2);
+  });
+  for (const spec of (m.triNodes || [])) {
+    const col = (G.ELEMENTS[spec[0]] || {}).color || '#fff';
+    for (const pt of spec.slice(2))
+      r.push('<circle cx="' + (pt[0] * T + T / 2) + '" cy="' + (pt[1] * T + T / 2) +
+             '" r="' + (T * 0.32) + '" fill="' + col + '"' +
+             (spec[1] === 'lane' ? ' stroke="#fff" stroke-width="1"' : '') + '/>');
+  }
+  return '<svg class="bsvg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' +
+         esc(m.name) + ' three-way board layout">' + r.join('') + '</svg>';
+}
+
+/* ONE ENTRY POINT, so no board can silently render blank again (the owner
+   found 19 that did). Duo geometry draws itself; a tri board draws through
+   triSVG; a procedural family draws its handcrafted reference board, clearly
+   labelled as the reference rather than as a layout any battle uses. */
+function mapFigure(m) {
+  if (!m) return '';
+  if (m.tri) return triSVG(m);
+  if (m.procedural) {
+    const ref = G.FAMILY_REFERENCE_BY_ID && G.FAMILY_REFERENCE_BY_ID[m.family];
+    if (!ref) return '';
+    return boardSVG(ref) +
+      '<span class="refnote">HANDCRAFTED REFERENCE BOARD. The generator rolls a fresh ' +
+      'layout for every world and seed; this is the worked example the family is built ' +
+      'to reproduce.</span>' + terraChips(ref) +
+      '<span class="quote">' + esc(ref.terra.basis) + '</span>' +
+      (ref.brief ? '<span>' + esc(ref.brief) + '</span>' : '');
+  }
+  return boardSVG(m);
+}
+
 function boardSVG(m) {
   if (!m || m.tri || m.procedural || !m.lanes) return '';
   const T = 10, W = m.cols * T, H = m.rows * T;
@@ -317,7 +370,9 @@ function terraChips(m) {
   if (!m || !m.terra) return '';
   const t = m.terra;
   return '<span class="terra">' + [t.class, t.flow, t.cover, t.barriers, t.sight]
-    .map(v => '<i>' + esc(v) + '</i>').join('') + '</span>';
+    .map(v => '<i>' + esc(v) + '</i>').join('') +
+    (t.challenge ? '<i class="ch ch-' + esc(t.challenge) + '">' + esc(t.challenge) + '</i>' : '') +
+    '</span>';
 }
 
 /* Register one addressable thing and return the little ref chip that renders
@@ -471,6 +526,15 @@ h2{font-size:15px;letter-spacing:.14em;margin:38px 0 6px;color:#fff;text-transfo
 .terra{display:flex;gap:5px;flex-wrap:wrap}
 .terra i{font-style:normal;font-size:10px;letter-spacing:.1em;color:#8aa0b5;border:1px solid #23303f;
  border-radius:3px;padding:1px 6px;text-transform:uppercase}
+.terra i.ch{color:#0a0f16;border-color:transparent;font-weight:700}
+.ch-teaching{background:#6ee7a0}.ch-standard{background:#7dd3fc}.ch-demanding{background:#fbbf24}
+.ch-punishing{background:#fb923c}.ch-brutal{background:#f0a8a8}
+.sgrounds{display:flex;gap:5px;flex-wrap:wrap}
+.sgrounds a{font-size:11px;color:#7dd3fc;text-decoration:none;border:1px solid #23303f;
+ border-radius:3px;padding:1px 6px}
+.sgrounds a:hover{border-color:#7dd3fc}
+.refnote{display:block;font-size:11px;line-height:1.5;color:#8aa0b5;border-left:2px solid #5c4420;
+ padding-left:8px;margin:2px 0}
 .wboard{display:flex;gap:14px;margin:8px 0 10px;background:#0d141c;border:1px solid #1d2836;
  border-radius:6px;padding:10px}
 .wboard .bwrap{flex:0 0 250px;max-width:250px}
@@ -748,6 +812,32 @@ function arsenalOf(fac) {
   return ids;
 }
 
+/* WHICH GROUNDS FIELD EACH SCENARIO. A scenario is a win condition, not a
+   place, so it has no board of its own; what it HAS is the set of grounds the
+   campaign fights it on, read off live galaxies rather than asserted. That is
+   the honest answer to "this scenario has no map": name its grounds and link
+   them, instead of inventing a board it never uses. */
+function scenarioGrounds() {
+  const out = {};
+  try {
+    const gctx = { console, window: {}, document: undefined };
+    vm.createContext(gctx);
+    for (const f of ['mapgen', 'config', 'worldmaps', 'lore', 'factions', 'towers2', 'roster', 'story'])
+      try { vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', f + '.js'), 'utf8'), gctx, { filename: f }); } catch (e) {}
+    vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', 'galaxy.js'), 'utf8'), gctx, { filename: 'galaxy.js' });
+    const sc = vm.runInContext('worldScenarioOf', gctx);
+    for (const fac of FACS) {
+      const g = vm.runInContext('generateGalaxy(20290413,"' + fac + '",0,1,2)', gctx);
+      g.systems.forEach(sys => sys.worlds.forEach(wd => {
+        const id = (sc(wd) || {}).id;
+        if (!id) return;
+        (out[id] = out[id] || new Map()).set(wd.map, wd.name);
+      }));
+    }
+  } catch (e) { console.log('  (scenario grounds unavailable: ' + String(e.message).slice(0, 70) + ')'); }
+  return out;
+}
+
 function page(fac) {
   const o = [];
   const ENC = encountersFor(fac);
@@ -943,7 +1033,8 @@ function page(fac) {
             '<a class="src" href="index.html#mp-' + esc(shown.id) + '">map:' + esc(shown.id) + '</a>' +
             '</div></div>');
         } else if (shown && shown.tri) {
-          w('<div class="wboard"><div class="binfo"><b>' + esc(shown.name) + '</b>' +
+          w('<div class="wboard"><div class="bwrap">' + triSVG(shown) + '</div>' +
+            '<div class="binfo"><b>' + esc(shown.name) + '</b>' +
             '<span class="nums">THREE-WAY GROUND &middot; a contested world fights on the shared tri boards</span>' +
             (shown.blurb ? '<span class="basis">' + esc(shown.blurb) + '</span>' : '') +
             '<a class="src" href="index.html#mp-' + esc(shown.id) + '">map:' + esc(shown.id) + '</a>' +
@@ -1142,13 +1233,24 @@ function index() {
   w('<h2 id="scenarios" style="font-size:13px;margin-top:26px">Scenarios, ' + G.SCENARIOS.length + '</h2>');
   w('<p class="sub">The shapes a battle can take, each with its three stars.</p>');
   w('<div class="cards">');
-  G.SCENARIOS.forEach(s =>
+  const SG = scenarioGrounds();
+  G.SCENARIOS.forEach(s => {
+    /* A scenario is a win condition, so it carries the GROUNDS it is fought
+       on rather than a board of its own: every one links to a real map. */
+    const grounds = SG[s.id] ? Array.from(SG[s.id].entries()) : [];
     w('<div class="card" id="sc-' + esc(s.id) + '"><b>' + (s.icon || '') + ' ' + esc(s.name) + '</b>' +
       '<span>' + esc(s.brief || '') + '</span>' +
       ((s.stars || []).length ? '<span class="nums">stars: ' + s.stars.map(esc).join(' &middot; ') + '</span>' : '') +
       (s.flavor ? '<span class="quote">' + esc(s.flavor) + '</span>' : '') +
+      (grounds.length
+        ? '<span class="nums">fought on ' + grounds.length + ' ground' + (grounds.length === 1 ? '' : 's') +
+          ', including</span><span class="sgrounds">' +
+          grounds.slice(0, 6).map(g => '<a href="#mp-' + esc(g[0]) + '">' + esc(g[1]) + '</a>').join('') +
+          '</span>'
+        : '') +
       spine('scenario:' + s.id, 'scenario', s.name, null, 'index.html', 'sc-' + s.id,
-            locateIdUnder('js/config.js', 'SCENARIOS', s.id, s.name)) + '</div>'));
+            locateIdUnder('js/config.js', 'SCENARIOS', s.id, s.name)) + '</div>');
+  });
   w('</div>');
 
   /* THE CAMPAIGN GROUNDS (Session 44, docs/WORLDMAPS-DESIGN.md): every
@@ -1185,9 +1287,11 @@ function index() {
   const authoredMaps = poolBoards.filter(m => !m.procedural), procMaps = poolBoards.filter(m => m.procedural);
   w('<h2 id="boards" style="font-size:13px;margin-top:26px">The pool boards, ' + poolBoards.length +
     ' (' + authoredMaps.length + ' authored, ' + procMaps.length + ' procedural)</h2>');
-  w('<p class="sub">The skirmish and duel pools, the three shared tri grounds, and the procedural ' +
-    'families that will carry the post-campaign unknown. Procedural boards roll a fresh layout ' +
-    'per world and seed, so they are named, not drawn.</p>');
+  w('<p class="sub">The skirmish and duel pools, the shared three-way grounds, and the procedural ' +
+    'families that will carry the post-campaign unknown. A procedural family rolls a fresh layout ' +
+    'for every world and seed, so what is drawn for it here is its <b style="color:#fff">handcrafted ' +
+    'reference board</b>: the worked example the generator is built to reproduce, and the design ' +
+    'brief for anyone rebuilding that family later.</p>');
   w('<div class="cards">');
   poolBoards.forEach(m =>
     w('<div class="card" id="mp-' + esc(m.id) + '"><b>' + esc(m.name) + '</b>' +
@@ -1195,7 +1299,11 @@ function index() {
         : (m.tri ? 'three-way ground' : 'authored')) +
       (m.tier !== undefined ? ' &middot; tier ' + m.tier : (m.minTier !== undefined ? ' &middot; from tier ' + m.minTier : '')) +
       (m.adj ? ' &middot; ' + esc(m.adj) : '') + '</span>' +
-      (!m.procedural && !m.tri ? boardSVG(m) : '') +
+      mapFigure(m) +
+      /* Procedural entries get their chips from the reference board inside
+         mapFigure; everything else carries its own codex now. */
+      (m.procedural ? '' : terraChips(m) +
+        (m.terra ? '<span class="quote">' + esc(m.terra.basis) + '</span>' : '')) +
       (m.sigNote ? '<span>' + esc(m.sigNote) + '</span>' : '') +
       spine('map:' + m.id, 'map', m.name, null, 'index.html', 'mp-' + m.id,
             locateIdUnder('js/config.js', 'MAPS', m.id, m.name)) + '</div>'));

@@ -42,3 +42,30 @@ Notes per item land here as work lands.
   regenerates narrative from the commit so the live site was never wrong,
   and the very next commit carries the regeneration. The gate's freshness
   check is what caught it.
+
+## Session 45: no board entry may lack a map
+
+Owner: "some of the Scenarios are actually missing the map related to it ...
+make every scenario has a map and ensure these maps are all unique and provide
+a different level of challenge each."
+
+Measured first: 19 of 71 board entries rendered with no map. Four were the
+three-way grounds (real geometry, no renderer that understood absolute
+tri coordinates) and fifteen were procedural families (no fixed geometry at
+all). Both closed, and the gap is now a gate check rather than something a
+person has to notice.
+
+| # | Item | Status | Check id |
+| --- | --- | --- | --- |
+| 13 | Draw the four three-way grounds (triSVG, colour per seat) | landed | WM.12 |
+| 14 | One handcrafted reference board per procedural family (15) | landed | WM.11, WM.12 |
+| 15 | `challenge` added to the codex; all 35 planet boards classified | landed | WM.13 |
+| 16 | Codex extended to the 21 pool boards and 4 tri grounds (POOL_TERRA) | landed | WM.15 |
+| 17 | Scenario cards carry the grounds they are fought on | landed | rendered, 4/4 |
+| 18 | showboard: `worlds`, `refs`, `tri`, by-id | landed | manual review |
+
+Verified: probe 15 checks green; 0 of 71 entries now render without a map
+(was 19); challenge spread across all five levels; four mutation tests each
+caught by the predicted check with control green; deadfields exemption made
+explicit after finding `challenge` was passing only because the word appears
+in a cutscene caption.

@@ -45,7 +45,14 @@ const TERRA_VOCAB = Object.freeze({
          'convergent', 'split', 'staircase', 'weave'],
   cover: ['open', 'scattered', 'pocketed', 'walled', 'mazed'],
   barriers: ['none', 'blocks', 'walls', 'mixed'],
-  sight: ['long', 'broken', 'blind']
+  sight: ['long', 'broken', 'blind'],
+  /* HOW HARD THE GROUND ITSELF IS (owner directive, Session 45), intrinsic to
+     the geometry and independent of when the campaign hands it to you: how
+     much a defence has to solve before the waves are even considered. Earth's
+     street grid forgives a bad opening; Mercury's nine-tile band does not.
+     The probe asserts every level is used, so this cannot collapse into one
+     value and stop meaning anything. */
+  challenge: ['teaching', 'standard', 'demanding', 'punishing', 'brutal']
 });
 
 const WORLD_MAPS = [
@@ -56,7 +63,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_earth', world: 'EARTH', name: 'THE HARBOUR DISTRICT', adj: 'Fallen',
-    terra: { class: 'grid', flow: 'switchback', cover: 'scattered', barriers: 'blocks', sight: 'long',
+    terra: { class: 'grid', flow: 'switchback', cover: 'scattered', barriers: 'blocks', sight: 'long', challenge: 'teaching',
       basis: 'A coastal city under the fall. Streets keep their grid even after the fragments came down through it, and rubble does not stop a shot, only a foundation.' },
     blurb: 'The streets still run at right angles; the fragments only bent what they landed on. Corners are the whole game: every block you own watches two legs of somebody else’s march.',
     trait: 'Street grid · fragment rubble',
@@ -76,7 +83,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_luna', world: 'LUNA', name: 'THE FAR SIDE', adj: 'Airless',
-    terra: { class: 'crater', flow: 'serpentine', cover: 'pocketed', barriers: 'blocks', sight: 'long',
+    terra: { class: 'crater', flow: 'serpentine', cover: 'pocketed', barriers: 'blocks', sight: 'long', challenge: 'standard',
       basis: 'No atmosphere: nothing scatters light and nothing stops a round. Crater rims are the only cover on the Moon, and they are cover for FOUNDATIONS, not lines of fire.' },
     blurb: 'The occupiers were always on the far side. Rim after rim breaks the ground into pockets, and every pocket sees a different bend of the road, all the way to the horizon.',
     trait: 'Crater pockets · nothing blocks a shot',
@@ -95,7 +102,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_mars', world: 'MARS', name: 'THE GREAT RIFT', adj: 'Incised',
-    terra: { class: 'canyon', flow: 'switchback', cover: 'walled', barriers: 'walls', sight: 'blind',
+    terra: { class: 'canyon', flow: 'switchback', cover: 'walled', barriers: 'walls', sight: 'blind', challenge: 'demanding',
       basis: 'Valles Marineris: a rift that would run New York to Los Angeles, four times deeper than the Grand Canyon. The walls are REAL walls; nothing flat-trajectory crosses a mesa.' },
     blurb: 'The road switchbacks down the rift floor and the mesas between the legs stop everything but a shell with the sense to arc. Whoever brings lobbed fire owns three legs at once; everyone else owns one.',
     trait: 'Canyon walls · lobbed fire pays triple',
@@ -115,7 +122,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_venus', world: 'VENUS', name: 'THE PRESSURE GARDENS', adj: 'Crushing',
-    terra: { class: 'dome', flow: 'serpentine', cover: 'walled', barriers: 'mixed', sight: 'broken',
+    terra: { class: 'dome', flow: 'serpentine', cover: 'walled', barriers: 'mixed', sight: 'broken', challenge: 'demanding',
       basis: 'Ninety atmospheres and lead-melting heat: nothing lives outside a shell. The dome walls survived their builders, and they still stop a shot the way they stopped the sky.' },
     blurb: 'The road threads between dead pressure domes. Every shell breaks somebody’s line of fire, and the lanes of sight left over are short, bent and worth fighting for.',
     trait: 'Dome shells · short bent sightlines',
@@ -135,7 +142,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_mercury', world: 'MERCURY', name: 'THE TERMINATOR LINE', adj: 'Scorched',
-    terra: { class: 'band', flow: 'straight', cover: 'open', barriers: 'blocks', sight: 'long',
+    terra: { class: 'band', flow: 'straight', cover: 'open', barriers: 'blocks', sight: 'long', challenge: 'punishing',
       basis: 'Mercury barely turns: one side glows, one side freezes, and the only survivable ground is the moving line between them. Everything else is dead to foundations forever.' },
     blurb: 'The whole battle lives in a strip nine tiles tall. The day side and the night side take everything else, the road barely bends, and there is nowhere to stand behind anything.',
     trait: 'One thin band · nowhere to hide',
@@ -154,7 +161,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_jupiter', world: 'JUPITER', name: 'THE CLOUD DECKS', adj: 'Stormed',
-    terra: { class: 'archipelago', flow: 'split', cover: 'pocketed', barriers: 'blocks', sight: 'long',
+    terra: { class: 'archipelago', flow: 'split', cover: 'pocketed', barriers: 'blocks', sight: 'long', challenge: 'demanding',
       basis: 'There is no ground: only platforms riding the cloud tops of a storm three Earths wide. What falls between the decks does not land anywhere.' },
     blurb: 'Two roads ride separate decks and only meet at your door. Between the platforms is sky all the way down, and the sky is already full of things that do not need a road.',
     trait: 'Two decks · the gap goes all the way down',
@@ -176,7 +183,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_saturn', world: 'SATURN', name: 'THE SHEPHERD RING', adj: 'Ringed',
-    terra: { class: 'ring', flow: 'ring-arc', cover: 'walled', barriers: 'mixed', sight: 'broken',
+    terra: { class: 'ring', flow: 'ring-arc', cover: 'walled', barriers: 'mixed', sight: 'broken', challenge: 'punishing',
       basis: 'The rings are a debris field a kilometre thin and a planet wide, kept in shape by shepherd moons. The act ends here: the door under Saturn is a real door, and it has one gap.' },
     blurb: 'The road runs three-quarters of a ring around the core and then goes IN. The core wall has exactly one gap, the traffic out here already ends at Saturn, and both facts are the same fact.',
     trait: 'Ring arc · one door in the core wall',
@@ -203,7 +210,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_maia', world: 'MAIA', name: 'THE LIGHT PLAIN', adj: 'Radiant',
-    terra: { class: 'field', flow: 'straight', cover: 'open', barriers: 'blocks', sight: 'long',
+    terra: { class: 'field', flow: 'straight', cover: 'open', barriers: 'blocks', sight: 'long', challenge: 'standard',
       basis: 'Maia sits inside the reflection nebula: the whole sky glows with scattered starlight and there is no night. A plain with nothing on it but the shine.' },
     blurb: 'The widest ground in the theatre and almost nothing on it. The road barely bends, the light never ends, and a line that cannot cover width does not survive here.',
     trait: 'Open plain · spread or break',
@@ -221,7 +228,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_electra', world: 'ELECTRA', name: 'THE SHRINE TERRACES', adj: 'Stepped',
-    terra: { class: 'terrace', flow: 'staircase', cover: 'pocketed', barriers: 'blocks', sight: 'broken',
+    terra: { class: 'terrace', flow: 'staircase', cover: 'pocketed', barriers: 'blocks', sight: 'broken', challenge: 'standard',
       basis: 'Electra is a subgiant already swelling off the main sequence: the Federation builds its terraces on ground that is itself descending, step after step.' },
     blurb: 'The road only ever steps down and left, and the shrines only shelter the downhill side. Whoever holds the high pockets fires over everything below and answers to nothing above.',
     trait: 'Descending steps · cover on one side',
@@ -239,7 +246,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_taygeta', world: 'TAYGETA', name: 'THE CHORAL HALLS', adj: 'Sung',
-    terra: { class: 'plaza', flow: 'split', cover: 'pocketed', barriers: 'blocks', sight: 'broken',
+    terra: { class: 'plaza', flow: 'split', cover: 'pocketed', barriers: 'blocks', sight: 'broken', challenge: 'demanding',
       basis: 'Taygeta is a spectroscopic binary: two voices in one point of light. The halls are built as a pair, and nothing that happens in one carries to the other.' },
     blurb: 'Two halls, one voice each, and a bank between them no tower shoots across. The processions walk both halls at once and only meet at your door.',
     trait: 'Two halls · one door',
@@ -260,7 +267,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_merope', world: 'MEROPE', name: 'THE DUST WAKE', adj: 'Veiled',
-    terra: { class: 'weave', flow: 'braid', cover: 'scattered', barriers: 'blocks', sight: 'broken',
+    terra: { class: 'weave', flow: 'braid', cover: 'scattered', barriers: 'blocks', sight: 'broken', challenge: 'demanding',
       basis: 'The Merope nebula is the dust the cluster is currently ploughing through: a wake, not a home. Two currents cross in it, and the crossings are where everything happens.' },
     blurb: 'Two roads braid through the dust and cross twice. A tower at a crossing works both roads for the price of one; a tower anywhere else works half a road.',
     trait: 'Braided roads · pay for the crossings',
@@ -281,7 +288,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_celaeno', world: 'CELAENO', name: 'THE ARCHIVE VAULTS', adj: 'Shelved',
-    terra: { class: 'maze', flow: 'serpentine', cover: 'mazed', barriers: 'mixed', sight: 'blind',
+    terra: { class: 'maze', flow: 'serpentine', cover: 'mazed', barriers: 'mixed', sight: 'blind', challenge: 'punishing',
       basis: 'Celaeno is the faint sister, the one catalogues kept losing. The Federation keeps its records here, in stacks tall enough to stop a shot and dense enough to lose a war in.' },
     blurb: 'The stacks stop shots and the road winds between them. Nothing sees far, corners are everything, and what you cannot see can already see you.',
     trait: 'Record stacks · blind corners',
@@ -301,7 +308,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_sterope', world: 'STEROPE', name: 'THE LIGHTNING NURSERIES', adj: 'Charged',
-    terra: { class: 'corridor', flow: 'straight', cover: 'walled', barriers: 'walls', sight: 'broken',
+    terra: { class: 'corridor', flow: 'straight', cover: 'walled', barriers: 'walls', sight: 'broken', challenge: 'standard',
       basis: 'Sterope, the lightning: the nurseries breed storm cells between insulated posts, and the posts are the only things on the floor that do not conduct.' },
     blurb: 'One long run with insulator posts staggered beside it. Each post blinds one short stretch of road and shields one tower; pick which side of the post you live on.',
     trait: 'One run · staggered posts',
@@ -322,7 +329,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_alcyone', world: 'ALCYONE', name: 'THE ANCHOR SANCTUM', adj: 'Anchored',
-    terra: { class: 'plaza', flow: 'ring-arc', cover: 'walled', barriers: 'mixed', sight: 'broken',
+    terra: { class: 'plaza', flow: 'ring-arc', cover: 'walled', barriers: 'mixed', sight: 'broken', challenge: 'demanding',
       basis: 'Alcyone is the central sun of the Pleiades, the anchor the sisters turn on. The seat of the Federation is a sanctum whose plaza watches every approach at once.' },
     blurb: 'Three legs wrap the sanctum plaza and the plaza answers all three. The act ends here: whoever holds the middle holds the argument.',
     trait: 'One plaza · every road answers to it',
@@ -346,7 +353,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_z1b', world: 'ZETA-1 b', name: 'THE TITHER FIELDS', adj: 'Harvested',
-    terra: { class: 'field', flow: 'serpentine', cover: 'scattered', barriers: 'blocks', sight: 'long',
+    terra: { class: 'field', flow: 'serpentine', cover: 'scattered', barriers: 'blocks', sight: 'long', challenge: 'teaching',
       basis: 'The first world of the first sun grows the tithe. Crop ranks run in strips wider than roads, planted in ground too soft to found a tower on.' },
     blurb: 'The road winds through the harvest ranks. The strips are cover only in the sense that nothing grows back where you build, and the compact counts every tile you take.',
     trait: 'Harvest ranks · soft ground',
@@ -364,7 +371,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_z1c', world: 'ZETA-1 c', name: 'THE GULLET', adj: 'Swallowed',
-    terra: { class: 'channel', flow: 'switchback', cover: 'pocketed', barriers: 'mixed', sight: 'blind',
+    terra: { class: 'channel', flow: 'switchback', cover: 'pocketed', barriers: 'mixed', sight: 'blind', challenge: 'punishing',
       basis: 'A client world hollowed into a feeding channel: the road IS a digestive tract, and the ribs between its folds are load-bearing in a sense nobody enjoys explaining.' },
     blurb: 'The road folds back on itself four times inside one throat. The ribs stop shots between folds, the pockets hold two towers each, and everything gets swallowed eventually.',
     trait: 'Folded throat · rib-blind folds',
@@ -383,7 +390,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_z1d', world: 'ZETA-1 d', name: 'THE SPORE SHOALS', adj: 'Blooming',
-    terra: { class: 'archipelago', flow: 'split', cover: 'pocketed', barriers: 'blocks', sight: 'long',
+    terra: { class: 'archipelago', flow: 'split', cover: 'pocketed', barriers: 'blocks', sight: 'long', challenge: 'demanding',
       basis: 'The outer world of the first sun blooms in season, and the season never ends. Firm ground comes in shoals; everything between them is bloom too deep to found.' },
     blurb: 'Two roads pick their way between the blooms and share the last stretch home. The shoals hold two or three towers each, and no shoal covers both roads.',
     trait: 'Two roads · firm ground in shoals',
@@ -404,7 +411,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_z2b', world: 'ZETA-2 b', name: 'THE HIVE GALLERY', adj: 'Combed',
-    terra: { class: 'corridor', flow: 'switchback', cover: 'pocketed', barriers: 'blocks', sight: 'broken',
+    terra: { class: 'corridor', flow: 'switchback', cover: 'pocketed', barriers: 'blocks', sight: 'broken', challenge: 'demanding',
       basis: 'The first world of the second sun is comb all the way down: one gallery corridor with cells budding off it, each cell exactly one purpose wide.' },
     blurb: 'One corridor, and the comb walls split the ground beside it into cells. Each cell watches one stretch of gallery and no cell helps another.',
     trait: 'Gallery cells · no cell helps another',
@@ -422,7 +429,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_z2c', world: 'ZETA-2 c', name: 'THE BIRTHING POOLS', adj: 'Brooding',
-    terra: { class: 'channel', flow: 'split', cover: 'scattered', barriers: 'blocks', sight: 'long',
+    terra: { class: 'channel', flow: 'split', cover: 'scattered', barriers: 'blocks', sight: 'long', challenge: 'demanding',
       basis: 'Twin channels drain the pools on either side of a brood bank. The bank is nursery ground: nothing builds on it, and the compact would like you to know it noticed you trying.' },
     blurb: 'Two channels around one bank, joining at your gate. The bank splits every field of fire in half, and what hatches in the pools arrives from both sides at once.',
     trait: 'Twin channels · the bank splits your fire',
@@ -444,7 +451,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_z2d', world: 'ZETA-2 d', name: 'THE LEDGER CHAMBER', adj: 'Accounted',
-    terra: { class: 'maze', flow: 'serpentine', cover: 'mazed', barriers: 'mixed', sight: 'blind',
+    terra: { class: 'maze', flow: 'serpentine', cover: 'mazed', barriers: 'mixed', sight: 'blind', challenge: 'punishing',
       basis: 'The chamber walls record what was taken and from whom, stacked floor to ceiling. The records are dense enough to stop a shot, which the compact considers a feature of good bookkeeping.' },
     blurb: 'The road winds the stacks of the account. Every wall is a page, every corner is blind, and the audit arrives on foot.',
     trait: 'Ledger stacks · the audit walks',
@@ -463,7 +470,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_serpo', world: 'SERPO', name: 'THE EXCHANGE GROUND', adj: 'Ceremonial',
-    terra: { class: 'corridor', flow: 'straight', cover: 'walled', barriers: 'mixed', sight: 'broken',
+    terra: { class: 'corridor', flow: 'straight', cover: 'walled', barriers: 'mixed', sight: 'broken', challenge: 'demanding',
       basis: 'Serpo is where the exchange happened: twelve went, and the ground remembers the protocol. One straight ceremonial road, and every gate on it opens exactly once.' },
     blurb: 'The seat of the compact is one straight road through three gate walls, each pierced only where the road passes. Every gate is a kill box, and the compact holds all three receipts.',
     trait: 'One road · three gates',
@@ -486,7 +493,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_proxd', world: 'PROXIMA d', name: 'THE SCORCH LINE', adj: 'Flared',
-    terra: { class: 'band', flow: 'straight', cover: 'open', barriers: 'blocks', sight: 'long',
+    terra: { class: 'band', flow: 'straight', cover: 'open', barriers: 'blocks', sight: 'long', challenge: 'punishing',
       basis: 'Proxima d hugs a flare star at a fraction of Mercury distance: the survivable band is thinner than Mercury ever was, and it moves when the star clears its throat.' },
     blurb: 'Mercury, but meaner. The band is thinner, the scars are fresher, and when the flare comes up there is nowhere on this board it does not reach.',
     trait: 'Thinner band · flare scars',
@@ -504,7 +511,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_proxb', world: 'PROXIMA b', name: 'THE FIRST PORT', adj: 'Docked',
-    terra: { class: 'grid', flow: 'switchback', cover: 'scattered', barriers: 'mixed', sight: 'broken',
+    terra: { class: 'grid', flow: 'switchback', cover: 'scattered', barriers: 'mixed', sight: 'broken', challenge: 'standard',
       basis: 'Proxima b is real, roughly Earth-mass, and the first port out of Sol. The capital of the Free Captains is docks all the way down: cargo in ranks, cranes on rails.' },
     blurb: 'The road works the dockyard in switchbacks. Cargo stacks break the ground, crane masts break the sightlines, and everything on this board is for sale, including the ground.',
     trait: 'Dock grid · crane masts',
@@ -523,7 +530,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_proxc', world: 'PROXIMA c', name: 'THE WRECK YARDS', adj: 'Salvaged',
-    terra: { class: 'archipelago', flow: 'serpentine', cover: 'pocketed', barriers: 'blocks', sight: 'broken',
+    terra: { class: 'archipelago', flow: 'serpentine', cover: 'pocketed', barriers: 'blocks', sight: 'broken', challenge: 'standard',
       basis: 'Proxima c is cold, distant and real, and the Captains fill its orbit with what they cut apart: a plain of hulls from a hundred builders, none of them local.' },
     blurb: 'The road picks between beached hulls. Every wreck is cover, every gap between wrecks is a firing lane somebody already measured, and the salvage rights are the fight.',
     trait: 'Beached hulls · measured gaps',
@@ -542,7 +549,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_flare', world: 'THE FLARE SHELTER', name: 'THE FLARE SHELTER', adj: 'Bunkered',
-    terra: { class: 'ring', flow: 'convergent', cover: 'walled', barriers: 'mixed', sight: 'broken',
+    terra: { class: 'ring', flow: 'convergent', cover: 'walled', barriers: 'mixed', sight: 'broken', challenge: 'demanding',
       basis: 'When Proxima flares, the open band is death for minutes at a time, so the Captains built one shelter big enough to argue inside. Every road on the world leads into it.' },
     blurb: 'Two roads converge on the shelter door, and the shelter ring stops everything that is not already inside. Whoever holds the door decides who waits out the flare in the open.',
     trait: 'Converging roads · one shelter door',
@@ -565,7 +572,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_narrowstrait', world: 'THE NARROWS', name: 'THE SMUGGLER STRAIT', adj: 'Squeezed',
-    terra: { class: 'corridor', flow: 'switchback', cover: 'pocketed', barriers: 'blocks', sight: 'broken',
+    terra: { class: 'corridor', flow: 'switchback', cover: 'pocketed', barriers: 'blocks', sight: 'broken', challenge: 'punishing',
       basis: 'The strait between Proxima and the Centauri pair is thick with drift shoals: one channel through, known to everyone who does not report cargo, which is everyone.' },
     blurb: 'The tightest ground in the theatre. The channel squeezes between shoals with pockets barely wide enough to found in, and every pocket is somebody’s old ambush.',
     trait: 'One channel · ambush pockets',
@@ -583,7 +590,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_locker', world: 'THE DARK LOCKER', name: 'THE DARK LOCKER', adj: 'Sealed',
-    terra: { class: 'maze', flow: 'switchback', cover: 'mazed', barriers: 'mixed', sight: 'blind',
+    terra: { class: 'maze', flow: 'switchback', cover: 'mazed', barriers: 'mixed', sight: 'blind', challenge: 'punishing',
       basis: 'The Captains keep one vault where the star cannot flare on it: the permanently dark side of a tide-locked rock. What is in the locker stays in the locker.' },
     blurb: 'Vault walls in the permanent dark. Sightlines die at every corner, the road doubles back on itself, and half the things stored here were never logged in.',
     trait: 'Vault walls · permanent dark',
@@ -602,7 +609,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_proxgate', world: 'PROXIMA GATE', name: 'THE TOLL PLAZA', adj: 'Tolled',
-    terra: { class: 'plaza', flow: 'convergent', cover: 'walled', barriers: 'mixed', sight: 'broken',
+    terra: { class: 'plaza', flow: 'convergent', cover: 'walled', barriers: 'mixed', sight: 'broken', challenge: 'demanding',
       basis: 'The Gate is the one stable transit point out of the Proxima well, and the Captains never met a bottleneck they did not price. Three roads in, one gate out, receipts for all.' },
     blurb: 'The seat of the Free Captains: three roads converge on one toll gate. Everything that leaves the system passes the plaza, and the plaza knows what everything is worth.',
     trait: 'Three roads · one toll gate',
@@ -630,7 +637,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_sira1', world: 'SIRIUS A I', name: 'THE CALIBRATION PLAIN', adj: 'Levelled',
-    terra: { class: 'field', flow: 'straight', cover: 'open', barriers: 'blocks', sight: 'long',
+    terra: { class: 'field', flow: 'straight', cover: 'open', barriers: 'blocks', sight: 'long', challenge: 'demanding',
       basis: 'The first world of the bright star was levelled to reference flatness a very long time ago. Four calibration markers survive. Nothing else was permitted to.' },
     blurb: 'A board with four objects on it, placed to tolerances. The road runs true, the ground is a datum, and there is nothing between your line and theirs but the arithmetic.',
     trait: 'Reference flat · four markers',
@@ -648,7 +655,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_sira2', world: 'SIRIUS A II', name: 'THE ASSEMBLY ROWS', adj: 'Fenced',
-    terra: { class: 'corridor', flow: 'straight', cover: 'walled', barriers: 'mixed', sight: 'broken',
+    terra: { class: 'corridor', flow: 'straight', cover: 'walled', barriers: 'mixed', sight: 'broken', challenge: 'standard',
       basis: 'The second world builds the bodies of the Vigil, on one production run fenced both sides. The fences predate every complaint about the fences.' },
     blurb: 'One production run between two fence lines. The gaps in the fences are the only firing angles anyone gets, and the line does not stop for casualties, theirs or yours.',
     trait: 'One run · fence-gap angles',
@@ -667,7 +674,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_ash', world: 'THE ASH FIELD', name: 'THE ASH FIELD', adj: 'Shed',
-    terra: { class: 'crater', flow: 'serpentine', cover: 'scattered', barriers: 'blocks', sight: 'long',
+    terra: { class: 'crater', flow: 'serpentine', cover: 'scattered', barriers: 'blocks', sight: 'long', challenge: 'standard',
       basis: 'Sirius B was once the larger star. What it shed on the way down fell here, and the Vigil neither cleared it nor mourns it, which may be the same operation.' },
     blurb: 'Drifts of a dead star. The road winds through what the companion shed, the drifts stop nothing but foundations, and the ground is still faintly warm if you ask it.',
     trait: 'Stellar drifts · faintly warm',
@@ -685,7 +692,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_sirb1', world: 'SIRIUS B I', name: 'THE COLLAPSE FORGE', adj: 'Compressed',
-    terra: { class: 'forge', flow: 'ring-arc', cover: 'walled', barriers: 'mixed', sight: 'broken',
+    terra: { class: 'forge', flow: 'ring-arc', cover: 'walled', barriers: 'mixed', sight: 'broken', challenge: 'demanding',
       basis: 'The one world of the white dwarf works by borrowed pressure: the forge core is walled on every face and the doors are exactly where the road needs them, no wider.' },
     blurb: 'The road arcs the forge floor and then passes through the core, one door in, one door out. Everything inside the core wall is pressure; everything outside is queue.',
     trait: 'Forge arc · two doors through the core',
@@ -704,7 +711,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_diamond', world: 'THE DIAMOND SHELF', name: 'THE DIAMOND SHELF', adj: 'Faceted',
-    terra: { class: 'terrace', flow: 'staircase', cover: 'walled', barriers: 'mixed', sight: 'blind',
+    terra: { class: 'terrace', flow: 'staircase', cover: 'walled', barriers: 'mixed', sight: 'blind', challenge: 'punishing',
       basis: 'A white dwarf crystallises as it cools: the shelf is crystallised carbon, cut into terraces, and every facet is a mirror thick enough to stop a shot.' },
     blurb: 'The road climbs the shelf, and the facets above every step blind the step below. Nothing sees more than one terrace, except whatever is standing on top.',
     trait: 'Climbing steps · facet-blind',
@@ -723,7 +730,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_companion', world: 'THE COMPANION', name: 'THE LONG ORBIT', adj: 'Mourning',
-    terra: { class: 'ring', flow: 'spiral', cover: 'pocketed', barriers: 'blocks', sight: 'long',
+    terra: { class: 'ring', flow: 'spiral', cover: 'pocketed', barriers: 'blocks', sight: 'long', challenge: 'demanding',
       basis: 'The Companion orbits the dwarf that used to be the bigger star. The road spirals inward the way the orbit does: patiently, and crossing its own past on the way.' },
     blurb: 'One road, spiralling in, crossing its own exit once. Debris pockets ride the orbit line, and the middle of the board is the end of the road in both senses.',
     trait: 'Inward spiral · crosses its own exit',
@@ -741,7 +748,7 @@ const WORLD_MAPS = [
 
   {
     id: 'w_dogstar', world: 'THE DOG STAR', name: 'THE HALL OF STANDING ORDERS', adj: 'Ordered',
-    terra: { class: 'maze', flow: 'serpentine', cover: 'walled', barriers: 'mixed', sight: 'blind',
+    terra: { class: 'maze', flow: 'serpentine', cover: 'walled', barriers: 'mixed', sight: 'blind', challenge: 'brutal',
       basis: 'The hall every standing order comes from. The desks are in perfect order, the chairs have never been occupied, and the walls are filing, floor to ceiling, forever.' },
     blurb: 'The last board. The road winds the hall between desk rows in perfect order, every corner is blind, and at the end of it is the room the orders come from, still issuing.',
     trait: 'Desk rows · the orders continue',
@@ -767,3 +774,350 @@ WORLD_MAPS.forEach(m => MAPS.push(m));
 
 const WORLD_MAP_BY_NAME = {};
 WORLD_MAPS.forEach(m => { WORLD_MAP_BY_NAME[m.world] = m; });
+
+/* ==========================================================================
+   THE FAMILY REFERENCE BOARDS (owner directive, Session 45).
+
+   Every procedural family now has ONE handcrafted board that shows what the
+   family means when a person builds it on purpose. The owner's brief for the
+   whole handcrafted programme was that it provides an example, through
+   handcrafted detail and intentional gameplay design, of how to rebuild the
+   thing in its own unique way. These are that example, one per family, and
+   they are what the document draws for a family that would otherwise show no
+   map at all.
+
+   NOT PLAYABLE BOARDS, deliberately. They are never pushed into MAPS and no
+   battle is ever fought on one: the game keeps rolling each family per world
+   and seed, because procedural ground is the future post-campaign mode. They
+   are the design corpus and the documentation figure, and they obey exactly
+   the geometry contract the playable boards obey, so a generator can be
+   judged against them. tools/probe-worldmaps.js validates them with the same
+   laws and the same terrain codex as every world board.
+
+   `terra.basis` on a world board states the real physical trait of the body
+   the board is built from. A family has no body, so here it states the
+   STRUCTURAL PREMISE instead: the one sentence a generator for this family
+   has to keep true for the family to mean anything.
+   ========================================================================== */
+const FAMILY_REFERENCE = [
+
+  {
+    family: 'spiral', name: 'VORTEX REACH',
+    terra: { class: 'ring', flow: 'spiral', cover: 'scattered', barriers: 'blocks',
+      sight: 'long', challenge: 'standard',
+      basis: 'One road that winds inward and must cross its own exit at least once, so a single position can be made to answer two passes of the same march.' },
+    brief: 'The winding is the whole idea: everything that walks in walks all of it, and the way out cuts back through ground it has already covered.',
+    cols: 30, rows: 17,
+    lanes: [[[14, 8], [4, 8], [4, 3], [12, 3], [12, 13], [2, 13], [2, 6], [8, 6], [8, 10], [-1, 10]]],
+    blocks: [[0, 0, 1, 1], [13, 15, 14, 16], [10, 11, 11, 12], [6, 0, 7, 1]],
+    nodes: [[10, 5, 'storm', 'build'], [6, 15, 'frost', 'build'], [6, 6, 'kinetic', 'lane']]
+  },
+
+  {
+    family: 'twin-channel', name: 'TWIN STRAITS',
+    terra: { class: 'channel', flow: 'split', cover: 'pocketed', barriers: 'blocks',
+      sight: 'long', challenge: 'demanding',
+      basis: 'Two channels that never share a tile, divided by a bank wide enough that no position on one channel can be made to help the other.' },
+    brief: 'The bank is the board. Whichever mouth you fortify is the one they stop using, so the defence is bought twice or it fails once.',
+    cols: 28, rows: 17,
+    lanes: [
+      [[13, 3], [8, 3], [8, 1], [3, 1], [3, 8], [-1, 8]],
+      [[13, 13], [8, 13], [8, 15], [3, 15], [3, 8], [-1, 8]]
+    ],
+    blocks: [[5, 6, 12, 10], [0, 0, 1, 1], [0, 15, 1, 16]],
+    nodes: [[10, 4, 'frost', 'build'], [10, 12, 'venom', 'build'], [10, 3, 'storm', 'lane']]
+  },
+
+  {
+    family: 'chokepoint', name: 'THE NARROWS',
+    terra: { class: 'corridor', flow: 'switchback', cover: 'pocketed', barriers: 'blocks',
+      sight: 'broken', challenge: 'demanding',
+      basis: 'A single-file corridor whose alcoves are sealed from each other, so nothing built in one alcove can support another.' },
+    brief: 'Three pockets, three separate arguments. Anything you want covered twice has to be paid for twice.',
+    cols: 24, rows: 13,
+    lanes: [[[11, 6], [9, 6], [9, 2], [6, 2], [6, 10], [3, 10], [3, 6], [-1, 6]]],
+    blocks: [[0, 0, 8, 0], [0, 11, 8, 12], [7, 3, 8, 5], [4, 3, 5, 5], [7, 7, 8, 9], [0, 7, 1, 9]],
+    nodes: [[2, 3, 'radiant', 'build'], [10, 9, 'void', 'build'], [6, 6, 'fire', 'lane']]
+  },
+
+  {
+    family: 'island-scatter', name: 'SHATTERED SHOALS',
+    terra: { class: 'archipelago', flow: 'serpentine', cover: 'pocketed', barriers: 'blocks',
+      sight: 'broken', challenge: 'demanding',
+      basis: 'A road that outlived the ground it was laid on: only the old standing pockets take a foundation, and there is no second-best tile behind a bad one.' },
+    brief: 'The fight is decided by which pockets are taken first, because nothing is waiting behind them.',
+    cols: 30, rows: 15,
+    lanes: [[[14, 7], [10, 7], [10, 3], [5, 3], [5, 11], [1, 11], [1, 7], [-1, 7]]],
+    blocks: [[11, 0, 14, 2], [6, 0, 9, 1], [0, 0, 3, 1], [11, 9, 14, 11], [7, 5, 9, 9],
+             [0, 13, 4, 14], [11, 13, 14, 14], [2, 5, 3, 9]],
+    nodes: [[12, 4, 'void', 'build'], [1, 3, 'kinetic', 'build'], [5, 7, 'venom', 'lane']]
+  },
+
+  {
+    family: 'open-field', name: 'THE EXPANSE',
+    terra: { class: 'field', flow: 'straight', cover: 'open', barriers: 'blocks',
+      sight: 'long', challenge: 'standard',
+      basis: 'Ground kept clear by law and still clear now: a board wide enough that a line which cannot cover width does not cover anything.' },
+    brief: 'Almost nothing to stand behind and a great deal to stand in front of. Spread, or be walked around.',
+    cols: 36, rows: 17,
+    lanes: [[[17, 8], [9, 8], [9, 9], [2, 9], [2, 7], [-1, 7]]],
+    blocks: [[12, 3, 13, 3], [5, 13, 6, 13], [14, 12, 14, 12]],
+    nodes: [[12, 6, 'radiant', 'build'], [6, 11, 'storm', 'build'], [5, 9, 'kinetic', 'lane']]
+  },
+
+  {
+    family: 'convergence', name: 'LAST BASTION',
+    terra: { class: 'plaza', flow: 'convergent', cover: 'scattered', barriers: 'blocks',
+      sight: 'long', challenge: 'punishing',
+      basis: 'Several roads that end at the same door, so the last stretch carries every march at once and nothing earlier can be traded away.' },
+    brief: 'A siege shape: three approaches, one gate, and no depth left to give once they are inside the last run.',
+    cols: 28, rows: 17,
+    lanes: [
+      [[13, 3], [6, 3], [6, 8], [-1, 8]],
+      [[13, 13], [6, 13], [6, 8], [-1, 8]],
+      [[13, 8], [-1, 8]]
+    ],
+    blocks: [[9, 5, 11, 6], [9, 10, 11, 11], [0, 0, 1, 1], [0, 15, 1, 16], [3, 1, 4, 2], [3, 14, 4, 15]],
+    nodes: [[8, 2, 'fire', 'build'], [8, 14, 'frost', 'build'], [9, 8, 'radiant', 'lane']]
+  },
+
+  {
+    family: 'fortress-ring', name: 'SIEGE RING',
+    terra: { class: 'ring', flow: 'serpentine', cover: 'walled', barriers: 'walls',
+      sight: 'broken', challenge: 'punishing',
+      basis: 'A shot-stopping ring with gaps in it, standing between the road and the only ground that watches the whole road.' },
+    brief: 'The inside of the ring is the best real estate on the board and the hardest to use: what stands there is safe from most of the march and blind to most of it too.',
+    cols: 28, rows: 17,
+    lanes: [[[13, 8], [10, 8], [10, 3], [4, 3], [4, 13], [1, 13], [1, 8], [-1, 8]]],
+    walls: [[6, 5, 9, 5], [6, 11, 9, 11], [6, 6, 6, 7], [6, 9, 6, 10]],
+    blocks: [[0, 0, 1, 1], [12, 15, 13, 16], [11, 12, 12, 13]],
+    nodes: [[8, 8, 'void', 'build'], [12, 5, 'kinetic', 'build'], [4, 6, 'fire', 'lane']]
+  },
+
+  {
+    family: 'braid', name: 'WOVEN ROADS',
+    terra: { class: 'weave', flow: 'braid', cover: 'scattered', barriers: 'blocks',
+      sight: 'long', challenge: 'standard',
+      basis: 'Two roads that cross each other at least twice, so a position at a crossing works both marches for the price of one.' },
+    brief: 'Everything on this board is a question about the crossings. Away from them, every tower is doing half a job at full cost.',
+    cols: 30, rows: 15,
+    lanes: [
+      [[14, 4], [10, 4], [10, 10], [6, 10], [6, 4], [2, 4], [2, 7], [-1, 7]],
+      [[14, 10], [12, 10], [12, 6], [8, 6], [8, 12], [4, 12], [4, 7], [-1, 7]]
+    ],
+    blocks: [[0, 0, 1, 1], [13, 13, 14, 14], [11, 1, 12, 2], [1, 10, 2, 11]],
+    nodes: [[11, 8, 'storm', 'build'], [5, 2, 'frost', 'build'], [10, 6, 'void', 'lane']]
+  },
+
+  {
+    family: 'gauntlet', name: 'THE FENCED ROAD',
+    terra: { class: 'corridor', flow: 'straight', cover: 'walled', barriers: 'walls',
+      sight: 'broken', challenge: 'standard',
+      basis: 'One run with shot-stopping posts staggered beside it, each post blinding a short stretch of road and sheltering one position.' },
+    brief: 'A straight road that is not a simple one: the whole game is choosing which side of which post to live on.',
+    cols: 32, rows: 13,
+    lanes: [[[15, 6], [8, 6], [8, 7], [2, 7], [2, 5], [-1, 5]]],
+    walls: [[13, 4, 13, 4], [11, 8, 11, 8], [9, 4, 9, 4], [6, 9, 6, 9], [4, 5, 4, 5],
+            [12, 2, 13, 2], [5, 10, 6, 10]],
+    blocks: [[0, 0, 1, 1], [0, 11, 1, 12], [14, 10, 15, 12]],
+    nodes: [[11, 5, 'kinetic', 'build'], [5, 3, 'radiant', 'build'], [12, 6, 'fire', 'lane']]
+  },
+
+  {
+    family: 'staircase', name: 'DESCENT STEPS',
+    terra: { class: 'terrace', flow: 'staircase', cover: 'pocketed', barriers: 'blocks',
+      sight: 'broken', challenge: 'standard',
+      basis: 'A road that only ever descends, with cover that only ever shelters the downhill side, so height is bought once and then kept.' },
+    brief: 'Monotonic ground. Whoever takes the high steps fires over everything below and answers to nothing above.',
+    cols: 28, rows: 17,
+    lanes: [[[13, 2], [11, 2], [11, 5], [8, 5], [8, 8], [5, 8], [5, 11], [2, 11], [2, 14], [-1, 14]]],
+    blocks: [[12, 3, 13, 4], [9, 6, 10, 7], [6, 9, 7, 10], [3, 12, 4, 13], [0, 0, 1, 1]],
+    nodes: [[12, 6, 'radiant', 'build'], [6, 3, 'frost', 'build'], [8, 6, 'storm', 'lane']]
+  },
+
+  {
+    family: 'horseshoe', name: 'THE PLAZA',
+    terra: { class: 'plaza', flow: 'ring-arc', cover: 'open', barriers: 'blocks',
+      sight: 'long', challenge: 'teaching',
+      basis: 'Three legs wrapped around one open middle, placed so the middle can be made to answer all three at once.' },
+    brief: 'The gentlest shape in the set and the clearest lesson: one good centre beats three good edges.',
+    cols: 28, rows: 15,
+    lanes: [[[13, 2], [3, 2], [3, 12], [11, 12], [11, 7], [-1, 7]]],
+    blocks: [[0, 0, 1, 1], [0, 13, 1, 14], [12, 13, 13, 14], [12, 0, 13, 0]],
+    nodes: [[7, 4, 'radiant', 'build'], [7, 10, 'storm', 'build'], [7, 7, 'kinetic', 'lane']]
+  },
+
+  {
+    family: 'switchback', name: 'HAIRPIN PASS',
+    terra: { class: 'canyon', flow: 'switchback', cover: 'open', barriers: 'blocks',
+      sight: 'long', challenge: 'demanding',
+      basis: 'A zigzag tight enough that the march is never far from where it just was, and never exposed for long in any one leg.' },
+    brief: 'Six hairpins in one pass. Range is worth less than position, because everything is close and nothing stays.',
+    cols: 24, rows: 17,
+    lanes: [[[11, 2], [4, 2], [4, 4], [10, 4], [10, 6], [4, 6], [4, 8], [10, 8],
+             [10, 10], [4, 10], [4, 12], [10, 12], [10, 14], [2, 14], [2, 10], [-1, 10]]],
+    blocks: [[0, 0, 1, 1], [0, 15, 1, 16], [11, 15, 11, 16]],
+    nodes: [[7, 3, 'fire', 'build'], [7, 11, 'venom', 'build'], [7, 8, 'frost', 'lane']]
+  },
+
+  {
+    family: 'labyrinth', name: 'THE MAZE',
+    terra: { class: 'maze', flow: 'serpentine', cover: 'mazed', barriers: 'mixed',
+      sight: 'blind', challenge: 'brutal',
+      basis: 'A coarse grid of shot-stopping walls with a corridor carved through it, so no sightline survives more than one turn.' },
+    brief: 'The hardest reference in the set. Nothing sees far, nothing supports anything, and every engagement is decided before it is visible.',
+    cols: 26, rows: 17,
+    lanes: [[[12, 2], [8, 2], [8, 6], [11, 6], [11, 10], [5, 10], [5, 14], [1, 14], [1, 6], [-1, 6]]],
+    walls: [[2, 4, 6, 4], [9, 4, 10, 4], [3, 8, 6, 8], [9, 8, 10, 8], [12, 8, 12, 8],
+            [2, 12, 4, 12], [7, 12, 11, 12], [3, 5, 3, 7]],
+    blocks: [[0, 0, 1, 1], [11, 15, 12, 16]],
+    nodes: [[6, 6, 'void', 'build'], [2, 10, 'frost', 'build'], [5, 12, 'void', 'lane']]
+  },
+
+  {
+    family: 'twin-temple', name: 'TWIN SANCTUMS',
+    terra: { class: 'plaza', flow: 'split', cover: 'pocketed', barriers: 'blocks',
+      sight: 'broken', challenge: 'demanding',
+      basis: 'Two compact arenas in separate row bands, sharing only the door, so attention spent in one band is attention absent from the other.' },
+    brief: 'Two small battles that only become one battle at the gate, and by then the loser has usually been decided.',
+    cols: 28, rows: 17,
+    lanes: [
+      [[13, 3], [9, 3], [9, 6], [4, 6], [4, 2], [1, 2], [1, 8], [-1, 8]],
+      [[13, 13], [9, 13], [9, 10], [4, 10], [4, 14], [1, 14], [1, 8], [-1, 8]]
+    ],
+    blocks: [[6, 8, 12, 8], [11, 5, 12, 6], [11, 10, 12, 11], [0, 0, 0, 1], [0, 15, 0, 16]],
+    nodes: [[7, 4, 'radiant', 'build'], [7, 12, 'venom', 'build'], [6, 6, 'fire', 'lane']]
+  },
+
+  {
+    family: 'twin-gate', name: 'THE BARS',
+    terra: { class: 'corridor', flow: 'straight', cover: 'walled', barriers: 'walls',
+      sight: 'broken', challenge: 'demanding',
+      basis: 'One road pierced by full-height bars that leave open only the tile the road passes through, so every bar is a kill box with one door.' },
+    brief: 'Straight, short, and entirely about the gaps. What cannot shoot through a bar had better be standing in front of one.',
+    cols: 30, rows: 13,
+    lanes: [[[14, 6], [3, 6], [3, 7], [-1, 7]]],
+    walls: [[11, 0, 11, 5], [11, 7, 11, 12], [7, 0, 7, 5], [7, 7, 7, 12],
+            [13, 2, 13, 4], [13, 8, 13, 10]],
+    blocks: [[0, 0, 1, 1], [0, 11, 1, 12]],
+    nodes: [[9, 3, 'storm', 'build'], [9, 9, 'kinetic', 'build'], [9, 6, 'void', 'lane']]
+  }
+
+];
+
+const FAMILY_REFERENCE_BY_ID = {};
+FAMILY_REFERENCE.forEach(m => { FAMILY_REFERENCE_BY_ID[m.family] = m; });
+
+/* ==========================================================================
+   THE CODEX OVER THE OLDER BOARDS (owner directive, Session 45).
+
+   The terrain codex was introduced with the handcrafted planet grounds, so
+   the twenty-one pool boards and the four three-way grounds that predate it
+   carried no classification at all: the categorisation system covered the
+   new boards and stopped at the old ones, which is exactly the kind of
+   half-applied scheme that stops being useful to sort by.
+
+   Classified here rather than in js/config.js for two reasons: the codex is
+   this module's job, and config.js is the largest file in the project, so a
+   twenty-five point edit spread through it is a merge problem for everyone
+   else. The records are keyed by map id and merged onto the live entries
+   below, which keeps every board's classification in one readable table.
+
+   `basis` for these states what the SHAPE is doing, since a pool board is an
+   archetype rather than a named body: same discipline as the reference set.
+   ========================================================================== */
+const POOL_TERRA = {
+
+  spine: { class: 'field', flow: 'serpentine', cover: 'open', barriers: 'none',
+    sight: 'long', challenge: 'teaching',
+    basis: 'One serpentine with generous shoulders and no obstruction anywhere on it: the only board in the game where nothing at all stands between a tower and the road.' },
+
+  delta: { class: 'channel', flow: 'split', cover: 'pocketed', barriers: 'blocks',
+    sight: 'long', challenge: 'demanding',
+    basis: 'Two mouths divided by a silt bank no tower shoots across, so the ground is cut into a north pocket and a south pocket that cannot cover each other.' },
+
+  narrows: { class: 'corridor', flow: 'switchback', cover: 'pocketed', barriers: 'blocks',
+    sight: 'broken', challenge: 'demanding',
+    basis: 'Rubble has taken everything but three alcoves, and each alcove watches a single leg of the corridor with no fallback behind it.' },
+
+  shattered: { class: 'archipelago', flow: 'serpentine', cover: 'pocketed', barriers: 'blocks',
+    sight: 'broken', challenge: 'demanding',
+    basis: 'Four standing islands hanging off one long fall of a lane, with nothing buildable in the water between them.' },
+
+  crossroads: { class: 'weave', flow: 'braid', cover: 'scattered', barriers: 'blocks',
+    sight: 'long', challenge: 'standard',
+    basis: 'Two lanes that meet twice, so the two crossings are worth more than any other tile on the board and everybody can see that.' },
+
+  coil: { class: 'ring', flow: 'spiral', cover: 'scattered', barriers: 'blocks',
+    sight: 'long', challenge: 'standard',
+    basis: 'The longest single lane in the game, wound so tightly that its exit cuts back across the ground it just covered.' },
+
+  expanse: { class: 'field', flow: 'split', cover: 'open', barriers: 'blocks',
+    sight: 'long', challenge: 'demanding',
+    basis: 'A massive field carrying two long lanes, wide enough that no single line of towers can be made to answer both of them.' },
+
+  rift: { class: 'channel', flow: 'split', cover: 'scattered', barriers: 'blocks',
+    sight: 'broken', challenge: 'demanding',
+    basis: 'Twin loops feeding one throat, so the same ground is walked twice and the throat is paid for twice.' },
+
+  lattice: { class: 'grid', flow: 'convergent', cover: 'scattered', barriers: 'blocks',
+    sight: 'long', challenge: 'demanding',
+    basis: 'Three lanes on a signal grid that all end at one shared gate, so the gate carries three marches and nothing upstream carries any of them alone.' },
+
+  causeway: { class: 'band', flow: 'split', cover: 'pocketed', barriers: 'blocks',
+    sight: 'long', challenge: 'punishing',
+    basis: 'One narrow strip of standing ground carrying both lanes, with no second pass anywhere: what is not stopped on the causeway is not stopped.' },
+
+  anvil: { class: 'terrace', flow: 'staircase', cover: 'pocketed', barriers: 'blocks',
+    sight: 'broken', challenge: 'demanding',
+    basis: 'The shortest lane in the game across terraced ground, so the march is over quickly and every terrace has to earn its place immediately.' },
+
+  lance: { class: 'band', flow: 'straight', cover: 'open', barriers: 'blocks',
+    sight: 'long', challenge: 'standard',
+    basis: 'One straight run forty tiles long with open flanks, where range is worth more than position and nothing ever turns.' },
+
+  skew: { class: 'field', flow: 'split', cover: 'scattered', barriers: 'blocks',
+    sight: 'long', challenge: 'demanding',
+    basis: 'Two lanes of deliberately unequal length, so the cheap road and the expensive road are the same decision seen from two sides.' },
+
+  strait: { class: 'channel', flow: 'straight', cover: 'open', barriers: 'blocks',
+    sight: 'long', challenge: 'demanding',
+    basis: 'Lanes that cross the mirror axis, so the two waves pass each other head-on and every tower is firing into traffic going both ways.' },
+
+  loom: { class: 'weave', flow: 'weave', cover: 'scattered', barriers: 'blocks',
+    sight: 'long', challenge: 'standard',
+    basis: 'Two combs threaded through each other, with one band of ground in the middle that reads both of them at once.' },
+
+  ossuary: { class: 'corridor', flow: 'serpentine', cover: 'scattered', barriers: 'blocks',
+    sight: 'long', challenge: 'punishing',
+    basis: 'One long barrow lane where nothing reanimates, so every kill is final and every loss is permanent: a survival board wearing a duel board shape.' },
+
+  atoll: { class: 'ring', flow: 'ring-arc', cover: 'scattered', barriers: 'blocks',
+    sight: 'long', challenge: 'standard',
+    basis: 'One ring road around a citadel, so the inside is the prize and the outside is the whole approach.' },
+
+  /* The four three-way grounds. Three commanders, no mirror axis, and a
+     shared spawn at the middle: every one of them is punishing before its
+     scenario is considered, which is why the campaign only fights them where
+     two powers were already at war over the world. */
+  confluence: { class: 'plaza', flow: 'convergent', cover: 'scattered', barriers: 'blocks',
+    sight: 'long', challenge: 'punishing',
+    basis: 'Three powers, one spawn and no allies, where every kill reanimates toward both rivals so the dead walk twice as thick as on any duel board.' },
+
+  crown: { class: 'ring', flow: 'convergent', cover: 'pocketed', barriers: 'blocks',
+    sight: 'broken', challenge: 'punishing',
+    basis: 'A walled crown over the shared spawn with exactly three doors, one per commander, so nothing leaves without passing a wall every side can shoot at.' },
+
+  carousel: { class: 'weave', flow: 'ring-arc', cover: 'pocketed', barriers: 'blocks',
+    sight: 'long', challenge: 'punishing',
+    basis: 'Three hooked arms around three islands, so each commander walks a curve that hands its flank to the next one along.' },
+
+  orrery: { class: 'ring', flow: 'ring-arc', cover: 'pocketed', barriers: 'blocks',
+    sight: 'broken', challenge: 'brutal',
+    basis: 'Nested rings pierced by six gaps, the most obstructed ground in the game, where a defence has to choose which of six ways in it is prepared to lose.' }
+};
+
+/* Merged onto the live entries: the codex is one table, and every board in
+   the game now carries a classification. Mutation only, no draw, no new
+   board, and the sim never reads any of it. */
+MAPS.forEach(m => { if (POOL_TERRA[m.id] && !m.terra) m.terra = POOL_TERRA[m.id]; });

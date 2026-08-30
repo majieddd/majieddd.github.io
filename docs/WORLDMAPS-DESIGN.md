@@ -48,7 +48,16 @@ example.
 | `cover` | open, scattered, pocketed, walled, mazed | Obstacle density class |
 | `barriers` | none, blocks, walls, mixed | Which obstacle kinds appear (blocks stop building; walls also stop shots) |
 | `sight` | long, broken, blind | What a tower can expect to see |
-| `basis` | prose | The real physical trait of the body this board is built from |
+| `challenge` | teaching, standard, demanding, punishing, brutal | How hard the GROUND is, intrinsic to the geometry and independent of when the campaign hands it to you |
+| `basis` | prose | The real physical trait of the body this board is built from (for an archetype board, the structural premise instead) |
+
+**Coverage is universal (Session 45).** Every board in the game carries the
+codex, not just the handcrafted planets: the twenty-one pool boards and the
+four three-way grounds are classified in `POOL_TERRA` (js/worldmaps.js) and
+merged onto their live MAPS entries, because a classification applied to half
+the shelf cannot be sorted by. The probe also asserts that every vocabulary
+term is EARNED by some board, so a category that was imagined rather than
+observed shows up as a failure.
 
 Every field except `basis` is validated against its vocabulary by
 tools/probe-worldmaps.js. `basis` is content (a sentence), exempt by the
@@ -119,9 +128,30 @@ in the blurb.)
 | THE COMPANION | ring / spiral / pocketed | The orbit of the dead star: one long inward spiral. |
 | THE DOG STAR (seat) | maze / serpentine / walled | The hall of standing orders: an immaculate wall grid, one winding road, desks in perfect order, chairs never occupied. |
 
+## The family reference boards (Session 45)
+
+Procedural families had no fixed geometry, so they rendered as blank entries:
+nineteen boards in the document showed no map at all (fifteen families plus
+the four three-way grounds, which had geometry but no renderer that understood
+it). Both are closed:
+
+- **The three-way grounds are drawn.** They are authored in ABSOLUTE
+  coordinates with one lane per commander and no mirror axis, which is why the
+  duo renderer refused them; `triSVG` draws them with a colour per seat.
+- **Every procedural family gets ONE handcrafted reference board**
+  (`FAMILY_REFERENCE` in js/worldmaps.js): the worked example the generator is
+  built to reproduce, obeying the same geometry contract and carrying the same
+  codex as a playable board. They are never pushed into MAPS and no battle is
+  ever fought on one; the game keeps rolling each family per world and seed.
+  This is the owner's stated purpose for the handcrafted programme made
+  literal: a design brief a future generator can be judged against.
+
+`node tools/showboard.js refs` pages through them; `tri` pages the three-way
+grounds; `worlds` pages the planets.
+
 ## Verification
 
-- `tools/probe-worldmaps.js`, wired into gate.js: 35 boards present and
+- `tools/probe-worldmaps.js`, wired into gate.js (15 checks): 35 boards present and
   name-keyed to GX_HOME_SYSTEMS exactly; geometry laws (even cols, first
   waypoint at cols/2-1, last at x=-1, axis-aligned segments, half-side
   terrain, walls never on lane tiles, every authored node survives the
@@ -129,7 +159,16 @@ in the blurb.)
   the STREAM PIN: a committed fixture of owners, kinds, seats, arenas and
   boons across seeds, generated before the override landed, asserted equal
   after it.
-- `tools/showboard.js` renders any world board by id for authoring review.
+- WM.11 through WM.15 cover the Session 45 work: every family has a
+  reference board and none is playable; **every board entry resolves to
+  geometry a page can draw** (the check that would have caught the nineteen
+  blanks); challenge is present and spread across all five levels; no two
+  authored boards share geometry; and the codex covers every board with every
+  term earned. All four were mutation-tested (deleted reference, duplicated
+  geometry, out-of-vocabulary value, stripped codex): each caught by its
+  predicted check, control green.
+- `tools/showboard.js` renders any board by id, plus `worlds`, `refs` and
+  `tri` for authoring review.
 - Balance: campaign board geometry is a deliberate sim change (owner
   directive); pins re-baseline, recorded in docs/BALANCE-BASELINE.md.
 - The narrative spine renders every board as an SVG from the game's own

@@ -233,9 +233,17 @@ for (const t of tables) {
        any value outside TERRA_VOCAB, and the narrative spine renders every
        field. Scoped to worldmaps.js and to exactly these names, so a real
        behaviour field added to that file is still caught (verified by
-       planting `surgeRate: 7` on two boards: flagged; control green). */
+       planting `surgeRate: 7` on two boards: flagged; control green).
+
+       `challenge` IS LISTED DELIBERATELY even though it already passed. It
+       passed for the wrong reason: the loose reader scan is name-based and
+       the word "challenge" happens to appear in a cutscene caption
+       (js/cutscenes.js), so an unrelated line of dialogue was vouching for a
+       codex field. That green would have flipped red the day somebody edited
+       the caption. Naming it here makes the exemption the reason. */
     if (/worldmaps\.js$/.test(t.file) &&
-        ['class', 'flow', 'cover', 'barriers', 'sight', 'basis'].indexOf(key) >= 0) continue;
+        ['class', 'flow', 'cover', 'barriers', 'sight', 'basis', 'challenge',
+         'brief', 'family'].indexOf(key) >= 0) continue;
     if (!declared.has(key)) declared.set(key, []);
     const hit = declared.get(key);
     if (!hit.some(h => h.table === t.name)) hit.push({ table: t.name, file: t.file, line: t.line });

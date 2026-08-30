@@ -14,6 +14,11 @@
  * Usage:
  *   node tools/showboard.js                 one sample of every family
  *   node tools/showboard.js braid 5         five seeds of one family
+ *   node tools/showboard.js worlds          every handcrafted planet board
+ *   node tools/showboard.js refs            every family REFERENCE board
+ *   node tools/showboard.js tri             the three-way grounds (1/2/3 = seats)
+ *   node tools/showboard.js ref:labyrinth   one reference board
+ *   node tools/showboard.js w_mars          one board by id
  */
 'use strict';
 const fs = require('fs');
@@ -101,11 +106,41 @@ function renderAuthored(m) {
   console.log('');
 }
 
+/* TRI GROUNDS: absolute coordinates, one lane per commander, no mirror. */
+function renderTri(m) {
+  const { cols, rows } = m;
+  const grid = [];
+  for (let y = 0; y < rows; y++) grid.push(new Array(cols).fill('.'));
+  const put = (x, y, ch) => { if (x >= 0 && y >= 0 && x < cols && y < rows) grid[y][x] = ch; };
+  for (const [x0, y0, x1, y1] of (m.blocks || []))
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) put(x, y, '#');
+  for (const [x0, y0, x1, y1] of (m.walls || []))
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) put(x, y, 'W');
+  (m.triLanes || []).forEach((lane, i) => {
+    for (const [x, y] of tiles(lane)) put(x, y, String(i + 1));
+    const b = lane[lane.length - 1];
+    put(b[0], b[1], 'ABC'[i] || 'B');
+  });
+  for (const spec of (m.triNodes || [])) for (const pt of spec.slice(2)) put(pt[0], pt[1], 'o');
+  console.log('--- ' + m.id + '  ' + m.name + '  ' + cols + 'x' + rows + '  THREE-WAY, lanes=' +
+              (m.triLanes || []).length + '  blocks=' + (m.blocks || []).length +
+              (m.terra ? '  [' + m.terra.class + '/' + m.terra.flow + '/' + m.terra.challenge + ']' : ''));
+  for (const row of grid) console.log('   ' + row.join(''));
+  console.log('');
+}
+
 const arg = process.argv[2];
 const n = Number(process.argv[3] || 1);
 const fams = [...new Set(G.MAPS.filter(m => m.procedural && m.family).map(m => m.family))];
 const byId = arg && G.MAPS.find(m => m.id === arg && !m.procedural && !m.tri && m.lanes);
+const REF = win.FAMILY_REFERENCE || [];
+const triById = arg && G.MAPS.find(m => m.id === arg && m.tri);
+const refByFam = arg && REF.find(r => r.family === arg.replace(/^ref:/, '') && /^ref:/.test(arg));
 if (arg === 'worlds') G.MAPS.filter(m => m.world).forEach(renderAuthored);
+else if (arg === 'refs') REF.forEach(r => renderAuthored(Object.assign({ id: 'ref:' + r.family }, r)));
+else if (arg === 'tri') G.MAPS.filter(m => m.tri).forEach(renderTri);
+else if (refByFam) renderAuthored(Object.assign({ id: 'ref:' + refByFam.family }, refByFam));
+else if (triById) renderTri(triById);
 else if (byId) renderAuthored(byId);
 else if (arg && fams.includes(arg)) for (let i = 0; i < n; i++) render(arg, 'seed' + i);
 else for (const f of fams) render(f, 'seed0');

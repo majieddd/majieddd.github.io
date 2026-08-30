@@ -4520,7 +4520,7 @@
    "name": "THE HARBOUR DISTRICT",
    "faction": null,
    "page": "index.html#mp-w_earth",
-   "src": "js/worldmaps.js:58"
+   "src": "js/worldmaps.js:65"
   },
   {
    "ref": "map:w_luna",
@@ -4528,7 +4528,7 @@
    "name": "THE FAR SIDE",
    "faction": null,
    "page": "index.html#mp-w_luna",
-   "src": "js/worldmaps.js:78"
+   "src": "js/worldmaps.js:85"
   },
   {
    "ref": "map:w_mars",
@@ -4536,7 +4536,7 @@
    "name": "THE GREAT RIFT",
    "faction": null,
    "page": "index.html#mp-w_mars",
-   "src": "js/worldmaps.js:97"
+   "src": "js/worldmaps.js:104"
   },
   {
    "ref": "map:w_venus",
@@ -4544,7 +4544,7 @@
    "name": "THE PRESSURE GARDENS",
    "faction": null,
    "page": "index.html#mp-w_venus",
-   "src": "js/worldmaps.js:117"
+   "src": "js/worldmaps.js:124"
   },
   {
    "ref": "map:w_mercury",
@@ -4552,7 +4552,7 @@
    "name": "THE TERMINATOR LINE",
    "faction": null,
    "page": "index.html#mp-w_mercury",
-   "src": "js/worldmaps.js:137"
+   "src": "js/worldmaps.js:144"
   },
   {
    "ref": "map:w_jupiter",
@@ -4560,7 +4560,7 @@
    "name": "THE CLOUD DECKS",
    "faction": null,
    "page": "index.html#mp-w_jupiter",
-   "src": "js/worldmaps.js:156"
+   "src": "js/worldmaps.js:163"
   },
   {
    "ref": "map:w_saturn",
@@ -4568,7 +4568,7 @@
    "name": "THE SHEPHERD RING",
    "faction": null,
    "page": "index.html#mp-w_saturn",
-   "src": "js/worldmaps.js:178"
+   "src": "js/worldmaps.js:185"
   },
   {
    "ref": "map:w_maia",
@@ -4576,7 +4576,7 @@
    "name": "THE LIGHT PLAIN",
    "faction": null,
    "page": "index.html#mp-w_maia",
-   "src": "js/worldmaps.js:205"
+   "src": "js/worldmaps.js:212"
   },
   {
    "ref": "map:w_electra",
@@ -4584,7 +4584,7 @@
    "name": "THE SHRINE TERRACES",
    "faction": null,
    "page": "index.html#mp-w_electra",
-   "src": "js/worldmaps.js:223"
+   "src": "js/worldmaps.js:230"
   },
   {
    "ref": "map:w_taygeta",
@@ -4592,7 +4592,7 @@
    "name": "THE CHORAL HALLS",
    "faction": null,
    "page": "index.html#mp-w_taygeta",
-   "src": "js/worldmaps.js:241"
+   "src": "js/worldmaps.js:248"
   },
   {
    "ref": "map:w_merope",
@@ -4600,7 +4600,7 @@
    "name": "THE DUST WAKE",
    "faction": null,
    "page": "index.html#mp-w_merope",
-   "src": "js/worldmaps.js:262"
+   "src": "js/worldmaps.js:269"
   },
   {
    "ref": "map:w_celaeno",
@@ -4608,7 +4608,7 @@
    "name": "THE ARCHIVE VAULTS",
    "faction": null,
    "page": "index.html#mp-w_celaeno",
-   "src": "js/worldmaps.js:283"
+   "src": "js/worldmaps.js:290"
   },
   {
    "ref": "map:w_sterope",
@@ -4616,7 +4616,7 @@
    "name": "THE LIGHTNING NURSERIES",
    "faction": null,
    "page": "index.html#mp-w_sterope",
-   "src": "js/worldmaps.js:303"
+   "src": "js/worldmaps.js:310"
   },
   {
    "ref": "map:w_alcyone",
@@ -4624,7 +4624,7 @@
    "name": "THE ANCHOR SANCTUM",
    "faction": null,
    "page": "index.html#mp-w_alcyone",
-   "src": "js/worldmaps.js:324"
+   "src": "js/worldmaps.js:331"
   },
   {
    "ref": "map:w_z1b",
@@ -4632,7 +4632,7 @@
    "name": "THE TITHER FIELDS",
    "faction": null,
    "page": "index.html#mp-w_z1b",
-   "src": "js/worldmaps.js:348"
+   "src": "js/worldmaps.js:355"
   },
   {
    "ref": "map:w_z1c",
@@ -4640,7 +4640,7 @@
    "name": "THE GULLET",
    "faction": null,
    "page": "index.html#mp-w_z1c",
-   "src": "js/worldmaps.js:366"
+   "src": "js/worldmaps.js:373"
   },
   {
    "ref": "map:w_z1d",
@@ -4648,7 +4648,7 @@
    "name": "THE SPORE SHOALS",
    "faction": null,
    "page": "index.html#mp-w_z1d",
-   "src": "js/worldmaps.js:385"
+   "src": "js/worldmaps.js:392"
   },
   {
    "ref": "map:w_z2b",
@@ -4656,7 +4656,7 @@
    "name": "THE HIVE GALLERY",
    "faction": null,
    "page": "index.html#mp-w_z2b",
-   "src": "js/worldmaps.js:406"
+   "src": "js/worldmaps.js:413"
   },
   {
    "ref": "map:w_z2c",
@@ -4664,7 +4664,7 @@
    "name": "THE BIRTHING POOLS",
    "faction": null,
    "page": "index.html#mp-w_z2c",
-   "src": "js/worldmaps.js:424"
+   "src": "js/worldmaps.js:431"
   },
   {
    "ref": "map:w_z2d",
@@ -4672,7 +4672,7 @@
    "name": "THE LEDGER CHAMBER",
    "faction": null,
    "page": "index.html#mp-w_z2d",
-   "src": "js/worldmaps.js:446"
+   "src": "js/worldmaps.js:453"
   },
   {
    "ref": "map:w_serpo",
@@ -4680,7 +4680,7 @@
    "name": "THE EXCHANGE GROUND",
    "faction": null,
    "page": "index.html#mp-w_serpo",
-   "src": "js/worldmaps.js:465"
+   "src": "js/worldmaps.js:472"
   },
   {
    "ref": "map:w_proxd",
@@ -4688,7 +4688,7 @@
    "name": "THE SCORCH LINE",
    "faction": null,
    "page": "index.html#mp-w_proxd",
-   "src": "js/worldmaps.js:488"
+   "src": "js/worldmaps.js:495"
   },
   {
    "ref": "map:w_proxb",
@@ -4696,7 +4696,7 @@
    "name": "THE FIRST PORT",
    "faction": null,
    "page": "index.html#mp-w_proxb",
-   "src": "js/worldmaps.js:506"
+   "src": "js/worldmaps.js:513"
   },
   {
    "ref": "map:w_proxc",
@@ -4704,7 +4704,7 @@
    "name": "THE WRECK YARDS",
    "faction": null,
    "page": "index.html#mp-w_proxc",
-   "src": "js/worldmaps.js:525"
+   "src": "js/worldmaps.js:532"
   },
   {
    "ref": "map:w_flare",
@@ -4712,7 +4712,7 @@
    "name": "THE FLARE SHELTER",
    "faction": null,
    "page": "index.html#mp-w_flare",
-   "src": "js/worldmaps.js:544"
+   "src": "js/worldmaps.js:551"
   },
   {
    "ref": "map:w_narrowstrait",
@@ -4720,7 +4720,7 @@
    "name": "THE SMUGGLER STRAIT",
    "faction": null,
    "page": "index.html#mp-w_narrowstrait",
-   "src": "js/worldmaps.js:567"
+   "src": "js/worldmaps.js:574"
   },
   {
    "ref": "map:w_locker",
@@ -4728,7 +4728,7 @@
    "name": "THE DARK LOCKER",
    "faction": null,
    "page": "index.html#mp-w_locker",
-   "src": "js/worldmaps.js:585"
+   "src": "js/worldmaps.js:592"
   },
   {
    "ref": "map:w_proxgate",
@@ -4736,7 +4736,7 @@
    "name": "THE TOLL PLAZA",
    "faction": null,
    "page": "index.html#mp-w_proxgate",
-   "src": "js/worldmaps.js:604"
+   "src": "js/worldmaps.js:611"
   },
   {
    "ref": "map:w_sira1",
@@ -4744,7 +4744,7 @@
    "name": "THE CALIBRATION PLAIN",
    "faction": null,
    "page": "index.html#mp-w_sira1",
-   "src": "js/worldmaps.js:632"
+   "src": "js/worldmaps.js:639"
   },
   {
    "ref": "map:w_sira2",
@@ -4752,7 +4752,7 @@
    "name": "THE ASSEMBLY ROWS",
    "faction": null,
    "page": "index.html#mp-w_sira2",
-   "src": "js/worldmaps.js:650"
+   "src": "js/worldmaps.js:657"
   },
   {
    "ref": "map:w_ash",
@@ -4760,7 +4760,7 @@
    "name": "THE ASH FIELD",
    "faction": null,
    "page": "index.html#mp-w_ash",
-   "src": "js/worldmaps.js:669"
+   "src": "js/worldmaps.js:676"
   },
   {
    "ref": "map:w_sirb1",
@@ -4768,7 +4768,7 @@
    "name": "THE COLLAPSE FORGE",
    "faction": null,
    "page": "index.html#mp-w_sirb1",
-   "src": "js/worldmaps.js:687"
+   "src": "js/worldmaps.js:694"
   },
   {
    "ref": "map:w_diamond",
@@ -4776,7 +4776,7 @@
    "name": "THE DIAMOND SHELF",
    "faction": null,
    "page": "index.html#mp-w_diamond",
-   "src": "js/worldmaps.js:706"
+   "src": "js/worldmaps.js:713"
   },
   {
    "ref": "map:w_companion",
@@ -4784,7 +4784,7 @@
    "name": "THE LONG ORBIT",
    "faction": null,
    "page": "index.html#mp-w_companion",
-   "src": "js/worldmaps.js:725"
+   "src": "js/worldmaps.js:732"
   },
   {
    "ref": "map:w_dogstar",
@@ -4792,7 +4792,7 @@
    "name": "THE HALL OF STANDING ORDERS",
    "faction": null,
    "page": "index.html#mp-w_dogstar",
-   "src": "js/worldmaps.js:743"
+   "src": "js/worldmaps.js:750"
   },
   {
    "ref": "map:spine",
