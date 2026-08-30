@@ -865,8 +865,18 @@ function generateGalaxy(seed, playerFaction, mapPool, kindsW, gxv) {
            assigned tri grounds. */
         {
           const cur = MAPS.find(m => m.id === w.map);
-          if (!cur || !cur.tri)
-            w.map = TRI_MAP_IDS[(w.si * WORLDS_PER_SYSTEM + w.wi) % TRI_MAP_IDS.length];
+          if (!cur || !cur.tri) {
+            /* KEYED BY NAME, NOT BY (si, wi). Systems sit at different tiers
+               in different campaigns, so a tier-indexed pick gave the same
+               planet different tri grounds across factions and broke the
+               one-universe law (owner-sweep 38.1 caught it in a real page).
+               The name is the world's universal identity; a tiny string
+               hash spreads the four tri grounds across it, no draw. */
+            let h = 0;
+            for (let ci = 0; ci < w.name.length; ci++)
+              h = (h * 31 + w.name.charCodeAt(ci)) % 9973;
+            w.map = TRI_MAP_IDS[h % TRI_MAP_IDS.length];
+          }
         }
       } else {
         w.contested = false; w.contestedBy = null;

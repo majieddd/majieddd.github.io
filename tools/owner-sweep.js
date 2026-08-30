@@ -2859,38 +2859,49 @@
            : systems + ' systems across ' + gs.length + ' galaxies, every one serving at least 2 distinct boards');
     });
 
-    T('42.2 every procedural family is reachable in a campaign', function () {
-      var gs = galaxies(12), seen = {};
-      for (var i = 0; i < gs.length; i++)
-        for (var a = 0; a < gs[i].systems.length; a++)
-          for (var b = 0; b < gs[i].systems[a].worlds.length; b++) seen[gs[i].systems[a].worlds[b].map] = 1;
-      var never = PROC.filter(function (m) { return !seen[m.id]; }).map(function (m) { return m.id; });
-      ok('42.2 every procedural family is reachable in a campaign',
-         gs.length > 0 && never.length === 0,
-         never.length ? never.length + ' of ' + PROC.length + ' never appear in ' + gs.length +
-                        ' galaxies: ' + never.join(', ')
-                      : 'all ' + PROC.length + ' procedural families appear across ' + gs.length + ' galaxies');
-    });
-
-    T('42.3 a system fields the ground its theme advertises', function () {
-      /* The themes name each system (OPEN GROUND, WALLED GROUND). Four themed
-         families against twenty-one authored boards made that label a 16%
-         chance of being true, so the draw is weighted. This asserts the label
-         is not decoration without demanding the authored boards disappear. */
-      var gs = galaxies(12), proc = 0, tot = 0;
+    /* HISTORY, because 42.2 and 42.3 used to assert the OPPOSITE. Until
+       Session 44 the campaign rolled boards from a themed pool, 42.2 held
+       every procedural family reachable in a campaign, and 42.3 held each
+       system to fielding 30%+ themed procedural ground. The owner then made
+       every campaign planet a handcrafted board (docs/WORLDMAPS-DESIGN.md):
+       procedural ground now belongs to skirmish and the future post-campaign
+       mode, and the campaign fields it NEVER. Same worlds, inverted law. */
+    T('42.2 the campaign fields no procedural ground, and the pool still ships every family', function () {
+      var gs = galaxies(12), rolled = [];
       for (var i = 0; i < gs.length; i++)
         for (var a = 0; a < gs[i].systems.length; a++)
           for (var b = 0; b < gs[i].systems[a].worlds.length; b++) {
             var w = gs[i].systems[a].worlds[b];
-            if (w.contested) continue;
-            tot++;
-            if (PROC.some(function (m) { return m.id === w.map; })) proc++;
+            if (PROC.some(function (m) { return m.id === w.map; }) && rolled.length < 4)
+              rolled.push(w.name + ':' + w.map);
           }
-      var share = tot ? proc / tot : 0;
-      ok('42.3 a system fields the ground its theme advertises',
-         tot > 0 && share >= 0.30,
-         Math.round(share * 100) + '% of ordinary worlds are themed procedural ground across ' +
-         tot + ' worlds (was 16% before the draw was weighted, floor is 30%)');
+      ok('42.2 the campaign fields no procedural ground, and the pool still ships every family',
+         gs.length > 0 && rolled.length === 0 && PROC.length >= 15,
+         rolled.length ? 'campaign worlds on procedural ground: ' + rolled.join(', ')
+                       : 'zero procedural campaign worlds across ' + gs.length + ' galaxies; ' +
+                         PROC.length + ' families still in the pool for skirmish and the unknown');
+    });
+
+    T('42.3 every campaign world fields its own handcrafted board, tri on contested', function () {
+      var gs = galaxies(12), tot = 0, bad = [];
+      for (var i = 0; i < gs.length; i++)
+        for (var a = 0; a < gs[i].systems.length; a++)
+          for (var b = 0; b < gs[i].systems[a].worlds.length; b++) {
+            var w = gs[i].systems[a].worlds[b];
+            tot++;
+            var def = MAPS.find(function (m) { return m.id === w.map; });
+            var own = typeof WORLD_MAP_BY_NAME !== 'undefined' && WORLD_MAP_BY_NAME[w.name];
+            if (w.contested) {
+              if ((!def || !def.tri) && bad.length < 4) bad.push(w.name + ' contested on ' + w.map);
+            } else if (own && w.map !== own.id && bad.length < 4) {
+              bad.push(w.name + ' fields ' + w.map + ' not ' + own.id);
+            } else if (!own && bad.length < 4) {
+              bad.push(w.name + ' has no handcrafted board');
+            }
+          }
+      ok('42.3 every campaign world fields its own handcrafted board, tri on contested',
+         tot > 0 && bad.length === 0,
+         bad.length ? bad.join('; ') : tot + ' campaign worlds all on their authored ground');
     });
   })();
 

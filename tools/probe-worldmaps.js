@@ -204,5 +204,26 @@ function rectTiles(rects) {
     diffs.slice(0, 4).join('; ') || (worlds + ' worlds, ' + contested + ' contested on tri grounds'));
 }
 
+/* ---- WM.10 one universe: the same planet fields the same ground in every
+        campaign. Systems sit at different tiers per faction, so anything
+        keyed off the tier index diverges across factions; owner-sweep 38.1
+        caught exactly that in a real page when the first tri assignment
+        used (si, wi). This is the node-side twin of that check. ---- */
+{
+  const byName = {};
+  const diffs = [];
+  for (const fac of ['human', 'light', 'xeno', 'pirate', 'robot']) {
+    const g = vm.runInContext('generateGalaxy(20290413,' + JSON.stringify(fac) + ',0,1,2)', ctx);
+    g.systems.forEach(sys => sys.worlds.forEach(w => {
+      if (byName[w.name] === undefined) byName[w.name] = { map: w.map, fac };
+      else if (byName[w.name].map !== w.map && diffs.length < 4)
+        diffs.push(w.name + ': ' + byName[w.name].map + ' (' + byName[w.name].fac + ') vs ' +
+                   w.map + ' (' + fac + ')');
+    }));
+  }
+  T('WM.10 the same planet fields the same ground in every campaign', diffs.length === 0,
+    diffs.join('; ') || Object.keys(byName).length + ' planets consistent across 5 campaigns');
+}
+
 console.log((fail ? 'WORLD BOARDS: ' + fail + ' FAILURE(S)' : 'WORLD BOARDS: ' + pass + ' checks, all pass'));
 process.exit(fail ? 1 : 0);

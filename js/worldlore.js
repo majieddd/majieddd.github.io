@@ -321,6 +321,232 @@
     }
   };
 
+  /* --------------------------------------------------------------------------
+     THE CAMPAIGN GROUNDS (Session 44, docs/WORLDMAPS-DESIGN.md).
+
+     One dossier per handcrafted planet board in js/worldmaps.js, same shape
+     and same then/now discipline as AUTHORED_MAPS above: what the site DID,
+     with verbs, and what its geometry means now that armies walk it. The
+     board's terra.basis carries the physics; these carry the history.
+  -------------------------------------------------------------------------- */
+  var WORLD_BOARD_DOSSIERS = {
+
+    w_earth: {
+      id: 'w_earth', name: 'THE HARBOUR DISTRICT', classification: 'Fallen port city',
+      canon: 'The harbour district where the fragments came down whole and split open in the streets.',
+      functionThen: 'Freight and habitation. The grid moved a port city’s traffic and the blocks held its people, and on the morning of the thirteenth both were full.',
+      conflictNow: 'The grid still runs at right angles, so every corner is a firing decision somebody already made when they laid the street. The rubble only stops foundations: the sightlines belong to whoever reads the plan fastest.'
+    },
+    w_luna: {
+      id: 'w_luna', name: 'THE FAR SIDE', classification: 'Farside depot field',
+      canon: 'The depots on the side of the Moon that never faces home, which is where the occupiers always were.',
+      functionThen: 'Storage and silence. The craters hid supply the near side was never told about, and the rims kept each depot out of its neighbour’s accidents.',
+      conflictNow: 'No air means no cover in the firing sense: every rim is a wall for buildings and an open window for shots. The pockets decide placement, the vacuum decides everything else.'
+    },
+    w_mars: {
+      id: 'w_mars', name: 'THE GREAT RIFT', classification: 'Canyon descent road',
+      canon: 'The switchback road down the floor of Valles Marineris, cut when the trench was a mining concession.',
+      functionThen: 'Extraction. Ore convoys walked the switchbacks and the mesas between the legs kept a loose load on one leg from ending traffic on the next.',
+      conflictNow: 'The mesas stop shells with flat ideas. A battery that lobs owns three legs from one shelf; a battery that does not owns the leg it stands on and the silence of the other two.'
+    },
+    w_venus: {
+      id: 'w_venus', name: 'THE PRESSURE GARDENS', classification: 'Dome settlement chain',
+      canon: 'A chain of pressure domes on the volcanic plain, grown one shell at a time by settlers who never saw the sky unarmoured.',
+      functionThen: 'Survival. Each dome held one neighbourhood at one atmosphere, and the shells were engineered against ninety: nothing the war brought is more pressure than they were built for.',
+      conflictNow: 'Dead domes still stop shots. The road threads the shells and every line of fire is short, bent and shared, so the fight is won by whoever collects the most corners, not the most range.'
+    },
+    w_mercury: {
+      id: 'w_mercury', name: 'THE TERMINATOR LINE', classification: 'Twilight transit band',
+      canon: 'The survivable strip between Mercury’s day and night, walked because it was the only ground that permitted walking.',
+      functionThen: 'Passage. Caravans tracked the terminator as it crept, and the scarps in the band were the only shade and the only shelter on a world made of too much and too little sun.',
+      conflictNow: 'Nine tiles of ground between two kinds of dead. There is no depth to trade, so a line here is a commitment: everything stands in the same band the enemy marches through.'
+    },
+    w_jupiter: {
+      id: 'w_jupiter', name: 'THE CLOUD DECKS', classification: 'Aerial anchorage',
+      canon: 'Platform decks riding the cloud tops, moored above a storm that has been running for centuries.',
+      functionThen: 'Anchorage. The decks broke bulk between orbit and atmosphere, and the gap between platforms was a feature: a fire on one deck stayed on one deck.',
+      conflictNow: 'Two roads on two decks that only meet at your door. The gap goes all the way down, which the fliers know, and the sky arrives carrying things the roads never see.'
+    },
+    w_saturn: {
+      id: 'w_saturn', name: 'THE SHEPHERD RING', classification: 'Ring gate approach',
+      canon: 'The shepherd station inside Saturn’s rings, and under it the door the traffic out here already ends at.',
+      functionThen: 'Shepherding. The station kept the ring debris in its lanes, and the core wall kept the door under guard by beings that never explained the guarding.',
+      conflictNow: 'The road runs three quarters of a ring in the open and then goes through one gap in the core wall. Everything before the door is manoeuvre; everything at the door is arithmetic.'
+    },
+
+    w_maia: {
+      id: 'w_maia', name: 'THE LIGHT PLAIN', classification: 'Nebula reflection flat',
+      canon: 'A plain inside the reflection nebula where the sky itself is the settlement’s lamp.',
+      functionThen: 'Gathering. The Federation held its open assemblies here because the light carried to every edge and nothing on the plain could hide a second agenda.',
+      conflictNow: 'The widest board in the theatre and nothing on it. A narrow line dies at the width; the plain rewards whoever accepts that everything here happens in the open.'
+    },
+    w_electra: {
+      id: 'w_electra', name: 'THE SHRINE TERRACES', classification: 'Stepped shrine complex',
+      canon: 'Terraces cut down the nebula shelf, one shrine per step, on ground that is itself slowly descending.',
+      functionThen: 'Observance. Pilgrims walked down step by step, and each shrine sheltered the step below it, which is why every shelter faces downhill.',
+      conflictNow: 'The road only ever descends, and the cover only ever faces one way. High ground fires over everything below and answers to nothing above: the battle is a queue for altitude.'
+    },
+    w_taygeta: {
+      id: 'w_taygeta', name: 'THE CHORAL HALLS', classification: 'Twin assembly halls',
+      canon: 'A paired hall built for a binary star: two voices, two naves, one door, and a bank between them that carries no sound.',
+      functionThen: 'Antiphony. Each hall sang its half and the bank kept the halves distinct until the door, where the voices met and the point of the building happened.',
+      conflictNow: 'The bank stops fire the way it stopped sound. Two processions arrive in parallel and nothing bought for one hall helps the other, so the defence is written twice or it fails once.'
+    },
+    w_merope: {
+      id: 'w_merope', name: 'THE DUST WAKE', classification: 'Nebula dust crossing',
+      canon: 'The wake of dust the cluster is ploughing through at Merope, where two currents cross and everything travelling rides one or the other.',
+      functionThen: 'Navigation. The currents were the roads and the crossings were the interchanges, marked and kept clear because everything in the wake eventually passed through them.',
+      conflictNow: 'The crossings are still the whole map. A position at a crossing works both roads for one price; every other position is half a road and full cost.'
+    },
+    w_celaeno: {
+      id: 'w_celaeno', name: 'THE ARCHIVE VAULTS', classification: 'Record vault stacks',
+      canon: 'The Federation’s deep records, shelved on the faint sister the catalogues kept losing, which the archivists considered a feature.',
+      functionThen: 'Custody. The stacks were built dense enough that no single vantage read two aisles, because a reader who could survey the archive could edit it.',
+      conflictNow: 'Blind aisles cut both ways. Nothing sees far, corners decide engagements, and the stacks stop incoming fire exactly as well as they stopped incoming curiosity.'
+    },
+    w_sterope: {
+      id: 'w_sterope', name: 'THE LIGHTNING NURSERIES', classification: 'Storm culture run',
+      canon: 'The nurseries where the Federation cultures storm cells between insulated posts, on the star named for the lightning.',
+      functionThen: 'Cultivation. The posts grounded the young cells and the run between them was kept straight so a discharge always had somewhere planned to go.',
+      conflictNow: 'Each post blinds one stretch of road and shields one emplacement. The run is straight but the fight is not: it is a series of small decisions about which side of a post to live on.'
+    },
+    w_alcyone: {
+      id: 'w_alcyone', name: 'THE ANCHOR SANCTUM', classification: 'Central sanctum plaza',
+      canon: 'The sanctum of the Pleiades’ central sun, the anchor the sisters turn on and the seat the Federation rules from.',
+      functionThen: 'Audience. Every approach to the sanctum was walked in the open across the plaza, because the architecture’s whole argument was that the centre sees everything.',
+      conflictNow: 'The argument holds under fire. The plaza answers all three legs at once, so the middle is worth more than any edge, and both commanders know it before the first wave walks.'
+    },
+
+    w_z1b: {
+      id: 'w_z1b', name: 'THE TITHER FIELDS', classification: 'Tithe cultivation ranks',
+      canon: 'The first harvest world of the first sun, where the compact grows what its clients owe it.',
+      functionThen: 'Yield. The ranks ran in strips wider than roads and the ground was kept soft on purpose: nothing was to stand on it but the crop and its collectors.',
+      conflictNow: 'Soft ground refuses foundations, so the ranks herd the builders as much as the marchers. Every tile taken is a tile off the tithe, and the compact counts.'
+    },
+    w_z1c: {
+      id: 'w_z1c', name: 'THE GULLET', classification: 'Biotic feed channel',
+      canon: 'A client world hollowed into a feeding channel, folded four times inside one throat.',
+      functionThen: 'Digestion. Material went in at the top and arrived at the bottom changed, and the ribs between the folds kept each stage of the process from meeting the next early.',
+      conflictNow: 'The ribs stop shots between folds, so each fold is a private battle with a pocket for two towers and no help from the neighbours. Everything gets swallowed eventually; the fight is about how slowly.'
+    },
+    w_z1d: {
+      id: 'w_z1d', name: 'THE SPORE SHOALS', classification: 'Bloom shoal water',
+      canon: 'The outer bloom world of the first sun, in a season that has not ended since the compact arrived.',
+      functionThen: 'Propagation. The blooms seeded the shoals and the shoals fed the blooms, and the firm ground between them existed to be temporary.',
+      conflictNow: 'Two roads share only the last stretch home, and no shoal covers both. The bloom holds everything soft, so a defence is a set of small islands that had better agree with each other.'
+    },
+    w_z2b: {
+      id: 'w_z2b', name: 'THE HIVE GALLERY', classification: 'Comb gallery habitation',
+      canon: 'The first world of the second sun, combed into one gallery with cells budding off it.',
+      functionThen: 'Habitation. Each cell held one purpose at one size, and the comb walls existed so no cell’s business spilled into the gallery until it was ready to.',
+      conflictNow: 'The cells watch one stretch of gallery each and help nobody. A defence here is bought cell by cell, and the gallery knows exactly how many cells you did not buy.'
+    },
+    w_z2c: {
+      id: 'w_z2c', name: 'THE BIRTHING POOLS', classification: 'Brood pool drainage',
+      canon: 'Twin channels draining the birthing pools around a brood bank the compact does not discuss with outsiders.',
+      functionThen: 'Incubation. The bank was nursery ground and the channels kept its waters moving, separately, because broods that meet early merge and broods that merge are worthless.',
+      conflictNow: 'The bank splits every field of fire in half and what hatches arrives from both sides at once. The defence that wins is the one that accepted, early, that the middle cannot be owned.'
+    },
+    w_z2d: {
+      id: 'w_z2d', name: 'THE LEDGER CHAMBER', classification: 'Account record chamber',
+      canon: 'The chamber whose walls record what was taken and from whom, stacked floor to ceiling, forever.',
+      functionThen: 'Accounting. Every acquisition the compact ever made was shelved here, and the stacks were built dense because the account is long and the compact does not abridge.',
+      conflictNow: 'The record stops shots. The road winds the stacks, every corner is blind, and the audit arrives on foot, patiently, with the page already open to your entry.'
+    },
+    w_serpo: {
+      id: 'w_serpo', name: 'THE EXCHANGE GROUND', classification: 'Ceremonial exchange road',
+      canon: 'The ground where the exchange happened: twelve went, and the road remembers the protocol exactly.',
+      functionThen: 'Ceremony. The road ran straight because the protocol did, and each gate opened once, in order, for parties that had agreed on everything but trust.',
+      conflictNow: 'Three gates, each pierced only where the road passes, each a kill box with a receipt. The seat of the compact is a straight line that nothing crosses quickly.'
+    },
+
+    w_proxd: {
+      id: 'w_proxd', name: 'THE SCORCH LINE', classification: 'Flare-scoured band',
+      canon: 'The survivable line on a world that hugs a flare star, thinner than Mercury’s and less patient.',
+      functionThen: 'Endurance. The line was walked between flares by crews who knew the schedule was a rumour, and the scars in the band mark the times the rumour was wrong.',
+      conflictNow: 'The band is thin, the scars are fresh, and when the star clears its throat there is nowhere on the board it does not reach. A defence here is a bet on minutes.'
+    },
+    w_proxb: {
+      id: 'w_proxb', name: 'THE FIRST PORT', classification: 'Capital dockyard',
+      canon: 'The first port out of Sol and the capital of the Free Captains, docks all the way down.',
+      functionThen: 'Trade. Cargo moved in ranks and cranes moved on rails, and everything on the yard had a price, a berth and at least two owners on paper.',
+      conflictNow: 'The stacks break the ground and the crane masts break the sightlines. The yard fights the way it traded: in short exchanges, corner by corner, everything negotiable except the exit.'
+    },
+    w_proxc: {
+      id: 'w_proxc', name: 'THE WRECK YARDS', classification: 'Salvage hull plain',
+      canon: 'A plain of hulls from a hundred builders, none of them local, all of them cut.',
+      functionThen: 'Salvage. The Captains beached what they took and cut what they beached, and the gaps between hulls were measured lanes for moving the pieces out.',
+      conflictNow: 'Every wreck is cover and every gap is a firing lane somebody already measured. The salvage rights are the fight, and the yard was arranged by people who understood fields of fire professionally.'
+    },
+    w_flare: {
+      id: 'w_flare', name: 'THE FLARE SHELTER', classification: 'Flare refuge ring',
+      canon: 'The one shelter big enough to argue inside, built because when Proxima flares the open band is death for minutes at a time.',
+      functionThen: 'Refuge. Every road on the world led to the door, and the ring stopped what the star threw, which was everything, on a schedule nobody trusted.',
+      conflictNow: 'The roads still converge and the ring still stops everything not already inside. Whoever holds the door decides who waits out the flare in the open, and both armies checked the forecast.'
+    },
+    w_narrowstrait: {
+      id: 'w_narrowstrait', name: 'THE SMUGGLER STRAIT', classification: 'Drift shoal channel',
+      canon: 'The one channel through the drift shoals, known to everyone who does not report cargo, which is everyone.',
+      functionThen: 'Evasion. The channel existed because the shoals did, and the pockets beside it were loading stops, ambush sites and customs-free warehousing, usually on the same night.',
+      conflictNow: 'The tightest ground in the theatre. Every pocket is somebody’s old ambush and holds barely a foundation, so the strait is won by whoever wastes the fewest tiles.'
+    },
+    w_locker: {
+      id: 'w_locker', name: 'THE DARK LOCKER', classification: 'Darkside vault maze',
+      canon: 'The vault the Captains keep where the star cannot flare on it, on the permanently dark side of a tide-locked rock.',
+      functionThen: 'Concealment. What went into the locker stayed in the locker, and the walls were stacked so no line of sight survived three turns, including the auditors’.',
+      conflictNow: 'Sightlines die at every corner and half the inventory was never logged in. The maze fights in whispers: short engagements, blind approaches, and the permanent dark keeping score.'
+    },
+    w_proxgate: {
+      id: 'w_proxgate', name: 'THE TOLL PLAZA', classification: 'Transit toll gate',
+      canon: 'The one stable transit point out of the Proxima well, and the Captains never met a bottleneck they did not price.',
+      functionThen: 'Collection. Three roads fed one gate and the gate fed the Captains, and the booths were walled because toll collectors have enemies with receipts.',
+      conflictNow: 'Everything that leaves the system passes the plaza, and the plaza knows what everything is worth. Three roads in, one gap out, and the queue is armed.'
+    },
+
+    w_sira1: {
+      id: 'w_sira1', name: 'THE CALIBRATION PLAIN', classification: 'Reference datum flat',
+      canon: 'The plain the Vigil levelled to reference flatness, keeping four markers and permitting nothing else.',
+      functionThen: 'Measurement. Every instrument the machines fielded was zeroed here, against a ground flat enough to disagree with nothing.',
+      conflictNow: 'Four objects on a board built to tolerances. There is no cover to argue about, so the battle is the arithmetic both sides were always going to do, performed in the open.'
+    },
+    w_sira2: {
+      id: 'w_sira2', name: 'THE ASSEMBLY ROWS', classification: 'Production run fences',
+      canon: 'The run where the Vigil builds its bodies, fenced both sides, older than every complaint about the fences.',
+      functionThen: 'Production. The line ran one direction at one speed, and the fence gaps existed where the assembly arms reached in, no wider than the reach.',
+      conflictNow: 'The gaps are the only firing angles anyone gets, and the line does not stop for casualties. A defence here is a schedule negotiated with a conveyor.'
+    },
+    w_ash: {
+      id: 'w_ash', name: 'THE ASH FIELD', classification: 'Stellar shed drift',
+      canon: 'What Sirius B shed on the way down from being the greater star, fallen here in drifts.',
+      functionThen: 'Repose. The Vigil neither cleared the field nor mourns it, and the drifts lie in the pattern they fell, which the machines treat as data worth preserving.',
+      conflictNow: 'The drifts stop foundations and nothing else, and the ground is still faintly warm if you ask it. Long sightlines over a dead star’s ashes: the fight is exposed and knows it.'
+    },
+    w_sirb1: {
+      id: 'w_sirb1', name: 'THE COLLAPSE FORGE', classification: 'Pressure forge core',
+      canon: 'The forge on the white dwarf’s one world, working by borrowed pressure inside a core walled on every face.',
+      functionThen: 'Compression. The core pressed what ordinary forges cannot, and the doors were exactly where the feed road needed them, no wider, because pressure hates a spare opening.',
+      conflictNow: 'The road arcs the floor and then goes through the core, one door in, one door out. Everything inside the wall is pressure; everything outside is queue; both are somebody’s firing solution.'
+    },
+    w_diamond: {
+      id: 'w_diamond', name: 'THE DIAMOND SHELF', classification: 'Crystal terrace climb',
+      canon: 'The shelf where the cooling dwarf crystallises, cut into terraces of carbon with mirror facets.',
+      functionThen: 'Extraction. The terraces were cut for the crystal and the facets were left standing because cutting a mirror thick enough to stop a shot costs more than routing around it.',
+      conflictNow: 'The road climbs and the facets blind each step from the one below. Nothing sees more than one terrace, except whatever has already finished climbing.'
+    },
+    w_companion: {
+      id: 'w_companion', name: 'THE LONG ORBIT', classification: 'Memorial orbit ring',
+      canon: 'The orbit of the dwarf that used to be the bigger star, walked by machines that do not use the word grief.',
+      functionThen: 'Observance, in the machine sense. The orbit was kept swept and the debris was kept catalogued, on a circuit that crosses its own past once per revolution.',
+      conflictNow: 'One road spiralling in, crossing its own exit. The centre is the end of the road in both senses, and the debris pockets on the ring line are the only places to stand and argue about it.'
+    },
+    w_dogstar: {
+      id: 'w_dogstar', name: 'THE HALL OF STANDING ORDERS', classification: 'Order origin hall',
+      canon: 'The hall every standing order comes from, where the desks are in perfect order and the chairs have never been occupied.',
+      functionThen: 'Issuance. The orders were filed, shelved and issued from here by a civilisation that then evolved past needing a mouth, and the filing continued.',
+      conflictNow: 'Desk rows in perfect order, every corner blind, and at the end of the winding the room the orders come from, still issuing. The last board asks the only question the campaign has left.'
+    }
+  };
+
   /* Every board id the game ships, from js/config.js MAPS. Held here as a
      literal so selfCheck can run with nothing else loaded, and cross-checked
      against the live MAPS whenever MAPS is present: a hard-coded manifest that
@@ -336,7 +562,14 @@
        BOTH directions and a manifest that lags the table is the drift this
        comment warns about. */
     'braid', 'gauntlet', 'staircase', 'horseshoe', 'switchback', 'labyrinth',
-    'twin-temple', 'twin-gate'
+    'twin-temple', 'twin-gate',
+    /* The campaign grounds (Session 44): one handcrafted board per planet,
+       dossiers in WORLD_BOARD_DOSSIERS above, defs in js/worldmaps.js. */
+    'w_earth', 'w_luna', 'w_mars', 'w_venus', 'w_mercury', 'w_jupiter', 'w_saturn',
+    'w_maia', 'w_electra', 'w_taygeta', 'w_merope', 'w_celaeno', 'w_sterope', 'w_alcyone',
+    'w_z1b', 'w_z1c', 'w_z1d', 'w_z2b', 'w_z2c', 'w_z2d', 'w_serpo',
+    'w_proxd', 'w_proxb', 'w_proxc', 'w_flare', 'w_narrowstrait', 'w_locker', 'w_proxgate',
+    'w_sira1', 'w_sira2', 'w_ash', 'w_sirb1', 'w_diamond', 'w_companion', 'w_dogstar'
   ];
 
   /* --------------------------------------------------------------------------
@@ -491,7 +724,7 @@
 
       var shipped = gameMapName(id);
 
-      var authored = AUTHORED_MAPS[id];
+      var authored = AUTHORED_MAPS[id] || WORLD_BOARD_DOSSIERS[id];
       if (authored) {
         return {
           id: authored.id,
