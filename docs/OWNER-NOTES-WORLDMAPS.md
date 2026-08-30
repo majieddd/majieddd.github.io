@@ -24,3 +24,21 @@ Only verified closes a row. A blocked row carries pasted command output.
 | 12 | Owner call, deferred: per-planet TRI boards for contested ground | owner-call | | |
 
 Notes per item land here as work lands.
+
+## Session close notes
+
+- Owner-sweep on the live bundle first read 5 failures; all five were real
+  and all five are closed: 38.1 caught the tri assignment keyed on the tier
+  index (same planet, different tri ground per campaign; now keyed on the
+  world NAME and pinned node-side by new WM.10), 41.1/41.2 wanted dossiers
+  for the 35 new boards (written in js/worldlore.js, selfCheck 0 missing,
+  0 incomplete, 0 drift), and 42.2/42.3 asserted the retired rolled-pool
+  era (rewritten to the inverted law: zero procedural campaign ground, pool
+  intact, own board everywhere, tri on contested).
+- Final: owner-sweep 107 pass 0 fail on the rebuilt bundle;
+  probe-worldmaps 10 checks green; static gate CLEAN.
+- Process note: commit e829579 shipped without the regenerated pages
+  because a heredoc broke the shell's short-circuit chain; the deploy
+  regenerates narrative from the commit so the live site was never wrong,
+  and the very next commit carries the regeneration. The gate's freshness
+  check is what caught it.
