@@ -704,7 +704,7 @@ var R = (function () {
     p.u1f('uRimPower', ART.rimPower);
     p.u3v('uAmbientSky', pal.ambientSky);
     p.u3v('uAmbientGround', pal.ambientGround);
-    p.u1f('uAmbient', hd ? ART.ambient * 1.15 : ART.ambient);
+    p.u1f('uAmbient', hd ? ART.ambient * 1.26 : ART.ambient);
     p.u1f('uSpecStrength', ART.specStrength);
     p.u1f('uSpecPower', ART.specPower);
     p.u1f('uBands', ART.bands);
@@ -976,7 +976,7 @@ var R = (function () {
       ph.u2f('uRes', W, H);
       ph.u1f('uTime', time);
       ph.u1f('uBloomStrength', quality.bloom ? ART.bloomStrength * 0.52 : 0.0);
-      ph.u1f('uExposure', fx.exposure * ART.exposure * 1.06);
+      ph.u1f('uExposure', fx.exposure * ART.exposure * 1.14);
       ph.u1f('uSaturation', ART.saturation * 1.14);
       ph.u1f('uContrast', ART.contrast * 1.04);
       ph.u3f('uLift', 0.008, -0.003, 0.018);

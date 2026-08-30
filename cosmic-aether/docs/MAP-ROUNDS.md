@@ -65,3 +65,16 @@ animated geometry), QA tester (placement/pads, fps, HUD).
   reads as fine shell/hide ridges).
 
 ## Round 3 - environment director final verification (in flight)
+
+## PLANET PASS (owner directive: make it look like a globe/planet)
+- Spherical sag on the whole height field (SAG_R 300): the ground bends toward
+  the horizon; gameplay flatness preserved (heightAt knows the sag).
+- The rim wall was REPLACED by the world itself: a huge lathe sphere (R 300,
+  crown 0.35 under the board centre, latitude bands #241b52 / #1a1240 /
+  #120d2c / #100b26) sized so the board edge dives below its surface: the
+  border reads as shoreline on a globe, no floating slab, no gaps.
+- Vision verified from horizon, wide and top-down angles: curved horizon
+  arcing on both sides, towers silhouetted against the world, board still
+  fully readable in play view. Gate: 78/78 + 45/45 (V.3 floor re-satisfied
+  with SAG_R 300 + exposure 1.14 + ambient 1.26 after the sag darkened the
+  sampled plots).

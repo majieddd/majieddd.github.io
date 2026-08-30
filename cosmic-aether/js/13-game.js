@@ -131,7 +131,7 @@ var GAME = (function () {
     /* Board meshes, rebuilt per run because the board can change. */
     G.groundMesh = trackMesh(GL.mesh(G.board.groundData));
     G.padMesh = G.board.padData ? trackMesh(GL.mesh(G.board.padData)) : null;
-    G.rimMesh = G.board.rimData ? trackMesh(GL.mesh(G.board.rimData)) : null;
+    G.planetMesh = G.board.planetData ? trackMesh(GL.mesh(G.board.planetData)) : null;
     G.decorMesh = G.board.decorData ? trackMesh(GL.mesh(G.board.decorData)) : null;
     G.spireMesh = G.board.spireData ? trackMesh(GL.mesh(G.board.spireData)) : null;
     var pal = R.palette();
@@ -822,9 +822,10 @@ var GAME = (function () {
     R.push(G.groundMesh, U.m4ident(), { castShadow: false, facetJitter: 0.015, rimScale: 0.18, mat: 'ground' });
     /* Paving slabs stand on the ground; give them their own quiet scale. */
     if (G.padMesh) R.push(G.padMesh, U.m4ident(), { mat: 'ground', detailScale: 0.6, rimScale: 0.25, facetJitter: 0.015 });
-    /* The rim wall: stone, slightly stronger detail, no shadows (it catches
-       the key and reads as the plate's thickness). */
-    if (G.rimMesh) R.push(G.rimMesh, U.m4ident(), { mat: 'stone', detailScale: 0.35, castShadow: false, facetJitter: 0.02, rimScale: 0.3 });
+    /* THE WORLD. The planet sphere renders first (bottom of the stack) so
+       the board sits into it; soft rock detail, no cast shadow (it IS the
+       ground of the universe). */
+    if (G.planetMesh) R.push(G.planetMesh, U.m4ident(), { mat: 'stone', detailScale: 0.5, castShadow: false, facetJitter: 0.02, rimScale: 0.4 });
     /* Scenery takes a reduced rim so the rocks and spires stay BEHIND the
        towers in the read. With a brighter board and full rim they were as
        bright as the things the player is meant to be looking at. */

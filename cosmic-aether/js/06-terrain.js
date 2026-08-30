@@ -193,6 +193,18 @@ var TERRAIN = (function () {
       }
     }
 
+    /* PLANET SAG. The board is now a biome on a globe: every height is pulled
+       down by its own spherical sag so the plateau bends toward the horizon,
+       and a big planet sphere below catches the edges (the border dives under
+       it, so there is no floating rim and no gap anywhere). Gameplay stays
+       flat enough: the sag is ~4 units over a 45-unit half extent, and units
+       and click targets use heightAt, which knows the sag. */
+    var SAG_R = 300.0;
+    for (var sgi = 0; sgi < HW * HH; sgi++) {
+      var sx2 = (sgi % HW) * CS - halfW, sz2 = Math.floor(sgi / HW) * CS - halfH;
+      height[sgi] -= (sx2 * sx2 + sz2 * sz2) / (2.0 * SAG_R);
+    }
+
     function heightAt(wx, wz) {
       var fx = (wx + halfW) / CS, fz = (wz + halfH) / CS;
       var x0 = Math.floor(fx), z0 = Math.floor(fz);
@@ -367,59 +379,29 @@ var TERRAIN = (function () {
       padData = padB.build({ jitter: 0.015 });
     }
 
-    /* ---------- RIM WALL ----------
-       The board is a floating plate; without a wall it is a sheet with a
-       cliff hole in it. Two-tone skirt around the whole boundary gives the
-       plate visible thickness and the rim a lit ceiling to read against:
-       a light cap band where the plateau meets the drop, and a dark body
-       falling to the void below. */
-    var rimB = MESH.builder('rim:' + seed);
-    var capCol = '#463a7c', bodyCol = '#0b0914';
-    var bottomY = -12.0;
-    function wallSeg(x0, z0, y0, x1, z1, y1) {
-      var topA = [x0, y0, z0], topB = [x1, y1, z1];
-      var midA = [x0, y0 - capH, z0], midB = [x1, y1 - capH, z1];
-      var botA = [x0, bottomY, z0], botB = [x1, bottomY, z1];
-      rimB.color(capCol).tooth(0.8);
-      rimB.quad(topA, topB, midB, midA);
-      rimB.color(bodyCol).tooth(0.9);
-      rimB.quad(midA, midB, botB, botA);
+    /* ---------- PLANET ----------
+       The world itself. One huge lathe sphere below the plate: its crown
+       sits just under the board centre, and the board's own sag carries the
+       board edge below the sphere surface, so the border reads as shoreline
+       on a globe rather than as the edge of a floating slab. Bands of dark
+       violet basalt so the world owns a light response of its own. */
+    var PLANET_R = 300.0;
+    var planetB = MESH.builder('planet:' + seed);
+    var ss2 = 26;
+    function profSpan(fr0, fr1) {
+      var prof = [];
+      for (var si2 = 0; si2 <= 4; si2++) {
+        var a = (fr0 + (fr1 - fr0) * si2 / 4) * Math.PI - Math.PI / 2;
+        prof.push([Math.max(0.001, Math.cos(a) * PLANET_R), Math.sin(a) * PLANET_R]);
+      }
+      return prof;
     }
-    /* Perimeter: four sides traversed counter-clockwise when seen from
-       above. With quad(topA, topB, midB, midA) that traversal always yields
-       a wall facing OUTWARD (verified: +x traversal on the -z side gives -z
-       normal, -z traversal on the -x side gives -x normal, and so on). */
-    var capH = 1.8;
-    function wallSeg(x0, z0, y0, x1, z1, y1) {
-      var topA = [x0, y0, z0], topB = [x1, y1, z1];
-      var midA = [x0, y0 - capH, z0], midB = [x1, y1 - capH, z1];
-      var botA = [x0, bottomY, z0], botB = [x1, bottomY, z1];
-      rimB.color(capCol).tooth(0.8);
-      rimB.quad(topA, topB, midB, midA);
-      rimB.color(bodyCol).tooth(0.9);
-      rimB.quad(midA, midB, botB, botA);
-    }
-    /* z = -halfH edge, +x traversal (row 0 of the height grid). */
-    for (var xw = 0; xw < GW; xw++) {
-      wallSeg(-halfW + xw * CS, -halfH, height[xw * HW + 0],
-              -halfW + (xw + 1) * CS, -halfH, height[(xw + 1) * HW + 0]);
-    }
-    /* x = +halfW edge, +z traversal (last column of the grid). */
-    for (var zw = 0; zw < GH; zw++) {
-      wallSeg(halfW, -halfH + zw * CS, height[zw * HW + GW],
-              halfW, -halfH + (zw + 1) * CS, height[(zw + 1) * HW + GW]);
-    }
-    /* z = +halfH edge, -x traversal (last row of the grid). */
-    for (var xw2 = GW - 1; xw2 >= 0; xw2--) {
-      wallSeg(-halfW + (xw2 + 1) * CS, halfH, height[(xw2 + 1) * HW + (HH - 1)],
-              -halfW + xw2 * CS, halfH, height[xw2 * HW + (HH - 1)]);
-    }
-    /* x = -halfW edge, -z traversal (first column of the grid). */
-    for (var zw2 = GH - 1; zw2 >= 0; zw2--) {
-      wallSeg(-halfW, -halfH + zw2 * CS, height[zw2 * HW + 0],
-              -halfW, -halfH + (zw2 + 1) * CS, height[(zw2 + 1) * HW]);
-    }
-    var rimData = rimB.build({ jitter: 0.008 });
+    planetB.color('#241b52'); planetB.lathe(profSpan(0.00, 0.22), ss2, 0);
+    planetB.color('#1a1240'); planetB.lathe(profSpan(0.22, 0.58), ss2, 0);
+    planetB.color('#120d2c'); planetB.lathe(profSpan(0.58, 0.86), ss2, 0);
+    planetB.color('#100b26'); planetB.lathe(profSpan(0.86, 1.00), ss2, 0);
+    var planetData = MESH.transform(planetB.build({ jitter: 0.02 }),
+      U.m4trs(0, -(PLANET_R + 0.35), 0, 0, 0, 0, 1, 1, 1));
 
     /* ---------- scenery ----------
        Baked into a single merged mesh: it never moves, so there is no reason
@@ -518,7 +500,7 @@ var TERRAIN = (function () {
       plots: plots,
       groundData: groundData,
       padData: padData,
-      rimData: rimData,
+      planetData: planetData,
       decorData: decorData,
       spireData: spireData,
       spawn: pathAt(path, 0).pos,
