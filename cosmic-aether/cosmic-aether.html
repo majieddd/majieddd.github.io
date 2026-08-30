@@ -5996,29 +5996,35 @@ var TERRAIN = (function () {
       padData = padB.build({ jitter: 0.015 });
     }
 
-    /* ---------- PLANET ----------
-       The world itself. One huge lathe sphere below the plate: its crown
-       sits just under the board centre, and the board's own sag carries the
-       board edge below the sphere surface, so the border reads as shoreline
-       on a globe rather than as the edge of a floating slab. Bands of dark
-       violet basalt so the world owns a light response of its own. */
-    var PLANET_R = def.planetR || 300.0;
-    var planetB = MESH.builder('planet:' + seed);
-    var ss2 = 26;
-    function profSpan(fr0, fr1) {
+    /* ---------- WORLD ----------
+       Not a sphere: the world is the GROUND'S OWN CURVE continuing outward.
+       A planet sphere sized independently can rise above a more deeply
+       sagged board and poke through it (measured on HALFWORLD: an eclipse
+       ring where the sphere surfaced mid-field, burying the road and
+       occluding every denizen under it). The correct construction is a
+       paraboloid matching the height field's sag exactly minus a fixed
+       underhang, so the world surface is guaranteed below the plate
+       everywhere and the shoreline is seamless by construction. */
+    var worldR = Math.max(halfW, halfH) * 1.9;
+    function worldY(r) { return -(r * r) / (2.0 * SAG_R) - 0.30; }
+    var worldB = MESH.builder('world:' + seed);
+    var wSides = 30;
+    function wSpan(r0, r1, col) {
       var prof = [];
-      for (var si2 = 0; si2 <= 4; si2++) {
-        var a = (fr0 + (fr1 - fr0) * si2 / 4) * Math.PI - Math.PI / 2;
-        prof.push([Math.max(0.001, Math.cos(a) * PLANET_R), Math.sin(a) * PLANET_R]);
+      for (var wi = 0; wi <= 5; wi++) {
+        var r = r0 + (r1 - r0) * wi / 5;
+        prof.push([r, worldY(r)]);
       }
-      return prof;
+      worldB.color(col);
+      worldB.lathe(prof, wSides, wi * 0.35);
     }
-    planetB.color('#241b52'); planetB.lathe(profSpan(0.00, 0.22), ss2, 0);
-    planetB.color('#1a1240'); planetB.lathe(profSpan(0.22, 0.58), ss2, 0);
-    planetB.color('#120d2c'); planetB.lathe(profSpan(0.58, 0.86), ss2, 0);
-    planetB.color('#100b26'); planetB.lathe(profSpan(0.86, 1.00), ss2, 0);
-    var planetData = MESH.transform(planetB.build({ jitter: 0.02 }),
-      U.m4trs(0, -(PLANET_R + 0.35), 0, 0, 0, 0, 1, 1, 1));
+    wSpan(0.001, worldR * 0.50, '#241b52');
+    wSpan(worldR * 0.50, worldR * 0.85, '#1a1240');
+    wSpan(worldR * 0.85, worldR * 1.00, '#100b26');
+    /* Closing lip and underside: the world silhouette rolls over and the
+       underside falls away, so the horizon reads as a planet shoulder. */
+    wSpan(worldR * 1.00, worldR * 1.06, '#0d0920');
+    var worldData = worldB.build({ jitter: 0.02 });
 
     /* ---------- scenery ----------
        Baked into a single merged mesh: it never moves, so there is no reason
@@ -6117,7 +6123,7 @@ var TERRAIN = (function () {
       plots: plots,
       groundData: groundData,
       padData: padData,
-      planetData: planetData,
+      worldData: worldData,
       decorData: decorData,
       spireData: spireData,
       spawn: pathAt(path, 0).pos,
@@ -10671,7 +10677,7 @@ var GAME = (function () {
     /* Board meshes, rebuilt per run because the board can change. */
     G.groundMesh = trackMesh(GL.mesh(G.board.groundData));
     G.padMesh = G.board.padData ? trackMesh(GL.mesh(G.board.padData)) : null;
-    G.planetMesh = G.board.planetData ? trackMesh(GL.mesh(G.board.planetData)) : null;
+    G.planetMesh = G.board.worldData ? trackMesh(GL.mesh(G.board.worldData)) : null;
     G.decorMesh = G.board.decorData ? trackMesh(GL.mesh(G.board.decorData)) : null;
     G.spireMesh = G.board.spireData ? trackMesh(GL.mesh(G.board.spireData)) : null;
     var pal = R.palette();

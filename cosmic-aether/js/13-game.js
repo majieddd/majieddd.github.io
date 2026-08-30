@@ -131,7 +131,7 @@ var GAME = (function () {
     /* Board meshes, rebuilt per run because the board can change. */
     G.groundMesh = trackMesh(GL.mesh(G.board.groundData));
     G.padMesh = G.board.padData ? trackMesh(GL.mesh(G.board.padData)) : null;
-    G.planetMesh = G.board.planetData ? trackMesh(GL.mesh(G.board.planetData)) : null;
+    G.planetMesh = G.board.worldData ? trackMesh(GL.mesh(G.board.worldData)) : null;
     G.decorMesh = G.board.decorData ? trackMesh(GL.mesh(G.board.decorData)) : null;
     G.spireMesh = G.board.spireData ? trackMesh(GL.mesh(G.board.spireData)) : null;
     var pal = R.palette();
