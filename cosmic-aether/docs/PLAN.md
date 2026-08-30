@@ -51,3 +51,9 @@ AEGIS_GPU=1 node cosmic-aether/tools/headless.js http://127.0.0.1:8741/cosmic-ae
 - "Classic" style keeps the v1.3 painterly pipeline intact (`R.setStyle`).
 - Every shader compiles against both paths; style switching is a program
   selection, not a rebuild.
+
+## Handover
+
+New collaborator? Start at HANDOVER.md at the lane root: what the game is,
+where it lives, run/build/verify runbook, architecture map, conventions,
+gotchas, and the current verified state.
