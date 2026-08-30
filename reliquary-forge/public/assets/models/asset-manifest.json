@@ -1,0 +1,235 @@
+{
+  "generator": "5.2.1 LTS",
+  "assets": {
+    "enemy-scarab": {
+      "file": "assets/models/enemy-scarab.glb",
+      "bytes": 271516,
+      "meshNodes": 7,
+      "vertices": 5666,
+      "triangles": 11232,
+      "semanticPivots": {
+        "Scarab_Gait_L": [
+          -0.48,
+          -0.0,
+          0.68
+        ],
+        "Scarab_Gait_R": [
+          0.48,
+          -0.0,
+          0.68
+        ]
+      },
+      "sockets": {},
+      "authoredVerticalBounds": [
+        -0.0028,
+        1.2
+      ]
+    },
+    "enemy-manta": {
+      "file": "assets/models/enemy-manta.glb",
+      "bytes": 225576,
+      "meshNodes": 4,
+      "vertices": 3073,
+      "triangles": 6110,
+      "semanticPivots": {
+        "Manta_Wing_L": [
+          -0.24,
+          0.16,
+          0.65
+        ],
+        "Manta_Wing_R": [
+          0.24,
+          0.16,
+          0.65
+        ]
+      },
+      "sockets": {},
+      "authoredVerticalBounds": [
+        -0.125,
+        1.325
+      ]
+    },
+    "enemy-husk": {
+      "file": "assets/models/enemy-husk.glb",
+      "bytes": 251356,
+      "meshNodes": 4,
+      "vertices": 5024,
+      "triangles": 9956,
+      "semanticPivots": {
+        "Husk_Gait_L": [
+          -0.62,
+          -0.0,
+          0.9
+        ],
+        "Husk_Gait_R": [
+          0.62,
+          -0.0,
+          0.9
+        ]
+      },
+      "sockets": {},
+      "authoredVerticalBounds": [
+        -0.0227,
+        1.73
+      ]
+    },
+    "enemy-choir": {
+      "file": "assets/models/enemy-choir.glb",
+      "bytes": 208492,
+      "meshNodes": 4,
+      "vertices": 3150,
+      "triangles": 6272,
+      "semanticPivots": {
+        "Choir_Orbit": [
+          0.0,
+          -0.0,
+          0.87
+        ]
+      },
+      "sockets": {},
+      "authoredVerticalBounds": [
+        -0.215,
+        1.955
+      ]
+    },
+    "enemy-warden": {
+      "file": "assets/models/enemy-warden.glb",
+      "bytes": 469656,
+      "meshNodes": 8,
+      "vertices": 11469,
+      "triangles": 22798,
+      "semanticPivots": {
+        "Warden_Cape": [
+          0.0,
+          -0.68,
+          1.78
+        ],
+        "Warden_Crown": [
+          0.0,
+          0.04,
+          3.38
+        ],
+        "Warden_Arm_L": [
+          -1.12,
+          -0.02,
+          2.36
+        ],
+        "Warden_Gait_L": [
+          -0.48,
+          -0.14,
+          1.06
+        ],
+        "Warden_Arm_R": [
+          1.12,
+          -0.02,
+          2.36
+        ],
+        "Warden_Gait_R": [
+          0.48,
+          -0.14,
+          1.06
+        ],
+        "Warden_Tendrils": [
+          0.0,
+          -0.54,
+          1.18
+        ]
+      },
+      "sockets": {},
+      "authoredVerticalBounds": [
+        0.0,
+        4.235
+      ]
+    },
+    "tower-helios": {
+      "file": "assets/models/tower-helios.glb",
+      "bytes": 322072,
+      "meshNodes": 3,
+      "vertices": 8198,
+      "triangles": 16324,
+      "semanticPivots": {
+        "Helios_Yaw": [
+          0.0,
+          -0.02,
+          1.4
+        ],
+        "Helios_Pitch": [
+          0.0,
+          0.14,
+          1.52
+        ]
+      },
+      "sockets": {
+        "Helios_MuzzleSocket_L": [
+          -0.27,
+          1.86,
+          1.53
+        ],
+        "Helios_MuzzleSocket_R": [
+          0.27,
+          1.86,
+          1.53
+        ]
+      },
+      "authoredVerticalBounds": [
+        0.0,
+        1.89
+      ]
+    },
+    "tower-vortex": {
+      "file": "assets/models/tower-vortex.glb",
+      "bytes": 317768,
+      "meshNodes": 2,
+      "vertices": 7224,
+      "triangles": 14344,
+      "semanticPivots": {
+        "Vortex_Rotor": [
+          0.0,
+          -0.0,
+          1.22
+        ]
+      },
+      "sockets": {
+        "Vortex_ApertureSocket": [
+          0.0,
+          -0.0,
+          1.3
+        ]
+      },
+      "authoredVerticalBounds": [
+        0.0,
+        1.845
+      ]
+    },
+    "tower-rime": {
+      "file": "assets/models/tower-rime.glb",
+      "bytes": 261084,
+      "meshNodes": 3,
+      "vertices": 5184,
+      "triangles": 10288,
+      "semanticPivots": {
+        "Rime_Yaw": [
+          0.0,
+          -0.04,
+          1.3
+        ],
+        "Rime_Halo": [
+          0.0,
+          0.56,
+          1.58
+        ]
+      },
+      "sockets": {
+        "Rime_MuzzleSocket": [
+          0.0,
+          1.08,
+          1.58
+        ]
+      },
+      "authoredVerticalBounds": [
+        0.0,
+        2.34
+      ]
+    }
+  }
+}

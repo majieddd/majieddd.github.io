@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0c1018" />
+    <link rel="icon" href="data:," />
+    <title>Cosmic Conquest: Reliquary Forge</title>
+  </head>
+  <body>
+    <main id="game-shell">
+      <canvas id="game-canvas" aria-label="Cosmic Conquest 3D battlefield"></canvas>
+
+      <section id="boot" class="boot" aria-live="polite">
+        <div class="boot__sigil" aria-hidden="true"></div>
+        <p class="kicker">RELIQUARY FORGE</p>
+        <h1>Hold the celestial breach.</h1>
+        <p id="boot-status">Tempering painted warforms...</p>
+        <div class="boot__track"><span id="boot-progress"></span></div>
+        <button id="enter-button" class="btn btn--primary" type="button" disabled>Enter the field</button>
+      </section>
+
+      <div id="hud" class="hud is-hidden">
+        <section class="objective" aria-label="Mission objective">
+          <p class="kicker">THE COIL, FRONT XIII</p>
+          <h2>Seal the wound before the Crown Warden crosses.</h2>
+          <p class="flavor"><em>Each impact stains the void with living pigment.</em></p>
+        </section>
+
+        <section class="status-strip" aria-label="Battle status">
+          <div><span>RELIC</span><strong id="lives-value">20</strong></div>
+          <div><span>LUMEN</span><strong id="gold-value">420</strong></div>
+          <div><span>WAVE</span><strong id="wave-value">0 / 8</strong></div>
+          <div><span>FPS</span><strong id="fps-value">60</strong></div>
+        </section>
+
+        <div id="boss-panel" class="boss-panel is-hidden" aria-live="polite">
+          <div class="boss-panel__line"><span>CROWN WARDEN</span><strong id="boss-health-text">100%</strong></div>
+          <div class="meter"><span id="boss-health-fill"></span></div>
+        </div>
+
+        <section class="command-rail" aria-label="Tower construction">
+          <div class="command-rail__copy">
+            <span id="selection-label">Select a warform</span>
+            <small id="selection-detail">Click a tower, then an illuminated plinth.</small>
+          </div>
+          <div id="tower-buttons" class="tower-buttons"></div>
+          <button id="wave-button" class="btn btn--primary" type="button">Begin wave</button>
+        </section>
+
+        <button id="codex-button" class="btn btn--ghost codex-button" type="button" aria-expanded="false" aria-controls="codex">Field codex</button>
+        <aside id="codex" class="codex is-hidden" aria-label="Field codex">
+          <div class="codex__head">
+            <div>
+              <p class="kicker">WARFORM INDEX</p>
+              <h2>Forge doctrine</h2>
+            </div>
+            <button id="codex-close" class="btn btn--ghost" type="button">Close</button>
+          </div>
+          <div id="codex-content"></div>
+        </aside>
+
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      </div>
+
+      <div id="context-lost" class="context-lost is-hidden" role="alert">
+        <strong>The rendering relic went dark.</strong>
+        <span>Restoring the WebGL context...</span>
+      </div>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

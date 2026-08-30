@@ -56,6 +56,14 @@ jobs:
           done
           echo "bundle ok: $(du -h aegis-protocol.html | cut -f1), spine ok: $(du -h narrative/spine.json | cut -f1)"
 
+      - name: Build Reliquary Forge
+        run: |
+          npm --prefix reliquary-forge ci
+          npm --prefix reliquary-forge run check
+          npm --prefix reliquary-forge run build
+          cp -R reliquary-forge/dist/. reliquary-forge/
+          rm -rf reliquary-forge/node_modules reliquary-forge/dist
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3

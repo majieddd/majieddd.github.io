@@ -92,3 +92,9 @@ jobs:
           keys=$(grep -o '"[a-z0-9_]*":' js/artpack.js | wc -l)
           echo "artpack carries $keys keys"
           [ "$keys" -ge 100 ] || { echo "::error::only $keys art keys — expected ~188"; exit 1; }
+
+      - name: Reliquary Forge typechecks and builds
+        run: |
+          npm --prefix reliquary-forge ci
+          npm --prefix reliquary-forge run check
+          npm --prefix reliquary-forge run build
