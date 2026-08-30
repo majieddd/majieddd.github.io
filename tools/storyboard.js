@@ -1,4 +1,4 @@
-/* THE LIVING STORYBOARD.  node tools/storyboard.js  ->  narrative/
+/* THE LIVING STORYBOARD AND SPINE.  node tools/storyboard.js  ->  narrative/
  *
  * One page per power, showing that power's campaign in PLAY ORDER and nothing
  * else. The previous review document tried to show all five powers on every
@@ -16,6 +16,22 @@
  * Every panel carries its real plate. Missing art is drawn as an empty frame
  * rather than skipped, because a storyboard that hides its holes is not a
  * review. Notes are per world, saved to localStorage, exported by one button.
+ *
+ * THE SPINE (owner directive, Session 43). This document is the canonical
+ * reference for EVERYTHING on main: every tower, denizen, commander, boon,
+ * element, reaction, ability, doctrine, world, slide and story beat, each
+ * with a stable ref (`tower:flak`, `human/act2/MARS`, `human/intro/slide7`)
+ * and a link to the exact source line on GitHub. narrative/spine.json maps
+ * every ref to its page anchor and source location, so an owner note like
+ * "flak feels weak" or "slide 7 of the human intro reads flat" resolves to
+ * one card and one line of code without a conversation about where it lives.
+ *
+ * Because it is generated from the loaded game modules, it can only describe
+ * what main actually holds. Two things keep it that way:
+ *   - node tools/storyboard.js --check   regenerates in memory and exits 1
+ *     if the committed pages are stale; tools/gate.js runs it.
+ *   - .github/workflows/pages.yml regenerates before every deploy, so the
+ *     live document always matches the commit being published.
  */
 
 const fs = require('fs'), path = require('path'), vm = require('vm');
@@ -23,7 +39,7 @@ const ROOT = path.dirname(__dirname);
 
 const ctx = { console, window: {}, document: undefined };
 vm.createContext(ctx);
-for (const f of ['config', 'lore', 'factions', 'towers2', 'roster', 'story',
+for (const f of ['config', 'lore', 'factions', 'towers2', 'abilities', 'roster', 'story',
                  'galaxy', 'cutscenes', 'planetcuts', 'dialogue'])
   try { vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', f + '.js'), 'utf8'), ctx, { filename: f + '.js' }); }
   catch (e) { console.log('  (skipped ' + f + ': ' + e.message.split('\n')[0] + ')'); }
@@ -31,7 +47,10 @@ for (const f of ['config', 'lore', 'factions', 'towers2', 'roster', 'story',
 const G = vm.runInContext(
   '({ GX_HOME_SYSTEMS, GX_UNIVERSE_ORDER, PLANET_CUTS, PLANET_MOMENTS, CUTSCENES, ' +
   'STORY, FACTIONS, COMMANDER_ROSTER, UNIT_TYPES, DIALOGUE, LORE, ' +
-  'ACT_MORALS, ACT_SCENARIOS, BOONS, GX_SOL_ENCOUNTERS, GX_ACT_ENCOUNTERS })', ctx);
+  'ACT_MORALS, ACT_SCENARIOS, BOONS, GX_SOL_ENCOUNTERS, GX_ACT_ENCOUNTERS, ' +
+  'TOWER_TYPES, TOWER_ORDER, ENEMY_TYPES, FACTION_UNITS, POWER_ORDER, ' +
+  'ELEMENTS, COMBOS, ABILITIES, PLAYER_MODS, ENEMY_MODS, SUMMON_DOCTRINES, ' +
+  'MACHINE_HOST, originKeyOf })', ctx);
 
 const FACS = ['human', 'light', 'xeno', 'pirate', 'robot'];
 const SYSOF = { human: 0, light: 1, xeno: 2, pirate: 3, robot: 4 };
@@ -80,6 +99,101 @@ const plate = (k, stale) => has(k)
   ? '<img loading="lazy" src="../art/' + k + '.webp" alt="">' +
     (stale ? '<span class="stale">OLD ART &middot; NOT THIS PLACE</span>' : '')
   : '<span class="noart">NO PLATE<br><b>' + esc(k) + '</b></span>';
+
+/* ==========================================================================
+   THE SPINE: stable refs, page anchors, and source lines.
+
+   Every card this document renders gets three coordinates:
+     ref     what a human types in a note        tower:flak, human/act2/MARS
+     anchor  where it lives on the page          human.html#tw-flak
+     src     where it lives in the code          js/config.js:2101, on GitHub
+
+   All three are collected into narrative/spine.json so a note against any
+   ref resolves to a page location AND a source location mechanically.
+
+   LOCATING SOURCE LINES. The data itself comes from the LOADED modules (the
+   facts.js law: source text is not the program). The line number is the one
+   thing loading cannot give, so it is found by searching the defining file
+   for the entry's own `id:'x'` field, disambiguated by requiring the def's
+   NAME nearby when the id string appears more than once, and THROWING when
+   that still is not unique or when nothing is found. A spine that silently
+   lacked an entry, or pointed a note at the wrong line, would be worse than
+   no spine, so every miss is loud and fails the gate.
+   ========================================================================== */
+const REPO_BLOB = 'https://github.com/majieddd/majieddd.github.io/blob/main/';
+const SPINE = [];
+const SRC_CACHE = {};
+const srcLines = rel => SRC_CACHE[rel] ||
+  (SRC_CACHE[rel] = fs.readFileSync(path.join(ROOT, rel), 'utf8').split('\n'));
+
+/* Find the one place `id:'<id>'` (space optional) is defined across `rels`
+   (a path or a list of paths: towers split config.js/towers2.js). `name`
+   disambiguates: when the id string occurs on several lines, the def line is
+   the one whose 3-line window also carries the entry's exact name value.
+   Returns 'js/file.js:123'. Anything but exactly one survivor throws. */
+function locateId(rels, id, name, opts) {
+  const files = Array.isArray(rels) ? rels : [rels];
+  const pat = new RegExp("id:\\s*'" + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "'");
+  let hits = [];
+  for (const rel of files) {
+    const lines = srcLines(rel);
+    for (let i = 0; i < lines.length; i++)
+      if (pat.test(lines[i])) hits.push({ rel, i, win: lines[i] + (lines[i + 1] || '') + (lines[i + 2] || '') });
+  }
+  if (hits.length > 1 && name) {
+    const near = hits.filter(h => h.win.indexOf(name) >= 0);
+    if (near.length) hits = near;
+  }
+  /* `first` is for the ONE table that legitimately authors an id twice: the
+     combo matrix is symmetric, so fire+frost and frost+fire both carry
+     id:'thermal' and both lines ARE the same reaction. Every hit must still
+     carry the same name, or two different defs are sharing an id and that is
+     a real defect this must not paper over. */
+  if (opts && opts.first && hits.length > 1) {
+    if (name && hits.some(h => h.win.indexOf(name) < 0))
+      throw new Error('spine: id ' + id + ' has ' + hits.length + ' defs with DIFFERENT names in ' +
+                      files.join(', '));
+    hits = [hits[0]];
+  }
+  if (hits.length !== 1)
+    throw new Error('spine: id ' + id + ' matched ' + hits.length + ' lines across ' +
+                    files.join(', ') + ' (need exactly 1). Fix locateId or the def.');
+  return hits[0].rel + ':' + (hits[0].i + 1);
+}
+
+/* Find the 1-based line of a KEY (`kinetic: {` or `'05': {`) between the
+   declaration of `constName` and the next top-level `const`. For tables whose
+   entries carry no id field. */
+function locateKey(rel, constName, key) {
+  const lines = srcLines(rel);
+  let start = -1, end = lines.length;
+  /* EXACT name then `=`: `const STORY` must not lock onto `const STORY_ACTS`,
+     which is a real prefix collision in js/story.js. */
+  const decl = new RegExp('^const ' + constName + '\\s*=');
+  for (let i = 0; i < lines.length; i++)
+    if (decl.test(lines[i])) { start = i; break; }
+  if (start < 0) throw new Error('spine: const ' + constName + ' not found in ' + rel);
+  for (let i = start + 1; i < lines.length; i++)
+    if (/^const /.test(lines[i])) { end = i; break; }
+  const pat = new RegExp("^\\s*'?" + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "'?:\\s*[{\\[]");
+  const hits = [];
+  for (let i = start; i < end; i++) if (pat.test(lines[i])) hits.push(i);
+  if (hits.length !== 1)
+    throw new Error('spine: key ' + key + ' matched ' + hits.length + ' lines under ' +
+                    constName + ' in ' + rel + ' (need exactly 1).');
+  return rel + ':' + (hits[0] + 1);
+}
+
+/* Register one addressable thing and return the little ref chip that renders
+   under its card: the ref string, then the source line, linked to GitHub.
+   `src` is 'js/file.js:123', or 'js/file.js' for the one-line canon file. */
+function spine(ref, kind, name, fac, page, anchor, src) {
+  SPINE.push({ ref, kind, name, faction: fac || null, page: page + '#' + anchor, src });
+  const m = /^(.*?):(\d+)$/.exec(src);
+  const href = m ? REPO_BLOB + m[1] + '#L' + m[2] : REPO_BLOB + src;
+  return '<a class="src" href="' + href + '" title="the exact source of this entry">' +
+         esc(ref) + ' &middot; ' + esc(src) + '</a>';
+}
 
 /* The five acts a given power plays, in order. Each power opens at home and
    rotates outward, which is campTier in js/galaxy.js. */
@@ -192,6 +306,20 @@ h2{font-size:15px;letter-spacing:.14em;margin:38px 0 6px;color:#fff;text-transfo
 .card span{color:#93a7ba;font-size:12.5px;line-height:1.5}
 .card i{color:#75899e;font-style:normal;letter-spacing:.06em;font-size:11px}
 .card .quote{color:#c3d2e0;border-left:2px solid #23303f;padding-left:9px;font-style:italic}
+[id]{scroll-margin-top:64px}
+.src{display:block;margin-top:auto;padding-top:6px;font:10.5px/1.4 ui-monospace,Consolas,monospace;
+ color:#5b6b7d;text-decoration:none;letter-spacing:.02em}
+.src:hover{color:#7dd3fc}
+.tdet{margin:2px 0 0}
+.tdet summary{cursor:pointer;color:#75899e;font-size:11px;letter-spacing:.1em;list-style:none}
+.tdet summary::before{content:'+ ';color:var(--fc)}
+.tdet[open] summary::before{content:'\\2212 '}
+.tdet ul{margin:6px 0 2px;padding-left:16px}
+.tdet li{color:#93a7ba;font-size:12.5px;line-height:1.5;margin:3px 0}
+.tdet li b{color:#c3d2e0;font-weight:600;letter-spacing:.04em}
+.sig{color:#8aa0b5;font-size:12px}
+.sig b{color:#c3d2e0;font-weight:600}
+.whead .src,.actbar .src,.sub .src{display:inline;margin:0;padding:0}
 .beat .reveal{display:block;margin-top:7px;padding-top:7px;border-top:1px solid #1d2836;
  color:#8aa0b5;font-size:13px}
 .beat.moral{border-color:#3d3320;background:#12100c}
@@ -227,8 +355,9 @@ const SAVEJS = `
 })();
 `;
 
-function panel(key, label, text, after, stale) {
-  return '<div class="pan' + (after ? ' after' : '') + (stale ? ' stalepan' : '') + '">' +
+function panel(key, label, text, after, stale, anchor) {
+  return '<div class="pan' + (after ? ' after' : '') + (stale ? ' stalepan' : '') + '"' +
+         (anchor ? ' id="' + esc(anchor) + '"' : '') + '>' +
          '<div class="pimg">' + plate(key, stale) + '</div>' +
          '<div class="plab">' + label + '</div>' +
          '<div class="ptxt">' + esc(text || '') + '</div></div>';
@@ -279,6 +408,164 @@ function encountersFor(fac) {
   return out;
 }
 
+/* ==========================================================================
+   THE FIELD MANUAL. Towers, denizens and boons on the power's own page;
+   the Vigil, the shared systems, the timeline and the relationship web on
+   the index. Every number is read off the loaded tables, so a stat printed
+   here IS the stat in the game, and every card carries its ref and its
+   source line. Counters accumulate so the run can ASSERT total coverage:
+   a tower this document skipped would otherwise be invisible forever.
+   ========================================================================== */
+const TOWER_FILES = ['js/config.js', 'js/towers2.js'];
+/* ENEMY_TYPES is authored in config.js and EXTENDED by factions.js
+   (Object.assign(ENEMY_TYPES, FACTION_ENEMY_TYPES) at the merge line), so a
+   denizen def can live in either file. */
+const UNIT_FILES = ['js/config.js', 'js/factions.js'];
+const COVER = { towers: 0, units: 0, vigil: 0, commanders: 0, boons: 0 };
+
+function towerCard(id, fac, page) {
+  const t = G.TOWER_TYPES[id];
+  const b = t.base || {};
+  const el = G.ELEMENTS[t.element] || {};
+  const lo = (G.LORE && G.LORE.towers && G.LORE.towers[id]) || {};
+  const nums = [
+    b.damage !== undefined ? 'dmg ' + b.damage : '',
+    b.rate !== undefined ? 'rate ' + b.rate + '/s' : '',
+    b.range !== undefined ? 'range ' + b.range : '',
+    b.dmgType || '',
+    b.splash ? 'splash ' + b.splash : ''
+  ].filter(Boolean).join(' &middot; ');
+  const ladder = [];
+  (t.levels || []).forEach((l, i) =>
+    ladder.push('<li><b>' + esc(l.name) + '</b> upgrade ' + (i + 1) + ', ' + l.cost + 'g</li>'));
+  (t.talents || []).forEach(x =>
+    ladder.push('<li><b>' + esc(x.name) + '</b> ' + esc(x.desc || '') + '</li>'));
+  (t.branches || []).forEach(x =>
+    ladder.push('<li><b>' + esc(x.name) + '</b> tier 4 branch, ' + x.cost + 'g. ' + esc(x.note || '') + '</li>'));
+  COVER.towers++;
+  return '<div class="card" id="tw-' + esc(id) + '">' +
+    '<b>' + esc(t.name) + '</b>' +
+    '<span class="nums">' + esc(t.role || '') + ' &middot; ' + (el.icon || '') + ' ' +
+      esc(el.name || t.element) + ' &middot; ' + t.cost + 'g, growth &times;' + t.costGrowth + '</span>' +
+    (nums ? '<span class="nums">' + nums + '</span>' : '') +
+    '<span>' + esc(t.desc || '') + '</span>' +
+    (lo.historical_origin ? '<span class="quote">' + esc(lo.historical_origin) + '</span>' : '') +
+    (lo.canon_mechanic ? '<span><i>Canon:</i> ' + esc(lo.canon_mechanic) + '</span>' : '') +
+    (ladder.length ? '<details class="tdet"><summary>THE LADDER: ' +
+      (t.levels || []).length + ' upgrades, ' + (t.talents || []).length + ' talents, ' +
+      (t.branches || []).length + ' branches</summary><ul>' + ladder.join('') + '</ul></details>' : '') +
+    spine('tower:' + id, 'tower', t.name, fac, page, 'tw-' + id, locateId(TOWER_FILES, id, t.name)) +
+    '</div>';
+}
+
+function unitCard(id, fac, page) {
+  const e = G.ENEMY_TYPES[id];
+  const u = G.UNIT_TYPES[id] || {};
+  const lo = (G.LORE && G.LORE.units && G.LORE.units[id]) || {};
+  const specials = [
+    e.flying ? 'FLYING' : '', e.stealth ? 'stealth' : '',
+    e.shield ? 'shield ' + e.shield + (e.shieldRegen ? ', +' + e.shieldRegen + '/s' : '') : '',
+    e.healRate ? 'heals allies ' + e.healRate + '/s' : '',
+    e.splitInto ? 'splits into ' + (e.splitCount || 2) + ' on death' : '',
+    e.splashResist ? 'splash resist ' + Math.round(e.splashResist * 100) + '%' : ''
+  ].filter(Boolean).join(' &middot; ');
+  const weak = e.elemWeak ? Object.keys(e.elemWeak).map(k => (G.ELEMENTS[k] || {}).name || k).join(', ') : '';
+  const res = e.elemResist ? Object.keys(e.elemResist).map(k => (G.ELEMENTS[k] || {}).name || k).join(', ') : '';
+  const talents = (u.talents || []).map(x =>
+    '<li><b>' + esc(x.name) + '</b> ' + esc(x.desc || '') + '</li>');
+  COVER.units++;
+  return '<div class="card" id="un-' + esc(id) + '">' +
+    '<b>' + esc(e.name) + '</b>' +
+    '<span class="nums">' + e.hp + ' hp &middot; ' + (e.armor || 0) + ' armour &middot; speed ' +
+      e.speed + ' &middot; bounty ' + e.bounty + ' &middot; ' + e.lives + ' live' + (e.lives === 1 ? '' : 's') + '</span>' +
+    (specials ? '<span class="nums">' + specials + '</span>' : '') +
+    ((weak || res) ? '<span class="nums">' + (weak ? 'weak to ' + esc(weak) : '') +
+      (weak && res ? ' &middot; ' : '') + (res ? 'resists ' + esc(res) : '') + '</span>' : '') +
+    '<span>' + esc(e.desc || '') + '</span>' +
+    (lo.formation ? '<span><i>Formation:</i> ' + esc(lo.formation) + '</span>' : '') +
+    (lo.canon ? '<span class="quote">' + esc(lo.canon) + '</span>' : '') +
+    (talents.length ? '<details class="tdet"><summary>DOCTRINE TALENTS: ' + talents.length +
+      '</summary><ul>' + talents.join('') + '</ul></details>' : '') +
+    spine('unit:' + id, 'unit', e.name, fac, page, 'un-' + id, locateId(UNIT_FILES, id, e.name)) +
+    '</div>';
+}
+
+function commanderCard(c, fac, page) {
+  const lo = (G.LORE && G.LORE.commanders && G.LORE.commanders[c.id]) || {};
+  const open = (G.DIALOGUE && G.DIALOGUE.openers && G.DIALOGUE.openers[c.id]) || '';
+  const abil = (c.abilities || []).map(a => G.ABILITIES[a]).filter(Boolean)
+    .map(a => '<li><b>' + a.icon + ' ' + esc(a.name) + '</b> ' + esc(a.desc) +
+              ' (' + a.cd + 's cooldown, ' + a.dur + 's)</li>');
+  const sig = c.signature
+    ? '<span class="sig"><i>Signature:</i> ' +
+      c.signature.towers.map(t => '<b>' + esc((G.TOWER_TYPES[t] || {}).name || t) + '</b>').join(' + ') +
+      ' with ' +
+      c.signature.units.map(u => '<b>' + esc((G.ENEMY_TYPES[u] || {}).name || u) + '</b>').join(' + ') + '</span>'
+    : '';
+  const tech = (c.tech ? Object.values(c.tech) : []).filter(n => n && n.name && n.desc)
+    .map(n => '<li><b>' + esc(n.name) + '</b> ' + esc(n.desc) + '</li>');
+  COVER.commanders++;
+  return '<div class="card" id="cd-' + esc(c.id) + '">' +
+    '<b>' + (c.icon ? c.icon + ' ' : '') + esc(c.name) + '</b>' +
+    '<span class="nums">' + esc(c.title || '') + '</span>' +
+    (c.blurb ? '<span>' + esc(c.blurb) + '</span>' : '') +
+    (c.trait ? '<span><i>' + esc(c.trait.name) + ':</i> ' + esc(c.trait.desc) + '</span>' : '') +
+    sig +
+    (lo.role ? '<span>' + esc(lo.role) + '</span>' : '') +
+    (lo.motive ? '<span><i>Wants:</i> ' + esc(lo.motive) + '</span>' : '') +
+    (lo.fracture ? '<span><i>Breaks on:</i> ' + esc(lo.fracture) + '</span>' : '') +
+    (open ? '<span class="quote">' + esc(open) + '</span>' : '') +
+    ((abil.length || tech.length)
+      ? '<details class="tdet"><summary>ABILITIES AND TECH: ' + abil.length + ' abilities, ' +
+        tech.length + ' tech nodes</summary><ul>' + abil.join('') + tech.join('') + '</ul></details>' : '') +
+    spine('commander:' + c.id, 'commander', c.name, fac, page, 'cd-' + c.id,
+          locateId('js/roster.js', c.id, c.name)) +
+    '</div>';
+}
+
+function boonCard(b, fac, page) {
+  COVER.boons++;
+  return '<div class="card" id="bn-' + esc(b.id) + '">' +
+    '<b>' + (b.icon ? b.icon + ' ' : '') + esc(b.name) + '</b>' +
+    '<span class="nums">on ' + esc(b.k) + ' worlds</span>' +
+    '<span>' + esc(b.desc || '') + '</span>' +
+    (b.lore ? '<span class="quote">' + esc(b.lore) + '</span>' : '') +
+    spine('boon:' + b.id, 'boon', b.name, fac, page, 'bn-' + b.id,
+          locateId('js/towers2.js', b.id, b.name)) +
+    '</div>';
+}
+
+function vigilCard(id) {
+  const e = G.ENEMY_TYPES[id];
+  const lo = (G.LORE && G.LORE.vigil && G.LORE.vigil[id]) || {};
+  COVER.vigil++;
+  return '<div class="card" id="vg-' + esc(id) + '">' +
+    '<b>' + esc(e.name) + '</b>' +
+    '<span class="nums">' + e.hp + ' hp &middot; ' + (e.armor || 0) + ' armour &middot; speed ' +
+      e.speed + ' &middot; bounty ' + e.bounty + ' &middot; ' + e.lives + ' live' + (e.lives === 1 ? '' : 's') +
+      (e.flying ? ' &middot; FLYING' : '') + '</span>' +
+    '<span>' + esc(e.desc || '') + '</span>' +
+    (lo.original_function ? '<span><i>Was:</i> ' + esc(lo.original_function) + '</span>' : '') +
+    (lo.canon ? '<span class="quote">' + esc(lo.canon) + '</span>' : '') +
+    spine('vigil:' + id, 'vigil', e.name, null, 'index.html', 'vg-' + id,
+          locateId(UNIT_FILES, id, e.name)) +
+    '</div>';
+}
+
+/* The five powers' sendable rosters, asserted against FACTION_UNITS so the
+   pages and the muster can never disagree about who is sendable. */
+function armyOf(fac) {
+  const ids = G.FACTION_UNITS[fac] || [];
+  if (!ids.length) throw new Error('spine: FACTION_UNITS.' + fac + ' is empty; the muster disagrees');
+  return ids;
+}
+function arsenalOf(fac) {
+  const ok = G.originKeyOf(fac);
+  const ids = G.TOWER_ORDER.filter(id => G.TOWER_TYPES[id].origin === ok);
+  if (!ids.length) throw new Error('spine: no towers under origin ' + ok + ' for ' + fac);
+  return ids;
+}
+
 function page(fac) {
   const o = [];
   const ENC = encountersFor(fac);
@@ -296,51 +583,79 @@ function page(fac) {
 
   /* ---- who you are: the role-playing layer, on the same sheet ---- */
   const F = G.FACTIONS[fac] || {};
-  w('<div class="power">');
+  const pageFile = fac + '.html';
+  const doc = (G.SUMMON_DOCTRINES || {})[fac];
+  w('<div class="power" id="power">');
   w('<div class="creed">' + esc(F.creed || '') + '</div>');
   if (F.tagline) w('<p class="sub" style="margin:0 0 10px">' + esc(F.tagline) + '</p>');
   if (F.blurb) w('<p class="blurb">' + esc(F.blurb) + '</p>');
   if (F.bonusName) w('<div class="bonus"><b>' + esc(F.bonusName) + '</b> ' + esc(F.bonusDesc || '') + '</div>');
+  if (doc) w(' <div class="bonus" id="doctrine"><b>' + esc(doc.name) + '</b> ' + esc(doc.desc || '') + '</div>');
+  w(spine('faction:' + fac, 'faction', F.name || fac, fac, pageFile, 'power',
+          locateId('js/factions.js', fac, F.name)));
+  if (doc) w(spine('doctrine:' + fac, 'doctrine', doc.name, fac, pageFile, 'doctrine',
+                   locateKey('js/factions.js', 'SUMMON_DOCTRINES', fac)));
   w('</div>');
 
-  /* Units. What the player actually fields, beside the story about them. */
-  const units = Object.values(G.UNIT_TYPES || {}).filter(u => u.faction === fac);
-  if (units.length) {
-    w('<h2>What you field</h2>');
-    w('<div class="cards">');
-    units.forEach(u => w('<div class="card"><b>' + esc(u.name) + '</b>' +
-      '<span class="nums">' + [u.hp && ('hp ' + u.hp), u.speed && ('spd ' + u.speed),
-        u.armor && ('armour ' + u.armor)].filter(Boolean).join(' &middot; ') + '</span>' +
-      '<span>' + esc(u.desc || '') + '</span></div>'));
-    w('</div>');
-  }
+  /* THE ARSENAL. Every tower this origin builds, full dossier, in the order
+     TOWER_ORDER introduces them. Read off the loaded tables: a stat printed
+     here IS the stat in the game on this commit. */
+  const arsenal = arsenalOf(fac);
+  w('<h2 id="arsenal">The arsenal</h2>');
+  w('<p class="sub">' + arsenal.length + ' towers. Numbers are base values before marks, talents, ' +
+    'commander traits or boons. Open THE LADDER on any card for its full upgrade tree.</p>');
+  w('<div class="cards">');
+  arsenal.forEach(id => w(towerCard(id, fac, pageFile)));
+  w('</div>');
 
-  /* Commanders, with the lore entry that explains them. */
+  /* WHAT YOU FIELD. The sendable roster, lightest first, exactly the muster
+     order, with the full combat sheet the enemy reads off ENEMY_TYPES. */
+  const army = armyOf(fac);
+  w('<h2 id="army">What you field</h2>');
+  w('<p class="sub">' + army.length + ' denizens, lightest first, which is also the order the muster ' +
+    'introduces them. The same body the rival meets when you send it.</p>');
+  w('<div class="cards">');
+  army.forEach(id => w(unitCard(id, fac, pageFile)));
+  w('</div>');
+
+  /* Commanders, with trait, signature, abilities, tech and the lore entry
+     that explains them. */
   const roster = (G.COMMANDER_ROSTER || []).filter(c => c.faction === fac);
   if (roster.length) {
-    w('<h2>Who leads</h2>');
+    w('<h2 id="leaders">Who leads</h2>');
+    w('<p class="sub">' + roster.length + ' commanders under this banner. CADRE, the unaligned ' +
+      'baseline everyone starts with, lives on the <a href="index.html#cd-cadre">index</a>.</p>');
     w('<div class="cards">');
-    roster.forEach(c => {
-      const lo = (G.LORE && G.LORE.commanders && G.LORE.commanders[c.id]) || {};
-      const open = (G.DIALOGUE && G.DIALOGUE.openers && G.DIALOGUE.openers[c.id]) || '';
-      w('<div class="card"><b>' + esc(c.name) + '</b>' +
-        '<span class="nums">' + esc(c.title || '') + '</span>' +
-        (lo.role ? '<span>' + esc(lo.role) + '</span>' : '') +
-        (lo.motive ? '<span><i>Wants:</i> ' + esc(lo.motive) + '</span>' : '') +
-        (lo.fracture ? '<span><i>Breaks on:</i> ' + esc(lo.fracture) + '</span>' : '') +
-        (open ? '<span class="quote">' + esc(open) + '</span>' : '') +
-        '</div>');
-    });
+    roster.forEach(c => w(commanderCard(c, fac, pageFile)));
     w('</div>');
   }
 
-  /* The spine: six beats that carry the whole tragedy, with what each reveals. */
-  const spine = (G.STORY && G.STORY[fac]) || [];
-  if (spine.length) {
-    w('<h2>The spine</h2>');
-    w('<p class="sub">Six beats that carry the arc. Everything else on this page hangs off them.</p>');
-    spine.forEach((b, i) => w('<div class="beat"><b>BEAT ' + (i + 1) + '</b>' + esc(b.line || '') +
-      (b.reveal ? '<span class="reveal">' + esc(b.reveal) + '</span>' : '') + '</div>'));
+  /* WAR BOONS. The five per-power picks a world can offer this banner. */
+  const boons = (G.BOONS || []).filter(b => b.f === fac);
+  if (boons.length) {
+    w('<h2 id="boons">War boons</h2>');
+    w('<p class="sub">' + boons.length + ' boons a world can grant this power, by world kind.</p>');
+    w('<div class="cards">');
+    boons.forEach(b => w(boonCard(b, fac, pageFile)));
+    w('</div>');
+  }
+
+  /* The story spine: the beats that carry the whole tragedy, with what each
+     reveals. (`beats`, not `spine`: spine() is the ref collector now.) */
+  const beats = (G.STORY && G.STORY[fac]) || [];
+  if (beats.length) {
+    const beatsSrc = locateKey('js/story.js', 'STORY', fac);
+    w('<h2 id="story">The spine</h2>');
+    w('<p class="sub">' + beats.length + ' beats that carry the arc. Everything else on this page ' +
+      'hangs off them. ' + spine(fac + '/story', 'story', facName(fac) + ' story spine', fac,
+                                 pageFile, 'story', beatsSrc) + '</p>');
+    beats.forEach((b, i) => {
+      SPINE.push({ ref: fac + '/beat' + (i + 1), kind: 'beat', name: b.title || ('beat ' + (i + 1)),
+                   faction: fac, page: pageFile + '#beat-' + (i + 1), src: beatsSrc });
+      w('<div class="beat" id="beat-' + (i + 1) + '"><b>BEAT ' + (i + 1) +
+        (b.title ? ' &middot; ' + esc(b.title) : '') + '</b>' + esc(b.line || '') +
+        (b.reveal ? '<span class="reveal">' + esc(b.reveal) + '</span>' : '') + '</div>');
+    });
   }
 
   /* The six alternate opening lines a world can speak instead of its own. */
@@ -348,33 +663,46 @@ function page(fac) {
                ['renegade', 'your own banner holds it'], ['retaken', 'you lost this once'],
                ['flawless', 'three stars'], ['defeat', 'you lost the campaign']];
   if (G.PLANET_MOMENTS) {
-    w('<h2>Alternate voices</h2>');
+    w('<h2 id="voices">Alternate voices</h2>');
     w('<p class="sub">These replace the first line on any world where they apply, most surprising fact first.</p>');
     w('<div class="cards">');
     MOM.forEach(([k, label]) => {
       const t = G.PLANET_MOMENTS[k] && G.PLANET_MOMENTS[k][fac];
-      if (t) w('<div class="card"><b>' + esc(k.toUpperCase()) + '</b><span class="nums">' +
-               esc(label) + '</span><span class="quote">' + esc(t) + '</span></div>');
+      if (t) w('<div class="card" id="vc-' + esc(k) + '"><b>' + esc(k.toUpperCase()) + '</b><span class="nums">' +
+               esc(label) + '</span><span class="quote">' + esc(t) + '</span>' +
+               spine(fac + '/voice/' + k, 'voice', k.toUpperCase(), fac, pageFile, 'vc-' + k,
+                     locateKey('js/planetcuts.js', 'PLANET_MOMENTS', k)) + '</div>');
     });
     w('</div>');
   }
 
   /* ---- the intro ---- */
-  w('<h2>Opening cinematic</h2>');
+  const introSrc = locateKey('js/cutscenes.js', 'CUTSCENES', fac);
+  w('<h2 id="intro">Opening cinematic</h2>');
   const intro = cs.intro || [];
+  w('<p class="sub">' + intro.length + ' slides. ' +
+    spine(fac + '/intro', 'cinematic', facName(fac) + ' opening', fac, pageFile, 'intro', introSrc) +
+    '</p>');
   w('<div class="strip">');
-  intro.forEach((sl, i) => w(panel(sl.key, 'SLIDE ' + (i + 1), sl.text, false)));
+  intro.forEach((sl, i) => {
+    SPINE.push({ ref: fac + '/intro/slide' + (i + 1), kind: 'slide',
+                 name: 'opening slide ' + (i + 1) + (sl.text ? '' : ' (silent)'),
+                 faction: fac, page: pageFile + '#intro-' + (i + 1), src: introSrc });
+    w(panel(sl.key, 'SLIDE ' + (i + 1), sl.text, false, false, 'intro-' + (i + 1)));
+  });
   w('</div>');
   w(noteBox(fac + ' / INTRO', 'Notes on the opening cinematic...'));
 
   /* ---- the acts ---- */
   actsFor(fac).forEach((act, ai) => {
     const sysBeat = (cs.sys || [])[ai];
-    w('<div class="act">');
+    w('<div class="act" id="act-' + (ai + 1) + '">');
     w('<div class="actbar"><span class="actno">ACT ' + (ai + 1) + '</span>' +
       '<span class="actname">' + esc(act.sys) + '</span>' +
       '<span class="actwho">' + (act.homeOf === fac ? 'your home' : 'home of ' + esc(facName(act.homeOf))) +
-      '</span></div>');
+      '</span>' +
+      spine(fac + '/act' + (ai + 1), 'act', act.sys, fac, pageFile, 'act-' + (ai + 1),
+            locateKey('js/story.js', 'ACT_SCENARIOS', fac)) + '</div>');
     /* What this act IS, and what the player is meant to be left holding. Both
        are authored per power per act and were previously visible nowhere. */
     const scen = (G.ACT_SCENARIOS && G.ACT_SCENARIOS[fac] || [])[ai];
@@ -395,11 +723,14 @@ function page(fac) {
          Only the Earth System is authored today; everywhere else this is the
          canon seed's roll and is labelled as such. */
       const enc = ENC[key];
-      w('<div class="whead"><span class="wname">' + esc(wname) + '</span>' +
+      const wref = fac + '/act' + (ai + 1) + '/' + wname;
+      const wsrc = e ? locateKey('js/planetcuts.js', 'PLANET_CUTS', key) : 'js/planetcuts.js';
+      w('<div class="whead" id="w-' + key + '"><span class="wname">' + esc(wname) + '</span>' +
         (wi === 6 ? '<span class="chip seat">SEAT &middot; ACT ENDS HERE</span>' : '') +
         (rev ? '<span class="chip rev">REVERSAL &middot; ' + esc(rev) + '</span>' : '') +
         (enc ? '<span class="chip enc">' + esc(enc.scenario) + ' &middot; ' +
-               esc(enc.who) + '</span>' : '') + '</div>');
+               esc(enc.who) + '</span>' : '') +
+        spine(wref, 'world', wname, fac, pageFile, 'w-' + key, wsrc) + '</div>');
       if (enc && enc.note) w('<p class="encnote">' + esc(enc.note) + '</p>');
       if (!e) { w('<p class="sub">No authored entry for this world yet.</p></div>'); return; }
       const k = b => 'pcut_' + key + '_' + fac + '_' + b;
@@ -427,12 +758,14 @@ function page(fac) {
 function index() {
   const o = [];
   const w = s => o.push(s);
-  w('<!doctype html><meta charset="utf-8"><title>Cosmic Conquest storyboard</title>');
+  w('<!doctype html><meta charset="utf-8"><title>Cosmic Conquest spine</title>');
   w('<style>' + CSS + '</style><body data-fac="index">');
-  w('<div class="wrap"><h1>COSMIC CONQUEST &mdash; STORYBOARD</h1>');
-  w('<p class="sub">A living document. Rebuilt from the game itself every time it changes, ' +
-    'so it can never describe a version that no longer exists. Pick a power and read its ' +
-    'campaign in play order.</p>');
+  w('<div class="wrap"><h1>COSMIC CONQUEST &mdash; THE SPINE</h1>');
+  w('<p class="sub">The canonical reference for everything on main: every campaign in play order, ' +
+    'every tower, denizen, commander, boon, element, reaction and ability, each with its stable ' +
+    'ref and the exact source line it is generated from. Rebuilt from the game itself on every ' +
+    'push to main, so it can never describe a version that no longer exists. Pick a power and ' +
+    'read its campaign, its arsenal and its army on one sheet.</p>');
   w('<div class="grid5">');
   FACS.forEach(f => {
     const st = G.STORY && G.STORY[f];
@@ -442,6 +775,164 @@ function index() {
       '<span>' + esc(hook) + '</span></a>');
   });
   w('</div>');
+
+  /* ---- how to give a note against anything in the game ---- */
+  const exTower = arsenalOf('human')[4], exUnit = armyOf('human')[1];
+  w('<h2 id="howto">How to reference anything here</h2>');
+  w('<p class="sub">Every card on every page carries a mono line: its <b style="color:#fff">ref</b>, ' +
+    'then the source it is generated from, linked to the exact line on GitHub. Quote the ref in a ' +
+    'note ("<b style="color:#fff">tower:' + esc(exTower) + ' feels weak", "human/intro/slide7 reads ' +
+    'flat</b>") and it resolves mechanically: <a href="spine.json">spine.json</a> maps every ref to ' +
+    'its page anchor and its source location, for people and for the AI working on the game.</p>');
+  w('<table class="dec">');
+  [['tower:' + exTower, 'a tower, on its power&#39;s page under THE ARSENAL'],
+   ['unit:' + exUnit, 'a sendable denizen, under WHAT YOU FIELD'],
+   ['commander:' + (G.COMMANDER_ROSTER.find(c => c.faction) || {}).id, 'a commander, under WHO LEADS'],
+   ['boon:' + (G.BOONS[0] || {}).id, 'a war boon, under WAR BOONS'],
+   ['vigil:' + Object.keys(G.ENEMY_TYPES).find(id => !(G.ENEMY_TYPES[id].faction)), 'a Vigil machine, on this page'],
+   ['human/act2', 'an act on a power&#39;s page; human/act2/' + esc((G.GX_HOME_SYSTEMS.human.worlds || [])[0] || 'EARTH') + ' is one world in it'],
+   ['human/intro/slide7', 'one slide of a power&#39;s opening cinematic'],
+   ['human/beat3', 'one beat of a power&#39;s story spine; human/voice/seat is an alternate voice'],
+   ['element:fire &middot; reaction:' + (Object.values(G.COMBOS.fire || {})[0] || {}).id +
+    ' &middot; ability:' + Object.keys(G.ABILITIES)[0] +
+    ' &middot; doctrine:light &middot; playermod:' + (G.PLAYER_MODS[0] || {}).id +
+    ' &middot; timeline:12', 'the shared systems, below on this page']]
+    .forEach(r => w('<tr class="y"><td>REF</td><td><b>' + r[0] + '</b></td><td>' + r[1] + '</td></tr>'));
+  w('</table>');
+  w('<p class="sub">Canon this page does not render (mythos operations, visual briefs, world ' +
+    'generation, arena modifiers, scenarios, maps) lives under those keys in ' +
+    '<a href="' + REPO_BLOB + 'js/lore.js">js/lore.js</a>, the frozen lore bible. The pages and ' +
+    'spine.json are regenerated together by <a href="' + REPO_BLOB + 'tools/storyboard.js">' +
+    'tools/storyboard.js</a>; tools/gate.js fails if they go stale, and the deploy workflow ' +
+    'rebuilds them on every push to main, so only what is actually on main can appear here.</p>');
+
+  /* ---- the commander everyone starts with ---- */
+  const cadre = G.COMMANDER_ROSTER.filter(c => !c.faction);
+  if (cadre.length) {
+    w('<h2 id="baseline">The baseline commander</h2>');
+    w('<p class="sub">Unaligned, free, and issued to every profile. The factioned rosters live on ' +
+      'their power&#39;s own page.</p>');
+    w('<div class="cards">');
+    cadre.forEach(c => w(commanderCard(c, null, 'index.html')));
+    w('</div>');
+  }
+
+  /* ---- the shared systems every power plays under ---- */
+  w('<h2 id="systems">The shared systems</h2>');
+  w('<p class="sub">The rules underneath every banner: what marks, what reacts, what a commander ' +
+    'can call down, and what a wave can arrive carrying.</p>');
+
+  const elemIds = Object.keys(G.ELEMENTS);
+  w('<h2 id="elements" style="font-size:13px;margin-top:26px">Elements, ' + elemIds.length + '</h2>');
+  w('<div class="cards">');
+  elemIds.forEach(id => {
+    const e = G.ELEMENTS[id];
+    const tw = G.TOWER_ORDER.filter(t => G.TOWER_TYPES[t].element === id);
+    w('<div class="card" id="el-' + esc(id) + '"><b>' + e.icon + ' ' + esc(e.name) + '</b>' +
+      '<span>' + (e.marks
+        ? 'Leaves a mark. A hit from a different marking element consumes it and triggers a reaction.'
+        : 'Does not mark. Straight damage, no reactions, that is the trade.') + '</span>' +
+      '<span class="nums">' + tw.length + ' tower' + (tw.length === 1 ? '' : 's') + ': ' +
+      esc(tw.map(t => G.TOWER_TYPES[t].name).join(', ')) + '</span>' +
+      spine('element:' + id, 'element', e.name, null, 'index.html', 'el-' + id,
+            locateKey('js/towers2.js', 'ELEMENTS', id)) + '</div>');
+  });
+  w('</div>');
+
+  const seenRx = new Set();
+  w('<h2 id="reactions" style="font-size:13px;margin-top:26px">Reactions</h2>');
+  w('<div class="cards">');
+  for (const a in G.COMBOS) for (const b in G.COMBOS[a]) {
+    const c = G.COMBOS[a][b];
+    if (seenRx.has(c.id)) continue;
+    seenRx.add(c.id);
+    w('<div class="card" id="rx-' + esc(c.id) + '"><b>' + esc(c.name) + '</b>' +
+      '<span class="nums">' + G.ELEMENTS[a].icon + ' ' + esc(G.ELEMENTS[a].name) + ' + ' +
+      G.ELEMENTS[b].icon + ' ' + esc(G.ELEMENTS[b].name) + '</span>' +
+      '<span>' + esc(c.desc || '') + '</span>' +
+      spine('reaction:' + c.id, 'reaction', c.name, null, 'index.html', 'rx-' + c.id,
+            locateId('js/towers2.js', c.id, c.name, { first: true })) + '</div>');
+  }
+  w('</div>');
+
+  const abilIds = Object.keys(G.ABILITIES);
+  w('<h2 id="abilities" style="font-size:13px;margin-top:26px">Commander abilities, ' + abilIds.length + '</h2>');
+  w('<div class="cards">');
+  abilIds.forEach(id => {
+    const a = G.ABILITIES[id];
+    w('<div class="card" id="ab-' + esc(id) + '"><b>' + a.icon + ' ' + esc(a.name) + '</b>' +
+      '<span class="nums">' + (a.kind === 'offense' ? 'OFFENSIVE' : 'DEFENSIVE') + ' &middot; ' +
+      a.cd + 's cooldown &middot; ' + a.dur + 's duration</span>' +
+      '<span>' + esc(a.desc || '') + '</span>' +
+      spine('ability:' + id, 'ability', a.name, null, 'index.html', 'ab-' + id,
+            locateId('js/abilities.js', id, a.name)) + '</div>');
+  });
+  w('</div>');
+
+  w('<h2 id="mods" style="font-size:13px;margin-top:26px">Wave modifiers: ' +
+    G.PLAYER_MODS.length + ' yours, ' + G.ENEMY_MODS.length + ' theirs</h2>');
+  w('<p class="sub">Index-coupled tables (the duel wire carries indices), so these are append-only ' +
+    'and shown in wire order.</p>');
+  w('<div class="cards">');
+  G.PLAYER_MODS.forEach(m =>
+    w('<div class="card" id="pm-' + esc(m.id) + '"><b>' + (m.icon || '') + ' ' + esc(m.name) + '</b>' +
+      '<span class="nums">yours</span><span>' + esc(m.desc || '') + '</span>' +
+      spine('playermod:' + m.id, 'playermod', m.name, null, 'index.html', 'pm-' + m.id,
+            locateId('js/config.js', m.id, m.name)) + '</div>'));
+  G.ENEMY_MODS.forEach(m =>
+    w('<div class="card" id="em-' + esc(m.id) + '"><b>' + (m.icon || '') + ' ' + esc(m.name) + '</b>' +
+      '<span class="nums">theirs</span><span>' + esc(m.desc || '') + '</span>' +
+      spine('enemymod:' + m.id, 'enemymod', m.name, null, 'index.html', 'em-' + m.id,
+            locateId('js/config.js', m.id, m.name)) + '</div>'));
+  w('</div>');
+
+  /* ---- the machines everyone fights ---- */
+  const facUnitIds = new Set(FACS.flatMap(f => G.FACTION_UNITS[f] || []));
+  const vigilIds = Object.keys(G.ENEMY_TYPES).filter(id => !facUnitIds.has(id));
+  w('<h2 id="vigil">' + esc((G.MACHINE_HOST || {}).name || 'THE VIGIL') + ', ' + vigilIds.length + ' machines</h2>');
+  w('<p class="sub">The standing garrison of the dead builders, and the host every campaign fights ' +
+    'wherever no living banner holds the ground. The five powers&#39; own denizens live on their pages.</p>');
+  w('<div class="cards">');
+  vigilIds.forEach(id => w(vigilCard(id)));
+  w('</div>');
+
+  /* ---- the timeline ---- */
+  const tl = (G.LORE && G.LORE.timeline && G.LORE.timeline.events) || [];
+  if (tl.length) {
+    w('<h2 id="timeline">The timeline, ' + tl.length + ' events</h2>');
+    w('<p class="sub">The canon record, oldest first, from the frozen lore bible ' +
+      '(<a href="' + REPO_BLOB + 'js/lore.js">js/lore.js</a>, release ' +
+      esc((G.LORE && G.LORE.version) || '') + '). Ref any row as timeline:N.</p>');
+    w('<table class="dec">');
+    tl.forEach((ev, i) => {
+      SPINE.push({ ref: 'timeline:' + (i + 1), kind: 'timeline', name: String(ev.event || '').slice(0, 80),
+                   faction: null, page: 'index.html#tl-' + (i + 1), src: 'js/lore.js' });
+      w('<tr class="y" id="tl-' + (i + 1) + '"><td>' + esc(ev.date || '') + '</td><td><b>' +
+        esc(ev.event || '') + '</b>' + (ev.cause ? '<br><span>' + esc(ev.cause) + '</span>' : '') +
+        '</td><td>' + (i + 1) + (ev.status && ev.status !== 'canon' ? ' &middot; ' + esc(ev.status) : '') +
+        '</td></tr>');
+    });
+    w('</table>');
+  }
+
+  /* ---- who cannot stand whom ---- */
+  const rels = (G.LORE && G.LORE.relationships) || [];
+  if (rels.length) {
+    const cname = id => { const c = G.COMMANDER_ROSTER.find(x => x.id === id); return c ? c.name : id; };
+    w('<h2 id="relationships">The relationship web, ' + rels.length + ' threads</h2>');
+    w('<p class="sub">Every authored tension between commanders, from the lore bible. ' +
+      'Ref a thread as rel:a-b.</p>');
+    w('<table class="dec">');
+    rels.forEach(r => {
+      SPINE.push({ ref: 'rel:' + r.a + '-' + r.b, kind: 'relationship',
+                   name: cname(r.a) + ' and ' + cname(r.b), faction: null,
+                   page: 'index.html#rel-' + r.a + '-' + r.b, src: 'js/lore.js' });
+      w('<tr class="y" id="rel-' + esc(r.a) + '-' + esc(r.b) + '"><td>' + esc(cname(r.a)) + ' &amp; ' +
+        esc(cname(r.b)) + '</td><td><b>' + esc(r.theme || '') + '</b><br><span>' +
+        esc(r.conflict || '') + '</span></td><td>rel:' + esc(r.a) + '-' + esc(r.b) + '</td></tr>');
+    });
+    w('</table>');
+  }
 
   let panels = 0, missing = 0, stale = 0, worlds = 0;
   FACS.forEach(fac => actsFor(fac).forEach(act => act.worlds.forEach((wn, wi) => {
@@ -509,6 +1000,14 @@ function index() {
     '<span style="color:#ffd89b"><b>' + stale + '</b> showing OLD art, needs re-render</span>' +
     '<span><b>' + missing + '</b> with no plate at all</span>' +
     '<span><b>' + worlds + '</b> world entries</span></div>');
+  w('<div class="stat" style="margin-top:8px"><span><b>' + G.TOWER_ORDER.length + '</b> towers</span>' +
+    '<span><b>' + Object.keys(G.ENEMY_TYPES).length + '</b> denizen types, of which <b>' +
+    FACS.reduce((a, f) => a + (G.FACTION_UNITS[f] || []).length, 0) + '</b> sendable</span>' +
+    '<span><b>' + G.COMMANDER_ROSTER.length + '</b> commanders</span>' +
+    '<span><b>' + G.BOONS.length + '</b> boons</span>' +
+    '<span><b>' + Object.keys(G.ELEMENTS).length + '</b> elements</span>' +
+    '<span><b>' + seenRx.size + '</b> reactions</span>' +
+    '<span><b>' + Object.keys(G.ABILITIES).length + '</b> abilities</span></div>');
   w('<p class="sub" style="margin-top:10px">The stale panels are Proxima Centauri and Sirius. ' +
     'Those systems replaced the old Barnard and Tabby acts, and the plate keys are ' +
     'positional, so every old file still resolves and would quietly show a wreck yard under a ' +
@@ -521,7 +1020,61 @@ function index() {
 }
 
 const dir = path.join(ROOT, 'narrative');
-fs.mkdirSync(dir, { recursive: true });
-FACS.forEach(f => fs.writeFileSync(path.join(dir, f + '.html'), page(f), 'utf8'));
-fs.writeFileSync(path.join(dir, 'index.html'), index(), 'utf8');
-console.log('wrote narrative/index.html and ' + FACS.length + ' campaign pages');
+const CHECK = process.argv.includes('--check');
+
+/* Faction pages FIRST, index second: the coverage counters and the spine
+   accumulate across every page, and the assertions below hold the totals to
+   the loaded tables. */
+const files = {};
+FACS.forEach(f => { files[f + '.html'] = page(f); });
+files['index.html'] = index();
+
+/* COVERAGE IS ASSERTED, NOT ASSUMED. A tower this document silently skipped
+   would be invisible in every future review, which is the dead-field failure
+   with a longer fuse. Any mismatch kills the run, and the gate with it. */
+const facUnitTotal = FACS.reduce((a, f) => a + (G.FACTION_UNITS[f] || []).length, 0);
+[['towers', COVER.towers, G.TOWER_ORDER.length],
+ ['sendable denizens', COVER.units, facUnitTotal],
+ ['vigil machines', COVER.vigil, Object.keys(G.ENEMY_TYPES).length - facUnitTotal],
+ ['commanders', COVER.commanders, G.COMMANDER_ROSTER.length],
+ ['boons', COVER.boons, G.BOONS.length]
+].forEach(([what, got, want]) => {
+  if (got !== want)
+    throw new Error('spine coverage: rendered ' + got + ' ' + what + ' but the game holds ' + want);
+});
+
+/* A ref that resolves to two places is worse than no ref. */
+{
+  const seen = new Set();
+  for (const e of SPINE) {
+    if (seen.has(e.ref)) throw new Error('spine: duplicate ref ' + e.ref);
+    seen.add(e.ref);
+  }
+}
+
+files['spine.json'] = JSON.stringify({
+  what: 'Every stable ref in the Cosmic Conquest spine: ref, kind, name, faction, page anchor, source location. Regenerated by tools/storyboard.js; only what is on main can appear here.',
+  repo: 'https://github.com/majieddd/majieddd.github.io',
+  entries: SPINE
+}, null, 1) + '\n';
+
+if (CHECK) {
+  /* Regenerate in memory and compare. The read may fail because the file is
+     MISSING, which is just the loudest kind of stale, so it reports as stale
+     rather than throwing. */
+  const stale = Object.keys(files).filter(n => {
+    try { return fs.readFileSync(path.join(dir, n), 'utf8') !== files[n]; }
+    catch (e) { return true; }
+  });
+  if (stale.length) {
+    console.log('narrative spine STALE: ' + stale.join(', ') + '. Run: node tools/storyboard.js');
+    process.exit(1);
+  }
+  console.log('narrative spine fresh: ' + Object.keys(files).length + ' files, ' + SPINE.length + ' refs');
+} else {
+  fs.mkdirSync(dir, { recursive: true });
+  for (const n of Object.keys(files)) fs.writeFileSync(path.join(dir, n), files[n], 'utf8');
+  console.log('wrote narrative/: ' + FACS.length + ' campaign pages, index.html, spine.json (' +
+    SPINE.length + ' refs; ' + COVER.towers + ' towers, ' + (COVER.units + COVER.vigil) +
+    ' denizens, ' + COVER.commanders + ' commanders, ' + COVER.boons + ' boons)');
+}
