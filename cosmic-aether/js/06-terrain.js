@@ -388,7 +388,7 @@ var TERRAIN = (function () {
        paraboloid matching the height field's sag exactly minus a fixed
        underhang, so the world surface is guaranteed below the plate
        everywhere and the shoreline is seamless by construction. */
-    var worldR = Math.max(halfW, halfH) * 1.9;
+    var worldR = Math.max(def.planetR || 300, Math.max(halfW, halfH)) * 1.15;
     function worldY(r) { return -(r * r) / (2.0 * SAG_R) - 0.30; }
     var worldB = MESH.builder('world:' + seed);
     var wSides = 30;
@@ -425,7 +425,7 @@ var TERRAIN = (function () {
       for (var vi = 0; vi < Vd.length; vi += 12) {
         var px = Vd[vi], py = Vd[vi + 1], pz = Vd[vi + 2];
         var r = Math.hypot(px, pz);
-        var m = U.smoothstep(boardR, boardR * 1.5, r) * (1.0 - U.smoothstep(worldR * 0.96, worldR * 1.06, r));
+        var m = U.smoothstep(boardR, boardR * 1.25, r) * (1.0 - U.smoothstep(worldR * 0.9, worldR * 1.02, r));
         if (m > 0.001) {
           var nl = wnoise(px, pz);
           Vd[vi + 1] = py + nl * 2.8 * m;
@@ -460,8 +460,8 @@ var TERRAIN = (function () {
       var wcol = ['#1e1746', '#171138', '#241b52'];
       for (var wr = 0; wr < 26; wr++) {
         var anga = wrRng() * U.TAU;
-        var rr = Math.max(halfW, halfH) * (1.06 + wrRng() * 0.85);
-        if (rr > worldR * 0.9) continue;
+        var rr = Math.max(halfW, halfH) * (1.04 + wrRng() * 0.30);
+        if (rr > worldR * 0.92) continue;
         var rx = Math.cos(anga) * rr, rz = Math.sin(anga) * rr * 0.72;
         var rs = 0.8 + wrRng() * 2.2;
         var ry = worldY(rr) - 0.4;
