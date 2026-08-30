@@ -5812,14 +5812,23 @@ var TERRAIN = (function () {
 
     /* PLANET SAG. The board is now a biome on a globe: every height is pulled
        down by its own spherical sag so the plateau bends toward the horizon,
-       and a big planet sphere below catches the edges (the border dives under
-       it, so there is no floating rim and no gap anywhere). Gameplay stays
-       flat enough: the sag is ~4 units over a 45-unit half extent, and units
-       and click targets use heightAt, which knows the sag. */
+       and the world surface below catches the edges. Gameplay stays flat
+       enough: units and click targets use heightAt, which knows the sag. */
     var SAG_R = def.sagR || 300.0;
     for (var sgi = 0; sgi < HW * HH; sgi++) {
       var sx2 = (sgi % HW) * CS - halfW, sz2 = Math.floor(sgi / HW) * CS - halfH;
       height[sgi] -= (sx2 * sx2 + sz2 * sz2) / (2.0 * SAG_R);
+    }
+    /* SHORELINE TUCK. The boundary ring dips below the world's surface (the
+       world is the same parabola minus an underhang). The world then covers
+       the last sliver of board from above, so the plate's edge disappears
+       under the globe instead of floating on it: no ledge, no detached-rim
+       illusion on the steep far side of a small planet. */
+    for (var sgj = 0; sgj < HH; sgj++) {
+      for (var sgi2 = 0; sgi2 < HW; sgi2++) {
+        var isEdge = (sgi2 === 0 || sgj === 0 || sgi2 === HW - 1 || sgj === HH - 1);
+        if (isEdge) height[sgj * HW + sgi2] -= 0.55;
+      }
     }
 
     function heightAt(wx, wz) {
@@ -5922,10 +5931,13 @@ var TERRAIN = (function () {
         var z0 = -halfH + j * CS, z1 = z0 + CS;
         var pd = (pdist[i00] + pdist[i10] + pdist[i01] + pdist[i11]) * 0.25;
         var onPath = pd < pathWidth * 1.05;
+        var core = onPath && pd < pathWidth * 0.55;
 
         var r = rnd();
         var col = onPath
-          ? pathCols[Math.floor(r * pathCols.length) % pathCols.length]
+          ? (core
+              ? (r < 0.5 ? '#b06b9b' : '#a35c8f')
+              : (r < 0.5 ? '#7d4a73' : '#6e4170'))
           : groundCols[Math.floor(r * groundCols.length) % groundCols.length];
         var base = U.hex2rgb(col);
         gb.tooth(onPath ? 0.75 : 1.0);
@@ -5944,10 +5956,17 @@ var TERRAIN = (function () {
            result is coherent patches with visible internal brushwork, which is
            what the reference plates actually do. */
         function stroke() {
-          gb.color(U.shift(base,
-            (rnd() - 0.5) * 0.022,
-            (rnd() - 0.5) * 0.14,
-            (rnd() - 0.5) * 0.075));
+          if (onPath) {
+            gb.color(U.shift(base,
+              (rnd() - 0.5) * 0.012,
+              (rnd() - 0.5) * 0.03,
+              (rnd() - 0.5) * 0.02));
+          } else {
+            gb.color(U.shift(base,
+              (rnd() - 0.5) * 0.022,
+              (rnd() - 0.5) * 0.14,
+              (rnd() - 0.5) * 0.075));
+          }
         }
         /* Alternate the diagonal per cell. A uniform diagonal across a whole
            grid produces a visible corduroy running the length of the board,
