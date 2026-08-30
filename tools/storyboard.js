@@ -39,7 +39,7 @@ const ROOT = path.dirname(__dirname);
 
 const ctx = { console, window: {}, document: undefined };
 vm.createContext(ctx);
-for (const f of ['artpack', 'config', 'lore', 'factions', 'towers2', 'abilities', 'roster', 'story',
+for (const f of ['artpack', 'config', 'worldmaps', 'lore', 'factions', 'towers2', 'abilities', 'roster', 'story',
                  'galaxy', 'cutscenes', 'planetcuts', 'dialogue'])
   try { vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', f + '.js'), 'utf8'), ctx, { filename: f + '.js' }); }
   catch (e) { console.log('  (skipped ' + f + ': ' + e.message.split('\n')[0] + ')'); }
@@ -51,7 +51,8 @@ const G = vm.runInContext(
   'TOWER_TYPES, TOWER_ORDER, ENEMY_TYPES, FACTION_UNITS, POWER_ORDER, ' +
   'ELEMENTS, COMBOS, ABILITIES, PLAYER_MODS, ENEMY_MODS, SUMMON_DOCTRINES, ' +
   'MACHINE_HOST, originKeyOf, ARTPACK, ' +
-  'MAPS, SCENARIOS, ARENA_MODS, TARGET_MODES, LEVEL_ROLLS, SECRET_FACTIONS, LORE_CODEX })', ctx);
+  'MAPS, SCENARIOS, ARENA_MODS, TARGET_MODES, LEVEL_ROLLS, SECRET_FACTIONS, LORE_CODEX, ' +
+  'WORLD_MAPS, WORLD_MAP_BY_NAME, TERRA_VOCAB })', ctx);
 
 const FACS = ['human', 'light', 'xeno', 'pirate', 'robot'];
 const SYSOF = { human: 0, light: 1, xeno: 2, pirate: 3, robot: 4 };
@@ -259,6 +260,66 @@ function iconFig(kind, id, alt, cls) {
   return null;
 }
 
+/* ==========================================================================
+   THE BOARD, DRAWN (Session 44). An inline SVG of the finished two-sided
+   field, expanded and mirrored exactly the way buildField and showboard do
+   it, so the page cannot disagree with the engine about the geometry.
+   Authored duo boards only: tri grounds mirror on a column and procedural
+   boards are per-seed rolls, so both are labelled instead of drawn.
+   ========================================================================== */
+function laneTilesOf(lane) {
+  const out = [];
+  for (let i = 0; i < lane.length - 1; i++) {
+    const [x0, y0] = lane[i], [x1, y1] = lane[i + 1];
+    const dx = Math.sign(x1 - x0), dy = Math.sign(y1 - y0);
+    let x = x0, y = y0;
+    out.push([x, y]);
+    while (x !== x1 || y !== y1) { x += dx; y += dy; out.push([x, y]); }
+  }
+  return out;
+}
+function boardSVG(m) {
+  if (!m || m.tri || m.procedural || !m.lanes) return '';
+  const T = 10, W = m.cols * T, H = m.rows * T;
+  const mir = x => m.cols - 1 - x;
+  const r = [];
+  const rect = (x, y, wd, ht, fill, rx) =>
+    r.push('<rect x="' + x + '" y="' + y + '" width="' + wd + '" height="' + ht +
+           '" fill="' + fill + '"' + (rx ? ' rx="' + rx + '"' : '') + '/>');
+  rect(0, 0, W, H, '#0a0f16');
+  for (const [x0, y0, x1, y1] of (m.blocks || [])) {
+    rect(x0 * T, y0 * T, (x1 - x0 + 1) * T, (y1 - y0 + 1) * T, '#26313f', 2);
+    rect(mir(x1) * T, y0 * T, (x1 - x0 + 1) * T, (y1 - y0 + 1) * T, '#26313f', 2);
+  }
+  for (const [x0, y0, x1, y1] of (m.walls || [])) {
+    rect(x0 * T, y0 * T, (x1 - x0 + 1) * T, (y1 - y0 + 1) * T, '#5c4420', 2);
+    rect(mir(x1) * T, y0 * T, (x1 - x0 + 1) * T, (y1 - y0 + 1) * T, '#5c4420', 2);
+  }
+  for (const lane of m.lanes) for (const [x, y] of laneTilesOf(lane)) {
+    if (x < 0) continue;
+    rect(x * T, y * T, T, T, 'rgba(125,211,252,0.30)');
+    rect(mir(x) * T, y * T, T, T, 'rgba(240,168,168,0.30)');
+  }
+  const b = m.lanes[0][m.lanes[0].length - 1];
+  rect(0, b[1] * T - 2, 4, T + 4, '#6ee7a0');
+  rect(W - 4, b[1] * T - 2, 4, T + 4, '#f0a8a8');
+  for (const nd of (m.nodes || [])) {
+    const col = (G.ELEMENTS[nd[2]] || {}).color || '#fff';
+    [nd[0], mir(nd[0])].forEach(gx =>
+      r.push('<circle cx="' + (gx * T + T / 2) + '" cy="' + (nd[1] * T + T / 2) +
+             '" r="' + (T * 0.32) + '" fill="' + col + '"' +
+             (nd[3] === 'lane' ? ' stroke="#fff" stroke-width="1"' : '') + '/>'));
+  }
+  return '<svg class="bsvg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' +
+         esc(m.name) + ' board layout">' + r.join('') + '</svg>';
+}
+function terraChips(m) {
+  if (!m || !m.terra) return '';
+  const t = m.terra;
+  return '<span class="terra">' + [t.class, t.flow, t.cover, t.barriers, t.sight]
+    .map(v => '<i>' + esc(v) + '</i>').join('') + '</span>';
+}
+
 /* Register one addressable thing and return the little ref chip that renders
    under its card: the ref string, then the source line, linked to GitHub.
    `src` is 'js/file.js:123', or 'js/file.js' for the one-line canon file. */
@@ -406,6 +467,17 @@ h2{font-size:15px;letter-spacing:.14em;margin:38px 0 6px;color:#fff;text-transfo
 .crest svg{width:100%;height:100%;display:block}
 .tart{width:100%;aspect-ratio:16/7;object-fit:cover;border-radius:6px;border:1px solid #1d2836;
  background:#060a0f;margin:2px 0}
+.bsvg{width:100%;height:auto;display:block;border:1px solid #1d2836;border-radius:6px;background:#0a0f16}
+.terra{display:flex;gap:5px;flex-wrap:wrap}
+.terra i{font-style:normal;font-size:10px;letter-spacing:.1em;color:#8aa0b5;border:1px solid #23303f;
+ border-radius:3px;padding:1px 6px;text-transform:uppercase}
+.wboard{display:flex;gap:14px;margin:8px 0 10px;background:#0d141c;border:1px solid #1d2836;
+ border-radius:6px;padding:10px}
+.wboard .bwrap{flex:0 0 250px;max-width:250px}
+.wboard .binfo{display:flex;flex-direction:column;gap:5px;min-width:0}
+.wboard b{color:#fff;font-size:13px;letter-spacing:.05em}
+.wboard .basis{color:#93a7ba;font-size:12.5px;line-height:1.5;font-style:italic}
+@media(max-width:700px){.wboard{flex-direction:column}.wboard .bwrap{flex:auto;max-width:none}}
 .sfig{width:20px;height:20px;border-radius:4px;vertical-align:-5px;margin-right:4px;
  border:1px solid #1d2836;background:#060a0f;display:inline-block}
 .fhero{float:right;width:190px;aspect-ratio:1;object-fit:cover;border-radius:8px;
@@ -493,7 +565,8 @@ function encountersFor(fac) {
       const who = facName(wd.owner) +
         (wd.contested && wd.contestedBy ? ' and ' + [].concat(wd.contestedBy).map(facName).join(' and ') : '');
       const a = sys.name === 'THE EARTH SYSTEM' ? SOL[wd.wi] : null;
-      out['' + uni + wd.wi] = { scenario: sc(wd).name, who: who, note: a && a.note };
+      out['' + uni + wd.wi] = { scenario: sc(wd).name, who: who, note: a && a.note,
+                                map: wd.map, contested: !!wd.contested };
     }));
   } catch (e) { console.log('  (encounters unavailable: ' + String(e.message).slice(0, 80) + ')'); }
   return out;
@@ -853,6 +926,30 @@ function page(fac) {
                esc(enc.who) + '</span>' : '') +
         spine(wref, 'world', wname, fac, pageFile, 'w-' + key, wsrc) + '</div>');
       if (enc && enc.note) w('<p class="encnote">' + esc(enc.note) + '</p>');
+      /* THE GROUND (Session 44): every world shows its handcrafted board,
+         drawn from the def by the same expansion the engine uses. Contested
+         worlds (per this campaign's canon seed) name their shared tri
+         ground instead of drawing it. */
+      {
+        const wmDef = G.WORLD_MAP_BY_NAME && G.WORLD_MAP_BY_NAME[wname];
+        const encMap = enc && enc.map ? G.MAPS.find(m2 => m2.id === enc.map) : null;
+        const shown = (enc && enc.contested) ? (encMap || wmDef) : (wmDef || encMap);
+        if (shown && !shown.tri) {
+          w('<div class="wboard"><div class="bwrap">' + boardSVG(shown) + '</div>' +
+            '<div class="binfo"><b>' + esc(shown.name) + '</b>' +
+            (shown.trait ? '<span class="nums">' + esc(shown.trait) + '</span>' : '') +
+            terraChips(shown) +
+            (shown.terra ? '<span class="basis">' + esc(shown.terra.basis) + '</span>' : '') +
+            '<a class="src" href="index.html#mp-' + esc(shown.id) + '">map:' + esc(shown.id) + '</a>' +
+            '</div></div>');
+        } else if (shown && shown.tri) {
+          w('<div class="wboard"><div class="binfo"><b>' + esc(shown.name) + '</b>' +
+            '<span class="nums">THREE-WAY GROUND &middot; a contested world fights on the shared tri boards</span>' +
+            (shown.blurb ? '<span class="basis">' + esc(shown.blurb) + '</span>' : '') +
+            '<a class="src" href="index.html#mp-' + esc(shown.id) + '">map:' + esc(shown.id) + '</a>' +
+            '</div></div>');
+        }
+      }
       if (!e) { w('<p class="sub">No authored entry for this world yet.</p></div>'); return; }
       const k = b => 'pcut_' + key + '_' + fac + '_' + b;
       const st = staleWorld(key, fac);
@@ -1054,17 +1151,51 @@ function index() {
             locateIdUnder('js/config.js', 'SCENARIOS', s.id, s.name)) + '</div>'));
   w('</div>');
 
-  const authoredMaps = G.MAPS.filter(m => !m.procedural), procMaps = G.MAPS.filter(m => m.procedural);
-  w('<h2 id="boards" style="font-size:13px;margin-top:26px">The boards, ' + G.MAPS.length +
+  /* THE CAMPAIGN GROUNDS (Session 44, docs/WORLDMAPS-DESIGN.md): every
+     planet's handcrafted board, drawn from its def by the engine's own
+     expansion, with its terrain codex. Grouped by home system, in the
+     order the worlds are visited. */
+  const worldBoards = G.MAPS.filter(m => m.world);
+  w('<h2 id="grounds">The campaign grounds, ' + worldBoards.length + ' handcrafted boards</h2>');
+  w('<p class="sub">One board per planet, built by hand from the body&#39;s real physical character ' +
+    '(the italic line under each). The chips are the terrain codex: class, flow, cover, barriers, ' +
+    'sight, closed vocabularies that double as the brief for future procedural families. ' +
+    'Contested worlds fight on the shared tri boards instead; the campaign no longer rolls ' +
+    'boards from a pool.</p>');
+  for (const fkey of Object.keys(G.GX_HOME_SYSTEMS)) {
+    const sys = G.GX_HOME_SYSTEMS[fkey];
+    w('<h2 style="font-size:12px;margin-top:20px;color:' + facColor(fkey) + '">' + esc(sys.name) + '</h2>');
+    w('<div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(330px,1fr))">');
+    for (const wname of sys.worlds) {
+      const m = G.WORLD_MAP_BY_NAME[wname];
+      if (!m) continue;
+      w('<div class="card" id="mp-' + esc(m.id) + '">' +
+        '<b>' + esc(wname) + ' &middot; ' + esc(m.name) + '</b>' +
+        (m.trait ? '<span class="nums">' + esc(m.trait) + '</span>' : '') +
+        boardSVG(m) + terraChips(m) +
+        (m.terra ? '<span class="quote">' + esc(m.terra.basis) + '</span>' : '') +
+        (m.sigNote ? '<span>' + esc(m.sigNote) + '</span>' : '') +
+        spine('map:' + m.id, 'map', m.name, null, 'index.html', 'mp-' + m.id,
+              locateIdUnder('js/worldmaps.js', 'WORLD_MAPS', m.id, m.name)) + '</div>');
+    }
+    w('</div>');
+  }
+
+  const poolBoards = G.MAPS.filter(m => !m.world);
+  const authoredMaps = poolBoards.filter(m => !m.procedural), procMaps = poolBoards.filter(m => m.procedural);
+  w('<h2 id="boards" style="font-size:13px;margin-top:26px">The pool boards, ' + poolBoards.length +
     ' (' + authoredMaps.length + ' authored, ' + procMaps.length + ' procedural)</h2>');
-  w('<p class="sub">Every battlefield the galaxy can deal. Procedural boards are families: each ' +
-    'world rolls its own layout from the family and its seed.</p>');
+  w('<p class="sub">The skirmish and duel pools, the three shared tri grounds, and the procedural ' +
+    'families that will carry the post-campaign unknown. Procedural boards roll a fresh layout ' +
+    'per world and seed, so they are named, not drawn.</p>');
   w('<div class="cards">');
-  G.MAPS.forEach(m =>
+  poolBoards.forEach(m =>
     w('<div class="card" id="mp-' + esc(m.id) + '"><b>' + esc(m.name) + '</b>' +
-      '<span class="nums">' + (m.procedural ? 'procedural, family ' + esc(m.family || m.id) : 'authored') +
+      '<span class="nums">' + (m.procedural ? 'procedural, family ' + esc(m.family || m.id)
+        : (m.tri ? 'three-way ground' : 'authored')) +
       (m.tier !== undefined ? ' &middot; tier ' + m.tier : (m.minTier !== undefined ? ' &middot; from tier ' + m.minTier : '')) +
       (m.adj ? ' &middot; ' + esc(m.adj) : '') + '</span>' +
+      (!m.procedural && !m.tri ? boardSVG(m) : '') +
       (m.sigNote ? '<span>' + esc(m.sigNote) + '</span>' : '') +
       spine('map:' + m.id, 'map', m.name, null, 'index.html', 'mp-' + m.id,
             locateIdUnder('js/config.js', 'MAPS', m.id, m.name)) + '</div>'));

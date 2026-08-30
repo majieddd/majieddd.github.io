@@ -303,3 +303,27 @@ compound with wave scaling harder than flat stat adds.
 and on the commit before the units landed, in the same page, and compare median
 wave of LOSS runs. Wins reported separately, tier 0, loadout pinned to
 `bolt/cryo/mortar/flak/beacon`, as the Session 21 seeded baseline below.
+
+# Session 44 RE-BASELINED for THE HANDCRAFTED CAMPAIGN GROUNDS
+
+Owner directive (docs/WORLDMAPS-DESIGN.md): every campaign planet now fields
+a handcrafted board (js/worldmaps.js, 35 boards) instead of a pool roll, and
+the authored-encounter overlay keeps map and contested flag in step both
+ways. Board geometry is the ground every sim number stands on, so every pin
+that runs on a campaign world re-baselines from here. Deliberate, not a
+regression: a pins run comparing across this commit is comparing different
+battlefields.
+
+What is proven at this commit, and how: geometry and assignment are held by
+tools/probe-worldmaps.js (nine checks in the gate: coverage, geometry law,
+wall/lane separation, node survival, terrain codex vocabulary, rosters,
+open-ground floor at 88+ tiles a side, the galaxy stream pin over 2800
+worlds, and live assignment across 175 worlds with 60 contested on tri
+grounds). The stream pin means owners, kinds, seats, arenas and boons did
+NOT move: only the ground did.
+
+What is NOT yet measured: in-browser pin numbers on the new boards. Pins
+compare only inside one browser session, so the next balance session runs
+tools/balance-pins.js on a spread of world boards (suggest w_earth, w_mars,
+w_mercury, w_jupiter, w_dogstar: the extremes of open, walled, thin, split
+and mazed ground) and records its table under this heading.

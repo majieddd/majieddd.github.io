@@ -4515,6 +4515,286 @@
    "src": "js/config.js:2541"
   },
   {
+   "ref": "map:w_earth",
+   "kind": "map",
+   "name": "THE HARBOUR DISTRICT",
+   "faction": null,
+   "page": "index.html#mp-w_earth",
+   "src": "js/worldmaps.js:58"
+  },
+  {
+   "ref": "map:w_luna",
+   "kind": "map",
+   "name": "THE FAR SIDE",
+   "faction": null,
+   "page": "index.html#mp-w_luna",
+   "src": "js/worldmaps.js:78"
+  },
+  {
+   "ref": "map:w_mars",
+   "kind": "map",
+   "name": "THE GREAT RIFT",
+   "faction": null,
+   "page": "index.html#mp-w_mars",
+   "src": "js/worldmaps.js:97"
+  },
+  {
+   "ref": "map:w_venus",
+   "kind": "map",
+   "name": "THE PRESSURE GARDENS",
+   "faction": null,
+   "page": "index.html#mp-w_venus",
+   "src": "js/worldmaps.js:117"
+  },
+  {
+   "ref": "map:w_mercury",
+   "kind": "map",
+   "name": "THE TERMINATOR LINE",
+   "faction": null,
+   "page": "index.html#mp-w_mercury",
+   "src": "js/worldmaps.js:137"
+  },
+  {
+   "ref": "map:w_jupiter",
+   "kind": "map",
+   "name": "THE CLOUD DECKS",
+   "faction": null,
+   "page": "index.html#mp-w_jupiter",
+   "src": "js/worldmaps.js:156"
+  },
+  {
+   "ref": "map:w_saturn",
+   "kind": "map",
+   "name": "THE SHEPHERD RING",
+   "faction": null,
+   "page": "index.html#mp-w_saturn",
+   "src": "js/worldmaps.js:178"
+  },
+  {
+   "ref": "map:w_maia",
+   "kind": "map",
+   "name": "THE LIGHT PLAIN",
+   "faction": null,
+   "page": "index.html#mp-w_maia",
+   "src": "js/worldmaps.js:205"
+  },
+  {
+   "ref": "map:w_electra",
+   "kind": "map",
+   "name": "THE SHRINE TERRACES",
+   "faction": null,
+   "page": "index.html#mp-w_electra",
+   "src": "js/worldmaps.js:223"
+  },
+  {
+   "ref": "map:w_taygeta",
+   "kind": "map",
+   "name": "THE CHORAL HALLS",
+   "faction": null,
+   "page": "index.html#mp-w_taygeta",
+   "src": "js/worldmaps.js:241"
+  },
+  {
+   "ref": "map:w_merope",
+   "kind": "map",
+   "name": "THE DUST WAKE",
+   "faction": null,
+   "page": "index.html#mp-w_merope",
+   "src": "js/worldmaps.js:262"
+  },
+  {
+   "ref": "map:w_celaeno",
+   "kind": "map",
+   "name": "THE ARCHIVE VAULTS",
+   "faction": null,
+   "page": "index.html#mp-w_celaeno",
+   "src": "js/worldmaps.js:283"
+  },
+  {
+   "ref": "map:w_sterope",
+   "kind": "map",
+   "name": "THE LIGHTNING NURSERIES",
+   "faction": null,
+   "page": "index.html#mp-w_sterope",
+   "src": "js/worldmaps.js:303"
+  },
+  {
+   "ref": "map:w_alcyone",
+   "kind": "map",
+   "name": "THE ANCHOR SANCTUM",
+   "faction": null,
+   "page": "index.html#mp-w_alcyone",
+   "src": "js/worldmaps.js:324"
+  },
+  {
+   "ref": "map:w_z1b",
+   "kind": "map",
+   "name": "THE TITHER FIELDS",
+   "faction": null,
+   "page": "index.html#mp-w_z1b",
+   "src": "js/worldmaps.js:348"
+  },
+  {
+   "ref": "map:w_z1c",
+   "kind": "map",
+   "name": "THE GULLET",
+   "faction": null,
+   "page": "index.html#mp-w_z1c",
+   "src": "js/worldmaps.js:366"
+  },
+  {
+   "ref": "map:w_z1d",
+   "kind": "map",
+   "name": "THE SPORE SHOALS",
+   "faction": null,
+   "page": "index.html#mp-w_z1d",
+   "src": "js/worldmaps.js:385"
+  },
+  {
+   "ref": "map:w_z2b",
+   "kind": "map",
+   "name": "THE HIVE GALLERY",
+   "faction": null,
+   "page": "index.html#mp-w_z2b",
+   "src": "js/worldmaps.js:406"
+  },
+  {
+   "ref": "map:w_z2c",
+   "kind": "map",
+   "name": "THE BIRTHING POOLS",
+   "faction": null,
+   "page": "index.html#mp-w_z2c",
+   "src": "js/worldmaps.js:424"
+  },
+  {
+   "ref": "map:w_z2d",
+   "kind": "map",
+   "name": "THE LEDGER CHAMBER",
+   "faction": null,
+   "page": "index.html#mp-w_z2d",
+   "src": "js/worldmaps.js:446"
+  },
+  {
+   "ref": "map:w_serpo",
+   "kind": "map",
+   "name": "THE EXCHANGE GROUND",
+   "faction": null,
+   "page": "index.html#mp-w_serpo",
+   "src": "js/worldmaps.js:465"
+  },
+  {
+   "ref": "map:w_proxd",
+   "kind": "map",
+   "name": "THE SCORCH LINE",
+   "faction": null,
+   "page": "index.html#mp-w_proxd",
+   "src": "js/worldmaps.js:488"
+  },
+  {
+   "ref": "map:w_proxb",
+   "kind": "map",
+   "name": "THE FIRST PORT",
+   "faction": null,
+   "page": "index.html#mp-w_proxb",
+   "src": "js/worldmaps.js:506"
+  },
+  {
+   "ref": "map:w_proxc",
+   "kind": "map",
+   "name": "THE WRECK YARDS",
+   "faction": null,
+   "page": "index.html#mp-w_proxc",
+   "src": "js/worldmaps.js:525"
+  },
+  {
+   "ref": "map:w_flare",
+   "kind": "map",
+   "name": "THE FLARE SHELTER",
+   "faction": null,
+   "page": "index.html#mp-w_flare",
+   "src": "js/worldmaps.js:544"
+  },
+  {
+   "ref": "map:w_narrowstrait",
+   "kind": "map",
+   "name": "THE SMUGGLER STRAIT",
+   "faction": null,
+   "page": "index.html#mp-w_narrowstrait",
+   "src": "js/worldmaps.js:567"
+  },
+  {
+   "ref": "map:w_locker",
+   "kind": "map",
+   "name": "THE DARK LOCKER",
+   "faction": null,
+   "page": "index.html#mp-w_locker",
+   "src": "js/worldmaps.js:585"
+  },
+  {
+   "ref": "map:w_proxgate",
+   "kind": "map",
+   "name": "THE TOLL PLAZA",
+   "faction": null,
+   "page": "index.html#mp-w_proxgate",
+   "src": "js/worldmaps.js:604"
+  },
+  {
+   "ref": "map:w_sira1",
+   "kind": "map",
+   "name": "THE CALIBRATION PLAIN",
+   "faction": null,
+   "page": "index.html#mp-w_sira1",
+   "src": "js/worldmaps.js:632"
+  },
+  {
+   "ref": "map:w_sira2",
+   "kind": "map",
+   "name": "THE ASSEMBLY ROWS",
+   "faction": null,
+   "page": "index.html#mp-w_sira2",
+   "src": "js/worldmaps.js:650"
+  },
+  {
+   "ref": "map:w_ash",
+   "kind": "map",
+   "name": "THE ASH FIELD",
+   "faction": null,
+   "page": "index.html#mp-w_ash",
+   "src": "js/worldmaps.js:669"
+  },
+  {
+   "ref": "map:w_sirb1",
+   "kind": "map",
+   "name": "THE COLLAPSE FORGE",
+   "faction": null,
+   "page": "index.html#mp-w_sirb1",
+   "src": "js/worldmaps.js:687"
+  },
+  {
+   "ref": "map:w_diamond",
+   "kind": "map",
+   "name": "THE DIAMOND SHELF",
+   "faction": null,
+   "page": "index.html#mp-w_diamond",
+   "src": "js/worldmaps.js:706"
+  },
+  {
+   "ref": "map:w_companion",
+   "kind": "map",
+   "name": "THE LONG ORBIT",
+   "faction": null,
+   "page": "index.html#mp-w_companion",
+   "src": "js/worldmaps.js:725"
+  },
+  {
+   "ref": "map:w_dogstar",
+   "kind": "map",
+   "name": "THE HALL OF STANDING ORDERS",
+   "faction": null,
+   "page": "index.html#mp-w_dogstar",
+   "src": "js/worldmaps.js:743"
+  },
+  {
    "ref": "map:spine",
    "kind": "map",
    "name": "THE SPINE",
