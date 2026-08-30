@@ -234,6 +234,31 @@ function assetBytes(key) {
   return Buffer.from(G.ARTPACK[key].slice(23), 'base64');
 }
 
+/* THE GAME'S OWN ICONS, BAKED. Tower and unit icons are PROCEDURAL:
+   UI.paintTowerIcons runs each tower's real draw_<id> on the battlefield
+   plinth and UI.paintUnitIcons runs Enemy.prototype.draw normalised to the
+   tile, so they cannot be decoded out of artpack like the paintings.
+   tools/bake-icons.js runs those painters in headless Chrome and commits
+   the pixels as narrative/assets/icon_tw_<id>.webp / icon_un_<id>.webp
+   (committed like the art plates, because the deploy regeneration is
+   node-only and cannot launch a browser). This helper uses a baked file
+   when it exists and records a miss when it does not: --check FAILS on
+   misses and names the bake, so a new tower cannot ship iconless past the
+   gate, while a node-only regeneration still proceeds on what is
+   committed. */
+const BAKED_USED = new Set();
+const MISSING_ICONS = new Set();
+function iconFig(kind, id, alt, cls) {
+  const name = 'icon_' + kind + '_' + id + '.webp';
+  if (fs.existsSync(path.join(ROOT, 'narrative', 'assets', name))) {
+    BAKED_USED.add(name);
+    return '<img class="' + (cls || 'cfig') + '" loading="lazy" src="assets/' + name + '" alt="' +
+           esc(alt || '') + '">';
+  }
+  MISSING_ICONS.add(name);
+  return null;
+}
+
 /* Register one addressable thing and return the little ref chip that renders
    under its card: the ref string, then the source line, linked to GitHub.
    `src` is 'js/file.js:123', or 'js/file.js' for the one-line canon file. */
@@ -379,6 +404,10 @@ h2{font-size:15px;letter-spacing:.14em;margin:38px 0 6px;color:#fff;text-transfo
  color:var(--cc);border-color:var(--cc);background:#0a0f16}
 .crest{display:inline-block;width:24px;height:24px;vertical-align:-3px;margin-right:9px}
 .crest svg{width:100%;height:100%;display:block}
+.tart{width:100%;aspect-ratio:16/7;object-fit:cover;border-radius:6px;border:1px solid #1d2836;
+ background:#060a0f;margin:2px 0}
+.sfig{width:20px;height:20px;border-radius:4px;vertical-align:-5px;margin-right:4px;
+ border:1px solid #1d2836;background:#060a0f;display:inline-block}
 .fhero{float:right;width:190px;aspect-ratio:1;object-fit:cover;border-radius:8px;
  border:1px solid #1d2836;margin:0 0 12px 18px}
 @media(max-width:700px){.fhero{float:none;width:100%;aspect-ratio:16/9;margin:0 0 12px}}
@@ -505,15 +534,20 @@ function towerCard(id, fac, page) {
   (t.branches || []).forEach(x =>
     ladder.push('<li><b>' + esc(x.name) + '</b> tier 4 branch, ' + x.cost + 'g. ' + esc(x.note || '') + '</li>'));
   COVER.towers++;
+  /* The head figure is THE ICON, the same drawing the shop and the board
+     paint, baked by tools/bake-icons.js. The painted illustration (the few
+     towers that have one) moves into the body as a wide plate rather than
+     competing with the icon for the head slot. */
   return '<div class="card" id="tw-' + esc(id) + '">' +
     '<div class="chead">' +
-      (fig('twr_' + id, 'cfig', t.name) || chipFig(t.color, t.glyph || t.name.charAt(0))) +
+      (iconFig('tw', id, t.name) || chipFig(t.color, t.glyph || t.name.charAt(0))) +
       '<div class="cheadt"><b>' + esc(t.name) + '</b>' +
       '<span class="nums">' + esc(t.role || '') + ' &middot; ' + (el.icon || '') + ' ' +
         esc(el.name || t.element) + ' &middot; ' + t.cost + 'g, growth &times;' + t.costGrowth + '</span>' +
       '</div></div>' +
     (nums ? '<span class="nums">' + nums + '</span>' : '') +
     '<span>' + esc(t.desc || '') + '</span>' +
+    (fig('twr_' + id, 'tart', t.name + ' painted plate') || '') +
     (lo.historical_origin ? '<span class="quote">' + esc(lo.historical_origin) + '</span>' : '') +
     (lo.canon_mechanic ? '<span><i>Canon:</i> ' + esc(lo.canon_mechanic) + '</span>' : '') +
     (ladder.length ? '<details class="tdet"><summary>THE LADDER: ' +
@@ -541,7 +575,7 @@ function unitCard(id, fac, page) {
   COVER.units++;
   return '<div class="card" id="un-' + esc(id) + '">' +
     '<div class="chead">' +
-      (fig('foe_' + id, 'cfig', e.name) || chipFig(e.color, e.name.charAt(0))) +
+      (fig('foe_' + id, 'cfig', e.name) || iconFig('un', id, e.name) || chipFig(e.color, e.name.charAt(0))) +
       '<div class="cheadt"><b>' + esc(e.name) + '</b>' +
       '<span class="nums">' + e.hp + ' hp &middot; ' + (e.armor || 0) + ' armour &middot; speed ' +
         e.speed + ' &middot; bounty ' + e.bounty + ' &middot; ' + e.lives + ' live' + (e.lives === 1 ? '' : 's') + '</span>' +
@@ -564,11 +598,14 @@ function commanderCard(c, fac, page) {
   const abil = (c.abilities || []).map(a => G.ABILITIES[a]).filter(Boolean)
     .map(a => '<li><b>' + a.icon + ' ' + esc(a.name) + '</b> ' + esc(a.desc) +
               ' (' + a.cd + 's cooldown, ' + a.dur + 's)</li>');
+  /* Signature pair with the same mini icons the in-game codex row shows. */
   const sig = c.signature
     ? '<span class="sig"><i>Signature:</i> ' +
-      c.signature.towers.map(t => '<b>' + esc((G.TOWER_TYPES[t] || {}).name || t) + '</b>').join(' + ') +
+      c.signature.towers.map(t => (iconFig('tw', t, '', 'sfig') || '') +
+        '<b>' + esc((G.TOWER_TYPES[t] || {}).name || t) + '</b>').join(' + ') +
       ' with ' +
-      c.signature.units.map(u => '<b>' + esc((G.ENEMY_TYPES[u] || {}).name || u) + '</b>').join(' + ') + '</span>'
+      c.signature.units.map(u => (iconFig('un', u, '', 'sfig') || '') +
+        '<b>' + esc((G.ENEMY_TYPES[u] || {}).name || u) + '</b>').join(' + ') + '</span>'
     : '';
   const tech = (c.tech ? Object.values(c.tech) : []).filter(n => n && n.name && n.desc)
     .map(n => '<li><b>' + esc(n.name) + '</b> ' + esc(n.desc) + '</li>');
@@ -611,7 +648,7 @@ function vigilCard(id) {
   COVER.vigil++;
   return '<div class="card" id="vg-' + esc(id) + '">' +
     '<div class="chead">' +
-      (fig('foe_' + id, 'cfig', e.name) || chipFig(e.color, e.name.charAt(0))) +
+      (fig('foe_' + id, 'cfig', e.name) || iconFig('un', id, e.name) || chipFig(e.color, e.name.charAt(0))) +
       '<div class="cheadt"><b>' + esc(e.name) + '</b>' +
       '<span class="nums">' + e.hp + ' hp &middot; ' + (e.armor || 0) + ' armour &middot; speed ' +
         e.speed + ' &middot; bounty ' + e.bounty + ' &middot; ' + e.lives + ' live' + (e.lives === 1 ? '' : 's') +
@@ -1220,16 +1257,23 @@ files['spine.json'] = JSON.stringify({
   entries: SPINE
 }, null, 1) + '\n';
 
-/* The figure files the pages reference, decoded from js/artpack.js. The
-   assets directory is fully DERIVED: exactly the referenced keys exist there,
-   an orphan is staleness, and --check holds bytes equal. */
+/* The figure files the pages reference. Two provenances, one contract:
+   paintings are decoded from js/artpack.js here; baked icons come from
+   tools/bake-icons.js and are read back as their own bytes, which makes
+   them referenced (so the orphan pass keeps them) and self-equal (so the
+   byte compare below is an existence check for them, not a content one:
+   a changed draw function needs a re-bake, the same standing the plates
+   have). Exactly the referenced set exists in assets/, an orphan is
+   staleness, and --check holds bytes equal. */
 const ASSETS = {};
 for (const k of ASSET_KEYS) ASSETS[k + '.webp'] = assetBytes(k);
 const assetDir = path.join(dir, 'assets');
+for (const n of BAKED_USED) ASSETS[n] = fs.readFileSync(path.join(assetDir, n));
 const assetCounts = (() => {
   const by = {};
   for (const k of ASSET_KEYS) { const p = k.split('_')[0]; by[p] = (by[p] || 0) + 1; }
-  return Object.keys(by).sort().map(p => by[p] + ' ' + p).join(', ');
+  return Object.keys(by).sort().map(p => by[p] + ' ' + p).join(', ') +
+         ', ' + BAKED_USED.size + ' baked icons';
 })();
 
 if (CHECK) {
@@ -1244,9 +1288,19 @@ if (CHECK) {
     try { if (!fs.readFileSync(path.join(assetDir, n)).equals(ASSETS[n])) stale.push('assets/' + n); }
     catch (e) { stale.push('assets/' + n); }
   }
+  /* An entity whose baked icon does not exist rendered as a chip. The pages
+     are internally consistent, so the byte compare alone would stay green
+     while the manual quietly lost its icons: that is this row's whole job. */
+  for (const n of MISSING_ICONS)
+    stale.push('assets/' + n + ' (missing; run node tools/bake-icons.js <url>)');
   try {
+    /* icon_* files are bake-icons.js's to manage: it bakes the FULL tower and
+       denizen sets while the pages may reference fewer (painted art wins the
+       unit head slot), and deleting the unreferenced rest here would ping-pong
+       with every re-bake. Everything else in assets/ is this generator's. */
     for (const f of fs.readdirSync(assetDir))
-      if (f.endsWith('.webp') && !ASSETS[f]) stale.push('assets/' + f + ' (orphaned)');
+      if (f.endsWith('.webp') && !ASSETS[f] && !/^icon_/.test(f))
+        stale.push('assets/' + f + ' (orphaned)');
   } catch (e) { /* no assets dir at all is already reported above, per key */ }
   if (stale.length) {
     console.log('narrative spine STALE: ' + stale.slice(0, 8).join(', ') +
@@ -1255,7 +1309,7 @@ if (CHECK) {
     process.exit(1);
   }
   console.log('narrative spine fresh: ' + Object.keys(files).length + ' files, ' + SPINE.length +
-    ' refs, ' + ASSET_KEYS.size + ' figures');
+    ' refs, ' + Object.keys(ASSETS).length + ' figures');
 } else {
   fs.mkdirSync(assetDir, { recursive: true });
   let wrote = 0;
@@ -1267,7 +1321,10 @@ if (CHECK) {
     if (!cur || !cur.equals(ASSETS[n])) { fs.writeFileSync(p, ASSETS[n]); wrote++; }
   }
   for (const f of fs.readdirSync(assetDir))
-    if (f.endsWith('.webp') && !ASSETS[f]) { fs.unlinkSync(path.join(assetDir, f)); }
+    if (f.endsWith('.webp') && !ASSETS[f] && !/^icon_/.test(f)) { fs.unlinkSync(path.join(assetDir, f)); }
+  if (MISSING_ICONS.size)
+    console.log('WARNING: ' + MISSING_ICONS.size + ' entities have no baked icon and rendered ' +
+      'as colour chips. Run: node tools/bake-icons.js <url>  (gate --check fails until then)');
   console.log('wrote narrative/: ' + FACS.length + ' campaign pages, index.html, spine.json (' +
     SPINE.length + ' refs; ' + COVER.towers + ' towers, ' + (COVER.units + COVER.vigil) +
     ' denizens, ' + COVER.commanders + ' commanders, ' + COVER.boons + ' boons; figures: ' +

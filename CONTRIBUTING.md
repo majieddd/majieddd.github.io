@@ -204,7 +204,12 @@ Three rules keep it canonical:
    the derived output: the painted figures (commanders, denizens, abilities,
    banners, the few painted towers) are decoded out of `js/artpack.js` by the
    same run, orphans are deleted, and cards without painted art degrade to
-   the entity's own colour and glyph rather than a placeholder.
+   the entity's own colour and glyph rather than a placeholder. The tower and
+   unit ICONS are the game's own procedural drawings, baked to files by
+   `node tools/bake-icons.js <url>` (headless Chrome running the real
+   painters); they are committed like the plates because the deploy
+   regeneration is node-only, and `--check` fails naming the bake whenever a
+   referenced icon is missing, so a new tower cannot ship iconless.
 2. **It cannot go stale.** `tools/gate.js` runs `storyboard.js --check`, which
    regenerates in memory and fails on any diff, and
    `.github/workflows/pages.yml` regenerates it on every push to main, so the
