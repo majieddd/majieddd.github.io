@@ -4315,6 +4315,598 @@
    "src": "js/config.js:4633"
   },
   {
+   "ref": "target:first",
+   "kind": "target",
+   "name": "FIRST",
+   "faction": null,
+   "page": "index.html#tg-first",
+   "src": "js/config.js:4637"
+  },
+  {
+   "ref": "target:last",
+   "kind": "target",
+   "name": "LAST",
+   "faction": null,
+   "page": "index.html#tg-last",
+   "src": "js/config.js:4638"
+  },
+  {
+   "ref": "target:strong",
+   "kind": "target",
+   "name": "STRONG",
+   "faction": null,
+   "page": "index.html#tg-strong",
+   "src": "js/config.js:4639"
+  },
+  {
+   "ref": "target:weak",
+   "kind": "target",
+   "name": "WEAK",
+   "faction": null,
+   "page": "index.html#tg-weak",
+   "src": "js/config.js:4640"
+  },
+  {
+   "ref": "target:close",
+   "kind": "target",
+   "name": "CLOSE",
+   "faction": null,
+   "page": "index.html#tg-close",
+   "src": "js/config.js:4641"
+  },
+  {
+   "ref": "waveroll:r_dmg",
+   "kind": "waveroll",
+   "name": "CALIBRATED",
+   "faction": null,
+   "page": "index.html#lr-r_dmg",
+   "src": "js/config.js:1561"
+  },
+  {
+   "ref": "waveroll:r_rate",
+   "kind": "waveroll",
+   "name": "LUBRICATED",
+   "faction": null,
+   "page": "index.html#lr-r_rate",
+   "src": "js/config.js:1562"
+  },
+  {
+   "ref": "waveroll:r_range",
+   "kind": "waveroll",
+   "name": "SIGHTED",
+   "faction": null,
+   "page": "index.html#lr-r_range",
+   "src": "js/config.js:1563"
+  },
+  {
+   "ref": "waveroll:r_splash",
+   "kind": "waveroll",
+   "name": "PACKED",
+   "faction": null,
+   "page": "index.html#lr-r_splash",
+   "src": "js/config.js:1564"
+  },
+  {
+   "ref": "waveroll:r_status",
+   "kind": "waveroll",
+   "name": "POTENT",
+   "faction": null,
+   "page": "index.html#lr-r_status",
+   "src": "js/config.js:1565"
+  },
+  {
+   "ref": "waveroll:r_pierce",
+   "kind": "waveroll",
+   "name": "HARDENED",
+   "faction": null,
+   "page": "index.html#lr-r_pierce",
+   "src": "js/config.js:1566"
+  },
+  {
+   "ref": "waveroll:r_crit",
+   "kind": "waveroll",
+   "name": "KEEN",
+   "faction": null,
+   "page": "index.html#lr-r_crit",
+   "src": "js/config.js:1567"
+  },
+  {
+   "ref": "waveroll:r_mixed",
+   "kind": "waveroll",
+   "name": "BALANCED",
+   "faction": null,
+   "page": "index.html#lr-r_mixed",
+   "src": "js/config.js:1568"
+  },
+  {
+   "ref": "arena:swift",
+   "kind": "arena",
+   "name": "SWIFT CURRENT",
+   "faction": null,
+   "page": "index.html#ar-swift",
+   "src": "js/towers2.js:1132"
+  },
+  {
+   "ref": "arena:ironclad",
+   "kind": "arena",
+   "name": "IRONCLAD",
+   "faction": null,
+   "page": "index.html#ar-ironclad",
+   "src": "js/towers2.js:1133"
+  },
+  {
+   "ref": "arena:goldrush",
+   "kind": "arena",
+   "name": "GOLD RUSH",
+   "faction": null,
+   "page": "index.html#ar-goldrush",
+   "src": "js/towers2.js:1134"
+  },
+  {
+   "ref": "arena:scarcity",
+   "kind": "arena",
+   "name": "SCARCITY",
+   "faction": null,
+   "page": "index.html#ar-scarcity",
+   "src": "js/towers2.js:1135"
+  },
+  {
+   "ref": "arena:deepwar",
+   "kind": "arena",
+   "name": "DEEP WAR",
+   "faction": null,
+   "page": "index.html#ar-deepwar",
+   "src": "js/towers2.js:1136"
+  },
+  {
+   "ref": "arena:thinline",
+   "kind": "arena",
+   "name": "THIN LINE",
+   "faction": null,
+   "page": "index.html#ar-thinline",
+   "src": "js/towers2.js:1137"
+  },
+  {
+   "ref": "arena:warchest",
+   "kind": "arena",
+   "name": "WAR CHEST",
+   "faction": null,
+   "page": "index.html#ar-warchest",
+   "src": "js/towers2.js:1138"
+  },
+  {
+   "ref": "arena:frenzy",
+   "kind": "arena",
+   "name": "FRENZY",
+   "faction": null,
+   "page": "index.html#ar-frenzy",
+   "src": "js/towers2.js:1139"
+  },
+  {
+   "ref": "scenario:assault",
+   "kind": "scenario",
+   "name": "ASSAULT",
+   "faction": null,
+   "page": "index.html#sc-assault",
+   "src": "js/config.js:2485"
+  },
+  {
+   "ref": "scenario:swarm",
+   "kind": "scenario",
+   "name": "THE SWARM",
+   "faction": null,
+   "page": "index.html#sc-swarm",
+   "src": "js/config.js:2503"
+  },
+  {
+   "ref": "scenario:overrun",
+   "kind": "scenario",
+   "name": "OVERRUN",
+   "faction": null,
+   "page": "index.html#sc-overrun",
+   "src": "js/config.js:2526"
+  },
+  {
+   "ref": "scenario:vigil",
+   "kind": "scenario",
+   "name": "THE LONG VIGIL",
+   "faction": null,
+   "page": "index.html#sc-vigil",
+   "src": "js/config.js:2541"
+  },
+  {
+   "ref": "map:spine",
+   "kind": "map",
+   "name": "THE SPINE",
+   "faction": null,
+   "page": "index.html#mp-spine",
+   "src": "js/config.js:131"
+  },
+  {
+   "ref": "map:delta",
+   "kind": "map",
+   "name": "THE DELTA",
+   "faction": null,
+   "page": "index.html#mp-delta",
+   "src": "js/config.js:143"
+  },
+  {
+   "ref": "map:narrows",
+   "kind": "map",
+   "name": "THE NARROWS",
+   "faction": null,
+   "page": "index.html#mp-narrows",
+   "src": "js/config.js:164"
+  },
+  {
+   "ref": "map:shattered",
+   "kind": "map",
+   "name": "SHATTERED",
+   "faction": null,
+   "page": "index.html#mp-shattered",
+   "src": "js/config.js:184"
+  },
+  {
+   "ref": "map:crossroads",
+   "kind": "map",
+   "name": "CROSSROADS",
+   "faction": null,
+   "page": "index.html#mp-crossroads",
+   "src": "js/config.js:199"
+  },
+  {
+   "ref": "map:coil",
+   "kind": "map",
+   "name": "THE COIL",
+   "faction": null,
+   "page": "index.html#mp-coil",
+   "src": "js/config.js:218"
+  },
+  {
+   "ref": "map:expanse",
+   "kind": "map",
+   "name": "THE EXPANSE",
+   "faction": null,
+   "page": "index.html#mp-expanse",
+   "src": "js/config.js:234"
+  },
+  {
+   "ref": "map:rift",
+   "kind": "map",
+   "name": "THE RIFT",
+   "faction": null,
+   "page": "index.html#mp-rift",
+   "src": "js/config.js:266"
+  },
+  {
+   "ref": "map:confluence",
+   "kind": "map",
+   "name": "THE CONFLUENCE",
+   "faction": null,
+   "page": "index.html#mp-confluence",
+   "src": "js/config.js:283"
+  },
+  {
+   "ref": "map:crown",
+   "kind": "map",
+   "name": "THE CROWN",
+   "faction": null,
+   "page": "index.html#mp-crown",
+   "src": "js/config.js:317"
+  },
+  {
+   "ref": "map:carousel",
+   "kind": "map",
+   "name": "THE CAROUSEL",
+   "faction": null,
+   "page": "index.html#mp-carousel",
+   "src": "js/config.js:354"
+  },
+  {
+   "ref": "map:orrery",
+   "kind": "map",
+   "name": "THE ORRERY",
+   "faction": null,
+   "page": "index.html#mp-orrery",
+   "src": "js/config.js:378"
+  },
+  {
+   "ref": "map:lattice",
+   "kind": "map",
+   "name": "THE LATTICE",
+   "faction": null,
+   "page": "index.html#mp-lattice",
+   "src": "js/config.js:410"
+  },
+  {
+   "ref": "map:causeway",
+   "kind": "map",
+   "name": "THE CAUSEWAY",
+   "faction": null,
+   "page": "index.html#mp-causeway",
+   "src": "js/config.js:432"
+  },
+  {
+   "ref": "map:anvil",
+   "kind": "map",
+   "name": "THE ANVIL",
+   "faction": null,
+   "page": "index.html#mp-anvil",
+   "src": "js/config.js:452"
+  },
+  {
+   "ref": "map:lance",
+   "kind": "map",
+   "name": "THE LANCE",
+   "faction": null,
+   "page": "index.html#mp-lance",
+   "src": "js/config.js:478"
+  },
+  {
+   "ref": "map:skew",
+   "kind": "map",
+   "name": "THE SKEW",
+   "faction": null,
+   "page": "index.html#mp-skew",
+   "src": "js/config.js:494"
+  },
+  {
+   "ref": "map:strait",
+   "kind": "map",
+   "name": "THE STRAIT",
+   "faction": null,
+   "page": "index.html#mp-strait",
+   "src": "js/config.js:515"
+  },
+  {
+   "ref": "map:loom",
+   "kind": "map",
+   "name": "THE LOOM",
+   "faction": null,
+   "page": "index.html#mp-loom",
+   "src": "js/config.js:535"
+  },
+  {
+   "ref": "map:ossuary",
+   "kind": "map",
+   "name": "THE OSSUARY",
+   "faction": null,
+   "page": "index.html#mp-ossuary",
+   "src": "js/config.js:555"
+  },
+  {
+   "ref": "map:atoll",
+   "kind": "map",
+   "name": "THE ATOLL",
+   "faction": null,
+   "page": "index.html#mp-atoll",
+   "src": "js/config.js:571"
+  },
+  {
+   "ref": "map:spiral",
+   "kind": "map",
+   "name": "Vortex Reach",
+   "faction": null,
+   "page": "index.html#mp-spiral",
+   "src": "js/config.js:622"
+  },
+  {
+   "ref": "map:twin-channel",
+   "kind": "map",
+   "name": "Twin Straits",
+   "faction": null,
+   "page": "index.html#mp-twin-channel",
+   "src": "js/config.js:625"
+  },
+  {
+   "ref": "map:chokepoint",
+   "kind": "map",
+   "name": "The Narrows",
+   "faction": null,
+   "page": "index.html#mp-chokepoint",
+   "src": "js/config.js:628"
+  },
+  {
+   "ref": "map:island-scatter",
+   "kind": "map",
+   "name": "Shattered Shoals",
+   "faction": null,
+   "page": "index.html#mp-island-scatter",
+   "src": "js/config.js:631"
+  },
+  {
+   "ref": "map:open-field",
+   "kind": "map",
+   "name": "The Expanse",
+   "faction": null,
+   "page": "index.html#mp-open-field",
+   "src": "js/config.js:634"
+  },
+  {
+   "ref": "map:convergence",
+   "kind": "map",
+   "name": "Last Bastion",
+   "faction": null,
+   "page": "index.html#mp-convergence",
+   "src": "js/config.js:636"
+  },
+  {
+   "ref": "map:fortress-ring",
+   "kind": "map",
+   "name": "Siege Ring",
+   "faction": null,
+   "page": "index.html#mp-fortress-ring",
+   "src": "js/config.js:639"
+  },
+  {
+   "ref": "map:braid",
+   "kind": "map",
+   "name": "Woven Roads",
+   "faction": null,
+   "page": "index.html#mp-braid",
+   "src": "js/config.js:647"
+  },
+  {
+   "ref": "map:gauntlet",
+   "kind": "map",
+   "name": "The Fenced Road",
+   "faction": null,
+   "page": "index.html#mp-gauntlet",
+   "src": "js/config.js:649"
+  },
+  {
+   "ref": "map:staircase",
+   "kind": "map",
+   "name": "Descent Steps",
+   "faction": null,
+   "page": "index.html#mp-staircase",
+   "src": "js/config.js:651"
+  },
+  {
+   "ref": "map:horseshoe",
+   "kind": "map",
+   "name": "The Plaza",
+   "faction": null,
+   "page": "index.html#mp-horseshoe",
+   "src": "js/config.js:653"
+  },
+  {
+   "ref": "map:switchback",
+   "kind": "map",
+   "name": "Hairpin Pass",
+   "faction": null,
+   "page": "index.html#mp-switchback",
+   "src": "js/config.js:655"
+  },
+  {
+   "ref": "map:labyrinth",
+   "kind": "map",
+   "name": "The Maze",
+   "faction": null,
+   "page": "index.html#mp-labyrinth",
+   "src": "js/config.js:657"
+  },
+  {
+   "ref": "map:twin-temple",
+   "kind": "map",
+   "name": "Twin Sanctums",
+   "faction": null,
+   "page": "index.html#mp-twin-temple",
+   "src": "js/config.js:659"
+  },
+  {
+   "ref": "map:twin-gate",
+   "kind": "map",
+   "name": "The Bars",
+   "faction": null,
+   "page": "index.html#mp-twin-gate",
+   "src": "js/config.js:661"
+  },
+  {
+   "ref": "lorecodex:pattern",
+   "kind": "lorecodex",
+   "name": "What The Files Agreed On",
+   "faction": null,
+   "page": "index.html#lc-pattern",
+   "src": "js/factions.js:1027"
+  },
+  {
+   "ref": "lorecodex:disclosure",
+   "kind": "lorecodex",
+   "name": "September 11, 2028",
+   "faction": null,
+   "page": "index.html#lc-disclosure",
+   "src": "js/factions.js:1035"
+  },
+  {
+   "ref": "lorecodex:concord",
+   "kind": "lorecodex",
+   "name": "The Concord, Holidays 2028",
+   "faction": null,
+   "page": "index.html#lc-concord",
+   "src": "js/factions.js:1042"
+  },
+  {
+   "ref": "lorecodex:intercept",
+   "kind": "lorecodex",
+   "name": "April 13, 2029",
+   "faction": null,
+   "page": "index.html#lc-intercept",
+   "src": "js/factions.js:1049"
+  },
+  {
+   "ref": "lorecodex:order",
+   "kind": "lorecodex",
+   "name": "The Old Order",
+   "faction": null,
+   "page": "index.html#lc-order",
+   "src": "js/factions.js:1055"
+  },
+  {
+   "ref": "lorecodex:verbs",
+   "kind": "lorecodex",
+   "name": "Five Ways To Take A World",
+   "faction": null,
+   "page": "index.html#lc-verbs",
+   "src": "js/factions.js:1062"
+  },
+  {
+   "ref": "lorecodex:vigil",
+   "kind": "lorecodex",
+   "name": "The Vigil",
+   "faction": null,
+   "page": "index.html#lc-vigil",
+   "src": "js/factions.js:1069"
+  },
+  {
+   "ref": "lorecodex:ancients",
+   "kind": "lorecodex",
+   "name": "The Ancients",
+   "faction": null,
+   "page": "index.html#lc-ancients",
+   "src": "js/factions.js:1074"
+  },
+  {
+   "ref": "lorecodex:garrisons",
+   "kind": "lorecodex",
+   "name": "Who Is Actually Standing There",
+   "faction": null,
+   "page": "index.html#lc-garrisons",
+   "src": "js/factions.js:1080"
+  },
+  {
+   "ref": "lorecodex:reanimation",
+   "kind": "lorecodex",
+   "name": "Echo Reversal",
+   "faction": null,
+   "page": "index.html#lc-reanimation",
+   "src": "js/factions.js:1087"
+  },
+  {
+   "ref": "lorecodex:stars",
+   "kind": "lorecodex",
+   "name": "Stars Are Claim Stability",
+   "faction": null,
+   "page": "index.html#lc-stars",
+   "src": "js/factions.js:1095"
+  },
+  {
+   "ref": "lorecodex:souls",
+   "kind": "lorecodex",
+   "name": "SOULS",
+   "faction": null,
+   "page": "index.html#lc-souls",
+   "src": "js/factions.js:1101"
+  },
+  {
+   "ref": "lorecodex:conquest",
+   "kind": "lorecodex",
+   "name": "Conquest",
+   "faction": null,
+   "page": "index.html#lc-conquest",
+   "src": "js/factions.js:1108"
+  },
+  {
    "ref": "vigil:shardling",
    "kind": "vigil",
    "name": "Shard Sentry",

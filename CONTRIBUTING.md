@@ -200,7 +200,11 @@ Three rules keep it canonical:
 
 1. **It is generated, never hand-edited.** `node tools/storyboard.js` rebuilds
    it from the loaded game modules; a stat on those pages IS the stat in the
-   game. Hand edits are overwritten by design.
+   game. Hand edits are overwritten by design. `narrative/assets/` is part of
+   the derived output: the painted figures (commanders, denizens, abilities,
+   banners, the few painted towers) are decoded out of `js/artpack.js` by the
+   same run, orphans are deleted, and cards without painted art degrade to
+   the entity's own colour and glyph rather than a placeholder.
 2. **It cannot go stale.** `tools/gate.js` runs `storyboard.js --check`, which
    regenerates in memory and fails on any diff, and
    `.github/workflows/pages.yml` regenerates it on every push to main, so the

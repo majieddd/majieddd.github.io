@@ -39,7 +39,7 @@ const ROOT = path.dirname(__dirname);
 
 const ctx = { console, window: {}, document: undefined };
 vm.createContext(ctx);
-for (const f of ['config', 'lore', 'factions', 'towers2', 'abilities', 'roster', 'story',
+for (const f of ['artpack', 'config', 'lore', 'factions', 'towers2', 'abilities', 'roster', 'story',
                  'galaxy', 'cutscenes', 'planetcuts', 'dialogue'])
   try { vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', f + '.js'), 'utf8'), ctx, { filename: f + '.js' }); }
   catch (e) { console.log('  (skipped ' + f + ': ' + e.message.split('\n')[0] + ')'); }
@@ -50,7 +50,8 @@ const G = vm.runInContext(
   'ACT_MORALS, ACT_SCENARIOS, BOONS, GX_SOL_ENCOUNTERS, GX_ACT_ENCOUNTERS, ' +
   'TOWER_TYPES, TOWER_ORDER, ENEMY_TYPES, FACTION_UNITS, POWER_ORDER, ' +
   'ELEMENTS, COMBOS, ABILITIES, PLAYER_MODS, ENEMY_MODS, SUMMON_DOCTRINES, ' +
-  'MACHINE_HOST, originKeyOf })', ctx);
+  'MACHINE_HOST, originKeyOf, ARTPACK, ' +
+  'MAPS, SCENARIOS, ARENA_MODS, TARGET_MODES, LEVEL_ROLLS, SECRET_FACTIONS, LORE_CODEX })', ctx);
 
 const FACS = ['human', 'light', 'xeno', 'pirate', 'robot'];
 const SYSOF = { human: 0, light: 1, xeno: 2, pirate: 3, robot: 4 };
@@ -161,6 +162,27 @@ function locateId(rels, id, name, opts) {
   return hits[0].rel + ':' + (hits[0].i + 1);
 }
 
+/* Like locateId but bounded to one table's declaration block. Needed because
+   config.js legitimately reuses an id ACROSS tables: `overrun` is both a
+   difficulty preset and a scenario, with the same display name, so neither
+   the id nor the name can disambiguate globally. Within its own table an id
+   is unique by construction. */
+function locateIdUnder(rel, constName, id, name) {
+  const lines = srcLines(rel);
+  const decl = new RegExp('^const ' + constName + '\\s*=');
+  let start = -1, end = lines.length;
+  for (let i = 0; i < lines.length; i++) if (decl.test(lines[i])) { start = i; break; }
+  if (start < 0) throw new Error('spine: const ' + constName + ' not found in ' + rel);
+  for (let i = start + 1; i < lines.length; i++) if (/^const /.test(lines[i])) { end = i; break; }
+  const pat = new RegExp("id:\\s*'" + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "'");
+  const hits = [];
+  for (let i = start; i < end; i++) if (pat.test(lines[i])) hits.push(i);
+  if (hits.length !== 1)
+    throw new Error('spine: id ' + id + ' matched ' + hits.length + ' lines under ' + constName +
+                    ' in ' + rel + ' (need exactly 1).');
+  return rel + ':' + (hits[0] + 1);
+}
+
 /* Find the 1-based line of a KEY (`kinetic: {` or `'05': {`) between the
    declaration of `constName` and the next top-level `const`. For tables whose
    entries carry no id field. */
@@ -182,6 +204,34 @@ function locateKey(rel, constName, key) {
     throw new Error('spine: key ' + key + ' matched ' + hits.length + ' lines under ' +
                     constName + ' in ' + rel + ' (need exactly 1).');
   return rel + ':' + (hits[0] + 1);
+}
+
+/* ==========================================================================
+   FIGURES. Everything with art shows its art (owner directive, Session 43).
+   The painted portraits live as data URIs inside js/artpack.js; the pages
+   are static files, so every key a card references is DECODED OUT to
+   narrative/assets/<key>.webp by the same run that writes the pages, and
+   the --check freshness gate byte-compares those files too. Where no
+   painted key exists the card degrades to the same thing the in-game codex
+   degrades to: the entity's own colour and glyph, never a placeholder that
+   pretends to be art.
+   ========================================================================== */
+const ASSET_KEYS = new Set();
+function fig(key, cls, alt) {
+  const v = G.ARTPACK && G.ARTPACK[key];
+  if (!v) return null;
+  if (v.slice(0, 23) !== 'data:image/webp;base64,')
+    throw new Error('artpack key ' + key + ' is not the webp data URI this extractor expects');
+  ASSET_KEYS.add(key);
+  return '<img class="' + cls + '" loading="lazy" src="assets/' + key + '.webp" alt="' +
+         esc(alt || '') + '">';
+}
+function chipFig(color, glyph) {
+  return '<span class="cfig chip-fig" style="--cc:' + esc(color || '#7dd3fc') + '">' +
+         esc(glyph || '') + '</span>';
+}
+function assetBytes(key) {
+  return Buffer.from(G.ARTPACK[key].slice(23), 'base64');
 }
 
 /* Register one addressable thing and return the little ref chip that renders
@@ -320,6 +370,18 @@ h2{font-size:15px;letter-spacing:.14em;margin:38px 0 6px;color:#fff;text-transfo
 .sig{color:#8aa0b5;font-size:12px}
 .sig b{color:#c3d2e0;font-weight:600}
 .whead .src,.actbar .src,.sub .src{display:inline;margin:0;padding:0}
+.chead{display:flex;gap:10px;align-items:center;min-width:0}
+.cheadt{display:flex;flex-direction:column;gap:3px;min-width:0}
+.cfig{width:52px;height:52px;border-radius:6px;flex:none;object-fit:cover;
+ border:1px solid #1d2836;background:#060a0f}
+.chead .cfig.lg{width:64px;height:64px}
+.chip-fig{display:flex;align-items:center;justify-content:center;font-size:22px;
+ color:var(--cc);border-color:var(--cc);background:#0a0f16}
+.crest{display:inline-block;width:24px;height:24px;vertical-align:-3px;margin-right:9px}
+.crest svg{width:100%;height:100%;display:block}
+.fhero{float:right;width:190px;aspect-ratio:1;object-fit:cover;border-radius:8px;
+ border:1px solid #1d2836;margin:0 0 12px 18px}
+@media(max-width:700px){.fhero{float:none;width:100%;aspect-ratio:16/9;margin:0 0 12px}}
 .beat .reveal{display:block;margin-top:7px;padding-top:7px;border-top:1px solid #1d2836;
  color:#8aa0b5;font-size:13px}
 .beat.moral{border-color:#3d3320;background:#12100c}
@@ -444,9 +506,12 @@ function towerCard(id, fac, page) {
     ladder.push('<li><b>' + esc(x.name) + '</b> tier 4 branch, ' + x.cost + 'g. ' + esc(x.note || '') + '</li>'));
   COVER.towers++;
   return '<div class="card" id="tw-' + esc(id) + '">' +
-    '<b>' + esc(t.name) + '</b>' +
-    '<span class="nums">' + esc(t.role || '') + ' &middot; ' + (el.icon || '') + ' ' +
-      esc(el.name || t.element) + ' &middot; ' + t.cost + 'g, growth &times;' + t.costGrowth + '</span>' +
+    '<div class="chead">' +
+      (fig('twr_' + id, 'cfig', t.name) || chipFig(t.color, t.glyph || t.name.charAt(0))) +
+      '<div class="cheadt"><b>' + esc(t.name) + '</b>' +
+      '<span class="nums">' + esc(t.role || '') + ' &middot; ' + (el.icon || '') + ' ' +
+        esc(el.name || t.element) + ' &middot; ' + t.cost + 'g, growth &times;' + t.costGrowth + '</span>' +
+      '</div></div>' +
     (nums ? '<span class="nums">' + nums + '</span>' : '') +
     '<span>' + esc(t.desc || '') + '</span>' +
     (lo.historical_origin ? '<span class="quote">' + esc(lo.historical_origin) + '</span>' : '') +
@@ -475,9 +540,12 @@ function unitCard(id, fac, page) {
     '<li><b>' + esc(x.name) + '</b> ' + esc(x.desc || '') + '</li>');
   COVER.units++;
   return '<div class="card" id="un-' + esc(id) + '">' +
-    '<b>' + esc(e.name) + '</b>' +
-    '<span class="nums">' + e.hp + ' hp &middot; ' + (e.armor || 0) + ' armour &middot; speed ' +
-      e.speed + ' &middot; bounty ' + e.bounty + ' &middot; ' + e.lives + ' live' + (e.lives === 1 ? '' : 's') + '</span>' +
+    '<div class="chead">' +
+      (fig('foe_' + id, 'cfig', e.name) || chipFig(e.color, e.name.charAt(0))) +
+      '<div class="cheadt"><b>' + esc(e.name) + '</b>' +
+      '<span class="nums">' + e.hp + ' hp &middot; ' + (e.armor || 0) + ' armour &middot; speed ' +
+        e.speed + ' &middot; bounty ' + e.bounty + ' &middot; ' + e.lives + ' live' + (e.lives === 1 ? '' : 's') + '</span>' +
+      '</div></div>' +
     (specials ? '<span class="nums">' + specials + '</span>' : '') +
     ((weak || res) ? '<span class="nums">' + (weak ? 'weak to ' + esc(weak) : '') +
       (weak && res ? ' &middot; ' : '') + (res ? 'resists ' + esc(res) : '') + '</span>' : '') +
@@ -506,8 +574,10 @@ function commanderCard(c, fac, page) {
     .map(n => '<li><b>' + esc(n.name) + '</b> ' + esc(n.desc) + '</li>');
   COVER.commanders++;
   return '<div class="card" id="cd-' + esc(c.id) + '">' +
-    '<b>' + (c.icon ? c.icon + ' ' : '') + esc(c.name) + '</b>' +
-    '<span class="nums">' + esc(c.title || '') + '</span>' +
+    '<div class="chead">' +
+      (fig('cmd_' + c.id, 'cfig lg', c.name) || chipFig(c.color, c.icon)) +
+      '<div class="cheadt"><b>' + (c.icon ? c.icon + ' ' : '') + esc(c.name) + '</b>' +
+      '<span class="nums">' + esc(c.title || '') + '</span></div></div>' +
     (c.blurb ? '<span>' + esc(c.blurb) + '</span>' : '') +
     (c.trait ? '<span><i>' + esc(c.trait.name) + ':</i> ' + esc(c.trait.desc) + '</span>' : '') +
     sig +
@@ -540,10 +610,13 @@ function vigilCard(id) {
   const lo = (G.LORE && G.LORE.vigil && G.LORE.vigil[id]) || {};
   COVER.vigil++;
   return '<div class="card" id="vg-' + esc(id) + '">' +
-    '<b>' + esc(e.name) + '</b>' +
-    '<span class="nums">' + e.hp + ' hp &middot; ' + (e.armor || 0) + ' armour &middot; speed ' +
-      e.speed + ' &middot; bounty ' + e.bounty + ' &middot; ' + e.lives + ' live' + (e.lives === 1 ? '' : 's') +
-      (e.flying ? ' &middot; FLYING' : '') + '</span>' +
+    '<div class="chead">' +
+      (fig('foe_' + id, 'cfig', e.name) || chipFig(e.color, e.name.charAt(0))) +
+      '<div class="cheadt"><b>' + esc(e.name) + '</b>' +
+      '<span class="nums">' + e.hp + ' hp &middot; ' + (e.armor || 0) + ' armour &middot; speed ' +
+        e.speed + ' &middot; bounty ' + e.bounty + ' &middot; ' + e.lives + ' live' + (e.lives === 1 ? '' : 's') +
+        (e.flying ? ' &middot; FLYING' : '') + '</span>' +
+      '</div></div>' +
     '<span>' + esc(e.desc || '') + '</span>' +
     (lo.original_function ? '<span><i>Was:</i> ' + esc(lo.original_function) + '</span>' : '') +
     (lo.canon ? '<span class="quote">' + esc(lo.canon) + '</span>' : '') +
@@ -577,9 +650,18 @@ function page(fac) {
     FACS.map(f => '<a href="' + f + '.html"' + (f === fac ? ' class="on" style="color:' + facColor(f) + '"' : '') +
       '>' + esc(facName(f)) + '</a>').join('') + '</div></div>');
   w('<div class="wrap">');
-  w('<h1 style="color:' + facColor(fac) + '">' + esc(facName(fac)) + '</h1>');
-  w('<p class="sub">The campaign in play order. Three panels before each battle, two after. ' +
+  const crest = (G.FACTIONS[fac] || {}).crest;
+  w(fig('fac_' + fac, 'fhero', facName(fac) + ' banner art') || '');
+  w('<h1 style="color:' + facColor(fac) + '">' +
+    (crest ? '<span class="crest">' + crest + '</span>' : '') + esc(facName(fac)) + '</h1>');
+  w('<p class="sub">The campaign in play order, then the full field manual: arsenal, army, ' +
+    'leaders and boons, every number live from the game data. ' +
     'Type in any box to leave a note, then SAVE NOTES to download them.</p>');
+  w('<p class="sub" style="margin-top:-8px">' +
+    ['<a href="#arsenal">arsenal</a>', '<a href="#army">what you field</a>',
+     '<a href="#leaders">who leads</a>', '<a href="#boons">war boons</a>',
+     '<a href="#story">the spine</a>', '<a href="#intro">opening</a>',
+     '<a href="#act-1">acts</a>'].join(' &middot; ') + '</p>');
 
   /* ---- who you are: the role-playing layer, on the same sheet ---- */
   const F = G.FACTIONS[fac] || {};
@@ -591,6 +673,9 @@ function page(fac) {
   if (F.blurb) w('<p class="blurb">' + esc(F.blurb) + '</p>');
   if (F.bonusName) w('<div class="bonus"><b>' + esc(F.bonusName) + '</b> ' + esc(F.bonusDesc || '') + '</div>');
   if (doc) w(' <div class="bonus" id="doctrine"><b>' + esc(doc.name) + '</b> ' + esc(doc.desc || '') + '</div>');
+  if ((G.SECRET_FACTIONS || []).includes(fac))
+    w('<p class="sub" style="margin:10px 0 0"><span class="chip seat">SECRET BANNER</span> ' +
+      'This power unlocks only once the game is beaten; its arsenal is the prize of the campaign.</p>');
   w(spine('faction:' + fac, 'faction', F.name || fac, fac, pageFile, 'power',
           locateId('js/factions.js', fac, F.name)));
   if (doc) w(spine('doctrine:' + fac, 'doctrine', doc.name, fac, pageFile, 'doctrine',
@@ -770,8 +855,10 @@ function index() {
   FACS.forEach(f => {
     const st = G.STORY && G.STORY[f];
     const hook = (st && st[0] && st[0].line) ? String(st[0].line).slice(0, 120) : '';
+    const cr = (G.FACTIONS[f] || {}).crest;
     w('<a class="fcard" href="' + f + '.html" style="--fc:' + facColor(f) + '">' +
-      '<b style="color:' + facColor(f) + '">' + esc(facName(f)) + '</b>' +
+      '<b style="color:' + facColor(f) + '">' +
+      (cr ? '<span class="crest">' + cr + '</span>' : '') + esc(facName(f)) + '</b>' +
       '<span>' + esc(hook) + '</span></a>');
   });
   w('</div>');
@@ -796,7 +883,11 @@ function index() {
    ['element:fire &middot; reaction:' + (Object.values(G.COMBOS.fire || {})[0] || {}).id +
     ' &middot; ability:' + Object.keys(G.ABILITIES)[0] +
     ' &middot; doctrine:light &middot; playermod:' + (G.PLAYER_MODS[0] || {}).id +
-    ' &middot; timeline:12', 'the shared systems, below on this page']]
+    ' &middot; timeline:12', 'the shared systems, below on this page'],
+   ['map:' + (G.MAPS[0] || {}).id + ' &middot; scenario:' + (G.SCENARIOS[0] || {}).id +
+    ' &middot; arena:' + (G.ARENA_MODS[0] || {}).id + ' &middot; target:' + (G.TARGET_MODES[0] || {}).id +
+    ' &middot; waveroll:' + (G.LEVEL_ROLLS[0] || {}).id + ' &middot; lorecodex:' + (G.LORE_CODEX[0] || {}).id,
+    'boards, scenarios, arena modifiers, targeting, wave rolls and the lore codex, below']]
     .forEach(r => w('<tr class="y"><td>REF</td><td><b>' + r[0] + '</b></td><td>' + r[1] + '</td></tr>'));
   w('</table>');
   w('<p class="sub">Canon this page does not render (mythos operations, visual briefs, world ' +
@@ -860,9 +951,12 @@ function index() {
   w('<div class="cards">');
   abilIds.forEach(id => {
     const a = G.ABILITIES[id];
-    w('<div class="card" id="ab-' + esc(id) + '"><b>' + a.icon + ' ' + esc(a.name) + '</b>' +
+    w('<div class="card" id="ab-' + esc(id) + '">' +
+      '<div class="chead">' +
+      (fig('abil_' + id, 'cfig', a.name) || chipFig(a.kind === 'offense' ? '#fbbf24' : '#7dd3fc', a.icon)) +
+      '<div class="cheadt"><b>' + a.icon + ' ' + esc(a.name) + '</b>' +
       '<span class="nums">' + (a.kind === 'offense' ? 'OFFENSIVE' : 'DEFENSIVE') + ' &middot; ' +
-      a.cd + 's cooldown &middot; ' + a.dur + 's duration</span>' +
+      a.cd + 's cooldown &middot; ' + a.dur + 's duration</span></div></div>' +
       '<span>' + esc(a.desc || '') + '</span>' +
       spine('ability:' + id, 'ability', a.name, null, 'index.html', 'ab-' + id,
             locateId('js/abilities.js', id, a.name)) + '</div>');
@@ -878,12 +972,76 @@ function index() {
     w('<div class="card" id="pm-' + esc(m.id) + '"><b>' + (m.icon || '') + ' ' + esc(m.name) + '</b>' +
       '<span class="nums">yours</span><span>' + esc(m.desc || '') + '</span>' +
       spine('playermod:' + m.id, 'playermod', m.name, null, 'index.html', 'pm-' + m.id,
-            locateId('js/config.js', m.id, m.name)) + '</div>'));
+            locateIdUnder('js/config.js', 'PLAYER_MODS', m.id, m.name)) + '</div>'));
   G.ENEMY_MODS.forEach(m =>
     w('<div class="card" id="em-' + esc(m.id) + '"><b>' + (m.icon || '') + ' ' + esc(m.name) + '</b>' +
       '<span class="nums">theirs</span><span>' + esc(m.desc || '') + '</span>' +
       spine('enemymod:' + m.id, 'enemymod', m.name, null, 'index.html', 'em-' + m.id,
-            locateId('js/config.js', m.id, m.name)) + '</div>'));
+            locateIdUnder('js/config.js', 'ENEMY_MODS', m.id, m.name)) + '</div>'));
+  w('</div>');
+
+  w('<h2 id="targeting" style="font-size:13px;margin-top:26px">Targeting modes, ' +
+    G.TARGET_MODES.length + ' &middot; Wave rolls, ' + G.LEVEL_ROLLS.length + '</h2>');
+  w('<p class="sub">Both index-coupled on the duel wire, so append-only and shown in wire order.</p>');
+  w('<div class="cards">');
+  G.TARGET_MODES.forEach(m =>
+    w('<div class="card" id="tg-' + esc(m.id) + '"><b>' + esc(m.name) + '</b>' +
+      '<span class="nums">targeting</span><span>' + esc(m.desc || '') + '</span>' +
+      spine('target:' + m.id, 'target', m.name, null, 'index.html', 'tg-' + m.id,
+            locateIdUnder('js/config.js', 'TARGET_MODES', m.id, m.name)) + '</div>'));
+  G.LEVEL_ROLLS.forEach(m =>
+    w('<div class="card" id="lr-' + esc(m.id) + '"><b>' + esc(m.name) + '</b>' +
+      '<span class="nums">wave roll</span><span>' + esc(m.desc || '') + '</span>' +
+      spine('waveroll:' + m.id, 'waveroll', m.name, null, 'index.html', 'lr-' + m.id,
+            locateIdUnder('js/config.js', 'LEVEL_ROLLS', m.id, m.name)) + '</div>'));
+  w('</div>');
+
+  w('<h2 id="arenas" style="font-size:13px;margin-top:26px">Arena modifiers, ' + G.ARENA_MODS.length + '</h2>');
+  w('<p class="sub">A world can impose one of these on its whole battle.</p>');
+  w('<div class="cards">');
+  G.ARENA_MODS.forEach(m =>
+    w('<div class="card" id="ar-' + esc(m.id) + '"><b>' + (m.icon || '') + ' ' + esc(m.name) + '</b>' +
+      '<span>' + esc(m.desc || '') + '</span>' +
+      spine('arena:' + m.id, 'arena', m.name, null, 'index.html', 'ar-' + m.id,
+            locateIdUnder('js/towers2.js', 'ARENA_MODS', m.id, m.name)) + '</div>'));
+  w('</div>');
+
+  w('<h2 id="scenarios" style="font-size:13px;margin-top:26px">Scenarios, ' + G.SCENARIOS.length + '</h2>');
+  w('<p class="sub">The shapes a battle can take, each with its three stars.</p>');
+  w('<div class="cards">');
+  G.SCENARIOS.forEach(s =>
+    w('<div class="card" id="sc-' + esc(s.id) + '"><b>' + (s.icon || '') + ' ' + esc(s.name) + '</b>' +
+      '<span>' + esc(s.brief || '') + '</span>' +
+      ((s.stars || []).length ? '<span class="nums">stars: ' + s.stars.map(esc).join(' &middot; ') + '</span>' : '') +
+      (s.flavor ? '<span class="quote">' + esc(s.flavor) + '</span>' : '') +
+      spine('scenario:' + s.id, 'scenario', s.name, null, 'index.html', 'sc-' + s.id,
+            locateIdUnder('js/config.js', 'SCENARIOS', s.id, s.name)) + '</div>'));
+  w('</div>');
+
+  const authoredMaps = G.MAPS.filter(m => !m.procedural), procMaps = G.MAPS.filter(m => m.procedural);
+  w('<h2 id="boards" style="font-size:13px;margin-top:26px">The boards, ' + G.MAPS.length +
+    ' (' + authoredMaps.length + ' authored, ' + procMaps.length + ' procedural)</h2>');
+  w('<p class="sub">Every battlefield the galaxy can deal. Procedural boards are families: each ' +
+    'world rolls its own layout from the family and its seed.</p>');
+  w('<div class="cards">');
+  G.MAPS.forEach(m =>
+    w('<div class="card" id="mp-' + esc(m.id) + '"><b>' + esc(m.name) + '</b>' +
+      '<span class="nums">' + (m.procedural ? 'procedural, family ' + esc(m.family || m.id) : 'authored') +
+      (m.tier !== undefined ? ' &middot; tier ' + m.tier : (m.minTier !== undefined ? ' &middot; from tier ' + m.minTier : '')) +
+      (m.adj ? ' &middot; ' + esc(m.adj) : '') + '</span>' +
+      (m.sigNote ? '<span>' + esc(m.sigNote) + '</span>' : '') +
+      spine('map:' + m.id, 'map', m.name, null, 'index.html', 'mp-' + m.id,
+            locateIdUnder('js/config.js', 'MAPS', m.id, m.name)) + '</div>'));
+  w('</div>');
+
+  w('<h2 id="lorecodex">The lore codex, ' + G.LORE_CODEX.length + ' entries</h2>');
+  w('<p class="sub">The in-game Field Manual&#39;s lore pages, word for word.</p>');
+  w('<div class="cards">');
+  G.LORE_CODEX.forEach(l =>
+    w('<div class="card" id="lc-' + esc(l.id) + '"><b>' + esc(l.title) + '</b>' +
+      '<span>' + esc(l.body || '') + '</span>' +
+      spine('lorecodex:' + l.id, 'lorecodex', l.title, null, 'index.html', 'lc-' + l.id,
+            locateIdUnder('js/factions.js', 'LORE_CODEX', l.id, l.title)) + '</div>'));
   w('</div>');
 
   /* ---- the machines everyone fights ---- */
@@ -1062,6 +1220,18 @@ files['spine.json'] = JSON.stringify({
   entries: SPINE
 }, null, 1) + '\n';
 
+/* The figure files the pages reference, decoded from js/artpack.js. The
+   assets directory is fully DERIVED: exactly the referenced keys exist there,
+   an orphan is staleness, and --check holds bytes equal. */
+const ASSETS = {};
+for (const k of ASSET_KEYS) ASSETS[k + '.webp'] = assetBytes(k);
+const assetDir = path.join(dir, 'assets');
+const assetCounts = (() => {
+  const by = {};
+  for (const k of ASSET_KEYS) { const p = k.split('_')[0]; by[p] = (by[p] || 0) + 1; }
+  return Object.keys(by).sort().map(p => by[p] + ' ' + p).join(', ');
+})();
+
 if (CHECK) {
   /* Regenerate in memory and compare. The read may fail because the file is
      MISSING, which is just the loudest kind of stale, so it reports as stale
@@ -1070,15 +1240,36 @@ if (CHECK) {
     try { return fs.readFileSync(path.join(dir, n), 'utf8') !== files[n]; }
     catch (e) { return true; }
   });
+  for (const n of Object.keys(ASSETS)) {
+    try { if (!fs.readFileSync(path.join(assetDir, n)).equals(ASSETS[n])) stale.push('assets/' + n); }
+    catch (e) { stale.push('assets/' + n); }
+  }
+  try {
+    for (const f of fs.readdirSync(assetDir))
+      if (f.endsWith('.webp') && !ASSETS[f]) stale.push('assets/' + f + ' (orphaned)');
+  } catch (e) { /* no assets dir at all is already reported above, per key */ }
   if (stale.length) {
-    console.log('narrative spine STALE: ' + stale.join(', ') + '. Run: node tools/storyboard.js');
+    console.log('narrative spine STALE: ' + stale.slice(0, 8).join(', ') +
+      (stale.length > 8 ? ' and ' + (stale.length - 8) + ' more' : '') +
+      '. Run: node tools/storyboard.js');
     process.exit(1);
   }
-  console.log('narrative spine fresh: ' + Object.keys(files).length + ' files, ' + SPINE.length + ' refs');
+  console.log('narrative spine fresh: ' + Object.keys(files).length + ' files, ' + SPINE.length +
+    ' refs, ' + ASSET_KEYS.size + ' figures');
 } else {
-  fs.mkdirSync(dir, { recursive: true });
+  fs.mkdirSync(assetDir, { recursive: true });
+  let wrote = 0;
   for (const n of Object.keys(files)) fs.writeFileSync(path.join(dir, n), files[n], 'utf8');
+  for (const n of Object.keys(ASSETS)) {
+    const p = path.join(assetDir, n);
+    let cur = null;
+    try { cur = fs.readFileSync(p); } catch (e) { /* missing: write below */ }
+    if (!cur || !cur.equals(ASSETS[n])) { fs.writeFileSync(p, ASSETS[n]); wrote++; }
+  }
+  for (const f of fs.readdirSync(assetDir))
+    if (f.endsWith('.webp') && !ASSETS[f]) { fs.unlinkSync(path.join(assetDir, f)); }
   console.log('wrote narrative/: ' + FACS.length + ' campaign pages, index.html, spine.json (' +
     SPINE.length + ' refs; ' + COVER.towers + ' towers, ' + (COVER.units + COVER.vigil) +
-    ' denizens, ' + COVER.commanders + ' commanders, ' + COVER.boons + ' boons)');
+    ' denizens, ' + COVER.commanders + ' commanders, ' + COVER.boons + ' boons; figures: ' +
+    assetCounts + '; ' + wrote + ' asset files updated)');
 }
