@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cosmic Conquest | All Games Index</title>
+<meta name="description" content="Every playable Cosmic Conquest game, edition and map at majieddd.github.io, in one page.">
+<meta name="theme-color" content="#0a0e17">
+<link rel="icon" href="data:,">
+<style>
+/* COSMIC CONQUEST :: GAMES INDEX
+   One page, zero dependencies. Dark void theme matched to the games. */
+:root {
+  --void: #0a0e17;
+  --ground: #0d1220;
+  --panel: rgba(17, 22, 38, 0.82);
+  --panel-solid: #131828;
+  --raised: rgba(30, 38, 62, 0.9);
+  --line: rgba(140, 160, 210, 0.16);
+  --line-strong: rgba(150, 175, 230, 0.32);
+  --accent: #38e8ff;
+  --accent-2: #7dd3fc;
+  --gold: #fbbf24;
+  --text: #e8ecf8;
+  --text-dim: #a8b4d0;
+  --text-faint: #8492b0;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --font: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--void);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.wrap { max-width: 1160px; margin: 0 auto; padding: 40px 20px 80px; }
+
+/* ---------- header ---------- */
+header h1 {
+  font-size: 34px; font-weight: 800; letter-spacing: 0.1em;
+  margin: 0 0 6px;
+}
+header h1 .thin { font-weight: 300; color: var(--text-dim); }
+header .tagline { color: var(--text-dim); max-width: 66ch; margin: 0 0 10px; }
+header .meta {
+  font-family: var(--mono); font-size: 12px; color: var(--text-faint);
+  border-top: 1px solid var(--line); padding-top: 12px; margin-top: 14px;
+}
+header .meta b { color: var(--accent); font-weight: 700; }
+
+/* ---------- sections ---------- */
+.grouplabel {
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-faint); margin: 38px 0 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.grouplabel::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+}
+.card {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 14px 15px 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  transition: border-color 160ms ease-out, transform 160ms ease-out, background 160ms ease-out;
+}
+.card:hover { border-color: var(--accent); transform: translateY(-2px); background: var(--raised); }
+.card .tag {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+  color: var(--accent); text-transform: uppercase;
+}
+.card h3 { margin: 0; font-size: 16.5px; font-weight: 800; letter-spacing: 0.03em; }
+.card .desc { margin: 0; font-size: 12.5px; color: var(--text-dim); flex: 1; }
+.card .slug {
+  font-family: var(--mono); font-size: 11.5px; color: var(--accent-2);
+  word-break: break-all;
+}
+.card .repo {
+  font-family: var(--mono); font-size: 10px; color: var(--text-faint);
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.card .repo .live { color: var(--gold); }
+a.card { text-decoration: none; color: inherit; }
+
+/* notable chip rows */
+.row-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font-family: var(--mono); font-size: 11.5px; color: var(--accent-2);
+  background: rgba(11, 15, 26, 0.72);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 5px 10px;
+  text-decoration: none;
+  transition: border-color 160ms ease-out, color 160ms ease-out;
+}
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip .d { color: var(--text-faint); font-size: 10px; }
+
+footer {
+  margin-top: 52px; border-top: 1px solid var(--line); padding-top: 16px;
+  font-size: 12.5px; color: var(--text-faint);
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>COSMIC CONQUEST <span class="thin">GAMES INDEX</span></h1>
+  <p class="tagline">Every game, edition and map published at majieddd.github.io, from the flagship 2D tower defense to the standalone experiments in their own repositories. One page, nothing else.</p>
+  <p class="meta"><b>34 entries</b>, all verified 200 OK live - main site is majieddd.github.io itself; each standalone game ships from its own repository.</p>
+</header>
+
+<!-- ================= MAIN ================= -->
+<div class="grouplabel">Flagship (2D)</div>
+<div class="grid">
+  <a class="card" href="https://majieddd.github.io/">
+    <span class="tag">Flagship</span>
+    <h3>Cosmic Conquest</h3>
+    <p class="desc">The main 2D PvPvE tower defense. Neutral waves attack both commanders, and under most banners everything you kill gets back up and marches on your rival.</p>
+    <span class="slug">/</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/aegis-protocol.html">
+    <span class="tag">Bundle</span>
+    <h3>Cosmic Conquest (single file)</h3>
+    <p class="desc">The full main game as a standalone, zero-dependency single-file bundle built from index.html + js/ + css/.</p>
+    <span class="slug">/aegis-protocol.html</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/aegis-artifact.html">
+    <span class="tag">Bundle</span>
+    <h3>Cosmic Conquest (artifact)</h3>
+    <p class="desc">Second single-file bundle build of the main game, generated alongside aegis-protocol.html.</p>
+    <span class="slug">/aegis-artifact.html</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+</div>
+
+<!-- ================= 3D ================= -->
+<div class="grouplabel">3D editions (main repo)</div>
+<div class="grid">
+  <a class="card" href="https://majieddd.github.io/3d-game-delta/">
+    <span class="tag">3D</span>
+    <h3>INKFALL: Siege of the Avalon Yard</h3>
+    <p class="desc">3D planet battle suite, now wrapping the entire planet in an equatorial belt with two-sided pad rows.</p>
+    <span class="slug">/3d-game-delta/</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/aegis-3d/">
+    <span class="tag">3D</span>
+    <h3>Cosmic Conquest: LOWPOLY</h3>
+    <p class="desc">The first low-poly 3D edition of the game.</p>
+    <span class="slug">/aegis-3d/</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/aegis-3d-highpoly/">
+    <span class="tag">3D</span>
+    <h3>Cosmic Conquest: HIGHPOLY</h3>
+    <p class="desc">High fidelity 3D tower defense in the Cosmic Conquest universe, painted in the Neon Reliquary style with amplified FX, fluid motion and modern UI. Zero dependencies, one file, WebGL2.</p>
+    <span class="slug">/aegis-3d-highpoly/</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/aegis-3d-highpoly-v2/">
+    <span class="tag">3D</span>
+    <h3>Cosmic Conquest: HIGHPOLY v2</h3>
+    <p class="desc">The next highpoly iteration, same painted style, refined build.</p>
+    <span class="slug">/aegis-3d-highpoly-v2/</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/cosmic-aether/">
+    <span class="tag">3D</span>
+    <h3>Cosmic Conquest: Reliquary (LowPoly)</h3>
+    <p class="desc">Low-poly 3D tower defense in the Neon Reliquary painted style. Zero dependencies, one file, WebGL2.</p>
+    <span class="slug">/cosmic-aether/</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+</div>
+
+<!-- ================= THE COIL ================= -->
+<div class="grouplabel">The Coil - test editions (cosmicconquest3dtest repo)</div>
+<div class="grid">
+  <a class="card" href="https://majieddd.github.io/cosmicconquest3dtest/">
+    <span class="tag">Hub</span>
+    <h3>The Coil - Test Editions</h3>
+    <p class="desc">Hub page for every Coil edition and style archive.</p>
+    <span class="slug">/cosmicconquest3dtest/</span>
+    <span class="repo">repo: cosmicconquest3dtest <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/cosmicconquest3dtest/planet/">
+    <span class="tag">Edition</span>
+    <h3>Coil - Planet</h3>
+    <p class="desc">The current main mode: planet-curved maps with the MERIDIAN/CIRCUMFERENCE selector. High-detail faceted containment defense, WebGL2, one file.</p>
+    <span class="slug">/cosmicconquest3dtest/planet/</span>
+    <span class="repo">repo: cosmicconquest3dtest <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/cosmicconquest3dtest/hifi/">
+    <span class="tag">Edition</span>
+    <h3>Coil - HiFi</h3>
+    <p class="desc">Hi-fi Blender model edition with the full art pipeline.</p>
+    <span class="slug">/cosmicconquest3dtest/hifi/</span>
+    <span class="repo">repo: cosmicconquest3dtest <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/cosmicconquest3dtest/v1/">
+    <span class="tag">Edition</span>
+    <h3>Coil - v1</h3>
+    <p class="desc">First Coil edition, flat board.</p>
+    <span class="slug">/cosmicconquest3dtest/v1/</span>
+    <span class="repo">repo: cosmicconquest3dtest <span class="live">LIVE</span></span>
+  </a>
+</div>
+
+<div class="grouplabel">The Coil - map/style archives</div>
+<div class="row-chips">
+  <a class="chip" href="https://majieddd.github.io/cosmicconquest3dtest/print-shop/">print-shop</a>
+  <a class="chip" href="https://majieddd.github.io/cosmicconquest3dtest/deck-clinical/">deck-clinical</a>
+  <a class="chip" href="https://majieddd.github.io/cosmicconquest3dtest/glass-neon/">glass-neon</a>
+  <a class="chip" href="https://majieddd.github.io/cosmicconquest3dtest/noir-cell/">noir-cell</a>
+  <a class="chip" href="https://majieddd.github.io/cosmicconquest3dtest/pastel-day/">pastel-day</a>
+</div>
+
+<!-- ================= RELIQUARY ================= -->
+<div class="grouplabel">Reliquary editions</div>
+<div class="grid">
+  <a class="card" href="https://majieddd.github.io/reliquary/">
+    <span class="tag">Edition</span>
+    <h3>The Neon Reliquary</h3>
+    <p class="desc">Painted low-poly tower defense in the Cosmic Conquest universe. Wet-oil rendered, authentic arsenal, ten waves and the Harbinger. Ships from its own repository.</p>
+    <span class="slug">/reliquary/</span>
+    <span class="repo">repo: reliquary <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/cosmic-reliquary-versions.html">
+    <span class="tag">Archive</span>
+    <h3>Reliquary - versions</h3>
+    <p class="desc">Version picker for every standalone single-file Reliquary build.</p>
+    <span class="slug">/cosmic-reliquary-versions.html</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/cosmic-reliquary-v1.3.html">
+    <span class="tag">Edition</span>
+    <h3>Reliquary v1.3</h3>
+    <p class="desc">Latest standalone Reliquary build, single file.</p>
+    <span class="slug">/cosmic-reliquary-v1.3.html</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/cosmic-reliquary-v1.2.html">
+    <span class="tag">Edition</span>
+    <h3>Reliquary v1.2</h3>
+    <p class="desc">Standalone build.</p>
+    <span class="slug">/cosmic-reliquary-v1.2.html</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/cosmic-reliquary-v1.1.html">
+    <span class="tag">Edition</span>
+    <h3>Reliquary v1.1</h3>
+    <p class="desc">Standalone build.</p>
+    <span class="slug">/cosmic-reliquary-v1.1.html</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/cosmic-reliquary-v1.0.html">
+    <span class="tag">Edition</span>
+    <h3>Reliquary v1.0</h3>
+    <p class="desc">Original standalone build, low-poly, Neon Reliquary painted style.</p>
+    <span class="slug">/cosmic-reliquary-v1.0.html</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+</div>
+
+<!-- ================= PROTOTYPES ================= -->
+<div class="grouplabel">Prototypes &amp; sandboxes (main repo)</div>
+<div class="grid">
+  <a class="card" href="https://majieddd.github.io/prototypes/voxel-command-demo/">
+    <span class="tag">Prototype</span>
+    <h3>The Coil - Voxel Command Demo</h3>
+    <p class="desc">A playable voxel tactical demo for Cosmic Conquest.</p>
+    <span class="slug">/prototypes/voxel-command-demo/</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/voxel-sandbox/">
+    <span class="tag">Sandbox</span>
+    <h3>Voxel Sandbox</h3>
+    <p class="desc">Open voxel sandbox playground.</p>
+    <span class="slug">/voxel-sandbox/</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/polytd/">
+    <span class="tag">Proto</span>
+    <h3>Poly Protocol</h3>
+    <p class="desc">COSMIC CONQUEST - POLY PROTOCOL, polygonal build of the defense loop.</p>
+    <span class="slug">/polytd/</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/narrative/">
+    <span class="tag">Story</span>
+    <h3>Cosmic Conquest storyboard</h3>
+    <p class="desc">Author narrative chapters: HUMANITY, LIGHT, XENO, PIRATE, ROBOT, plus changes log.</p>
+    <span class="slug">/narrative/</span>
+    <span class="repo">repo: majieddd.github.io <span class="live">LIVE</span></span>
+  </a>
+</div>
+
+<!-- ================= STANDALONE REPOS ================= -->
+<div class="grouplabel">Standalone games (own repositories)</div>
+<div class="grid">
+  <a class="card" href="https://majieddd.github.io/aether-front/">
+    <span class="tag">Game</span>
+    <h3>Cosmic Conquest: Aether Front</h3>
+    <p class="desc">Self-contained low-poly isometric tower defense in the Neon Reliquary style.</p>
+    <span class="slug">/aether-front/</span>
+    <span class="repo">repo: aether-front <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/cosmic-conquest-voxel-demo/">
+    <span class="tag">Game</span>
+    <h3>Cosmic Conquest: Voxel Demo</h3>
+    <p class="desc">3D voxel-style playable preview of the units, palettes and core loop. Same art bible, same roster, new geometry.</p>
+    <span class="slug">/cosmic-conquest-voxel-demo/</span>
+    <span class="repo">repo: cosmic-conquest-voxel-demo <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/omicron-vale/">
+    <span class="tag">Game</span>
+    <h3>Omicron: Willow Vale Defense</h3>
+    <p class="desc">3-wave 3D tower defense painted like a diorama, Blender-authored assets, single page.</p>
+    <span class="slug">/omicron-vale/</span>
+    <span class="repo">repo: omicron-vale <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/epsilon-rift/play.html">
+    <span class="tag">Game</span>
+    <h3>EPSILON RIFT</h3>
+    <p class="desc">3D space tower defense, Blender + three.js, Everspace-2-inspired. Single-file game (repo root is the README landing; the game is play.html).</p>
+    <span class="slug">/epsilon-rift/play.html</span>
+    <span class="repo">repo: epsilon-rift <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/willowvale-defense/">
+    <span class="tag">Game</span>
+    <h3>Willowvale Defense</h3>
+    <p class="desc">Painterly low-poly 3D tower defense. Single-file play.html, zero dependencies, procedural art and audio.</p>
+    <span class="slug">/willowvale-defense/</span>
+    <span class="repo">repo: willowvale-defense <span class="live">LIVE</span></span>
+  </a>
+  <a class="card" href="https://majieddd.github.io/crumb-rush/">
+    <span class="tag">Game</span>
+    <h3>CRUMB RUSH: Last Call Boulevard</h3>
+    <p class="desc">Single-file 3D tower defense comedy: Three.js r128, Blender-authored assets, FXAA + bloom. Root redirects straight into play.html.</p>
+    <span class="slug">/crumb-rush/</span>
+    <span class="repo">repo: crumb-rush <span class="live">LIVE</span></span>
+  </a>
+</div>
+
+<!-- ================= ARCHIVE ================= -->
+<div class="grouplabel">Archive</div>
+<div class="row-chips">
+  <a class="chip" href="https://majieddd.github.io/docs/archive/v1-aegis-protocol-solo.html">v1 Aegis Protocol (solo archive)</a>
+</div>
+
+<footer>
+  Nothing on this page is generated at runtime: every link above points at a real published location. Standalone games each ship from their own GitHub repository under majieddd.github.io/<repo>/; the 3D editions and bundles live inside the main majieddd.github.io repo alongside the flagship.
+</footer>
+
+</div>
+</body>
+</html>
