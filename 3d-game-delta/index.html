@@ -82,7 +82,7 @@ window.addEventListener('error', function (e) {
       <div class="sub">SIEGE OF THE AVALON YARD</div>
       <div class="lede">The yard is half-built and the Nihil are coming. Build the six turrets
       of the Avalon line, hold the ring, and let every battle paint its own story in ink.</div>
-      <div class="sub" style="margin-top:14px;font-size:11px;color:#7d94ac">BUILD v1.1</div>
+      <div class="sub" style="margin-top:14px;font-size:11px;color:#7d94ac">BUILD v1.2</div>
       <button class="btn" id="btn-start" onclick="window.__bootStart && window.__bootStart()">IGNITE THE CORE</button>
     </div>
   </div>
@@ -1030,18 +1030,23 @@ function TOWERS(scene, fx, snd) {
 /* INKFALL 06_enemies.js - the Nihil fleet: 5 enemy types with rigs, paths, shields */
 'use strict';
 const ENEMY_DEFS = {
-  gnat:    { hp: 55,  speed: 7.4, dmg: 2,  value: 12, laps: 1.0, scale: 1.05, desc: 'Fast weaver dart' },
-  borer:   { hp: 170, speed: 3.3, dmg: 4,  value: 30, armor: 4, laps: 1.25, scale: 1.25, desc: 'Armored drill' },
-  vaal:    { hp: 95,  speed: 5.6, dmg: 3,  value: 24, shield: 65, shRecharge: 9, shDelay: 2.5, laps: 1.0, scale: 1.1, desc: 'Gyro drone' },
-  gullwing:{ hp: 380, speed: 4.4, dmg: 7,  value: 55, laps: 1.5, scale: 1.5, desc: 'Frigate, splits on death' },
-  carrion: { hp: 1900, speed: 1.7, dmg: 12, value: 200, shield: 300, shRecharge: 6, shDelay: 3.5, laps: 1.0, scale: 3.1, desc: 'Boss bioship', boss: true },
-  brood:   { hp: 640, speed: 2.6, dmg: 8,  value: 90, laps: 0.7, scale: 1.9, desc: 'Carrion split' }
+  gnat:    { hp: 55,  speed: 7.4, dmg: 2,  value: 12, laps: 1.0, scale: 1.7, desc: 'Fast weaver dart' },
+  borer:   { hp: 170, speed: 3.3, dmg: 4,  value: 30, armor: 4, laps: 1.25, scale: 1.9, desc: 'Armored drill' },
+  vaal:    { hp: 95,  speed: 5.6, dmg: 3,  value: 24, shield: 65, shRecharge: 9, shDelay: 2.5, laps: 1.0, scale: 1.7, desc: 'Gyro drone' },
+  gullwing:{ hp: 380, speed: 4.4, dmg: 7,  value: 55, laps: 1.5, scale: 2.2, desc: 'Frigate, splits on death' },
+  carrion: { hp: 1900, speed: 1.7, dmg: 12, value: 200, shield: 300, shRecharge: 6, shDelay: 3.5, laps: 1.0, scale: 4.3, desc: 'Boss bioship', boss: true },
+  brood:   { hp: 640, speed: 2.6, dmg: 8,  value: 90, laps: 0.7, scale: 2.7, desc: 'Carrion split' }
 };
 const E_PAL = {
-  hull: { color: 0x57636a }, dark: { color: 0x3b4547 }, leaf: { color: 0x67826b },
-  rust: { color: 0x5a4d38 }, glowG: { color: 0x2f4a24, emissive: 0x8dff57, glow: 1.6 },
+  hull: { color: 0x57636a, emissive: 0x1a262a, glow: 0.5 },
+  dark: { color: 0x3b4547, emissive: 0x121a1d, glow: 0.4 },
+  leaf: { color: 0x67826b, emissive: 0x18251b, glow: 0.45 },
+  rust: { color: 0x5a4d38, emissive: 0x2a2118, glow: 0.4 },
+  glowG: { color: 0x2f4a24, emissive: 0x8dff57, glow: 1.6 },
   glowR: { color: 0x4a2521, emissive: 0xff5040, glow: 1.7 }
 };
+/* self-lit base so enemies never fall into the black band (rim + wash) */
+const E_LIGHT = { key: 0xffefd0, ambient: 0x71859c, specAmt: 0.85, rim: 0x4ae8c8, rimPow: 2.3, fog: 0.009 };
 function ENEMIES(scene, fx, snd, yard) {
   const list = [];
   /* ring marker texture (deck-projected enemy indicator) */
@@ -1060,7 +1065,7 @@ function ENEMIES(scene, fx, snd, yard) {
   function palMat(role) {
     const def = E_PAL[role];
     if (!matCache[role]) {
-      matCache[role] = makeToon(Object.assign({ key: 0xffe9c4, ambient: 0x637a80, specAmt: 0.5, rim: 0x39e0a8, fog: 0.009 }, def));
+      matCache[role] = makeToon(Object.assign({}, E_LIGHT, def));
       matCache[role].userData.baseGlow = def.glow || 0;
     }
     return matCache[role];
@@ -1081,96 +1086,123 @@ function ENEMIES(scene, fx, snd, yard) {
   };
   /* ---------- rig builders: part(geo, role, x,y,z, parent) ---------- */
   const rigs = {
+    /* sleek dart: elongated hull, flapping canard fins, twin engine pods, cockpit */
     gnat() {
       const body = new THREE.Group();
-      const hull = part(GEO.oct(0.55), 'hull'); hull.scale.set(1.5, 0.7, 2.1); body.add(hull);
-      const nose = part(GEO.cone(0.22, 0.8), 'dark'); nose.rotation.x = Math.PI / 2; nose.position.z = 1.1; body.add(nose);
-      const tail = part(GEO.cone(0.3, 0.9), 'dark'); tail.rotation.x = -Math.PI / 2; tail.position.z = -1.0; body.add(tail);
+      const hull = part(GEO.box(0.5, 0.44, 1.55), 'hull'); body.add(hull);
+      const nose = part(GEO.cone(0.26, 0.85), 'dark', 0, 0.02, 1.2, body); nose.rotation.x = Math.PI / 2;
+      const tail = part(GEO.cone(0.34, 1.0), 'dark', 0, 0.02, -1.05, body); tail.rotation.x = -Math.PI / 2;
+      const cockpit = part(GEO.sphere(0.17), 'glowG', 0, 0.24, 0.32, body); cockpit.scale.set(1, 0.7, 1.4);
+      /* flapping canard fins */
+      const wings = new THREE.Group(); wings.position.y = 0.05; body.add(wings);
       for (const s of [-1, 1]) {
-        const fin = part(GEO.box(0.08, 0.42, 0.7), 'leaf', s * 0.5, 0.05, -0.55, body); fin.rotation.z = s * 0.5;
+        const piv = new THREE.Group(); piv.position.x = s * 0.22; wings.add(piv);
+        const fin = part(GEO.box(0.9, 0.08, 0.42), 'leaf', s * 0.5, 0, -0.15, piv);
+        piv.userData.base = s * -0.18;
       }
-      const eng = part(GEO.sphere(0.16), 'glowG', 0, 0, -1.35, body);
-      const thr = makeGlowSprite(0x8dff57, 1.5, 0.8); thr.position.z = -1.7; body.add(thr);
-      return { body, hull, nose, eng, thr, parts: { hull, nose, eng, thr } };
+      const tailFin = part(GEO.box(0.07, 0.5, 0.34), 'leaf', 0, 0.3, -0.95, body);
+      /* twin engine pods */
+      for (const s of [-1, 1]) {
+        const pod = part(GEO.cyl(0.12, 0.16, 0.6, 7), 'dark', s * 0.28, -0.16, -0.72, body); pod.rotation.x = Math.PI / 2;
+        const eng = part(GEO.sphere(0.09), 'glowG', s * 0.28, -0.16, -1.05, body);
+      }
+      const thr = makeGlowSprite(0x8dff57, 1.7, 0.85); thr.position.set(0, -0.05, -1.55); body.add(thr);
+      return { body, hull, nose, eng: cockpit, thr, wings, parts: { hull, nose, cockpit, wings, thr } };
     },
     borer() {
       const body = new THREE.Group();
-      const shell = part(GEO.oct(0.8), 'hull'); shell.scale.set(1.1, 0.85, 1.7); body.add(shell);
-      const drill = new THREE.Group(); drill.position.z = 1.35; body.add(drill);
-      const tip = part(GEO.cone(0.42, 1.5), 'rust', 0, 0, 0.3, drill); tip.rotation.x = Math.PI / 2;
+      const shell = part(GEO.oct(0.85), 'hull'); shell.scale.set(1.15, 0.9, 1.8); body.add(shell);
+      /* armored plate bands along the back */
       for (let i = 0; i < 3; i++) {
-        const seg = part(GEO.cyl(0.42, 0.52, 0.36, 7), 'rust', 0, 0, -0.45 - i * 0.36, drill); seg.rotation.x = Math.PI / 2;
+        const plate = part(GEO.box(1.1, 0.3, 0.34), 'dark', 0, 0.42 - i * 0.03, 0.5 - i * 0.55, body);
+        plate.rotation.x = -0.1 - i * 0.12;
       }
-      for (const s of [-1, 1]) {
-        const leg = part(GEO.box(0.16, 0.5, 0.9), 'dark', s * 0.85, 0.2, -0.2, body); leg.rotation.z = s * 0.35;
+      const drill = new THREE.Group(); drill.position.z = 1.6; body.add(drill);
+      const tip = part(GEO.cone(0.55, 2.0), 'rust', 0, 0, 0.15, drill); tip.rotation.x = Math.PI / 2;
+      for (let i = 0; i < 3; i++) {
+        const seg = part(GEO.cyl(0.42, 0.62, 0.4, 7), 'rust', 0, 0, -0.55 - i * 0.4, drill); seg.rotation.x = Math.PI / 2;
       }
-      const eye = part(GEO.sphere(0.1), 'glowG', 0, 0.42, 0.62, body);
-      const thr = makeGlowSprite(0x8dff57, 1.1, 0.6); thr.position.z = -1.6; body.add(thr);
+      /* grinder guard fins */
+      for (const s of [-1, 1]) part(GEO.box(0.14, 0.6, 1.0), 'dark', s * 1.0, 0.18, -0.3, body);
+      const eye = part(GEO.sphere(0.13), 'glowG', 0, 0.5, 0.7, body);
+      const thr = makeGlowSprite(0x8dff57, 1.5, 0.7); thr.position.z = -1.9; body.add(thr);
       return { body, shell, drill, tip, eye, thr, parts: { shell, drill, tip, eye, thr } };
     },
     vaal() {
       const body = new THREE.Group();
-      const core = part(GEO.oct(0.5), 'hull'); core.scale.set(1, 1.4, 1); body.add(core);
+      const core = part(GEO.oct(0.55), 'hull'); core.scale.set(1, 1.5, 1); body.add(core);
       const ring1 = new THREE.Group(); ring1.position.y = 0.05; body.add(ring1);
-      const t1 = part(new THREE.TorusGeometry(0.85, 0.07, 6, 20), 'glowG', 0, 0, 0, ring1); t1.rotation.x = 0.4;
-      const t2 = part(new THREE.TorusGeometry(0.85, 0.07, 6, 20), 'leaf', 0, 0, 0, ring1); t2.rotation.x = -0.8;
-      const shield = new THREE.Mesh(new THREE.SphereGeometry(1.05, 16, 12), null);
+      const t1 = part(new THREE.TorusGeometry(0.95, 0.085, 6, 20), 'glowG', 0, 0, 0, ring1); t1.rotation.x = 0.5;
+      const ring2 = new THREE.Group(); body.add(ring2);
+      const t2 = part(new THREE.TorusGeometry(0.95, 0.085, 6, 20), 'leaf', 0, 0, 0, ring2); t2.rotation.x = -0.75;
+      const shield = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 12), null);
       shield.material = makeToon({ color: 0x2fe0c0, emissive: 0x35e0cf, glow: 0.7, transparent: true, key: 0xccfff8, ambient: 0x2c5a5a, specAmt: 0.2, opacity: 0.5 });
       shield.material.opacity = 0.45;
-      const gl = makeGlowSprite(0x8dff57, 1.3, 0.5); body.add(gl);
-      return { body, core, ring1, shield, gl, parts: { core, ring1, shield, gl } };
+      const gl = makeGlowSprite(0x8dff57, 1.5, 0.5); body.add(gl);
+      return { body, core, ring1, ring2, shield, gl, parts: { core, ring1, ring2, shield, gl } };
     },
     gullwing() {
       const body = new THREE.Group();
-      const hull = part(GEO.box(1.1, 0.7, 2.4), 'hull'); body.add(hull);
-      const nose = part(GEO.cone(0.5, 1.0), 'dark', 0, 0, 1.5, body); nose.rotation.x = Math.PI / 2;
-      const deck = part(GEO.box(0.6, 0.24, 1.2), 'leaf', 0, 0.5, 0, body);
-      const wings = new THREE.Group(); wings.position.y = 0.2; body.add(wings);
+      const hull = part(GEO.box(1.2, 0.8, 2.7), 'hull'); body.add(hull);
+      const nose = part(GEO.cone(0.55, 1.2), 'dark', 0, 0, 1.7, body); nose.rotation.x = Math.PI / 2;
+      const deck = part(GEO.box(0.66, 0.26, 1.3), 'leaf', 0, 0.55, 0, body);
+      /* big flapping gull wings */
+      const wings = new THREE.Group(); wings.position.y = 0.22; body.add(wings);
       for (const s of [-1, 1]) {
-        const piv = new THREE.Group(); piv.position.x = s * 0.5; wings.add(piv);
-        const w = part(GEO.box(1.6, 0.1, 0.55), 'leaf', s * 0.95, 0, -0.1, piv); w.rotation.z = s * -0.22;
-        piv.userData.base = s * -0.22;
+        const piv = new THREE.Group(); piv.position.x = s * 0.55; wings.add(piv);
+        const w = part(GEO.box(2.3, 0.09, 0.7), 'leaf', s * 1.2, 0, -0.1, piv); w.rotation.z = s * -0.25;
+        const wTip = part(GEO.box(0.5, 0.06, 0.4), 'glowG', s * 2.25, 0.12, -0.1, piv);
+        piv.userData.base = s * -0.25;
       }
+      /* rear fin + tail pods */
+      const rfin = part(GEO.box(0.08, 0.65, 0.5), 'leaf', 0, 0.55, -1.2, body);
       for (const s of [-1, 1]) {
-        part(GEO.box(0.34, 0.34, 0.9), 'dark', s * 0.55, -0.3, -0.6, body);
+        part(GEO.box(0.4, 0.4, 1.1), 'dark', s * 0.62, -0.34, -0.7, body);
+        part(GEO.sphere(0.1), 'glowG', s * 0.62, -0.34, -1.28, body);
       }
-      const thr = makeGlowSprite(0x8dff57, 1.6, 0.7); thr.position.set(0, 0, -1.6); body.add(thr);
-      const lamp = part(GEO.sphere(0.12), 'glowR', 0, 0.6, 1.25, body);
+      const thr = makeGlowSprite(0x8dff57, 2.1, 0.8); thr.position.set(0, -0.05, -1.9); body.add(thr);
+      const lamp = part(GEO.sphere(0.14), 'glowR', 0, 0.62, 1.45, body);
       return { body, hull, wings, thr, lamp, parts: { hull, wings, thr, lamp } };
     },
     carrion() {
       const body = new THREE.Group();
-      const hull = part(GEO.oct(1.0), 'hull'); hull.scale.set(1.3, 0.95, 2.2); body.add(hull);
-      const carapace = part(GEO.oct(0.9), 'dark', 0, 0.35, 0, body); carapace.scale.set(1.1, 0.7, 1.9);
+      const hull = part(GEO.oct(1.0), 'hull'); hull.scale.set(1.35, 1.0, 2.4); body.add(hull);
+      const carapace = part(GEO.oct(0.9), 'dark', 0, 0.4, 0, body); carapace.scale.set(1.15, 0.75, 2.0);
       /* emissive vein plates along the spine (hostile bio-light) */
       for (let i = 0; i < 5; i++) {
-        const v = part(GEO.box(0.14, 0.1, 0.7), 'glowG', 0, 0.62 + i * 0.015, 0.55 - i * 0.55, body);
+        const v = part(GEO.box(0.16, 0.12, 0.8), 'glowG', 0, 0.68 + i * 0.02, 0.6 - i * 0.62, body);
         v.rotation.x = -0.3 - i * 0.1;
       }
-      for (const s of [-1, 1]) part(GEO.box(0.1, 0.5, 0.4), 'glowG', s * 0.55, 0.3, -0.2, body);
-      const jaw = new THREE.Group(); jaw.position.z = 2.1; jaw.position.y = -0.15; body.add(jaw);
-      const mand1 = part(GEO.cone(0.3, 1.3), 'dark', -0.35, -0.1, 0.5, jaw); mand1.rotation.x = Math.PI / 2 + 0.35;
-      const mand2 = part(GEO.cone(0.3, 1.3), 'dark', 0.35, -0.1, 0.5, jaw); mand2.rotation.x = Math.PI / 2 - 0.35;
-      const jawGlow = part(GEO.sphere(0.34), 'glowR', 0, 0.05, 0.75, jaw);
-      for (let i = 0; i < 4; i++) {
-        const finp = part(GEO.box(0.12, 0.5 - i * 0.07, 0.5), 'leaf', 0, 0.9 + i * 0.05, 0.9 - i * 0.62, body);
-        finp.rotation.x = -0.5 - i * 0.18;
+      for (const s of [-1, 1]) part(GEO.box(0.12, 0.6, 0.5), 'glowG', s * 0.62, 0.32, -0.2, body);
+      /* articulating jaw */
+      const jaw = new THREE.Group(); jaw.position.z = 2.45; jaw.position.y = -0.15; body.add(jaw);
+      const mand1 = part(GEO.cone(0.38, 1.7), 'dark', -0.42, -0.1, 0.55, jaw); mand1.rotation.x = Math.PI / 2 + 0.35;
+      const mand2 = part(GEO.cone(0.38, 1.7), 'dark', 0.42, -0.1, 0.55, jaw); mand2.rotation.x = Math.PI / 2 - 0.35;
+      const jawGlow = part(GEO.sphere(0.4), 'glowR', 0, 0.06, 0.9, jaw);
+      /* dorsal spine fins */
+      for (let i = 0; i < 5; i++) {
+        const finp = part(GEO.box(0.14, 0.62 - i * 0.07, 0.6), 'leaf', 0, 1.0 + i * 0.05, 1.05 - i * 0.65, body);
+        finp.rotation.x = -0.5 - i * 0.16;
       }
+      /* rowing side wings */
       for (const s of [-1, 1]) {
-        const piv = new THREE.Group(); piv.position.set(s * 0.9, 0.1, -0.2); piv.rotation.y = s * 0.3;
-        const wing = part(GEO.box(2.2, 0.08, 0.9), 'leaf', s * 1.1, 0, 0, piv); piv.rotation.z = s * -0.15; body.add(piv);
+        const piv = new THREE.Group(); piv.position.set(s * 1.0, 0.1, -0.25); piv.rotation.y = s * 0.3;
+        const wing = part(GEO.box(2.8, 0.1, 1.1), 'leaf', s * 1.45, 0, 0, piv); piv.rotation.z = s * -0.15;
+        part(GEO.box(0.5, 0.08, 0.5), 'glowR', s * 2.2, 0.12, 0, piv); body.add(piv);
       }
-      const thr = makeGlowSprite(0x9dff70, 3.2, 0.9); thr.position.z = -2.4; body.add(thr);
-      const eyes = makeGlowSprite(0xff5040, 2.3, 0.85); eyes.position.set(0, 0.45, 1.66); body.add(eyes);
+      const thr = makeGlowSprite(0x9dff70, 4.2, 0.9); thr.position.z = -2.7; body.add(thr);
+      const eyes = makeGlowSprite(0xff5040, 2.6, 0.85); eyes.position.set(0, 0.5, 1.9); body.add(eyes);
       return { body, hull, carapace, jaw, jawGlow, thr, eyes, parts: { hull, carapace, jaw, jawGlow, thr, eyes } };
     },
     brood() {
       const body = new THREE.Group();
-      const hull = part(GEO.oct(0.85), 'hull'); hull.scale.set(1.2, 0.85, 1.7); body.add(hull);
-      const jaw = new THREE.Group(); jaw.position.z = 1.5; body.add(jaw);
-      const mand = part(GEO.cone(0.22, 0.9), 'dark', 0, 0, 0, jaw); mand.rotation.x = Math.PI / 2;
-      const thr = makeGlowSprite(0xff5040, 1.5, 0.8); thr.position.z = -1.7; body.add(thr);
-      return { body, hull, jaw, thr, parts: { hull, jaw, thr } };
+      const hull = part(GEO.oct(0.9), 'hull'); hull.scale.set(1.25, 0.9, 1.9); body.add(hull);
+      const jaw = new THREE.Group(); jaw.position.z = 1.75; body.add(jaw);
+      const mand = part(GEO.cone(0.3, 1.2), 'dark', 0, 0, 0, jaw); mand.rotation.x = Math.PI / 2;
+      const jawGlow = part(GEO.sphere(0.26), 'glowR', 0, 0.05, 0.5, jaw);
+      for (const s of [-1, 1]) part(GEO.box(0.1, 0.5, 0.5), 'glowG', s * 0.5, 0.3, -0.2, body);
+      const thr = makeGlowSprite(0xff5040, 2.0, 0.8); thr.position.z = -2.0; body.add(thr);
+      return { body, hull, jaw, jawGlow, thr, parts: { hull, jaw, jawGlow, thr } };
     }
   };
   /* ---------- enemy instance ---------- */
@@ -1203,9 +1235,15 @@ function ENEMIES(scene, fx, snd, yard) {
     const marker = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), markerMat);
     marker.rotation.x = -Math.PI / 2; marker.visible = false;
     scene.add(marker);
-    /* body glow so ships pop against the dark deck */
-    const bg = makeGlowSprite((type === 'carrion' || type === 'brood') ? 0xff7a3a : 0x8dff57, 1.5 * def.scale, 0.55);
+    /* body glow so ships pop against the dark deck (kept subtle: geometry must read first) */
+    const bg = makeGlowSprite((type === 'carrion' || type === 'brood') ? 0xff7a3a : 0x8dff57, 1.25 * def.scale, 0.32);
     bg.position.y = 0.35 * def.scale; grp.add(bg);
+    /* ink outline shells on the main hull of each type (solid comic read) */
+    const OUT = { gnat: ['hull'], borer: ['shell'], vaal: ['core'], gullwing: ['hull'], carrion: ['hull', 'carapace'], brood: ['hull'] };
+    for (const key of OUT[type] || []) {
+      const m = rig.parts[key];
+      if (m) addOutline(m, 1.05, { opacity: 0.8 });
+    }
     /* hp bar */
     const bar = makeHpBar(); bar.scale.set(1.4, 1, 1); bar.visible = false;
     bar.position.y = 2.2 * def.scale; grp.add(bar);
@@ -1248,37 +1286,46 @@ function ENEMIES(scene, fx, snd, yard) {
             b.set(px, py, pz);
             const aheadTheta = (this.u + 1.2 - APPROACH) / R;
             this.grp.lookAt(Math.cos(aheadTheta) * R, py, Math.sin(aheadTheta) * R);
-            this.grp.rotation.z = 0.42;
+            /* bank into the weave (roll follows weave phase) so flight reads 3D */
+            const bankRoll = 0.32 + Math.sin(theta * this.weaveF + this.phase + Math.PI * 0.5) * 0.2;
+            this.grp.rotation.z = bankRoll * ((this.type === 'carrion' || this.type === 'brood') ? 0.55 : 1);
+            this.grp.rotation.x = Math.sin(this.u * 2.1 + this.phase) * 0.07;
           }
           this.laneDist = Math.max(this.laneDist, this.u);
         }
+        /* IMPORTANT: sync the visible rig to the path position */
+        this.grp.position.copy(b);
+        this.grp.position.y += Math.sin(this.u * 0.7 + this.phase) * 0.18;
         /* animate rig parts */
         const p = this.rig.parts;
         const tt = game.time;
         if (p.thr) { p.thr.scale.setScalar(0.8 + Math.sin(tt * 31 + this.phase) * 0.25); }
-        if (this.bodyGlow) { this.bodyGlow.material.opacity = 0.32 + Math.sin(tt * 5 + this.phase) * 0.1; }
+        if (this.bodyGlow) { this.bodyGlow.material.opacity = 0.22 + Math.sin(tt * 5 + this.phase) * 0.08; }
         /* ground marker tracks the ship on the deck */
         const md = Math.sqrt(b.x * b.x + b.z * b.z);
         this.marker.visible = this.alive && md > BOARD.R_IN + 0.6 && md < BOARD.R_OUT - 0.3;
         if (this.marker.visible) {
           this.marker.position.set(b.x, 0.05, b.z);
-          const ms = 1.9 * this.def.scale;
+          const ms = (this.def.boss || this.type === 'brood') ? 3.6 : 2.1;
           this.marker.scale.set(ms, ms * (1 + Math.sin(tt * 6 + this.phase) * 0.06), 1);
         }
-        if (p.drill) { p.drill.rotation.z += dt * (this.type === 'borer' ? 9 : 0); }
+        if (p.drill) { p.drill.rotation.z += dt * (this.type === 'borer' ? 14 : 0); }
         if (p.ring1) { p.ring1.rotation.y += dt * 5; }
+        if (p.ring2) { p.ring2.rotation.y -= dt * 3.6; }
         if (p.wings && p.wings.children.length) {
-          const flip = Math.sin(tt * 7 + this.phase) * 0.35;
+          const flip = Math.sin(tt * 9 + this.phase) * 0.6;
           for (const piv of p.wings.children) piv.rotation.z = (piv.userData.base || -0.22) + flip;
         }
         if (p.jaw) {
-          const bite = this.type === 'carrion' ? (Math.sin(tt * 1.6 + this.phase) * 0.5 + 0.5) : 0.3;
-          p.jaw.position.y = -0.15 - bite * 0.22; p.jaw.rotation.x = bite * 0.3;
+          const bite = this.type === 'carrion' ? (Math.sin(tt * 1.9 + this.phase) * 0.5 + 0.5) : (Math.sin(tt * 6 + this.phase) * 0.5 + 0.5) * 0.7;
+          p.jaw.position.y = -0.15 - bite * 0.3; p.jaw.rotation.x = bite * 0.35;
           if (p.jaw.children.length >= 2) {
-            p.jaw.children[0].rotation.x = Math.PI / 2 + 0.35 + bite * 0.25;
-            p.jaw.children[1].rotation.x = Math.PI / 2 - 0.35 - bite * 0.25;
+            p.jaw.children[0].rotation.x = Math.PI / 2 + 0.35 + bite * 0.3;
+            p.jaw.children[1].rotation.x = Math.PI / 2 - 0.35 - bite * 0.3;
           }
         }
+        if (p.jawGlow && p.jawGlow.scale) { p.jawGlow.scale.setScalar(1 + Math.sin(tt * 4 + this.phase) * 0.25); }
+        if (p.eyes && p.eyes.material) { p.eyes.material.opacity = 0.6 + Math.sin(tt * 2.6 + this.phase) * 0.25; }
         if (p.shield) { p.shield.material.opacity = this.shield > 0 ? 0.42 : 0.16; }
         if (this.type === 'carrion' && this.spawnTimer > 0) {
           this.spawnTimer -= dt;
@@ -2405,6 +2452,16 @@ function GAME(root) {
         const t = new THREE.Vector3(fx || 0, fy || 3, fz || 0);
         game.focus.copy(t); cam.desired.copy(t); cam.target.copy(t);
         game.focusLock = true;
+      },
+      snap: (yaw, pitch, dist, fx, fy, fz) => {
+        cam.yaw = yaw; cam.pitch = pitch || 0.42; cam.dist = dist || 20;
+        const t = new THREE.Vector3(fx || 0, fy || 3, fz || 0);
+        game.focus.copy(t); cam.desired.copy(t); cam.target.copy(t);
+        game.focusLock = true;
+        const cp = t.clone().add(new THREE.Vector3(
+          Math.cos(yaw) * Math.cos(pitch) * dist, Math.sin(pitch) * dist, Math.sin(yaw) * Math.cos(pitch) * dist));
+        camera.position.copy(cp);
+        camera.lookAt(t);
       },
       unlock: () => { game.focusLock = false; },
       focus: () => camera.position.toArray().map((v) => +v.toFixed(2)),

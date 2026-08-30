@@ -69,4 +69,25 @@ Measured facts: draw calls in the win-run at 15 towers: 654 max; fps 91-92 on He
 - Node --check all modules, assemble parse, em-dash scan clean over src/tools/docs/README.
 - Full Helium GPU run: BOOTED, start, wave1->2->3, WIN (123 kills, 4 lives), 0 errors, audio running.
 - screenshots in tools/: shot_00_title, shot_01_wave1, shot_02_wave2, shot_03_end.
-Final artifact: play.html 1573 KB, single file, file:// double-click, no network.
+- Final artifact (v1.1): play.html 1575 KB, single file, file:// double-click, no network.
+
+## ROUND 6 - ENEMY 3D & ANIMATION (user-requested, 2026-08-29)
+CRITICAL BUG FOUND: enemy group positions were never synced to the path - game logic
+(e.pos, damage, markers, turret targeting) all ran on the real path, but the visible
+ship rigs rendered at the origin, hidden inside the core pedestal. The user saw markers
+staying on the deck with no ships on them. Root cause: this.grp.position.copy(b) was
+missing from enemy.update(). Fixed; verified: ships now fly the ring visibly.
+Enemy fidelity pass (all verified via 2-frame motion proofs in tools/anim_*):
+- New detailed rigs: gnat = elongated dart + cockpit + flapping canard fins + twin engine pods;
+  borer = armored back plates + bigger spinning drill (14 rad/s); vaal = counter-rotating gyro
+  rings + core + shield; gullwing = big flapping gull wings (2.3 span) + wingtip glows + tail pods;
+  carrion = larger jaw (biting), spine veins, rowing blade wings, red eyes, breathing eye glow.
+- Scale-up (all types ~+30-40%) so ships read at game distance; markers made type-independent
+  (2.1, boss 3.6); body glow reduced (0.32) so geometry reads first.
+- Self-lit material set: emissive wash + brighter ambient + spec 0.85 + strong teal rim (rimPow 2.3)
+  so ships never fall into the dark toon band from any camera angle. Ink outline shells on hulls.
+- Flight: bank/roll now follows the weave phase (roll 0.32 +- 0.2, plus pitch bob) - visible 3D motion.
+- Physics unchanged (balance identical): WIN verified 123 kills / lives 4 / 0 errors / 144 fps;
+  draw calls 522-567 with 15 towers; motion-proof screenshots per type in tools/.
+Facts: anim_gnat/borer/vaal/gullwing/carrion _a/_b pairs captured; win state re-verified twice.
+Published as BUILD v1.2 at https://majieddd.github.io/3d-game-delta/.
