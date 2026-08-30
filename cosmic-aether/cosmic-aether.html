@@ -4675,7 +4675,7 @@ var R = (function () {
   /* Per-frame uniform state the caller sets before render(). */
   var cam = {
     pos: [0, 22, 26], target: [0, 0, 0], up: [0, 1, 0],
-    fov: 0.72, near: 0.5, far: 260
+    fov: 0.72, near: 0.5, far: 620
   };
   var sun = { dir: [0.42, 0.80, 0.44], distance: 90, extent: 46, centre: [0, 0, 0] };
   var fx = {
@@ -6024,25 +6024,46 @@ var TERRAIN = (function () {
        paraboloid matching the height field's sag exactly minus a fixed
        underhang, so the world surface is guaranteed below the plate
        everywhere and the shoreline is seamless by construction. */
-    var worldR = Math.max(def.planetR || 300, Math.max(halfW, halfH)) * 1.15;
-    function worldY(r) { return -(r * r) / (2.0 * SAG_R) - 0.30; }
+    /* A REAL GLOBE. The world is now a closed ball whose crown is the
+       ground's own parabola (the underhang guarantee that killed the old
+       poke) and whose far hemisphere is a true sphere lower half. From any
+       reachable camera the silhouette is a solid planet with the playfield
+       sitting on its crown. */
+    var worldR = Math.max(def.planetR || 0, 2 * SAG_R);
+    var yOff = -0.30;
+    function worldY(r) { return -(r * r) / (2.0 * SAG_R) + yOff; }
     var worldB = MESH.builder('world:' + seed);
     var wSides = 30;
-    function wSpan(r0, r1, col) {
+    /* Crown: parabola from the pole to the equator (y decreases with r, the
+       same convention the old bowl used and rendered correctly). */
+    function crownSpan(t0, t1, col) {
       var prof = [];
-      for (var wi = 0; wi <= 5; wi++) {
-        var r = r0 + (r1 - r0) * wi / 5;
+      for (var wi = 0; wi <= 6; wi++) {
+        var r = (t0 + (t1 - t0) * wi / 6) * worldR;
         prof.push([r, worldY(r)]);
       }
       worldB.color(col);
       worldB.lathe(prof, wSides, wi * 0.35);
     }
-    wSpan(0.001, worldR * 0.50, '#241b52');
-    wSpan(worldR * 0.50, worldR * 0.85, '#1a1240');
-    wSpan(worldR * 0.85, worldR * 1.00, '#100b26');
-    /* Closing lip and underside: the world silhouette rolls over and the
-       underside falls away, so the horizon reads as a planet shoulder. */
-    wSpan(worldR * 1.00, worldR * 1.06, '#0d0920');
+    crownSpan(0.001, 0.50, '#241b52');
+    crownSpan(0.50, 0.85, '#1a1240');
+    crownSpan(0.85, 1.00, '#100b26');
+    /* Far hemisphere: bottom pole up to the equator (y INCREASES with the
+       profile so the lathe winding stays outward, matching the crown). */
+    function farSpan(a0, a1, col) {
+      var prof = [];
+      for (var wi = 0; wi <= 6; wi++) {
+        var a = (a0 + (a1 - a0) * wi / 6) * Math.PI / 2;
+        var r = Math.max(0.001, Math.cos(a) * worldR);
+        var y = -worldR - Math.sin(a) * worldR + yOff;
+        prof.push([r, y]);
+      }
+      worldB.color(col);
+      worldB.lathe(prof, wSides, wi * 0.37);
+    }
+    farSpan(1.0, 0.55, '#0d0920');
+    farSpan(0.55, 0.22, '#0a0718');
+    farSpan(0.22, 0.0, '#080512');
     var worldData = worldB.build({ jitter: 0.02 });
 
     /* WORLD RELIEF. The rest of the planet is terrain too: displacement plus
@@ -6061,7 +6082,7 @@ var TERRAIN = (function () {
       for (var vi = 0; vi < Vd.length; vi += 12) {
         var px = Vd[vi], py = Vd[vi + 1], pz = Vd[vi + 2];
         var r = Math.hypot(px, pz);
-        var m = U.smoothstep(boardR, boardR * 1.25, r) * (1.0 - U.smoothstep(worldR * 0.9, worldR * 1.02, r));
+        var m = U.smoothstep(boardR, boardR * 1.25, r) * (1.0 - U.smoothstep(worldR * 0.88, worldR * 0.99, r));
         if (m > 0.001) {
           var nl = wnoise(px, pz);
           Vd[vi + 1] = py + nl * 2.8 * m;
@@ -6096,8 +6117,8 @@ var TERRAIN = (function () {
       var wcol = ['#1e1746', '#171138', '#241b52'];
       for (var wr = 0; wr < 26; wr++) {
         var anga = wrRng() * U.TAU;
-        var rr = Math.max(halfW, halfH) * (1.04 + wrRng() * 0.30);
-        if (rr > worldR * 0.92) continue;
+        var rr = Math.max(halfW, halfH) * (1.04 + wrRng() * 0.26);
+        if (rr > worldR * 0.86) continue;
         var rx = Math.cos(anga) * rr, rz = Math.sin(anga) * rr * 0.72;
         var rs = 0.8 + wrRng() * 2.2;
         var ry = worldY(rr) - 0.4;

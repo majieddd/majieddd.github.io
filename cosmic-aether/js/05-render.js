@@ -224,7 +224,7 @@ var R = (function () {
   /* Per-frame uniform state the caller sets before render(). */
   var cam = {
     pos: [0, 22, 26], target: [0, 0, 0], up: [0, 1, 0],
-    fov: 0.72, near: 0.5, far: 260
+    fov: 0.72, near: 0.5, far: 620
   };
   var sun = { dir: [0.42, 0.80, 0.44], distance: 90, extent: 46, centre: [0, 0, 0] };
   var fx = {
