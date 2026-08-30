@@ -42,7 +42,7 @@ var GAME = (function () {
   };
 
   var input = {
-    mx: 0, my: 0, down: false, dragging: false,
+    mx: 0, my: 0, down: false, downButton: -1, dragging: false,
     lastX: 0, lastY: 0, dragDist: 0,
     hoverPlot: null, hoverTower: null, ground: null
   };
@@ -132,6 +132,7 @@ var GAME = (function () {
     G.groundMesh = trackMesh(GL.mesh(G.board.groundData));
     G.padMesh = G.board.padData ? trackMesh(GL.mesh(G.board.padData)) : null;
     G.planetMesh = G.board.worldData ? trackMesh(GL.mesh(G.board.worldData)) : null;
+    G.worldRocksMesh = G.board.worldRocksData ? trackMesh(GL.mesh(G.board.worldRocksData)) : null;
     G.decorMesh = G.board.decorData ? trackMesh(GL.mesh(G.board.decorData)) : null;
     G.spireMesh = G.board.spireData ? trackMesh(GL.mesh(G.board.spireData)) : null;
     var pal = R.palette();
@@ -187,14 +188,25 @@ var GAME = (function () {
         input.dragDist += Math.abs(dx) + Math.abs(dy);
         if (input.dragDist > 5) input.dragging = true;
         if (input.dragging) {
-          cam.targetYaw -= dx * 0.005;
-          cam.targetPitch = U.clamp(cam.targetPitch + dy * 0.004, 0.42, 1.32);
+          if (input.downButton === 2) {
+            /* RIGHT-DRAG PANS ACROSS THE WORLD. The focus moves along the
+               camera plane, so you can walk the view to any shore of the
+               planet, not just look at the centre. */
+            var pw = 0.55 * (cam.targetDist / 40);
+            var rx = Math.cos(cam.yaw), rz = -Math.sin(cam.yaw);
+            cam.targetFocus[0] = U.clamp(cam.targetFocus[0] - dx * rx * pw, -170, 170);
+            cam.targetFocus[1] = U.clamp(cam.targetFocus[1] + dy * pw * 0.15, -14, 60);
+            cam.targetFocus[2] = U.clamp(cam.targetFocus[2] + dx * rz * pw, -170, 170);
+          } else {
+            cam.targetYaw -= dx * 0.005;
+            cam.targetPitch = U.clamp(cam.targetPitch + dy * 0.004, 0.14, 1.36);
+          }
         }
       }
       input.lastX = e.clientX; input.lastY = e.clientY;
     });
     canvas.addEventListener('mousedown', function (e) {
-      input.down = true; input.dragging = false; input.dragDist = 0;
+      input.down = true; input.downButton = e.button; input.dragging = false; input.dragDist = 0;
       input.lastX = e.clientX; input.lastY = e.clientY;
       AUDIO.resume();
     });
@@ -204,7 +216,7 @@ var GAME = (function () {
     });
     canvas.addEventListener('wheel', function (e) {
       e.preventDefault();
-      cam.targetDist = U.clamp(cam.targetDist * (1 + Math.sign(e.deltaY) * 0.10), 26, (cam.fitDist || 160) * 1.15);
+      cam.targetDist = U.clamp(cam.targetDist * (1 + Math.sign(e.deltaY) * 0.10), 10, Math.max((cam.fitDist || 160) * 2.2, 220));
     }, { passive: false });
     canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
@@ -826,6 +838,8 @@ var GAME = (function () {
        the board sits into it; soft rock detail, no cast shadow (it IS the
        ground of the universe). */
     if (G.planetMesh) R.push(G.planetMesh, U.m4ident(), { mat: 'stone', detailScale: 0.5, castShadow: false, facetJitter: 0.02, rimScale: 0.4 });
+    /* Far-hemisphere scenery sits on the world surface, quiet and dark. */
+    if (G.worldRocksMesh) R.push(G.worldRocksMesh, U.m4ident(), { mat: 'stone', detailScale: 0.6, castShadow: false, rimScale: 0.3 });
     /* Scenery takes a reduced rim so the rocks and spires stay BEHIND the
        towers in the read. With a brighter board and full rim they were as
        bright as the things the player is meant to be looking at. */
@@ -834,8 +848,16 @@ var GAME = (function () {
 
     var pal = R.palette();
     var sp = G.board.spawn, gl = G.board.goal;
-    R.push(G.spawnMesh, U.m4trs(sp[0], G.board.heightAt(sp[0], sp[2]) - 0.3, sp[2], 0, 0, 0, 1, 1, 1));
-    R.push(G.goalMesh, U.m4trs(gl[0], G.board.heightAt(gl[0], gl[2]) - 0.2, gl[2], 0, 0, 0, 1, 1, 1));
+    var spawnY = G.board.heightAt(sp[0], sp[2]);
+    var goalY = G.board.heightAt(gl[0], gl[2]);
+    R.push(G.spawnMesh, U.m4trs(sp[0], spawnY - 0.3, sp[2], 0, 0, 0, 2.3, 2.3, 2.3));
+    R.push(G.goalMesh, U.m4trs(gl[0], goalY - 0.2, gl[2], 0, 0, 0, 2.3, 2.3, 2.3));
+    /* Beacons: tall additive light columns so START and EXIT read anywhere. */
+    var enAcc = PAINT.FACTIONS[G.enemyFaction].accentRgb || PAINT.FACTIONS[G.enemyFaction].keyRgb;
+    R.pushUnlit(MODELS.beacon(), U.m4trs(sp[0], spawnY + 8, sp[2], 0, 0, 0, 1, 1, 1),
+      { tint: enAcc, alpha: 0.5, additive: true, pulse: 0.9 });
+    R.pushUnlit(MODELS.beacon(), U.m4trs(gl[0], goalY + 8, gl[2], 0, 0, 0, 1, 1, 1),
+      { tint: pal.rim, alpha: 0.6, additive: true, pulse: 0.7 });
 
     /* The goal pulses harder as lives drop, which is a readable panic signal
        that costs nothing and needs no UI. */
@@ -852,11 +874,14 @@ var GAME = (function () {
       for (var i = 0; i < G.board.plots.length; i++) {
         var p = G.board.plots[i];
         if (p.tower) continue;
+        /* PLACEMENT REFORM: the hex swarm is gone. Rings appear only while a
+           tower is armed in the dock, quiet unless hovered. */
+        if (G.selected == null) continue;
         var isHover = input.hoverPlot === p;
         var col = afford ? (isHover ? pal.rim : pal.keyRgb) : [0.7, 0.25, 0.3];
         R.pushUnlit(G.plotRing,
           U.m4trs(p.x, p.y + 0.30, p.z, 0, 0.4, 0, 1.5, 1, 1.5),
-          { tint: col, alpha: isHover ? 0.85 : 0.45, additive: true, pulse: isHover ? 0.5 : 0 });
+          { tint: col, alpha: isHover ? 0.85 : 0.22, additive: true, pulse: isHover ? 0.5 : 0 });
       }
       /* Ghost preview at the hovered plot, including its range. */
       if (input.hoverPlot) {

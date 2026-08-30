@@ -915,6 +915,17 @@ var MODELS = (function () {
 
   /* The goal marker: what the denizens are walking toward, and the thing the
      player is defending. It has to read as important from the first frame. */
+  /* A tall thin light column for START and EXIT beacons, rendered through
+     the unlit program so the tint stays pure. */
+  function beacon() {
+    return memo('beacon', function () {
+      var b = MESH.builder('beacon');
+      b.color('#ffffff').tooth(0);
+      b.prism(0.55, 0.12, 16, 4, 0, 0);
+      return GL.mesh(b.build({ jitter: 0.012 }));
+    });
+  }
+
   function goalMesh(accentHex) {
     return memo('goal:' + accentHex, function () {
       var b = MESH.builder('goal:' + accentHex);
@@ -968,7 +979,7 @@ var MODELS = (function () {
     tower: tower,
     denizen: denizen,
     projectile: projectile,
-    ring: ring,
+    ring: ring, beacon: beacon,
     beam: beam,
     dome: dome,
     goalMesh: goalMesh,

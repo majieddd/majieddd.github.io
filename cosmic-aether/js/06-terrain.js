@@ -409,6 +409,72 @@ var TERRAIN = (function () {
     wSpan(worldR * 1.00, worldR * 1.06, '#0d0920');
     var worldData = worldB.build({ jitter: 0.02 });
 
+    /* WORLD RELIEF. The rest of the planet is terrain too: displacement plus
+       per-vertex colouration ramped in only OUTSIDE the continent, so the
+       shoreline underhang stays perfectly sealed and the far hemisphere
+       reads as a rugged world rather than a smooth dome. */
+    var boardR = Math.max(halfW, halfH) * 1.02;
+    (function () {
+      function wnoise(x, z) {
+        var a = Math.sin(x * 0.045 + Math.sin(z * 0.037) * 2.1);
+        var b = Math.cos(z * 0.052 + Math.sin(x * 0.041) * 1.7);
+        var c = Math.sin((x + z) * 0.021 + 4.2);
+        return a * 0.45 + b * 0.35 + c * 0.2;
+      }
+      var Vd = worldData.verts;
+      for (var vi = 0; vi < Vd.length; vi += 12) {
+        var px = Vd[vi], py = Vd[vi + 1], pz = Vd[vi + 2];
+        var r = Math.hypot(px, pz);
+        var m = U.smoothstep(boardR, boardR * 1.5, r) * (1.0 - U.smoothstep(worldR * 0.96, worldR * 1.06, r));
+        if (m > 0.001) {
+          var nl = wnoise(px, pz);
+          Vd[vi + 1] = py + nl * 2.8 * m;
+          var ck = 0.72 + 0.5 * Math.abs(nl);
+          Vd[vi + 6] *= ck; Vd[vi + 7] *= ck; Vd[vi + 8] *= ck * 1.04;
+          if (nl > 0.30) { Vd[vi + 6] *= 1.18; Vd[vi + 7] *= 1.10; Vd[vi + 8] *= 1.30; }
+        }
+      }
+      /* Recompute facet normals so the relief catches the light properly. */
+      for (var fi = 0; fi < Vd.length; fi += 36) {
+        var ax = Vd[fi], ay = Vd[fi + 1], az = Vd[fi + 2];
+        var bx = Vd[fi + 12], by = Vd[fi + 13], bz = Vd[fi + 14];
+        var cx = Vd[fi + 24], cy = Vd[fi + 25], cz = Vd[fi + 26];
+        var ux = bx - ax, uy = by - ay, uz = bz - az;
+        var vx = cx - ax, vy = cy - ay, vz = cz - az;
+        var nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+        var l = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
+        nx /= l; ny /= l; nz /= l;
+        for (var k = 0; k < 3; k++) {
+          var o = fi + k * 12;
+          Vd[o + 3] = nx; Vd[o + 4] = ny; Vd[o + 5] = nz;
+        }
+      }
+    })();
+
+    /* World scenery: boulders and crystals scattered across the far
+       hemisphere, seated on the displaced surface. */
+    var worldRocksData = null;
+    {
+      var wrPieces = [];
+      var wrRng = U.rng('wrocks:' + seed);
+      var wcol = ['#1e1746', '#171138', '#241b52'];
+      for (var wr = 0; wr < 26; wr++) {
+        var anga = wrRng() * U.TAU;
+        var rr = Math.max(halfW, halfH) * (1.06 + wrRng() * 0.85);
+        if (rr > worldR * 0.9) continue;
+        var rx = Math.cos(anga) * rr, rz = Math.sin(anga) * rr * 0.72;
+        var rs = 0.8 + wrRng() * 2.2;
+        var ry = worldY(rr) - 0.4;
+        var wsb = MESH.builder('wrock' + wr + seed);
+        wsb.tooth(1.0).color(wcol[wr % wcol.length]);
+        wsb.ico(rs, 1);
+        wrPieces.push(MESH.transform(wsb.build({ jitter: 0.15 }),
+          U.m4trs(rx, ry + rs * 0.1, rz, wrRng() * 0.6, wrRng() * U.TAU, wrRng() * 0.6,
+            1, 0.8 + wrRng() * 0.5, 1)));
+      }
+      if (wrPieces.length) worldRocksData = MESH.merge(wrPieces);
+    }
+
     /* ---------- scenery ----------
        Baked into a single merged mesh: it never moves, so there is no reason
        to pay a draw call per rock. */
@@ -507,6 +573,7 @@ var TERRAIN = (function () {
       groundData: groundData,
       padData: padData,
       worldData: worldData,
+      worldRocksData: worldRocksData,
       decorData: decorData,
       spireData: spireData,
       spawn: pathAt(path, 0).pos,
