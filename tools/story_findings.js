@@ -20,7 +20,7 @@ const FINDINGS = [
   why:
     'This is not a wording clash, it is two different centuries. Every faction origin in the ' +
     'timeline (Ashtar Declaration 2093, Farm Revolts 2095, Scrap Constellation Charter 2097, ' +
-    'Parallel Declaration 2098) sits in a decade the campaign never mentions, and the campaign ' +
+    'Vigil Declaration 2098) sits in a decade the campaign never mentions, and the campaign ' +
     'inciting event sits seventy years before any of them.',
   fix:
     'Apophis is a real object and it RETURNS. Keep the lore exactly as written: the 2029 pass is ' +
@@ -31,13 +31,13 @@ const FINDINGS = [
     'what the residual meant. The grievance stops being a mood and becomes a provable cover-up.',
   cost: 'Rewrite the oath date references only. No plate re-renders. Roughly 8 lines.',
   outcome:
-    'DONE, and the owner improved the fix. The campaign is set in 2029, so the 27 fictional '
-    'events from 2030 to 2099 were rebased into 1947 to 2029 and became the HIDDEN history '
-    'rather than the future: Ashtar Declaration 2022, Farm Revolts 2024, Scrap Constellation '
-    'Charter 2027, Parallel Declaration 2028, Five-Way War 2029. The timeline was also unsorted '
-    'and is now ordered. The owner then supplied the real hook: Apophis was NEVER going to hit. '
-    'It was cleared after 2004, it passes at twenty thousand miles, a tenth of the Moon distance, '
-    'naked-eye visible, and the world had declared a holiday to watch it. THEN IT CHANGED COURSE. '
+    'DONE, and the owner improved the fix. The campaign is set in 2029, so the 27 fictional ' +
+    'events from 2030 to 2099 were rebased into 1947 to 2029 and became the HIDDEN history ' +
+    'rather than the future: Ashtar Declaration 2022, Farm Revolts 2024, Scrap Constellation ' +
+    'Charter 2027, Vigil Declaration 2028, Five-Way War 2029. The timeline was also unsorted ' +
+    'and is now ordered. The owner then supplied the real hook: Apophis was NEVER going to hit. ' +
+    'It was cleared after 2004, it passes at twenty thousand miles, a tenth of the Moon distance, ' +
+    'naked-eye visible, and the world had declared a holiday to watch it. THEN IT CHANGED COURSE. ' +
     'Rocks do not do that, and that single fact is the whole conspiracy.' },
 
 { id: 'F2', severity: 'CRITICAL', kind: 'arc', status: 'FIXED',
@@ -59,12 +59,12 @@ const FINDINGS = [
     'explicitly, so a player who reads only the ground text still gets the story.',
   cost: 'About 40 rewritten cells. No re-renders: this is text over existing plates.',
   outcome:
-    'DONE. Every act now carries the inciting event: 10, 4, 3, 4 and 6 cells across the five, '
-    'no zeros, up from three acts at zero. The Sirius link was the best find: the machine units '
-    'inside Apophis were maker-format, so the foundry that stamps them is the Parallel own, and '
-    'their act now discovers its build standard in the Earth delivery. The metric was WIDENED to '
-    'catch phrasing like "the Earth event", which is goalpost-moving unless checked, so it now '
-    'prints every match for inspection. Widening also exposed false positives in the original '
+    'DONE. Every act now carries the inciting event: 10, 4, 3, 4 and 6 cells across the five, ' +
+    'no zeros, up from three acts at zero. The Sirius link was the best find: the machine units ' +
+    'inside Apophis were maker-format, so the foundry that stamps them is the Vigil own, and ' +
+    'their act now discovers its build standard in the Earth delivery. The metric was WIDENED to ' +
+    'catch phrasing like "the Earth event", which is goalpost-moving unless checked, so it now ' +
+    'prints every match for inspection. Widening also exposed false positives in the original ' +
     'count: "cut into the rock" is not a premise reference and had been counted as one.' },
 
 { id: 'F3', severity: 'MAJOR', kind: 'voice', status: 'FIXED',
@@ -85,16 +85,16 @@ const FINDINGS = [
     'harbour district and split open in the streets. Whatever was riding inside was already awake."',
   cost: '35 ground lines and 35 works lines. No re-renders.',
   outcome:
-    'DONE. All 35 rewritten. Re-measured after: 0 of 35 still read as labels, down from 30. The '
-    'detector itself was wrong on the first pass and flagged five good lines because its verb list '
-    'lacked floats, cut, climbs, rises and strips; it was widened and then proved both ways, that '
+    'DONE. All 35 rewritten. Re-measured after: 0 of 35 still read as labels, down from 30. The ' +
+    'detector itself was wrong on the first pass and flagged five good lines because its verb list ' +
+    'lacked floats, cut, climbs, rises and strips; it was widened and then proved both ways, that ' +
     'it still flags the original label opening and no longer flags the replacement.' },
 
 { id: 'F4', severity: 'MAJOR', kind: 'formula', status: 'FIXED',
   title: 'Two thirds of all closing lines announce their own world like a status report.',
   evidence:
     'Measured: 113 of 175 beat-3 lines open by naming the world. "Proxima d is sorted and every ' +
-    'plate is filed." "The flare shelter runs to quota." The Parallel uses the construction ' +
+    'plate is filed." "The flare shelter runs to quota." The Vigil uses the construction ' +
     '"X RESTORED" in 31 of its 105 lines, and its top two words across the whole campaign are ' +
     'restored (33) and secured (23).',
   why:
@@ -104,15 +104,15 @@ const FINDINGS = [
     'screen.',
   fix:
     'Cap world-naming openers at roughly one in five. Give the third beat a job: it must state a ' +
-    'CONSEQUENCE somebody pays, not a status. For the Parallel, retire "RESTORED" as a default and ' +
+    'CONSEQUENCE somebody pays, not a status. For the Vigil, retire "RESTORED" as a default and ' +
     'let the log break register when the unit notices something it cannot file.',
   cost: 'About 90 rewritten lines. No re-renders.',
   outcome:
-    'DONE. World-naming beat-3 openers 113 to 31, and the Parallel stamp 31 to 8. The first '
-    'metric over-counted: "The narrows are open and the gate is kept lit" reads fine, so the fix '
-    'targeted the two real formulas, the RESTORED stamp and a bare proper noun in the subject '
-    'slot. 49 stamps dropped and 37 proper nouns swapped for the thing itself. The reversal pass '
-    'then introduced a NEW repetition of its own, "the vault is" fourteen times, which the audit '
+    'DONE. World-naming beat-3 openers 113 to 31, and the Vigil stamp 31 to 8. The first ' +
+    'metric over-counted: "The narrows are open and the gate is kept lit" reads fine, so the fix ' +
+    'targeted the two real formulas, the RESTORED stamp and a bare proper noun in the subject ' +
+    'slot. 49 stamps dropped and 37 proper nouns swapped for the thing itself. The reversal pass ' +
+    'then introduced a NEW repetition of its own, "the vault is" fourteen times, which the audit ' +
     'caught and which was varied back down to five.' },
 
 { id: 'F5', severity: 'MAJOR', kind: 'structure', status: 'FIXED',
@@ -123,7 +123,7 @@ const FINDINGS = [
     '(contested, renegade, retaken, flawless, defeat) change the words but not the shape.',
   why:
     'A hero story needs the floor to drop. Nothing here ever costs the player a belief. The strongest ' +
-    'single image in the whole campaign, the Parallel reaching the origin of every order it has ' +
+    'single image in the whole campaign, the Vigil reaching the origin of every order it has ' +
     'obeyed and finding the chairs empty, works precisely because it inverts the pattern, and it is ' +
     'the only one that does.',
   fix:
@@ -133,12 +133,12 @@ const FINDINGS = [
     'world that turns out to be a decoy while the real objective moves. Five reversals total.',
   cost: 'Five worlds rewritten plus roughly 25 plates re-rendered.',
   outcome:
-    'DONE as text; the plates still need re-rendering. One reversal per act, all at wi 5, the '
-    'world before the seat: TITAN finds a fragment hull decades older than Apophis, STEROPE finds '
-    'Earth protection order granted then withdrawn unsigned, ZETA-2 d finds Earth in the ledger '
-    'as a SUPPLIER under human countersignature, THE DARK LOCKER finds the Free Captains carried '
-    'Hungry freight for forty years, and THE COMPANION drops its mast and the orders keep '
-    'arriving anyway. That last one ends on the Parallel recording the word DECORATIVE.' },
+    'DONE as text; the plates still need re-rendering. One reversal per act, all at wi 5, the ' +
+    'world before the seat: TITAN finds a fragment hull decades older than Apophis, STEROPE finds ' +
+    'Earth protection order granted then withdrawn unsigned, ZETA-2 d finds Earth in the ledger ' +
+    'as a SUPPLIER under human countersignature, THE DARK LOCKER finds the Free Captains carried ' +
+    'Hungry freight for forty years, and THE COMPANION drops its mast and the orders keep ' +
+    'arriving anyway. That last one ends on the Vigil recording the word DECORATIVE.' },
 
 { id: 'F6', severity: 'MAJOR', kind: 'waste', status: 'DECIDE',
   title: 'The best backstory in the project is invisible to the player.',

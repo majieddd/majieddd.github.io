@@ -58,13 +58,19 @@ function run(cmd, argv, opts) {
 
 function staticGates() {
   const js = fs.readdirSync(path.join(ROOT, 'js')).filter(f => f.endsWith('.js'));
+  /* tools/ TOO. tools/story_findings.js sat at HEAD with a missing string
+     concatenation `+` (a SyntaxError on load) because this loop only read
+     js/: the harnesses were policing the game while nothing parsed the
+     harnesses. CONTRIBUTING has claimed CI parses tools/ all along; now the
+     local gate actually does. */
+  const tools = fs.readdirSync(path.join(ROOT, 'tools')).filter(f => f.endsWith('.js'))
+    .map(f => 'tools/' + f);
   let bad = 0;
-  for (const f of js.concat(['build.js'])) {
-    const p = f === 'build.js' ? 'build.js' : path.join('js', f);
+  for (const p of js.map(f => 'js/' + f).concat(tools, ['build.js'])) {
     const r = run(process.execPath, ['--check', p]);
     if (r.code !== 0) { fail('parse ' + p + ': ' + r.out.split('\n')[0]); bad++; }
   }
-  say('parse: ' + (js.length + 1) + ' files, ' + bad + ' bad');
+  say('parse: ' + (js.length + tools.length + 1) + ' files, ' + bad + ' bad');
 
   /* build.js's hardcoded module list vs what is actually on disk. A module
      added to js/ but not the list works when SERVED and breaks when BUNDLED,
