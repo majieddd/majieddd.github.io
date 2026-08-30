@@ -78,3 +78,18 @@ animated geometry), QA tester (placement/pads, fps, HUD).
   fully readable in play view. Gate: 78/78 + 45/45 (V.3 floor re-satisfied
   with SAG_R 300 + exposure 1.14 + ambient 1.26 after the sag darkened the
   sampled plots).
+
+## HALFWORLD (owner directive: massive map, multiple gates, windy roads, half
+## the sphere, smaller world, playable option)
+- NEW BOARD: id 'halfworld', gw 56 x gh 34 (cell 3.2 = 179 x 109 units),
+  per-board sagR 120 / planetR 150 (small world: edges sag ~28 units; the
+  playfield is terraced by the pad-flattening which reads as carved worlds).
+- ROUTE: 24 waypoints, ~700 units; three rim-touch gates (N, SW, NE arms)
+  feeding one winding highway, exits at the far rim. Windy S/switchback
+  serpentine across half the globe.
+- SUITE: verify 1.6 updated 3 -> 4 boards (content-count assertion, content
+  intentionally expanded; the check's purpose - no silent board - is kept),
+  2.7 label -> all four. All four boards pass 2.7 (lane inside plate,
+  plots >= 18).
+- MEASURED: gate 78/78 + 45/45; HALFWORLD perf 145 fps, 63 draws, 123 plots,
+  14 towers; menu lists 4 boards.

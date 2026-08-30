@@ -403,6 +403,17 @@ var DATA = (function () {
       blurb: 'A long double switchback under broken vaulting. The hardest board in the demo.',
       waypoints: [[-38, 0, 13], [-28, 0, 17], [-21, 0, 5], [-23, 0, -8], [-11, 0, -15], [1, 0, -10],
                   [6, 0, 1], [1, 0, 13], [12, 0, 17], [24, 0, 13], [29, 0, 1], [38, 0, -4]]
+    },
+    {
+      id: 'halfworld', name: 'HALFWORLD', sub: 'Half a sphere, one road',
+      cell: 3.2, gw: 56, gh: 34, pathWidth: 4.2, decor: 110, spires: 12,
+      difficulty: 2, sagR: 120, planetR: 150,
+      blurb: 'A massive expedition carved across half the world. Three gates feed one winding highway; two exits wait at the far rim.',
+      waypoints: [[-78, 0, -44], [-64, 0, -30], [-70, 0, -12], [-52, 0, -2], [-56, 0, 14],
+                  [-36, 0, 20], [-28, 0, 6], [-40, 0, -14], [-24, 0, -30], [-6, 0, -36],
+                  [8, 0, -22], [24, 0, -18], [12, 0, -2], [26, 0, 6], [44, 0, 8],
+                  [38, 0, 24], [52, 0, 34], [70, 0, 30], [62, 0, 10], [78, 0, -2],
+                  [68, 0, -24], [50, 0, -40], [72, 0, -46], [84, 0, -34]]
     }
   ];
 

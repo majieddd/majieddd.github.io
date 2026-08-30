@@ -5816,7 +5816,7 @@ var TERRAIN = (function () {
        it, so there is no floating rim and no gap anywhere). Gameplay stays
        flat enough: the sag is ~4 units over a 45-unit half extent, and units
        and click targets use heightAt, which knows the sag. */
-    var SAG_R = 300.0;
+    var SAG_R = def.sagR || 300.0;
     for (var sgi = 0; sgi < HW * HH; sgi++) {
       var sx2 = (sgi % HW) * CS - halfW, sz2 = Math.floor(sgi / HW) * CS - halfH;
       height[sgi] -= (sx2 * sx2 + sz2 * sz2) / (2.0 * SAG_R);
@@ -6002,7 +6002,7 @@ var TERRAIN = (function () {
        board edge below the sphere surface, so the border reads as shoreline
        on a globe rather than as the edge of a floating slab. Bands of dark
        violet basalt so the world owns a light response of its own. */
-    var PLANET_R = 300.0;
+    var PLANET_R = def.planetR || 300.0;
     var planetB = MESH.builder('planet:' + seed);
     var ss2 = 26;
     function profSpan(fr0, fr1) {
@@ -6854,6 +6854,17 @@ var DATA = (function () {
       blurb: 'A long double switchback under broken vaulting. The hardest board in the demo.',
       waypoints: [[-38, 0, 13], [-28, 0, 17], [-21, 0, 5], [-23, 0, -8], [-11, 0, -15], [1, 0, -10],
                   [6, 0, 1], [1, 0, 13], [12, 0, 17], [24, 0, 13], [29, 0, 1], [38, 0, -4]]
+    },
+    {
+      id: 'halfworld', name: 'HALFWORLD', sub: 'Half a sphere, one road',
+      cell: 3.2, gw: 56, gh: 34, pathWidth: 4.2, decor: 110, spires: 12,
+      difficulty: 2, sagR: 120, planetR: 150,
+      blurb: 'A massive expedition carved across half the world. Three gates feed one winding highway; two exits wait at the far rim.',
+      waypoints: [[-78, 0, -44], [-64, 0, -30], [-70, 0, -12], [-52, 0, -2], [-56, 0, 14],
+                  [-36, 0, 20], [-28, 0, 6], [-40, 0, -14], [-24, 0, -30], [-6, 0, -36],
+                  [8, 0, -22], [24, 0, -18], [12, 0, -2], [26, 0, 6], [44, 0, 8],
+                  [38, 0, 24], [52, 0, 34], [70, 0, 30], [62, 0, 10], [78, 0, -2],
+                  [68, 0, -24], [50, 0, -40], [72, 0, -46], [84, 0, -34]]
     }
   ];
 

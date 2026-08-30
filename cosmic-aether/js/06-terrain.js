@@ -199,7 +199,7 @@ var TERRAIN = (function () {
        it, so there is no floating rim and no gap anywhere). Gameplay stays
        flat enough: the sag is ~4 units over a 45-unit half extent, and units
        and click targets use heightAt, which knows the sag. */
-    var SAG_R = 300.0;
+    var SAG_R = def.sagR || 300.0;
     for (var sgi = 0; sgi < HW * HH; sgi++) {
       var sx2 = (sgi % HW) * CS - halfW, sz2 = Math.floor(sgi / HW) * CS - halfH;
       height[sgi] -= (sx2 * sx2 + sz2 * sz2) / (2.0 * SAG_R);
@@ -385,7 +385,7 @@ var TERRAIN = (function () {
        board edge below the sphere surface, so the border reads as shoreline
        on a globe rather than as the edge of a floating slab. Bands of dark
        violet basalt so the world owns a light response of its own. */
-    var PLANET_R = 300.0;
+    var PLANET_R = def.planetR || 300.0;
     var planetB = MESH.builder('planet:' + seed);
     var ss2 = 26;
     function profSpan(fr0, fr1) {

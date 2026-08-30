@@ -56,7 +56,7 @@
   ok('1.3 seven elements defined', c.elements === 7, c.elements);
   ok('1.4 twenty waves defined', c.waves === 20, c.waves);
   ok('1.5 five commanders defined', c.commanders === 5, c.commanders);
-  ok('1.6 three boards defined', c.boards === 3, c.boards);
+  ok('1.6 four boards defined', c.boards === 4, c.boards);
 
   /* Every tower must name a real element, and every element must be reachable
      by at least one tower, or some reactions are unplayable by construction. */
@@ -116,7 +116,7 @@
       boardIssues.push(DATA.BOARDS[bi].id + ':threw ' + e.message);
     }
   }
-  ok('2.7 all three boards build and contain their lane', boardIssues.length === 0, boardIssues.join(' '));
+  ok('2.7 all four boards build and contain their lane', boardIssues.length === 0, boardIssues.join(' '));
 
   /* ---------- 3. every tower fires ----------
      Each tower ALONE, on the plot closest to the lane, with denizens spawned
