@@ -51,6 +51,22 @@
 </head>
 <body>
 <canvas id="gl"></canvas>
+<script>
+/* boot error surfacing: any uncaught error becomes a visible line on screen */
+window.__bootFail = function (msg) {
+  var d = document.getElementById('bootfail');
+  if (!d) { d = document.createElement('div'); d.id = 'bootfail'; document.body.appendChild(d); }
+  d.style.display = 'block';
+  d.textContent = 'BOOT ERROR: ' + msg;
+};
+window.addEventListener('error', function (e) {
+  if (window.__GAME && window.__GAME.state === 'wave') return;
+  window.__bootFail(String(e.message || 'unknown'));
+});
+</script>
+<style>
+#bootfail{position:fixed;bottom:8px;left:8px;z-index:99;max-width:72%;background:rgba(120,20,20,.92);border:2px solid #ff9f9f;color:#ffe9e9;font-family:Consolas,monospace;font-size:12px;padding:6px 10px;border-radius:6px;display:none}
+</style>
 <div id="vignette"></div>
 <div id="uic">
   <div id="fps"></div>
@@ -66,7 +82,8 @@
       <div class="sub">SIEGE OF THE AVALON YARD</div>
       <div class="lede">The yard is half-built and the Nihil are coming. Build the six turrets
       of the Avalon line, hold the ring, and let every battle paint its own story in ink.</div>
-      <button class="btn" id="btn-start">IGNITE THE CORE</button>
+      <div class="sub" style="margin-top:14px;font-size:11px;color:#7d94ac">BUILD v1.1</div>
+      <button class="btn" id="btn-start" onclick="window.__bootStart && window.__bootStart()">IGNITE THE CORE</button>
     </div>
   </div>
 
@@ -2550,10 +2567,34 @@ const UI = (function () {
 })();
 
 /* ===== 12_main.js ===== */
-/* INKFALL 12_main.js - boot, loop, input wiring, fps meter */
+/* INKFALL 12_main.js - boot, loop, input wiring, fps meter
+   Hardened: __bootStart is defined BEFORE the engine boots so the title button
+   always works, even if GAME() throws; failures surface via __bootFail(). */
 'use strict';
 (function () {
-  const game = GAME();
+  var booted = false;
+  function bootStart() {
+    if (booted) return;
+    var g = window.__GAME;
+    var title = document.getElementById('scr-title');
+    if (title) { title.classList.remove('on'); title.style.display = 'none'; }
+    if (!g) { window.__bootFail('engine boot failed, see console'); return; }
+    try {
+      g.begin();
+      booted = true;
+    } catch (err) {
+      window.__bootFail(String((err && err.message) || err));
+    }
+  }
+  window.__bootStart = bootStart;
+
+  var game = null;
+  try {
+    game = GAME();
+  } catch (e) {
+    window.__bootFail(String((e && e.message) || e));
+    throw e;
+  }
   window.__GAME = game;
   UI.init();
   game.bindInput();
@@ -2577,13 +2618,13 @@ const UI = (function () {
     game.camera.updateProjectionMatrix();
     game.renderer.setSize(window.innerWidth, window.innerHeight);
   });
-  document.getElementById('btn-start').addEventListener('click', () => {
-    UI.hideTitle();
-    game.begin();
-  });
+  /* start on pointerdown AND click: both routes call guarded bootStart */
+  document.getElementById('btn-start').addEventListener('click', bootStart);
+  document.getElementById('btn-start').addEventListener('pointerdown', bootStart, { passive: true });
   document.getElementById('btn-again').addEventListener('click', () => {
     document.getElementById('scr-over').classList.remove('on');
-    game.begin();
+    booted = false;
+    bootStart();
   });
   /* pad click -> build menu */
   const canvas = document.getElementById('gl');
