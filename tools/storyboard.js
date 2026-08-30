@@ -547,7 +547,6 @@ function towerCard(id, fac, page) {
       '</div></div>' +
     (nums ? '<span class="nums">' + nums + '</span>' : '') +
     '<span>' + esc(t.desc || '') + '</span>' +
-    (fig('twr_' + id, 'tart', t.name + ' painted plate') || '') +
     (lo.historical_origin ? '<span class="quote">' + esc(lo.historical_origin) + '</span>' : '') +
     (lo.canon_mechanic ? '<span><i>Canon:</i> ' + esc(lo.canon_mechanic) + '</span>' : '') +
     (ladder.length ? '<details class="tdet"><summary>THE LADDER: ' +
@@ -575,7 +574,7 @@ function unitCard(id, fac, page) {
   COVER.units++;
   return '<div class="card" id="un-' + esc(id) + '">' +
     '<div class="chead">' +
-      (fig('foe_' + id, 'cfig', e.name) || iconFig('un', id, e.name) || chipFig(e.color, e.name.charAt(0))) +
+      (iconFig('un', id, e.name) || chipFig(e.color, e.name.charAt(0))) +
       '<div class="cheadt"><b>' + esc(e.name) + '</b>' +
       '<span class="nums">' + e.hp + ' hp &middot; ' + (e.armor || 0) + ' armour &middot; speed ' +
         e.speed + ' &middot; bounty ' + e.bounty + ' &middot; ' + e.lives + ' live' + (e.lives === 1 ? '' : 's') + '</span>' +
@@ -648,7 +647,7 @@ function vigilCard(id) {
   COVER.vigil++;
   return '<div class="card" id="vg-' + esc(id) + '">' +
     '<div class="chead">' +
-      (fig('foe_' + id, 'cfig', e.name) || iconFig('un', id, e.name) || chipFig(e.color, e.name.charAt(0))) +
+      (iconFig('un', id, e.name) || chipFig(e.color, e.name.charAt(0))) +
       '<div class="cheadt"><b>' + esc(e.name) + '</b>' +
       '<span class="nums">' + e.hp + ' hp &middot; ' + (e.armor || 0) + ' armour &middot; speed ' +
         e.speed + ' &middot; bounty ' + e.bounty + ' &middot; ' + e.lives + ' live' + (e.lives === 1 ? '' : 's') +
