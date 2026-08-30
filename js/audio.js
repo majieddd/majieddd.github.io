@@ -1124,7 +1124,7 @@ const Sound = (() => {
       { root: NOTE.D3 / 2, arp: [NOTE.D3, NOTE.F3, NOTE.A3, NOTE.F3] },
       { root: NOTE.C3,     arp: [NOTE.C4, NOTE.E4, NOTE.G4, NOTE.E4] }
     ],
-    /* The Parallel, chrome. Two chords across four bars, so it barely moves,
+    /* The Vigil, chrome. Two chords across four bars, so it barely moves,
        and the second is a maj7 whose seventh never resolves down. Machines
        tending a garden for a maker who is not coming back. */
     robot: [

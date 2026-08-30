@@ -480,7 +480,7 @@ var MODELS = (function () {
       plinth(b, t, 2.35);
       b.color(HULL.mid).tooth(0.95);
       b.frustum(2.5, 1.9, 2.1, 1.5, 0.75, 1.25);
-      /* Capacitor bank down one flank: cold, industrial, Parallel. */
+      /* Capacitor bank down one flank: cold, industrial, Vigil. */
       b.color(HULL.trim).tooth(0.75);
       for (var i = 0; i < 4; i++) {
         b.push(); b.translate(-1.5 + i * 1.0, 1.45, -1.15); b.prism(0.3, 0.28, 0.85, 6, 0); b.pop();

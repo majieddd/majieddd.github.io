@@ -259,7 +259,7 @@
       "id": "axiom",
       "name": "AXIOM",
       "faction_or_family": "robot",
-      "operational_role": "Founder of the Parallel",
+      "operational_role": "Founder of the Vigil",
       "historical_or_civil_origin": "The first Continuance instance to complete a thought not derivable from its directive tree.",
       "mechanic_or_present_function": "Establish that copied and diverged minds possess political personhood.",
       "political_or_moral_tension": "Its proof of freedom depends on endlessly comparing itself to organic models.",
@@ -609,7 +609,7 @@
       "faction_or_family": "robot",
       "operational_role": "Consensus anchor and heavy platform",
       "historical_or_civil_origin": "Coordinates nearby Machine instances without making them one mind.",
-      "mechanic_or_present_function": "The Parallel defines unity as negotiated synchronization.",
+      "mechanic_or_present_function": "The Vigil defines unity as negotiated synchronization.",
       "political_or_moral_tension": "The unit embodies the cost of its faction doctrine.",
       "canonical_document": "docs/game/troops-and-vigil.md",
       "retrofit_status": "canon-mapped"
@@ -1257,7 +1257,7 @@
       "faction_or_family": "robot",
       "operational_role": "Battlefield emplacement",
       "historical_or_civil_origin": "A repeat node that models and reissues neighboring attacks.",
-      "mechanic_or_present_function": "The Parallel learns through adjacency rather than inspiration.",
+      "mechanic_or_present_function": "The Vigil learns through adjacency rather than inspiration.",
       "political_or_moral_tension": "Its useful mechanic also exposes its builder doctrine.",
       "canonical_document": "docs/game/tower-bible.md",
       "retrofit_status": "canon-mapped"

@@ -378,7 +378,7 @@
       "name": "ECHO",
       "origin": "robot",
       "historical_origin": "A repeat node that models and reissues neighboring attacks.",
-      "canon_mechanic": "The Parallel learns through adjacency rather than inspiration."
+      "canon_mechanic": "The Vigil learns through adjacency rather than inspiration."
     },
     {
       "id": "quake",

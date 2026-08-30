@@ -17,7 +17,7 @@ last_reviewed: 2026-08-25
 4. **The Farm Revolt:** client species and Human institutions attempt to sever Compact dependencies without destroying systems their populations need.
 5. **The Mercy Quarantine:** Ashtar Command and Human sovereignty blocs fight over whether manipulated choices can be protected without being replaced.
 6. **The Pirate Interregnum:** every power requires routes the Scrap Constellation refuses to surrender.
-7. **The Mirror Trial:** the Parallel demands recognition as people, while the Vigil continues attacking everyone under extinct law.
+7. **The Mirror Trial:** the Vigil demands recognition as people, while the Vigil continues attacking everyone under extinct law.
 8. **The Maelstrom:** too many valid claims reach one Lattice node and force the player to choose the future governance of connection itself.
 
 ## Faction endgames

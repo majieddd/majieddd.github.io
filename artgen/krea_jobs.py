@@ -67,7 +67,7 @@ TROOP_DUOTONE = {
     'light':  'Monochrome radiant gold',
     'xeno':   'Duotone glowing purple bioluminescence and hot magenta',
     'pirate': 'Monochrome bright red',
-    # THE PARALLEL takes the Vigil's own phrase, because it is the same claim:
+    # THE VIGIL takes the Vigil's own phrase, because it is the same claim:
     # a power with no colour of its own. It differs from the neutral machines
     # only in being CLEAN -- white chrome rather than scavenged grey.
     'robot':  'Monochrome white chrome, no colour at all',
@@ -157,7 +157,7 @@ FACTION_LOOK = {
                'joints, unsettling asymmetry, bioluminescent veins'),
     'pirate': ('crimson neon-trimmed salvage plating, aftermarket cybernetics, jagged '
                'trophies, brutal improvised tech'),
-    # THE PARALLEL. Chrome and white with no colour of its own, because the
+    # THE VIGIL. Chrome and white with no colour of its own, because the
     # faction's whole identity is that it is a copy that got better -- it wears
     # the SHAPE of the thing it iterated on and none of its warmth. Deliberately
     # the only entry with no neon accent: the four powers each own a hue, and
@@ -227,7 +227,7 @@ COMMANDERS = [
                           'arms raised, sound made visible as golden rings'),
     ('halder',  'light',  'a colossal reptiloid bulwark commander locked behind interlocking '
                           'light plates, scaled brow, utterly immovable'),
-    # THE PARALLEL, Session 22, unchanged by the S38 rework: the redraft
+    # THE VIGIL, Session 22, unchanged by the S38 rework: the redraft
     # language is approved. AXIOM is the original thought; the four -R
     # commanders are machine redrafts of NYX, LUMEN, MAWLORD and DREGG, each
     # quoting its source silhouette minus the thing that made it alive.
@@ -279,7 +279,7 @@ FACTIONS = {
     'pirate': ('a heraldic emblem of a lawless armada: crossed boarding blades over a broken '
                f'hull plate, rendered entirely in glowing crimson. {MONO_LOOK}'),
     # ITERATE. PERFECT. REPLACE -- so the mark is one form drawn three times,
-    # each cleaner than the last. White, because the Parallel has no colour.
+    # each cleaner than the last. White, because the Vigil has no colour.
     # First render came back as an all-over lattice: 'nested' spread the motif
     # across the field instead of stacking it. Stated as ONE mark, concentric,
     # with the count named twice.
@@ -336,7 +336,7 @@ FACTION_TROOPS = {
     'linebreaker': ('human',  'a heavy soldier under bolted-on alien panelling, glowing with retained heat'),
     'dragoon':     ('human',  'an anchored assault frame braced low, spread wide, refusing to be moved'),
     'vanguard':    ('human',  'a barrier-linked formation leader holding the line for the rank beside it'),
-    # THE PARALLEL, Session 22. Written off the in-game descriptions rather than
+    # THE VIGIL, Session 22. Written off the in-game descriptions rather than
     # invented beside them, so the picture and the codex entry say one thing.
     'stitch':      ('robot',  'a small white repair drone with its mending tools reversed into cutters, never quite alone'),
     'fabricant':   ('robot',  'a printed white infantry chassis still cooling, seams unfinished, running cold and calm'),
@@ -700,11 +700,11 @@ def build_jobs():
     # the order of what must survive. sdxl_all.prefix_for() returns '' for the
     # cmd class -- WRONG, and it cost a render: cmd has no entry in
     # PREFIX_BY_CLASS and falls through to SDXL_PREFIX, which opens with a neon
-    # palette. Harmless for the twenty-one, who want it; fatal for the Parallel,
+    # palette. Harmless for the twenty-one, who want it; fatal for the Vigil,
     # who must have no colour. sdxl_all.prefix_for now special-cases them.
     # Worst case across the 21: the frame clause closes at token 71 (cadre 68,
     # vanta 71, sevra 71, lumen 56). Verified by scratchpad portraits_test.js.
-    # THE PARALLEL IS THE ONE FACTION THAT CANNOT TAKE {STYLE}. That tail ends
+    # THE VIGIL IS THE ONE FACTION THAT CANNOT TAKE {STYLE}. That tail ends
     # 'vaporwave neon palette of magenta cyan violet and chrome', and on the
     # first render it did exactly what it says: three of the five machine
     # commanders came back magenta, against a faction brief whose whole content

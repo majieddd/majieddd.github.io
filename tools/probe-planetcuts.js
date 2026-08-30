@@ -93,14 +93,14 @@ T('PC.5 the human opening is the full fifteen beats', () => {
 });
 
 T('PC.6 no line still carries a status-stamp formula', () => {
-  /* The Parallel used "WORLD RESTORED." as a header on 31 of its 105 lines.
+  /* The Vigil used "WORLD RESTORED." as a header on 31 of its 105 lines.
      Under ten is variety; a return to thirty is the template coming back. */
   let n = 0;
   Object.entries(P).forEach(([k, e]) => {
     if (!/^\d\d$/.test(k)) return;
     ((e.f && e.f.robot) || []).forEach(l => { if (/ RESTORED\b/.test(l)) n++; });
   });
-  must(n <= 12, n + ' Parallel lines use the RESTORED stamp; the formula is back');
+  must(n <= 12, n + ' Vigil lines use the RESTORED stamp; the formula is back');
   return n + ' RESTORED stamps, under the 12 ceiling';
 });
 

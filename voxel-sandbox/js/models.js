@@ -73,7 +73,7 @@ var MODELS = {
     ]
   },
 
-  /* PARALLEL splicer: a headless four-legged chassis, torch on the stump. */
+  /* VIGIL splicer: a headless four-legged chassis, torch on the stump. */
   splicer: {
     name: 'SPLICER',
     pal: ['#0a0e17', '#1e293b', '#e2e8f0', '#5eead4'],

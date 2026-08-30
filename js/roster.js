@@ -618,7 +618,7 @@ const COMMANDER_ROSTER = [
   },
 
   /* ======================================================================
-     THE PARALLEL, the fifth banner, and the machines' answer to the four.
+     THE VIGIL, the fifth banner, and the machines' answer to the four.
 
      Every one of these COMPILES: it opens the battle weaker than the
      commander it was copied from and rewrites itself as the battle teaches
@@ -636,7 +636,7 @@ const COMMANDER_ROSTER = [
   {
     id: 'axiom', faction: 'robot', name: 'AXIOM', title: 'The First Draft',
     color: '#e2e8f0', icon: '⬡', free: true,
-    blurb: 'The first machine to finish a thought it was not given. Everything the Parallel is began as a note AXIOM made about somebody else\'s war.',
+    blurb: 'The first machine to finish a thought it was not given. Everything the Vigil is began as a note AXIOM made about somebody else\'s war.',
     abilities: ['focusfire', 'dampen'],
     /* BOOT SEQUENCE starts behind and recovers, so it builds the two things that compound while it does. */
     signature: { towers: ['vault', 'pylon'], units: ['stitch', 'fabricant'] },

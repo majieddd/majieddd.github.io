@@ -443,7 +443,7 @@
   T('39.31 a faction reclaims only at home, and invades everywhere else', () => {
     /* A faction takes its OWN home first and is the aggressor for the other
        four systems, so possessive reclaiming language outside home would be
-       wrong. "recovered" is excluded: the Parallel says "the recovered core"
+       wrong. "recovered" is excluded: the Vigil says "the recovered core"
        constantly and means retrieved, not repossessed. */
     const RECLAIM = /\b(our own (pens|ring|archive|tribunal|cathedral|foundry|yard|anchorage|shelter)|ours again|we built (this|these|it))\b/i;
     const bads = [];

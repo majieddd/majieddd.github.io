@@ -45,7 +45,7 @@ Two worlds in every system carry overlapping valid claims. Their three-way battl
 
 ## Why the Vigil attacks everyone
 
-The **Vigil** is legacy Old Weather enforcement. It recognizes lane boundaries, threat thresholds, and ancient safety rules, but not current flags. A Human colony, Federation protectorate, Compact concession, Pirate sanctuary, and Parallel foundry can all be unauthorized in different ways.
+The **Vigil** is legacy Old Weather enforcement. It recognizes lane boundaries, threat thresholds, and ancient safety rules, but not current flags. A Human colony, Federation protectorate, Compact concession, Pirate sanctuary, and Vigil foundry can all be unauthorized in different ways.
 
 The neutral wave is therefore not wildlife and not a secret Pirate army. It is a jurisdiction defending itself according to rules whose legislature is extinct.
 
@@ -62,7 +62,7 @@ This is why kills pressure the rival, why echoes are faster and frailer, and why
 | **I - The First Claim** | Choose a banner, secure entry worlds, rescue the first unit. | The map is a legal and infrastructural record, not empty territory. |
 | **II - The Archive War** | Encounter contradictory dossiers, terrain nodes, and rival doctrines. | Pre-2099 UAP history contains mundane error, disinformation, and genuine contacts from different operators. |
 | **III - The Five Seats** | Defeat system commanders and learn their private motives. | No faction's public explanation of the war is complete. |
-| **IV - The Mirror Trial** | Discover and unlock the Parallel after a conquered galaxy. | Machines are political persons; the Vigil is not their obedient army. |
+| **IV - The Mirror Trial** | Discover and unlock the Vigil after a conquered galaxy. | Machines are political persons; the Vigil is not their obedient army. |
 | **V - The Maelstrom** | Survive a many-seat jurisdictional overload. | The Source Lattice can be restored, privatized, quarantined, opened, or allowed to remain fragmented. |
 
 ## Stars, SOULS, and rescues

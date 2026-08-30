@@ -578,9 +578,9 @@
          : 'Game.loopErrors is empty');
   });
 
-  T('22.11 the Parallel arsenal opens only once the game is beaten', function () {
+  T('22.11 the Vigil arsenal opens only once the game is beaten', function () {
     if (typeof SECRET_FACTIONS === 'undefined' || !Meta.secretUnitOpen) {
-      skip('22.11 the Parallel arsenal opens only once the game is beaten', 'no secret faction');
+      skip('22.11 the Vigil arsenal opens only once the game is beaten', 'no secret faction');
       return;
     }
     var secretUnits = UNIT_ORDER.filter(function (id) {
@@ -595,7 +595,7 @@
     /* ...and the ORDINARY cross-faction law must survive untouched. */
     var xenoStillLocked = !!Meta.unitOriginLock('chitling');
     v.victories = keep;
-    ok('22.11 the Parallel arsenal opens only once the game is beaten',
+    ok('22.11 the Vigil arsenal opens only once the game is beaten',
        secretUnits.length === 5 && lockedBefore && openAfter && xenoStillLocked,
        secretUnits.length + ' machine soldiers; locked before ' + lockedBefore +
        ', open after ' + openAfter + ', xeno still locked ' + xenoStillLocked);
@@ -1071,7 +1071,7 @@
       /* No cell of the holder table may ever hand a system to its player. */
       gxs[f].systems.forEach(sys => {
         if (sys.holder === f) bad.push(f + ' self-garrisons ' + sys.name);
-        if (sys.holder === 'robot') bad.push(f + ' meets a Parallel garrison at ' + sys.name + ', spoiler');
+        if (sys.holder === 'robot') bad.push(f + ' meets a Vigil garrison at ' + sys.name + ', spoiler');
       });
     });
     ok(id, bad.length === 0,
@@ -1240,16 +1240,16 @@
          'identical in every field, so no saved campaign moves');
   });
 
-  /* ---- 24.2 the Parallel gets no splinter ------------------------------ */
-  T('24.2 THE PARALLEL has no renegade world and no own-power boon', function () {
-    if (typeof generateGalaxy !== 'function') { skip('24.2 THE PARALLEL has no renegade world and no own-power boon', 'no generator'); return; }
+  /* ---- 24.2 the Vigil gets no splinter ------------------------------ */
+  T('24.2 THE VIGIL has no renegade world and no own-power boon', function () {
+    if (typeof generateGalaxy !== 'function') { skip('24.2 THE VIGIL has no renegade world and no own-power boon', 'no generator'); return; }
     let ren = 0;
     for (let seed = 1; seed <= 6; seed++) {
       const g = generateGalaxy(seed, 'robot');
       g.systems.forEach(function (sys) { sys.worlds.forEach(function (w) { if (w.renegade) ren++; }); });
     }
     const machineBoons = BOONS.filter(function (b) { return b.f === 'robot'; }).length;
-    ok('24.2 THE PARALLEL has no renegade world and no own-power boon',
+    ok('24.2 THE VIGIL has no renegade world and no own-power boon',
        ren === 0 && machineBoons === 0,
        ren + ' renegade worlds over six machine galaxies, ' + machineBoons + ' machine boons, ' +
        'a splinter would pay another power advantage and seat a machine commander behind it');

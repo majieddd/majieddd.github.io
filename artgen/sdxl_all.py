@@ -24,7 +24,7 @@ sys.path.insert(0, HERE)
 from krea_jobs import build_jobs, NEG, FACTION_TROOPS, COMMANDERS   # noqa: E402
 
 # The machine commanders, derived from the roster rather than listed here, so
-# a sixth Parallel commander is styled correctly the day it is added.
+# a sixth Vigil commander is styled correctly the day it is added.
 ROBOT_COMMANDERS = {cid for cid, fac, _ in COMMANDERS if fac == 'robot'}
 from krea_gen import fit, quality_for                      # noqa: E402
 
@@ -47,7 +47,7 @@ SDXL_PREFIX = ('cyberpunk sci-fi vaporwave painted cutscene illustration, neon m
 # to medieval knights -- the setting must be in the prefix, not the tail.
 FACTION_COLOUR = { 'human': 'neon cyan', 'light': 'radiant gold',
                    'xeno': 'xeno violet', 'pirate': 'blood crimson',
-                   # THE PARALLEL. Without an entry here the lookup falls back
+                   # THE VIGIL. Without an entry here the lookup falls back
                    # to bare 'neon', which is precisely the failure this file
                    # documents two comments down: a neon prefix repainting a
                    # monochrome brief, and grey is the easiest thing to repaint.
@@ -109,7 +109,7 @@ def prefix_for(key):
     # so no game-side art lookup has to change.
     if parts[0] == 'foe' and '_'.join(parts[1:]) in FACTION_TROOPS:
         return TROOP_PREFIX
-    # THE PARALLEL'S COMMANDERS, checked before the class table for the same
+    # THE VIGIL'S COMMANDERS, checked before the class table for the same
     # reason: the key cannot tell you the faction, only the roster can.
     #
     # A comment in krea_jobs.py asserted that this function 'returns '' for

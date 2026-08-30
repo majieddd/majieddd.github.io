@@ -889,9 +889,13 @@ function index() {
   /* ---- the machines everyone fights ---- */
   const facUnitIds = new Set(FACS.flatMap(f => G.FACTION_UNITS[f] || []));
   const vigilIds = Object.keys(G.ENEMY_TYPES).filter(id => !facUnitIds.has(id));
-  w('<h2 id="vigil">' + esc((G.MACHINE_HOST || {}).name || 'THE VIGIL') + ', ' + vigilIds.length + ' machines</h2>');
-  w('<p class="sub">The standing garrison of the dead builders, and the host every campaign fights ' +
-    'wherever no living banner holds the ground. The five powers&#39; own denizens live on their pages.</p>');
+  /* ONE NAME, TWO ROLES: the playable banner and this host are both THE
+     VIGIL by owner directive, so this section is titled by ROLE. */
+  w('<h2 id="vigil">The Vigil&#39;s standing guard, ' + vigilIds.length + ' machines</h2>');
+  w('<p class="sub">The neutral enforcement waves of the machine civilization, garrisoning every ' +
+    'world no living banner holds. Same polity as <a href="robot.html">the playable Vigil banner</a>, ' +
+    'different role: these hold nothing and answer to standing orders older than the war. ' +
+    'The five powers&#39; own denizens live on their pages.</p>');
   w('<div class="cards">');
   vigilIds.forEach(id => w(vigilCard(id)));
   w('</div>');

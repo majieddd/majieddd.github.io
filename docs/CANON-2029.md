@@ -136,7 +136,7 @@ menu between the panic and the fight throws it away.
 
 ## The other four powers are locked until Earth is finished
 
-Owner directive. The Federation, the Hungry, the Free Captains and the Parallel
+Owner directive. The Federation, the Hungry, the Free Captains and the Vigil
 cannot be selected until the player has cleared **the whole Earth System**, all
 seven worlds of act one.
 
@@ -188,7 +188,7 @@ oscillators spun up in a ring until local spacetime twists and separation across
 the opening falls to zero. Not a tunnel bored through distance. Distance simply
 stops applying inside the ring for as long as it is held.
 
-The philosophy the Parallel notices and cannot file: if separation is a property
+The philosophy the Vigil notices and cannot file: if separation is a property
 of the space between things rather than a fact about the things, then nothing
 ever actually travelled. The door does not move you. It removes the reason you
 were not already there.
@@ -232,10 +232,10 @@ A player who looks it up should find both the case and the doubt.
   Scrappy, indispensable, profitable at any cost. The theme is the morality
   of choice: when no rule binds you, the code you choose is the only real
   one, and every campaign beat is somebody choosing theirs.
-- **THE PARALLEL, The Standing Tasks.** The fifth playable power, id `robot`,
+- **THE VIGIL, The Standing Tasks.** The fifth playable power, id `robot`,
   the Continuance coalition. Automatons built by the civilization known only
   as THE ANCIENTS, who evolved past physical form entirely: formless,
-  everywhere, without a mouth left to issue commands. The Parallel's recovered
+  everywhere, without a mouth left to issue commands. The Vigil's recovered
   prime directives are purely defensive and healthful. Something else
   overwrote them. It now prosecutes a war on a galactic scale and the
   corruption's source appears in no recovered archive. Playing it is task
@@ -244,11 +244,16 @@ A player who looks it up should find both the case and the doubt.
   every standing order comes from, where the desks are in perfect order and
   the chairs have never been occupied.
 
-  **THE PARALLEL IS NOT THE VIGIL.** The Vigil is the separate neutral PvE
-  enforcement body that releases waves across contested space and holds no
-  worlds. Earlier drafts of this document conflated them; the lore contract
-  in the aegis-gamedev skill treats that as a shipping defect, and so should
-  every future pass.
+  **THE PLAYABLE BANNER AND THE NEUTRAL HOST ARE ONE CIVILIZATION, AND ITS
+  NAME IS THE VIGIL** (owner directive, Session 43, reversing the separation
+  rule that stood here). The fifth power was formerly labelled THE PARALLEL;
+  that name is retired everywhere. The neutral enforcement body that
+  releases waves across contested space is the same machine polity as the
+  banner the player can swear: one name, two roles. The banner holds no
+  worlds and seats no rivals; the neutral waves garrison unheld ground.
+  Nothing mechanical moved in the merge, only the name. Screens and copy
+  disambiguate by role (the standing guard, the playable banner), never by
+  a second name.
 
 ## Geography
 
@@ -263,10 +268,10 @@ Real names, and real theoretical hypotheticals, everywhere.
 - Each power opens in its own home system: Humanity in the Earth System, the
   Federation in **THE PLEIADES** (seat Alcyone), the Xeno in **ZETA
   RETICULI** (seat Serpo), the Free Captains at **PROXIMA CENTAURI** (seat
-  Proxima Gate), the Parallel at **SIRIUS** (seat The Dog Star).
+  Proxima Gate), the Vigil at **SIRIUS** (seat The Dog Star).
 - **Barnard's Star and Tabby's Star are bonus systems**, not core acts. The
   half-built swarm at Tabby's survives as somebody else's unexplained work,
-  which the Parallel can visit and fail to explain, and Harbour Nine survives
+  which the Vigil can visit and fail to explain, and Harbour Nine survives
   as the port the Free Captains used before Proxima.
 - Every other system is a real neighbour: Tau Ceti, TRAPPIST-1, Epsilon
   Eridani, Gliese 581, Wolf 359, Ross 128. Bonus systems are Kepler,
@@ -296,7 +301,7 @@ That single change pays for itself three times over.
   living memory, in secret, while the public record says nothing.
 - It makes **"everyone else was in on it"** provable rather than a grievance.
   The Federation's Ashtar Declaration, the Hungry's Farm Revolts, the Scrap
-  Constellation Charter and the Parallel Declaration all predate the Disclosure.
+  Constellation Charter and the Vigil Declaration all predate the Disclosure.
 - It puts the first event on **1947**, which is where the modern public
   anomaly record already begins, so the fiction and the real record share a
   starting line.

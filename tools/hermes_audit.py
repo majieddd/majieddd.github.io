@@ -51,7 +51,7 @@ VIOLATIONS = [
      'contains an em dash, which is absolute in this project'),
     ('vigil',
      re.compile(r'\bvigil\b', re.I),
-     'mentions the Vigil, which is a separate body from the Parallel'),
+     'mentions the Vigil, which is a separate body from the Vigil'),
     ('xeno-as-species',
      re.compile(r'\ba\s+xeno\b|\bxenos\b|\bxeno\s+(?:species|race|biology|creature)', re.I),
      'writes the Xeno as a species; it is the Extraction Compact, a business'),

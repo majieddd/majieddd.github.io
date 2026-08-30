@@ -26,7 +26,7 @@ The campaign's secondary systems should read as consequences of world history, n
 
 ## Victory boons
 
-Boons are institutions, charters, ecological adaptations, and recovered procedures. They are not magical loot detached from the conquered world. The four ordinary map powers each have five boons; the secret Parallel does not normally own campaign worlds, so it recovers other powers' infrastructure instead of supplying a fifth world-boon set.
+Boons are institutions, charters, ecological adaptations, and recovered procedures. They are not magical loot detached from the conquered world. The four ordinary map powers each have five boons; the secret Vigil does not normally own campaign worlds, so it recovers other powers' infrastructure instead of supplying a fifth world-boon set.
 
 | ID | Origin | World kind | Canon explanation |
 |---|---|---|---|

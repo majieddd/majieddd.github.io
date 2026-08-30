@@ -709,7 +709,7 @@ const PLANET_CUTS = {
   },
 
   /* ═══════════════ si 4, TABBY'S STAR ═══════════════
-     The Parallel's home: a star that dims at intervals nobody has explained,
+     The Vigil's home: a star that dims at intervals nobody has explained,
      and a garden tended for a maker who is not coming back. */
 
   '40': {

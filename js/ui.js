@@ -5111,7 +5111,7 @@ const UI = {
        cursor between visits. */
     /* POWER_ORDER, not FACTION_ORDER -- this grid asks "who has troops", which
        is the question POWER_ORDER exists to answer. FACTION_ORDER deliberately
-       omits the Parallel (it holds no worlds and seats no bosses), so grouping
+       omits the Vigil (it holds no worlds and seats no bosses), so grouping
        by it silently discarded all five machine soldiers: `unitHost` returns
        the 'robot' key and `order.filter(k => groups[k])` threw the group away.
        The consequence ran the authored fantasy backwards -- the RIVAL draws
@@ -8353,7 +8353,7 @@ const UI = {
       <section><h3>Conquest</h3><div class="codex-note">
         <p>A campaign is a galaxy: five solar systems, seven worlds each, held by every
            power that is not yours${(() => {
-             /* Counted, not hard-coded. A Parallel commander faces FOUR rivals
+             /* Counted, not hard-coded. A Vigil commander faces FOUR rivals
                 because the machines hold no worlds of their own, and the old
                 sentence said "the three powers that are not yours" to
                 everybody. */

@@ -1097,7 +1097,7 @@ const Net = {
       mix(q(pod.t)); mix(q(pod.powerHp)); mix(pod.lidx | 0);
     }
     /* THE RELAY NETWORK and THE SPLICE. Both are duel-reachable -- any
-       commander may field Parallel soldiers once the install has taken a
+       commander may field Vigil soldiers once the install has taken a
        galaxy -- and both change what arrives and where it walks: a relay
        moves speed and armour, a splice adds a whole LANE. Hash the cause,
        not the symptom: without these a divergence here would surface later
@@ -1149,7 +1149,7 @@ const Net = {
         mix(w ? q(w.prev) : 0);
       }
       /* THE COMPILE and THE BOOTSTRAP. A clone commander rewrites its own
-         traits at wave boundaries and the Parallel's towers ramp every wave,
+         traits at wave boundaries and the Vigil's towers ramp every wave,
          so both sides' STATS depend on these even though `mods` themselves
          are not hashed. `stats.jammed` is in because it is the metric
          LUMEN-R compiles on -- a client that counted one more intrusion

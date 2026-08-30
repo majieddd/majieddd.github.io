@@ -23,7 +23,7 @@ for (const f of ['config', 'lore', 'factions', 'towers2', 'roster', 'story',
 
 const G = vm.runInContext('({ STORY, STORY_ACTS, ACT_SCENARIOS, ACT_MORALS, CUTSCENES, ' +
   'PLANET_CUTS, PLANET_MOMENTS, GX_HOME_SYSTEMS, FACTIONS, COMMANDER_ROSTER, ' +
-  'LORE_CODEX, UNIT_TYPES, DIALOGUE, LORE, BOONS, SCENARIOS })', ctx);
+  'LORE_CODEX, UNIT_TYPES, DIALOGUE, LORE, BOONS, SCENARIOS, MACHINE_HOST })', ctx);
 const FACS = ['human', 'light', 'xeno', 'pirate', 'robot'];
 
 /* Every string a player can read, with where it came from. */
@@ -45,9 +45,11 @@ Object.entries(G.PLANET_MOMENTS || {}).forEach(([kind, byFac]) =>
   Object.entries(byFac).forEach(([f, t]) => add('moment ' + kind + '/' + f, t)));
 /* LORE_CODEX is the Field Manual: the game's own comment on it calls this
    "the ONE screen a new player learns the game from." It went unscanned for a
-   whole session, during which it kept describing THE PARALLEL as "the Vigil"
-   throughout, the exact conflation this file's CO.8 exists to catch, and CO.8
-   could not see it because it only fires when both words share a cell. */
+   whole session, during which it kept conflating the machine banner with the
+   neutral host, the defect the PRE-MERGE CO.8 existed to catch, and that CO.8
+   could not see it because it only fired when both names shared a cell.
+   (Since the Session 43 merge the two ARE one named civilization; the lesson
+   this comment preserves is the unscanned-surface failure, not the rule.) */
 (G.LORE_CODEX || []).forEach(e => add('codex/' + e.id, e.body));
 Object.values(G.UNIT_TYPES || {}).forEach(u => add('unit/' + u.id, u.desc));
 /* Found the same way LORE_CODEX was found: a live Compact/Accord leak (a
@@ -173,40 +175,40 @@ T('CO.7 every opening exists and closes on its own banner', () => {
   return FACS.map(f => f + ':' + (G.CUTSCENES[f].intro || []).length).join(' ');
 });
 
-/* ---- 8. the Vigil is never the Parallel ---- */
-/* Blunt co-occurrence was the whole check until faction/robot/blurb joined
-   the corpus: "The Vigil still runs the jurisdiction it was handed... The
-   Parallel is what diverged from it." Correct, load-bearing lore, flagged
-   anyway, because the original rule could not tell EXPLAINING the split
-   from ERASING it. A cell that says the two are different is not the
-   defect this check exists to catch; only a cell that says or implies
-   they are the same one is. */
-T('CO.8 the Vigil is never conflated with the Parallel', () => {
-  const DIFFERENTIATES = /\bdiverged?\b|\bdivergence\b|\bis not\b|\bare not\b|\bunlike\b|\bseparate from\b|\bdistinct from\b|\bused to be\b|\bno longer\b|\bbroke from\b|\bfork(?:ed)?\b/i;
-  const bad = CELLS.filter(c => /\bVigil\b/i.test(c.text) && /\bParallel\b/i.test(c.text) && !DIFFERENTIATES.test(c.text));
+/* ---- 8. the retired name PARALLEL never reaches a player ---- */
+/* HISTORY, because this check used to assert the OPPOSITE. Until Session 43
+   the playable machine power was THE PARALLEL and the neutral host was THE
+   VIGIL, and CO.8/CO.8b enforced that they never read as one body. The owner
+   then merged them: one civilization, one name, THE VIGIL, two roles (the
+   playable banner and the neutral standing guard), ids untouched. So the
+   conflation these checks hunted is now the canon, and the surviving defect
+   is the RETIRED NAME: any player-facing cell still saying "Parallel" is a
+   fossil of the old canon and must go. */
+T('CO.8 the retired name Parallel appears in no player-facing cell', () => {
+  /* Capitalised forms only: lowercase "in parallel" is ordinary English and
+     legitimately lives in r_failover's lore line. The first cut of this
+     check used /i and flagged exactly that. */
+  const bad = CELLS.filter(c => /\bParallel\b|\bPARALLEL\b/.test(c.text));
   must(!bad.length, () => bad.map(b => b.where).join(', '));
-  return 'no cell treats them as one body';
+  return 'no cell carries the retired name';
 });
 
-/* ---- 8b. the Vigil never does the Parallel's specific narrative work ---- */
-T('CO.8b the Vigil is never described holding worlds or built by the Ancients', () => {
-  /* The narrower version of CO.8: a cell can say "Vigil" alone (correctly, it
-     is a real separate thing) and never say "Parallel" at all, and STILL be
-     wrong if it hands the Vigil the Parallel's own established facts: built by
-     the Ancients, recovered prime directives, holding worlds/seats, or the verb
-     CONTINUE (the Parallel's signature verb in the five-ways-to-conquer set).
-     Found live: the Field Manual's "order" and "verbs" and "ancients" entries
-     all did exactly this, undetected for a session because nothing scanned
-     LORE_CODEX at all and CO.8 only fires on CO-occurrence. */
-  const bad = CELLS.filter(c => /\bVigil\b/i.test(c.text) && (
-    /\bVigil\b[^.!?]{0,60}\b(hold|holds|holding|own|owns|belong|belongs)\b/i.test(c.text) ||
-    /\b(stand|stands)\b[^.!?]{0,30}\bthe Vigil\b/i.test(c.text) ||
-    /\bVigil\b[^.!?]{0,40}\bCONTINUE/i.test(c.text) ||
-    /\bAncients\b[^.!?]{0,60}\bVigil\b|\bVigil\b[^.!?]{0,60}\bAncients\b/i.test(c.text) ||
-    /\bVigil\b[^.!?]{0,60}\bprime directive/i.test(c.text)
-  ));
-  must(!bad.length, () => bad.map(b => b.where).join(', '));
-  return 'no cell hands the Vigil the Parallel\'s origin, directives or claim to worlds';
+/* ---- 8b. the merge itself is pinned ---- */
+T('CO.8b the banner and the host are both named THE VIGIL, ids distinct', () => {
+  /* The regression gate for the Session 43 merge: a future pass that renames
+     either half back, or "fixes" the shared name as if it were a collision,
+     goes red here and finds this comment. The IDS must stay distinct
+     (`robot` the playable banner, `vigil` the host) because the wire, saves
+     and every table key on them; only the display name merged. */
+  must(G.FACTIONS && G.FACTIONS.robot && G.FACTIONS.robot.name === 'THE VIGIL',
+       () => 'FACTIONS.robot.name is ' + JSON.stringify(G.FACTIONS.robot && G.FACTIONS.robot.name));
+  must(G.FACTIONS.robot.short === 'Vigil',
+       () => 'FACTIONS.robot.short is ' + JSON.stringify(G.FACTIONS.robot.short));
+  must(G.MACHINE_HOST && G.MACHINE_HOST.name === 'THE VIGIL',
+       () => 'MACHINE_HOST.name is ' + JSON.stringify(G.MACHINE_HOST && G.MACHINE_HOST.name));
+  must(G.MACHINE_HOST.id === 'vigil' && G.FACTIONS.robot.id === 'robot',
+       () => 'ids moved: host=' + G.MACHINE_HOST.id + ' banner=' + G.FACTIONS.robot.id);
+  return 'one name, two roles, ids robot/vigil intact';
 });
 
 /* ---- 9. the Xeno is never written as a species ---- */
@@ -224,7 +226,7 @@ T('CO.9 the Xeno is never a species', () => {
  * this checks the source text directly instead of skipping them, which is
  * exactly how OWNER_LINES.robot sat mislabeled "Vigil" for a whole session:
  * nothing was reading this file at all. */
-T('CO.11 worldlore.js and missions.js carry no retired term or Vigil claim', () => {
+T('CO.11 worldlore.js and missions.js carry no retired term or retired name', () => {
   const bad = [];
   ['js/worldlore.js', 'js/missions.js'].forEach(rel => {
     let src;
@@ -233,12 +235,15 @@ T('CO.11 worldlore.js and missions.js carry no retired term or Vigil claim', () 
       bad.push(rel + ': retired term (Compact/Accord/Severance/Disclosure Fracture/Lattice)');
     if (/\bCERES\b|\bEUROPA\b|\bTITAN\b|BARNARD|TABBY|KIC-8462|HARBOUR NINE/.test(src))
       bad.push(rel + ': names a retired world');
-    if (/\bVigil\b[^'"\n]{0,60}\b(holds|hold|owns|own|maintains)\b/.test(src) &&
-        !/nest/i.test(src.slice(Math.max(0, src.search(/\bVigil\b/) - 40), src.search(/\bVigil\b/) + 80)))
-      bad.push(rel + ': "Vigil" paired with a holding/owning verb outside a nest context');
+    /* The pre-merge "Vigil holding verb" clause lived here; since Session 43
+       the banner and the host are one named civilization and the Vigil
+       legitimately holds and maintains. The surviving raw-source defect is
+       the RETIRED NAME. */
+    if (/\bParallel\b/.test(src))
+      bad.push(rel + ': carries the retired name Parallel');
   });
   must(!bad.length, () => bad.join('; '));
-  return 'no retired term, no retired world, no Vigil holding claim';
+  return 'no retired term, no retired world, no retired name';
 });
 
 /* boonFor() (js/towers2.js) falls back to a RANDOM other faction's boon

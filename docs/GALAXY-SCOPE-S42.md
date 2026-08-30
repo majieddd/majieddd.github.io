@@ -18,7 +18,7 @@ is real and checkable.*
 | CORE 2 | **THE PLEIADES** | act | Federation of Light | 7 | M45, 444 ly |
 | CORE 3 | **ZETA RETICULI** | act | The Xeno | 7 | wide binary, 39 ly |
 | CORE 4 | **PROXIMA CENTAURI** | act | The Pirates *(new)* | 7 | closest star, 4.24 ly |
-| CORE 5 | **SIRIUS** | act | The Parallel *(new)* | 7 | binary, 8.6 ly |
+| CORE 5 | **SIRIUS** | act | The Vigil *(new)* | 7 | binary, 8.6 ly |
 | BONUS 1 | **TABBY'S STAR** | bonus | nobody | 2 | KIC 8462852 |
 | BONUS 2 | **BARNARD'S STAR** | bonus | nobody | 2 | red dwarf, 5.96 ly |
 | BONUS 3 | **KEPLER** | bonus | nobody | 3 | Kepler catalogue |
@@ -88,7 +88,7 @@ a frontier grows.
 | 5 | THE DARK LOCKER | the black market vault | outer dark, unlit |
 | 6 | **PROXIMA GATE** *(seat)* | the sanctuary bay | first port out of Sol |
 
-### CORE 5. SIRIUS, home of the Parallel *(replaces Tabby's Star)*
+### CORE 5. SIRIUS, home of the Vigil *(replaces Tabby's Star)*
 Binary: Sirius A blazing white, Sirius B a white dwarf. Dogon Sirius B
 tradition; the Law of One Sirius social memory complex. Every world is an
 office of a civilisation that outlived its own bodies.
@@ -112,7 +112,7 @@ CLOSEST star to Earth, which makes it the first port out and the natural home
 of a power whose entire identity is passage. `GX_STAR_POOL` already names its
 seat PROXIMA GATE.
 
-**SIRIUS for the Parallel, and this one is an upgrade.** Their canon is that
+**SIRIUS for the Vigil, and this one is an upgrade.** Their canon is that
 the Ancients evolved past physical form entirely. Sirius B is a white dwarf: a
 star once LARGER than Sirius A (a progenitor of roughly 5 solar masses) that
 burned through, threw off most of itself, and collapsed into a core about the
@@ -124,7 +124,7 @@ real astronomy. `GX_STAR_POOL` already names the seat THE DOG STAR.
 diamond star. It is not one yet: at roughly 25,000 K and only about 126 million
 years into cooling, its carbon core has NOT crystallised, and the famous
 crystallised white dwarf is BPM 37093, not this one. So THE DIAMOND SHELF is not
-named for what the star is. It is named for what the Parallel knows it will
+named for what the star is. It is named for what the Vigil knows it will
 BECOME, which is the most in character thing this faction could do: they built
 their repair yards on a promise the star has not kept yet, because they fully
 expect to still be standing there when it does. A civilisation that outlived its
@@ -148,7 +148,7 @@ megastructure star. Real dips of 15 per cent in 2011 and 21 per cent in 2013.
 The leading natural explanation is now orbiting dust, because the dips dim blue
 light harder than red, which is the signature of dust and not of a solid panel.
 **The swarm survives here as somebody else's unexplained work**, which is why
-displacing the Parallel from it costs the arc nothing. The in game tension
+displacing the Vigil from it costs the arc nothing. The in game tension
 writes itself: the machines insist it is a structure, the light says dust, and
 the game never settles it.
 
@@ -158,7 +158,7 @@ the game never settles it.
 | THE DIMMING | the shadow band, ground under the 21 per cent dip, which has never once seen full daylight |
 
 Machines here still run the build order. Nobody can say whose it is. The
-Parallel can visit and fail to explain it, which turns their lost finale into
+Vigil can visit and fail to explain it, which turns their lost finale into
 their best open question.
 
 ### BONUS 2. BARNARD'S STAR, hangs off PROXIMA CENTAURI
@@ -263,7 +263,7 @@ and safest to defer if the render budget runs short.
 Three questions were open. Each is answered here with its reasoning, and each is
 cheap to reverse before Phase A renders.
 
-**5.1 The Parallel's finale moves to THE DOG STAR.** Their act currently ends at
+**5.1 The Vigil's finale moves to THE DOG STAR.** Their act currently ends at
 THE VEIL. Sirius is now their home, so the finale becomes the origin of the
 orders, which is the better ending for a campaign that is a mystery about who
 writes them: the last thing they take is the desk the instructions came from.

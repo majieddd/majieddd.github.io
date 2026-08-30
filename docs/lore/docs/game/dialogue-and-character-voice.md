@@ -29,7 +29,7 @@ This prevents every Federation commander from speaking like a priest, every Xeno
 - Xeno dialogue should emphasize dependency, contracts, Yield, memory, hierarchy, and client systems. Hunger language belongs mainly to Mawlord, Ulgrim, and the Voracious Brood.
 - Pirate dialogue should distinguish abolitionists, sanctuary captains, salvagers, privateers, and traffickers.
 - Human dialogue should reveal different polities and professions rather than treating Humanity as one military culture.
-- Machine dialogue should expose distinct mission interpretations. The Parallel is not the Vigil and does not speak for the whole Old Weather.
+- Machine dialogue should expose distinct mission interpretations. The playable banner and the neutral enforcement waves are one civilization named the Vigil (the name Parallel is retired), but no single process speaks for the whole Old Weather.
 
 ## Commander voices and sample lines
 
@@ -77,7 +77,7 @@ Each commander should ultimately receive short lines for:
 - unit rescue;
 - one-star, two-star, and three-star victory;
 - defeat and return;
-- Parallel reveal;
+- Vigil reveal;
 - Maelstrom endgame.
 
 The machine-readable commander registry contains motive and contradiction fields that can be used to generate drafts, but final dialogue should be hand-reviewed for voice and continuity.

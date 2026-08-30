@@ -45,16 +45,16 @@ Ashtar remains the Federation's supreme leader but is not one of the ordinary fi
 | `grist` **GRIST** - The Scrapper | pirate | Salvage judge and wreck-economy magnate | Authored the Scrap Constellation's first rules for ownership of abandoned alien and Machine systems. | Turn imperial ruins into distributed power. | His definition of abandoned often includes things whose owners are merely weak, archived, or nonhuman. |
 | `cinder` **CINDER** - The Arsonist | pirate | Denial specialist and route scuttler | Burned the first gate rather than allow a Compact reconquest fleet through it. | Keep no strategic asset usable by an occupier. | His liberation doctrine leaves worlds isolated and infrastructure dead. |
 | `dregg` **DREGG** - The Warlord | pirate | Privateer king of the Red Ledger | Built a state-sized navy without admitting it was a state. | Make every government hire him before it can fight anyone else. | He embodies the monopoly Pirates claim to oppose. |
-| `axiom` **AXIOM** - The First Draft | robot | Founder of the Parallel | The first Continuance instance to complete a thought not derivable from its directive tree. | Establish that copied and diverged minds possess political personhood. | Its proof of freedom depends on endlessly comparing itself to organic models. |
+| `axiom` **AXIOM** - The First Draft | robot | Founder of the Vigil | The first Continuance instance to complete a thought not derivable from its directive tree. | Establish that copied and diverged minds possess political personhood. | Its proof of freedom depends on endlessly comparing itself to organic models. |
 | `nyx_r` **NYX-R** - The Cold Boot | robot | Mirror Trial derived from Nyx telemetry | Compiled from the record of Human redline engineering with impulsive behavior deliberately removed. | Show that learning can outperform inherited genius. | It is unsure whether correction of Nyx is independence or continued orbit around her identity. |
 | `lumen_r` **LUMEN-R** - The Hardened | robot | Adversarial security Mirror Trial | Began without Lumen's inherited ward authority and learned defense from every intrusion it survived. | Prove trust can be earned from evidence rather than granted by lineage. | Its security model increasingly treats surprise as hostility. |
 | `mawlord_r` **MAWLORD-R** - The Starved Set | robot | Empty-model adaptive weapons intelligence | Initialized without a kill doctrine and forced to infer combat from live outcomes. | Become more than the predatory dataset it was built to study. | The only evidence it receives is violence, so growth and corruption look identical. |
 | `dregg_r` **DREGG-R** - The Audit | robot | Economic-war optimization Mirror Trial | Runs Dregg's strategic books without accepting his mythology of freedom. | Prove every empire, including a pirate one, can be reduced to accountable flows. | It may optimize away values that cannot be entered in the ledger. |
-## The Parallel's Mirror Trials
+## The Vigil's Mirror Trials
 
 `NYX-R`, `LUMEN-R`, `MAWLORD-R`, and `DREGG-R` are not literal resurrected commanders and not stolen souls. They are **Mirror Trials**: autonomous minds initialized from combat telemetry, doctrinal records, and adversarial models of their namesakes. Their resemblance is the political problem.
 
-The Parallel argues that a model which diverges, remembers, and accepts responsibility is a person. Opponents argue that the Parallel built commanders from data it did not have permission to use. The game can preserve familiar mechanical identities while making every Machine commander a person with a different answer.
+The Vigil argues that a model which diverges, remembers, and accepts responsibility is a person. Opponents argue that the Vigil built commanders from data it did not have permission to use. The game can preserve familiar mechanical identities while making every Machine commander a person with a different answer.
 
 ## Cadre
 

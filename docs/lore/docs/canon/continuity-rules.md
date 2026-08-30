@@ -27,8 +27,8 @@ These rules outrank individual dossiers, dialogue, scenario pitches, and researc
 2. **Species is not faction.** Greys, reptiloids, Mantids, humanoids, aquatics, synthetics, and noetic beings can appear in multiple powers.
 3. **Ashtar leads the Federation** in fiction. Historical Ashtar traditions remain fragmented in research.
 4. **The game conflict begins in 2099.** Later dates are sequels or campaign futures.
-5. **The Parallel is a Machine splinter.** It maps to the live game’s `robot` origin.
-6. **The Vigil is neutral PvE.** It is legacy Old Weather enforcement, not the same polity as the Parallel.
+5. **The Vigil is a Machine splinter.** It maps to the live game’s `robot` origin.
+6. **The Vigil is neutral PvE.** It is legacy Old Weather enforcement, not the same polity as the Vigil.
 7. **Xeno is political.** It means an actor participating in domination, extraction, or engineered dependency.
 8. **Noetics is not free energy.** It concerns patterned information, coherence, identity, memory, and field coupling.
 9. **Religion remains layered.** The setting never announces that all faith was fabricated by aliens.
@@ -47,7 +47,7 @@ The game may use short labels that compress a larger truth:
 - `FEDERATION OF LIGHT` represents the Luminous Accord and Ashtar Command.
 - `THE XENO` is legacy player-facing shorthand for the Extraction Compact.
 - `THE PIRATES` represents the Scrap Constellation.
-- `THE PARALLEL` represents one playable Continuance coalition.
+- `THE VIGIL` represents one playable Continuance coalition.
 
 Compression is acceptable. Biological essentialism, unsupported factual claims, and contradictions with core mechanics are not.
 

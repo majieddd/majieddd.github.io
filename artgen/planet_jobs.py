@@ -50,7 +50,7 @@ v2 generates for every faction. If that table moves, this one is stale and
 # humans grounded in the restraint of Dune and flying what a crewed space
 # programme would actually fly; the Federation a multi-species cathedral
 # culture in gold and ivory; the Compact predatory and wet; the pirates a
-# mixed fleet AND a mixed crew, no two hulls from one yard; the Parallel
+# mixed fleet AND a mixed crew, no two hulls from one yard; the Vigil
 # chrome and pale teal with no colour of its own.
 FLEET = {
     'human':  ('a human fleet of capsule ships, strap-on boosters and station modules, weld '
@@ -64,7 +64,7 @@ FLEET = {
     'pirate': ('a raider armada where no two ships came from the same yard, patchwork '
                'galleons, gutted freighters flying rigging and converted tankers strung with '
                'lights, crimson and rust'),
-    'robot':  ('a Parallel formation of seamless white-chrome hulls with hairline panel gaps, '
+    'robot':  ('a Vigil formation of seamless white-chrome hulls with hairline panel gaps, '
                'flying in exact spacing, cold white running lights, pale teal shadow, no '
                'insignia anywhere'),
 }
@@ -424,7 +424,7 @@ WORLDS = [
      'the sanctuary bay under new colours, the boom restrung across the mouth and every berth logged '
      'and numbered, one captain high on a catwalk watching the banner go up without them'),
 
-    # ---- si 4, TABBY'S STAR. The Parallel's home: a star that dims at ------
+    # ---- si 4, TABBY'S STAR. The Vigil's home: a star that dims at ------
     # irregular intervals, and a garden tended for a maker who is not coming.
     (4, 0, 'SIRIUS A I',
      'an inner world under a blue white star twenty five times brighter than the Sun, its terraces '

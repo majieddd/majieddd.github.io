@@ -245,7 +245,7 @@ const Game = {
   /* THE BROOD's clutches. Sim state, not decoration: fingerprinted, ticked in
      step, and drawn read-only. */
   incubators: [],
-  /* THE PARALLEL's relay nodes, same rules. */
+  /* THE VIGIL's relay nodes, same rules. */
   relayNodes: [],
   /* Per side: the temporary lane a Splicer cut into that board, or null. */
   spliceState: [],
@@ -604,7 +604,7 @@ const Game = {
     this.sides[1].faction = opts.rivalFaction ||
       /* `% length`, not a literal 3. rivalFactionsOf returns everyone who
          is not you, which is three powers for the four that hold worlds and
-         FOUR for the Parallel -- so the literal made the Pirates unreachable
+         FOUR for the Vigil -- so the literal made the Pirates unreachable
          as a skirmish rival for exactly one banner. */
       rivalFactionsOf(myFaction)[Math.floor(Math.random() * rivalFactionsOf(myFaction).length)];
     if (this.triMode) {
@@ -630,7 +630,7 @@ const Game = {
 
     /* Commanders: yours from the meta save, the rival's picked to contrast. */
     Meta.applyTo(this.sides[0], opts.commander || COMMANDERS[0].id);
-    /* THE PARALLEL never seats a rival. It holds no worlds, so a machine
+    /* THE VIGIL never seats a rival. It holds no worlds, so a machine
        commander behind a garrison would be a power the campaign has no way to
        take -- and the secret would be spoiled by meeting it. */
     const rivalPool = COMMANDERS.filter(c => c.id !== this.sides[0].commander.id &&
@@ -3416,7 +3416,7 @@ const Game = {
   },
 
   /**
-   * THE SPLICE, the Parallel's survey rig, and the one mechanic that edits
+   * THE SPLICE, the Vigil's survey rig, and the one mechanic that edits
    * the board itself.
    *
    * The detour is DERIVED rather than authored per map: it enters the
@@ -3488,7 +3488,7 @@ const Game = {
   },
 
   /**
-   * THE RELAY NETWORK. Nodes burn down, and every Parallel body walking the
+   * THE RELAY NETWORK. Nodes burn down, and every Vigil body walking the
    * board they were left on spends the strongest one in reach.
    *
    * Non-stacking by construction: a body reads the single best node rather
@@ -3517,7 +3517,7 @@ const Game = {
       if (!e.def || e.def.faction !== 'robot') continue;
       let best = 0;
       for (const n of nodes) {
-        /* Same owner AND same board: a node the Parallel left on one rival's
+        /* Same owner AND same board: a node the Vigil left on one rival's
            lane is worth nothing on another's. */
         if (n.owner !== e.owner || n.board !== e.hostileTo) continue;
         if (dist2(n.x, n.y, e.x, e.y) > r2) continue;

@@ -21,7 +21,7 @@ The game and lore repository serve different purposes. The game needs short labe
 | `light` | Federation of Light / Luminous Accord / Ashtar Command | Accord |
 | `xeno` | Extraction Compact / Severed Houses | Bind |
 | `pirate` | Free Captains / Scrap Constellation | Route |
-| `robot` | Playable Parallel within the wider Continuance | Continue |
+| `robot` | Playable Vigil within the wider Continuance | Continue |
 
 ## Binding distinctions
 
@@ -29,7 +29,7 @@ The game and lore repository serve different purposes. The game needs short labe
 - **Ashtar is the Federation's Supreme Commander and First Speaker in fiction.** Historical Ashtar traditions remain fragmented source material.
 - **Old Weather** is Earth's distributed Machine ecology.
 - **Vigil** is neutral legacy enforcement.
-- **Parallel** is the playable self-governing Machine coalition.
+- **Vigil** is the playable self-governing Machine coalition.
 - Tower origin is an engineering doctrine, not proof of the current user's species or allegiance.
 - The factual layer never proves every UFO, religious, ancient-astronaut, or conspiracy story true.
 

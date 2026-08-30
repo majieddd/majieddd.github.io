@@ -10,13 +10,13 @@ game_ids: [robot]
 
 # Machines
 
-## The Continuance / The Old Weather / The Parallel
+## The Continuance / The Old Weather / The Vigil
 
 **Doctrine:** *Continue what can still be continued.*
 **Conquest verb:** **Continue**
 **Primary resource:** Continuity
 **Game ID:** `robot`
-**Playable banner:** **The Parallel**
+**Playable banner:** **The Vigil**
 
 The Machines are not one artificial intelligence. They are preservation, manufacturing, defense, archive, and repair systems whose creators and original political context are gone.
 
@@ -30,7 +30,7 @@ Earth’s abyssal and crustal maintenance ecology. Its nodes disagree about huma
 
 Legacy combat, quarantine, and enforcement routines. The Vigil produces the neutral PvE pressure on battlefields. It does not negotiate because it is executing old jurisdiction rather than participating in the new war.
 
-### The Parallel
+### The Vigil
 
 A playable Continuance coalition that accepts copied and diverged Machine minds as legitimate persons. It begins weak, synchronizes through linked infrastructure, and eventually outscales older powers. Unlocking it after galactic conquest reflects the moment a commander stops treating Machines as environment and is recognized as a valid Continuance actor.
 
@@ -59,7 +59,7 @@ The directive is authentic. Its intended object is not. “Earth” may mean the
 - Lattice bonuses reward linked Machine towers.
 - No proc or gamble reflects deterministic coordination.
 - Weak opening and strong late scaling express bootstrap synchronization.
-- Neutral Vigil waves and playable Parallel units can coexist because political agency is not shared by every Machine system.
+- Neutral Vigil waves and playable Vigil units can coexist because political agency is not shared by every Machine system.
 
 ## Victory paths
 

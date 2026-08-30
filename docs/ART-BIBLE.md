@@ -38,7 +38,7 @@ rest of this file is about WHAT gets drawn inside it.
 | Radiant gold | `#fbbf24` | FEDERATION OF LIGHT |
 | Xeno violet | `#7c3aed` | THE XENO |
 | Raider crimson | `#ef4444` | THE PIRATES |
-| Chrome + pale teal | `#94a3b8` range | THE PARALLEL (machines) |
+| Chrome + pale teal | `#94a3b8` range | THE VIGIL (machines) |
 | Neon magenta | `#ff2fd6` | vaporwave key light, skies, accents |
 
 Faction colour dominates to the point of monochrome in anything a faction
@@ -112,7 +112,7 @@ turn their back on it.
   and humans among them. Crimson and rust dominant, scavenged material
   everywhere.
 
-### 3.5 The Parallel: unchanged
+### 3.5 The Vigil: unchanged
 
 Chrome and pale teal, cold white light, machines tending a garden for a maker
 who is not coming back. The redraft language (a machine restatement of an
@@ -378,7 +378,7 @@ wrong for the beat (a rewrite). Tell them apart before acting.
 `tools/brand_audit.py` reads every plate and reports its saturation-weighted
 dominant hue, the share of coloured pixels inside the band its power owns, mean
 saturation and mean luminance, then flags anything outside the section 2 bands.
-The Parallel is judged on a saturation CEILING rather than a hue band, because
+The Vigil is judged on a saturation CEILING rather than a hue band, because
 its identity is that it owns no hue and a hue test on it would mean nothing.
 
 It exists because eye does not scale to 875 plates, and because
@@ -425,7 +425,7 @@ the art:
    failures sat ONE 10-degree bin below a floor drawn exactly on the brand
    token (`#7c3aed` is hue 262), while carrying 47 to 70 per cent of their
    colour inside the band. They were violet plates being misreported;
-3. **the Parallel moved from a saturation ceiling to CHROME MASS**, because
+3. **the Vigil moved from a saturation ceiling to CHROME MASS**, because
    TITAN/robot and MARS/robot were flagged for standing on an orange sky and a
    red regolith while the automata themselves were correctly colourless. A
    whole-frame ceiling punishes the one power with no colour for campaigning
@@ -440,7 +440,7 @@ twice chance.
 `tools/brand_audit_mutants.py` takes four plates that pass, breaks each one
 deliberately, and requires the audit to reject all four. Federation gold
 rotated to blue goes 11.21 to 0.13, human cyan rotated to red 5.05 to 0.99,
-pirate crimson rotated to teal 2.49 to 0.03, Parallel chrome saturated into
+pirate crimson rotated to teal 2.49 to 0.03, Vigil chrome saturated into
 colour 0.32 to 0.00. **4 caught, 0 missed.** Run it whenever a threshold in
 brand_audit.py moves; a gate that only ever passes has demonstrated nothing.
 

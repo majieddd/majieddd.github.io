@@ -31,7 +31,7 @@ Commander dialogue becomes memorable when it reflects shared history rather than
 | `grist` / `orin` | **Salvage versus stewardship** | Both make wreckage useful. Orin asks whether the object can be repaired; Grist asks whether anyone can still enforce ownership. |
 | `cinder` / `lumen` | **Denial versus preservation** | Cinder destroys compromised systems; Lumen protects their authentic core and accepts the cost of careful recovery. |
 | `dregg` / `dregg_r` | **Legend versus ledger** | Dregg treats charisma as a strategic asset. The Audit records every hidden subsidy beneath his myth of independence. |
-| `axiom` / `thrax` | **Parallel persons versus coercive collective** | Axiom argues that copies may diverge freely. Thrax argues that divergence should be reconciled inside one mind. |
+| `axiom` / `thrax` | **Vigil persons versus coercive collective** | Axiom argues that copies may diverge freely. Thrax argues that divergence should be reconciled inside one mind. |
 
 ## Relationship progression
 

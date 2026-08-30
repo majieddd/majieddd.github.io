@@ -39,14 +39,14 @@ These 25 stable IDs are the people, vehicles, organisms, and bodies recovered at
 | `fabricant` **Fabricant** | robot | General-purpose production body | Prints replacement components while recording every deviation as precedent. | Manufacturing becomes law by repetition. |
 | `splicer` **Splicer** | robot | Interface and protocol conversion frame | Makes incompatible organic and synthetic systems temporarily interoperable. | Translation can become quiet control. |
 | `gantry` **Gantry** | robot | Mobile industrial support chassis | Carries tools, ammunition, and construction logic rather than a singular weapon. | The battlefield is treated as unfinished infrastructure. |
-| `omniframe` **Omniframe** | robot | Consensus anchor and heavy platform | Coordinates nearby Machine instances without making them one mind. | The Parallel defines unity as negotiated synchronization. |
+| `omniframe` **Omniframe** | robot | Consensus anchor and heavy platform | Coordinates nearby Machine instances without making them one mind. | The Vigil defines unity as negotiated synchronization. |
 ## Doctrinal mechanics
 
 - **Human Salvage Armor:** Human detachments turn battlefield wreckage into standardized protection. This is adaptation with a colonial shadow: everything becomes a compatible resource.
 - **Federation Vow:** A shield can pass between signatories because the ward authenticates a shared defensive obligation. The Vow is scoped consent, not surrender of a soul.
 - **Xeno Mass:** The Voracious Brood converts nearby death into growth. These five units are one Compact client-army, not the biology of every Xeno civilization.
 - **Pirate Scuttle:** Pirate bodies and vehicles are designed to deny useful capture. Their deaths damage nearby infrastructure because autonomy includes deciding what survives you.
-- **Machine Relay:** Parallel units leave forward nodes because every action is also infrastructure for the next instance.
+- **Machine Relay:** Vigil units leave forward nodes because every action is also infrastructure for the next instance.
 
 ## The Vigil is not a faction army
 

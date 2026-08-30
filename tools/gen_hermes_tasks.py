@@ -67,10 +67,10 @@ NEW_CORE = {
         ('SIRIUS B I', 'the quarantine, sealed white halls of units that failed inspection',
          'orbiting the white dwarf itself, about 1.02 solar masses in an Earth sized body'),
         ('THE DIAMOND SHELF', 'the repair yards standing on a carbon core',
-         'Sirius B has NOT crystallised: at 25,000 K and 126 million years of cooling its core is still fluid. The Parallel named the place for what it will one day become'),
+         'Sirius B has NOT crystallised: at 25,000 K and 126 million years of cooling its core is still fluid. The Vigil named the place for what it will one day become'),
         ('THE COMPANION', 'the task queue relay, a mast and yard passing standing orders down',
          'the white dwarf close in, tiny and ferociously hot'),
-        ('THE DOG STAR', 'the origin, where the orders come from, and the Parallel capital',
+        ('THE DOG STAR', 'the origin, where the orders come from, and the Vigil capital',
          'the brightest star in Earth s sky, 8.6 ly away, the Dogon Sirius B tradition'),
     ],
 }
@@ -107,7 +107,7 @@ FACTIONS = {
     'light': 'The Federation of Light, the Galactic Federation of Light. Sacred bureaucracy: registries, mandates, protections flagged and then deferred for decades. Their guilt is paperwork. They never gloat, and they never demand anyone surrender their free will: their menace is protecting people who never asked.',
     'xeno': 'The Xeno, meaning the Hungry: a business, NOT a species. Livestock and harvest language, cold and proprietary: herds, yield, pens, stock, quotas, schedules. Not cruel, agricultural. It speaks like a firm that has audited everyone.',
     'pirate': 'The Pirates, the Free Captains, who call their territory the Free Roads. Rough, warm, first person, loyal to crews and hostile to authority. Salvage, tolls, debts, no fee.',
-    'robot': 'The Parallel, the Continuance coalition, an ancient machine order that gave up physical bodies. Clipped site logs, ALL CAPS labels, refers to itself as "This unit" and never "we". Speaks of the queue, the core, standing orders. Its quiet horror is that it does not know who writes the orders. It is NOT the Vigil.',
+    'robot': 'The Vigil, the Continuance coalition, an ancient machine order that gave up physical bodies. Clipped site logs, ALL CAPS labels, refers to itself as "This unit" and never "we". Speaks of the queue, the core, standing orders. Its quiet horror is that it does not know who writes the orders. It is NOT the Vigil.',
 }
 
 HOME = {3: 'pirate', 4: 'robot', 0: 'human', 1: 'light', 2: 'xeno'}

@@ -78,11 +78,11 @@ function build(G, artHas) {
       check: () => HOME.pirate && HOME.pirate.name === 'PROXIMA CENTAURI',
       got: () => (HOME.pirate ? HOME.pirate.name : '?') },
 
-    { id: 'the Parallel are at SIRIUS', why: 'Sirius B is a star that gave up its own form.',
+    { id: 'the Vigil are at SIRIUS', why: 'Sirius B is a star that gave up its own form.',
       check: () => HOME.robot && HOME.robot.name === 'SIRIUS',
       got: () => (HOME.robot ? HOME.robot.name : '?') },
 
-    { id: 'the Parallel act ends at THE DOG STAR', why: 'They reach the source of every order and the chairs are empty.',
+    { id: 'the Vigil act ends at THE DOG STAR', why: 'They reach the source of every order and the chairs are empty.',
       check: () => HOME.robot && HOME.robot.worlds[6] === 'THE DOG STAR',
       got: () => (HOME.robot ? HOME.robot.worlds[6] : '?') },
 

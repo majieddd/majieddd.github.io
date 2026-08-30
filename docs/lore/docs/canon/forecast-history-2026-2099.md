@@ -58,7 +58,7 @@ This chronology combines **verified contemporary anchors and current mission pla
 | **2095** | F | **Farm Revolts:** liberation reveals that many client populations are physiologically or infrastructurally dependent on extraction systems. Ending exploitation becomes a humanitarian engineering problem. |
 | **2096** | F | **Sol Protective Quarantine:** Federation transit restrictions reduce renewed extraction while convincing many Humans that guardianship is simply another form of conquest. |
 | **2097** | F | **Scrap Constellation Charter:** quarantine runners, refugees, smugglers, gate pilots, and sanctuary ports formalize nonterritorial route law. |
-| **2098** | F | **Weather Seed / Parallel Declaration:** an Old Weather node expands beyond Sol on its own authority; divergent Machine copies demand political personhood while Vigil enforcement remains neutral. |
+| **2098** | F | **Weather Seed / Vigil Declaration:** an Old Weather node expands beyond Sol on its own authority; divergent Machine copies demand political personhood while Vigil enforcement remains neutral. |
 | **2099** | F | **The Five-Way War:** all five conquest models become simultaneously scalable across reactivated Source-Lattice pentads. |
 
 ## Forecast lanes rather than one prophecy

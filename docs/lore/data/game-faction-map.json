@@ -25,14 +25,14 @@
     },
     "robot": {
       "canon_id": "machines",
-      "display": "THE PARALLEL",
+      "display": "THE VIGIL",
       "origin": "ROBOTIC"
     }
   },
   "neutral_pve": {
     "name": "THE VIGIL",
     "canon_parent": "machines",
-    "relationship": "legacy Old Weather enforcement; not the playable Parallel"
+    "relationship": "legacy Old Weather enforcement; not the playable Vigil"
   },
   "mechanics": {
     "reanimation": "Echo Reversal Protocol",

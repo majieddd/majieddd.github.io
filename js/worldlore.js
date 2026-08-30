@@ -381,7 +381,7 @@
     ],
     robot: [
       'A Continuance work site: the automatons execute their standing tasks here, and the tasks stopped matching the recovered directives long ago.',
-      'The Parallel holds it and maintains it perfectly, for a purpose no recovered archive can produce.'
+      'The Vigil holds it and maintains it perfectly, for a purpose no recovered archive can produce.'
     ]
   };
 

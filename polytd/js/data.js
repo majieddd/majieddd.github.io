@@ -76,7 +76,7 @@ const TOWERS = {
   },
   nullfield: {
     id:'nullfield', name:'NULLFIELD', elem:'void', cost:275, role:'SLOW FIELD',
-    desc:'A rotating gyro of the Parallel: everything near it drags. The lattice pays in stillness.',
+    desc:'A rotating gyro of the Vigil: everything near it drags. The lattice pays in stillness.',
     base:{ dmg:5, range:2.8, rate:0.8, pv:9, aura:0.28, auraR:2.6 }, tag:'aura',
     lv:[ {cost:130, dmg:12, aura:0.38, auraR:3.0, name:'SCHELL'},
          {cost:220, dmg:20, aura:0.5, auraR:3.4, name:'CHURCH'} ],
@@ -94,7 +94,7 @@ const ENEMIES = {
   bulwark: { id:'bulwark', name:'BULWARK', hp:110, speed:0.95, bounty:14, armor:6, kind:'walk', col:'#cbd5e1',
     desc:'A Hive warrior in plated chassis. Kinetic does not care. Magic barely does.' },
   wisp: { id:'wisp', name:'WISP', hp:30, speed:1.8, bounty:8, armor:0, kind:'fly', col:'#38e8ff',
-    desc:'A spectral carrier from the Parallel fleet. It ignores ground fire and the lane itself.' },
+    desc:'A spectral carrier from the Vigil fleet. It ignores ground fire and the lane itself.' },
   vector: { id:'vector', name:'VECTOR', hp:64, speed:1.5, bounty:11, armor:3, kind:'walk', col:'#fbbf24',
     desc:'Federation blade-saint. Her halo is the order that ruled the sky for nine hundred years.' },
   harbinger: { id:'harbinger', name:'HARBINGER', hp:420, speed:0.85, bounty:60, armor:4, kind:'walk', col:'#ef4444',
@@ -102,7 +102,7 @@ const ENEMIES = {
   spawnling: { id:'spawnling', name:'SPAWNLING', hp:34, speed:1.55, bounty:5, armor:0, kind:'walk', col:'#a855f7',
     desc:'Xeno gnawling, born of a carrier wake. Every wave feeds the next.' },
   juggernaut: { id:'juggernaut', name:'JUGGERNAUT', hp:2600, speed:0.5, bounty:400, armor:10, kind:'walk', col:'#e2e8f0',
-    boss:2, desc:'The Parallel answer to a fortress: a cathedral that walks. It does not die to one gun.' }
+    boss:2, desc:'The Vigil answer to a fortress: a cathedral that walks. It does not die to one gun.' }
 };
 
 function waveHpMul(w){

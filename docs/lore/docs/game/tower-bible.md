@@ -85,7 +85,7 @@ The display copy should answer three questions in this order:
 | `carronade` | **CARRONADE** | A capital ship's gun emplaced with its deck and heat problems intact. | Overload is both signature power and forced downtime. |
 | `stokehold` | **STOKEHOLD** | A ship boiler that accepts friendly weapon heat instead of allowing guns to jam. | A reckless fleet becomes a shared thermal economy. |
 
-## Parallel Continuance Arsenal
+## Vigil Continuance Arsenal
 
 | Stable ID | Tower | Historical origin | Why the mechanic belongs |
 |---|---|---|---|
@@ -94,7 +94,7 @@ The display copy should answer three questions in this order:
 | `vault` | **VAULT** | A resource-allocation node that turns verified throughput into local currency. | Machine economy is accounting made physical. |
 | `dronebay` | **DRONE BAY** | A mobile coverage system descended from autonomous inspection swarms. | The only fixed structure whose effective territory moves. |
 | `foundry` | **FOUNDRY** | A repair ecology that forges bodies to engage threats directly. | Machine manufacturing becomes a temporary army. |
-| `echo` | **ECHO** | A repeat node that models and reissues neighboring attacks. | The Parallel learns through adjacency rather than inspiration. |
+| `echo` | **ECHO** | A repeat node that models and reissues neighboring attacks. | The Vigil learns through adjacency rather than inspiration. |
 | `quake` | **QUAKE** | A crustal maintenance hammer repurposed as field-wide ground control. | Old infrastructure makes the whole defended side its range. |
 | `pylon` | **PYLON** | A local lattice keystone that increases the value of linked Machine hardware. | Machine strength is topology, not individual heroism. |
 | `replicator` | **REPLICATOR** | An autonomous construction precedent that builds another approved emplacement. | Its true cost is territory and the political right to reproduce. |

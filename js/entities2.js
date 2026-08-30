@@ -963,7 +963,7 @@ function unitDeathDoctrine(e) {
     }
   }
 
-  /* RELAY. A Parallel body that dies on somebody's lane leaves a working node
+  /* RELAY. A Vigil body that dies on somebody's lane leaves a working node
      where it fell. Unlike the other four this does nothing to the board it
      died on -- it is infrastructure for the machines still walking, which is
      why it is recorded rather than applied: the buff is read per frame from

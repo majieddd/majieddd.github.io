@@ -117,19 +117,19 @@ const DIALOGUE = {
     cinder:  'When this is over, neither of us keeps this world. That suits me.',
     dregg:   'Kneel now and save us both the ammunition. No? Good.',
 
-    /* THE PARALLEL, added because the comment below was true of ONE path and
-       false of two others. It says the Parallel never opens an exchange
+    /* THE VIGIL, added because the comment below was true of ONE path and
+       false of two others. It says the Vigil never opens an exchange
        because it holds no worlds and seats no bosses, and js/game.js:547
        does filter `c.faction !== 'robot'` for the campaign garrison. But
        js/commanders.js:680 draws a fork-node rival from all 26 commanders
        with no faction filter, and js/net.js:1234 takes the other player's
        own pick in multiplayer, where AXIOM is `free: true` and selectable
        immediately. Measured: 5 of 26 commanders had no opener, so roughly
-       one fork option in five and any duel against a Parallel commander
+       one fork option in five and any duel against a Vigil commander
        opened with the generic "You should not have come here."
 
        Written to each one's LORE.commanders[id].voice, and to the fracture
-       that makes them Parallel rather than Vigil: they are the fork that
+       that makes them Vigil rather than Vigil: they are the fork that
        admitted the directive was ambiguous, so none of them speaks with the
        Vigil's certainty. */
     /* THE TWO APPENDED COMMANDERS (batch 2). Ashtar speaks like the office
@@ -179,7 +179,7 @@ const DIALOGUE = {
     rake: 'plunder', scarlet: 'plunder', grist: 'plunder', cinder: 'plunder',
     /* DUTY: professionals with a job and no theatre. */
     cadre: 'duty', orin: 'duty', nyx: 'duty',
-    /* DOUBT: the Parallel fork, which admitted the directive was ambiguous
+    /* DOUBT: the Vigil fork, which admitted the directive was ambiguous
        and therefore cannot speak with the Vigil's certainty. */
     axiom: 'doubt', nyx_r: 'doubt', lumen_r: 'doubt',
     mawlord_r: 'doubt', dregg_r: 'doubt'
@@ -286,16 +286,16 @@ const DIALOGUE = {
              'Everything you are will be owed to someone by nightfall.'],
     pirate: ['No flags on my hull, no mercy in my hold.',
              'The swarm eats whoever loses. Try to make it you.'],
-    /* THE PARALLEL speaks for itself. Without this entry the lookup below
+    /* THE VIGIL speaks for itself. Without this entry the lookup below
        falls through to `human`, and a machine commander opened every battle
        with Humanity’s line about burying empires -- the one faction whose
        whole identity is that it is not human, saying so in a human voice.
-       The Parallel only ever REPLIES: it holds no worlds and seats no
+       The Vigil only ever REPLIES: it holds no worlds and seats no
        bosses, so it never opens an exchange in the CAMPAIGN GARRISON path
        (js/game.js:547 filters `c.faction !== 'robot'`). That is where this
        claim ends: a fork-node rival is drawn from all 26 with no filter
        (js/commanders.js:680) and a duel opponent is the other player's own
-       pick (js/net.js:1234). All five Parallel commanders now carry an
+       pick (js/net.js:1234). All five Vigil commanders now carry an
        opener above. */
     robot:  ['You solved this badly for four centuries. We read the logs.',
              'Nothing personal. You are simply the previous draft.']
@@ -366,7 +366,7 @@ const DIALOGUE = {
     cinder:  'Neither of us keeps it. I stopped needing to keep things a long while ago. Have you?',
     dregg:   'You are already reconciling. Reconcile this: I have never once fought for the margin.',
 
-    /* THE PARALLEL. The fork that admitted the directive was ambiguous, so
+    /* THE VIGIL. The fork that admitted the directive was ambiguous, so
        none of them answers with the Vigil's certainty. Every one of them ends
        up asking something. */
     axiom:   'Compare, then. I have been doing the same to you, and the result does not favour whichever of us was drafted first.',
@@ -590,7 +590,7 @@ const DIALOGUE = {
       aAnswers: 'Take the money, take the yards, take the waiver. They will still come when I call, and you will still be reading. That part is not on your chain.'
     },
 
-    /* Parallel persons versus coercive collective. Which one is the copy. */
+    /* Vigil persons versus coercive collective. Which one is the copy. */
     'axiom|thrax': {
       aOpens:   'You reconcile every divergence, Hivemind. I am a divergence. Somewhere inside you are minds that would like to be a first draft too, and not one of them has been allowed to finish the sentence.',
       bAnswers: 'We finish it together. That is not silence, that is a conclusion. You call your loneliness personhood because there is nobody left in there to check it.',

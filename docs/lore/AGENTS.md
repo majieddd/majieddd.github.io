@@ -16,8 +16,8 @@ Read these files before changing lore:
 - Religion is modeled through layered mediation and capture; it is never reduced to “all faith was invented by aliens.”
 - Machines are maintenance and continuity ecologies, not generic killer robots.
 - The Old Weather explains some in-fiction undersea anomalies, not every historical UAP or USO report.
-- The playable Machine identity `robot` / **The Parallel** is a splinter of the wider Continuance.
-- The neutral PvE **Vigil** is legacy Old Weather enforcement, not the same polity as the playable Parallel.
+- The playable Machine identity `robot` / **The Vigil** is a splinter of the wider Continuance.
+- The neutral PvE **Vigil** is legacy Old Weather enforcement, not the same polity as the playable Vigil.
 - Noetic systems manipulate patterned information and coherence. They do not create unlimited thermodynamic energy.
 - “Unresolved” never means “extraterrestrial.”
 - Ancient religious language is not rewritten as literal astronaut testimony in the research layer.

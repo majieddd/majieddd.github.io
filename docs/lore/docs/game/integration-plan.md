@@ -29,7 +29,7 @@ Make every commander, unit, tower, ability, battlefield, world, boon, modifier, 
 
 - Add role, history, motive, contradiction, and voice tags to commander dossiers.
 - Replace faction-generic replies with state-aware dialogue pools.
-- Add Machine opener lines and Parallel-specific relationship scenes.
+- Add Machine opener lines and Vigil-specific relationship scenes.
 
 ## Phase 4 - Arsenal and units
 

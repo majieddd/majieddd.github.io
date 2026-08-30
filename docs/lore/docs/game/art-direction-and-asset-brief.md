@@ -30,13 +30,13 @@ A faction color may aid readability, but it must not erase species, material, en
 | **Federation** | Open circles, scoped halos, witness threads, radiant amber/gold, transparent boundaries, many-species interfaces. | Consent seals, memory chains, emergency-key markings, and visible room for individual identity. | Literal angels as the universal species, church-copy ornament, or imagery that presents coercion as the official ideal. |
 | **Xenos / Compact** | No single morphology. House overlays, ownership marks, dependency ports, purple as UI affiliation rather than skin color. | Patents, tithe seals, client-caste interfaces, grafts, noetic extraction architecture, and old severance damage. | A single evil alien race or one shared organic aesthetic. |
 | **Pirates** | Patchwork pressure environments, route tattoos, cargo geometry, red/copper hazard paint, incompatible components kept visible. | Sanctuary markings, disputed salvage tags, cut credentials, quarantine scars, and mixed-species accommodations. | Theme-park piracy, universal skull motifs, or comic relief by default. |
-| **Machines** | Function-first geometry, geological and ecological integration, silver/cyan Parallel revisions, old teal/stone Old Weather structures. | Version seams, mission-law inscriptions, repair strata, archive checksums, and divergent node jurisprudence. | Generic exterminator robots or assuming every Machine shares one body language. |
+| **Machines** | Function-first geometry, geological and ecological integration, silver/cyan Vigil revisions, old teal/stone Old Weather structures. | Version seams, mission-law inscriptions, repair strata, archive checksums, and divergent node jurisprudence. | Generic exterminator robots or assuming every Machine shares one body language. |
 
 ## Machine distinction
 
 - **Old Weather:** ancient, distributed, oceanic/crustal/ecological, rarely humanoid.
 - **Vigil:** custodial and enforcement chassis whose original civil function remains readable beneath weaponization.
-- **Parallel:** modern political Machines who preserve revision history and deliberately display personhood choices.
+- **Vigil:** modern political Machines who preserve revision history and deliberately display personhood choices.
 
 ## Commander portrait briefs
 

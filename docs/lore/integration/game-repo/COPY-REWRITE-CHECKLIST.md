@@ -41,7 +41,7 @@ This checklist changes presentation and context only. Stable IDs, balance values
 
 - [ ] Rebuild commander portraits from `data/visual-asset-briefs.json`.
 - [ ] Preserve morphology/politics separation: species does not determine faction.
-- [ ] Keep Old Weather, Vigil, and Parallel visually distinct.
+- [ ] Keep Old Weather, Vigil, and Vigil visually distinct.
 - [ ] Rebuild world plates from jurisdiction function plus current holder rather than generic planet genre.
 - [ ] Add faction materials and provenance cues to tower and unit plates.
 

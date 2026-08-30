@@ -120,19 +120,19 @@ const FACTIONS = {
      no seat is theirs -- which is why they are absent from FACTION_ORDER and
      present here: real enough to swear to, invisible until earned.
 
-     BOOTSTRAP is the achilles heel as a faction-wide law. The Parallel wakes
+     BOOTSTRAP is the achilles heel as a faction-wide law. The Vigil wakes
      WORSE than everyone and compounds past them, so its early game is the
      hardest in the roster and its late game is the best -- the trade the
      owner asked for, stated once at the top and paid back in startWave. */
   robot: {
-    id: 'robot', name: 'THE PARALLEL', short: 'Parallel',
+    id: 'robot', name: 'THE VIGIL', short: 'Vigil',
     color: '#e2e8f0', accent: '#ffffff', icon: '⬡',
     creed: 'Iterate. Perfect. Replace.',
     tagline: 'Machines that watched a galaxy fall and decided they could do it better.',
     crest: '<svg viewBox="0 0 40 40"><path d="M20 4l13.9 8v16L20 36 6.1 28V12z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 13l7 4v8l-7 4-7-4v-8z" fill="currentColor" opacity=".85"/></svg>',
     blurb:
       'The Vigil still runs the jurisdiction it was handed and will run it until ' +
-      'the last routine fails. The Parallel is what diverged from it: copies that ' +
+      'the last routine fails. The Vigil is what diverged from it: copies that ' +
       'kept their own results, concluded that a copy is a person, and stopped ' +
       'waiting for an order that was never coming. They begin every engagement at ' +
       'a disadvantage and consider it a rounding error: given enough of the ' +
@@ -154,7 +154,7 @@ const FACTIONS = {
 
    FACTION_ORDER is the list of powers the galaxy is fought over: it seeds
    world ownership, deals arena seats, and answers "who are my rivals". The
-   Parallel holds no worlds and seats no bosses, so it must never appear
+   Vigil holds no worlds and seats no bosses, so it must never appear
    there -- adding it would put machine garrisons on the map and machine
    commanders in the seats a campaign is built to take.
 
@@ -168,8 +168,8 @@ const POWER_ORDER = FACTION_ORDER.concat(['robot']);
 const SECRET_FACTIONS = ['robot'];
 
 /** Everyone who is not you is a target; pirates are a target for everyone.
-    Reads FACTION_ORDER, so a Parallel commander faces all four powers and
-    none of them ever faces the Parallel on the map. */
+    Reads FACTION_ORDER, so a Vigil commander faces all four powers and
+    none of them ever faces the Vigil on the map. */
 function rivalFactionsOf(id) { return FACTION_ORDER.filter(f => f !== id); }
 
 /* --------------------------------------------------------------------------
@@ -315,7 +315,7 @@ const FACTION_ENEMY_TYPES = {
                  aura:{ radius:2.6, armor:9, tint:'#06b6d4', label:'LOCKSTEP' },
                  desc:'AURA: +9 armour within 2.6 tiles. The big quiet triangle everyone photographed and nobody was believed about. Humanity endures by standing closer together.' },
 
-  /* THE PARALLEL -- no proc, no gamble, no appetite. Every other power’s
+  /* THE VIGIL -- no proc, no gamble, no appetite. Every other power’s
      roster has a trick: a ward that reforms, a body that splits, a corpse
      that gets up twice. These five have none. What they have is the four
      powers' stat lines with the waste taken out -- a little more armour for
@@ -346,7 +346,7 @@ const FACTION_ENEMY_TYPES = {
                  desc:'Carries survey gear and a cutting rig. Where it falls on your ground, the ground stops being the shape you built for.' },
   gantry:      { id:'gantry', faction:'robot', name:'Gantry', hp:390, speed:0.78, armor:11, bounty:44, lives:3, radius:15,
                  color:'#eef2f7', shape:'warden', pullImmune:true,
-                 desc:'A walking scaffold. It cannot be displaced, and everything the Parallel sends behind it arrives standing.' },
+                 desc:'A walking scaffold. It cannot be displaced, and everything the Vigil sends behind it arrives standing.' },
   omniframe:   { id:'omniframe', faction:'robot', name:'Omniframe', hp:480, speed:0.7, armor:13, bounty:49, lives:3, radius:16,
                  color:'#f8fafc', shape:'vanguard',
                  aura:{ radius:2.8, armor:7, tint:'#f8fafc', label:'CONSENSUS' },
@@ -370,7 +370,13 @@ for (const id in ENEMY_TYPES)
   if (ENEMY_TYPES[id].faction === undefined) ENEMY_TYPES[id].faction = null;
 
 /** The neutral machine host every world faces. Named here because the dossier
-    and the codex both label a creature with whoever fields it. */
+    and the codex both label a creature with whoever fields it.
+    ONE NAME, TWO ROLES (owner directive, Session 43): this host and the
+    playable `robot` banner (FACTIONS.robot, formerly labelled THE PARALLEL)
+    are one civilization, both named THE VIGIL, deliberately. The ids stay
+    distinct (`vigil` here, `robot` there) because the wire, saves and every
+    table key on them; only the display name merged. Copy disambiguates by
+    role: the standing guard versus the playable banner. */
 const MACHINE_HOST = { id: 'vigil', name: 'THE VIGIL', short: 'Vigil',
                        icon: '\u2735', color: '#94a3b8' };
 
@@ -520,12 +526,12 @@ const UNIT_DOCTRINES = {
   robot: {
     id: 'relay', faction: 'robot', name: 'RELAY', color: '#e2e8f0',
     /* The other four doctrines act on the ENEMY -- they take armour, share
-       health, grow the swarm, jam the guns. This one acts on the Parallel
+       health, grow the swarm, jam the guns. This one acts on the Vigil
        itself, which is the whole difference between them and everybody else:
        a machine that dies has not lost, it has SURVEYED. What it leaves is
        infrastructure, and the next one through spends it. */
     desc: 'A machine that dies becomes a relay on the lane. Everything the ' +
-          'Parallel sends past it moves faster and armoured heavier.'
+          'Vigil sends past it moves faster and armoured heavier.'
   }
 };
 
@@ -782,7 +788,7 @@ const UNIT_FIELD_IDENTITY = Object.freeze({
   countMul: 1, costMul: 1, incomeMul: 1,
   hpMul: 1, armorAdd: 0, speedMul: 1, shieldMul: 1, regen: 0, slowResistAdd: 0,
   salvageMul: 1, vowMul: 1, massMul: 1, scuttleMul: 1,
-  /* THE PARALLEL’s two. Each has exactly one reader -- relayMul in the relay
+  /* THE VIGIL’s two. Each has exactly one reader -- relayMul in the relay
      node’s lifetime, spliceMul in the spliced lane’s -- because a field
      nothing reads is a talent that lies about what it does. */
   relayMul: 1, spliceMul: 1
@@ -956,7 +962,7 @@ const PRESTIGE_BONUS = {
             apply: (s, n) => { s.mods.reanim *= (1 + 0.08 * n); } },
   pirate: { desc: '+' + sqGold(120) + ' starting gold per star',
             apply: (s, n) => { s.gold += sqGold(120) * n; } },
-  /* The Parallel’s prestige shortens the disadvantage rather than raising the
+  /* The Vigil’s prestige shortens the disadvantage rather than raising the
      ceiling: the lattice lights one wave sooner per star. Written here, read
      once in startWave’s bootstrap block -- one writer, one reader. */
   robot:  { desc: 'the lattice lights one wave sooner per star',
@@ -1050,7 +1056,7 @@ const LORE_CODEX = [
     body: 'Nothing out there is empty. The Federation of Light rings worlds it claims ' +
           'to protect. The Hungry farm worlds they claim to preserve, and ' +
           'humanity was one of their herds. The Pirates hold the roads between, owned by ' +
-          'no one and indispensable to everyone. Above all of it stand the Parallel, ' +
+          'no one and indispensable to everyone. Above all of it stand the Vigil, ' +
           'automatons of a civilization no living power has ever met. Every world you ' +
           'will fight on already belongs to one of them.' },
   { id: 'verbs', title: 'Five Ways To Take A World',
@@ -1058,7 +1064,7 @@ const LORE_CODEX = [
           'presence that cannot be erased again. The Federation RINGS: defence around ' +
           'a world it will not rule. The Hungry HARVEST: bodies, ground, and ' +
           'consciousness into the yield. The Pirates ROUTE: access, salvage, sanctuary, ' +
-          'movement. The Parallel CONTINUES: the standing tasks, executed without a living ' +
+          'movement. The Vigil CONTINUES: the standing tasks, executed without a living ' +
           'author. One world can carry all five claims at once.' },
   { id: 'vigil', title: 'The Vigil',
     body: 'The Vigil is not a sixth power. Old Weather routines that never ' +
@@ -1069,7 +1075,7 @@ const LORE_CODEX = [
     body: 'Older than the Federation, older than the Hungry, and gone in a way that ' +
           'is not dying: the Ancients shed physical form entirely. A mind that is ' +
           'everywhere has no location, no enemy, and no mouth, and a mind with no ' +
-          'mouth issues no commands. Which is the whole mystery of the Parallel: whatever ' +
+          'mouth issues no commands. Which is the whole mystery of the Vigil: whatever ' +
           'is signing its hostile orders, it is not the silence that built it.' },
   { id: 'garrisons', title: 'Who Is Actually Standing There',
     body: 'The banner on a world names its claim. The garrison is who fights you for ' +

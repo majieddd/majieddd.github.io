@@ -24,7 +24,7 @@
     },
     "robot": {
       "shape": "function-first geometry and visible revisions",
-      "materials": "Old Weather stone/teal; Parallel silver/cyan",
+      "materials": "Old Weather stone/teal; Vigil silver/cyan",
       "avoid": "generic killer robot monoculture"
     }
   },

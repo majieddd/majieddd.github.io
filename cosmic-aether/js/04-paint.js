@@ -414,7 +414,7 @@ var PAINT = (function () {
       accent: '#ef4444', accent2: '#fb923c'
     }),
     robotic: Object.assign(derive('#94a3b8', { shadowHue: 0.62, rimShift: 0.02, nebA: 0.50, nebB: 0.88 }), {
-      id: 'robotic', name: 'THE PARALLEL',
+      id: 'robotic', name: 'THE VIGIL',
       motto: 'Tending a garden for a maker who is not coming back.',
       accent: '#94a3b8', accent2: '#5eead4'
     })

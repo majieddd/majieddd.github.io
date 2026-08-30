@@ -77,11 +77,13 @@ function galaxyRng(seed) {
    anyone's sky. Later systems draw from real neighbours, and Sol itself
    appears in NON-human campaigns with Earth as its seat.
 
-   NOT THE VIGIL. This paragraph read "the Vigil at Tabby's Star" for the
-   whole life of the file, and both halves of that were wrong: the fifth home
-   belongs to the machines, and the Vigil is not a power and holds nothing
-   anywhere. Barnard's and Tabby's were demoted to bonus systems (see the
-   note below); the Vigil never had a home to demote.
+   ONE NAME, TWO ROLES (owner directive, Session 43). The fifth home belongs
+   to the machines, and the machines are THE VIGIL: the playable banner
+   (formerly labelled THE PARALLEL, a name now retired) and the neutral
+   enforcement waves are one civilization. The banner still holds no worlds
+   and seats no rivals; the neutral waves still garrison unheld ground.
+   Nothing mechanical moved in the merge, only the name. Barnard's and
+   Tabby's were demoted to bonus systems (see the note below).
 
    STREAM SAFETY, which is the whole design. The old tables were consumed by
    pure index arithmetic and never by rnd(), so naming draws NOTHING today
@@ -127,7 +129,7 @@ const GX_HOME_SYSTEMS = {
      because it is the closest star to Earth, which makes the Free Captains'
      capital the first port out of Sol.
 
-     Sirius for the Parallel because Sirius B is a white dwarf: a star once
+     Sirius for the Vigil because Sirius B is a white dwarf: a star once
      larger than Sirius A that burned through, shed most of itself and collapsed.
      The makers' own star gave up its form, which is a better home for a power
      that outlived its bodies than an irregularly dimming star was. */
@@ -343,7 +345,7 @@ const GX_ACT_ENCOUNTERS = {
    (the harvest holds Earth, the broken fence lets the xeno into the Pleiades,
    the shattered pods put a human fleet over Zeta, a human crackdown closes
    Proxima Gate, and the machines of Sirius read as what corrupted them).
-   'robot' never appears as a holder: seating Parallel commanders in front of
+   'robot' never appears as a holder: seating Vigil commanders in front of
    a player who has not unlocked the faction would spoil it. */
 const GX_V2_HOLDER = {
   /* system EARTH   */ human:  { human: 'xeno',   light: 'xeno',   xeno: 'human',  pirate: 'xeno',   robot: 'xeno' },
@@ -699,9 +701,9 @@ function generateGalaxy(seed, playerFaction, mapPool, kindsW, gxv) {
        Measured over 4 powers x 40 seeds: every non-renegade field is
        byte-identical. */
     {
-      /* THE PARALLEL HOLDS NO WORLDS AND OWNS NO BOONS. BOONS has twenty
+      /* THE VIGIL HOLDS NO WORLDS AND OWNS NO BOONS. BOONS has twenty
          entries across the four powers that fight over the galaxy and none
-         for the machines, so a renegade world on a Parallel profile would pay
+         for the machines, so a renegade world on a Vigil profile would pay
          a fallback boon belonging to somebody else, and worldBossOf would
          seat a MACHINE commander behind it, spoiling the secret faction to a
          player who has only just unlocked it. No splinter for a power that
@@ -1350,7 +1352,7 @@ function galaxyHoldings(galaxy, progress) {
   const out = {};
   for (const f of FACTION_ORDER) out[f] = 0;
   /* The player’s own banner may not be one of the galaxy’s four powers -- THE
-     PARALLEL holds no worlds and so is absent from FACTION_ORDER. Without a
+     VIGIL holds no worlds and so is absent from FACTION_ORDER. Without a
      slot of its own the first conquest increments `undefined` and every
      holdings figure on the screen becomes NaN. */
   out[galaxy.playerFaction] = out[galaxy.playerFaction] || 0;

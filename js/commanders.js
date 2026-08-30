@@ -420,7 +420,7 @@ const Meta = {
       this.save();
     }
     /* A banner that did not exist when the shelves were carved gets an empty
-       one on read. Safe to run forever, and it is what lets THE PARALLEL be
+       one on read. Safe to run forever, and it is what lets THE VIGIL be
        added to a live install without a migration of its own. */
     for (const k of arsenalShelfKeys()) {
       if (!Array.isArray(r.vault.unlockedBy[k])) r.vault.unlockedBy[k] = STARTER_TOWERS.slice();
@@ -1080,10 +1080,10 @@ const Meta = {
       a unit already in the vault stays usable by every banner and every
       commander in the install, which is the whole of the Soul Profile half. */
   /**
-   * THE PARALLEL'S TECHNOLOGY IS THE PRIZE, and this is the door to it.
+   * THE VIGIL'S TECHNOLOGY IS THE PRIZE, and this is the door to it.
    *
    * A secret faction's soldiers are the one set the ordinary banner law
-   * cannot deliver. No world flies machine colours -- the Parallel is absent
+   * cannot deliver. No world flies machine colours -- the Vigil is absent
    * from FACTION_ORDER by design -- so no world ever OFFERS a machine unit,
    * and the own-banner purchase rule then left five soldiers, a whole unit
    * doctrine (RELAY) and the temporary-lane mechanic (THE SPLICE) as content
@@ -1092,9 +1092,9 @@ const Meta = {
    * for a human player contained no robot-owned world at all.
    *
    * So beating the game opens the machines' ARSENAL as well as their banner:
-   * once this install has taken a galaxy, any commander may buy Parallel
+   * once this install has taken a galaxy, any commander may buy Vigil
    * soldiers with souls and field them under their own rite. That is the
-   * lore stated as a rule -- the Parallel does not recruit, it gets copied --
+   * lore stated as a rule -- the Vigil does not recruit, it gets copied --
    * and it is what makes RELAY and THE SPLICE live mechanics instead of
    * dead ones. The gate is the SECRET, never the banner, because a rule that
    * required swearing to the machines would hand their units only to the one

@@ -10,7 +10,7 @@ finding the METRIC wrong rather than the art:
   2. concentration replaced the dominant-hue bin, because 16 of 19 xeno
      failures sat ONE BIN below a floor drawn exactly on the brand token while
      carrying 47 to 70 per cent of their colour inside the band;
-  3. the Parallel moved from a saturation ceiling to CHROME MASS, because
+  3. the Vigil moved from a saturation ceiling to CHROME MASS, because
      TITAN/robot and MARS/robot were flagged for standing on an orange sky and
      a red regolith while the automata themselves were correctly colourless.
 
@@ -46,7 +46,7 @@ MUTANTS = [
     ('pcut_00_human_2',  'human',  '2', ('rotate', 150),
      'human cyan rotated to red'),
     ('pcut_12_robot_2',  'robot',  '2', ('saturate', 0.08),
-     'Parallel chrome saturated into colour'),
+     'Vigil chrome saturated into colour'),
     ('pcut_00_pirate_2', 'pirate', '2', ('rotate', 200),
      'pirate crimson rotated to teal'),
 ]

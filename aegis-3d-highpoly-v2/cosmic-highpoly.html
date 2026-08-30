@@ -3114,7 +3114,7 @@ var PAINT = (function () {
       accent: '#ef4444', accent2: '#fb923c'
     }),
     robotic: Object.assign(derive('#94a3b8', { shadowHue: 0.62, rimShift: 0.02, nebA: 0.50, nebB: 0.88 }), {
-      id: 'robotic', name: 'THE PARALLEL',
+      id: 'robotic', name: 'THE VIGIL',
       motto: 'Tending a garden for a maker who is not coming back.',
       accent: '#94a3b8', accent2: '#5eead4'
     })
@@ -4727,7 +4727,7 @@ var DATA = (function () {
       cost: 300, range: 30.0, dps: 84, fireRate: 0.5, pierce: 99, air: true,
       role: 'Long-range piercing hitscan',
       blurb: 'Instant. Crosses the whole board and damages every target on the line. Slow to cycle.',
-      flavor: 'The Parallel does not lead its shots. It does not need to.',
+      flavor: 'The Vigil does not lead its shots. It does not need to.',
       upgrades: [
         { cost: 360, dps: 1.7, fireRate: 1.25, note: 'Faster capacitor cycle.' },
         { cost: 700, dps: 2.0, range: 1.15, note: 'Second rail, doubled rating.' }
@@ -4790,7 +4790,7 @@ var DATA = (function () {
     human:  { chitling: 'TROOPER', gnawling: 'TIC TAC', tither: 'FOO FIGHTER', bloatpod: 'FLUXLINER', graft: 'FIELD MEDIC', stockman: 'AURORA', hivelord: 'BLACK MANTA', broodmother: 'TR-3B', colossus: 'PHOENIX HEAVY', harbinger: 'MOTHERSHIP' },
     light:  { chitling: 'VOTARY', gnawling: 'DEFERRAL', tither: 'CENSER', bloatpod: 'ARBITER', graft: 'SANCTIFIER', stockman: 'SEALBEARER', hivelord: 'ORIFLAMME', broodmother: 'LUMINARK', colossus: 'MONSTRANCE', harbinger: 'FIRST SPEAKER' },
     pirate: { chitling: 'CUTTER', gnawling: 'RUNNER', tither: 'SKIFF', bloatpod: 'WRECKER', graft: 'SAWBONES', stockman: 'SCRAPJACK', hivelord: 'BOARDER', broodmother: 'IRONHULK', colossus: 'DREADNOUGHT', harbinger: 'THE RED LEDGER' },
-    robotic:{ chitling: 'STITCH', gnawling: 'SPLICER', tither: 'DRONE', bloatpod: 'FABRICANT', graft: 'MENDER UNIT', stockman: 'GANTRY', hivelord: 'OMNIFRAME', broodmother: 'LATTICE CORE', colossus: 'FOUNDRY WORKS', harbinger: 'THE PARALLEL' }
+    robotic:{ chitling: 'STITCH', gnawling: 'SPLICER', tither: 'DRONE', bloatpod: 'FABRICANT', graft: 'MENDER UNIT', stockman: 'GANTRY', hivelord: 'OMNIFRAME', broodmother: 'LATTICE CORE', colossus: 'FOUNDRY WORKS', harbinger: 'THE VIGIL' }
   };
 
   /* ---------- wave curve ----------
@@ -5385,7 +5385,7 @@ var MODELS = (function () {
       plinth(b, t, 2.35);
       b.color(HULL.mid).tooth(0.95);
       b.frustum(2.5, 1.9, 2.1, 1.5, 0.75, 1.25);
-      /* Capacitor bank down one flank: cold, industrial, Parallel. */
+      /* Capacitor bank down one flank: cold, industrial, Vigil. */
       b.color(HULL.trim).tooth(0.75);
       for (var i = 0; i < 4; i++) {
         b.push(); b.translate(-1.5 + i * 1.0, 1.45, -1.15); b.prism(0.3, 0.28, 0.85, 6, 0); b.pop();

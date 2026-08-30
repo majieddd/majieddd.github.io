@@ -10,7 +10,7 @@ Use this as the compact context primer before editing game-facing content.
 - Conquest verbs: Settle, Accord, Bind, Route, Continue.
 - Xeno is political, never a species label.
 - Ashtar is Supreme Commander and First Speaker in fiction; historical Ashtar traditions remain fragmented contactee history.
-- Old Weather is the ancient Machine ecology; Vigil is neutral legacy enforcement; Parallel is the playable Machine polity.
+- Old Weather is the ancient Machine ecology; Vigil is neutral legacy enforcement; Vigil is the playable Machine polity.
 - Source Lattice is transit, authentication, shared-memory, and noetic-coherence infrastructure, not unlimited psychic energy.
 - Religion is handled through the Revelation Stack, not a universal alien hoax.
 - UAP records preserve provenance; unresolved never means extraterrestrial by default.

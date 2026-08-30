@@ -64,7 +64,7 @@ const NEW_CORE = {
     ['SIRIUS A II', 'the foundry', 'a blazing white world with no night worth the name, its canyon floor glowing where the casting halls run without stopping', 'hard shadows, no meaningful night'],
     ['THE ASH FIELD', 'the archive', 'a plain of grey dust that was once the outer envelope of a dying star, stacked memory cores standing up out of it like headstones', 'debris Sirius B threw off collapsing from ~5 solar masses'],
     ['SIRIUS B I', 'the quarantine', 'a small world orbiting a white dwarf, its sealed halls glowing faintly under a companion star no bigger than Earth and hotter than anything else in the sky', '~1.02 solar masses in an Earth sized body'],
-    ['THE DIAMOND SHELF', 'the repair yards', 'a shelf of raw carbon under a fierce white pinpoint of a star, the ground glittering only where the light catches it', 'Sirius B has NOT crystallised yet: 25,000 K, 126 Myr of cooling. The Parallel named it for what it will become'],
+    ['THE DIAMOND SHELF', 'the repair yards', 'a shelf of raw carbon under a fierce white pinpoint of a star, the ground glittering only where the light catches it', 'Sirius B has NOT crystallised yet: 25,000 K, 126 Myr of cooling. The Vigil named it for what it will become'],
     ['THE COMPANION', 'the task queue relay', 'a white dwarf close enough to fill half the sky, tiny and ferociously bright, a relay mast standing black against it', 'the dwarf, close in'],
     ['THE DOG STAR', 'the origin (SEAT)', "the brightest star in Earth's sky seen from underneath it, a blue white blaze over a capital built entirely of instruction halls", 'the Dogon Sirius B tradition; Law of One Sirius complex'],
   ]},
@@ -74,7 +74,7 @@ const BONUS = [
   ["TABBY'S STAR", 'SIRIUS', [
     ['THE VEIL', 'the swarm scaffold, a collector lattice the size of a planet, still half built'],
     ['THE DIMMING', 'the shadow band, ground under the 21 per cent dip that has never seen full daylight'],
-  ], 'The swarm survives as somebody else unexplained work, so displacing the Parallel from it costs the arc nothing and gains it a mystery. Real dips of 15 per cent in 2011 and 21 per cent in 2013; the leading natural explanation is now dust, because the dips dim blue light harder than red.'],
+  ], 'The swarm survives as somebody else unexplained work, so displacing the Vigil from it costs the arc nothing and gains it a mystery. Real dips of 15 per cent in 2011 and 21 per cent in 2013; the leading natural explanation is now dust, because the dips dim blue light harder than red.'],
   ["BARNARD'S STAR", 'PROXIMA CENTAURI', [
     ['BARNARD b', 'the cold rock, a sub Earth on a three day orbit, too close in to hold air'],
     ['HARBOUR NINE', 'the ghost port, the sanctuary bay the Free Captains used before Proxima, still lit, mostly empty'],
@@ -154,7 +154,7 @@ w('<p class="sub">Every scene below is marked <span class="tag keep">KEEP</span>
 
 w('<div class="note"><b>The one structural change.</b> Two of the five core systems are ' +
   'replaced. Barnard\'s Star becomes PROXIMA CENTAURI, home of the Free Captains. ' +
-  'Tabby\'s Star becomes SIRIUS, home of the Parallel. Both displaced systems survive as ' +
+  'Tabby\'s Star becomes SIRIUS, home of the Vigil. Both displaced systems survive as ' +
   'bonus systems, so no image is lost. Every other act is untouched.</div>');
 
 /* ---------------- section: adversarial story review ---------------- */
@@ -181,7 +181,7 @@ if (AUDIT) {
     ['Closing lines that open by naming their own world',
      AUDIT.beat3NamesItself + ' of ' + AUDIT.beat3Total,
      'A template. The third beat is where a power says what it MADE of a place.'],
-    ['Parallel lines using the construction "X RESTORED"',
+    ['Vigil lines using the construction "X RESTORED"',
      AUDIT.robotRestored + ' of ' + AUDIT.robotTotal,
      'The machine voice has become a form to fill in.'],
     ['Dialogue cells referencing the inciting event',
@@ -474,7 +474,7 @@ const MECHANICAL = {
   'Population, biosphere, and control': 'MISSION, Compact acts',
   'Depopulation and elite escape': 'MISSION, Compact acts',
   'Abduction and future-human lore': 'MISSION',
-  'Time and reality': 'MISSION, Parallel acts',
+  'Time and reality': 'MISSION, Vigil acts',
   'Mythic geography': 'BONUS WORLD',
   'Lost civilization / archaeology': 'BONUS WORLD',
 };

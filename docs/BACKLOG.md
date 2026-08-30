@@ -207,7 +207,7 @@ Full write-ups with build notes in [`MECHANICS-OPTIONS.md`](MECHANICS-OPTIONS.md
 5. Economy structures must survive to pay (jam gates VAULT income)
 6. Commander attention as an economic resource (FOCUS)
 7. Fog over the rival board / visibility-gated placement
-8. ~~Mutable destination, or a second spawn mouth~~, **SHIPPED** in Session 22 as THE SPLICE: a Parallel SPLICER killed on your ground cuts a temporary second lane into your board for one wave (`Game.openSplice`)
+8. ~~Mutable destination, or a second spawn mouth~~, **SHIPPED** in Session 22 as THE SPLICE: a Vigil SPLICER killed on your ground cuts a temporary second lane into your board for one wave (`Game.openSplice`)
 9. Per-tower usage XP
 10. Tower upkeep / supply priority
 11. Territory-linked income
@@ -230,12 +230,12 @@ Eight owner items, all shipped. What is worth knowing later:
   The **commander** carries the rite, not the banner, that is the mixing
   contract, and it is why a cross-faction commander brings their summoning to
   your flag while your roster supplies the soldiers.
-- **THE PARALLEL** is real in `FACTIONS` and absent from `FACTION_ORDER`. That
+- **THE VIGIL** is real in `FACTIONS` and absent from `FACTION_ORDER`. That
   split is load-bearing: `FACTION_ORDER` is the powers the galaxy is fought
   over (world owners, arena seats, rivals) and `POWER_ORDER` is the powers
   that own troops. Adding the robots to the former would put machine
   garrisons on the map and machine bosses in seats.
-- **A Parallel player never fields their own soldiers**, and that is by
+- **A Vigil player never fields their own soldiers**, and that is by
   construction rather than by oversight: the Lattice clones what it kills and
   cannot buy. Robot units reach a lane when ANOTHER power captures them
   their technology is a thing to be stolen. The RELAY doctrine and THE SPLICE
@@ -345,7 +345,7 @@ new check so it cannot quietly come back.
 | P8 | `lastInterest` and `lastMuster` were written every wave and read by nobody | `js/ui.js` | live in the bank row and the POWER ledger |
 | P12 | The append-only rule for the five index-coupled tables lived only in a comment | `js/net.js` `lockstepAudit` | sweep 23.1, and 23.2 bends a table to prove 23.1 can fail |
 | G6 | Five towers the rival builds and could never upgrade: the scorer valued every upgrade by added damage, and these do none | `js/ai.js` `utilityUpgradeGain` | sweep 23.6 |
-| G9/G12 | The Parallel shipped with no art: 5 commanders, 5 units, 1 crest | `artgen/`, `js/artpack.js` | sweep 22.13 ledger reads 0 unpainted |
+| G9/G12 | The Vigil shipped with no art: 5 commanders, 5 units, 1 crest | `artgen/`, `js/artpack.js` | sweep 22.13 ledger reads 0 unpainted |
 | P13 | Docs described a smaller game than the one that ships, and several records contradicted each other | `README`, `CONTRIBUTING`, `docs/` | measured against the live registries |
 
 **Two of these were my own measurement errors before they were fixes**, and
@@ -385,7 +385,7 @@ four kind-keyed boons in about **4%** of galaxies, 2.3 of 4 on average.
 than "in this run". Cycling the key by system index, apex on the last, makes
 it **min 5, max 5, avg 5.00 in every galaxy** for all four powers.
 
-Four more, all real: THE PARALLEL was being given renegade worlds despite
+Four more, all real: THE VIGIL was being given renegade worlds despite
 owning none of the twenty boons (its splinter would have seated a machine
 commander and spoiled the secret faction); `applyRivalHoldings` could stamp a
 rival over a renegade world while the flag stayed true; `worldAllegiance` had
@@ -503,7 +503,7 @@ free bodies from 78 kills, with power and econ genuinely uncapped.
 
 ### The five skews
 
-Humanity and the Parallel already read correctly and were left alone. The other
+Humanity and the Vigil already read correctly and were left alone. The other
 three each carried a single number that said nothing about how they play. They
 needed a new hook: `FACTIONS[x].apply` runs *before* any commander is seated and
 `Meta.applyTo` then does `side.traits = freshTraits()`, so anything written to

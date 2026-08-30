@@ -82,7 +82,7 @@ Some classify Humanity as protected life. Others identify Humans as invasive org
 
 Its oldest enforcement routines are called the **Vigil**. They still defend jurisdictions and release neutral combat forces without recognizing the new war as legitimate politics.
 
-The playable **Parallel** emerged when Machine continuations concluded that copied and diverged minds were political persons rather than disposable instances. It is one coalition within the wider Continuance, not the sovereign owner of every Machine.
+The playable **Vigil** emerged when Machine continuations concluded that copied and diverged minds were political persons rather than disposable instances. It is one coalition within the wider Continuance, not the sovereign owner of every Machine.
 
 ## The long disclosure
 

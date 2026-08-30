@@ -31,7 +31,7 @@ last_reviewed: 2026-08-25
 
 **Old Weather**, Earth’s distributed abyssal Machine ecology. It behaves more like competing maintenance law than a single artificial intelligence.
 
-**The Parallel**, Playable Machine coalition that concludes Machine continuations are legitimate political persons. Maps to the live game ID `robot`.
+**The Vigil**, Playable Machine coalition that concludes Machine continuations are legitimate political persons. Maps to the live game ID `robot`.
 
 **Revelation Stack**, Eight layers through which spiritual experience, alien contact, Machine interfaces, human interpretation, institutions, spoofing, disinformation, and emergent belief entities can overlap.
 

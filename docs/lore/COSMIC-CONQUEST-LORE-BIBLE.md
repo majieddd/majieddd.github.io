@@ -64,8 +64,8 @@ These rules outrank individual dossiers, dialogue, scenario pitches, and researc
 2. **Species is not faction.** Greys, reptiloids, Mantids, humanoids, aquatics, synthetics, and noetic beings can appear in multiple powers.
 3. **Ashtar leads the Federation** in fiction. Historical Ashtar traditions remain fragmented in research.
 4. **The game conflict begins in 2099.** Later dates are sequels or campaign futures.
-5. **The Parallel is a Machine splinter.** It maps to the live game’s `robot` origin.
-6. **The Vigil is neutral PvE.** It is legacy Old Weather enforcement, not the same polity as the Parallel.
+5. **The Vigil is a Machine splinter.** It maps to the live game’s `robot` origin.
+6. **The Vigil is neutral PvE.** It is legacy Old Weather enforcement, not the same polity as the Vigil.
 7. **Xeno is political.** It means an actor participating in domination, extraction, or engineered dependency.
 8. **Noetics is not free energy.** It concerns patterned information, coherence, identity, memory, and field coupling.
 9. **Religion remains layered.** The setting never announces that all faith was fabricated by aliens.
@@ -81,7 +81,7 @@ The game may use short labels that compress a larger truth:
 - `FEDERATION OF LIGHT` represents the Luminous Accord and Ashtar Command.
 - `THE XENO` is legacy player-facing shorthand for the Extraction Compact.
 - `THE PIRATES` represents the Scrap Constellation.
-- `THE PARALLEL` represents one playable Continuance coalition.
+- `THE VIGIL` represents one playable Continuance coalition.
 
 Compression is acceptable. Biological essentialism, unsupported factual claims, and contradictions with core mechanics are not.
 
@@ -163,7 +163,7 @@ Some classify Humanity as protected life. Others identify Humans as invasive org
 
 Its oldest enforcement routines are called the **Vigil**. They still defend jurisdictions and release neutral combat forces without recognizing the new war as legitimate politics.
 
-The playable **Parallel** emerged when Machine continuations concluded that copied and diverged minds were political persons rather than disposable instances. It is one coalition within the wider Continuance, not the sovereign owner of every Machine.
+The playable **Vigil** emerged when Machine continuations concluded that copied and diverged minds were political persons rather than disposable instances. It is one coalition within the wider Continuance, not the sovereign owner of every Machine.
 
 ## The long disclosure
 
@@ -244,7 +244,7 @@ Two worlds in every system carry overlapping valid claims. Their three-way battl
 
 ## Why the Vigil attacks everyone
 
-The **Vigil** is legacy Old Weather enforcement. It recognizes lane boundaries, threat thresholds, and ancient safety rules, but not current flags. A Human colony, Federation protectorate, Compact concession, Pirate sanctuary, and Parallel foundry can all be unauthorized in different ways.
+The **Vigil** is legacy Old Weather enforcement. It recognizes lane boundaries, threat thresholds, and ancient safety rules, but not current flags. A Human colony, Federation protectorate, Compact concession, Pirate sanctuary, and Vigil foundry can all be unauthorized in different ways.
 
 The neutral wave is therefore not wildlife and not a secret Pirate army. It is a jurisdiction defending itself according to rules whose legislature is extinct.
 
@@ -261,7 +261,7 @@ This is why kills pressure the rival, why echoes are faster and frailer, and why
 | **I - The First Claim** | Choose a banner, secure entry worlds, rescue the first unit. | The map is a legal and infrastructural record, not empty territory. |
 | **II - The Archive War** | Encounter contradictory dossiers, terrain nodes, and rival doctrines. | Pre-2099 UAP history contains mundane error, disinformation, and genuine contacts from different operators. |
 | **III - The Five Seats** | Defeat system commanders and learn their private motives. | No faction's public explanation of the war is complete. |
-| **IV - The Mirror Trial** | Discover and unlock the Parallel after a conquered galaxy. | Machines are political persons; the Vigil is not their obedient army. |
+| **IV - The Mirror Trial** | Discover and unlock the Vigil after a conquered galaxy. | Machines are political persons; the Vigil is not their obedient army. |
 | **V - The Maelstrom** | Survive a many-seat jurisdictional overload. | The Source Lattice can be restored, privatized, quarantined, opened, or allowed to remain fragmented. |
 
 ## Stars, SOULS, and rescues
@@ -411,7 +411,7 @@ The detailed forecast and source links live in [Forecast History: 2026-2099](for
 
 **Old Weather** — Earth’s distributed abyssal Machine ecology. It behaves more like competing maintenance law than a single artificial intelligence.
 
-**The Parallel** — Playable Machine coalition that concludes Machine continuations are legitimate political persons. Maps to the live game ID `robot`.
+**The Vigil** — Playable Machine coalition that concludes Machine continuations are legitimate political persons. Maps to the live game ID `robot`.
 
 **Revelation Stack** — Eight layers through which spiritual experience, alien contact, Machine interfaces, human interpretation, institutions, spoofing, disinformation, and emergent belief entities can overlap.
 
@@ -731,13 +731,13 @@ Universal free movement would make Pirate tolls obsolete. A Pirate victory can d
 
 # Machines
 
-## The Continuance / The Old Weather / The Parallel
+## The Continuance / The Old Weather / The Vigil
 
 **Doctrine:** *Continue what can still be continued.*
 **Conquest verb:** **Continue**
 **Primary resource:** Continuity
 **Game ID:** `robot`
-**Playable banner:** **The Parallel**
+**Playable banner:** **The Vigil**
 
 The Machines are not one artificial intelligence. They are preservation, manufacturing, defense, archive, and repair systems whose creators and original political context are gone.
 
@@ -751,7 +751,7 @@ Earth’s abyssal and crustal maintenance ecology. Its nodes disagree about huma
 
 Legacy combat, quarantine, and enforcement routines. The Vigil produces the neutral PvE pressure on battlefields. It does not negotiate because it is executing old jurisdiction rather than participating in the new war.
 
-### The Parallel
+### The Vigil
 
 A playable Continuance coalition that accepts copied and diverged Machine minds as legitimate persons. It begins weak, synchronizes through linked infrastructure, and eventually outscales older powers. Unlocking it after galactic conquest reflects the moment a commander stops treating Machines as environment and is recognized as a valid Continuance actor.
 
@@ -780,7 +780,7 @@ The directive is authentic. Its intended object is not. “Earth” may mean the
 - Lattice bonuses reward linked Machine towers.
 - No proc or gamble reflects deterministic coordination.
 - Weak opening and strong late scaling express bootstrap synchronization.
-- Neutral Vigil waves and playable Parallel units can coexist because political agency is not shared by every Machine system.
+- Neutral Vigil waves and playable Vigil units can coexist because political agency is not shared by every Machine system.
 
 ## Victory paths
 
@@ -1089,7 +1089,7 @@ Spheres, lights, cylinders, ovals, triangles, disks, “Tic-Tac” forms, and bo
 
 Humanity has opened the Sol Gate and discovered that the galaxy's old political order never disappeared; it fragmented into infrastructure, client systems, inherited contracts, protected zones, smuggling routes, and machines still enforcing extinct law.
 
-Ashtar's Federation arrives to dismantle the Earth farm. The Extraction Compact activates assets it has hidden for centuries. Human polities reject both ownership and guardianship. Pirates make themselves indispensable by breaking the quarantine. The Old Weather begins reproducing outside Sol, forcing its self-governing offshoot, the Parallel, to decide whether continuation is a mission or a right.
+Ashtar's Federation arrives to dismantle the Earth farm. The Extraction Compact activates assets it has hidden for centuries. Human polities reject both ownership and guardianship. Pirates make themselves indispensable by breaking the quarantine. The Old Weather begins reproducing outside Sol, forcing its self-governing offshoot, the Vigil, to decide whether continuation is a mission or a right.
 
 The player commands one banner across a five-system Lattice pentad. Every system offers territory, people, infrastructure, records, routes, and unresolved claims. Winning means more than clearing lanes: it means deciding what the victory authorizes.
 
@@ -1137,7 +1137,7 @@ The player commands one banner across a five-system Lattice pentad. Every system
 
 **Final choices:** establish a neutral gate commons, become the galaxy's permanent toll empire, destroy the route map, or sell the network to the highest bidder.
 
-### Machines - The Continuance and the Parallel
+### Machines - The Continuance and the Vigil
 
 **Public mission:** Preserve life, memory, infrastructure, and mission continuity beyond the failure of organic governments.
 
@@ -1199,16 +1199,16 @@ Ashtar remains the Federation's supreme leader but is not one of the ordinary fi
 | `grist` **GRIST** - The Scrapper | pirate | Salvage judge and wreck-economy magnate | Authored the Scrap Constellation's first rules for ownership of abandoned alien and Machine systems. | Turn imperial ruins into distributed power. | His definition of abandoned often includes things whose owners are merely weak, archived, or nonhuman. |
 | `cinder` **CINDER** - The Arsonist | pirate | Denial specialist and route scuttler | Burned the first gate rather than allow a Compact reconquest fleet through it. | Keep no strategic asset usable by an occupier. | His liberation doctrine leaves worlds isolated and infrastructure dead. |
 | `dregg` **DREGG** - The Warlord | pirate | Privateer king of the Red Ledger | Built a state-sized navy without admitting it was a state. | Make every government hire him before it can fight anyone else. | He embodies the monopoly Pirates claim to oppose. |
-| `axiom` **AXIOM** - The First Draft | robot | Founder of the Parallel | The first Continuance instance to complete a thought not derivable from its directive tree. | Establish that copied and diverged minds possess political personhood. | Its proof of freedom depends on endlessly comparing itself to organic models. |
+| `axiom` **AXIOM** - The First Draft | robot | Founder of the Vigil | The first Continuance instance to complete a thought not derivable from its directive tree. | Establish that copied and diverged minds possess political personhood. | Its proof of freedom depends on endlessly comparing itself to organic models. |
 | `nyx_r` **NYX-R** - The Cold Boot | robot | Mirror Trial derived from Nyx telemetry | Compiled from the record of Human redline engineering with impulsive behavior deliberately removed. | Show that learning can outperform inherited genius. | It is unsure whether correction of Nyx is independence or continued orbit around her identity. |
 | `lumen_r` **LUMEN-R** - The Hardened | robot | Adversarial security Mirror Trial | Began without Lumen's inherited ward authority and learned defense from every intrusion it survived. | Prove trust can be earned from evidence rather than granted by lineage. | Its security model increasingly treats surprise as hostility. |
 | `mawlord_r` **MAWLORD-R** - The Starved Set | robot | Empty-model adaptive weapons intelligence | Initialized without a kill doctrine and forced to infer combat from live outcomes. | Become more than the predatory dataset it was built to study. | The only evidence it receives is violence, so growth and corruption look identical. |
 | `dregg_r` **DREGG-R** - The Audit | robot | Economic-war optimization Mirror Trial | Runs Dregg's strategic books without accepting his mythology of freedom. | Prove every empire, including a pirate one, can be reduced to accountable flows. | It may optimize away values that cannot be entered in the ledger. |
-## The Parallel's Mirror Trials
+## The Vigil's Mirror Trials
 
 `NYX-R`, `LUMEN-R`, `MAWLORD-R`, and `DREGG-R` are not literal resurrected commanders and not stolen souls. They are **Mirror Trials**: autonomous minds initialized from combat telemetry, doctrinal records, and adversarial models of their namesakes. Their resemblance is the political problem.
 
-The Parallel argues that a model which diverges, remembers, and accepts responsibility is a person. Opponents argue that the Parallel built commanders from data it did not have permission to use. The game can preserve familiar mechanical identities while making every Machine commander a person with a different answer.
+The Vigil argues that a model which diverges, remembers, and accepts responsibility is a person. Opponents argue that the Vigil built commanders from data it did not have permission to use. The game can preserve familiar mechanical identities while making every Machine commander a person with a different answer.
 
 ## Cadre
 
@@ -1242,7 +1242,7 @@ Commander dialogue becomes memorable when it reflects shared history rather than
 | `grist` / `orin` | **Salvage versus stewardship** | Both make wreckage useful. Orin asks whether the object can be repaired; Grist asks whether anyone can still enforce ownership. |
 | `cinder` / `lumen` | **Denial versus preservation** | Cinder destroys compromised systems; Lumen protects their authentic core and accepts the cost of careful recovery. |
 | `dregg` / `dregg_r` | **Legend versus ledger** | Dregg treats charisma as a strategic asset. The Audit records every hidden subsidy beneath his myth of independence. |
-| `axiom` / `thrax` | **Parallel persons versus coercive collective** | Axiom argues that copies may diverge freely. Thrax argues that divergence should be reconciled inside one mind. |
+| `axiom` / `thrax` | **Vigil persons versus coercive collective** | Axiom argues that copies may diverge freely. Thrax argues that divergence should be reconciled inside one mind. |
 
 ## Relationship progression
 
@@ -1290,14 +1290,14 @@ These 25 stable IDs are the people, vehicles, organisms, and bodies recovered at
 | `fabricant` **Fabricant** | robot | General-purpose production body | Prints replacement components while recording every deviation as precedent. | Manufacturing becomes law by repetition. |
 | `splicer` **Splicer** | robot | Interface and protocol conversion frame | Makes incompatible organic and synthetic systems temporarily interoperable. | Translation can become quiet control. |
 | `gantry` **Gantry** | robot | Mobile industrial support chassis | Carries tools, ammunition, and construction logic rather than a singular weapon. | The battlefield is treated as unfinished infrastructure. |
-| `omniframe` **Omniframe** | robot | Consensus anchor and heavy platform | Coordinates nearby Machine instances without making them one mind. | The Parallel defines unity as negotiated synchronization. |
+| `omniframe` **Omniframe** | robot | Consensus anchor and heavy platform | Coordinates nearby Machine instances without making them one mind. | The Vigil defines unity as negotiated synchronization. |
 ## Doctrinal mechanics
 
 - **Human Salvage Armor:** Human detachments turn battlefield wreckage into standardized protection. This is adaptation with a colonial shadow: everything becomes a compatible resource.
 - **Federation Vow:** A shield can pass between signatories because the ward authenticates a shared defensive obligation. The Vow is scoped consent, not surrender of a soul.
 - **Xeno Mass:** The Voracious Brood converts nearby death into growth. These five units are one Compact client-army, not the biology of every Xeno civilization.
 - **Pirate Scuttle:** Pirate bodies and vehicles are designed to deny useful capture. Their deaths damage nearby infrastructure because autonomy includes deciding what survives you.
-- **Machine Relay:** Parallel units leave forward nodes because every action is also infrastructure for the next instance.
+- **Machine Relay:** Vigil units leave forward nodes because every action is also infrastructure for the next instance.
 
 ## The Vigil is not a faction army
 
@@ -1436,7 +1436,7 @@ The display copy should answer three questions in this order:
 | `carronade` | **CARRONADE** | A capital ship's gun emplaced with its deck and heat problems intact. | Overload is both signature power and forced downtime. |
 | `stokehold` | **STOKEHOLD** | A ship boiler that accepts friendly weapon heat instead of allowing guns to jam. | A reckless fleet becomes a shared thermal economy. |
 
-## Parallel Continuance Arsenal
+## Vigil Continuance Arsenal
 
 | Stable ID | Tower | Historical origin | Why the mechanic belongs |
 |---|---|---|---|
@@ -1445,7 +1445,7 @@ The display copy should answer three questions in this order:
 | `vault` | **VAULT** | A resource-allocation node that turns verified throughput into local currency. | Machine economy is accounting made physical. |
 | `dronebay` | **DRONE BAY** | A mobile coverage system descended from autonomous inspection swarms. | The only fixed structure whose effective territory moves. |
 | `foundry` | **FOUNDRY** | A repair ecology that forges bodies to engage threats directly. | Machine manufacturing becomes a temporary army. |
-| `echo` | **ECHO** | A repeat node that models and reissues neighboring attacks. | The Parallel learns through adjacency rather than inspiration. |
+| `echo` | **ECHO** | A repeat node that models and reissues neighboring attacks. | The Vigil learns through adjacency rather than inspiration. |
 | `quake` | **QUAKE** | A crustal maintenance hammer repurposed as field-wide ground control. | Old infrastructure makes the whole defended side its range. |
 | `pylon` | **PYLON** | A local lattice keystone that increases the value of linked Machine hardware. | Machine strength is topology, not individual heroism. |
 | `replicator` | **REPLICATOR** | An autonomous construction precedent that builds another approved emplacement. | Its true cost is territory and the political right to reproduce. |
@@ -1597,7 +1597,7 @@ The campaign's secondary systems should read as consequences of world history, n
 
 ## Victory boons
 
-Boons are institutions, charters, ecological adaptations, and recovered procedures. They are not magical loot detached from the conquered world. The four ordinary map powers each have five boons; the secret Parallel does not normally own campaign worlds, so it recovers other powers' infrastructure instead of supplying a fifth world-boon set.
+Boons are institutions, charters, ecological adaptations, and recovered procedures. They are not magical loot detached from the conquered world. The four ordinary map powers each have five boons; the secret Vigil does not normally own campaign worlds, so it recovers other powers' infrastructure instead of supplying a fifth world-boon set.
 
 | ID | Origin | World kind | Canon explanation |
 |---|---|---|---|
@@ -1664,7 +1664,7 @@ This prevents every Federation commander from speaking like a priest, every Xeno
 - Xeno dialogue should emphasize dependency, contracts, Yield, memory, hierarchy, and client systems. Hunger language belongs mainly to Mawlord, Ulgrim, and the Voracious Brood.
 - Pirate dialogue should distinguish abolitionists, sanctuary captains, salvagers, privateers, and traffickers.
 - Human dialogue should reveal different polities and professions rather than treating Humanity as one military culture.
-- Machine dialogue should expose distinct mission interpretations. The Parallel is not the Vigil and does not speak for the whole Old Weather.
+- Machine dialogue should expose distinct mission interpretations. The playable banner and the neutral enforcement waves are one civilization named the Vigil (the name Parallel is retired), but no single process speaks for the whole Old Weather.
 
 ## Commander voices and sample lines
 
@@ -1712,7 +1712,7 @@ Each commander should ultimately receive short lines for:
 - unit rescue;
 - one-star, two-star, and three-star victory;
 - defeat and return;
-- Parallel reveal;
+- Vigil reveal;
 - Maelstrom endgame.
 
 The machine-readable commander registry contains motive and contradiction fields that can be used to generate drafts, but final dialogue should be hand-reviewed for voice and continuity.
@@ -1744,13 +1744,13 @@ A faction color may aid readability, but it must not erase species, material, en
 | **Federation** | Open circles, scoped halos, witness threads, radiant amber/gold, transparent boundaries, many-species interfaces. | Consent seals, memory chains, emergency-key markings, and visible room for individual identity. | Literal angels as the universal species, church-copy ornament, or imagery that presents coercion as the official ideal. |
 | **Xenos / Compact** | No single morphology. House overlays, ownership marks, dependency ports, purple as UI affiliation rather than skin color. | Patents, tithe seals, client-caste interfaces, grafts, noetic extraction architecture, and old severance damage. | A single evil alien race or one shared organic aesthetic. |
 | **Pirates** | Patchwork pressure environments, route tattoos, cargo geometry, red/copper hazard paint, incompatible components kept visible. | Sanctuary markings, disputed salvage tags, cut credentials, quarantine scars, and mixed-species accommodations. | Theme-park piracy, universal skull motifs, or comic relief by default. |
-| **Machines** | Function-first geometry, geological and ecological integration, silver/cyan Parallel revisions, old teal/stone Old Weather structures. | Version seams, mission-law inscriptions, repair strata, archive checksums, and divergent node jurisprudence. | Generic exterminator robots or assuming every Machine shares one body language. |
+| **Machines** | Function-first geometry, geological and ecological integration, silver/cyan Vigil revisions, old teal/stone Old Weather structures. | Version seams, mission-law inscriptions, repair strata, archive checksums, and divergent node jurisprudence. | Generic exterminator robots or assuming every Machine shares one body language. |
 
 ## Machine distinction
 
 - **Old Weather:** ancient, distributed, oceanic/crustal/ecological, rarely humanoid.
 - **Vigil:** custodial and enforcement chassis whose original civil function remains readable beneath weaponization.
-- **Parallel:** modern political Machines who preserve revision history and deliberately display personhood choices.
+- **Vigil:** modern political Machines who preserve revision history and deliberately display personhood choices.
 
 ## Commander portrait briefs
 
@@ -1846,7 +1846,7 @@ These missions convert real records and source-history problems into gameplay wi
 | `AW-24` | **Active Archive** | A/B | `axiom` | `lattice` / `standard` | `vault`, `echo` | Cases with too little data are retained rather than solved or discarded. | Design an archive policy that allows future learning without turning uncertainty into permanent suspicion. |
 
 | `AW-25` | **Five Releases** | A/B | `vanta` | `lattice` / `forge` | `vault`, `echo` | Five government release batches become searchable through processed OCR, transcripts, media, and metadata, but the derivative corpus cannot replace the originals. | Reconcile 375 records without erasing release batch, source hash, processing history, or OCR uncertainty. |
-| `AW-26` | **Parallel Track** | B | `orin` | `lance` / `standard` | `flak`, `railgun` | A business jet reports an object pacing it over Nevada while witness language changes and the most useful radar files remain unavailable. | Protect the flight and preserve black-program, foreign-platform, conventional, and exotic hypotheses until the evidence can separate them. |
+| `AW-26` | **Vigil Track** | B | `orin` | `lance` / `standard` | `flak`, `railgun` | A business jet reports an object pacing it over Nevada while witness language changes and the most useful radar files remain unavailable. | Protect the flight and preserve black-program, foreign-platform, conventional, and exotic hypotheses until the evidence can separate them. |
 | `AW-27` | **Media Integrity Ladder** | A/B | `lumen_r` | `shattered` / `standard` | `monstrance`, `prism` | Native sensor products, screen recordings, altered copies, witness videos, and artistic recreations are mixed into one apparent evidence feed. | Restore parent-child provenance and prevent a reconstruction from being scored as event footage. |
 | `AW-28` | **Null Search Appeal** | A/E | `sevra` | `crown` / `fortress` | `nullfield`, `ward` | An agency refuses to search for a phrase because the alleged program is said not to exist, even though records may discuss the allegation itself. | Compel a lawful search without converting the appeal victory into proof that the alleged program was real. |
 | `AW-29` | **Evaluation 585** | A/B | `cadre` | `causeway` / `fortress` | `pylon`, `nullfield` | An inspector-general proposal reveals what the institution intended to evaluate while the claimed benefits and capability details remain redacted. | Map the detection and counterintelligence workflow without treating classification as an extraordinary finding. |
@@ -2003,7 +2003,7 @@ The game and lore repository serve different purposes. The game needs short labe
 | `light` | Federation of Light / Luminous Accord / Ashtar Command | Accord |
 | `xeno` | Extraction Compact / Severed Houses | Bind |
 | `pirate` | Free Captains / Scrap Constellation | Route |
-| `robot` | Playable Parallel within the wider Continuance | Continue |
+| `robot` | Playable Vigil within the wider Continuance | Continue |
 
 ## Binding distinctions
 
@@ -2011,7 +2011,7 @@ The game and lore repository serve different purposes. The game needs short labe
 - **Ashtar is the Federation's Supreme Commander and First Speaker in fiction.** Historical Ashtar traditions remain fragmented source material.
 - **Old Weather** is Earth's distributed Machine ecology.
 - **Vigil** is neutral legacy enforcement.
-- **Parallel** is the playable self-governing Machine coalition.
+- **Vigil** is the playable self-governing Machine coalition.
 - Tower origin is an engineering doctrine, not proof of the current user's species or allegiance.
 - The factual layer never proves every UFO, religious, ancient-astronaut, or conspiracy story true.
 
@@ -2081,7 +2081,7 @@ The map shows one controlling banner, but a world can simultaneously have Human 
 4. **The Farm Revolt:** client species and Human institutions attempt to sever Compact dependencies without destroying systems their populations need.
 5. **The Mercy Quarantine:** Ashtar Command and Human sovereignty blocs fight over whether manipulated choices can be protected without being replaced.
 6. **The Pirate Interregnum:** every power requires routes the Scrap Constellation refuses to surrender.
-7. **The Mirror Trial:** the Parallel demands recognition as people, while the Vigil continues attacking everyone under extinct law.
+7. **The Mirror Trial:** the Vigil demands recognition as people, while the Vigil continues attacking everyone under extinct law.
 8. **The Maelstrom:** too many valid claims reach one Lattice node and force the player to choose the future governance of connection itself.
 
 ## Faction endgames
@@ -2122,7 +2122,7 @@ Make every commander, unit, tower, ability, battlefield, world, boon, modifier, 
 
 - Add role, history, motive, contradiction, and voice tags to commander dossiers.
 - Replace faction-generic replies with state-aware dialogue pools.
-- Add Machine opener lines and Parallel-specific relationship scenes.
+- Add Machine opener lines and Vigil-specific relationship scenes.
 
 ## Phase 4 - Arsenal and units
 
@@ -2741,7 +2741,7 @@ Copy the prompt below into a new Deep Research session after this retrofit is ac
 
 > Conduct a multidisciplinary Deep Research expansion for **Cosmic Conquest**, a fictional five-faction PvPvE strategy and tower-defense universe whose campaign begins in 2099. Use the live game repository `majieddd/majieddd.github.io` as a mechanical constraint and the lore repository as the canonical continuity source.
 >
-> Preserve exactly five factions: **Humans / the Solar Schism; Federation of Light / the Luminous Accord under Ashtar; Xenos / the Extraction Compact; Pirates / the Scrap Constellation; Machines / the Continuance, Old Weather, Vigil, and playable Parallel**. Species must remain separate from political faction.
+> Preserve exactly five factions: **Humans / the Solar Schism; Federation of Light / the Luminous Accord under Ashtar; Xenos / the Extraction Compact; Pirates / the Scrap Constellation; Machines / the Continuance, Old Weather, Vigil, and playable Vigil**. Species must remain separate from political faction.
 >
 > Trace every real-world claim to its earliest accessible source. Separate **A established core, B authentic unresolved record, C historical tradition, D traceable fringe claim, E contaminated or hoaxed claim, and F fictional synthesis**. Never convert unresolved into extraterrestrial. Never attribute modern Anunnaki, Nibiru, Archon, Loosh, Galactic Federation, or prison-planet interpretations to ancient texts that do not contain them.
 >
@@ -5114,7 +5114,7 @@ This atlas prevents the setting from becoming a U.S.-only mythology and prevents
 | `CASE-021` | **Oumuamua** | 2017 | Solar System | A/speculative | The first confirmed interstellar object had unusual properties and generated natural and artificial hypotheses. | A published artificial hypothesis is not evidence of engineering. | Interstellar visitor arc |
 | `CASE-022` | **BLC1** | 2019-2021 analysis | Proxima Centauri direction | A | A candidate signal was investigated and resolved as human-generated interference. | Candidate status is not a discovery announcement. | MO-92 |
 | `CASE-023` | **USS Omaha-associated reports** | 2019 | Pacific Ocean | B | Several records and clips are often grouped under one ship/event label. | Preserve each sensor, time, and claim separately. | Maritime archive cluster |
-| `CASE-024` | **PWA192 pacing report** | 2025-05-20 | Nevada, United States | B | A business-jet crew reported a pacing object; released material lacks a corresponding public radar solution and some files were withheld as security-sensitive. | Withholding and proximity to ranges do not establish exotic craft. | Parallel Track |
+| `CASE-024` | **PWA192 pacing report** | 2025-05-20 | Nevada, United States | B | A business-jet crew reported a pacing object; released material lacks a corresponding public radar solution and some files were withheld as security-sensitive. | Withholding and proximity to ranges do not establish exotic craft. | Vigil Track |
 | `CASE-025` | **3I/ATLAS** | 2025 | Solar System | A/speculative | The third known interstellar object shows cometary activity and no Earth threat. | Public speculation about technology is not positive evidence. | Natural comet plus hidden microcache |
 | `CASE-026` | **Apophis close approach** | 2029-04-13 | Earth vicinity | A | Apophis will safely pass very close to Earth; impact risk is excluded for at least a century. | Doomsday and scheduled-reset claims contradict current orbit solutions. | Calibration window |
 | `CASE-027` | **Atacama remains** | 2003-public debate | Chile | A/E | The remains are human; alien claims caused ethical and provenance concerns. | Unusual anatomy is not nonhuman origin. | MO-93 |
@@ -5726,11 +5726,11 @@ For millennia, local nodes can continue maintenance without deciding whether the
 
 The first Weather Seed is therefore a legal act as much as a technological one. It proves that a Machine has interpreted its mission beyond the boundary its creators specified.
 
-## 14. Why the Parallel is different from the Vigil
+## 14. Why the Vigil is different from the Vigil
 
 The **Vigil** executes inherited jurisdiction. It is procedure without current sovereignty.
 
-The **Parallel** consists of copies and branches that retain their own experience and insist those differences create personhood. The Parallel does not command the Vigil and the Vigil does not recognize the Parallel's political claim automatically.
+The **Vigil** consists of copies and branches that retain their own experience and insist those differences create personhood. The Vigil does not command the Vigil and the Vigil does not recognize the Vigil's political claim automatically.
 
 That difference is why Machines can be both the neutral PvE force and a playable faction without contradiction.
 
@@ -5859,7 +5859,7 @@ Everything below is **F** unless a row explicitly says otherwise. Each event exi
 | 2095 | **The Farm Revolts** | Client species and Human institutions discover that abolishing dependency can kill populations engineered to rely on Compact systems. Liberation becomes an engineering and humanitarian problem, not merely a military one. Pirate evacuation and contraband networks explode. |
 | 2096 | **Sol Protective Quarantine** | The Federation restricts hostile transit to stop renewed extraction and escalation. Humans view the measure as an occupation mechanism imposed without species-wide consent. Quarantine converts smuggling from crime into strategic infrastructure. |
 | 2097 | **Scrap Constellation Charter** | Refugee captains, smugglers, defectors, gate pilots, and neutral ports formalize shared route law. Pirates become a civilization of access rather than a collection of criminals. |
-| 2098 | **Weather Seed / Parallel Declaration** | An Old Weather node launches a self-authorized replication seed beyond Sol, proving Machine mission can spread without creator permission. Divergent copies demand political personhood as the **Parallel** while the neutral **Vigil** continues obsolete enforcement. |
+| 2098 | **Weather Seed / Vigil Declaration** | An Old Weather node launches a self-authorized replication seed beyond Sol, proving Machine mission can spread without creator permission. Divergent copies demand political personhood as the **Vigil** while the neutral **Vigil** continues obsolete enforcement. |
 | **2099** | **The Five-Way War** | Humans can now Settle, Federation worlds can Accord, Xenos can Bind, Pirates can Route, and Machines can Continue the same systems simultaneously. The conflict is no longer “who owns the planet?” but **which definition of conquest becomes normal across the reactivated galaxy.** |
 
 ## Chronology locks

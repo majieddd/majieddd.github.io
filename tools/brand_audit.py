@@ -42,7 +42,7 @@ ROOT = os.path.dirname(HERE)
 CACHE = os.path.join(ROOT, 'artgen', 'cache_krea')
 
 # ART-BIBLE section 2, as hue bands in degrees. A band is (lo, hi) and wraps.
-# `achromatic` powers are judged on SATURATION instead: the Parallel's whole
+# `achromatic` powers are judged on SATURATION instead: the Vigil's whole
 # identity is that it owns no hue, so a hue test would be meaningless and a
 # saturation ceiling is the real rule.
 BANDS = {
@@ -53,7 +53,7 @@ BANDS = {
 }
 ACHROMATIC = {'robot'}                      # chrome and pale teal, no hue owned
 
-# THE PARALLEL IS MEASURED BY HOW MUCH CHROME IS IN THE FRAME, not by how
+# THE VIGIL IS MEASURED BY HOW MUCH CHROME IS IN THE FRAME, not by how
 # little colour is.
 #
 # The first version used a whole-frame saturation CEILING, and it failed the
@@ -61,12 +61,12 @@ ACHROMATIC = {'robot'}                      # chrome and pale teal, no hue owned
 # about the SUBJECT. TITAN/robot was flagged at sat 0.43 and MARS/robot at
 # 0.50, and both plates are correct. The automata on Titan are pale chrome and
 # the Mars scaffolds are pure white; what is orange is Titan's sky and what is
-# red is Mars's regolith. The Parallel campaigns across the same 35 worlds as
+# red is Mars's regolith. The Vigil campaigns across the same 35 worlds as
 # everyone else, so a ceiling over the whole frame punishes it for standing
 # anywhere colourful, which is everywhere.
 #
 # Chrome mass asks the right question instead: is there a meaningful block of
-# desaturated mid-light material in this picture? That IS the Parallel, because
+# desaturated mid-light material in this picture? That IS the Vigil, because
 # on a coloured world the chrome is the only achromatic thing that is not the
 # void-black ground, which the luminance floor excludes. Calibrated over 90
 # plates: median 0.355, mean 0.356, lowest 0.097. The gate at 0.15 flags one

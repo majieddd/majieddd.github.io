@@ -225,7 +225,7 @@ var DATA = (function () {
       cost: 300, range: 30.0, dps: 84, fireRate: 0.5, pierce: 99, air: true,
       role: 'Long-range piercing hitscan',
       blurb: 'Instant. Crosses the whole board and damages every target on the line. Slow to cycle.',
-      flavor: 'The Parallel does not lead its shots. It does not need to.',
+      flavor: 'The Vigil does not lead its shots. It does not need to.',
       upgrades: [
         { cost: 360, dps: 1.7, fireRate: 1.25, note: 'Faster capacitor cycle.' },
         { cost: 700, dps: 2.0, range: 1.15, note: 'Second rail, doubled rating.' }
@@ -288,7 +288,7 @@ var DATA = (function () {
     human:  { chitling: 'TROOPER', gnawling: 'TIC TAC', tither: 'FOO FIGHTER', bloatpod: 'FLUXLINER', graft: 'FIELD MEDIC', stockman: 'AURORA', hivelord: 'BLACK MANTA', broodmother: 'TR-3B', colossus: 'PHOENIX HEAVY', harbinger: 'MOTHERSHIP' },
     light:  { chitling: 'VOTARY', gnawling: 'DEFERRAL', tither: 'CENSER', bloatpod: 'ARBITER', graft: 'SANCTIFIER', stockman: 'SEALBEARER', hivelord: 'ORIFLAMME', broodmother: 'LUMINARK', colossus: 'MONSTRANCE', harbinger: 'FIRST SPEAKER' },
     pirate: { chitling: 'CUTTER', gnawling: 'RUNNER', tither: 'SKIFF', bloatpod: 'WRECKER', graft: 'SAWBONES', stockman: 'SCRAPJACK', hivelord: 'BOARDER', broodmother: 'IRONHULK', colossus: 'DREADNOUGHT', harbinger: 'THE RED LEDGER' },
-    robotic:{ chitling: 'STITCH', gnawling: 'SPLICER', tither: 'DRONE', bloatpod: 'FABRICANT', graft: 'MENDER UNIT', stockman: 'GANTRY', hivelord: 'OMNIFRAME', broodmother: 'LATTICE CORE', colossus: 'FOUNDRY WORKS', harbinger: 'THE PARALLEL' }
+    robotic:{ chitling: 'STITCH', gnawling: 'SPLICER', tither: 'DRONE', bloatpod: 'FABRICANT', graft: 'MENDER UNIT', stockman: 'GANTRY', hivelord: 'OMNIFRAME', broodmother: 'LATTICE CORE', colossus: 'FOUNDRY WORKS', harbinger: 'THE VIGIL' }
   };
 
   /* ---------- wave curve ----------

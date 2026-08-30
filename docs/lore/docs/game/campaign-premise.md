@@ -13,7 +13,7 @@ last_reviewed: 2026-08-25
 
 Humanity has opened the Sol Gate and discovered that the galaxy's old political order never disappeared; it fragmented into infrastructure, client systems, inherited contracts, protected zones, smuggling routes, and machines still enforcing extinct law.
 
-Ashtar's Federation arrives to dismantle the Earth farm. The Extraction Compact activates assets it has hidden for centuries. Human polities reject both ownership and guardianship. Pirates make themselves indispensable by breaking the quarantine. The Old Weather begins reproducing outside Sol, forcing its self-governing offshoot, the Parallel, to decide whether continuation is a mission or a right.
+Ashtar's Federation arrives to dismantle the Earth farm. The Extraction Compact activates assets it has hidden for centuries. Human polities reject both ownership and guardianship. Pirates make themselves indispensable by breaking the quarantine. The Old Weather begins reproducing outside Sol, forcing its self-governing offshoot, the Vigil, to decide whether continuation is a mission or a right.
 
 The player commands one banner across a five-system Lattice pentad. Every system offers territory, people, infrastructure, records, routes, and unresolved claims. Winning means more than clearing lanes: it means deciding what the victory authorizes.
 
@@ -61,7 +61,7 @@ The player commands one banner across a five-system Lattice pentad. Every system
 
 **Final choices:** establish a neutral gate commons, become the galaxy's permanent toll empire, destroy the route map, or sell the network to the highest bidder.
 
-### Machines - The Continuance and the Parallel
+### Machines - The Continuance and the Vigil
 
 **Public mission:** Preserve life, memory, infrastructure, and mission continuity beyond the failure of organic governments.
 

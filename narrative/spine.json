@@ -16,7 +16,7 @@
    "name": "FIELD DOCTRINE",
    "faction": "human",
    "page": "human.html#doctrine",
-   "src": "js/factions.js:567"
+   "src": "js/factions.js:573"
   },
   {
    "ref": "tower:bolt",
@@ -832,7 +832,7 @@
    "name": "THE PROCESSION",
    "faction": "light",
    "page": "light.html#doctrine",
-   "src": "js/factions.js:574"
+   "src": "js/factions.js:580"
   },
   {
    "ref": "tower:beacon",
@@ -1600,7 +1600,7 @@
    "name": "THE BROOD",
    "faction": "xeno",
    "page": "xeno.html#doctrine",
-   "src": "js/factions.js:580"
+   "src": "js/factions.js:586"
   },
   {
    "ref": "tower:toxin",
@@ -2360,7 +2360,7 @@
    "name": "LETTERS OF MARQUE",
    "faction": "pirate",
    "page": "pirate.html#doctrine",
-   "src": "js/factions.js:586"
+   "src": "js/factions.js:592"
   },
   {
    "ref": "tower:pyre",
@@ -3109,7 +3109,7 @@
   {
    "ref": "faction:robot",
    "kind": "faction",
-   "name": "THE PARALLEL",
+   "name": "THE VIGIL",
    "faction": "robot",
    "page": "robot.html#power",
    "src": "js/factions.js:128"
@@ -3120,7 +3120,7 @@
    "name": "THE LATTICE",
    "faction": "robot",
    "page": "robot.html#doctrine",
-   "src": "js/factions.js:598"
+   "src": "js/factions.js:604"
   },
   {
    "ref": "tower:railgun",
@@ -3365,7 +3365,7 @@
   {
    "ref": "robot/story",
    "kind": "story",
-   "name": "THE PARALLEL story spine",
+   "name": "THE VIGIL story spine",
    "faction": "robot",
    "page": "robot.html#story",
    "src": "js/story.js:299"
@@ -3469,7 +3469,7 @@
   {
    "ref": "robot/intro",
    "kind": "cinematic",
-   "name": "THE PARALLEL opening",
+   "name": "THE VIGIL opening",
    "faction": "robot",
    "page": "robot.html#intro",
    "src": "js/cutscenes.js:139"
@@ -5069,7 +5069,7 @@
   {
    "ref": "timeline:66",
    "kind": "timeline",
-   "name": "Weather Seed / Parallel Declaration",
+   "name": "Weather Seed / Vigil Declaration",
    "faction": null,
    "page": "index.html#tl-66",
    "src": "js/lore.js"

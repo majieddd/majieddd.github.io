@@ -4034,7 +4034,7 @@ const PROCESSION_DAMP = 0.35;
    whole faction plans around. Feeding is the combo -- kills near a clutch
    hurry it -- and the cap turns overflow into a bigger feed rather than a
    loss, so a full nest still rewards killing. */
-/* THE PARALLEL's bootstrap. Every tower wakes 12% down on damage, rate and
+/* THE VIGIL's bootstrap. Every tower wakes 12% down on damage, rate and
    range and recovers 2% a wave, so the faction is the worst in the game for
    its first six waves and the best from the thirteenth. Break-even lands
    around wave 7 -- deliberately after the point a fresh commander is usually
@@ -4045,7 +4045,7 @@ const ROBOT_BOOT_FLOOR = 0.12;
 const ROBOT_BOOT_STEP = 0.02;
 const ROBOT_BOOT_WAVES = 12;
 
-/* THE RELAY. A Parallel body that dies on a rival's lane leaves a working
+/* THE RELAY. A Vigil body that dies on a rival's lane leaves a working
    node where it fell, and the machines behind it walk through faster and
    harder. This is the faction's combo: not one strong unit but a chain of
    ordinary ones, each paid for by the last one's death. Non-stacking -- the
@@ -4106,7 +4106,7 @@ const MUSTER_LOADOUT_SIZE = 4;          /* picks a detachment may carry -- match
    they start off weaker but have unique combos ... highly viable in late
    game."
 
-   HUMANITY and THE PARALLEL already read that way and are untouched: humanity
+   HUMANITY and THE VIGIL already read that way and are untouched: humanity
    takes a flat +10% across damage, rate and range plus ten lives, which is the
    definition of an all-rounder, and the machines open BELOW everyone
    (ROBOT_BOOT_FLOOR) and buy it back wave by wave. The other three were all

@@ -200,11 +200,11 @@ For millennia, local nodes can continue maintenance without deciding whether the
 
 The first Weather Seed is therefore a legal act as much as a technological one. It proves that a Machine has interpreted its mission beyond the boundary its creators specified.
 
-## 14. Why the Parallel is different from the Vigil
+## 14. Why the Vigil is different from the Vigil
 
 The **Vigil** executes inherited jurisdiction. It is procedure without current sovereignty.
 
-The **Parallel** consists of copies and branches that retain their own experience and insist those differences create personhood. The Parallel does not command the Vigil and the Vigil does not recognize the Parallel's political claim automatically.
+The **Vigil** consists of copies and branches that retain their own experience and insist those differences create personhood. The Vigil does not command the Vigil and the Vigil does not recognize the Vigil's political claim automatically.
 
 That difference is why Machines can be both the neutral PvE force and a playable faction without contradiction.
 
