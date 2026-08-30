@@ -539,7 +539,10 @@ const Meta = {
                    /* The non-tri map pool AS IT STANDS TODAY, pinned so this
                       campaign's galaxy keeps its boards when maps are added
                       later. Live-counted here, frozen-literal in migration. */
-                   mapPool: MAPS.filter(m => !m.tri).length,
+                   /* !m.world matches the galaxy draw's own pool filter: the
+                      handcrafted planet boards are assigned by name, never
+                      drawn, so they must not inflate the pin either. */
+                   mapPool: MAPS.filter(m => !m.tri && !m.world).length,
                    faction: p.faction || 'human', tier: p.galaxyTier || 0,
                    /* A first galaxy never chooses its slope -- the choice is
                       the reward for finishing one, and VETERAN is the law the

@@ -10,15 +10,15 @@ Only verified closes a row. A blocked row carries pasted command output.
 
 | # | Item | Status | Commit | Check id |
 | --- | --- | --- | --- | --- |
-| 1 | Design doc + this tracker | in-progress | | |
-| 2 | js/worldmaps.js: terrain codex vocab + 7 Earth System boards | open | | |
-| 3 | js/worldmaps.js: 7 Pleiades boards | open | | |
-| 4 | js/worldmaps.js: 7 Zeta Reticuli boards | open | | |
-| 5 | js/worldmaps.js: 7 Proxima Centauri boards | open | | |
-| 6 | js/worldmaps.js: 7 Sirius boards | open | | |
-| 7 | Stream-pin fixture captured at pre-change HEAD | open | | |
-| 8 | Galaxy wiring: post-draw override, pool + mapPool exclusion | open | | |
-| 9 | tools/probe-worldmaps.js, wired into gate.js | open | | |
+| 1 | Design doc + this tracker | verified 8f5edfe | 8f5edfe | fixture in-tree |
+| 2 | js/worldmaps.js: terrain codex vocab + 7 Earth System boards | landed (this commit) | HEAD | WM.1-WM.9 |
+| 3 | js/worldmaps.js: 7 Pleiades boards | landed (this commit) | HEAD | WM.1-WM.9 |
+| 4 | js/worldmaps.js: 7 Zeta Reticuli boards | landed (this commit) | HEAD | WM.1-WM.9 |
+| 5 | js/worldmaps.js: 7 Proxima Centauri boards | landed (this commit) | HEAD | WM.1-WM.9 |
+| 6 | js/worldmaps.js: 7 Sirius boards | landed (this commit) | HEAD | WM.1-WM.9 |
+| 7 | Stream-pin fixture captured at pre-change HEAD | verified 8f5edfe | 8f5edfe | WM.8 |
+| 8 | Galaxy wiring: post-draw override, pool + mapPool exclusion | landed (this commit) | HEAD | WM.1-WM.9 |
+| 9 | tools/probe-worldmaps.js, wired into gate.js | landed (this commit) | HEAD | WM.1-WM.9 |
 | 10 | Spine: SVG board + terrain codex on every world card and board entry | open | | |
 | 11 | Balance re-baseline note in docs/BALANCE-BASELINE.md | open | | |
 | 12 | Owner call, deferred: per-planet TRI boards for contested ground | owner-call | | |

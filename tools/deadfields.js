@@ -225,6 +225,17 @@ for (const t of tables) {
   for (const [key, n] of counts) {
     if (n < MIN_OCCURRENCES) continue;
     if ((prose.get(key) || 0) >= n) continue;   /* every value is a sentence */
+    /* THE TERRAIN CODEX (Session 44, docs/WORLDMAPS-DESIGN.md). worldmaps.js
+       carries a design-classification block per board: closed-vocabulary
+       tokens that are DESIGN content, not engine promises, the same
+       distinction the prose rule above draws for sentences. Their contract
+       deliberately lives tool-side: probe-worldmaps WM.5 fails the gate on
+       any value outside TERRA_VOCAB, and the narrative spine renders every
+       field. Scoped to worldmaps.js and to exactly these names, so a real
+       behaviour field added to that file is still caught (verified by
+       planting `surgeRate: 7` on two boards: flagged; control green). */
+    if (/worldmaps\.js$/.test(t.file) &&
+        ['class', 'flow', 'cover', 'barriers', 'sight', 'basis'].indexOf(key) >= 0) continue;
     if (!declared.has(key)) declared.set(key, []);
     const hit = declared.get(key);
     if (!hit.some(h => h.table === t.name)) hit.push({ table: t.name, file: t.file, line: t.line });

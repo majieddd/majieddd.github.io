@@ -204,6 +204,17 @@ function staticGates() {
      Mars and Jupiter are both authored contested by the machines and both
      drew a pirate marker, because the authored path wrote a one element
      array. Nothing was watching the shape, so this watches it. */
+  /* THE HANDCRAFTED CAMPAIGN GROUNDS (Session 44). Nine checks: coverage,
+     geometry law, wall/lane separation, node survival, the terrain codex
+     vocabulary, rosters, buildable-ground floor, the galaxy stream pin
+     (2800 worlds against the pre-change fixture), and live assignment
+     (own board everywhere, tri on contested). */
+  const wmp = run(process.execPath, ['tools/probe-worldmaps.js']);
+  if (wmp.code === 0) say('world boards: ' + (wmp.out.trim().split('\n').pop() || '').trim());
+  else fail('world boards: ' + wmp.out.trim().split('\n')
+                                .filter(l => l.indexOf('[FAIL]') >= 0)
+                                .map(l => l.replace(/^\s*\[FAIL\]\s*/, '')).join('; '));
+
   const ct = run(process.execPath, ['tools/probe-contest.js']);
   const ctLines = ct.out.trim().split(/\r?\n/);
   if (ct.code === 0) say('contested worlds: ' + ctLines[0]);

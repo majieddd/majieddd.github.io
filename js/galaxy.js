@@ -601,7 +601,11 @@ function generateGalaxy(seed, playerFaction, mapPool, kindsW, gxv) {
            is DERIVED from si, it draws nothing from rnd(), and for pinned old
            saves (mapPool <= 11, all authored maps) the themed pool always falls
            back to the full eligible set, so their boards stay byte-identical. */
-        map: (() => { const elig = MAPS.filter(m => !m.tri && (!m.minTier || m.minTier <= si));
+        map: (() => { /* !m.world: the handcrafted planet boards never enter a
+                         pool; the campaign override below assigns them by
+                         name. Without this filter their arrival would have
+                         reshaped this draw's pool for every new save. */
+                      const elig = MAPS.filter(m => !m.tri && !m.world && (!m.minTier || m.minTier <= si));
                       const th = GX_THEMES[si % GX_THEMES.length];
                       /* THE AUTHORED BOARDS STAY IN THE DRAW. A themed pool
                          of `th.families` alone is procedural-only, because the
@@ -650,6 +654,23 @@ function generateGalaxy(seed, playerFaction, mapPool, kindsW, gxv) {
         si, wi
       });
     }
+
+    /* THE HANDCRAFTED GROUNDS (owner directive, Session 44, docs/
+       WORLDMAPS-DESIGN.md): every campaign planet fields the board built
+       for it, keyed by its index-derived NAME and assigned AFTER the draw,
+       so the stream cannot move: the map draw above still runs and its
+       result is discarded, exactly as the contested and boon overrides
+       below discard theirs. tools/fixtures/galaxy-stream-pin.json holds
+       every other rolled field equal across 80 galaxies. The contested
+       block below reassigns its two worlds to the shared tri grounds, so
+       a three-way war keeps a three-way board by construction. Old v1
+       galaxies carry different world names, miss the key, and keep their
+       rolled boards: graceful by name, not by version flag. */
+    if (typeof WORLD_MAP_BY_NAME !== 'undefined')
+      for (const w of worlds) {
+        const wm = WORLD_MAP_BY_NAME[w.name];
+        if (wm) w.map = wm.id;
+      }
 
     /* Nominate the contested worlds: mid-ring, never the seat, never the first
        two worlds of a system (a three-way war is no way to open one), and
@@ -836,7 +857,27 @@ function generateGalaxy(seed, playerFaction, mapPool, kindsW, gxv) {
         }
         w.contested = true;
         w.contestedBy = [w.owner, ch];
-      } else { w.contested = false; w.contestedBy = null; }
+        /* THE MAP FOLLOWS THE FLAG (Session 44). An authored three-way war
+           fights on three-way ground: a world this table contests without a
+           tri board gets one, index-derived, no draw. Before this, JUPITER
+           and SATURN were authored contested and fought on rolled duel
+           boards, because only the slot-derived contested block ever
+           assigned tri grounds. */
+        {
+          const cur = MAPS.find(m => m.id === w.map);
+          if (!cur || !cur.tri)
+            w.map = TRI_MAP_IDS[(w.si * WORLDS_PER_SYSTEM + w.wi) % TRI_MAP_IDS.length];
+        }
+      } else {
+        w.contested = false; w.contestedBy = null;
+        /* And the reverse: a world this table CLEARS was sometimes sitting
+           on the slot-derived tri ground (MERCURY on THE CROWN, THE FLARE
+           SHELTER on THE CAROUSEL), fighting a two-way scenario on a
+           three-way board. A cleared world returns to its own handcrafted
+           ground. */
+        if (typeof WORLD_MAP_BY_NAME !== 'undefined' && WORLD_MAP_BY_NAME[w.name])
+          w.map = WORLD_MAP_BY_NAME[w.name].id;
+      }
       /* A world the fiction hands to somebody else cannot also be the
          renegade splinter of the player's own banner. */
       if (a.owner && a.owner !== playerFaction) w.renegade = false;
