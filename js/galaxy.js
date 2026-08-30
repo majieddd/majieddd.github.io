@@ -701,13 +701,14 @@ function generateGalaxy(seed, playerFaction, mapPool, kindsW, gxv) {
        Measured over 4 powers x 40 seeds: every non-renegade field is
        byte-identical. */
     {
-      /* THE VIGIL HOLDS NO WORLDS AND OWNS NO BOONS. BOONS has twenty
-         entries across the four powers that fight over the galaxy and none
-         for the machines, so a renegade world on a Vigil profile would pay
-         a fallback boon belonging to somebody else, and worldBossOf would
-         seat a MACHINE commander behind it, spoiling the secret faction to a
-         player who has only just unlocked it. No splinter for a power that
-         holds nothing. */
+      /* A SPLINTER ONLY FOR A POWER WITH ITS OWN BOONS. When this was
+         written the machines owned none, so a renegade world on a machine
+         profile would have paid a fallback boon belonging to somebody else
+         and seated a machine commander behind it, spoiling the secret
+         faction. The gate below derives that rule instead of dating it:
+         the five machine boons have since landed, so machine profiles now
+         roll renegades like everyone else, paying machine boons. owner-sweep
+         24.2 asserts the gate in both directions. */
       const hasOwnBoons = typeof BOONS !== 'undefined' &&
                           BOONS.some(b => b.f === playerFaction);
       /* Never the seat, never the two opening worlds, and never a world the

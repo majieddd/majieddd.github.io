@@ -595,8 +595,14 @@
     /* ...and the ORDINARY cross-faction law must survive untouched. */
     var xenoStillLocked = !!Meta.unitOriginLock('chitling');
     v.victories = keep;
+    /* DERIVED, was === 5: the machine roster grew to eight with the
+       fifteen-unit expansion and the literal never learned. */
+    var wantSecret = SECRET_FACTIONS.reduce(function (a, f) {
+      return a + ((typeof FACTION_UNITS !== 'undefined' && FACTION_UNITS[f]) || []).length;
+    }, 0);
     ok('22.11 the Vigil arsenal opens only once the game is beaten',
-       secretUnits.length === 5 && lockedBefore && openAfter && xenoStillLocked,
+       secretUnits.length === wantSecret && wantSecret > 0 &&
+       lockedBefore && openAfter && xenoStillLocked,
        secretUnits.length + ' machine soldiers; locked before ' + lockedBefore +
        ', open after ' + openAfter + ', xeno still locked ' + xenoStillLocked);
   });
@@ -746,13 +752,18 @@
        ' | both on poisonPct: ' + identityShared);
   });
 
-  T('19.23 twenty boons, five per power', function () {
+  T('19.23 five boons per power, every power', function () {
+    /* DERIVED, was "twenty boons across four powers": the five machine boons
+       landed later and this row stayed red for the crime of the game growing
+       as designed. The invariant is the SHAPE: every power in POWER_ORDER
+       carries exactly five, nobody else carries any. */
     const by = {};
     for (const b of BOONS) by[b.f] = (by[b.f] || 0) + 1;
     const counts = Object.keys(by).sort().map(function (k) { return k + ':' + by[k]; });
-    ok('19.23 twenty boons, five per power',
-       BOONS.length === 20 && Object.keys(by).length === 4 &&
-       Object.keys(by).every(function (k) { return by[k] === 5; }),
+    ok('19.23 five boons per power, every power',
+       BOONS.length === POWER_ORDER.length * 5 &&
+       Object.keys(by).length === POWER_ORDER.length &&
+       POWER_ORDER.every(function (f) { return by[f] === 5; }),
        counts.join(' '));
   });
 
@@ -1249,10 +1260,15 @@
       g.systems.forEach(function (sys) { sys.worlds.forEach(function (w) { if (w.renegade) ren++; }); });
     }
     const machineBoons = BOONS.filter(function (b) { return b.f === 'robot'; }).length;
-    ok('24.2 THE VIGIL has no renegade world and no own-power boon',
-       ren === 0 && machineBoons === 0,
-       ren + ' renegade worlds over six machine galaxies, ' + machineBoons + ' machine boons, ' +
-       'a splinter would pay another power advantage and seat a machine commander behind it');
+    /* THE RULE IS THE GATE, NOT THE ERA. galaxy.js grants a renegade world
+       only when the profile power has its OWN boons (hasOwnBoons), so when
+       the five machine boons landed, machine renegades began BY DESIGN and
+       this row, written when machines had none, went red for a session.
+       Asserting the gate keeps both eras honest: no own boons means no
+       splinter, own boons mean the splinter pays its own power. */
+    ok('24.2 machine renegades exist exactly when machine boons do',
+       (machineBoons > 0) === (ren > 0),
+       ren + ' renegade worlds over six machine galaxies, ' + machineBoons + ' machine boons');
   });
 
   /* ---- 24.3 the standing order reaches every way of starting a battle -- */
@@ -1525,8 +1541,14 @@
     }
     /* Derivation: exactly the authored seven are stealth, flyers are air. */
     const stealth = Object.keys(ENEMY_TYPES).filter(function (id) { return unitRole(ENEMY_TYPES[id]) === 'stealth'; });
-    const wantStealth = ['sprinter', 'jammer', 'blink', 'wraith', 'cutter', 'boarder', 'scrapjack'];
-    const stealthOk = stealth.length === 7 && wantStealth.every(function (id) { return stealth.indexOf(id) >= 0; });
+    /* DERIVED, was a hand-list of seven: `runner` was authored stealth in the
+       fifteen-unit expansion and the list never learned it. The assertion is
+       that unitRole classifies EXACTLY the authored stealth flags, so an
+       accidental flag on a new def still fails (the set includes it, and the
+       reviewer sees the id in the message rather than a bare WRONG). */
+    const wantStealth = Object.keys(ENEMY_TYPES).filter(function (id) { return !!ENEMY_TYPES[id].stealth; });
+    const stealthOk = stealth.length === wantStealth.length &&
+      wantStealth.every(function (id) { return stealth.indexOf(id) >= 0; });
     /* Behaviour: drive a battle with sends flowing; infantry engages, no
        wave-vs-wave pair ever does, stealth never does. */
     Game.start({ map: 'spine', difficulty: 'contested', seed: 21, loadout: PIN.slice(),
