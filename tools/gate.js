@@ -165,6 +165,21 @@ function staticGates() {
   if (ft.code === 0) say('commander signatures: ' + ft.out.trim().replace(/^facts check OK: /, ''));
   else fail('commander signatures: ' + ft.out.trim().split('\n').slice(1).map(l => l.trim()).join('; '));
 
+  /* THE NARRATIVE SPINE IS GENERATED, so the only lie it can tell is being
+     STALE: pages describing towers, worlds or slides that main no longer
+     holds, which is exactly the drift the owner made it canonical to stop.
+     --check regenerates in memory and diffs against narrative/; it also
+     re-runs the spine's own coverage assertions (every tower, denizen,
+     commander and boon rendered, every ref unique, every source line found
+     exactly once). Mutation-tested: a planted edit to human.html and a
+     removed spine.json each turned this red, control green. The deploy
+     workflow ALSO regenerates on every push, so the live site cannot go
+     stale even if a commit skips this gate; this check keeps the COMMITTED
+     copy honest so local review reads the same document the site serves. */
+  const sp = run(process.execPath, ['tools/storyboard.js', '--check']);
+  if (sp.code === 0) say(sp.out.trim().split('\n').pop());
+  else fail('narrative spine: ' + sp.out.trim().split('\n').pop());
+
   /* THE GAME LOADS WITHOUT THROWING. js/game.js:229 calls
      assertBoonKeysAreLive() at module top level -- a real, already-written
      check that a boon's apply() never writes a key BOON_FOLD does not know

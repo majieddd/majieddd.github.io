@@ -32,6 +32,17 @@ jobs:
       - name: Build the single-file bundle
         run: node build.js
 
+      # The narrative spine (narrative/*.html + spine.json) is the canonical
+      # reference for everything on main: campaigns, towers, denizens,
+      # commanders, boons, systems, each with a stable ref and a source line.
+      # It is regenerated HERE, from this very commit's game data, so the
+      # published document can never describe a version of the game that is
+      # not the one this deploy is publishing. The generator throws (and this
+      # deploy fails) if any table entry cannot be rendered or located, which
+      # is the honest outcome: better no deploy than a spine that lies.
+      - name: Regenerate the narrative spine from this commit
+        run: node tools/storyboard.js
+
       - name: Verify the bundle actually inlined everything
         run: |
           for f in aegis-protocol.html aegis-artifact.html; do
@@ -40,7 +51,10 @@ jobs:
           if grep -q '<script src=' aegis-protocol.html; then
             echo "::error::bundle still references an external script"; exit 1
           fi
-          echo "bundle ok: $(du -h aegis-protocol.html | cut -f1)"
+          for f in narrative/index.html narrative/spine.json; do
+            test -f "$f" || { echo "::error::$f was not written"; exit 1; }
+          done
+          echo "bundle ok: $(du -h aegis-protocol.html | cut -f1), spine ok: $(du -h narrative/spine.json | cut -f1)"
 
       - uses: actions/configure-pages@v5
 

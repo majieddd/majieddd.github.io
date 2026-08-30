@@ -185,6 +185,35 @@ block near the top is a Session-12 artifact and is marked superseded, plan from
 identity, and [`docs/MECHANICS-OPTIONS.md`](docs/MECHANICS-OPTIONS.md) holds
 fifteen designed-but-unbuilt mechanics awaiting an owner pick.
 
+### The narrative spine, the canonical reference for everything on main
+
+[`narrative/`](narrative/) (live at majieddd.github.io/narrative/) is the
+generated reference for the whole game: every campaign in play order, every
+tower, denizen, commander, boon, element, reaction, ability, wave modifier,
+world, slide, story beat, timeline event and commander relationship, each with
+a stable ref (`tower:flak`, `human/act2/MARS`, `human/intro/slide7`) and a link
+to the exact source line it was generated from. `narrative/spine.json` maps
+every ref to its page anchor and source location, so an owner note quoted
+against a ref resolves mechanically, for people and for the AI.
+
+Three rules keep it canonical:
+
+1. **It is generated, never hand-edited.** `node tools/storyboard.js` rebuilds
+   it from the loaded game modules; a stat on those pages IS the stat in the
+   game. Hand edits are overwritten by design.
+2. **It cannot go stale.** `tools/gate.js` runs `storyboard.js --check`, which
+   regenerates in memory and fails on any diff, and
+   `.github/workflows/pages.yml` regenerates it on every push to main, so the
+   published document always describes exactly the commit being published.
+3. **Coverage is asserted.** The generator throws if any tower, denizen,
+   commander or boon fails to render, if a ref is duplicated, or if a source
+   line cannot be located exactly once. A red gate beats a spine that lies.
+
+If you add a table (a new entity class the game reads), add its cards and its
+refs to `tools/storyboard.js` in the same change, or the new class is invisible
+to every future review. `narrative/CHANGES.html` is separate: a point-in-time
+session review written by `tools/storyboard_changes.js`, not regenerated.
+
 ---
 
 ## 4. Traps that have each cost someone a day
