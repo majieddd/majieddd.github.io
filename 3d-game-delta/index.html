@@ -85,7 +85,7 @@ window.addEventListener('error', function (e) {
       <div class="sub">SIEGE OF THE AVALON YARD</div>
       <div class="lede">The yard is half-built and the Nihil are coming. Build the six turrets
       of the Avalon line, hold the ring, and let every battle paint its own story in ink.</div>
-      <div class="sub" style="margin-top:14px;font-size:11px;color:#7d94ac">BUILD v1.4</div>
+      <div class="sub" style="margin-top:14px;font-size:11px;color:#7d94ac">BUILD v1.5</div>
       <button class="btn" id="btn-start" onclick="window.__bootStart && window.__bootStart()">IGNITE THE CORE</button>
     </div>
   </div>
@@ -213,6 +213,11 @@ function bevelBox(w, h, d, b, seg) {
   return g;
 }
 function lerpVec3(v, target, l, dt) { v.x = damp(v.x, target.x, l, dt); v.y = damp(v.y, target.y, l, dt); v.z = damp(v.z, target.z, l, dt); }
+function noCull(root) {
+  /* bent world: bounding spheres sit at FLAT positions, so frustum culling
+     wrongly drops on-screen objects (derendering). Disable per-object culling. */
+  root.traverse((o) => { if (o.isMesh || o.isSprite) o.frustumCulled = false; });
+}
 
 /* ===== 02_shaders.js ===== */
 /* INKFALL 02_shaders.js - hand-written GLSL: toon band + halftone, ink outline, rim,
@@ -1114,6 +1119,7 @@ function TOWERS(scene, fx, snd) {
     pad.frameInv = pad.frameInv || padFrameInv(pad);
     /* aim pivot: yaw at group root, pitch at tur */
     const outline = addOutline(parts.g, 1.02, { opacity: 0.75 });
+    noCull(group);
     scene.add(group);
     const t = {
       type, def, pad, group, parts, level: 1,
@@ -1435,6 +1441,7 @@ function ENEMIES(scene, fx, snd, yard) {
     /* hp bar */
     const bar = makeHpBar(); bar.scale.set(1.4, 1, 1); bar.visible = false;
     bar.position.y = 2.2 * def.scale; grp.add(bar);
+    noCull(grp);
     scene.add(grp);
     const e = {
       type, def, grp, rig, mats,
@@ -2340,14 +2347,16 @@ function GAME(root) {
   };
   /* ---------- camera control ---------- */
   const cam = {
-    auto: true, yaw: 0.6, pitch: 0.85, dist: 46, target: new THREE.Vector3(0, 6, 0),
-    desired: new THREE.Vector3(0, 6, 0),
+    auto: true, yaw: 0.6, pitch: 1.12, dist: 60, target: new THREE.Vector3(0, 14, 0),
+    desired: new THREE.Vector3(0, 14, 0),
     orbitVel: 0.05,
     dragging: false, px: 0, py: 0,
     onDown(x, y) { this.dragging = true; this.px = x; this.py = y; canvas.classList.add('dragging'); },
     onMove(x, y) {
       if (!this.dragging) return;
-      this.yaw -= (x - this.px) * 0.005; this.pitch = clamp(this.pitch + (y - this.py) * 0.004, 0.55, 1.38);
+      /* natural control: the world follows the cursor (drag right -> world moves right) */
+      this.yaw += (x - this.px) * 0.005;
+      this.pitch = clamp(this.pitch - (y - this.py) * 0.004, 0.55, 1.38);
       this.px = x; this.py = y;
     },
     onUp() { this.dragging = false; canvas.classList.remove('dragging'); },
@@ -2359,6 +2368,7 @@ function GAME(root) {
     }
   };
   game.cam = cam;
+  game.cam = cam;
   /* ---------- init systems ---------- */
   scene.background = null;
   const sky = makeSky(); scene.add(sky);
@@ -2368,6 +2378,7 @@ function GAME(root) {
   game.en = ENEMIES(scene, game.fx, SND, game.yard);
   game.tw = TOWERS(scene, game.fx, SND);
   game.waves = makeWaveController();
+  noCull(scene); /* bent world: flat bounding spheres -> no per-object culling (no derendering) */
   game.overlay = makeOverlay();
   scene.add(game.overlay.mesh);
   /* ---------- economy / build ---------- */
@@ -2519,7 +2530,7 @@ function GAME(root) {
       const combat = game.combatFocus;
       const combatWeight = (game.time - game.lastHitT < 1.6) ? 0.55 : 0.06;
       game.focus.x = damp(game.focus.x, combat.x * combatWeight, focusL, dtRaw);
-      game.focus.y = damp(game.focus.y, 3 + combat.y * combatWeight * 0.4, focusL, dtRaw);
+      game.focus.y = damp(game.focus.y, 10 + combat.y * combatWeight * 0.4, focusL, dtRaw);
       game.focus.z = damp(game.focus.z, combat.z * combatWeight, focusL, dtRaw);
     }
     cam.desired.copy(game.focus);
@@ -2621,6 +2632,11 @@ function GAME(root) {
     let dx = Math.abs(a.x - b.x); dx = Math.min(dx, BOARD.LEN - dx);
     const dy = a.y - b.y, dz = a.z - b.z;
     return Math.sqrt(dx * dx + dy * dy + dz * dz);
+  }
+  function noCull(root) {
+    /* bent world: bounding spheres sit at FLAT positions, so frustum culling
+       wrongly drops on-screen objects (derendering). Disable per-object culling. */
+    root.traverse((o) => { if (o.isMesh || o.isSprite) o.frustumCulled = false; });
   }
   function bindInput() {
     canvas.addEventListener('mousedown', (e) => {

@@ -71,6 +71,24 @@ Measured facts: draw calls in the win-run at 15 towers: 654 max; fps 91-92 on He
 - screenshots in tools/: shot_00_title, shot_01_wave1, shot_02_wave2, shot_03_end.
 - Final artifact (v1.1): play.html 1575 KB, single file, file:// double-click, no network.
 
+## ROUND 9 - NATURAL CONTROLS + DERENDERING FIX (user-requested, 2026-08-29)
+USER: "control for maneuvering the map and clicking/dragging is inverted"; "some objects
+and items still derender and disappear".
+- CAMERA: drag was anti-cursor (yaw -= dx, pitch += dy). Flipped to natural orbit
+  (world follows the cursor; drag right -> world moves right, drag down -> camera
+  lowers). Verified with REAL CDP drags: yaw 0.67->2.04 (drag right), pitch 1.12->1.38
+  (drag up), both NATURAL.
+- DERENDERING (root cause): the battle world is bent in the VERTEX SHADER, but
+  bounding spheres remain at FLAT positions -> frustum culling dropped objects that
+  are actually on screen (rocks, pads, walls, enemy ships popping out while orbiting).
+  FIX: noCull() disables per-object culling on the whole scene + every tower/enemy
+  at build time (scene traverse at init + build-site traverses).
+- DEFAULT CAMERA raised to a full-belt overview (pitch 1.12, dist 60, focus y 14) so
+  the whole ring is on screen at start instead of the belt riding the planet limb.
+Verified: real-click E2E build/sell (400->310->378); 5/5 enemy 2-frame proofs; WIN
+123 kills / lives 4 / 0 errors / 144 fps (draw calls up to 1023 with culling off,
+still 144 fps on the RTX 4080). Published as BUILD v1.5.
+
 ## ROUND 8 - PLANET-WIDE BELT + TWO-SIDED DEFENSE + GLITCH FIXES (2026-08-29)
 USER: "still glitchy"; "tower defense involves two sides"; "make it span the entire planet".
 REBUILD (bend v2): flat strip -> EQUATORIAL BELT around the whole planet (flat x = arc
