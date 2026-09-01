@@ -95,7 +95,7 @@ const inlineOnDemand = s => s.replace(ONDEMAND_RE, (m, key) => {
   return '"data:image/webp;base64,' + fs.readFileSync(file).toString('base64') + '"';
 });
 
-const js   = ['artpack', 'mapgen', 'lore', 'story', 'cutscenes', 'planetcuts', 'worldlore', 'missions', 'config', 'worldmaps', 'factions', 'towers2', 'abilities', 'roster', 'dialogue', 'commanders', 'audio', 'entities', 'entities2', 'ai', 'galaxy', 'game', 'net', 'ui', 'phone', 'debug', 'main']
+const js   = ['artpack', 'mapgen', 'lore', 'story', 'cutscenes', 'planetcuts', 'worldlore', 'missions', 'config', 'worldmaps', 'campaign2', 'factions', 'towers2', 'abilities', 'roster', 'dialogue', 'commanders', 'audio', 'entities', 'entities2', 'ai', 'galaxy', 'game', 'net', 'ui', 'phone', 'debug', 'main']
   .map(n => `/* ── ${n}.js ─────────────────────────────────── */\n` +
             (n === 'artpack' ? stripVideo(inlineOnDemand(stripPlanet(read(`js/${n}.js`)))) : read(`js/${n}.js`)))
   .join('\n\n');

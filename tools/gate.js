@@ -209,6 +209,16 @@ function staticGates() {
      vocabulary, rosters, buildable-ground floor, the galaxy stream pin
      (2800 worlds against the pre-change fixture), and live assignment
      (own board everywhere, tri on contested). */
+  /* THE REWORKED CAMPAIGN (Session 46, docs/CAMPAIGN-REWORK.md) is data with
+     no engine readers yet, which is the kind that rots quietest: nothing
+     playing the game ever disagrees with it. Nine checks stand in for the
+     engine until the engine arrives. */
+  const c2 = run(process.execPath, ['tools/probe-campaign2.js']);
+  if (c2.code === 0) say('campaign rework: ' + (c2.out.trim().split('\n').pop() || '').trim());
+  else fail('campaign rework: ' + c2.out.trim().split('\n')
+                                    .filter(l => l.indexOf('[FAIL]') >= 0)
+                                    .map(l => l.replace(/^\s*\[FAIL\]\s*/, '')).join('; '));
+
   const wmp = run(process.execPath, ['tools/probe-worldmaps.js']);
   if (wmp.code === 0) say('world boards: ' + (wmp.out.trim().split('\n').pop() || '').trim());
   else fail('world boards: ' + wmp.out.trim().split('\n')
