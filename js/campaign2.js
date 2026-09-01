@@ -66,14 +66,27 @@ const CAMPAIGN_ACTS = [
             brief: 'Ronald Dump calls Swami in for help. They agree on nothing and share one enemy, and the act of holding the capital together is the argument neither of them wins.' },
           { id: 'tri-city', name: 'THE TRI-CITY LINE', board: null, challenge: 'demanding', seats: CAMPAIGN_MULTI,
             brief: 'Los Angeles, the Texas triangle and Miami, defended at the same time by separate commanders. The first battle the player cannot personally be everywhere in.' },
+          /* ALL SEVEN CONTINENTS (owner call, Session 46). The four city
+             fights above are North American ground at street scale; the seven
+             below are the planet at continental scale, each one a front with
+             its own major countries as the points that have to hold. Seven
+             plus the four cities plus the globe is twelve battles on Earth,
+             which is deliberate: Earth is the act that teaches the game and
+             the only body the whole campaign returns to. */
+          { id: 'north-america', name: 'NORTH AMERICA', board: null, challenge: 'standard',
+            brief: 'The continent behind the cities already held: the Canadian north, the Mexican corridor, and an interior nobody thought would need fortifying because the coasts were supposed to hold.' },
           { id: 'south-america', name: 'SOUTH AMERICA', board: null, challenge: 'demanding',
-            brief: 'A continent as one board, its major countries as the points that have to hold.' },
+            brief: 'The Andes spine on one side and the basin on the other, with the major capitals as the points that have to hold and no straight road between any two of them.' },
           { id: 'europe', name: 'EUROPE', board: null, challenge: 'demanding',
-            brief: 'Dense, old and impossible to give ground in: every point lost is somebody’s capital.' },
+            brief: 'Dense, old and impossible to give ground in: every point lost is somebody’s capital, and the distances are short enough that losing one puts you inside the next.' },
           { id: 'africa', name: 'AFRICA', board: null, challenge: 'demanding',
-            brief: 'The widest front on the planet, and the one with the most ways in.' },
-          { id: 'asia-pacific', name: 'ASIA AND THE PACIFIC', board: null, challenge: 'punishing',
-            brief: 'Half the planet’s people and an ocean nobody can fortify.' },
+            brief: 'The widest front on the planet and the one with the most ways in: a board that punishes a line built to face one direction.' },
+          { id: 'asia', name: 'ASIA', board: null, challenge: 'punishing',
+            brief: 'The largest landmass and half the planet’s people, fought from the steppe to the coast. The only continent where the reinforcement problem is worse than the terrain.' },
+          { id: 'oceania', name: 'OCEANIA', board: null, challenge: 'punishing',
+            brief: 'Australia and an ocean of islands nobody can fortify at once. Everything here is a decision about which piece of water you are prepared to lose.' },
+          { id: 'antarctica', name: 'ANTARCTICA', board: null, challenge: 'punishing',
+            brief: 'Ice, a handful of stations, and the reason every power sent a survey team in the first place. The last continent, and the one that explains the others.' },
           { id: 'global', name: 'EARTH: GLOBAL WARFARE', board: null, whole: true, challenge: 'brutal', seats: CAMPAIGN_MULTI,
             brief: 'Every front at once, every surviving commander in play. The whole planet as one battle, and the shape the 3D port turns into a globe.' }
         ]
@@ -118,21 +131,8 @@ const CAMPAIGN_ACTS = [
         ]
       },
 
-      /* OWNER CALL (tracker item): Mercury is not in the owner's list, and the
-         act works at six planets without it. It is included because the act
-         budget allows seven, because w_mercury is already an authored board,
-         and because Sol reads short without it. Deleting this planet costs
-         nothing but the two locations. */
-      {
-        id: 'mercury', name: 'MERCURY', ownerCall: true,
-        premise: 'A world with one survivable stripe on it, and the stripe moves.',
-        locations: [
-          { id: 'terminator-line', name: 'THE TERMINATOR LINE', board: 'w_mercury', challenge: 'punishing',
-            brief: 'Nine tiles of ground between a day that melts lead and a night that freezes gas. Nowhere to hide, on purpose.' },
-          { id: 'whole-mercury', name: 'THE WHOLE OF MERCURY', board: null, whole: true, challenge: 'punishing',
-            brief: 'The planetary battle, fought along a line that will not stay still.' }
-        ]
-      },
+      /* MERCURY IS BONUS CONTENT (owner call, Session 46), not an act planet.
+         It keeps its authored board and its entry in CAMPAIGN_BONUS below. */
 
       {
         id: 'jupiter', name: 'JUPITER',
@@ -344,3 +344,50 @@ const CAMPAIGN_ORDER = {
 
 const CAMPAIGN_ACT_BY_ID = {};
 CAMPAIGN_ACTS.forEach(a => { CAMPAIGN_ACT_BY_ID[a.id] = a; });
+
+/* ==========================================================================
+   PARKED: BONUS BODIES AND SYSTEMS (owner calls, Session 46).
+
+   Places the canon keeps and the three-act campaign does not visit. This
+   table exists so "bonus content" is a recorded decision with a reason and a
+   board attached, rather than content that quietly stopped being mentioned:
+   the failure mode for a demoted place is that nobody can tell later whether
+   it was cut on purpose or lost in an edit.
+
+   `boards` names geometry that already exists and is NOT consumed by any
+   campaign location. Where a bonus body's board is instead re-parented into
+   an act (the Pleiades and Sirius sets), that is stated on the entry, because
+   a board cannot serve a campaign location and a bonus body at once and the
+   probe enforces exactly that.
+   ========================================================================== */
+const CAMPAIGN_BONUS = [
+  {
+    id: 'mercury', name: 'MERCURY', kind: 'body',
+    why: 'Dropped from Act 1 by owner call: Sol reads complete at six planets, and Mercury is a two-location detour on a body with one survivable stripe.',
+    boards: ['w_mercury'], reparented: false
+  },
+  {
+    id: 'pleiades', name: 'THE PLEIADES', kind: 'system',
+    why: 'Was the Federation home. The Federation now shares Proxima Centauri, so the cluster stops being a campaign system and stays in the canon as somewhere the game can talk about.',
+    /* Its seven boards carry Federation architecture, so they moved with the
+       Federation: they are Act 2 location boards now, not free geometry. */
+    boards: [], reparented: true,
+    reparentedTo: 'proxima'
+  },
+  {
+    id: 'sirius', name: 'SIRIUS', kind: 'system',
+    why: 'Was the Vigil home. The Vigil now shares Proxima Centauri, and the same logic applies: the star stays in the canon, the campaign stops going there.',
+    boards: [], reparented: true,
+    reparentedTo: 'proxima'
+  },
+  {
+    id: 'barnard', name: "BARNARD'S STAR", kind: 'system',
+    why: 'Demoted in Session 42, before this rework. Listed here so the parked set is one table rather than several sessions of precedent.',
+    boards: [], reparented: false
+  },
+  {
+    id: 'tabby', name: "TABBY'S STAR", kind: 'system',
+    why: 'Demoted in Session 42 alongside Barnard. THE VEIL survives there as somebody else’s unexplained work.',
+    boards: [], reparented: false
+  }
+];

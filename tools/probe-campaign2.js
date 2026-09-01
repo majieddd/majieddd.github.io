@@ -7,7 +7,8 @@
  * the engine arrives:
  *
  *   C2.1  three acts, 5 to 7 planets each (the owner's budget)
- *   C2.2  planets hold 1 to 9 locations; at most one whole-body battle per
+ *   C2.2  planets hold 1 to 12 locations (Earth carries twelve by owner
+ *         call); at most one whole-body battle per
  *         planet, and where there is one it is LAST, because it is the fight
  *         the smaller locations were rehearsals for
  *   C2.3  every id unique, and every ref (act/planet/location) unique
@@ -20,6 +21,8 @@
  *         home
  *   C2.9  every location that still needs a board says what it is for, so the
  *         backlog is a specification and not a list of holes
+ *   C2.10 every parked body (bonus content) records WHY it was parked, and
+ *         claims no board that a campaign location is already using
  */
 'use strict';
 const fs = require('fs');
@@ -32,7 +35,7 @@ vm.createContext(ctx);
 for (const f of ['mapgen', 'config', 'worldmaps', 'campaign2'])
   vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', f + '.js'), 'utf8'), ctx, { filename: f + '.js' });
 
-const G = vm.runInContext('({ CAMPAIGN_ACTS, CAMPAIGN_ORDER, CAMPAIGN_ACT_BY_ID, MAPS, TERRA_VOCAB })', ctx);
+const G = vm.runInContext('({ CAMPAIGN_ACTS, CAMPAIGN_ORDER, CAMPAIGN_ACT_BY_ID, CAMPAIGN_BONUS, MAPS, TERRA_VOCAB })', ctx);
 
 let pass = 0, fail = 0;
 function T(id, ok, detail) {
@@ -62,7 +65,7 @@ for (const a of G.CAMPAIGN_ACTS)
   const bad = [];
   for (const a of G.CAMPAIGN_ACTS) for (const p of a.planets) {
     const n = p.locations.length;
-    if (n < 1 || n > 9) bad.push(p.id + ' has ' + n + ' locations');
+    if (n < 1 || n > 12) bad.push(p.id + ' has ' + n + ' locations');
     const wholes = p.locations.filter(l => l.whole);
     if (wholes.length > 1) bad.push(p.id + ' has ' + wholes.length + ' whole-body battles');
     if (wholes.length === 1 && p.locations[p.locations.length - 1] !== wholes[0])
@@ -171,6 +174,42 @@ for (const a of G.CAMPAIGN_ACTS)
     vague.slice(0, 4).join('; ') ||
     todo.length + ' boards to author (' +
     Object.keys(byAct).map(k => k + ' ' + byAct[k]).join(', ') + '), all specified');
+}
+
+
+/* ---- C2.10 the parked set. A place demoted out of the campaign has to stay
+        a recorded decision with a reason, or a later session cannot tell
+        whether it was cut on purpose or lost in an edit. And a board cannot
+        serve a campaign location AND a bonus body at once: a bonus body
+        whose boards moved into an act must say so and claim none. ---- */
+{
+  const bonus = G.CAMPAIGN_BONUS || [];
+  const bad = [];
+  const used = new Set();
+  for (const a of G.CAMPAIGN_ACTS)
+    for (const p of a.planets)
+      for (const l of p.locations) if (l.board) used.add(l.board);
+  for (const b of bonus) {
+    if (!b.id || !b.name) bad.push('an entry has no id or name');
+    if (typeof b.why !== 'string' || b.why.length < 40)
+      bad.push(b.id + ': no reason recorded for parking it');
+    if (['body', 'system'].indexOf(b.kind) < 0) bad.push(b.id + ': kind is ' + JSON.stringify(b.kind));
+    for (const m of (b.boards || [])) {
+      if (!G.MAPS.some(x => x.id === m)) bad.push(b.id + ': board ' + m + ' does not exist');
+      if (used.has(m)) bad.push(b.id + ': board ' + m + ' is also a campaign location board');
+    }
+    if (b.reparented && (b.boards || []).length)
+      bad.push(b.id + ': re-parented but still claims boards');
+    if (b.reparented && !G.CAMPAIGN_ACT_BY_ID[b.reparentedTo])
+      bad.push(b.id + ': re-parented to unknown act ' + b.reparentedTo);
+  }
+  /* Nothing in the campaign may name a parked place as a host. */
+  for (const a of G.CAMPAIGN_ACTS)
+    if (bonus.some(b => b.id === a.id)) bad.push(a.id + ' is both an act and parked');
+  T('C2.10 every parked body records why, and claims no campaign board',
+    bad.length === 0 && bonus.length > 0,
+    bad.slice(0, 4).join('; ') ||
+    bonus.length + ' parked: ' + bonus.map(b => b.id + (b.reparented ? ' (boards re-parented)' : '')).join(', '));
 }
 
 console.log(fail ? 'CAMPAIGN REWORK: ' + fail + ' FAILURE(S)'

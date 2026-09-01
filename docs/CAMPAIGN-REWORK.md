@@ -4,7 +4,7 @@ Owner directive, Session 46. The campaign stops being "five systems of seven
 worlds, one battle each" and becomes a three-level hierarchy:
 
 ```
-ACT (a star system)  ->  PLANET (5 to 7 per act)  ->  LOCATION (1 to 9 per planet)
+ACT (a star system)  ->  PLANET (5 to 7 per act)  ->  LOCATION (1 to 12 per planet)
 ```
 
 A **location** is one battle on one board. A **planet** is taken when its
@@ -15,7 +15,7 @@ port turns into a single continuous globe. (The 3D work is happening in another
 session as WORLDHEART and is context only; nothing here depends on it.)
 
 The structure is committed as data in **js/campaign2.js** and held to its rules
-by **tools/probe-campaign2.js** (9 checks, in the gate). It is **not wired into
+by **tools/probe-campaign2.js** (10 checks, in the gate). It is **not wired into
 the engine yet, on purpose**: see the impact analysis below for why that is a
 separate batch.
 
@@ -36,11 +36,12 @@ Federation and the Vigil now share Proxima, the Xeno and the Pirates share Zeta.
 Every power opens at home; the probe asserts it. The middle act is always
 somebody else's home, which is the shape the story wants.
 
-**The Pleiades and Sirius stop being campaign systems** and demote to bonus
-systems, exactly as Barnard's Star and Tabby's Star already did, so the canon
-keeps its edges. **Nothing authored is lost**: their fourteen handcrafted boards
-are re-parented as location boards inside Act 2, which is why Act 2 needs no new
-geometry at all.
+**The Pleiades and Sirius are bonus content** (owner call), parked in
+`CAMPAIGN_BONUS` exactly as Barnard's Star and Tabby's Star already were, so the
+canon keeps its edges. **Nothing authored is lost**: their fourteen handcrafted
+boards moved with the powers that built them and are Act 2 location boards now,
+which is why Act 2 needs no new geometry at all. **Mercury is bonus content too**
+and keeps its board.
 
 ## The three acts
 
@@ -48,23 +49,25 @@ geometry at all.
 
 *The rock came apart over Earth and it was hollow. Everything after is the answer to that.*
 
-7 planets, 28 locations, 21 boards to author.
+6 planets, 29 locations, 23 boards to author.
 
 | Planet | Locations, in order | Ready | New |
 | --- | --- | ---: | ---: |
-| **EARTH** | LONG ISLAND **[new]** &rarr; NEW YORK CITY &rarr; WASHINGTON D.C. **[new]** &rarr; THE TRI-CITY LINE **[new]** *(multi)* &rarr; SOUTH AMERICA **[new]** &rarr; EUROPE **[new]** &rarr; AFRICA **[new]** &rarr; ASIA AND THE PACIFIC **[new]** &rarr; EARTH: GLOBAL WARFARE **[new]** *(multi)* | 1 | 8 |
+| **EARTH** | LONG ISLAND **[new]** &rarr; NEW YORK CITY &rarr; WASHINGTON D.C. **[new]** &rarr; THE TRI-CITY LINE **[new]** *(multi)* &rarr; NORTH AMERICA **[new]** &rarr; SOUTH AMERICA **[new]** &rarr; EUROPE **[new]** &rarr; AFRICA **[new]** &rarr; ASIA **[new]** &rarr; OCEANIA **[new]** &rarr; ANTARCTICA **[new]** &rarr; EARTH: GLOBAL WARFARE **[new]** *(multi)* | 1 | 11 |
 | **LUNA** | THE LUNAR BASE &rarr; THE WHOLE MOON **[new]** | 1 | 1 |
 | **MARS** | CRASH LANDING **[new]** &rarr; THE GREAT RIFT &rarr; OLYMPUS MONS **[new]** &rarr; THE WHOLE OF MARS **[new]** | 1 | 3 |
 | **VENUS** | THE PEAKS ABOVE THE CLOUD &rarr; THE ACID LAKES **[new]** &rarr; THE WHOLE OF VENUS **[new]** | 1 | 2 |
-| **MERCURY** (owner call) | THE TERMINATOR LINE &rarr; THE WHOLE OF MERCURY **[new]** | 1 | 1 |
 | **JUPITER** | HIGH ORBIT **[new]** &rarr; THE DEBRIS FIELD &rarr; THE EYE AND THE MOUNTAINS **[new]** &rarr; THE WHOLE OF JUPITER **[new]** | 1 | 3 |
 | **SATURN** | AROUND THE RINGS &rarr; THE ACID LAKE **[new]** &rarr; THE NORTH POLE FACILITY **[new]** &rarr; THE WHOLE OF SATURN **[new]** *(multi)* | 1 | 3 |
 
-Earth's nine locations are the spine of the whole game: Long Island (where the
-first protagonist is from, and where the Northrop Grumman radium leak gave
+Earth's twelve locations are the spine of the whole game: Long Island (where
+the first protagonist is from, and where the Northrop Grumman radium leak gave
 people cancer and gave a few of them something else), New York under Swami,
 Washington under a truce nobody enjoys, the Tri-City line where the player
-stops being able to be everywhere, four continents, then the planet.
+stops being able to be everywhere, then **all seven continents** at
+continental scale, then the planet entire. Twelve battles on one body is
+deliberate: Earth is the act that teaches the game and the only world the
+whole campaign comes back to.
 
 ### Act 2: PROXIMA CENTAURI, home of the Federation and the Vigil
 
@@ -133,15 +136,15 @@ read. This is an owner call and is flagged in the tracker.
 
 ## The asset schedule
 
-**28 new boards**, all specified in js/campaign2.js (the probe fails if a board
+**30 new boards**, all specified in js/campaign2.js (the probe fails if a board
 still to be built has no brief). Suggested order, because it front-loads the
 part the owner is designing against:
 
 | Batch | Boards | Why first |
 | --- | --- | --- |
 | A | Earth's first four: Long Island, D.C., Tri-City, plus the Global finale | The opening of the game and the two multi-commander shapes. Long Island is the new tutorial board and needs the most care. |
-| B | Earth's four continents | One archetype reused four ways with different point layouts, so they are cheap once A settles the idiom. |
-| C | Mars 3, Venus 2, Luna 1, Mercury 1 | The inner-system whole-body battles. |
+| B | Earth's seven continents | One archetype reused seven ways with different point layouts, so they are cheap once A settles the idiom. Antarctica is the exception and should be built last: it is the one that explains the others. |
+| C | Mars 3, Venus 2, Luna 1 | The inner-system whole-body battles. |
 | D | Jupiter 3, Saturn 3 | The act's back half, including the north pole facility. |
 | E | Zeta's 7 | Act 3, mostly whole-body battles over existing terrain vocabulary. |
 
@@ -156,28 +159,34 @@ commander portraits for the new named characters (Swami, Ronald Dump, the Long
 Island protagonist), and the story beats for four campaigns whose act order
 changed.
 
-## Owner calls still open
+## Owner calls, all settled (Session 46)
 
-1. **Mercury.** Not in the owner's list; included as a seventh Sol planet
-   because the budget allows it and w_mercury already exists. Delete the planet
-   if unwanted; it costs two locations.
-2. **Save migration** strategy above (recommendation: retire in-flight runs).
-3. **The Pleiades and Sirius as places.** Demoted to bonus systems here, with
-   their boards re-parented into Proxima. The alternative is keeping them as
-   playable systems, which would make some campaigns five acts and others
-   three.
-4. **Earth's continent count.** Four (South America, Europe, Africa,
-   Asia-Pacific) reads as complete without North America, which is covered by
-   the first four locations. Add Oceania as a fifth if the act wants length.
+1. **Mercury is bonus content**, not an Act 1 planet. Sol runs six planets. It
+   keeps `w_mercury` and its entry in `CAMPAIGN_BONUS`.
+2. **In-flight campaign saves are reset** at migration. The profile survives
+   with its commanders, unlocks, soul vault and ratings; the run does not. This
+   is what makes the id-shape change tractable at all.
+3. **The Pleiades and Sirius are bonus content**, parked in `CAMPAIGN_BONUS`.
+   Their fourteen boards moved with the powers that built them and are Act 2
+   location boards now, which is recorded on the parked entries and enforced:
+   a board cannot serve a campaign location and a bonus body at once.
+4. **All seven continents** are Earth fights: North America, South America,
+   Europe, Africa, Asia, Oceania, Antarctica. Earth is twelve locations.
+
+Parked places live in `CAMPAIGN_BONUS` with the reason recorded, so a later
+session can tell what was cut on purpose from what was lost in an edit. C2.10
+fails on a parked entry with no reason.
 
 ## Verification
 
-`node tools/probe-campaign2.js`, in the gate: three acts at 5 to 7 planets, the
-location budget, one whole-body battle per planet and it comes last, unique ids
+`node tools/probe-campaign2.js`, in the gate (10 checks): three acts at 5 to 7
+planets, the location budget (up to twelve, which is Earth), one whole-body battle per planet and it comes last, unique ids
 and refs, every named board resolves, no board serves two locations, challenge
 in the codex vocabulary, every power plays three acts and opens at home, one
 home act per power, and every board still to be built carries its brief.
 
 Mutation tested, four plants, each caught by its predicted check with control
 green: a power opening away from home, two locations sharing a board, a board
-id that does not exist, and a whole-body battle that is not last.
+id that does not exist, and a whole-body battle that is not last. C2.10 adds
+three more: a parked body claiming a board a campaign location uses, a parked
+body with no reason recorded, and a re-parented system still claiming boards.
