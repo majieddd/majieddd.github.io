@@ -30,7 +30,7 @@ Status: open | in-progress | landed <commit> | verified <commit> <check> | owner
 | --- | --- | --- |
 | A | Mercury as a Sol planet | **bonus content.** Sol runs six planets; Mercury keeps w_mercury and sits in CAMPAIGN_BONUS |
 | B | In-flight campaign saves on migration | **reset them.** The profile survives (commanders, unlocks, soul vault, ratings); the run does not |
-| C | Pleiades and Sirius | **bonus content**, parked in CAMPAIGN_BONUS. Their 14 boards moved with their powers and are Act 2 location boards |
+| C | Pleiades and Sirius | **bonus content**, parked in CAMPAIGN_BONUS. 13 of their 14 boards moved with their powers and are Act 2 location boards; the Pleiades keep the Dust Wake (w_merope) as the bonus location board |
 | D | Earth continents | **all seven.** North America, South America, Europe, Africa, Asia, Oceania, Antarctica. Earth is 12 locations |
 
 Decision B is the one that unblocks the engine batch: because runs are reset,
@@ -38,8 +38,10 @@ the world-id shape can change without inventing a meaning for old star keys.
 
 ## Notes
 
-- Act 2 needs ZERO new boards: the fourteen re-parented Pleiades and Sirius
-  boards plus the seven Proxima boards cover its eighteen locations.
+- Act 2 needs ZERO new boards: the thirteen re-parented Pleiades and Sirius
+  boards plus five of the seven Proxima boards cover its eighteen locations
+  (the Pleiades keep the Dust Wake as the bonus location board; the Narrows
+  and the Gate went to Act 3 with the pirates).
 - 33 of 63 locations already have a live board; 30 need authoring, all of them
   specified (C2.9 fails on a work item with no brief).
 - Parked places carry their reason in CAMPAIGN_BONUS and may not claim a board

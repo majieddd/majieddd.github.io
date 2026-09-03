@@ -22,7 +22,8 @@
  *   C2.9  every location that still needs a board says what it is for, so the
  *         backlog is a specification and not a list of holes
  *   C2.10 every parked body (bonus content) records WHY it was parked, and
- *         claims no board that a campaign location is already using
+ *         claims no board that a campaign location is already using (a
+ *         re-parented system may keep the boards no location took)
  */
 'use strict';
 const fs = require('fs');
@@ -181,7 +182,8 @@ for (const a of G.CAMPAIGN_ACTS)
         a recorded decision with a reason, or a later session cannot tell
         whether it was cut on purpose or lost in an edit. And a board cannot
         serve a campaign location AND a bonus body at once: a bonus body
-        whose boards moved into an act must say so and claim none. ---- */
+        whose boards moved into an act says so, and may keep only the
+        boards no location took (the Pleiades keep the Dust Wake). ---- */
 {
   const bonus = G.CAMPAIGN_BONUS || [];
   const bad = [];
@@ -198,8 +200,6 @@ for (const a of G.CAMPAIGN_ACTS)
       if (!G.MAPS.some(x => x.id === m)) bad.push(b.id + ': board ' + m + ' does not exist');
       if (used.has(m)) bad.push(b.id + ': board ' + m + ' is also a campaign location board');
     }
-    if (b.reparented && (b.boards || []).length)
-      bad.push(b.id + ': re-parented but still claims boards');
     if (b.reparented && !G.CAMPAIGN_ACT_BY_ID[b.reparentedTo])
       bad.push(b.id + ': re-parented to unknown act ' + b.reparentedTo);
   }

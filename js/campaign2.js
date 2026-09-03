@@ -369,9 +369,12 @@ const CAMPAIGN_BONUS = [
   {
     id: 'pleiades', name: 'THE PLEIADES', kind: 'system',
     why: 'Was the Federation home. The Federation now shares Proxima Centauri, so the cluster stops being a campaign system and stays in the canon as somewhere the game can talk about.',
-    /* Its seven boards carry Federation architecture, so they moved with the
-       Federation: they are Act 2 location boards now, not free geometry. */
-    boards: [], reparented: true,
+    /* Its boards carry Federation architecture, so they moved with the
+       Federation: six of the seven are Act 2 location boards now, not free
+       geometry. The seventh, the Dust Wake, stays with the cluster as the
+       bonus location's own board (Session 47: it was the one handcrafted
+       board no location and no parked entry kept). */
+    boards: ['w_merope'], reparented: true,
     reparentedTo: 'proxima'
   },
   {

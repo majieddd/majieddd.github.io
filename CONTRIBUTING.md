@@ -191,7 +191,7 @@ fifteen designed-but-unbuilt mechanics awaiting an owner pick.
 generated reference for the whole game: every campaign in play order, every
 tower, denizen, commander, boon, element, reaction, ability, wave modifier,
 world, slide, story beat, timeline event and commander relationship, each with
-a stable ref (`tower:flak`, `human/act2/MARS`, `human/intro/slide7`) and a link
+a stable ref (`tower:flak`, `human/world/MARS`, `human/intro/slide7`) and a link
 to the exact source line it was generated from. `narrative/spine.json` maps
 every ref to its page anchor and source location, so an owner note quoted
 against a ref resolves mechanically, for people and for the AI.

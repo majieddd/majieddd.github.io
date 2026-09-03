@@ -19,6 +19,326 @@
    "src": "js/factions.js:573"
   },
   {
+   "ref": "human/act-text/sol",
+   "kind": "acttext",
+   "name": "HUMANITY act framing, THE EARTH SYSTEM",
+   "faction": "human",
+   "page": "human.html#at-sol",
+   "src": "js/story.js:126"
+  },
+  {
+   "ref": "human/world/EARTH",
+   "kind": "world",
+   "name": "EARTH world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-00",
+   "src": "js/planetcuts.js:53"
+  },
+  {
+   "ref": "human/world/LUNA",
+   "kind": "world",
+   "name": "LUNA world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-01",
+   "src": "js/planetcuts.js:76"
+  },
+  {
+   "ref": "human/world/MARS",
+   "kind": "world",
+   "name": "MARS world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-02",
+   "src": "js/planetcuts.js:99"
+  },
+  {
+   "ref": "human/world/VENUS",
+   "kind": "world",
+   "name": "VENUS world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-03",
+   "src": "js/planetcuts.js:122"
+  },
+  {
+   "ref": "human/world/JUPITER",
+   "kind": "world",
+   "name": "JUPITER world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-05",
+   "src": "js/planetcuts.js:168"
+  },
+  {
+   "ref": "human/world/SATURN",
+   "kind": "world",
+   "name": "SATURN world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-06",
+   "src": "js/planetcuts.js:191"
+  },
+  {
+   "ref": "human/act-text/proxima",
+   "kind": "acttext",
+   "name": "HUMANITY act framing, PROXIMA CENTAURI",
+   "faction": "human",
+   "page": "human.html#at-proxima",
+   "src": "js/story.js:126"
+  },
+  {
+   "ref": "human/world/PROXIMA d",
+   "kind": "world",
+   "name": "PROXIMA d world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-30",
+   "src": "js/planetcuts.js:550"
+  },
+  {
+   "ref": "human/world/PROXIMA b",
+   "kind": "world",
+   "name": "PROXIMA b world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-31",
+   "src": "js/planetcuts.js:573"
+  },
+  {
+   "ref": "human/world/PROXIMA c",
+   "kind": "world",
+   "name": "PROXIMA c world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-32",
+   "src": "js/planetcuts.js:596"
+  },
+  {
+   "ref": "human/world/THE FLARE SHELTER",
+   "kind": "world",
+   "name": "THE FLARE SHELTER world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-33",
+   "src": "js/planetcuts.js:619"
+  },
+  {
+   "ref": "human/world/THE DARK LOCKER",
+   "kind": "world",
+   "name": "THE DARK LOCKER world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-35",
+   "src": "js/planetcuts.js:665"
+  },
+  {
+   "ref": "human/act-text/zeta",
+   "kind": "acttext",
+   "name": "HUMANITY act framing, ZETA RETICULI",
+   "faction": "human",
+   "page": "human.html#at-zeta",
+   "src": "js/story.js:126"
+  },
+  {
+   "ref": "human/world/ZETA-1 b",
+   "kind": "world",
+   "name": "ZETA-1 b world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-20",
+   "src": "js/planetcuts.js:385"
+  },
+  {
+   "ref": "human/world/ZETA-1 c",
+   "kind": "world",
+   "name": "ZETA-1 c world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-21",
+   "src": "js/planetcuts.js:408"
+  },
+  {
+   "ref": "human/world/ZETA-1 d",
+   "kind": "world",
+   "name": "ZETA-1 d world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-22",
+   "src": "js/planetcuts.js:431"
+  },
+  {
+   "ref": "human/world/ZETA-2 b",
+   "kind": "world",
+   "name": "ZETA-2 b world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-23",
+   "src": "js/planetcuts.js:454"
+  },
+  {
+   "ref": "human/world/ZETA-2 c",
+   "kind": "world",
+   "name": "ZETA-2 c world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-24",
+   "src": "js/planetcuts.js:477"
+  },
+  {
+   "ref": "human/world/SERPO",
+   "kind": "world",
+   "name": "SERPO world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-26",
+   "src": "js/planetcuts.js:523"
+  },
+  {
+   "ref": "human/act-text/the-pleiades",
+   "kind": "acttext",
+   "name": "HUMANITY act framing, THE PLEIADES",
+   "faction": "human",
+   "page": "human.html#at-the-pleiades",
+   "src": "js/story.js:126"
+  },
+  {
+   "ref": "human/act-text/sirius",
+   "kind": "acttext",
+   "name": "HUMANITY act framing, SIRIUS",
+   "faction": "human",
+   "page": "human.html#at-sirius",
+   "src": "js/story.js:126"
+  },
+  {
+   "ref": "human/world/MERCURY",
+   "kind": "world",
+   "name": "MERCURY world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-04",
+   "src": "js/planetcuts.js:145"
+  },
+  {
+   "ref": "human/world/MAIA",
+   "kind": "world",
+   "name": "MAIA world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-10",
+   "src": "js/planetcuts.js:220"
+  },
+  {
+   "ref": "human/world/ELECTRA",
+   "kind": "world",
+   "name": "ELECTRA world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-11",
+   "src": "js/planetcuts.js:243"
+  },
+  {
+   "ref": "human/world/TAYGETA",
+   "kind": "world",
+   "name": "TAYGETA world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-12",
+   "src": "js/planetcuts.js:266"
+  },
+  {
+   "ref": "human/world/MEROPE",
+   "kind": "world",
+   "name": "MEROPE world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-13",
+   "src": "js/planetcuts.js:289"
+  },
+  {
+   "ref": "human/world/CELAENO",
+   "kind": "world",
+   "name": "CELAENO world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-14",
+   "src": "js/planetcuts.js:312"
+  },
+  {
+   "ref": "human/world/STEROPE",
+   "kind": "world",
+   "name": "STEROPE world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-15",
+   "src": "js/planetcuts.js:335"
+  },
+  {
+   "ref": "human/world/ALCYONE",
+   "kind": "world",
+   "name": "ALCYONE world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-16",
+   "src": "js/planetcuts.js:358"
+  },
+  {
+   "ref": "human/world/ZETA-2 d",
+   "kind": "world",
+   "name": "ZETA-2 d world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-25",
+   "src": "js/planetcuts.js:500"
+  },
+  {
+   "ref": "human/world/THE NARROWS",
+   "kind": "world",
+   "name": "THE NARROWS world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-34",
+   "src": "js/planetcuts.js:642"
+  },
+  {
+   "ref": "human/world/PROXIMA GATE",
+   "kind": "world",
+   "name": "PROXIMA GATE world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-36",
+   "src": "js/planetcuts.js:688"
+  },
+  {
+   "ref": "human/world/SIRIUS A I",
+   "kind": "world",
+   "name": "SIRIUS A I world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-40",
+   "src": "js/planetcuts.js:715"
+  },
+  {
+   "ref": "human/world/SIRIUS A II",
+   "kind": "world",
+   "name": "SIRIUS A II world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-41",
+   "src": "js/planetcuts.js:738"
+  },
+  {
+   "ref": "human/world/THE ASH FIELD",
+   "kind": "world",
+   "name": "THE ASH FIELD world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-42",
+   "src": "js/planetcuts.js:761"
+  },
+  {
+   "ref": "human/world/SIRIUS B I",
+   "kind": "world",
+   "name": "SIRIUS B I world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-43",
+   "src": "js/planetcuts.js:784"
+  },
+  {
+   "ref": "human/world/THE DIAMOND SHELF",
+   "kind": "world",
+   "name": "THE DIAMOND SHELF world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-44",
+   "src": "js/planetcuts.js:807"
+  },
+  {
+   "ref": "human/world/THE COMPANION",
+   "kind": "world",
+   "name": "THE COMPANION world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-45",
+   "src": "js/planetcuts.js:830"
+  },
+  {
+   "ref": "human/world/THE DOG STAR",
+   "kind": "world",
+   "name": "THE DOG STAR world text, HUMANITY",
+   "faction": "human",
+   "page": "human.html#wt-46",
+   "src": "js/planetcuts.js:853"
+  },
+  {
    "ref": "tower:bolt",
    "kind": "tower",
    "name": "BOLT",
@@ -499,326 +819,6 @@
    "src": "js/cutscenes.js:28"
   },
   {
-   "ref": "human/act1",
-   "kind": "act",
-   "name": "THE EARTH SYSTEM",
-   "faction": "human",
-   "page": "human.html#act-1",
-   "src": "js/story.js:126"
-  },
-  {
-   "ref": "human/act1/EARTH",
-   "kind": "world",
-   "name": "EARTH",
-   "faction": "human",
-   "page": "human.html#w-00",
-   "src": "js/planetcuts.js:53"
-  },
-  {
-   "ref": "human/act1/LUNA",
-   "kind": "world",
-   "name": "LUNA",
-   "faction": "human",
-   "page": "human.html#w-01",
-   "src": "js/planetcuts.js:76"
-  },
-  {
-   "ref": "human/act1/MARS",
-   "kind": "world",
-   "name": "MARS",
-   "faction": "human",
-   "page": "human.html#w-02",
-   "src": "js/planetcuts.js:99"
-  },
-  {
-   "ref": "human/act1/VENUS",
-   "kind": "world",
-   "name": "VENUS",
-   "faction": "human",
-   "page": "human.html#w-03",
-   "src": "js/planetcuts.js:122"
-  },
-  {
-   "ref": "human/act1/MERCURY",
-   "kind": "world",
-   "name": "MERCURY",
-   "faction": "human",
-   "page": "human.html#w-04",
-   "src": "js/planetcuts.js:145"
-  },
-  {
-   "ref": "human/act1/JUPITER",
-   "kind": "world",
-   "name": "JUPITER",
-   "faction": "human",
-   "page": "human.html#w-05",
-   "src": "js/planetcuts.js:168"
-  },
-  {
-   "ref": "human/act1/SATURN",
-   "kind": "world",
-   "name": "SATURN",
-   "faction": "human",
-   "page": "human.html#w-06",
-   "src": "js/planetcuts.js:191"
-  },
-  {
-   "ref": "human/act2",
-   "kind": "act",
-   "name": "PROXIMA CENTAURI",
-   "faction": "human",
-   "page": "human.html#act-2",
-   "src": "js/story.js:126"
-  },
-  {
-   "ref": "human/act2/PROXIMA d",
-   "kind": "world",
-   "name": "PROXIMA d",
-   "faction": "human",
-   "page": "human.html#w-30",
-   "src": "js/planetcuts.js:550"
-  },
-  {
-   "ref": "human/act2/PROXIMA b",
-   "kind": "world",
-   "name": "PROXIMA b",
-   "faction": "human",
-   "page": "human.html#w-31",
-   "src": "js/planetcuts.js:573"
-  },
-  {
-   "ref": "human/act2/PROXIMA c",
-   "kind": "world",
-   "name": "PROXIMA c",
-   "faction": "human",
-   "page": "human.html#w-32",
-   "src": "js/planetcuts.js:596"
-  },
-  {
-   "ref": "human/act2/THE FLARE SHELTER",
-   "kind": "world",
-   "name": "THE FLARE SHELTER",
-   "faction": "human",
-   "page": "human.html#w-33",
-   "src": "js/planetcuts.js:619"
-  },
-  {
-   "ref": "human/act2/THE NARROWS",
-   "kind": "world",
-   "name": "THE NARROWS",
-   "faction": "human",
-   "page": "human.html#w-34",
-   "src": "js/planetcuts.js:642"
-  },
-  {
-   "ref": "human/act2/THE DARK LOCKER",
-   "kind": "world",
-   "name": "THE DARK LOCKER",
-   "faction": "human",
-   "page": "human.html#w-35",
-   "src": "js/planetcuts.js:665"
-  },
-  {
-   "ref": "human/act2/PROXIMA GATE",
-   "kind": "world",
-   "name": "PROXIMA GATE",
-   "faction": "human",
-   "page": "human.html#w-36",
-   "src": "js/planetcuts.js:688"
-  },
-  {
-   "ref": "human/act3",
-   "kind": "act",
-   "name": "ZETA RETICULI",
-   "faction": "human",
-   "page": "human.html#act-3",
-   "src": "js/story.js:126"
-  },
-  {
-   "ref": "human/act3/ZETA-1 b",
-   "kind": "world",
-   "name": "ZETA-1 b",
-   "faction": "human",
-   "page": "human.html#w-20",
-   "src": "js/planetcuts.js:385"
-  },
-  {
-   "ref": "human/act3/ZETA-1 c",
-   "kind": "world",
-   "name": "ZETA-1 c",
-   "faction": "human",
-   "page": "human.html#w-21",
-   "src": "js/planetcuts.js:408"
-  },
-  {
-   "ref": "human/act3/ZETA-1 d",
-   "kind": "world",
-   "name": "ZETA-1 d",
-   "faction": "human",
-   "page": "human.html#w-22",
-   "src": "js/planetcuts.js:431"
-  },
-  {
-   "ref": "human/act3/ZETA-2 b",
-   "kind": "world",
-   "name": "ZETA-2 b",
-   "faction": "human",
-   "page": "human.html#w-23",
-   "src": "js/planetcuts.js:454"
-  },
-  {
-   "ref": "human/act3/ZETA-2 c",
-   "kind": "world",
-   "name": "ZETA-2 c",
-   "faction": "human",
-   "page": "human.html#w-24",
-   "src": "js/planetcuts.js:477"
-  },
-  {
-   "ref": "human/act3/ZETA-2 d",
-   "kind": "world",
-   "name": "ZETA-2 d",
-   "faction": "human",
-   "page": "human.html#w-25",
-   "src": "js/planetcuts.js:500"
-  },
-  {
-   "ref": "human/act3/SERPO",
-   "kind": "world",
-   "name": "SERPO",
-   "faction": "human",
-   "page": "human.html#w-26",
-   "src": "js/planetcuts.js:523"
-  },
-  {
-   "ref": "human/act4",
-   "kind": "act",
-   "name": "THE PLEIADES",
-   "faction": "human",
-   "page": "human.html#act-4",
-   "src": "js/story.js:126"
-  },
-  {
-   "ref": "human/act4/MAIA",
-   "kind": "world",
-   "name": "MAIA",
-   "faction": "human",
-   "page": "human.html#w-10",
-   "src": "js/planetcuts.js:220"
-  },
-  {
-   "ref": "human/act4/ELECTRA",
-   "kind": "world",
-   "name": "ELECTRA",
-   "faction": "human",
-   "page": "human.html#w-11",
-   "src": "js/planetcuts.js:243"
-  },
-  {
-   "ref": "human/act4/TAYGETA",
-   "kind": "world",
-   "name": "TAYGETA",
-   "faction": "human",
-   "page": "human.html#w-12",
-   "src": "js/planetcuts.js:266"
-  },
-  {
-   "ref": "human/act4/MEROPE",
-   "kind": "world",
-   "name": "MEROPE",
-   "faction": "human",
-   "page": "human.html#w-13",
-   "src": "js/planetcuts.js:289"
-  },
-  {
-   "ref": "human/act4/CELAENO",
-   "kind": "world",
-   "name": "CELAENO",
-   "faction": "human",
-   "page": "human.html#w-14",
-   "src": "js/planetcuts.js:312"
-  },
-  {
-   "ref": "human/act4/STEROPE",
-   "kind": "world",
-   "name": "STEROPE",
-   "faction": "human",
-   "page": "human.html#w-15",
-   "src": "js/planetcuts.js:335"
-  },
-  {
-   "ref": "human/act4/ALCYONE",
-   "kind": "world",
-   "name": "ALCYONE",
-   "faction": "human",
-   "page": "human.html#w-16",
-   "src": "js/planetcuts.js:358"
-  },
-  {
-   "ref": "human/act5",
-   "kind": "act",
-   "name": "SIRIUS",
-   "faction": "human",
-   "page": "human.html#act-5",
-   "src": "js/story.js:126"
-  },
-  {
-   "ref": "human/act5/SIRIUS A I",
-   "kind": "world",
-   "name": "SIRIUS A I",
-   "faction": "human",
-   "page": "human.html#w-40",
-   "src": "js/planetcuts.js:715"
-  },
-  {
-   "ref": "human/act5/SIRIUS A II",
-   "kind": "world",
-   "name": "SIRIUS A II",
-   "faction": "human",
-   "page": "human.html#w-41",
-   "src": "js/planetcuts.js:738"
-  },
-  {
-   "ref": "human/act5/THE ASH FIELD",
-   "kind": "world",
-   "name": "THE ASH FIELD",
-   "faction": "human",
-   "page": "human.html#w-42",
-   "src": "js/planetcuts.js:761"
-  },
-  {
-   "ref": "human/act5/SIRIUS B I",
-   "kind": "world",
-   "name": "SIRIUS B I",
-   "faction": "human",
-   "page": "human.html#w-43",
-   "src": "js/planetcuts.js:784"
-  },
-  {
-   "ref": "human/act5/THE DIAMOND SHELF",
-   "kind": "world",
-   "name": "THE DIAMOND SHELF",
-   "faction": "human",
-   "page": "human.html#w-44",
-   "src": "js/planetcuts.js:807"
-  },
-  {
-   "ref": "human/act5/THE COMPANION",
-   "kind": "world",
-   "name": "THE COMPANION",
-   "faction": "human",
-   "page": "human.html#w-45",
-   "src": "js/planetcuts.js:830"
-  },
-  {
-   "ref": "human/act5/THE DOG STAR",
-   "kind": "world",
-   "name": "THE DOG STAR",
-   "faction": "human",
-   "page": "human.html#w-46",
-   "src": "js/planetcuts.js:853"
-  },
-  {
    "ref": "faction:light",
    "kind": "faction",
    "name": "GALACTIC FEDERATION OF LIGHT",
@@ -833,6 +833,326 @@
    "faction": "light",
    "page": "light.html#doctrine",
    "src": "js/factions.js:580"
+  },
+  {
+   "ref": "light/act-text/proxima",
+   "kind": "acttext",
+   "name": "GALACTIC FEDERATION OF LIGHT act framing, PROXIMA CENTAURI",
+   "faction": "light",
+   "page": "light.html#at-proxima",
+   "src": "js/story.js:134"
+  },
+  {
+   "ref": "light/world/PROXIMA d",
+   "kind": "world",
+   "name": "PROXIMA d world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-30",
+   "src": "js/planetcuts.js:550"
+  },
+  {
+   "ref": "light/world/PROXIMA b",
+   "kind": "world",
+   "name": "PROXIMA b world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-31",
+   "src": "js/planetcuts.js:573"
+  },
+  {
+   "ref": "light/world/PROXIMA c",
+   "kind": "world",
+   "name": "PROXIMA c world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-32",
+   "src": "js/planetcuts.js:596"
+  },
+  {
+   "ref": "light/world/THE FLARE SHELTER",
+   "kind": "world",
+   "name": "THE FLARE SHELTER world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-33",
+   "src": "js/planetcuts.js:619"
+  },
+  {
+   "ref": "light/world/THE DARK LOCKER",
+   "kind": "world",
+   "name": "THE DARK LOCKER world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-35",
+   "src": "js/planetcuts.js:665"
+  },
+  {
+   "ref": "light/act-text/sol",
+   "kind": "acttext",
+   "name": "GALACTIC FEDERATION OF LIGHT act framing, THE EARTH SYSTEM",
+   "faction": "light",
+   "page": "light.html#at-sol",
+   "src": "js/story.js:134"
+  },
+  {
+   "ref": "light/world/EARTH",
+   "kind": "world",
+   "name": "EARTH world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-00",
+   "src": "js/planetcuts.js:53"
+  },
+  {
+   "ref": "light/world/LUNA",
+   "kind": "world",
+   "name": "LUNA world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-01",
+   "src": "js/planetcuts.js:76"
+  },
+  {
+   "ref": "light/world/MARS",
+   "kind": "world",
+   "name": "MARS world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-02",
+   "src": "js/planetcuts.js:99"
+  },
+  {
+   "ref": "light/world/VENUS",
+   "kind": "world",
+   "name": "VENUS world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-03",
+   "src": "js/planetcuts.js:122"
+  },
+  {
+   "ref": "light/world/JUPITER",
+   "kind": "world",
+   "name": "JUPITER world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-05",
+   "src": "js/planetcuts.js:168"
+  },
+  {
+   "ref": "light/world/SATURN",
+   "kind": "world",
+   "name": "SATURN world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-06",
+   "src": "js/planetcuts.js:191"
+  },
+  {
+   "ref": "light/act-text/zeta",
+   "kind": "acttext",
+   "name": "GALACTIC FEDERATION OF LIGHT act framing, ZETA RETICULI",
+   "faction": "light",
+   "page": "light.html#at-zeta",
+   "src": "js/story.js:134"
+  },
+  {
+   "ref": "light/world/ZETA-1 b",
+   "kind": "world",
+   "name": "ZETA-1 b world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-20",
+   "src": "js/planetcuts.js:385"
+  },
+  {
+   "ref": "light/world/ZETA-1 c",
+   "kind": "world",
+   "name": "ZETA-1 c world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-21",
+   "src": "js/planetcuts.js:408"
+  },
+  {
+   "ref": "light/world/ZETA-1 d",
+   "kind": "world",
+   "name": "ZETA-1 d world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-22",
+   "src": "js/planetcuts.js:431"
+  },
+  {
+   "ref": "light/world/ZETA-2 b",
+   "kind": "world",
+   "name": "ZETA-2 b world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-23",
+   "src": "js/planetcuts.js:454"
+  },
+  {
+   "ref": "light/world/ZETA-2 c",
+   "kind": "world",
+   "name": "ZETA-2 c world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-24",
+   "src": "js/planetcuts.js:477"
+  },
+  {
+   "ref": "light/world/SERPO",
+   "kind": "world",
+   "name": "SERPO world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-26",
+   "src": "js/planetcuts.js:523"
+  },
+  {
+   "ref": "light/act-text/the-pleiades",
+   "kind": "acttext",
+   "name": "GALACTIC FEDERATION OF LIGHT act framing, THE PLEIADES",
+   "faction": "light",
+   "page": "light.html#at-the-pleiades",
+   "src": "js/story.js:134"
+  },
+  {
+   "ref": "light/act-text/sirius",
+   "kind": "acttext",
+   "name": "GALACTIC FEDERATION OF LIGHT act framing, SIRIUS",
+   "faction": "light",
+   "page": "light.html#at-sirius",
+   "src": "js/story.js:134"
+  },
+  {
+   "ref": "light/world/MERCURY",
+   "kind": "world",
+   "name": "MERCURY world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-04",
+   "src": "js/planetcuts.js:145"
+  },
+  {
+   "ref": "light/world/MAIA",
+   "kind": "world",
+   "name": "MAIA world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-10",
+   "src": "js/planetcuts.js:220"
+  },
+  {
+   "ref": "light/world/ELECTRA",
+   "kind": "world",
+   "name": "ELECTRA world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-11",
+   "src": "js/planetcuts.js:243"
+  },
+  {
+   "ref": "light/world/TAYGETA",
+   "kind": "world",
+   "name": "TAYGETA world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-12",
+   "src": "js/planetcuts.js:266"
+  },
+  {
+   "ref": "light/world/MEROPE",
+   "kind": "world",
+   "name": "MEROPE world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-13",
+   "src": "js/planetcuts.js:289"
+  },
+  {
+   "ref": "light/world/CELAENO",
+   "kind": "world",
+   "name": "CELAENO world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-14",
+   "src": "js/planetcuts.js:312"
+  },
+  {
+   "ref": "light/world/STEROPE",
+   "kind": "world",
+   "name": "STEROPE world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-15",
+   "src": "js/planetcuts.js:335"
+  },
+  {
+   "ref": "light/world/ALCYONE",
+   "kind": "world",
+   "name": "ALCYONE world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-16",
+   "src": "js/planetcuts.js:358"
+  },
+  {
+   "ref": "light/world/ZETA-2 d",
+   "kind": "world",
+   "name": "ZETA-2 d world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-25",
+   "src": "js/planetcuts.js:500"
+  },
+  {
+   "ref": "light/world/THE NARROWS",
+   "kind": "world",
+   "name": "THE NARROWS world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-34",
+   "src": "js/planetcuts.js:642"
+  },
+  {
+   "ref": "light/world/PROXIMA GATE",
+   "kind": "world",
+   "name": "PROXIMA GATE world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-36",
+   "src": "js/planetcuts.js:688"
+  },
+  {
+   "ref": "light/world/SIRIUS A I",
+   "kind": "world",
+   "name": "SIRIUS A I world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-40",
+   "src": "js/planetcuts.js:715"
+  },
+  {
+   "ref": "light/world/SIRIUS A II",
+   "kind": "world",
+   "name": "SIRIUS A II world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-41",
+   "src": "js/planetcuts.js:738"
+  },
+  {
+   "ref": "light/world/THE ASH FIELD",
+   "kind": "world",
+   "name": "THE ASH FIELD world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-42",
+   "src": "js/planetcuts.js:761"
+  },
+  {
+   "ref": "light/world/SIRIUS B I",
+   "kind": "world",
+   "name": "SIRIUS B I world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-43",
+   "src": "js/planetcuts.js:784"
+  },
+  {
+   "ref": "light/world/THE DIAMOND SHELF",
+   "kind": "world",
+   "name": "THE DIAMOND SHELF world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-44",
+   "src": "js/planetcuts.js:807"
+  },
+  {
+   "ref": "light/world/THE COMPANION",
+   "kind": "world",
+   "name": "THE COMPANION world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-45",
+   "src": "js/planetcuts.js:830"
+  },
+  {
+   "ref": "light/world/THE DOG STAR",
+   "kind": "world",
+   "name": "THE DOG STAR world text, GALACTIC FEDERATION OF LIGHT",
+   "faction": "light",
+   "page": "light.html#wt-46",
+   "src": "js/planetcuts.js:853"
   },
   {
    "ref": "tower:beacon",
@@ -1267,326 +1587,6 @@
    "src": "js/cutscenes.js:73"
   },
   {
-   "ref": "light/act1",
-   "kind": "act",
-   "name": "THE PLEIADES",
-   "faction": "light",
-   "page": "light.html#act-1",
-   "src": "js/story.js:134"
-  },
-  {
-   "ref": "light/act1/MAIA",
-   "kind": "world",
-   "name": "MAIA",
-   "faction": "light",
-   "page": "light.html#w-10",
-   "src": "js/planetcuts.js:220"
-  },
-  {
-   "ref": "light/act1/ELECTRA",
-   "kind": "world",
-   "name": "ELECTRA",
-   "faction": "light",
-   "page": "light.html#w-11",
-   "src": "js/planetcuts.js:243"
-  },
-  {
-   "ref": "light/act1/TAYGETA",
-   "kind": "world",
-   "name": "TAYGETA",
-   "faction": "light",
-   "page": "light.html#w-12",
-   "src": "js/planetcuts.js:266"
-  },
-  {
-   "ref": "light/act1/MEROPE",
-   "kind": "world",
-   "name": "MEROPE",
-   "faction": "light",
-   "page": "light.html#w-13",
-   "src": "js/planetcuts.js:289"
-  },
-  {
-   "ref": "light/act1/CELAENO",
-   "kind": "world",
-   "name": "CELAENO",
-   "faction": "light",
-   "page": "light.html#w-14",
-   "src": "js/planetcuts.js:312"
-  },
-  {
-   "ref": "light/act1/STEROPE",
-   "kind": "world",
-   "name": "STEROPE",
-   "faction": "light",
-   "page": "light.html#w-15",
-   "src": "js/planetcuts.js:335"
-  },
-  {
-   "ref": "light/act1/ALCYONE",
-   "kind": "world",
-   "name": "ALCYONE",
-   "faction": "light",
-   "page": "light.html#w-16",
-   "src": "js/planetcuts.js:358"
-  },
-  {
-   "ref": "light/act2",
-   "kind": "act",
-   "name": "ZETA RETICULI",
-   "faction": "light",
-   "page": "light.html#act-2",
-   "src": "js/story.js:134"
-  },
-  {
-   "ref": "light/act2/ZETA-1 b",
-   "kind": "world",
-   "name": "ZETA-1 b",
-   "faction": "light",
-   "page": "light.html#w-20",
-   "src": "js/planetcuts.js:385"
-  },
-  {
-   "ref": "light/act2/ZETA-1 c",
-   "kind": "world",
-   "name": "ZETA-1 c",
-   "faction": "light",
-   "page": "light.html#w-21",
-   "src": "js/planetcuts.js:408"
-  },
-  {
-   "ref": "light/act2/ZETA-1 d",
-   "kind": "world",
-   "name": "ZETA-1 d",
-   "faction": "light",
-   "page": "light.html#w-22",
-   "src": "js/planetcuts.js:431"
-  },
-  {
-   "ref": "light/act2/ZETA-2 b",
-   "kind": "world",
-   "name": "ZETA-2 b",
-   "faction": "light",
-   "page": "light.html#w-23",
-   "src": "js/planetcuts.js:454"
-  },
-  {
-   "ref": "light/act2/ZETA-2 c",
-   "kind": "world",
-   "name": "ZETA-2 c",
-   "faction": "light",
-   "page": "light.html#w-24",
-   "src": "js/planetcuts.js:477"
-  },
-  {
-   "ref": "light/act2/ZETA-2 d",
-   "kind": "world",
-   "name": "ZETA-2 d",
-   "faction": "light",
-   "page": "light.html#w-25",
-   "src": "js/planetcuts.js:500"
-  },
-  {
-   "ref": "light/act2/SERPO",
-   "kind": "world",
-   "name": "SERPO",
-   "faction": "light",
-   "page": "light.html#w-26",
-   "src": "js/planetcuts.js:523"
-  },
-  {
-   "ref": "light/act3",
-   "kind": "act",
-   "name": "PROXIMA CENTAURI",
-   "faction": "light",
-   "page": "light.html#act-3",
-   "src": "js/story.js:134"
-  },
-  {
-   "ref": "light/act3/PROXIMA d",
-   "kind": "world",
-   "name": "PROXIMA d",
-   "faction": "light",
-   "page": "light.html#w-30",
-   "src": "js/planetcuts.js:550"
-  },
-  {
-   "ref": "light/act3/PROXIMA b",
-   "kind": "world",
-   "name": "PROXIMA b",
-   "faction": "light",
-   "page": "light.html#w-31",
-   "src": "js/planetcuts.js:573"
-  },
-  {
-   "ref": "light/act3/PROXIMA c",
-   "kind": "world",
-   "name": "PROXIMA c",
-   "faction": "light",
-   "page": "light.html#w-32",
-   "src": "js/planetcuts.js:596"
-  },
-  {
-   "ref": "light/act3/THE FLARE SHELTER",
-   "kind": "world",
-   "name": "THE FLARE SHELTER",
-   "faction": "light",
-   "page": "light.html#w-33",
-   "src": "js/planetcuts.js:619"
-  },
-  {
-   "ref": "light/act3/THE NARROWS",
-   "kind": "world",
-   "name": "THE NARROWS",
-   "faction": "light",
-   "page": "light.html#w-34",
-   "src": "js/planetcuts.js:642"
-  },
-  {
-   "ref": "light/act3/THE DARK LOCKER",
-   "kind": "world",
-   "name": "THE DARK LOCKER",
-   "faction": "light",
-   "page": "light.html#w-35",
-   "src": "js/planetcuts.js:665"
-  },
-  {
-   "ref": "light/act3/PROXIMA GATE",
-   "kind": "world",
-   "name": "PROXIMA GATE",
-   "faction": "light",
-   "page": "light.html#w-36",
-   "src": "js/planetcuts.js:688"
-  },
-  {
-   "ref": "light/act4",
-   "kind": "act",
-   "name": "SIRIUS",
-   "faction": "light",
-   "page": "light.html#act-4",
-   "src": "js/story.js:134"
-  },
-  {
-   "ref": "light/act4/SIRIUS A I",
-   "kind": "world",
-   "name": "SIRIUS A I",
-   "faction": "light",
-   "page": "light.html#w-40",
-   "src": "js/planetcuts.js:715"
-  },
-  {
-   "ref": "light/act4/SIRIUS A II",
-   "kind": "world",
-   "name": "SIRIUS A II",
-   "faction": "light",
-   "page": "light.html#w-41",
-   "src": "js/planetcuts.js:738"
-  },
-  {
-   "ref": "light/act4/THE ASH FIELD",
-   "kind": "world",
-   "name": "THE ASH FIELD",
-   "faction": "light",
-   "page": "light.html#w-42",
-   "src": "js/planetcuts.js:761"
-  },
-  {
-   "ref": "light/act4/SIRIUS B I",
-   "kind": "world",
-   "name": "SIRIUS B I",
-   "faction": "light",
-   "page": "light.html#w-43",
-   "src": "js/planetcuts.js:784"
-  },
-  {
-   "ref": "light/act4/THE DIAMOND SHELF",
-   "kind": "world",
-   "name": "THE DIAMOND SHELF",
-   "faction": "light",
-   "page": "light.html#w-44",
-   "src": "js/planetcuts.js:807"
-  },
-  {
-   "ref": "light/act4/THE COMPANION",
-   "kind": "world",
-   "name": "THE COMPANION",
-   "faction": "light",
-   "page": "light.html#w-45",
-   "src": "js/planetcuts.js:830"
-  },
-  {
-   "ref": "light/act4/THE DOG STAR",
-   "kind": "world",
-   "name": "THE DOG STAR",
-   "faction": "light",
-   "page": "light.html#w-46",
-   "src": "js/planetcuts.js:853"
-  },
-  {
-   "ref": "light/act5",
-   "kind": "act",
-   "name": "THE EARTH SYSTEM",
-   "faction": "light",
-   "page": "light.html#act-5",
-   "src": "js/story.js:134"
-  },
-  {
-   "ref": "light/act5/EARTH",
-   "kind": "world",
-   "name": "EARTH",
-   "faction": "light",
-   "page": "light.html#w-00",
-   "src": "js/planetcuts.js:53"
-  },
-  {
-   "ref": "light/act5/LUNA",
-   "kind": "world",
-   "name": "LUNA",
-   "faction": "light",
-   "page": "light.html#w-01",
-   "src": "js/planetcuts.js:76"
-  },
-  {
-   "ref": "light/act5/MARS",
-   "kind": "world",
-   "name": "MARS",
-   "faction": "light",
-   "page": "light.html#w-02",
-   "src": "js/planetcuts.js:99"
-  },
-  {
-   "ref": "light/act5/VENUS",
-   "kind": "world",
-   "name": "VENUS",
-   "faction": "light",
-   "page": "light.html#w-03",
-   "src": "js/planetcuts.js:122"
-  },
-  {
-   "ref": "light/act5/MERCURY",
-   "kind": "world",
-   "name": "MERCURY",
-   "faction": "light",
-   "page": "light.html#w-04",
-   "src": "js/planetcuts.js:145"
-  },
-  {
-   "ref": "light/act5/JUPITER",
-   "kind": "world",
-   "name": "JUPITER",
-   "faction": "light",
-   "page": "light.html#w-05",
-   "src": "js/planetcuts.js:168"
-  },
-  {
-   "ref": "light/act5/SATURN",
-   "kind": "world",
-   "name": "SATURN",
-   "faction": "light",
-   "page": "light.html#w-06",
-   "src": "js/planetcuts.js:191"
-  },
-  {
    "ref": "faction:xeno",
    "kind": "faction",
    "name": "THE XENO",
@@ -1601,6 +1601,326 @@
    "faction": "xeno",
    "page": "xeno.html#doctrine",
    "src": "js/factions.js:586"
+  },
+  {
+   "ref": "xeno/act-text/zeta",
+   "kind": "acttext",
+   "name": "THE XENO act framing, ZETA RETICULI",
+   "faction": "xeno",
+   "page": "xeno.html#at-zeta",
+   "src": "js/story.js:142"
+  },
+  {
+   "ref": "xeno/world/ZETA-1 b",
+   "kind": "world",
+   "name": "ZETA-1 b world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-20",
+   "src": "js/planetcuts.js:385"
+  },
+  {
+   "ref": "xeno/world/ZETA-1 c",
+   "kind": "world",
+   "name": "ZETA-1 c world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-21",
+   "src": "js/planetcuts.js:408"
+  },
+  {
+   "ref": "xeno/world/ZETA-1 d",
+   "kind": "world",
+   "name": "ZETA-1 d world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-22",
+   "src": "js/planetcuts.js:431"
+  },
+  {
+   "ref": "xeno/world/ZETA-2 b",
+   "kind": "world",
+   "name": "ZETA-2 b world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-23",
+   "src": "js/planetcuts.js:454"
+  },
+  {
+   "ref": "xeno/world/ZETA-2 c",
+   "kind": "world",
+   "name": "ZETA-2 c world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-24",
+   "src": "js/planetcuts.js:477"
+  },
+  {
+   "ref": "xeno/world/SERPO",
+   "kind": "world",
+   "name": "SERPO world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-26",
+   "src": "js/planetcuts.js:523"
+  },
+  {
+   "ref": "xeno/act-text/proxima",
+   "kind": "acttext",
+   "name": "THE XENO act framing, PROXIMA CENTAURI",
+   "faction": "xeno",
+   "page": "xeno.html#at-proxima",
+   "src": "js/story.js:142"
+  },
+  {
+   "ref": "xeno/world/PROXIMA d",
+   "kind": "world",
+   "name": "PROXIMA d world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-30",
+   "src": "js/planetcuts.js:550"
+  },
+  {
+   "ref": "xeno/world/PROXIMA b",
+   "kind": "world",
+   "name": "PROXIMA b world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-31",
+   "src": "js/planetcuts.js:573"
+  },
+  {
+   "ref": "xeno/world/PROXIMA c",
+   "kind": "world",
+   "name": "PROXIMA c world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-32",
+   "src": "js/planetcuts.js:596"
+  },
+  {
+   "ref": "xeno/world/THE FLARE SHELTER",
+   "kind": "world",
+   "name": "THE FLARE SHELTER world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-33",
+   "src": "js/planetcuts.js:619"
+  },
+  {
+   "ref": "xeno/world/THE DARK LOCKER",
+   "kind": "world",
+   "name": "THE DARK LOCKER world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-35",
+   "src": "js/planetcuts.js:665"
+  },
+  {
+   "ref": "xeno/act-text/sol",
+   "kind": "acttext",
+   "name": "THE XENO act framing, THE EARTH SYSTEM",
+   "faction": "xeno",
+   "page": "xeno.html#at-sol",
+   "src": "js/story.js:142"
+  },
+  {
+   "ref": "xeno/world/EARTH",
+   "kind": "world",
+   "name": "EARTH world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-00",
+   "src": "js/planetcuts.js:53"
+  },
+  {
+   "ref": "xeno/world/LUNA",
+   "kind": "world",
+   "name": "LUNA world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-01",
+   "src": "js/planetcuts.js:76"
+  },
+  {
+   "ref": "xeno/world/MARS",
+   "kind": "world",
+   "name": "MARS world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-02",
+   "src": "js/planetcuts.js:99"
+  },
+  {
+   "ref": "xeno/world/VENUS",
+   "kind": "world",
+   "name": "VENUS world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-03",
+   "src": "js/planetcuts.js:122"
+  },
+  {
+   "ref": "xeno/world/JUPITER",
+   "kind": "world",
+   "name": "JUPITER world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-05",
+   "src": "js/planetcuts.js:168"
+  },
+  {
+   "ref": "xeno/world/SATURN",
+   "kind": "world",
+   "name": "SATURN world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-06",
+   "src": "js/planetcuts.js:191"
+  },
+  {
+   "ref": "xeno/act-text/sirius",
+   "kind": "acttext",
+   "name": "THE XENO act framing, SIRIUS",
+   "faction": "xeno",
+   "page": "xeno.html#at-sirius",
+   "src": "js/story.js:142"
+  },
+  {
+   "ref": "xeno/act-text/the-pleiades",
+   "kind": "acttext",
+   "name": "THE XENO act framing, THE PLEIADES",
+   "faction": "xeno",
+   "page": "xeno.html#at-the-pleiades",
+   "src": "js/story.js:142"
+  },
+  {
+   "ref": "xeno/world/MERCURY",
+   "kind": "world",
+   "name": "MERCURY world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-04",
+   "src": "js/planetcuts.js:145"
+  },
+  {
+   "ref": "xeno/world/MAIA",
+   "kind": "world",
+   "name": "MAIA world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-10",
+   "src": "js/planetcuts.js:220"
+  },
+  {
+   "ref": "xeno/world/ELECTRA",
+   "kind": "world",
+   "name": "ELECTRA world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-11",
+   "src": "js/planetcuts.js:243"
+  },
+  {
+   "ref": "xeno/world/TAYGETA",
+   "kind": "world",
+   "name": "TAYGETA world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-12",
+   "src": "js/planetcuts.js:266"
+  },
+  {
+   "ref": "xeno/world/MEROPE",
+   "kind": "world",
+   "name": "MEROPE world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-13",
+   "src": "js/planetcuts.js:289"
+  },
+  {
+   "ref": "xeno/world/CELAENO",
+   "kind": "world",
+   "name": "CELAENO world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-14",
+   "src": "js/planetcuts.js:312"
+  },
+  {
+   "ref": "xeno/world/STEROPE",
+   "kind": "world",
+   "name": "STEROPE world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-15",
+   "src": "js/planetcuts.js:335"
+  },
+  {
+   "ref": "xeno/world/ALCYONE",
+   "kind": "world",
+   "name": "ALCYONE world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-16",
+   "src": "js/planetcuts.js:358"
+  },
+  {
+   "ref": "xeno/world/ZETA-2 d",
+   "kind": "world",
+   "name": "ZETA-2 d world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-25",
+   "src": "js/planetcuts.js:500"
+  },
+  {
+   "ref": "xeno/world/THE NARROWS",
+   "kind": "world",
+   "name": "THE NARROWS world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-34",
+   "src": "js/planetcuts.js:642"
+  },
+  {
+   "ref": "xeno/world/PROXIMA GATE",
+   "kind": "world",
+   "name": "PROXIMA GATE world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-36",
+   "src": "js/planetcuts.js:688"
+  },
+  {
+   "ref": "xeno/world/SIRIUS A I",
+   "kind": "world",
+   "name": "SIRIUS A I world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-40",
+   "src": "js/planetcuts.js:715"
+  },
+  {
+   "ref": "xeno/world/SIRIUS A II",
+   "kind": "world",
+   "name": "SIRIUS A II world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-41",
+   "src": "js/planetcuts.js:738"
+  },
+  {
+   "ref": "xeno/world/THE ASH FIELD",
+   "kind": "world",
+   "name": "THE ASH FIELD world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-42",
+   "src": "js/planetcuts.js:761"
+  },
+  {
+   "ref": "xeno/world/SIRIUS B I",
+   "kind": "world",
+   "name": "SIRIUS B I world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-43",
+   "src": "js/planetcuts.js:784"
+  },
+  {
+   "ref": "xeno/world/THE DIAMOND SHELF",
+   "kind": "world",
+   "name": "THE DIAMOND SHELF world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-44",
+   "src": "js/planetcuts.js:807"
+  },
+  {
+   "ref": "xeno/world/THE COMPANION",
+   "kind": "world",
+   "name": "THE COMPANION world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-45",
+   "src": "js/planetcuts.js:830"
+  },
+  {
+   "ref": "xeno/world/THE DOG STAR",
+   "kind": "world",
+   "name": "THE DOG STAR world text, THE XENO",
+   "faction": "xeno",
+   "page": "xeno.html#wt-46",
+   "src": "js/planetcuts.js:853"
   },
   {
    "ref": "tower:toxin",
@@ -2027,326 +2347,6 @@
    "src": "js/cutscenes.js:95"
   },
   {
-   "ref": "xeno/act1",
-   "kind": "act",
-   "name": "ZETA RETICULI",
-   "faction": "xeno",
-   "page": "xeno.html#act-1",
-   "src": "js/story.js:142"
-  },
-  {
-   "ref": "xeno/act1/ZETA-1 b",
-   "kind": "world",
-   "name": "ZETA-1 b",
-   "faction": "xeno",
-   "page": "xeno.html#w-20",
-   "src": "js/planetcuts.js:385"
-  },
-  {
-   "ref": "xeno/act1/ZETA-1 c",
-   "kind": "world",
-   "name": "ZETA-1 c",
-   "faction": "xeno",
-   "page": "xeno.html#w-21",
-   "src": "js/planetcuts.js:408"
-  },
-  {
-   "ref": "xeno/act1/ZETA-1 d",
-   "kind": "world",
-   "name": "ZETA-1 d",
-   "faction": "xeno",
-   "page": "xeno.html#w-22",
-   "src": "js/planetcuts.js:431"
-  },
-  {
-   "ref": "xeno/act1/ZETA-2 b",
-   "kind": "world",
-   "name": "ZETA-2 b",
-   "faction": "xeno",
-   "page": "xeno.html#w-23",
-   "src": "js/planetcuts.js:454"
-  },
-  {
-   "ref": "xeno/act1/ZETA-2 c",
-   "kind": "world",
-   "name": "ZETA-2 c",
-   "faction": "xeno",
-   "page": "xeno.html#w-24",
-   "src": "js/planetcuts.js:477"
-  },
-  {
-   "ref": "xeno/act1/ZETA-2 d",
-   "kind": "world",
-   "name": "ZETA-2 d",
-   "faction": "xeno",
-   "page": "xeno.html#w-25",
-   "src": "js/planetcuts.js:500"
-  },
-  {
-   "ref": "xeno/act1/SERPO",
-   "kind": "world",
-   "name": "SERPO",
-   "faction": "xeno",
-   "page": "xeno.html#w-26",
-   "src": "js/planetcuts.js:523"
-  },
-  {
-   "ref": "xeno/act2",
-   "kind": "act",
-   "name": "PROXIMA CENTAURI",
-   "faction": "xeno",
-   "page": "xeno.html#act-2",
-   "src": "js/story.js:142"
-  },
-  {
-   "ref": "xeno/act2/PROXIMA d",
-   "kind": "world",
-   "name": "PROXIMA d",
-   "faction": "xeno",
-   "page": "xeno.html#w-30",
-   "src": "js/planetcuts.js:550"
-  },
-  {
-   "ref": "xeno/act2/PROXIMA b",
-   "kind": "world",
-   "name": "PROXIMA b",
-   "faction": "xeno",
-   "page": "xeno.html#w-31",
-   "src": "js/planetcuts.js:573"
-  },
-  {
-   "ref": "xeno/act2/PROXIMA c",
-   "kind": "world",
-   "name": "PROXIMA c",
-   "faction": "xeno",
-   "page": "xeno.html#w-32",
-   "src": "js/planetcuts.js:596"
-  },
-  {
-   "ref": "xeno/act2/THE FLARE SHELTER",
-   "kind": "world",
-   "name": "THE FLARE SHELTER",
-   "faction": "xeno",
-   "page": "xeno.html#w-33",
-   "src": "js/planetcuts.js:619"
-  },
-  {
-   "ref": "xeno/act2/THE NARROWS",
-   "kind": "world",
-   "name": "THE NARROWS",
-   "faction": "xeno",
-   "page": "xeno.html#w-34",
-   "src": "js/planetcuts.js:642"
-  },
-  {
-   "ref": "xeno/act2/THE DARK LOCKER",
-   "kind": "world",
-   "name": "THE DARK LOCKER",
-   "faction": "xeno",
-   "page": "xeno.html#w-35",
-   "src": "js/planetcuts.js:665"
-  },
-  {
-   "ref": "xeno/act2/PROXIMA GATE",
-   "kind": "world",
-   "name": "PROXIMA GATE",
-   "faction": "xeno",
-   "page": "xeno.html#w-36",
-   "src": "js/planetcuts.js:688"
-  },
-  {
-   "ref": "xeno/act3",
-   "kind": "act",
-   "name": "SIRIUS",
-   "faction": "xeno",
-   "page": "xeno.html#act-3",
-   "src": "js/story.js:142"
-  },
-  {
-   "ref": "xeno/act3/SIRIUS A I",
-   "kind": "world",
-   "name": "SIRIUS A I",
-   "faction": "xeno",
-   "page": "xeno.html#w-40",
-   "src": "js/planetcuts.js:715"
-  },
-  {
-   "ref": "xeno/act3/SIRIUS A II",
-   "kind": "world",
-   "name": "SIRIUS A II",
-   "faction": "xeno",
-   "page": "xeno.html#w-41",
-   "src": "js/planetcuts.js:738"
-  },
-  {
-   "ref": "xeno/act3/THE ASH FIELD",
-   "kind": "world",
-   "name": "THE ASH FIELD",
-   "faction": "xeno",
-   "page": "xeno.html#w-42",
-   "src": "js/planetcuts.js:761"
-  },
-  {
-   "ref": "xeno/act3/SIRIUS B I",
-   "kind": "world",
-   "name": "SIRIUS B I",
-   "faction": "xeno",
-   "page": "xeno.html#w-43",
-   "src": "js/planetcuts.js:784"
-  },
-  {
-   "ref": "xeno/act3/THE DIAMOND SHELF",
-   "kind": "world",
-   "name": "THE DIAMOND SHELF",
-   "faction": "xeno",
-   "page": "xeno.html#w-44",
-   "src": "js/planetcuts.js:807"
-  },
-  {
-   "ref": "xeno/act3/THE COMPANION",
-   "kind": "world",
-   "name": "THE COMPANION",
-   "faction": "xeno",
-   "page": "xeno.html#w-45",
-   "src": "js/planetcuts.js:830"
-  },
-  {
-   "ref": "xeno/act3/THE DOG STAR",
-   "kind": "world",
-   "name": "THE DOG STAR",
-   "faction": "xeno",
-   "page": "xeno.html#w-46",
-   "src": "js/planetcuts.js:853"
-  },
-  {
-   "ref": "xeno/act4",
-   "kind": "act",
-   "name": "THE EARTH SYSTEM",
-   "faction": "xeno",
-   "page": "xeno.html#act-4",
-   "src": "js/story.js:142"
-  },
-  {
-   "ref": "xeno/act4/EARTH",
-   "kind": "world",
-   "name": "EARTH",
-   "faction": "xeno",
-   "page": "xeno.html#w-00",
-   "src": "js/planetcuts.js:53"
-  },
-  {
-   "ref": "xeno/act4/LUNA",
-   "kind": "world",
-   "name": "LUNA",
-   "faction": "xeno",
-   "page": "xeno.html#w-01",
-   "src": "js/planetcuts.js:76"
-  },
-  {
-   "ref": "xeno/act4/MARS",
-   "kind": "world",
-   "name": "MARS",
-   "faction": "xeno",
-   "page": "xeno.html#w-02",
-   "src": "js/planetcuts.js:99"
-  },
-  {
-   "ref": "xeno/act4/VENUS",
-   "kind": "world",
-   "name": "VENUS",
-   "faction": "xeno",
-   "page": "xeno.html#w-03",
-   "src": "js/planetcuts.js:122"
-  },
-  {
-   "ref": "xeno/act4/MERCURY",
-   "kind": "world",
-   "name": "MERCURY",
-   "faction": "xeno",
-   "page": "xeno.html#w-04",
-   "src": "js/planetcuts.js:145"
-  },
-  {
-   "ref": "xeno/act4/JUPITER",
-   "kind": "world",
-   "name": "JUPITER",
-   "faction": "xeno",
-   "page": "xeno.html#w-05",
-   "src": "js/planetcuts.js:168"
-  },
-  {
-   "ref": "xeno/act4/SATURN",
-   "kind": "world",
-   "name": "SATURN",
-   "faction": "xeno",
-   "page": "xeno.html#w-06",
-   "src": "js/planetcuts.js:191"
-  },
-  {
-   "ref": "xeno/act5",
-   "kind": "act",
-   "name": "THE PLEIADES",
-   "faction": "xeno",
-   "page": "xeno.html#act-5",
-   "src": "js/story.js:142"
-  },
-  {
-   "ref": "xeno/act5/MAIA",
-   "kind": "world",
-   "name": "MAIA",
-   "faction": "xeno",
-   "page": "xeno.html#w-10",
-   "src": "js/planetcuts.js:220"
-  },
-  {
-   "ref": "xeno/act5/ELECTRA",
-   "kind": "world",
-   "name": "ELECTRA",
-   "faction": "xeno",
-   "page": "xeno.html#w-11",
-   "src": "js/planetcuts.js:243"
-  },
-  {
-   "ref": "xeno/act5/TAYGETA",
-   "kind": "world",
-   "name": "TAYGETA",
-   "faction": "xeno",
-   "page": "xeno.html#w-12",
-   "src": "js/planetcuts.js:266"
-  },
-  {
-   "ref": "xeno/act5/MEROPE",
-   "kind": "world",
-   "name": "MEROPE",
-   "faction": "xeno",
-   "page": "xeno.html#w-13",
-   "src": "js/planetcuts.js:289"
-  },
-  {
-   "ref": "xeno/act5/CELAENO",
-   "kind": "world",
-   "name": "CELAENO",
-   "faction": "xeno",
-   "page": "xeno.html#w-14",
-   "src": "js/planetcuts.js:312"
-  },
-  {
-   "ref": "xeno/act5/STEROPE",
-   "kind": "world",
-   "name": "STEROPE",
-   "faction": "xeno",
-   "page": "xeno.html#w-15",
-   "src": "js/planetcuts.js:335"
-  },
-  {
-   "ref": "xeno/act5/ALCYONE",
-   "kind": "world",
-   "name": "ALCYONE",
-   "faction": "xeno",
-   "page": "xeno.html#w-16",
-   "src": "js/planetcuts.js:358"
-  },
-  {
    "ref": "faction:pirate",
    "kind": "faction",
    "name": "THE PIRATES",
@@ -2361,6 +2361,326 @@
    "faction": "pirate",
    "page": "pirate.html#doctrine",
    "src": "js/factions.js:592"
+  },
+  {
+   "ref": "pirate/act-text/zeta",
+   "kind": "acttext",
+   "name": "THE PIRATES act framing, ZETA RETICULI",
+   "faction": "pirate",
+   "page": "pirate.html#at-zeta",
+   "src": "js/story.js:150"
+  },
+  {
+   "ref": "pirate/world/ZETA-1 b",
+   "kind": "world",
+   "name": "ZETA-1 b world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-20",
+   "src": "js/planetcuts.js:385"
+  },
+  {
+   "ref": "pirate/world/ZETA-1 c",
+   "kind": "world",
+   "name": "ZETA-1 c world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-21",
+   "src": "js/planetcuts.js:408"
+  },
+  {
+   "ref": "pirate/world/ZETA-1 d",
+   "kind": "world",
+   "name": "ZETA-1 d world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-22",
+   "src": "js/planetcuts.js:431"
+  },
+  {
+   "ref": "pirate/world/ZETA-2 b",
+   "kind": "world",
+   "name": "ZETA-2 b world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-23",
+   "src": "js/planetcuts.js:454"
+  },
+  {
+   "ref": "pirate/world/ZETA-2 c",
+   "kind": "world",
+   "name": "ZETA-2 c world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-24",
+   "src": "js/planetcuts.js:477"
+  },
+  {
+   "ref": "pirate/world/SERPO",
+   "kind": "world",
+   "name": "SERPO world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-26",
+   "src": "js/planetcuts.js:523"
+  },
+  {
+   "ref": "pirate/act-text/sol",
+   "kind": "acttext",
+   "name": "THE PIRATES act framing, THE EARTH SYSTEM",
+   "faction": "pirate",
+   "page": "pirate.html#at-sol",
+   "src": "js/story.js:150"
+  },
+  {
+   "ref": "pirate/world/EARTH",
+   "kind": "world",
+   "name": "EARTH world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-00",
+   "src": "js/planetcuts.js:53"
+  },
+  {
+   "ref": "pirate/world/LUNA",
+   "kind": "world",
+   "name": "LUNA world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-01",
+   "src": "js/planetcuts.js:76"
+  },
+  {
+   "ref": "pirate/world/MARS",
+   "kind": "world",
+   "name": "MARS world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-02",
+   "src": "js/planetcuts.js:99"
+  },
+  {
+   "ref": "pirate/world/VENUS",
+   "kind": "world",
+   "name": "VENUS world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-03",
+   "src": "js/planetcuts.js:122"
+  },
+  {
+   "ref": "pirate/world/JUPITER",
+   "kind": "world",
+   "name": "JUPITER world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-05",
+   "src": "js/planetcuts.js:168"
+  },
+  {
+   "ref": "pirate/world/SATURN",
+   "kind": "world",
+   "name": "SATURN world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-06",
+   "src": "js/planetcuts.js:191"
+  },
+  {
+   "ref": "pirate/act-text/proxima",
+   "kind": "acttext",
+   "name": "THE PIRATES act framing, PROXIMA CENTAURI",
+   "faction": "pirate",
+   "page": "pirate.html#at-proxima",
+   "src": "js/story.js:150"
+  },
+  {
+   "ref": "pirate/world/PROXIMA d",
+   "kind": "world",
+   "name": "PROXIMA d world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-30",
+   "src": "js/planetcuts.js:550"
+  },
+  {
+   "ref": "pirate/world/PROXIMA b",
+   "kind": "world",
+   "name": "PROXIMA b world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-31",
+   "src": "js/planetcuts.js:573"
+  },
+  {
+   "ref": "pirate/world/PROXIMA c",
+   "kind": "world",
+   "name": "PROXIMA c world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-32",
+   "src": "js/planetcuts.js:596"
+  },
+  {
+   "ref": "pirate/world/THE FLARE SHELTER",
+   "kind": "world",
+   "name": "THE FLARE SHELTER world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-33",
+   "src": "js/planetcuts.js:619"
+  },
+  {
+   "ref": "pirate/world/THE DARK LOCKER",
+   "kind": "world",
+   "name": "THE DARK LOCKER world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-35",
+   "src": "js/planetcuts.js:665"
+  },
+  {
+   "ref": "pirate/act-text/sirius",
+   "kind": "acttext",
+   "name": "THE PIRATES act framing, SIRIUS",
+   "faction": "pirate",
+   "page": "pirate.html#at-sirius",
+   "src": "js/story.js:150"
+  },
+  {
+   "ref": "pirate/act-text/the-pleiades",
+   "kind": "acttext",
+   "name": "THE PIRATES act framing, THE PLEIADES",
+   "faction": "pirate",
+   "page": "pirate.html#at-the-pleiades",
+   "src": "js/story.js:150"
+  },
+  {
+   "ref": "pirate/world/MERCURY",
+   "kind": "world",
+   "name": "MERCURY world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-04",
+   "src": "js/planetcuts.js:145"
+  },
+  {
+   "ref": "pirate/world/MAIA",
+   "kind": "world",
+   "name": "MAIA world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-10",
+   "src": "js/planetcuts.js:220"
+  },
+  {
+   "ref": "pirate/world/ELECTRA",
+   "kind": "world",
+   "name": "ELECTRA world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-11",
+   "src": "js/planetcuts.js:243"
+  },
+  {
+   "ref": "pirate/world/TAYGETA",
+   "kind": "world",
+   "name": "TAYGETA world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-12",
+   "src": "js/planetcuts.js:266"
+  },
+  {
+   "ref": "pirate/world/MEROPE",
+   "kind": "world",
+   "name": "MEROPE world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-13",
+   "src": "js/planetcuts.js:289"
+  },
+  {
+   "ref": "pirate/world/CELAENO",
+   "kind": "world",
+   "name": "CELAENO world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-14",
+   "src": "js/planetcuts.js:312"
+  },
+  {
+   "ref": "pirate/world/STEROPE",
+   "kind": "world",
+   "name": "STEROPE world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-15",
+   "src": "js/planetcuts.js:335"
+  },
+  {
+   "ref": "pirate/world/ALCYONE",
+   "kind": "world",
+   "name": "ALCYONE world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-16",
+   "src": "js/planetcuts.js:358"
+  },
+  {
+   "ref": "pirate/world/ZETA-2 d",
+   "kind": "world",
+   "name": "ZETA-2 d world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-25",
+   "src": "js/planetcuts.js:500"
+  },
+  {
+   "ref": "pirate/world/THE NARROWS",
+   "kind": "world",
+   "name": "THE NARROWS world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-34",
+   "src": "js/planetcuts.js:642"
+  },
+  {
+   "ref": "pirate/world/PROXIMA GATE",
+   "kind": "world",
+   "name": "PROXIMA GATE world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-36",
+   "src": "js/planetcuts.js:688"
+  },
+  {
+   "ref": "pirate/world/SIRIUS A I",
+   "kind": "world",
+   "name": "SIRIUS A I world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-40",
+   "src": "js/planetcuts.js:715"
+  },
+  {
+   "ref": "pirate/world/SIRIUS A II",
+   "kind": "world",
+   "name": "SIRIUS A II world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-41",
+   "src": "js/planetcuts.js:738"
+  },
+  {
+   "ref": "pirate/world/THE ASH FIELD",
+   "kind": "world",
+   "name": "THE ASH FIELD world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-42",
+   "src": "js/planetcuts.js:761"
+  },
+  {
+   "ref": "pirate/world/SIRIUS B I",
+   "kind": "world",
+   "name": "SIRIUS B I world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-43",
+   "src": "js/planetcuts.js:784"
+  },
+  {
+   "ref": "pirate/world/THE DIAMOND SHELF",
+   "kind": "world",
+   "name": "THE DIAMOND SHELF world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-44",
+   "src": "js/planetcuts.js:807"
+  },
+  {
+   "ref": "pirate/world/THE COMPANION",
+   "kind": "world",
+   "name": "THE COMPANION world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-45",
+   "src": "js/planetcuts.js:830"
+  },
+  {
+   "ref": "pirate/world/THE DOG STAR",
+   "kind": "world",
+   "name": "THE DOG STAR world text, THE PIRATES",
+   "faction": "pirate",
+   "page": "pirate.html#wt-46",
+   "src": "js/planetcuts.js:853"
   },
   {
    "ref": "tower:pyre",
@@ -2787,326 +3107,6 @@
    "src": "js/cutscenes.js:117"
   },
   {
-   "ref": "pirate/act1",
-   "kind": "act",
-   "name": "PROXIMA CENTAURI",
-   "faction": "pirate",
-   "page": "pirate.html#act-1",
-   "src": "js/story.js:150"
-  },
-  {
-   "ref": "pirate/act1/PROXIMA d",
-   "kind": "world",
-   "name": "PROXIMA d",
-   "faction": "pirate",
-   "page": "pirate.html#w-30",
-   "src": "js/planetcuts.js:550"
-  },
-  {
-   "ref": "pirate/act1/PROXIMA b",
-   "kind": "world",
-   "name": "PROXIMA b",
-   "faction": "pirate",
-   "page": "pirate.html#w-31",
-   "src": "js/planetcuts.js:573"
-  },
-  {
-   "ref": "pirate/act1/PROXIMA c",
-   "kind": "world",
-   "name": "PROXIMA c",
-   "faction": "pirate",
-   "page": "pirate.html#w-32",
-   "src": "js/planetcuts.js:596"
-  },
-  {
-   "ref": "pirate/act1/THE FLARE SHELTER",
-   "kind": "world",
-   "name": "THE FLARE SHELTER",
-   "faction": "pirate",
-   "page": "pirate.html#w-33",
-   "src": "js/planetcuts.js:619"
-  },
-  {
-   "ref": "pirate/act1/THE NARROWS",
-   "kind": "world",
-   "name": "THE NARROWS",
-   "faction": "pirate",
-   "page": "pirate.html#w-34",
-   "src": "js/planetcuts.js:642"
-  },
-  {
-   "ref": "pirate/act1/THE DARK LOCKER",
-   "kind": "world",
-   "name": "THE DARK LOCKER",
-   "faction": "pirate",
-   "page": "pirate.html#w-35",
-   "src": "js/planetcuts.js:665"
-  },
-  {
-   "ref": "pirate/act1/PROXIMA GATE",
-   "kind": "world",
-   "name": "PROXIMA GATE",
-   "faction": "pirate",
-   "page": "pirate.html#w-36",
-   "src": "js/planetcuts.js:688"
-  },
-  {
-   "ref": "pirate/act2",
-   "kind": "act",
-   "name": "SIRIUS",
-   "faction": "pirate",
-   "page": "pirate.html#act-2",
-   "src": "js/story.js:150"
-  },
-  {
-   "ref": "pirate/act2/SIRIUS A I",
-   "kind": "world",
-   "name": "SIRIUS A I",
-   "faction": "pirate",
-   "page": "pirate.html#w-40",
-   "src": "js/planetcuts.js:715"
-  },
-  {
-   "ref": "pirate/act2/SIRIUS A II",
-   "kind": "world",
-   "name": "SIRIUS A II",
-   "faction": "pirate",
-   "page": "pirate.html#w-41",
-   "src": "js/planetcuts.js:738"
-  },
-  {
-   "ref": "pirate/act2/THE ASH FIELD",
-   "kind": "world",
-   "name": "THE ASH FIELD",
-   "faction": "pirate",
-   "page": "pirate.html#w-42",
-   "src": "js/planetcuts.js:761"
-  },
-  {
-   "ref": "pirate/act2/SIRIUS B I",
-   "kind": "world",
-   "name": "SIRIUS B I",
-   "faction": "pirate",
-   "page": "pirate.html#w-43",
-   "src": "js/planetcuts.js:784"
-  },
-  {
-   "ref": "pirate/act2/THE DIAMOND SHELF",
-   "kind": "world",
-   "name": "THE DIAMOND SHELF",
-   "faction": "pirate",
-   "page": "pirate.html#w-44",
-   "src": "js/planetcuts.js:807"
-  },
-  {
-   "ref": "pirate/act2/THE COMPANION",
-   "kind": "world",
-   "name": "THE COMPANION",
-   "faction": "pirate",
-   "page": "pirate.html#w-45",
-   "src": "js/planetcuts.js:830"
-  },
-  {
-   "ref": "pirate/act2/THE DOG STAR",
-   "kind": "world",
-   "name": "THE DOG STAR",
-   "faction": "pirate",
-   "page": "pirate.html#w-46",
-   "src": "js/planetcuts.js:853"
-  },
-  {
-   "ref": "pirate/act3",
-   "kind": "act",
-   "name": "THE EARTH SYSTEM",
-   "faction": "pirate",
-   "page": "pirate.html#act-3",
-   "src": "js/story.js:150"
-  },
-  {
-   "ref": "pirate/act3/EARTH",
-   "kind": "world",
-   "name": "EARTH",
-   "faction": "pirate",
-   "page": "pirate.html#w-00",
-   "src": "js/planetcuts.js:53"
-  },
-  {
-   "ref": "pirate/act3/LUNA",
-   "kind": "world",
-   "name": "LUNA",
-   "faction": "pirate",
-   "page": "pirate.html#w-01",
-   "src": "js/planetcuts.js:76"
-  },
-  {
-   "ref": "pirate/act3/MARS",
-   "kind": "world",
-   "name": "MARS",
-   "faction": "pirate",
-   "page": "pirate.html#w-02",
-   "src": "js/planetcuts.js:99"
-  },
-  {
-   "ref": "pirate/act3/VENUS",
-   "kind": "world",
-   "name": "VENUS",
-   "faction": "pirate",
-   "page": "pirate.html#w-03",
-   "src": "js/planetcuts.js:122"
-  },
-  {
-   "ref": "pirate/act3/MERCURY",
-   "kind": "world",
-   "name": "MERCURY",
-   "faction": "pirate",
-   "page": "pirate.html#w-04",
-   "src": "js/planetcuts.js:145"
-  },
-  {
-   "ref": "pirate/act3/JUPITER",
-   "kind": "world",
-   "name": "JUPITER",
-   "faction": "pirate",
-   "page": "pirate.html#w-05",
-   "src": "js/planetcuts.js:168"
-  },
-  {
-   "ref": "pirate/act3/SATURN",
-   "kind": "world",
-   "name": "SATURN",
-   "faction": "pirate",
-   "page": "pirate.html#w-06",
-   "src": "js/planetcuts.js:191"
-  },
-  {
-   "ref": "pirate/act4",
-   "kind": "act",
-   "name": "THE PLEIADES",
-   "faction": "pirate",
-   "page": "pirate.html#act-4",
-   "src": "js/story.js:150"
-  },
-  {
-   "ref": "pirate/act4/MAIA",
-   "kind": "world",
-   "name": "MAIA",
-   "faction": "pirate",
-   "page": "pirate.html#w-10",
-   "src": "js/planetcuts.js:220"
-  },
-  {
-   "ref": "pirate/act4/ELECTRA",
-   "kind": "world",
-   "name": "ELECTRA",
-   "faction": "pirate",
-   "page": "pirate.html#w-11",
-   "src": "js/planetcuts.js:243"
-  },
-  {
-   "ref": "pirate/act4/TAYGETA",
-   "kind": "world",
-   "name": "TAYGETA",
-   "faction": "pirate",
-   "page": "pirate.html#w-12",
-   "src": "js/planetcuts.js:266"
-  },
-  {
-   "ref": "pirate/act4/MEROPE",
-   "kind": "world",
-   "name": "MEROPE",
-   "faction": "pirate",
-   "page": "pirate.html#w-13",
-   "src": "js/planetcuts.js:289"
-  },
-  {
-   "ref": "pirate/act4/CELAENO",
-   "kind": "world",
-   "name": "CELAENO",
-   "faction": "pirate",
-   "page": "pirate.html#w-14",
-   "src": "js/planetcuts.js:312"
-  },
-  {
-   "ref": "pirate/act4/STEROPE",
-   "kind": "world",
-   "name": "STEROPE",
-   "faction": "pirate",
-   "page": "pirate.html#w-15",
-   "src": "js/planetcuts.js:335"
-  },
-  {
-   "ref": "pirate/act4/ALCYONE",
-   "kind": "world",
-   "name": "ALCYONE",
-   "faction": "pirate",
-   "page": "pirate.html#w-16",
-   "src": "js/planetcuts.js:358"
-  },
-  {
-   "ref": "pirate/act5",
-   "kind": "act",
-   "name": "ZETA RETICULI",
-   "faction": "pirate",
-   "page": "pirate.html#act-5",
-   "src": "js/story.js:150"
-  },
-  {
-   "ref": "pirate/act5/ZETA-1 b",
-   "kind": "world",
-   "name": "ZETA-1 b",
-   "faction": "pirate",
-   "page": "pirate.html#w-20",
-   "src": "js/planetcuts.js:385"
-  },
-  {
-   "ref": "pirate/act5/ZETA-1 c",
-   "kind": "world",
-   "name": "ZETA-1 c",
-   "faction": "pirate",
-   "page": "pirate.html#w-21",
-   "src": "js/planetcuts.js:408"
-  },
-  {
-   "ref": "pirate/act5/ZETA-1 d",
-   "kind": "world",
-   "name": "ZETA-1 d",
-   "faction": "pirate",
-   "page": "pirate.html#w-22",
-   "src": "js/planetcuts.js:431"
-  },
-  {
-   "ref": "pirate/act5/ZETA-2 b",
-   "kind": "world",
-   "name": "ZETA-2 b",
-   "faction": "pirate",
-   "page": "pirate.html#w-23",
-   "src": "js/planetcuts.js:454"
-  },
-  {
-   "ref": "pirate/act5/ZETA-2 c",
-   "kind": "world",
-   "name": "ZETA-2 c",
-   "faction": "pirate",
-   "page": "pirate.html#w-24",
-   "src": "js/planetcuts.js:477"
-  },
-  {
-   "ref": "pirate/act5/ZETA-2 d",
-   "kind": "world",
-   "name": "ZETA-2 d",
-   "faction": "pirate",
-   "page": "pirate.html#w-25",
-   "src": "js/planetcuts.js:500"
-  },
-  {
-   "ref": "pirate/act5/SERPO",
-   "kind": "world",
-   "name": "SERPO",
-   "faction": "pirate",
-   "page": "pirate.html#w-26",
-   "src": "js/planetcuts.js:523"
-  },
-  {
    "ref": "faction:robot",
    "kind": "faction",
    "name": "THE VIGIL",
@@ -3121,6 +3121,326 @@
    "faction": "robot",
    "page": "robot.html#doctrine",
    "src": "js/factions.js:604"
+  },
+  {
+   "ref": "robot/act-text/proxima",
+   "kind": "acttext",
+   "name": "THE VIGIL act framing, PROXIMA CENTAURI",
+   "faction": "robot",
+   "page": "robot.html#at-proxima",
+   "src": "js/story.js:158"
+  },
+  {
+   "ref": "robot/world/PROXIMA d",
+   "kind": "world",
+   "name": "PROXIMA d world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-30",
+   "src": "js/planetcuts.js:550"
+  },
+  {
+   "ref": "robot/world/PROXIMA b",
+   "kind": "world",
+   "name": "PROXIMA b world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-31",
+   "src": "js/planetcuts.js:573"
+  },
+  {
+   "ref": "robot/world/PROXIMA c",
+   "kind": "world",
+   "name": "PROXIMA c world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-32",
+   "src": "js/planetcuts.js:596"
+  },
+  {
+   "ref": "robot/world/THE FLARE SHELTER",
+   "kind": "world",
+   "name": "THE FLARE SHELTER world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-33",
+   "src": "js/planetcuts.js:619"
+  },
+  {
+   "ref": "robot/world/THE DARK LOCKER",
+   "kind": "world",
+   "name": "THE DARK LOCKER world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-35",
+   "src": "js/planetcuts.js:665"
+  },
+  {
+   "ref": "robot/act-text/sol",
+   "kind": "acttext",
+   "name": "THE VIGIL act framing, THE EARTH SYSTEM",
+   "faction": "robot",
+   "page": "robot.html#at-sol",
+   "src": "js/story.js:158"
+  },
+  {
+   "ref": "robot/world/EARTH",
+   "kind": "world",
+   "name": "EARTH world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-00",
+   "src": "js/planetcuts.js:53"
+  },
+  {
+   "ref": "robot/world/LUNA",
+   "kind": "world",
+   "name": "LUNA world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-01",
+   "src": "js/planetcuts.js:76"
+  },
+  {
+   "ref": "robot/world/MARS",
+   "kind": "world",
+   "name": "MARS world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-02",
+   "src": "js/planetcuts.js:99"
+  },
+  {
+   "ref": "robot/world/VENUS",
+   "kind": "world",
+   "name": "VENUS world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-03",
+   "src": "js/planetcuts.js:122"
+  },
+  {
+   "ref": "robot/world/JUPITER",
+   "kind": "world",
+   "name": "JUPITER world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-05",
+   "src": "js/planetcuts.js:168"
+  },
+  {
+   "ref": "robot/world/SATURN",
+   "kind": "world",
+   "name": "SATURN world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-06",
+   "src": "js/planetcuts.js:191"
+  },
+  {
+   "ref": "robot/act-text/zeta",
+   "kind": "acttext",
+   "name": "THE VIGIL act framing, ZETA RETICULI",
+   "faction": "robot",
+   "page": "robot.html#at-zeta",
+   "src": "js/story.js:158"
+  },
+  {
+   "ref": "robot/world/ZETA-1 b",
+   "kind": "world",
+   "name": "ZETA-1 b world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-20",
+   "src": "js/planetcuts.js:385"
+  },
+  {
+   "ref": "robot/world/ZETA-1 c",
+   "kind": "world",
+   "name": "ZETA-1 c world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-21",
+   "src": "js/planetcuts.js:408"
+  },
+  {
+   "ref": "robot/world/ZETA-1 d",
+   "kind": "world",
+   "name": "ZETA-1 d world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-22",
+   "src": "js/planetcuts.js:431"
+  },
+  {
+   "ref": "robot/world/ZETA-2 b",
+   "kind": "world",
+   "name": "ZETA-2 b world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-23",
+   "src": "js/planetcuts.js:454"
+  },
+  {
+   "ref": "robot/world/ZETA-2 c",
+   "kind": "world",
+   "name": "ZETA-2 c world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-24",
+   "src": "js/planetcuts.js:477"
+  },
+  {
+   "ref": "robot/world/SERPO",
+   "kind": "world",
+   "name": "SERPO world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-26",
+   "src": "js/planetcuts.js:523"
+  },
+  {
+   "ref": "robot/act-text/sirius",
+   "kind": "acttext",
+   "name": "THE VIGIL act framing, SIRIUS",
+   "faction": "robot",
+   "page": "robot.html#at-sirius",
+   "src": "js/story.js:158"
+  },
+  {
+   "ref": "robot/act-text/the-pleiades",
+   "kind": "acttext",
+   "name": "THE VIGIL act framing, THE PLEIADES",
+   "faction": "robot",
+   "page": "robot.html#at-the-pleiades",
+   "src": "js/story.js:158"
+  },
+  {
+   "ref": "robot/world/MERCURY",
+   "kind": "world",
+   "name": "MERCURY world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-04",
+   "src": "js/planetcuts.js:145"
+  },
+  {
+   "ref": "robot/world/MAIA",
+   "kind": "world",
+   "name": "MAIA world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-10",
+   "src": "js/planetcuts.js:220"
+  },
+  {
+   "ref": "robot/world/ELECTRA",
+   "kind": "world",
+   "name": "ELECTRA world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-11",
+   "src": "js/planetcuts.js:243"
+  },
+  {
+   "ref": "robot/world/TAYGETA",
+   "kind": "world",
+   "name": "TAYGETA world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-12",
+   "src": "js/planetcuts.js:266"
+  },
+  {
+   "ref": "robot/world/MEROPE",
+   "kind": "world",
+   "name": "MEROPE world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-13",
+   "src": "js/planetcuts.js:289"
+  },
+  {
+   "ref": "robot/world/CELAENO",
+   "kind": "world",
+   "name": "CELAENO world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-14",
+   "src": "js/planetcuts.js:312"
+  },
+  {
+   "ref": "robot/world/STEROPE",
+   "kind": "world",
+   "name": "STEROPE world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-15",
+   "src": "js/planetcuts.js:335"
+  },
+  {
+   "ref": "robot/world/ALCYONE",
+   "kind": "world",
+   "name": "ALCYONE world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-16",
+   "src": "js/planetcuts.js:358"
+  },
+  {
+   "ref": "robot/world/ZETA-2 d",
+   "kind": "world",
+   "name": "ZETA-2 d world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-25",
+   "src": "js/planetcuts.js:500"
+  },
+  {
+   "ref": "robot/world/THE NARROWS",
+   "kind": "world",
+   "name": "THE NARROWS world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-34",
+   "src": "js/planetcuts.js:642"
+  },
+  {
+   "ref": "robot/world/PROXIMA GATE",
+   "kind": "world",
+   "name": "PROXIMA GATE world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-36",
+   "src": "js/planetcuts.js:688"
+  },
+  {
+   "ref": "robot/world/SIRIUS A I",
+   "kind": "world",
+   "name": "SIRIUS A I world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-40",
+   "src": "js/planetcuts.js:715"
+  },
+  {
+   "ref": "robot/world/SIRIUS A II",
+   "kind": "world",
+   "name": "SIRIUS A II world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-41",
+   "src": "js/planetcuts.js:738"
+  },
+  {
+   "ref": "robot/world/THE ASH FIELD",
+   "kind": "world",
+   "name": "THE ASH FIELD world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-42",
+   "src": "js/planetcuts.js:761"
+  },
+  {
+   "ref": "robot/world/SIRIUS B I",
+   "kind": "world",
+   "name": "SIRIUS B I world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-43",
+   "src": "js/planetcuts.js:784"
+  },
+  {
+   "ref": "robot/world/THE DIAMOND SHELF",
+   "kind": "world",
+   "name": "THE DIAMOND SHELF world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-44",
+   "src": "js/planetcuts.js:807"
+  },
+  {
+   "ref": "robot/world/THE COMPANION",
+   "kind": "world",
+   "name": "THE COMPANION world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-45",
+   "src": "js/planetcuts.js:830"
+  },
+  {
+   "ref": "robot/world/THE DOG STAR",
+   "kind": "world",
+   "name": "THE DOG STAR world text, THE VIGIL",
+   "faction": "robot",
+   "page": "robot.html#wt-46",
+   "src": "js/planetcuts.js:853"
   },
   {
    "ref": "tower:railgun",
@@ -3545,326 +3865,6 @@
    "faction": "robot",
    "page": "robot.html#intro-9",
    "src": "js/cutscenes.js:139"
-  },
-  {
-   "ref": "robot/act1",
-   "kind": "act",
-   "name": "SIRIUS",
-   "faction": "robot",
-   "page": "robot.html#act-1",
-   "src": "js/story.js:158"
-  },
-  {
-   "ref": "robot/act1/SIRIUS A I",
-   "kind": "world",
-   "name": "SIRIUS A I",
-   "faction": "robot",
-   "page": "robot.html#w-40",
-   "src": "js/planetcuts.js:715"
-  },
-  {
-   "ref": "robot/act1/SIRIUS A II",
-   "kind": "world",
-   "name": "SIRIUS A II",
-   "faction": "robot",
-   "page": "robot.html#w-41",
-   "src": "js/planetcuts.js:738"
-  },
-  {
-   "ref": "robot/act1/THE ASH FIELD",
-   "kind": "world",
-   "name": "THE ASH FIELD",
-   "faction": "robot",
-   "page": "robot.html#w-42",
-   "src": "js/planetcuts.js:761"
-  },
-  {
-   "ref": "robot/act1/SIRIUS B I",
-   "kind": "world",
-   "name": "SIRIUS B I",
-   "faction": "robot",
-   "page": "robot.html#w-43",
-   "src": "js/planetcuts.js:784"
-  },
-  {
-   "ref": "robot/act1/THE DIAMOND SHELF",
-   "kind": "world",
-   "name": "THE DIAMOND SHELF",
-   "faction": "robot",
-   "page": "robot.html#w-44",
-   "src": "js/planetcuts.js:807"
-  },
-  {
-   "ref": "robot/act1/THE COMPANION",
-   "kind": "world",
-   "name": "THE COMPANION",
-   "faction": "robot",
-   "page": "robot.html#w-45",
-   "src": "js/planetcuts.js:830"
-  },
-  {
-   "ref": "robot/act1/THE DOG STAR",
-   "kind": "world",
-   "name": "THE DOG STAR",
-   "faction": "robot",
-   "page": "robot.html#w-46",
-   "src": "js/planetcuts.js:853"
-  },
-  {
-   "ref": "robot/act2",
-   "kind": "act",
-   "name": "THE EARTH SYSTEM",
-   "faction": "robot",
-   "page": "robot.html#act-2",
-   "src": "js/story.js:158"
-  },
-  {
-   "ref": "robot/act2/EARTH",
-   "kind": "world",
-   "name": "EARTH",
-   "faction": "robot",
-   "page": "robot.html#w-00",
-   "src": "js/planetcuts.js:53"
-  },
-  {
-   "ref": "robot/act2/LUNA",
-   "kind": "world",
-   "name": "LUNA",
-   "faction": "robot",
-   "page": "robot.html#w-01",
-   "src": "js/planetcuts.js:76"
-  },
-  {
-   "ref": "robot/act2/MARS",
-   "kind": "world",
-   "name": "MARS",
-   "faction": "robot",
-   "page": "robot.html#w-02",
-   "src": "js/planetcuts.js:99"
-  },
-  {
-   "ref": "robot/act2/VENUS",
-   "kind": "world",
-   "name": "VENUS",
-   "faction": "robot",
-   "page": "robot.html#w-03",
-   "src": "js/planetcuts.js:122"
-  },
-  {
-   "ref": "robot/act2/MERCURY",
-   "kind": "world",
-   "name": "MERCURY",
-   "faction": "robot",
-   "page": "robot.html#w-04",
-   "src": "js/planetcuts.js:145"
-  },
-  {
-   "ref": "robot/act2/JUPITER",
-   "kind": "world",
-   "name": "JUPITER",
-   "faction": "robot",
-   "page": "robot.html#w-05",
-   "src": "js/planetcuts.js:168"
-  },
-  {
-   "ref": "robot/act2/SATURN",
-   "kind": "world",
-   "name": "SATURN",
-   "faction": "robot",
-   "page": "robot.html#w-06",
-   "src": "js/planetcuts.js:191"
-  },
-  {
-   "ref": "robot/act3",
-   "kind": "act",
-   "name": "THE PLEIADES",
-   "faction": "robot",
-   "page": "robot.html#act-3",
-   "src": "js/story.js:158"
-  },
-  {
-   "ref": "robot/act3/MAIA",
-   "kind": "world",
-   "name": "MAIA",
-   "faction": "robot",
-   "page": "robot.html#w-10",
-   "src": "js/planetcuts.js:220"
-  },
-  {
-   "ref": "robot/act3/ELECTRA",
-   "kind": "world",
-   "name": "ELECTRA",
-   "faction": "robot",
-   "page": "robot.html#w-11",
-   "src": "js/planetcuts.js:243"
-  },
-  {
-   "ref": "robot/act3/TAYGETA",
-   "kind": "world",
-   "name": "TAYGETA",
-   "faction": "robot",
-   "page": "robot.html#w-12",
-   "src": "js/planetcuts.js:266"
-  },
-  {
-   "ref": "robot/act3/MEROPE",
-   "kind": "world",
-   "name": "MEROPE",
-   "faction": "robot",
-   "page": "robot.html#w-13",
-   "src": "js/planetcuts.js:289"
-  },
-  {
-   "ref": "robot/act3/CELAENO",
-   "kind": "world",
-   "name": "CELAENO",
-   "faction": "robot",
-   "page": "robot.html#w-14",
-   "src": "js/planetcuts.js:312"
-  },
-  {
-   "ref": "robot/act3/STEROPE",
-   "kind": "world",
-   "name": "STEROPE",
-   "faction": "robot",
-   "page": "robot.html#w-15",
-   "src": "js/planetcuts.js:335"
-  },
-  {
-   "ref": "robot/act3/ALCYONE",
-   "kind": "world",
-   "name": "ALCYONE",
-   "faction": "robot",
-   "page": "robot.html#w-16",
-   "src": "js/planetcuts.js:358"
-  },
-  {
-   "ref": "robot/act4",
-   "kind": "act",
-   "name": "ZETA RETICULI",
-   "faction": "robot",
-   "page": "robot.html#act-4",
-   "src": "js/story.js:158"
-  },
-  {
-   "ref": "robot/act4/ZETA-1 b",
-   "kind": "world",
-   "name": "ZETA-1 b",
-   "faction": "robot",
-   "page": "robot.html#w-20",
-   "src": "js/planetcuts.js:385"
-  },
-  {
-   "ref": "robot/act4/ZETA-1 c",
-   "kind": "world",
-   "name": "ZETA-1 c",
-   "faction": "robot",
-   "page": "robot.html#w-21",
-   "src": "js/planetcuts.js:408"
-  },
-  {
-   "ref": "robot/act4/ZETA-1 d",
-   "kind": "world",
-   "name": "ZETA-1 d",
-   "faction": "robot",
-   "page": "robot.html#w-22",
-   "src": "js/planetcuts.js:431"
-  },
-  {
-   "ref": "robot/act4/ZETA-2 b",
-   "kind": "world",
-   "name": "ZETA-2 b",
-   "faction": "robot",
-   "page": "robot.html#w-23",
-   "src": "js/planetcuts.js:454"
-  },
-  {
-   "ref": "robot/act4/ZETA-2 c",
-   "kind": "world",
-   "name": "ZETA-2 c",
-   "faction": "robot",
-   "page": "robot.html#w-24",
-   "src": "js/planetcuts.js:477"
-  },
-  {
-   "ref": "robot/act4/ZETA-2 d",
-   "kind": "world",
-   "name": "ZETA-2 d",
-   "faction": "robot",
-   "page": "robot.html#w-25",
-   "src": "js/planetcuts.js:500"
-  },
-  {
-   "ref": "robot/act4/SERPO",
-   "kind": "world",
-   "name": "SERPO",
-   "faction": "robot",
-   "page": "robot.html#w-26",
-   "src": "js/planetcuts.js:523"
-  },
-  {
-   "ref": "robot/act5",
-   "kind": "act",
-   "name": "PROXIMA CENTAURI",
-   "faction": "robot",
-   "page": "robot.html#act-5",
-   "src": "js/story.js:158"
-  },
-  {
-   "ref": "robot/act5/PROXIMA d",
-   "kind": "world",
-   "name": "PROXIMA d",
-   "faction": "robot",
-   "page": "robot.html#w-30",
-   "src": "js/planetcuts.js:550"
-  },
-  {
-   "ref": "robot/act5/PROXIMA b",
-   "kind": "world",
-   "name": "PROXIMA b",
-   "faction": "robot",
-   "page": "robot.html#w-31",
-   "src": "js/planetcuts.js:573"
-  },
-  {
-   "ref": "robot/act5/PROXIMA c",
-   "kind": "world",
-   "name": "PROXIMA c",
-   "faction": "robot",
-   "page": "robot.html#w-32",
-   "src": "js/planetcuts.js:596"
-  },
-  {
-   "ref": "robot/act5/THE FLARE SHELTER",
-   "kind": "world",
-   "name": "THE FLARE SHELTER",
-   "faction": "robot",
-   "page": "robot.html#w-33",
-   "src": "js/planetcuts.js:619"
-  },
-  {
-   "ref": "robot/act5/THE NARROWS",
-   "kind": "world",
-   "name": "THE NARROWS",
-   "faction": "robot",
-   "page": "robot.html#w-34",
-   "src": "js/planetcuts.js:642"
-  },
-  {
-   "ref": "robot/act5/THE DARK LOCKER",
-   "kind": "world",
-   "name": "THE DARK LOCKER",
-   "faction": "robot",
-   "page": "robot.html#w-35",
-   "src": "js/planetcuts.js:665"
-  },
-  {
-   "ref": "robot/act5/PROXIMA GATE",
-   "kind": "world",
-   "name": "PROXIMA GATE",
-   "faction": "robot",
-   "page": "robot.html#w-36",
-   "src": "js/planetcuts.js:688"
   },
   {
    "ref": "commander:cadre",
@@ -5208,7 +5208,7 @@
    "name": "SIRIUS",
    "faction": null,
    "page": "index.html#bn-sirius",
-   "src": "js/campaign2.js:378"
+   "src": "js/campaign2.js:381"
   },
   {
    "ref": "bonus:barnard",
@@ -5216,7 +5216,7 @@
    "name": "BARNARD'S STAR",
    "faction": null,
    "page": "index.html#bn-barnard",
-   "src": "js/campaign2.js:384"
+   "src": "js/campaign2.js:387"
   },
   {
    "ref": "bonus:tabby",
@@ -5224,7 +5224,7 @@
    "name": "TABBY'S STAR",
    "faction": null,
    "page": "index.html#bn-tabby",
-   "src": "js/campaign2.js:389"
+   "src": "js/campaign2.js:392"
   },
   {
    "ref": "map:w_earth",
@@ -5259,14 +5259,6 @@
    "src": "js/worldmaps.js:124"
   },
   {
-   "ref": "map:w_mercury",
-   "kind": "map",
-   "name": "THE TERMINATOR LINE",
-   "faction": null,
-   "page": "index.html#mp-w_mercury",
-   "src": "js/worldmaps.js:144"
-  },
-  {
    "ref": "map:w_jupiter",
    "kind": "map",
    "name": "THE CLOUD DECKS",
@@ -5281,6 +5273,30 @@
    "faction": null,
    "page": "index.html#mp-w_saturn",
    "src": "js/worldmaps.js:185"
+  },
+  {
+   "ref": "map:w_proxd",
+   "kind": "map",
+   "name": "THE SCORCH LINE",
+   "faction": null,
+   "page": "index.html#mp-w_proxd",
+   "src": "js/worldmaps.js:495"
+  },
+  {
+   "ref": "map:w_sira1",
+   "kind": "map",
+   "name": "THE CALIBRATION PLAIN",
+   "faction": null,
+   "page": "index.html#mp-w_sira1",
+   "src": "js/worldmaps.js:639"
+  },
+  {
+   "ref": "map:w_proxb",
+   "kind": "map",
+   "name": "THE FIRST PORT",
+   "faction": null,
+   "page": "index.html#mp-w_proxb",
+   "src": "js/worldmaps.js:513"
   },
   {
    "ref": "map:w_maia",
@@ -5299,20 +5315,52 @@
    "src": "js/worldmaps.js:230"
   },
   {
-   "ref": "map:w_taygeta",
+   "ref": "map:w_alcyone",
    "kind": "map",
-   "name": "THE CHORAL HALLS",
+   "name": "THE ANCHOR SANCTUM",
    "faction": null,
-   "page": "index.html#mp-w_taygeta",
-   "src": "js/worldmaps.js:248"
+   "page": "index.html#mp-w_alcyone",
+   "src": "js/worldmaps.js:331"
   },
   {
-   "ref": "map:w_merope",
+   "ref": "map:w_proxc",
    "kind": "map",
-   "name": "THE DUST WAKE",
+   "name": "THE WRECK YARDS",
    "faction": null,
-   "page": "index.html#mp-w_merope",
-   "src": "js/worldmaps.js:269"
+   "page": "index.html#mp-w_proxc",
+   "src": "js/worldmaps.js:532"
+  },
+  {
+   "ref": "map:w_sira2",
+   "kind": "map",
+   "name": "THE ASSEMBLY ROWS",
+   "faction": null,
+   "page": "index.html#mp-w_sira2",
+   "src": "js/worldmaps.js:657"
+  },
+  {
+   "ref": "map:w_ash",
+   "kind": "map",
+   "name": "THE ASH FIELD",
+   "faction": null,
+   "page": "index.html#mp-w_ash",
+   "src": "js/worldmaps.js:676"
+  },
+  {
+   "ref": "map:w_flare",
+   "kind": "map",
+   "name": "THE FLARE SHELTER",
+   "faction": null,
+   "page": "index.html#mp-w_flare",
+   "src": "js/worldmaps.js:551"
+  },
+  {
+   "ref": "map:w_locker",
+   "kind": "map",
+   "name": "THE DARK LOCKER",
+   "faction": null,
+   "page": "index.html#mp-w_locker",
+   "src": "js/worldmaps.js:592"
   },
   {
    "ref": "map:w_celaeno",
@@ -5323,6 +5371,22 @@
    "src": "js/worldmaps.js:290"
   },
   {
+   "ref": "map:w_sirb1",
+   "kind": "map",
+   "name": "THE COLLAPSE FORGE",
+   "faction": null,
+   "page": "index.html#mp-w_sirb1",
+   "src": "js/worldmaps.js:694"
+  },
+  {
+   "ref": "map:w_diamond",
+   "kind": "map",
+   "name": "THE DIAMOND SHELF",
+   "faction": null,
+   "page": "index.html#mp-w_diamond",
+   "src": "js/worldmaps.js:713"
+  },
+  {
    "ref": "map:w_sterope",
    "kind": "map",
    "name": "THE LIGHTNING NURSERIES",
@@ -5331,12 +5395,28 @@
    "src": "js/worldmaps.js:310"
   },
   {
-   "ref": "map:w_alcyone",
+   "ref": "map:w_taygeta",
    "kind": "map",
-   "name": "THE ANCHOR SANCTUM",
+   "name": "THE CHORAL HALLS",
    "faction": null,
-   "page": "index.html#mp-w_alcyone",
-   "src": "js/worldmaps.js:331"
+   "page": "index.html#mp-w_taygeta",
+   "src": "js/worldmaps.js:248"
+  },
+  {
+   "ref": "map:w_companion",
+   "kind": "map",
+   "name": "THE LONG ORBIT",
+   "faction": null,
+   "page": "index.html#mp-w_companion",
+   "src": "js/worldmaps.js:732"
+  },
+  {
+   "ref": "map:w_dogstar",
+   "kind": "map",
+   "name": "THE HALL OF STANDING ORDERS",
+   "faction": null,
+   "page": "index.html#mp-w_dogstar",
+   "src": "js/worldmaps.js:750"
   },
   {
    "ref": "map:w_z1b",
@@ -5355,6 +5435,14 @@
    "src": "js/worldmaps.js:373"
   },
   {
+   "ref": "map:w_narrowstrait",
+   "kind": "map",
+   "name": "THE SMUGGLER STRAIT",
+   "faction": null,
+   "page": "index.html#mp-w_narrowstrait",
+   "src": "js/worldmaps.js:574"
+  },
+  {
    "ref": "map:w_z1d",
    "kind": "map",
    "name": "THE SPORE SHOALS",
@@ -5369,6 +5457,14 @@
    "faction": null,
    "page": "index.html#mp-w_z2b",
    "src": "js/worldmaps.js:413"
+  },
+  {
+   "ref": "map:w_proxgate",
+   "kind": "map",
+   "name": "THE TOLL PLAZA",
+   "faction": null,
+   "page": "index.html#mp-w_proxgate",
+   "src": "js/worldmaps.js:611"
   },
   {
    "ref": "map:w_z2c",
@@ -5395,116 +5491,20 @@
    "src": "js/worldmaps.js:472"
   },
   {
-   "ref": "map:w_proxd",
+   "ref": "map:w_mercury",
    "kind": "map",
-   "name": "THE SCORCH LINE",
+   "name": "THE TERMINATOR LINE",
    "faction": null,
-   "page": "index.html#mp-w_proxd",
-   "src": "js/worldmaps.js:495"
+   "page": "index.html#mp-w_mercury",
+   "src": "js/worldmaps.js:144"
   },
   {
-   "ref": "map:w_proxb",
+   "ref": "map:w_merope",
    "kind": "map",
-   "name": "THE FIRST PORT",
+   "name": "THE DUST WAKE",
    "faction": null,
-   "page": "index.html#mp-w_proxb",
-   "src": "js/worldmaps.js:513"
-  },
-  {
-   "ref": "map:w_proxc",
-   "kind": "map",
-   "name": "THE WRECK YARDS",
-   "faction": null,
-   "page": "index.html#mp-w_proxc",
-   "src": "js/worldmaps.js:532"
-  },
-  {
-   "ref": "map:w_flare",
-   "kind": "map",
-   "name": "THE FLARE SHELTER",
-   "faction": null,
-   "page": "index.html#mp-w_flare",
-   "src": "js/worldmaps.js:551"
-  },
-  {
-   "ref": "map:w_narrowstrait",
-   "kind": "map",
-   "name": "THE SMUGGLER STRAIT",
-   "faction": null,
-   "page": "index.html#mp-w_narrowstrait",
-   "src": "js/worldmaps.js:574"
-  },
-  {
-   "ref": "map:w_locker",
-   "kind": "map",
-   "name": "THE DARK LOCKER",
-   "faction": null,
-   "page": "index.html#mp-w_locker",
-   "src": "js/worldmaps.js:592"
-  },
-  {
-   "ref": "map:w_proxgate",
-   "kind": "map",
-   "name": "THE TOLL PLAZA",
-   "faction": null,
-   "page": "index.html#mp-w_proxgate",
-   "src": "js/worldmaps.js:611"
-  },
-  {
-   "ref": "map:w_sira1",
-   "kind": "map",
-   "name": "THE CALIBRATION PLAIN",
-   "faction": null,
-   "page": "index.html#mp-w_sira1",
-   "src": "js/worldmaps.js:639"
-  },
-  {
-   "ref": "map:w_sira2",
-   "kind": "map",
-   "name": "THE ASSEMBLY ROWS",
-   "faction": null,
-   "page": "index.html#mp-w_sira2",
-   "src": "js/worldmaps.js:657"
-  },
-  {
-   "ref": "map:w_ash",
-   "kind": "map",
-   "name": "THE ASH FIELD",
-   "faction": null,
-   "page": "index.html#mp-w_ash",
-   "src": "js/worldmaps.js:676"
-  },
-  {
-   "ref": "map:w_sirb1",
-   "kind": "map",
-   "name": "THE COLLAPSE FORGE",
-   "faction": null,
-   "page": "index.html#mp-w_sirb1",
-   "src": "js/worldmaps.js:694"
-  },
-  {
-   "ref": "map:w_diamond",
-   "kind": "map",
-   "name": "THE DIAMOND SHELF",
-   "faction": null,
-   "page": "index.html#mp-w_diamond",
-   "src": "js/worldmaps.js:713"
-  },
-  {
-   "ref": "map:w_companion",
-   "kind": "map",
-   "name": "THE LONG ORBIT",
-   "faction": null,
-   "page": "index.html#mp-w_companion",
-   "src": "js/worldmaps.js:732"
-  },
-  {
-   "ref": "map:w_dogstar",
-   "kind": "map",
-   "name": "THE HALL OF STANDING ORDERS",
-   "faction": null,
-   "page": "index.html#mp-w_dogstar",
-   "src": "js/worldmaps.js:750"
+   "page": "index.html#mp-w_merope",
+   "src": "js/worldmaps.js:269"
   },
   {
    "ref": "map:spine",

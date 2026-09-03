@@ -38,9 +38,10 @@ somebody else's home, which is the shape the story wants.
 
 **The Pleiades and Sirius are bonus content** (owner call), parked in
 `CAMPAIGN_BONUS` exactly as Barnard's Star and Tabby's Star already were, so the
-canon keeps its edges. **Nothing authored is lost**: their fourteen handcrafted
+canon keeps its edges. **Nothing authored is lost**: thirteen of their fourteen handcrafted
 boards moved with the powers that built them and are Act 2 location boards now,
-which is why Act 2 needs no new geometry at all. **Mercury is bonus content too**
+which is why Act 2 needs no new geometry at all, and the Pleiades keep the
+fourteenth, the Dust Wake, as the bonus location board. **Mercury is bonus content too**
 and keeps its board.
 
 ## The three acts
@@ -167,9 +168,10 @@ changed.
    with its commanders, unlocks, soul vault and ratings; the run does not. This
    is what makes the id-shape change tractable at all.
 3. **The Pleiades and Sirius are bonus content**, parked in `CAMPAIGN_BONUS`.
-   Their fourteen boards moved with the powers that built them and are Act 2
-   location boards now, which is recorded on the parked entries and enforced:
-   a board cannot serve a campaign location and a bonus body at once.
+   Thirteen of their fourteen boards moved with the powers that built them and
+   are Act 2 location boards now, which is recorded on the parked entries and
+   enforced: a board cannot serve a campaign location and a bonus body at once.
+   The Pleiades keep the fourteenth, the Dust Wake, as the bonus location board.
 4. **All seven continents** are Earth fights: North America, South America,
    Europe, Africa, Asia, Oceania, Antarctica. Earth is twelve locations.
 
