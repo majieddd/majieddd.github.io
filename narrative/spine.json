@@ -4515,6 +4515,718 @@
    "src": "js/config.js:2541"
   },
   {
+   "ref": "campaign:sol",
+   "kind": "act",
+   "name": "THE EARTH SYSTEM",
+   "faction": null,
+   "page": "index.html#ca-sol",
+   "src": "js/campaign2.js:53"
+  },
+  {
+   "ref": "campaign:sol/earth",
+   "kind": "planet",
+   "name": "EARTH",
+   "faction": null,
+   "page": "index.html#cp-sol-earth",
+   "src": "js/campaign2.js:58"
+  },
+  {
+   "ref": "campaign:sol/earth/long-island",
+   "kind": "location",
+   "name": "LONG ISLAND",
+   "faction": null,
+   "page": "index.html#cl-sol-earth-long-island",
+   "src": "js/campaign2.js:61"
+  },
+  {
+   "ref": "campaign:sol/earth/nyc",
+   "kind": "location",
+   "name": "NEW YORK CITY",
+   "faction": null,
+   "page": "index.html#cl-sol-earth-nyc",
+   "src": "js/campaign2.js:63"
+  },
+  {
+   "ref": "campaign:sol/earth/dc",
+   "kind": "location",
+   "name": "WASHINGTON D.C.",
+   "faction": null,
+   "page": "index.html#cl-sol-earth-dc",
+   "src": "js/campaign2.js:65"
+  },
+  {
+   "ref": "campaign:sol/earth/tri-city",
+   "kind": "location",
+   "name": "THE TRI-CITY LINE",
+   "faction": null,
+   "page": "index.html#cl-sol-earth-tri-city",
+   "src": "js/campaign2.js:67"
+  },
+  {
+   "ref": "campaign:sol/earth/north-america",
+   "kind": "location",
+   "name": "NORTH AMERICA",
+   "faction": null,
+   "page": "index.html#cl-sol-earth-north-america",
+   "src": "js/campaign2.js:76"
+  },
+  {
+   "ref": "campaign:sol/earth/south-america",
+   "kind": "location",
+   "name": "SOUTH AMERICA",
+   "faction": null,
+   "page": "index.html#cl-sol-earth-south-america",
+   "src": "js/campaign2.js:78"
+  },
+  {
+   "ref": "campaign:sol/earth/europe",
+   "kind": "location",
+   "name": "EUROPE",
+   "faction": null,
+   "page": "index.html#cl-sol-earth-europe",
+   "src": "js/campaign2.js:80"
+  },
+  {
+   "ref": "campaign:sol/earth/africa",
+   "kind": "location",
+   "name": "AFRICA",
+   "faction": null,
+   "page": "index.html#cl-sol-earth-africa",
+   "src": "js/campaign2.js:82"
+  },
+  {
+   "ref": "campaign:sol/earth/asia",
+   "kind": "location",
+   "name": "ASIA",
+   "faction": null,
+   "page": "index.html#cl-sol-earth-asia",
+   "src": "js/campaign2.js:84"
+  },
+  {
+   "ref": "campaign:sol/earth/oceania",
+   "kind": "location",
+   "name": "OCEANIA",
+   "faction": null,
+   "page": "index.html#cl-sol-earth-oceania",
+   "src": "js/campaign2.js:86"
+  },
+  {
+   "ref": "campaign:sol/earth/antarctica",
+   "kind": "location",
+   "name": "ANTARCTICA",
+   "faction": null,
+   "page": "index.html#cl-sol-earth-antarctica",
+   "src": "js/campaign2.js:88"
+  },
+  {
+   "ref": "campaign:sol/earth/global",
+   "kind": "location",
+   "name": "EARTH: GLOBAL WARFARE",
+   "faction": null,
+   "page": "index.html#cl-sol-earth-global",
+   "src": "js/campaign2.js:90"
+  },
+  {
+   "ref": "campaign:sol/luna",
+   "kind": "planet",
+   "name": "LUNA",
+   "faction": null,
+   "page": "index.html#cp-sol-luna",
+   "src": "js/campaign2.js:96"
+  },
+  {
+   "ref": "campaign:sol/luna/lunar-base",
+   "kind": "location",
+   "name": "THE LUNAR BASE",
+   "faction": null,
+   "page": "index.html#cl-sol-luna-lunar-base",
+   "src": "js/campaign2.js:99"
+  },
+  {
+   "ref": "campaign:sol/luna/whole-moon",
+   "kind": "location",
+   "name": "THE WHOLE MOON",
+   "faction": null,
+   "page": "index.html#cl-sol-luna-whole-moon",
+   "src": "js/campaign2.js:101"
+  },
+  {
+   "ref": "campaign:sol/mars",
+   "kind": "planet",
+   "name": "MARS",
+   "faction": null,
+   "page": "index.html#cp-sol-mars",
+   "src": "js/campaign2.js:107"
+  },
+  {
+   "ref": "campaign:sol/mars/crash-landing",
+   "kind": "location",
+   "name": "CRASH LANDING",
+   "faction": null,
+   "page": "index.html#cl-sol-mars-crash-landing",
+   "src": "js/campaign2.js:110"
+  },
+  {
+   "ref": "campaign:sol/mars/the-canyon",
+   "kind": "location",
+   "name": "THE GREAT RIFT",
+   "faction": null,
+   "page": "index.html#cl-sol-mars-the-canyon",
+   "src": "js/campaign2.js:112"
+  },
+  {
+   "ref": "campaign:sol/mars/king-of-the-hill",
+   "kind": "location",
+   "name": "OLYMPUS MONS",
+   "faction": null,
+   "page": "index.html#cl-sol-mars-king-of-the-hill",
+   "src": "js/campaign2.js:114"
+  },
+  {
+   "ref": "campaign:sol/mars/whole-mars",
+   "kind": "location",
+   "name": "THE WHOLE OF MARS",
+   "faction": null,
+   "page": "index.html#cl-sol-mars-whole-mars",
+   "src": "js/campaign2.js:116"
+  },
+  {
+   "ref": "campaign:sol/venus",
+   "kind": "planet",
+   "name": "VENUS",
+   "faction": null,
+   "page": "index.html#cp-sol-venus",
+   "src": "js/campaign2.js:122"
+  },
+  {
+   "ref": "campaign:sol/venus/sky-battle",
+   "kind": "location",
+   "name": "THE PEAKS ABOVE THE CLOUD",
+   "faction": null,
+   "page": "index.html#cl-sol-venus-sky-battle",
+   "src": "js/campaign2.js:125"
+  },
+  {
+   "ref": "campaign:sol/venus/acid-lakes",
+   "kind": "location",
+   "name": "THE ACID LAKES",
+   "faction": null,
+   "page": "index.html#cl-sol-venus-acid-lakes",
+   "src": "js/campaign2.js:127"
+  },
+  {
+   "ref": "campaign:sol/venus/whole-venus",
+   "kind": "location",
+   "name": "THE WHOLE OF VENUS",
+   "faction": null,
+   "page": "index.html#cl-sol-venus-whole-venus",
+   "src": "js/campaign2.js:129"
+  },
+  {
+   "ref": "campaign:sol/jupiter",
+   "kind": "planet",
+   "name": "JUPITER",
+   "faction": null,
+   "page": "index.html#cp-sol-jupiter",
+   "src": "js/campaign2.js:138"
+  },
+  {
+   "ref": "campaign:sol/jupiter/space-battle",
+   "kind": "location",
+   "name": "HIGH ORBIT",
+   "faction": null,
+   "page": "index.html#cl-sol-jupiter-space-battle",
+   "src": "js/campaign2.js:141"
+  },
+  {
+   "ref": "campaign:sol/jupiter/floating-debris",
+   "kind": "location",
+   "name": "THE DEBRIS FIELD",
+   "faction": null,
+   "page": "index.html#cl-sol-jupiter-floating-debris",
+   "src": "js/campaign2.js:143"
+  },
+  {
+   "ref": "campaign:sol/jupiter/eye-of-the-storm",
+   "kind": "location",
+   "name": "THE EYE AND THE MOUNTAINS",
+   "faction": null,
+   "page": "index.html#cl-sol-jupiter-eye-of-the-storm",
+   "src": "js/campaign2.js:145"
+  },
+  {
+   "ref": "campaign:sol/jupiter/whole-jupiter",
+   "kind": "location",
+   "name": "THE WHOLE OF JUPITER",
+   "faction": null,
+   "page": "index.html#cl-sol-jupiter-whole-jupiter",
+   "src": "js/campaign2.js:147"
+  },
+  {
+   "ref": "campaign:sol/saturn",
+   "kind": "planet",
+   "name": "SATURN",
+   "faction": null,
+   "page": "index.html#cp-sol-saturn",
+   "src": "js/campaign2.js:153"
+  },
+  {
+   "ref": "campaign:sol/saturn/around-the-rings",
+   "kind": "location",
+   "name": "AROUND THE RINGS",
+   "faction": null,
+   "page": "index.html#cl-sol-saturn-around-the-rings",
+   "src": "js/campaign2.js:156"
+  },
+  {
+   "ref": "campaign:sol/saturn/saturn-acid-lake",
+   "kind": "location",
+   "name": "THE ACID LAKE",
+   "faction": null,
+   "page": "index.html#cl-sol-saturn-saturn-acid-lake",
+   "src": "js/campaign2.js:158"
+  },
+  {
+   "ref": "campaign:sol/saturn/north-pole",
+   "kind": "location",
+   "name": "THE NORTH POLE FACILITY",
+   "faction": null,
+   "page": "index.html#cl-sol-saturn-north-pole",
+   "src": "js/campaign2.js:160"
+  },
+  {
+   "ref": "campaign:sol/saturn/whole-saturn",
+   "kind": "location",
+   "name": "THE WHOLE OF SATURN",
+   "faction": null,
+   "page": "index.html#cl-sol-saturn-whole-saturn",
+   "src": "js/campaign2.js:162"
+  },
+  {
+   "ref": "campaign:proxima",
+   "kind": "act",
+   "name": "PROXIMA CENTAURI",
+   "faction": null,
+   "page": "index.html#ca-proxima",
+   "src": "js/campaign2.js:174"
+  },
+  {
+   "ref": "campaign:proxima/proxima-d",
+   "kind": "planet",
+   "name": "PROXIMA d",
+   "faction": null,
+   "page": "index.html#cp-proxima-proxima-d",
+   "src": "js/campaign2.js:179"
+  },
+  {
+   "ref": "campaign:proxima/proxima-d/scorch-line",
+   "kind": "location",
+   "name": "THE SCORCH LINE",
+   "faction": null,
+   "page": "index.html#cl-proxima-proxima-d-scorch-line",
+   "src": "js/campaign2.js:182"
+  },
+  {
+   "ref": "campaign:proxima/proxima-d/whole-proxd",
+   "kind": "location",
+   "name": "THE WHOLE OF PROXIMA d",
+   "faction": null,
+   "page": "index.html#cl-proxima-proxima-d-whole-proxd",
+   "src": "js/campaign2.js:184"
+  },
+  {
+   "ref": "campaign:proxima/proxima-b",
+   "kind": "planet",
+   "name": "PROXIMA b",
+   "faction": null,
+   "page": "index.html#cp-proxima-proxima-b",
+   "src": "js/campaign2.js:189"
+  },
+  {
+   "ref": "campaign:proxima/proxima-b/the-first-port",
+   "kind": "location",
+   "name": "THE FIRST PORT",
+   "faction": null,
+   "page": "index.html#cl-proxima-proxima-b-the-first-port",
+   "src": "js/campaign2.js:192"
+  },
+  {
+   "ref": "campaign:proxima/proxima-b/the-light-plain",
+   "kind": "location",
+   "name": "THE LIGHT PLAIN",
+   "faction": null,
+   "page": "index.html#cl-proxima-proxima-b-the-light-plain",
+   "src": "js/campaign2.js:194"
+  },
+  {
+   "ref": "campaign:proxima/proxima-b/the-shrine-terraces",
+   "kind": "location",
+   "name": "THE SHRINE TERRACES",
+   "faction": null,
+   "page": "index.html#cl-proxima-proxima-b-the-shrine-terraces",
+   "src": "js/campaign2.js:196"
+  },
+  {
+   "ref": "campaign:proxima/proxima-b/whole-proxb",
+   "kind": "location",
+   "name": "THE WHOLE OF PROXIMA b",
+   "faction": null,
+   "page": "index.html#cl-proxima-proxima-b-whole-proxb",
+   "src": "js/campaign2.js:198"
+  },
+  {
+   "ref": "campaign:proxima/proxima-c",
+   "kind": "planet",
+   "name": "PROXIMA c",
+   "faction": null,
+   "page": "index.html#cp-proxima-proxima-c",
+   "src": "js/campaign2.js:203"
+  },
+  {
+   "ref": "campaign:proxima/proxima-c/the-wreck-yards",
+   "kind": "location",
+   "name": "THE WRECK YARDS",
+   "faction": null,
+   "page": "index.html#cl-proxima-proxima-c-the-wreck-yards",
+   "src": "js/campaign2.js:206"
+  },
+  {
+   "ref": "campaign:proxima/proxima-c/the-assembly-rows",
+   "kind": "location",
+   "name": "THE ASSEMBLY ROWS",
+   "faction": null,
+   "page": "index.html#cl-proxima-proxima-c-the-assembly-rows",
+   "src": "js/campaign2.js:208"
+  },
+  {
+   "ref": "campaign:proxima/proxima-c/whole-proxc",
+   "kind": "location",
+   "name": "THE WHOLE OF PROXIMA c",
+   "faction": null,
+   "page": "index.html#cl-proxima-proxima-c-whole-proxc",
+   "src": "js/campaign2.js:210"
+  },
+  {
+   "ref": "campaign:proxima/the-flare-shelter",
+   "kind": "planet",
+   "name": "THE FLARE SHELTER",
+   "faction": null,
+   "page": "index.html#cp-proxima-the-flare-shelter",
+   "src": "js/campaign2.js:215"
+  },
+  {
+   "ref": "campaign:proxima/the-flare-shelter/the-shelter-door",
+   "kind": "location",
+   "name": "THE SHELTER DOOR",
+   "faction": null,
+   "page": "index.html#cl-proxima-the-flare-shelter-the-shelter-door",
+   "src": "js/campaign2.js:218"
+  },
+  {
+   "ref": "campaign:proxima/the-flare-shelter/the-dark-locker",
+   "kind": "location",
+   "name": "THE DARK LOCKER",
+   "faction": null,
+   "page": "index.html#cl-proxima-the-flare-shelter-the-dark-locker",
+   "src": "js/campaign2.js:220"
+  },
+  {
+   "ref": "campaign:proxima/toliman",
+   "kind": "planet",
+   "name": "TOLIMAN",
+   "faction": null,
+   "page": "index.html#cp-proxima-toliman",
+   "src": "js/campaign2.js:225"
+  },
+  {
+   "ref": "campaign:proxima/toliman/the-archive-vaults",
+   "kind": "location",
+   "name": "THE ARCHIVE VAULTS",
+   "faction": null,
+   "page": "index.html#cl-proxima-toliman-the-archive-vaults",
+   "src": "js/campaign2.js:228"
+  },
+  {
+   "ref": "campaign:proxima/toliman/the-collapse-forge",
+   "kind": "location",
+   "name": "THE COLLAPSE FORGE",
+   "faction": null,
+   "page": "index.html#cl-proxima-toliman-the-collapse-forge",
+   "src": "js/campaign2.js:230"
+  },
+  {
+   "ref": "campaign:proxima/toliman/whole-toliman",
+   "kind": "location",
+   "name": "THE WHOLE OF TOLIMAN",
+   "faction": null,
+   "page": "index.html#cl-proxima-toliman-whole-toliman",
+   "src": "js/campaign2.js:232"
+  },
+  {
+   "ref": "campaign:proxima/rigil-kentaurus",
+   "kind": "planet",
+   "name": "RIGIL KENTAURUS",
+   "faction": null,
+   "page": "index.html#cp-proxima-rigil-kentaurus",
+   "src": "js/campaign2.js:237"
+  },
+  {
+   "ref": "campaign:proxima/rigil-kentaurus/the-lightning-nurseries",
+   "kind": "location",
+   "name": "THE LIGHTNING NURSERIES",
+   "faction": null,
+   "page": "index.html#cl-proxima-rigil-kentaurus-the-lightning-nurseries",
+   "src": "js/campaign2.js:240"
+  },
+  {
+   "ref": "campaign:proxima/rigil-kentaurus/the-choral-halls",
+   "kind": "location",
+   "name": "THE CHORAL HALLS",
+   "faction": null,
+   "page": "index.html#cl-proxima-rigil-kentaurus-the-choral-halls",
+   "src": "js/campaign2.js:242"
+  },
+  {
+   "ref": "campaign:proxima/rigil-kentaurus/the-long-orbit",
+   "kind": "location",
+   "name": "THE LONG ORBIT",
+   "faction": null,
+   "page": "index.html#cl-proxima-rigil-kentaurus-the-long-orbit",
+   "src": "js/campaign2.js:244"
+  },
+  {
+   "ref": "campaign:proxima/rigil-kentaurus/whole-rigil",
+   "kind": "location",
+   "name": "THE HALL OF STANDING ORDERS",
+   "faction": null,
+   "page": "index.html#cl-proxima-rigil-kentaurus-whole-rigil",
+   "src": "js/campaign2.js:246"
+  },
+  {
+   "ref": "campaign:zeta",
+   "kind": "act",
+   "name": "ZETA RETICULI",
+   "faction": null,
+   "page": "index.html#ca-zeta",
+   "src": "js/campaign2.js:257"
+  },
+  {
+   "ref": "campaign:zeta/zeta-1-b",
+   "kind": "planet",
+   "name": "ZETA-1 b",
+   "faction": null,
+   "page": "index.html#cp-zeta-zeta-1-b",
+   "src": "js/campaign2.js:262"
+  },
+  {
+   "ref": "campaign:zeta/zeta-1-b/the-tither-fields",
+   "kind": "location",
+   "name": "THE TITHER FIELDS",
+   "faction": null,
+   "page": "index.html#cl-zeta-zeta-1-b-the-tither-fields",
+   "src": "js/campaign2.js:265"
+  },
+  {
+   "ref": "campaign:zeta/zeta-1-b/whole-z1b",
+   "kind": "location",
+   "name": "THE WHOLE OF ZETA-1 b",
+   "faction": null,
+   "page": "index.html#cl-zeta-zeta-1-b-whole-z1b",
+   "src": "js/campaign2.js:267"
+  },
+  {
+   "ref": "campaign:zeta/zeta-1-c",
+   "kind": "planet",
+   "name": "ZETA-1 c",
+   "faction": null,
+   "page": "index.html#cp-zeta-zeta-1-c",
+   "src": "js/campaign2.js:272"
+  },
+  {
+   "ref": "campaign:zeta/zeta-1-c/the-gullet",
+   "kind": "location",
+   "name": "THE GULLET",
+   "faction": null,
+   "page": "index.html#cl-zeta-zeta-1-c-the-gullet",
+   "src": "js/campaign2.js:275"
+  },
+  {
+   "ref": "campaign:zeta/zeta-1-c/the-smuggler-strait",
+   "kind": "location",
+   "name": "THE SMUGGLER STRAIT",
+   "faction": null,
+   "page": "index.html#cl-zeta-zeta-1-c-the-smuggler-strait",
+   "src": "js/campaign2.js:277"
+  },
+  {
+   "ref": "campaign:zeta/zeta-1-c/whole-z1c",
+   "kind": "location",
+   "name": "THE WHOLE OF ZETA-1 c",
+   "faction": null,
+   "page": "index.html#cl-zeta-zeta-1-c-whole-z1c",
+   "src": "js/campaign2.js:279"
+  },
+  {
+   "ref": "campaign:zeta/zeta-1-d",
+   "kind": "planet",
+   "name": "ZETA-1 d",
+   "faction": null,
+   "page": "index.html#cp-zeta-zeta-1-d",
+   "src": "js/campaign2.js:284"
+  },
+  {
+   "ref": "campaign:zeta/zeta-1-d/the-spore-shoals",
+   "kind": "location",
+   "name": "THE SPORE SHOALS",
+   "faction": null,
+   "page": "index.html#cl-zeta-zeta-1-d-the-spore-shoals",
+   "src": "js/campaign2.js:287"
+  },
+  {
+   "ref": "campaign:zeta/zeta-1-d/whole-z1d",
+   "kind": "location",
+   "name": "THE WHOLE OF ZETA-1 d",
+   "faction": null,
+   "page": "index.html#cl-zeta-zeta-1-d-whole-z1d",
+   "src": "js/campaign2.js:289"
+  },
+  {
+   "ref": "campaign:zeta/zeta-2-b",
+   "kind": "planet",
+   "name": "ZETA-2 b",
+   "faction": null,
+   "page": "index.html#cp-zeta-zeta-2-b",
+   "src": "js/campaign2.js:294"
+  },
+  {
+   "ref": "campaign:zeta/zeta-2-b/the-hive-gallery",
+   "kind": "location",
+   "name": "THE HIVE GALLERY",
+   "faction": null,
+   "page": "index.html#cl-zeta-zeta-2-b-the-hive-gallery",
+   "src": "js/campaign2.js:297"
+  },
+  {
+   "ref": "campaign:zeta/zeta-2-b/the-toll-plaza",
+   "kind": "location",
+   "name": "THE TOLL PLAZA",
+   "faction": null,
+   "page": "index.html#cl-zeta-zeta-2-b-the-toll-plaza",
+   "src": "js/campaign2.js:299"
+  },
+  {
+   "ref": "campaign:zeta/zeta-2-b/whole-z2b",
+   "kind": "location",
+   "name": "THE WHOLE OF ZETA-2 b",
+   "faction": null,
+   "page": "index.html#cl-zeta-zeta-2-b-whole-z2b",
+   "src": "js/campaign2.js:301"
+  },
+  {
+   "ref": "campaign:zeta/zeta-2-c",
+   "kind": "planet",
+   "name": "ZETA-2 c",
+   "faction": null,
+   "page": "index.html#cp-zeta-zeta-2-c",
+   "src": "js/campaign2.js:306"
+  },
+  {
+   "ref": "campaign:zeta/zeta-2-c/the-birthing-pools",
+   "kind": "location",
+   "name": "THE BIRTHING POOLS",
+   "faction": null,
+   "page": "index.html#cl-zeta-zeta-2-c-the-birthing-pools",
+   "src": "js/campaign2.js:309"
+  },
+  {
+   "ref": "campaign:zeta/zeta-2-c/the-ledger-chamber",
+   "kind": "location",
+   "name": "THE LEDGER CHAMBER",
+   "faction": null,
+   "page": "index.html#cl-zeta-zeta-2-c-the-ledger-chamber",
+   "src": "js/campaign2.js:311"
+  },
+  {
+   "ref": "campaign:zeta/zeta-2-c/whole-z2c",
+   "kind": "location",
+   "name": "THE WHOLE OF ZETA-2 c",
+   "faction": null,
+   "page": "index.html#cl-zeta-zeta-2-c-whole-z2c",
+   "src": "js/campaign2.js:313"
+  },
+  {
+   "ref": "campaign:zeta/serpo",
+   "kind": "planet",
+   "name": "SERPO",
+   "faction": null,
+   "page": "index.html#cp-zeta-serpo",
+   "src": "js/campaign2.js:318"
+  },
+  {
+   "ref": "campaign:zeta/serpo/the-exchange-ground",
+   "kind": "location",
+   "name": "THE EXCHANGE GROUND",
+   "faction": null,
+   "page": "index.html#cl-zeta-serpo-the-exchange-ground",
+   "src": "js/campaign2.js:321"
+  },
+  {
+   "ref": "campaign:zeta/serpo/the-harbour-nine",
+   "kind": "location",
+   "name": "HARBOUR NINE",
+   "faction": null,
+   "page": "index.html#cl-zeta-serpo-the-harbour-nine",
+   "src": "js/campaign2.js:323"
+  },
+  {
+   "ref": "campaign:zeta/serpo/whole-serpo",
+   "kind": "location",
+   "name": "THE WHOLE OF SERPO",
+   "faction": null,
+   "page": "index.html#cl-zeta-serpo-whole-serpo",
+   "src": "js/campaign2.js:325"
+  },
+  {
+   "ref": "bonus:mercury",
+   "kind": "bonus",
+   "name": "MERCURY",
+   "faction": null,
+   "page": "index.html#bn-mercury",
+   "src": "js/campaign2.js:365"
+  },
+  {
+   "ref": "bonus:pleiades",
+   "kind": "bonus",
+   "name": "THE PLEIADES",
+   "faction": null,
+   "page": "index.html#bn-pleiades",
+   "src": "js/campaign2.js:370"
+  },
+  {
+   "ref": "bonus:sirius",
+   "kind": "bonus",
+   "name": "SIRIUS",
+   "faction": null,
+   "page": "index.html#bn-sirius",
+   "src": "js/campaign2.js:378"
+  },
+  {
+   "ref": "bonus:barnard",
+   "kind": "bonus",
+   "name": "BARNARD'S STAR",
+   "faction": null,
+   "page": "index.html#bn-barnard",
+   "src": "js/campaign2.js:384"
+  },
+  {
+   "ref": "bonus:tabby",
+   "kind": "bonus",
+   "name": "TABBY'S STAR",
+   "faction": null,
+   "page": "index.html#bn-tabby",
+   "src": "js/campaign2.js:389"
+  },
+  {
    "ref": "map:w_earth",
    "kind": "map",
    "name": "THE HARBOUR DISTRICT",

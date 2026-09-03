@@ -39,7 +39,7 @@ const ROOT = path.dirname(__dirname);
 
 const ctx = { console, window: {}, document: undefined };
 vm.createContext(ctx);
-for (const f of ['artpack', 'config', 'worldmaps', 'lore', 'factions', 'towers2', 'abilities', 'roster', 'story',
+for (const f of ['artpack', 'config', 'worldmaps', 'campaign2', 'lore', 'factions', 'towers2', 'abilities', 'roster', 'story',
                  'galaxy', 'cutscenes', 'planetcuts', 'dialogue'])
   try { vm.runInContext(fs.readFileSync(path.join(ROOT, 'js', f + '.js'), 'utf8'), ctx, { filename: f + '.js' }); }
   catch (e) { console.log('  (skipped ' + f + ': ' + e.message.split('\n')[0] + ')'); }
@@ -52,7 +52,8 @@ const G = vm.runInContext(
   'ELEMENTS, COMBOS, ABILITIES, PLAYER_MODS, ENEMY_MODS, SUMMON_DOCTRINES, ' +
   'MACHINE_HOST, originKeyOf, ARTPACK, ' +
   'MAPS, SCENARIOS, ARENA_MODS, TARGET_MODES, LEVEL_ROLLS, SECRET_FACTIONS, LORE_CODEX, ' +
-  'WORLD_MAPS, WORLD_MAP_BY_NAME, TERRA_VOCAB, FAMILY_REFERENCE, FAMILY_REFERENCE_BY_ID })', ctx);
+  'WORLD_MAPS, WORLD_MAP_BY_NAME, TERRA_VOCAB, FAMILY_REFERENCE, FAMILY_REFERENCE_BY_ID, ' +
+  'CAMPAIGN_ACTS, CAMPAIGN_ORDER, CAMPAIGN_ACT_BY_ID, CAMPAIGN_BONUS })', ctx);
 
 const FACS = ['human', 'light', 'xeno', 'pirate', 'robot'];
 const SYSOF = { human: 0, light: 1, xeno: 2, pirate: 3, robot: 4 };
@@ -533,6 +534,23 @@ h2{font-size:15px;letter-spacing:.14em;margin:38px 0 6px;color:#fff;text-transfo
 .sgrounds a{font-size:11px;color:#7dd3fc;text-decoration:none;border:1px solid #23303f;
  border-radius:3px;padding:1px 6px}
 .sgrounds a:hover{border-color:#7dd3fc}
+.actblk{border-left:3px solid var(--fc);padding-left:16px;margin:26px 0 30px}
+.planet{margin:16px 0 6px}
+.phead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.pname{font-size:15px;color:#fff;letter-spacing:.05em;font-weight:600}
+.pmeta{color:#75899e;font-size:12px}
+.phead .src{display:inline;margin:0;padding:0}
+.lochead{display:flex;gap:8px;align-items:baseline}
+.locno{font:600 11px ui-monospace,Consolas,monospace;color:#75899e;border:1px solid #23303f;border-radius:3px;padding:1px 5px}
+.card.loc.whole{border-color:#3d3320;background:#12100c}
+.lbrow{display:flex;gap:5px;flex-wrap:wrap}
+.lbrow:empty{display:none}
+.lb{font-style:normal;font-size:10px;letter-spacing:.12em;border-radius:3px;padding:1px 6px;border:1px solid}
+.lb-whole{color:#fbbf24;border-color:#7c5e14;background:#241c07}
+.lb-multi{color:#c4b5fd;border-color:#4c3d8a;background:#171230}
+.lb-new{color:#ffd89b;border-color:#5c4420;background:#1a1409}
+.toauthor{border:1px dashed #3a4656;border-radius:6px;padding:14px 12px;text-align:center;color:#8aa0b5;font-size:12px;line-height:1.5}
+.toauthor b{display:block;color:#ffd89b;letter-spacing:.14em;font-size:11px;margin-bottom:3px}
 .refnote{display:block;font-size:11px;line-height:1.5;color:#8aa0b5;border-left:2px solid #5c4420;
  padding-left:8px;margin:2px 0}
 .wboard{display:flex;gap:14px;margin:8px 0 10px;background:#0d141c;border:1px solid #1d2836;
@@ -838,6 +856,159 @@ function scenarioGrounds() {
   return out;
 }
 
+/* ==========================================================================
+   THE REWORKED CAMPAIGN ON THE SPINE (Session 46). js/campaign2.js is on main,
+   so it is on this document: the owner's rule is that the spine describes
+   everything main holds, and a structure that shipped without its cards here
+   broke that rule for exactly one commit. Each power's page shows ITS three
+   acts in ITS order; the index shows the canonical structure once, registers
+   every ref, and carries the act-order table and the parked set.
+
+   TWO CAMPAIGNS ARE ON MAIN AT ONCE, and the page says so: this is the design
+   of record, and the world panels further down are what the engine still
+   plays (the five-system galaxy) until the engine batch lands. Neither is
+   hidden, because hiding either would be the document lying about main.
+   ========================================================================== */
+const CAMPAIGN_REGISTERED = new Set();
+
+/* The ref chip without registration: a location renders on six pages but is
+   ONE ref, owned by the index. spine() registers; refChip() only draws. */
+function refChip(ref, src) {
+  const m = /^(.*?):(\d+)$/.exec(src);
+  const href = m ? REPO_BLOB + m[1] + '#L' + m[2] : REPO_BLOB + src;
+  return '<a class="src" href="' + href + '" title="the exact source of this entry">' +
+         esc(ref) + ' &middot; ' + esc(src) + '</a>';
+}
+function campaignRef(ref, kind, name, page, anchor, src, register) {
+  if (register && !CAMPAIGN_REGISTERED.has(ref)) {
+    CAMPAIGN_REGISTERED.add(ref);
+    return spine(ref, kind, name, null, page, anchor, src);
+  }
+  return refChip(ref, src);
+}
+
+function challengeChip(ch) {
+  return ch ? '<span class="terra"><i class="ch ch-' + esc(ch) + '">' + esc(ch) + '</i></span>' : '';
+}
+
+function locationCard(act, planet, loc, idx, page, register) {
+  const ref = 'campaign:' + act.id + '/' + planet.id + '/' + loc.id;
+  const anchor = 'cl-' + act.id + '-' + planet.id + '-' + loc.id;
+  const def = loc.board ? G.MAPS.find(m => m.id === loc.board) : null;
+  const src = locateId('js/campaign2.js', loc.id, loc.name);
+  const badges =
+    (loc.whole ? '<i class="lb lb-whole">PLANETARY BATTLE</i>' : '') +
+    (loc.seats ? '<i class="lb lb-multi">MULTI-COMMANDER</i>' : '') +
+    (def ? '' : '<i class="lb lb-new">BOARD TO AUTHOR</i>');
+  const fig = def
+    ? mapFigure(def) + '<a class="src" href="index.html#mp-' + esc(def.id) + '">map:' + esc(def.id) + '</a>'
+    : '<div class="toauthor"><b>NO BOARD YET</b><span>' + esc(loc.challenge) +
+      ' ground, specified by the brief above. Scheduled in docs/CAMPAIGN-REWORK.md.</span></div>';
+  return '<div class="card loc' + (loc.whole ? ' whole' : '') + '" id="' + anchor + '">' +
+    '<div class="lochead"><span class="locno">' + (idx + 1) + '</span><b>' + esc(loc.name) + '</b></div>' +
+    '<span class="lbrow">' + badges + '</span>' +
+    challengeChip(loc.challenge) +
+    '<span>' + esc(loc.brief || '') + '</span>' +
+    fig +
+    campaignRef(ref, 'location', loc.name, page, anchor, src, register) +
+    '</div>';
+}
+
+function planetBlock(act, planet, page, register) {
+  const ref = 'campaign:' + act.id + '/' + planet.id;
+  const anchor = 'cp-' + act.id + '-' + planet.id;
+  const src = locateId('js/campaign2.js', planet.id, planet.name);
+  const need = planet.locations.filter(l => !l.board).length;
+  let h = '<div class="planet" id="' + anchor + '">' +
+    '<div class="phead"><span class="pname">' + esc(planet.name) + '</span>' +
+    '<span class="pmeta">' + planet.locations.length + ' location' + (planet.locations.length === 1 ? '' : 's') +
+    (need ? ' &middot; <span style="color:#ffd89b">' + need + ' board' + (need === 1 ? '' : 's') + ' to author</span>' : ' &middot; every board ready') +
+    '</span>' + campaignRef(ref, 'planet', planet.name, page, anchor, src, register) + '</div>' +
+    (planet.premise ? '<p class="sub" style="margin:2px 0 8px">' + esc(planet.premise) + '</p>' : '') +
+    '<div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">';
+  planet.locations.forEach((l, i) => { h += locationCard(act, planet, l, i, page, register); });
+  return h + '</div></div>';
+}
+
+function actBlock(act, actNo, fac, page, register) {
+  const ref = 'campaign:' + act.id;
+  const anchor = 'ca-' + act.id;
+  const src = locateId('js/campaign2.js', act.id, act.name);
+  const who = fac
+    ? (act.hosts.indexOf(fac) >= 0 ? 'your home' : 'home of ' + act.hosts.map(facName).join(' and '))
+    : 'home of ' + act.hosts.map(facName).join(' and ');
+  const locs = act.planets.reduce((n, p) => n + p.locations.length, 0);
+  const need = act.planets.reduce((n, p) => n + p.locations.filter(l => !l.board).length, 0);
+  let h = '<div class="actblk" id="' + anchor + '" style="--fc:' + facColor(act.hosts[0]) + '">' +
+    '<div class="actbar"><span class="actno">ACT ' + actNo + '</span>' +
+    '<span class="actname">' + esc(act.name) + '</span>' +
+    '<span class="actwho">' + esc(who) + ' &middot; ' + act.planets.length + ' planets, ' + locs +
+    ' locations' + (need ? ', ' + need + ' boards to author' : ', every board ready') + '</span>' +
+    campaignRef(ref, 'act', act.name, page, anchor, src, register) + '</div>' +
+    (act.premise ? '<div class="beat"><b>WHAT THIS ACT IS</b>' + esc(act.premise) + '</div>' : '');
+  act.planets.forEach(p => { h += planetBlock(act, p, page, register); });
+  return h + '</div>';
+}
+
+/* The power's own campaign: three acts in ITS order. Draws only; the index
+   owns every ref. */
+function campaignSectionFor(fac, page) {
+  const order = (G.CAMPAIGN_ORDER || {})[fac];
+  if (!order || !G.CAMPAIGN_ACT_BY_ID) return '';
+  let h = '<h2 id="campaign">The campaign</h2>' +
+    '<p class="sub">The three-act campaign (docs/CAMPAIGN-REWORK.md), in this power&#39;s order: ' +
+    order.map(id => esc(G.CAMPAIGN_ACT_BY_ID[id].name)).join(' &rarr; ') +
+    '. Each planet is fought a location at a time and the last location is the planetary battle. ' +
+    'A card with a board draws it; a card marked BOARD TO AUTHOR is a scheduled work item. ' +
+    'This is the design of record on main. The world panels further down are what the engine ' +
+    'still plays today, the five-system galaxy, until the engine batch lands.</p>';
+  order.forEach((id, i) => { h += actBlock(G.CAMPAIGN_ACT_BY_ID[id], i + 1, fac, page, false); });
+  return h;
+}
+
+/* The canonical structure, once, on the index: registers every ref and
+   carries the act-order table and the parked set. */
+function campaignIndexSection() {
+  if (!G.CAMPAIGN_ACTS) return '';
+  const locs = G.CAMPAIGN_ACTS.reduce((n, a) => n + a.planets.reduce((m, p) => m + p.locations.length, 0), 0);
+  const need = G.CAMPAIGN_ACTS.reduce((n, a) => n + a.planets.reduce((m, p) => m + p.locations.filter(l => !l.board).length, 0), 0);
+  const planets = G.CAMPAIGN_ACTS.reduce((n, a) => n + a.planets.length, 0);
+  let h = '<h2 id="campaign">The campaign: three acts, ' + planets + ' planets, ' + locs + ' locations</h2>' +
+    '<p class="sub">The reworked campaign (owner directive, <a href="' + REPO_BLOB + 'docs/CAMPAIGN-REWORK.md">docs/CAMPAIGN-REWORK.md</a>): ' +
+    'act &rarr; planet &rarr; location, the last location of a planet being its planetary battle. ' +
+    'Every power plays all three acts in its own order and opens at home. ' +
+    '<b style="color:#fff">' + (locs - need) + ' locations have a live board, ' + need + ' are scheduled to be built.</b> ' +
+    'The structure is data on main (js/campaign2.js, gated by probe-campaign2) and is not yet wired into ' +
+    'the engine, which still plays the five-system galaxy: both are on main, so both are here.</p>';
+  h += '<table class="dec"><tr><td>POWER</td><td><b>ACT 1</b> &middot; ACT 2 &middot; ACT 3</td><td>opens at home</td></tr>';
+  FACS.forEach(f => {
+    const o = (G.CAMPAIGN_ORDER || {})[f] || [];
+    h += '<tr class="y"><td style="color:' + facColor(f) + '">' + esc(facName(f)) + '</td><td>' +
+      o.map((id, i) => (i === 0 ? '<b>' : '') + esc(G.CAMPAIGN_ACT_BY_ID[id].name) + (i === 0 ? '</b>' : '')).join(' &middot; ') +
+      '</td><td>' + esc(G.CAMPAIGN_ACT_BY_ID[o[0]] ? G.CAMPAIGN_ACT_BY_ID[o[0]].name : '') + '</td></tr>';
+  });
+  h += '</table>';
+  G.CAMPAIGN_ACTS.forEach((a, i) => { h += actBlock(a, i + 1, null, 'index.html', true); });
+  if (G.CAMPAIGN_BONUS && G.CAMPAIGN_BONUS.length) {
+    h += '<h2 id="parked" style="font-size:13px;margin-top:26px">Parked: bonus bodies and systems, ' + G.CAMPAIGN_BONUS.length + '</h2>' +
+      '<p class="sub">Places the canon keeps and the campaign does not visit, each with the reason it was ' +
+      'parked, so a later session can tell what was cut on purpose from what was lost in an edit.</p>' +
+      '<table class="dec">';
+    G.CAMPAIGN_BONUS.forEach(b => {
+      const anchor = 'bn-' + b.id;
+      h += '<tr class="n" id="' + anchor + '"><td>' + esc(b.kind.toUpperCase()) + '</td><td><b>' + esc(b.name) + '</b><br><span>' + esc(b.why) + '</span>' +
+        (b.reparented ? '<br><span>Its boards moved with their power and are Act ' +
+          (G.CAMPAIGN_ACTS.findIndex(a => a.id === b.reparentedTo) + 1) + ' location boards.</span>' : '') +
+        ((b.boards || []).length ? '<br><span>Keeps: ' + b.boards.map(id => '<a href="#mp-' + esc(id) + '">map:' + esc(id) + '</a>').join(', ') + '</span>' : '') +
+        '</td><td>' + campaignRef('bonus:' + b.id, 'bonus', b.name, 'index.html', anchor,
+          locateIdUnder('js/campaign2.js', 'CAMPAIGN_BONUS', b.id, b.name), true) + '</td></tr>';
+    });
+    h += '</table>';
+  }
+  return h;
+}
+
+
 function page(fac) {
   const o = [];
   const ENC = encountersFor(fac);
@@ -857,7 +1028,7 @@ function page(fac) {
     'leaders and boons, every number live from the game data. ' +
     'Type in any box to leave a note, then SAVE NOTES to download them.</p>');
   w('<p class="sub" style="margin-top:-8px">' +
-    ['<a href="#arsenal">arsenal</a>', '<a href="#army">what you field</a>',
+    ['<a href="#campaign">the campaign</a>', '<a href="#arsenal">arsenal</a>', '<a href="#army">what you field</a>',
      '<a href="#leaders">who leads</a>', '<a href="#boons">war boons</a>',
      '<a href="#story">the spine</a>', '<a href="#intro">opening</a>',
      '<a href="#act-1">acts</a>'].join(' &middot; ') + '</p>');
@@ -885,6 +1056,9 @@ function page(fac) {
      TOWER_ORDER introduces them. Read off the loaded tables: a stat printed
      here IS the stat in the game on this commit. */
   const arsenal = arsenalOf(fac);
+  /* THE REWORKED CAMPAIGN, this power's three acts in its order (Session 46). */
+  w(campaignSectionFor(fac, pageFile));
+
   w('<h2 id="arsenal">The arsenal</h2>');
   w('<p class="sub">' + arsenal.length + ' towers. Numbers are base values before marks, talents, ' +
     'commander traits or boons. Open THE LADDER on any card for its full upgrade tree.</p>');
@@ -1101,6 +1275,7 @@ function index() {
    ['commander:' + (G.COMMANDER_ROSTER.find(c => c.faction) || {}).id, 'a commander, under WHO LEADS'],
    ['boon:' + (G.BOONS[0] || {}).id, 'a war boon, under WAR BOONS'],
    ['vigil:' + Object.keys(G.ENEMY_TYPES).find(id => !(G.ENEMY_TYPES[id].faction)), 'a Vigil machine, on this page'],
+   ['campaign:sol/earth/long-island', 'a location in the reworked campaign; campaign:sol/earth is its planet, campaign:sol its act, bonus:mercury a parked body'],
    ['human/act2', 'an act on a power&#39;s page; human/act2/' + esc((G.GX_HOME_SYSTEMS.human.worlds || [])[0] || 'EARTH') + ' is one world in it'],
    ['human/intro/slide7', 'one slide of a power&#39;s opening cinematic'],
    ['human/beat3', 'one beat of a power&#39;s story spine; human/voice/seat is an alternate voice'],
@@ -1252,6 +1427,9 @@ function index() {
             locateIdUnder('js/config.js', 'SCENARIOS', s.id, s.name)) + '</div>');
   });
   w('</div>');
+
+  /* THE REWORKED CAMPAIGN (Session 46): canonical structure, registers refs. */
+  w(campaignIndexSection());
 
   /* THE CAMPAIGN GROUNDS (Session 44, docs/WORLDMAPS-DESIGN.md): every
      planet's handcrafted board, drawn from its def by the engine's own
