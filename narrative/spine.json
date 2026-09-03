@@ -19,11 +19,19 @@
    "src": "js/factions.js:573"
   },
   {
-   "ref": "human/act-text/sol",
+   "ref": "human/act1",
+   "kind": "act",
+   "name": "HUMANITY act 1, EARTH",
+   "faction": "human",
+   "page": "human.html#ca-1",
+   "src": "js/campaign2.js:362"
+  },
+  {
+   "ref": "human/act-text/the-earth-system",
    "kind": "acttext",
    "name": "HUMANITY act framing, THE EARTH SYSTEM",
    "faction": "human",
-   "page": "human.html#at-sol",
+   "page": "human.html#at-the-earth-system",
    "src": "js/story.js:126"
   },
   {
@@ -33,6 +41,14 @@
    "faction": "human",
    "page": "human.html#wt-00",
    "src": "js/planetcuts.js:53"
+  },
+  {
+   "ref": "human/act2",
+   "kind": "act",
+   "name": "HUMANITY act 2, THE SOLAR SYSTEM",
+   "faction": "human",
+   "page": "human.html#ca-2",
+   "src": "js/campaign2.js:362"
   },
   {
    "ref": "human/world/LUNA",
@@ -75,11 +91,19 @@
    "src": "js/planetcuts.js:191"
   },
   {
-   "ref": "human/act-text/proxima",
+   "ref": "human/act3",
+   "kind": "act",
+   "name": "HUMANITY act 3, THE OTHER TWO SYSTEMS",
+   "faction": "human",
+   "page": "human.html#ca-3",
+   "src": "js/campaign2.js:362"
+  },
+  {
+   "ref": "human/act-text/proxima-centauri",
    "kind": "acttext",
    "name": "HUMANITY act framing, PROXIMA CENTAURI",
    "faction": "human",
-   "page": "human.html#at-proxima",
+   "page": "human.html#at-proxima-centauri",
    "src": "js/story.js:126"
   },
   {
@@ -123,11 +147,11 @@
    "src": "js/planetcuts.js:665"
   },
   {
-   "ref": "human/act-text/zeta",
+   "ref": "human/act-text/zeta-reticuli",
    "kind": "acttext",
    "name": "HUMANITY act framing, ZETA RETICULI",
    "faction": "human",
-   "page": "human.html#at-zeta",
+   "page": "human.html#at-zeta-reticuli",
    "src": "js/story.js:126"
   },
   {
@@ -835,11 +859,19 @@
    "src": "js/factions.js:580"
   },
   {
-   "ref": "light/act-text/proxima",
+   "ref": "light/act1",
+   "kind": "act",
+   "name": "GALACTIC FEDERATION OF LIGHT act 1, PROXIMA CENTAURI",
+   "faction": "light",
+   "page": "light.html#ca-1",
+   "src": "js/campaign2.js:367"
+  },
+  {
+   "ref": "light/act-text/proxima-centauri",
    "kind": "acttext",
    "name": "GALACTIC FEDERATION OF LIGHT act framing, PROXIMA CENTAURI",
    "faction": "light",
-   "page": "light.html#at-proxima",
+   "page": "light.html#at-proxima-centauri",
    "src": "js/story.js:134"
   },
   {
@@ -883,11 +915,19 @@
    "src": "js/planetcuts.js:665"
   },
   {
-   "ref": "light/act-text/sol",
+   "ref": "light/act2",
+   "kind": "act",
+   "name": "GALACTIC FEDERATION OF LIGHT act 2, THE EARTH SYSTEM",
+   "faction": "light",
+   "page": "light.html#ca-2",
+   "src": "js/campaign2.js:367"
+  },
+  {
+   "ref": "light/act-text/the-earth-system",
    "kind": "acttext",
    "name": "GALACTIC FEDERATION OF LIGHT act framing, THE EARTH SYSTEM",
    "faction": "light",
-   "page": "light.html#at-sol",
+   "page": "light.html#at-the-earth-system",
    "src": "js/story.js:134"
   },
   {
@@ -939,11 +979,19 @@
    "src": "js/planetcuts.js:191"
   },
   {
-   "ref": "light/act-text/zeta",
+   "ref": "light/act3",
+   "kind": "act",
+   "name": "GALACTIC FEDERATION OF LIGHT act 3, ZETA RETICULI",
+   "faction": "light",
+   "page": "light.html#ca-3",
+   "src": "js/campaign2.js:367"
+  },
+  {
+   "ref": "light/act-text/zeta-reticuli",
    "kind": "acttext",
    "name": "GALACTIC FEDERATION OF LIGHT act framing, ZETA RETICULI",
    "faction": "light",
-   "page": "light.html#at-zeta",
+   "page": "light.html#at-zeta-reticuli",
    "src": "js/story.js:134"
   },
   {
@@ -1603,11 +1651,19 @@
    "src": "js/factions.js:586"
   },
   {
-   "ref": "xeno/act-text/zeta",
+   "ref": "xeno/act1",
+   "kind": "act",
+   "name": "THE XENO act 1, ZETA RETICULI",
+   "faction": "xeno",
+   "page": "xeno.html#ca-1",
+   "src": "js/campaign2.js:377"
+  },
+  {
+   "ref": "xeno/act-text/zeta-reticuli",
    "kind": "acttext",
    "name": "THE XENO act framing, ZETA RETICULI",
    "faction": "xeno",
-   "page": "xeno.html#at-zeta",
+   "page": "xeno.html#at-zeta-reticuli",
    "src": "js/story.js:142"
   },
   {
@@ -1659,11 +1715,19 @@
    "src": "js/planetcuts.js:523"
   },
   {
-   "ref": "xeno/act-text/proxima",
+   "ref": "xeno/act2",
+   "kind": "act",
+   "name": "THE XENO act 2, PROXIMA CENTAURI",
+   "faction": "xeno",
+   "page": "xeno.html#ca-2",
+   "src": "js/campaign2.js:377"
+  },
+  {
+   "ref": "xeno/act-text/proxima-centauri",
    "kind": "acttext",
    "name": "THE XENO act framing, PROXIMA CENTAURI",
    "faction": "xeno",
-   "page": "xeno.html#at-proxima",
+   "page": "xeno.html#at-proxima-centauri",
    "src": "js/story.js:142"
   },
   {
@@ -1707,11 +1771,19 @@
    "src": "js/planetcuts.js:665"
   },
   {
-   "ref": "xeno/act-text/sol",
+   "ref": "xeno/act3",
+   "kind": "act",
+   "name": "THE XENO act 3, THE EARTH SYSTEM",
+   "faction": "xeno",
+   "page": "xeno.html#ca-3",
+   "src": "js/campaign2.js:377"
+  },
+  {
+   "ref": "xeno/act-text/the-earth-system",
    "kind": "acttext",
    "name": "THE XENO act framing, THE EARTH SYSTEM",
    "faction": "xeno",
-   "page": "xeno.html#at-sol",
+   "page": "xeno.html#at-the-earth-system",
    "src": "js/story.js:142"
   },
   {
@@ -2363,11 +2435,19 @@
    "src": "js/factions.js:592"
   },
   {
-   "ref": "pirate/act-text/zeta",
+   "ref": "pirate/act1",
+   "kind": "act",
+   "name": "THE PIRATES act 1, ZETA RETICULI",
+   "faction": "pirate",
+   "page": "pirate.html#ca-1",
+   "src": "js/campaign2.js:382"
+  },
+  {
+   "ref": "pirate/act-text/zeta-reticuli",
    "kind": "acttext",
    "name": "THE PIRATES act framing, ZETA RETICULI",
    "faction": "pirate",
-   "page": "pirate.html#at-zeta",
+   "page": "pirate.html#at-zeta-reticuli",
    "src": "js/story.js:150"
   },
   {
@@ -2419,11 +2499,19 @@
    "src": "js/planetcuts.js:523"
   },
   {
-   "ref": "pirate/act-text/sol",
+   "ref": "pirate/act2",
+   "kind": "act",
+   "name": "THE PIRATES act 2, THE EARTH SYSTEM",
+   "faction": "pirate",
+   "page": "pirate.html#ca-2",
+   "src": "js/campaign2.js:382"
+  },
+  {
+   "ref": "pirate/act-text/the-earth-system",
    "kind": "acttext",
    "name": "THE PIRATES act framing, THE EARTH SYSTEM",
    "faction": "pirate",
-   "page": "pirate.html#at-sol",
+   "page": "pirate.html#at-the-earth-system",
    "src": "js/story.js:150"
   },
   {
@@ -2475,11 +2563,19 @@
    "src": "js/planetcuts.js:191"
   },
   {
-   "ref": "pirate/act-text/proxima",
+   "ref": "pirate/act3",
+   "kind": "act",
+   "name": "THE PIRATES act 3, PROXIMA CENTAURI",
+   "faction": "pirate",
+   "page": "pirate.html#ca-3",
+   "src": "js/campaign2.js:382"
+  },
+  {
+   "ref": "pirate/act-text/proxima-centauri",
    "kind": "acttext",
    "name": "THE PIRATES act framing, PROXIMA CENTAURI",
    "faction": "pirate",
-   "page": "pirate.html#at-proxima",
+   "page": "pirate.html#at-proxima-centauri",
    "src": "js/story.js:150"
   },
   {
@@ -3123,11 +3219,19 @@
    "src": "js/factions.js:604"
   },
   {
-   "ref": "robot/act-text/proxima",
+   "ref": "robot/act1",
+   "kind": "act",
+   "name": "THE VIGIL act 1, PROXIMA CENTAURI",
+   "faction": "robot",
+   "page": "robot.html#ca-1",
+   "src": "js/campaign2.js:372"
+  },
+  {
+   "ref": "robot/act-text/proxima-centauri",
    "kind": "acttext",
    "name": "THE VIGIL act framing, PROXIMA CENTAURI",
    "faction": "robot",
-   "page": "robot.html#at-proxima",
+   "page": "robot.html#at-proxima-centauri",
    "src": "js/story.js:158"
   },
   {
@@ -3171,11 +3275,19 @@
    "src": "js/planetcuts.js:665"
   },
   {
-   "ref": "robot/act-text/sol",
+   "ref": "robot/act2",
+   "kind": "act",
+   "name": "THE VIGIL act 2, THE EARTH SYSTEM",
+   "faction": "robot",
+   "page": "robot.html#ca-2",
+   "src": "js/campaign2.js:372"
+  },
+  {
+   "ref": "robot/act-text/the-earth-system",
    "kind": "acttext",
    "name": "THE VIGIL act framing, THE EARTH SYSTEM",
    "faction": "robot",
-   "page": "robot.html#at-sol",
+   "page": "robot.html#at-the-earth-system",
    "src": "js/story.js:158"
   },
   {
@@ -3227,11 +3339,19 @@
    "src": "js/planetcuts.js:191"
   },
   {
-   "ref": "robot/act-text/zeta",
+   "ref": "robot/act3",
+   "kind": "act",
+   "name": "THE VIGIL act 3, ZETA RETICULI",
+   "faction": "robot",
+   "page": "robot.html#ca-3",
+   "src": "js/campaign2.js:372"
+  },
+  {
+   "ref": "robot/act-text/zeta-reticuli",
    "kind": "acttext",
    "name": "THE VIGIL act framing, ZETA RETICULI",
    "faction": "robot",
-   "page": "robot.html#at-zeta",
+   "page": "robot.html#at-zeta-reticuli",
    "src": "js/story.js:158"
   },
   {
@@ -4515,116 +4635,124 @@
    "src": "js/config.js:2541"
   },
   {
-   "ref": "campaign:sol",
-   "kind": "act",
-   "name": "THE EARTH SYSTEM",
-   "faction": null,
-   "page": "index.html#ca-sol",
-   "src": "js/campaign2.js:53"
-  },
-  {
-   "ref": "campaign:sol/earth",
-   "kind": "planet",
+   "ref": "campaign:earth",
+   "kind": "theatre",
    "name": "EARTH",
    "faction": null,
-   "page": "index.html#cp-sol-earth",
-   "src": "js/campaign2.js:58"
-  },
-  {
-   "ref": "campaign:sol/earth/long-island",
-   "kind": "location",
-   "name": "LONG ISLAND",
-   "faction": null,
-   "page": "index.html#cl-sol-earth-long-island",
-   "src": "js/campaign2.js:61"
-  },
-  {
-   "ref": "campaign:sol/earth/nyc",
-   "kind": "location",
-   "name": "NEW YORK CITY",
-   "faction": null,
-   "page": "index.html#cl-sol-earth-nyc",
+   "page": "index.html#ct-earth",
    "src": "js/campaign2.js:63"
   },
   {
-   "ref": "campaign:sol/earth/dc",
+   "ref": "campaign:earth/earth",
+   "kind": "planet",
+   "name": "EARTH",
+   "faction": null,
+   "page": "index.html#cp-earth-earth",
+   "src": "js/campaign2.js:68"
+  },
+  {
+   "ref": "campaign:earth/earth/long-island",
+   "kind": "location",
+   "name": "LONG ISLAND",
+   "faction": null,
+   "page": "index.html#cl-earth-earth-long-island",
+   "src": "js/campaign2.js:71"
+  },
+  {
+   "ref": "campaign:earth/earth/nyc",
+   "kind": "location",
+   "name": "NEW YORK CITY",
+   "faction": null,
+   "page": "index.html#cl-earth-earth-nyc",
+   "src": "js/campaign2.js:73"
+  },
+  {
+   "ref": "campaign:earth/earth/dc",
    "kind": "location",
    "name": "WASHINGTON D.C.",
    "faction": null,
-   "page": "index.html#cl-sol-earth-dc",
-   "src": "js/campaign2.js:65"
+   "page": "index.html#cl-earth-earth-dc",
+   "src": "js/campaign2.js:75"
   },
   {
-   "ref": "campaign:sol/earth/tri-city",
+   "ref": "campaign:earth/earth/tri-city",
    "kind": "location",
    "name": "THE TRI-CITY LINE",
    "faction": null,
-   "page": "index.html#cl-sol-earth-tri-city",
-   "src": "js/campaign2.js:67"
+   "page": "index.html#cl-earth-earth-tri-city",
+   "src": "js/campaign2.js:77"
   },
   {
-   "ref": "campaign:sol/earth/north-america",
+   "ref": "campaign:earth/earth/north-america",
    "kind": "location",
    "name": "NORTH AMERICA",
    "faction": null,
-   "page": "index.html#cl-sol-earth-north-america",
-   "src": "js/campaign2.js:76"
-  },
-  {
-   "ref": "campaign:sol/earth/south-america",
-   "kind": "location",
-   "name": "SOUTH AMERICA",
-   "faction": null,
-   "page": "index.html#cl-sol-earth-south-america",
-   "src": "js/campaign2.js:78"
-  },
-  {
-   "ref": "campaign:sol/earth/europe",
-   "kind": "location",
-   "name": "EUROPE",
-   "faction": null,
-   "page": "index.html#cl-sol-earth-europe",
-   "src": "js/campaign2.js:80"
-  },
-  {
-   "ref": "campaign:sol/earth/africa",
-   "kind": "location",
-   "name": "AFRICA",
-   "faction": null,
-   "page": "index.html#cl-sol-earth-africa",
-   "src": "js/campaign2.js:82"
-  },
-  {
-   "ref": "campaign:sol/earth/asia",
-   "kind": "location",
-   "name": "ASIA",
-   "faction": null,
-   "page": "index.html#cl-sol-earth-asia",
-   "src": "js/campaign2.js:84"
-  },
-  {
-   "ref": "campaign:sol/earth/oceania",
-   "kind": "location",
-   "name": "OCEANIA",
-   "faction": null,
-   "page": "index.html#cl-sol-earth-oceania",
+   "page": "index.html#cl-earth-earth-north-america",
    "src": "js/campaign2.js:86"
   },
   {
-   "ref": "campaign:sol/earth/antarctica",
+   "ref": "campaign:earth/earth/south-america",
    "kind": "location",
-   "name": "ANTARCTICA",
+   "name": "SOUTH AMERICA",
    "faction": null,
-   "page": "index.html#cl-sol-earth-antarctica",
+   "page": "index.html#cl-earth-earth-south-america",
    "src": "js/campaign2.js:88"
   },
   {
-   "ref": "campaign:sol/earth/global",
+   "ref": "campaign:earth/earth/europe",
+   "kind": "location",
+   "name": "EUROPE",
+   "faction": null,
+   "page": "index.html#cl-earth-earth-europe",
+   "src": "js/campaign2.js:90"
+  },
+  {
+   "ref": "campaign:earth/earth/africa",
+   "kind": "location",
+   "name": "AFRICA",
+   "faction": null,
+   "page": "index.html#cl-earth-earth-africa",
+   "src": "js/campaign2.js:92"
+  },
+  {
+   "ref": "campaign:earth/earth/asia",
+   "kind": "location",
+   "name": "ASIA",
+   "faction": null,
+   "page": "index.html#cl-earth-earth-asia",
+   "src": "js/campaign2.js:94"
+  },
+  {
+   "ref": "campaign:earth/earth/oceania",
+   "kind": "location",
+   "name": "OCEANIA",
+   "faction": null,
+   "page": "index.html#cl-earth-earth-oceania",
+   "src": "js/campaign2.js:96"
+  },
+  {
+   "ref": "campaign:earth/earth/antarctica",
+   "kind": "location",
+   "name": "ANTARCTICA",
+   "faction": null,
+   "page": "index.html#cl-earth-earth-antarctica",
+   "src": "js/campaign2.js:98"
+  },
+  {
+   "ref": "campaign:earth/earth/global",
    "kind": "location",
    "name": "EARTH: GLOBAL WARFARE",
    "faction": null,
-   "page": "index.html#cl-sol-earth-global",
-   "src": "js/campaign2.js:90"
+   "page": "index.html#cl-earth-earth-global",
+   "src": "js/campaign2.js:100"
+  },
+  {
+   "ref": "campaign:sol",
+   "kind": "theatre",
+   "name": "THE SOLAR SYSTEM",
+   "faction": null,
+   "page": "index.html#ct-sol",
+   "src": "js/campaign2.js:111"
   },
   {
    "ref": "campaign:sol/luna",
@@ -4632,7 +4760,7 @@
    "name": "LUNA",
    "faction": null,
    "page": "index.html#cp-sol-luna",
-   "src": "js/campaign2.js:96"
+   "src": "js/campaign2.js:116"
   },
   {
    "ref": "campaign:sol/luna/lunar-base",
@@ -4640,7 +4768,7 @@
    "name": "THE LUNAR BASE",
    "faction": null,
    "page": "index.html#cl-sol-luna-lunar-base",
-   "src": "js/campaign2.js:99"
+   "src": "js/campaign2.js:119"
   },
   {
    "ref": "campaign:sol/luna/whole-moon",
@@ -4648,7 +4776,7 @@
    "name": "THE WHOLE MOON",
    "faction": null,
    "page": "index.html#cl-sol-luna-whole-moon",
-   "src": "js/campaign2.js:101"
+   "src": "js/campaign2.js:121"
   },
   {
    "ref": "campaign:sol/mars",
@@ -4656,7 +4784,7 @@
    "name": "MARS",
    "faction": null,
    "page": "index.html#cp-sol-mars",
-   "src": "js/campaign2.js:107"
+   "src": "js/campaign2.js:127"
   },
   {
    "ref": "campaign:sol/mars/crash-landing",
@@ -4664,7 +4792,7 @@
    "name": "CRASH LANDING",
    "faction": null,
    "page": "index.html#cl-sol-mars-crash-landing",
-   "src": "js/campaign2.js:110"
+   "src": "js/campaign2.js:130"
   },
   {
    "ref": "campaign:sol/mars/the-canyon",
@@ -4672,7 +4800,7 @@
    "name": "THE GREAT RIFT",
    "faction": null,
    "page": "index.html#cl-sol-mars-the-canyon",
-   "src": "js/campaign2.js:112"
+   "src": "js/campaign2.js:132"
   },
   {
    "ref": "campaign:sol/mars/king-of-the-hill",
@@ -4680,7 +4808,7 @@
    "name": "OLYMPUS MONS",
    "faction": null,
    "page": "index.html#cl-sol-mars-king-of-the-hill",
-   "src": "js/campaign2.js:114"
+   "src": "js/campaign2.js:134"
   },
   {
    "ref": "campaign:sol/mars/whole-mars",
@@ -4688,7 +4816,7 @@
    "name": "THE WHOLE OF MARS",
    "faction": null,
    "page": "index.html#cl-sol-mars-whole-mars",
-   "src": "js/campaign2.js:116"
+   "src": "js/campaign2.js:136"
   },
   {
    "ref": "campaign:sol/venus",
@@ -4696,7 +4824,7 @@
    "name": "VENUS",
    "faction": null,
    "page": "index.html#cp-sol-venus",
-   "src": "js/campaign2.js:122"
+   "src": "js/campaign2.js:142"
   },
   {
    "ref": "campaign:sol/venus/sky-battle",
@@ -4704,7 +4832,7 @@
    "name": "THE PEAKS ABOVE THE CLOUD",
    "faction": null,
    "page": "index.html#cl-sol-venus-sky-battle",
-   "src": "js/campaign2.js:125"
+   "src": "js/campaign2.js:145"
   },
   {
    "ref": "campaign:sol/venus/acid-lakes",
@@ -4712,7 +4840,7 @@
    "name": "THE ACID LAKES",
    "faction": null,
    "page": "index.html#cl-sol-venus-acid-lakes",
-   "src": "js/campaign2.js:127"
+   "src": "js/campaign2.js:147"
   },
   {
    "ref": "campaign:sol/venus/whole-venus",
@@ -4720,7 +4848,7 @@
    "name": "THE WHOLE OF VENUS",
    "faction": null,
    "page": "index.html#cl-sol-venus-whole-venus",
-   "src": "js/campaign2.js:129"
+   "src": "js/campaign2.js:149"
   },
   {
    "ref": "campaign:sol/jupiter",
@@ -4728,7 +4856,7 @@
    "name": "JUPITER",
    "faction": null,
    "page": "index.html#cp-sol-jupiter",
-   "src": "js/campaign2.js:138"
+   "src": "js/campaign2.js:158"
   },
   {
    "ref": "campaign:sol/jupiter/space-battle",
@@ -4736,7 +4864,7 @@
    "name": "HIGH ORBIT",
    "faction": null,
    "page": "index.html#cl-sol-jupiter-space-battle",
-   "src": "js/campaign2.js:141"
+   "src": "js/campaign2.js:161"
   },
   {
    "ref": "campaign:sol/jupiter/floating-debris",
@@ -4744,7 +4872,7 @@
    "name": "THE DEBRIS FIELD",
    "faction": null,
    "page": "index.html#cl-sol-jupiter-floating-debris",
-   "src": "js/campaign2.js:143"
+   "src": "js/campaign2.js:163"
   },
   {
    "ref": "campaign:sol/jupiter/eye-of-the-storm",
@@ -4752,7 +4880,7 @@
    "name": "THE EYE AND THE MOUNTAINS",
    "faction": null,
    "page": "index.html#cl-sol-jupiter-eye-of-the-storm",
-   "src": "js/campaign2.js:145"
+   "src": "js/campaign2.js:165"
   },
   {
    "ref": "campaign:sol/jupiter/whole-jupiter",
@@ -4760,7 +4888,7 @@
    "name": "THE WHOLE OF JUPITER",
    "faction": null,
    "page": "index.html#cl-sol-jupiter-whole-jupiter",
-   "src": "js/campaign2.js:147"
+   "src": "js/campaign2.js:167"
   },
   {
    "ref": "campaign:sol/saturn",
@@ -4768,7 +4896,7 @@
    "name": "SATURN",
    "faction": null,
    "page": "index.html#cp-sol-saturn",
-   "src": "js/campaign2.js:153"
+   "src": "js/campaign2.js:173"
   },
   {
    "ref": "campaign:sol/saturn/around-the-rings",
@@ -4776,7 +4904,7 @@
    "name": "AROUND THE RINGS",
    "faction": null,
    "page": "index.html#cl-sol-saturn-around-the-rings",
-   "src": "js/campaign2.js:156"
+   "src": "js/campaign2.js:176"
   },
   {
    "ref": "campaign:sol/saturn/saturn-acid-lake",
@@ -4784,7 +4912,7 @@
    "name": "THE ACID LAKE",
    "faction": null,
    "page": "index.html#cl-sol-saturn-saturn-acid-lake",
-   "src": "js/campaign2.js:158"
+   "src": "js/campaign2.js:178"
   },
   {
    "ref": "campaign:sol/saturn/north-pole",
@@ -4792,7 +4920,7 @@
    "name": "THE NORTH POLE FACILITY",
    "faction": null,
    "page": "index.html#cl-sol-saturn-north-pole",
-   "src": "js/campaign2.js:160"
+   "src": "js/campaign2.js:180"
   },
   {
    "ref": "campaign:sol/saturn/whole-saturn",
@@ -4800,15 +4928,15 @@
    "name": "THE WHOLE OF SATURN",
    "faction": null,
    "page": "index.html#cl-sol-saturn-whole-saturn",
-   "src": "js/campaign2.js:162"
+   "src": "js/campaign2.js:182"
   },
   {
    "ref": "campaign:proxima",
-   "kind": "act",
+   "kind": "theatre",
    "name": "PROXIMA CENTAURI",
    "faction": null,
-   "page": "index.html#ca-proxima",
-   "src": "js/campaign2.js:174"
+   "page": "index.html#ct-proxima",
+   "src": "js/campaign2.js:194"
   },
   {
    "ref": "campaign:proxima/proxima-d",
@@ -4816,7 +4944,7 @@
    "name": "PROXIMA d",
    "faction": null,
    "page": "index.html#cp-proxima-proxima-d",
-   "src": "js/campaign2.js:179"
+   "src": "js/campaign2.js:199"
   },
   {
    "ref": "campaign:proxima/proxima-d/scorch-line",
@@ -4824,7 +4952,7 @@
    "name": "THE SCORCH LINE",
    "faction": null,
    "page": "index.html#cl-proxima-proxima-d-scorch-line",
-   "src": "js/campaign2.js:182"
+   "src": "js/campaign2.js:202"
   },
   {
    "ref": "campaign:proxima/proxima-d/whole-proxd",
@@ -4832,7 +4960,7 @@
    "name": "THE WHOLE OF PROXIMA d",
    "faction": null,
    "page": "index.html#cl-proxima-proxima-d-whole-proxd",
-   "src": "js/campaign2.js:184"
+   "src": "js/campaign2.js:204"
   },
   {
    "ref": "campaign:proxima/proxima-b",
@@ -4840,7 +4968,7 @@
    "name": "PROXIMA b",
    "faction": null,
    "page": "index.html#cp-proxima-proxima-b",
-   "src": "js/campaign2.js:189"
+   "src": "js/campaign2.js:209"
   },
   {
    "ref": "campaign:proxima/proxima-b/the-first-port",
@@ -4848,7 +4976,7 @@
    "name": "THE FIRST PORT",
    "faction": null,
    "page": "index.html#cl-proxima-proxima-b-the-first-port",
-   "src": "js/campaign2.js:192"
+   "src": "js/campaign2.js:212"
   },
   {
    "ref": "campaign:proxima/proxima-b/the-light-plain",
@@ -4856,7 +4984,7 @@
    "name": "THE LIGHT PLAIN",
    "faction": null,
    "page": "index.html#cl-proxima-proxima-b-the-light-plain",
-   "src": "js/campaign2.js:194"
+   "src": "js/campaign2.js:214"
   },
   {
    "ref": "campaign:proxima/proxima-b/the-shrine-terraces",
@@ -4864,7 +4992,7 @@
    "name": "THE SHRINE TERRACES",
    "faction": null,
    "page": "index.html#cl-proxima-proxima-b-the-shrine-terraces",
-   "src": "js/campaign2.js:196"
+   "src": "js/campaign2.js:216"
   },
   {
    "ref": "campaign:proxima/proxima-b/whole-proxb",
@@ -4872,7 +5000,7 @@
    "name": "THE WHOLE OF PROXIMA b",
    "faction": null,
    "page": "index.html#cl-proxima-proxima-b-whole-proxb",
-   "src": "js/campaign2.js:198"
+   "src": "js/campaign2.js:218"
   },
   {
    "ref": "campaign:proxima/proxima-c",
@@ -4880,7 +5008,7 @@
    "name": "PROXIMA c",
    "faction": null,
    "page": "index.html#cp-proxima-proxima-c",
-   "src": "js/campaign2.js:203"
+   "src": "js/campaign2.js:223"
   },
   {
    "ref": "campaign:proxima/proxima-c/the-wreck-yards",
@@ -4888,7 +5016,7 @@
    "name": "THE WRECK YARDS",
    "faction": null,
    "page": "index.html#cl-proxima-proxima-c-the-wreck-yards",
-   "src": "js/campaign2.js:206"
+   "src": "js/campaign2.js:226"
   },
   {
    "ref": "campaign:proxima/proxima-c/the-assembly-rows",
@@ -4896,7 +5024,7 @@
    "name": "THE ASSEMBLY ROWS",
    "faction": null,
    "page": "index.html#cl-proxima-proxima-c-the-assembly-rows",
-   "src": "js/campaign2.js:208"
+   "src": "js/campaign2.js:228"
   },
   {
    "ref": "campaign:proxima/proxima-c/whole-proxc",
@@ -4904,7 +5032,7 @@
    "name": "THE WHOLE OF PROXIMA c",
    "faction": null,
    "page": "index.html#cl-proxima-proxima-c-whole-proxc",
-   "src": "js/campaign2.js:210"
+   "src": "js/campaign2.js:230"
   },
   {
    "ref": "campaign:proxima/the-flare-shelter",
@@ -4912,7 +5040,7 @@
    "name": "THE FLARE SHELTER",
    "faction": null,
    "page": "index.html#cp-proxima-the-flare-shelter",
-   "src": "js/campaign2.js:215"
+   "src": "js/campaign2.js:235"
   },
   {
    "ref": "campaign:proxima/the-flare-shelter/the-shelter-door",
@@ -4920,7 +5048,7 @@
    "name": "THE SHELTER DOOR",
    "faction": null,
    "page": "index.html#cl-proxima-the-flare-shelter-the-shelter-door",
-   "src": "js/campaign2.js:218"
+   "src": "js/campaign2.js:238"
   },
   {
    "ref": "campaign:proxima/the-flare-shelter/the-dark-locker",
@@ -4928,7 +5056,7 @@
    "name": "THE DARK LOCKER",
    "faction": null,
    "page": "index.html#cl-proxima-the-flare-shelter-the-dark-locker",
-   "src": "js/campaign2.js:220"
+   "src": "js/campaign2.js:240"
   },
   {
    "ref": "campaign:proxima/toliman",
@@ -4936,7 +5064,7 @@
    "name": "TOLIMAN",
    "faction": null,
    "page": "index.html#cp-proxima-toliman",
-   "src": "js/campaign2.js:225"
+   "src": "js/campaign2.js:245"
   },
   {
    "ref": "campaign:proxima/toliman/the-archive-vaults",
@@ -4944,7 +5072,7 @@
    "name": "THE ARCHIVE VAULTS",
    "faction": null,
    "page": "index.html#cl-proxima-toliman-the-archive-vaults",
-   "src": "js/campaign2.js:228"
+   "src": "js/campaign2.js:248"
   },
   {
    "ref": "campaign:proxima/toliman/the-collapse-forge",
@@ -4952,7 +5080,7 @@
    "name": "THE COLLAPSE FORGE",
    "faction": null,
    "page": "index.html#cl-proxima-toliman-the-collapse-forge",
-   "src": "js/campaign2.js:230"
+   "src": "js/campaign2.js:250"
   },
   {
    "ref": "campaign:proxima/toliman/whole-toliman",
@@ -4960,7 +5088,7 @@
    "name": "THE WHOLE OF TOLIMAN",
    "faction": null,
    "page": "index.html#cl-proxima-toliman-whole-toliman",
-   "src": "js/campaign2.js:232"
+   "src": "js/campaign2.js:252"
   },
   {
    "ref": "campaign:proxima/rigil-kentaurus",
@@ -4968,7 +5096,7 @@
    "name": "RIGIL KENTAURUS",
    "faction": null,
    "page": "index.html#cp-proxima-rigil-kentaurus",
-   "src": "js/campaign2.js:237"
+   "src": "js/campaign2.js:257"
   },
   {
    "ref": "campaign:proxima/rigil-kentaurus/the-lightning-nurseries",
@@ -4976,7 +5104,7 @@
    "name": "THE LIGHTNING NURSERIES",
    "faction": null,
    "page": "index.html#cl-proxima-rigil-kentaurus-the-lightning-nurseries",
-   "src": "js/campaign2.js:240"
+   "src": "js/campaign2.js:260"
   },
   {
    "ref": "campaign:proxima/rigil-kentaurus/the-choral-halls",
@@ -4984,7 +5112,7 @@
    "name": "THE CHORAL HALLS",
    "faction": null,
    "page": "index.html#cl-proxima-rigil-kentaurus-the-choral-halls",
-   "src": "js/campaign2.js:242"
+   "src": "js/campaign2.js:262"
   },
   {
    "ref": "campaign:proxima/rigil-kentaurus/the-long-orbit",
@@ -4992,7 +5120,7 @@
    "name": "THE LONG ORBIT",
    "faction": null,
    "page": "index.html#cl-proxima-rigil-kentaurus-the-long-orbit",
-   "src": "js/campaign2.js:244"
+   "src": "js/campaign2.js:264"
   },
   {
    "ref": "campaign:proxima/rigil-kentaurus/whole-rigil",
@@ -5000,15 +5128,15 @@
    "name": "THE HALL OF STANDING ORDERS",
    "faction": null,
    "page": "index.html#cl-proxima-rigil-kentaurus-whole-rigil",
-   "src": "js/campaign2.js:246"
+   "src": "js/campaign2.js:266"
   },
   {
    "ref": "campaign:zeta",
-   "kind": "act",
+   "kind": "theatre",
    "name": "ZETA RETICULI",
    "faction": null,
-   "page": "index.html#ca-zeta",
-   "src": "js/campaign2.js:257"
+   "page": "index.html#ct-zeta",
+   "src": "js/campaign2.js:277"
   },
   {
    "ref": "campaign:zeta/zeta-1-b",
@@ -5016,7 +5144,7 @@
    "name": "ZETA-1 b",
    "faction": null,
    "page": "index.html#cp-zeta-zeta-1-b",
-   "src": "js/campaign2.js:262"
+   "src": "js/campaign2.js:282"
   },
   {
    "ref": "campaign:zeta/zeta-1-b/the-tither-fields",
@@ -5024,7 +5152,7 @@
    "name": "THE TITHER FIELDS",
    "faction": null,
    "page": "index.html#cl-zeta-zeta-1-b-the-tither-fields",
-   "src": "js/campaign2.js:265"
+   "src": "js/campaign2.js:285"
   },
   {
    "ref": "campaign:zeta/zeta-1-b/whole-z1b",
@@ -5032,7 +5160,7 @@
    "name": "THE WHOLE OF ZETA-1 b",
    "faction": null,
    "page": "index.html#cl-zeta-zeta-1-b-whole-z1b",
-   "src": "js/campaign2.js:267"
+   "src": "js/campaign2.js:287"
   },
   {
    "ref": "campaign:zeta/zeta-1-c",
@@ -5040,7 +5168,7 @@
    "name": "ZETA-1 c",
    "faction": null,
    "page": "index.html#cp-zeta-zeta-1-c",
-   "src": "js/campaign2.js:272"
+   "src": "js/campaign2.js:292"
   },
   {
    "ref": "campaign:zeta/zeta-1-c/the-gullet",
@@ -5048,7 +5176,7 @@
    "name": "THE GULLET",
    "faction": null,
    "page": "index.html#cl-zeta-zeta-1-c-the-gullet",
-   "src": "js/campaign2.js:275"
+   "src": "js/campaign2.js:295"
   },
   {
    "ref": "campaign:zeta/zeta-1-c/the-smuggler-strait",
@@ -5056,7 +5184,7 @@
    "name": "THE SMUGGLER STRAIT",
    "faction": null,
    "page": "index.html#cl-zeta-zeta-1-c-the-smuggler-strait",
-   "src": "js/campaign2.js:277"
+   "src": "js/campaign2.js:297"
   },
   {
    "ref": "campaign:zeta/zeta-1-c/whole-z1c",
@@ -5064,7 +5192,7 @@
    "name": "THE WHOLE OF ZETA-1 c",
    "faction": null,
    "page": "index.html#cl-zeta-zeta-1-c-whole-z1c",
-   "src": "js/campaign2.js:279"
+   "src": "js/campaign2.js:299"
   },
   {
    "ref": "campaign:zeta/zeta-1-d",
@@ -5072,7 +5200,7 @@
    "name": "ZETA-1 d",
    "faction": null,
    "page": "index.html#cp-zeta-zeta-1-d",
-   "src": "js/campaign2.js:284"
+   "src": "js/campaign2.js:304"
   },
   {
    "ref": "campaign:zeta/zeta-1-d/the-spore-shoals",
@@ -5080,7 +5208,7 @@
    "name": "THE SPORE SHOALS",
    "faction": null,
    "page": "index.html#cl-zeta-zeta-1-d-the-spore-shoals",
-   "src": "js/campaign2.js:287"
+   "src": "js/campaign2.js:307"
   },
   {
    "ref": "campaign:zeta/zeta-1-d/whole-z1d",
@@ -5088,7 +5216,7 @@
    "name": "THE WHOLE OF ZETA-1 d",
    "faction": null,
    "page": "index.html#cl-zeta-zeta-1-d-whole-z1d",
-   "src": "js/campaign2.js:289"
+   "src": "js/campaign2.js:309"
   },
   {
    "ref": "campaign:zeta/zeta-2-b",
@@ -5096,7 +5224,7 @@
    "name": "ZETA-2 b",
    "faction": null,
    "page": "index.html#cp-zeta-zeta-2-b",
-   "src": "js/campaign2.js:294"
+   "src": "js/campaign2.js:314"
   },
   {
    "ref": "campaign:zeta/zeta-2-b/the-hive-gallery",
@@ -5104,7 +5232,7 @@
    "name": "THE HIVE GALLERY",
    "faction": null,
    "page": "index.html#cl-zeta-zeta-2-b-the-hive-gallery",
-   "src": "js/campaign2.js:297"
+   "src": "js/campaign2.js:317"
   },
   {
    "ref": "campaign:zeta/zeta-2-b/the-toll-plaza",
@@ -5112,7 +5240,7 @@
    "name": "THE TOLL PLAZA",
    "faction": null,
    "page": "index.html#cl-zeta-zeta-2-b-the-toll-plaza",
-   "src": "js/campaign2.js:299"
+   "src": "js/campaign2.js:319"
   },
   {
    "ref": "campaign:zeta/zeta-2-b/whole-z2b",
@@ -5120,7 +5248,7 @@
    "name": "THE WHOLE OF ZETA-2 b",
    "faction": null,
    "page": "index.html#cl-zeta-zeta-2-b-whole-z2b",
-   "src": "js/campaign2.js:301"
+   "src": "js/campaign2.js:321"
   },
   {
    "ref": "campaign:zeta/zeta-2-c",
@@ -5128,7 +5256,7 @@
    "name": "ZETA-2 c",
    "faction": null,
    "page": "index.html#cp-zeta-zeta-2-c",
-   "src": "js/campaign2.js:306"
+   "src": "js/campaign2.js:326"
   },
   {
    "ref": "campaign:zeta/zeta-2-c/the-birthing-pools",
@@ -5136,7 +5264,7 @@
    "name": "THE BIRTHING POOLS",
    "faction": null,
    "page": "index.html#cl-zeta-zeta-2-c-the-birthing-pools",
-   "src": "js/campaign2.js:309"
+   "src": "js/campaign2.js:329"
   },
   {
    "ref": "campaign:zeta/zeta-2-c/the-ledger-chamber",
@@ -5144,7 +5272,7 @@
    "name": "THE LEDGER CHAMBER",
    "faction": null,
    "page": "index.html#cl-zeta-zeta-2-c-the-ledger-chamber",
-   "src": "js/campaign2.js:311"
+   "src": "js/campaign2.js:331"
   },
   {
    "ref": "campaign:zeta/zeta-2-c/whole-z2c",
@@ -5152,7 +5280,7 @@
    "name": "THE WHOLE OF ZETA-2 c",
    "faction": null,
    "page": "index.html#cl-zeta-zeta-2-c-whole-z2c",
-   "src": "js/campaign2.js:313"
+   "src": "js/campaign2.js:333"
   },
   {
    "ref": "campaign:zeta/serpo",
@@ -5160,7 +5288,7 @@
    "name": "SERPO",
    "faction": null,
    "page": "index.html#cp-zeta-serpo",
-   "src": "js/campaign2.js:318"
+   "src": "js/campaign2.js:338"
   },
   {
    "ref": "campaign:zeta/serpo/the-exchange-ground",
@@ -5168,7 +5296,7 @@
    "name": "THE EXCHANGE GROUND",
    "faction": null,
    "page": "index.html#cl-zeta-serpo-the-exchange-ground",
-   "src": "js/campaign2.js:321"
+   "src": "js/campaign2.js:341"
   },
   {
    "ref": "campaign:zeta/serpo/the-harbour-nine",
@@ -5176,7 +5304,7 @@
    "name": "HARBOUR NINE",
    "faction": null,
    "page": "index.html#cl-zeta-serpo-the-harbour-nine",
-   "src": "js/campaign2.js:323"
+   "src": "js/campaign2.js:343"
   },
   {
    "ref": "campaign:zeta/serpo/whole-serpo",
@@ -5184,7 +5312,7 @@
    "name": "THE WHOLE OF SERPO",
    "faction": null,
    "page": "index.html#cl-zeta-serpo-whole-serpo",
-   "src": "js/campaign2.js:325"
+   "src": "js/campaign2.js:345"
   },
   {
    "ref": "bonus:mercury",
@@ -5192,7 +5320,7 @@
    "name": "MERCURY",
    "faction": null,
    "page": "index.html#bn-mercury",
-   "src": "js/campaign2.js:365"
+   "src": "js/campaign2.js:409"
   },
   {
    "ref": "bonus:pleiades",
@@ -5200,7 +5328,7 @@
    "name": "THE PLEIADES",
    "faction": null,
    "page": "index.html#bn-pleiades",
-   "src": "js/campaign2.js:370"
+   "src": "js/campaign2.js:414"
   },
   {
    "ref": "bonus:sirius",
@@ -5208,7 +5336,7 @@
    "name": "SIRIUS",
    "faction": null,
    "page": "index.html#bn-sirius",
-   "src": "js/campaign2.js:381"
+   "src": "js/campaign2.js:425"
   },
   {
    "ref": "bonus:barnard",
@@ -5216,7 +5344,7 @@
    "name": "BARNARD'S STAR",
    "faction": null,
    "page": "index.html#bn-barnard",
-   "src": "js/campaign2.js:387"
+   "src": "js/campaign2.js:431"
   },
   {
    "ref": "bonus:tabby",
@@ -5224,7 +5352,7 @@
    "name": "TABBY'S STAR",
    "faction": null,
    "page": "index.html#bn-tabby",
-   "src": "js/campaign2.js:392"
+   "src": "js/campaign2.js:436"
   },
   {
    "ref": "map:w_earth",

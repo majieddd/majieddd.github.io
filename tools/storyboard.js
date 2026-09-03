@@ -53,7 +53,7 @@ const G = vm.runInContext(
   'MACHINE_HOST, originKeyOf, ARTPACK, ' +
   'MAPS, SCENARIOS, ARENA_MODS, TARGET_MODES, LEVEL_ROLLS, SECRET_FACTIONS, LORE_CODEX, ' +
   'WORLD_MAPS, WORLD_MAP_BY_NAME, TERRA_VOCAB, FAMILY_REFERENCE, FAMILY_REFERENCE_BY_ID, ' +
-  'CAMPAIGN_ACTS, CAMPAIGN_ORDER, CAMPAIGN_ACT_BY_ID, CAMPAIGN_BONUS })', ctx);
+  'CAMPAIGN_THEATRES, CAMPAIGN_THEATRE_BY_ID, CAMPAIGN_ACTS_BY_POWER, CAMPAIGN_BONUS })', ctx);
 
 const FACS = ['human', 'light', 'xeno', 'pirate', 'robot'];
 const SYSOF = { human: 0, light: 1, xeno: 2, pirate: 3, robot: 4 };
@@ -141,12 +141,19 @@ function locateId(rels, id, name, opts) {
   for (const rel of files) {
     const lines = srcLines(rel);
     for (let i = 0; i < lines.length; i++)
-      if (pat.test(lines[i])) hits.push({ rel, i, win: lines[i] + (lines[i + 1] || '') + (lines[i + 2] || '') });
+      if (pat.test(lines[i])) hits.push({ rel, i, line: lines[i], win: lines[i] + (lines[i + 1] || '') + (lines[i + 2] || '') });
   }
   if (hits.length > 1 && name) {
     const near = hits.filter(h => h.win.indexOf(name) >= 0);
     if (near.length) hits = near;
   }
+  /* `also` / `not`: a regex the def LINE must match / must not match. For the
+     one place a container and its child legitimately share an id AND a name:
+     the Earth theatre holds the Earth planet (js/campaign2.js), and only the
+     theatre line carries `system:`. Applied only while more than one hit
+     survives, so a single clean hit can never be filtered down to nothing. */
+  if (hits.length > 1 && opts && opts.also) { const kept = hits.filter(h => opts.also.test(h.line)); if (kept.length) hits = kept; }
+  if (hits.length > 1 && opts && opts.not) { const kept = hits.filter(h => !opts.not.test(h.line)); if (kept.length) hits = kept; }
   /* `first` is for the ONE table that legitimately authors an id twice: the
      combo matrix is symmetric, so fire+frost and frost+fire both carry
      id:'thermal' and both lines ARE the same reaction. Every hit must still
@@ -554,6 +561,10 @@ h2{font-size:15px;letter-spacing:.14em;margin:38px 0 6px;color:#fff;text-transfo
 .lb-new{color:#ffd89b;border-color:#5c4420;background:#1a1409}
 .toauthor{border:1px dashed #3a4656;border-radius:6px;padding:14px 12px;text-align:center;color:#8aa0b5;font-size:12px;line-height:1.5}
 .toauthor b{display:block;color:#ffd89b;letter-spacing:.14em;font-size:11px;margin-bottom:3px}
+.theatre{margin:14px 0 6px}
+.thead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:6px 0;border-bottom:1px solid #23303f}
+.tname{font-size:14px;color:#fff;letter-spacing:.12em;font-weight:600}
+.thead .src{display:inline;margin:0}
 .wtext{margin:14px 0 2px;padding-top:10px;border-top:1px dashed #23303f}
 .wthead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
 .wtlabel{font-size:11px;letter-spacing:.14em;color:#8aa0b5}
@@ -868,12 +879,17 @@ function scenarioGrounds() {
 }
 
 /* ==========================================================================
-   THE CAMPAIGN ON THE SPINE (Session 46, restructured Session 47).
-   js/campaign2.js is the structure of record on main: act, then planet, then
-   location, the last location of a planet being its planetary battle. Each
-   power's page shows ITS three acts in ITS order; the index shows the
-   canonical structure once, registers every ref, and carries the act-order
-   table and the parked set.
+   THE CAMPAIGN ON THE SPINE (Sessions 46 and 47).
+   js/campaign2.js is the structure of record on main: four THEATRES, the
+   faction-independent places (Earth alone, the Solar System beyond it,
+   Proxima Centauri, Zeta Reticuli), each theatre -> planet -> location with
+   the last location of a planet its planetary battle; and three ACTS per
+   power, each act an ordered group of theatres. Humanity's acts are the
+   owner's boundaries (Session 47): Act 1 just Earth, Act 2 the entire Solar
+   System, Act 3 the other two systems that exist. The other powers open at
+   home in the Session 46 orders. Each power's page shows ITS three acts; the
+   index shows the four theatres once, registers every place ref, and carries
+   the act table and the parked set.
 
    ONE STRUCTURE, WITH THE OLDER TEXT FILED INTO IT. The engine still plays the
    five-system galaxy until the engine batch lands, and the story text on main
@@ -881,11 +897,12 @@ function scenarioGrounds() {
    js/planetcuts.js) was written against that galaxy. Session 46 rendered both
    campaigns one above the other, and a board under every old world panel read
    as "the old map per planet still exists". So: boards draw ONLY on location
-   cards, the world text and the act framing are filed under the planet or act
-   that carries their name in the new structure, and the pieces with no home
-   yet (Mercury, the two bonus systems, the worlds that were cut or folded into
-   locations) sit in one labelled, collapsed block at the end of the section.
-   Nothing on main is hidden, and nothing is drawn twice.
+   cards, the world text is filed under the planet or location that carries
+   its name, the act framing under the theatre whose system it was written
+   for, and the pieces with no home yet (Mercury, the two bonus systems, the
+   worlds that were cut or folded into locations) sit in one labelled,
+   collapsed block at the end of the section. Nothing on main is hidden, and
+   nothing is drawn twice.
    ========================================================================== */
 const CAMPAIGN_REGISTERED = new Set();
 
@@ -964,9 +981,9 @@ function worldTextStrip(fac, lw, ctx, page, label) {
 
 /* The act framing in js/story.js (ACT_SCENARIOS, ACT_MORALS) and the
    system-end beat in js/cutscenes.js are indexed by the OLD act number, which
-   actsFor() still computes. Matched to a new act by system name. Returns null
+   actsFor() still computes. Matched to a theatre by system name. Returns null
    when the old campaign never visited that system for this power. */
-function legacyActText(fac, sysName, ctx, page, actId) {
+function legacyActText(fac, sysName, ctx, page, slug) {
   const ai = actsFor(fac).findIndex(a => a.sys === sysName);
   if (ai < 0) return null;
   const cs = G.CUTSCENES[fac] || {};
@@ -975,18 +992,18 @@ function legacyActText(fac, sysName, ctx, page, actId) {
   const sysBeat = (cs.sys || [])[ai];
   if (!scen && !moral && !sysBeat) return null;
   ctx.placedActs.add(sysName);
-  const anchor = 'at-' + actId;
+  const anchor = 'at-' + slug;
   return { ai: ai, anchor: anchor,
     html: (scen ? '<div class="beat"><b>WHAT THIS ACT IS</b>' + esc(scen) + '</div>' : '') +
       (sysBeat ? '<div class="beat"><b>WHEN THE ACT ENDS</b>' + esc(sysBeat.a) + ' ' + esc(sysBeat.b) + '</div>' : '') +
       (moral ? '<div class="beat moral"><b>WHAT THE PLAYER IS LEFT HOLDING</b>' + esc(moral) + '</div>' : '') +
-      spine(fac + '/act-text/' + actId, 'acttext', facName(fac) + ' act framing, ' + sysName, fac, page, anchor,
+      spine(fac + '/act-text/' + slug, 'acttext', facName(fac) + ' act framing, ' + sysName, fac, page, anchor,
             locateKey('js/story.js', 'ACT_SCENARIOS', fac)) };
 }
 
-/* Everything authored for the five-system campaign that has no planet or act
-   in the new structure. Collapsed because it is not the design; present
-   because it is on main and the parked table on the index says why. */
+/* Everything authored for the five-system campaign that has no theatre or
+   planet in the new structure. Collapsed because it is not the design;
+   present because it is on main and the parked table on the index says why. */
 function legacyOrphans(fac, ctx, page) {
   const parkedActs = actsFor(fac).filter(a => !ctx.placedActs.has(a.sys));
   const all = legacyWorlds();
@@ -994,7 +1011,7 @@ function legacyOrphans(fac, ctx, page) {
     .filter(lw => !ctx.placed.has(lw.name) && G.PLANET_CUTS[lw.key])
     .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
   if (!parkedActs.length && !worlds.length) return '';
-  let h = '<details class="tdet legacy" id="legacy"><summary>TEXT ON MAIN WITH NO PLACE IN THE THREE ACTS &middot; ' +
+  let h = '<details class="tdet legacy" id="legacy"><summary>TEXT ON MAIN WITH NO PLACE IN THE FOUR THEATRES &middot; ' +
     parkedActs.length + ' act framing' + (parkedActs.length === 1 ? '' : 's') + ', ' +
     worlds.length + ' world ' + (worlds.length === 1 ? 'entry' : 'entries') + '</summary>' +
     '<p class="sub">Written for the five-system galaxy. The systems and bodies are bonus content now ' +
@@ -1013,9 +1030,22 @@ function legacyOrphans(fac, ctx, page) {
   return h + '</details>';
 }
 
-function locationCard(act, planet, loc, idx, page, register) {
-  const ref = 'campaign:' + act.id + '/' + planet.id + '/' + loc.id;
-  const anchor = 'cl-' + act.id + '-' + planet.id + '-' + loc.id;
+/* ---- the structure ---- */
+function theatreOf(id) { return (G.CAMPAIGN_THEATRE_BY_ID || {})[id] || null; }
+function theatreHosts(th) { return (th.hosts || []).map(facName).join(' and '); }
+function countOf(ths) {
+  const c = { planets: 0, locs: 0, need: 0 };
+  ths.forEach(t => t.planets.forEach(p => {
+    c.planets++; c.locs += p.locations.length; c.need += p.locations.filter(l => !l.board).length;
+  }));
+  return c;
+}
+function needText(c) { return c.need ? c.need + ' board' + (c.need === 1 ? '' : 's') + ' to author' : 'every board ready'; }
+function plural(n, w) { return n + ' ' + w + (n === 1 ? '' : 's'); }
+
+function locationCard(th, planet, loc, idx, page, register) {
+  const ref = 'campaign:' + th.id + '/' + planet.id + '/' + loc.id;
+  const anchor = 'cl-' + th.id + '-' + planet.id + '-' + loc.id;
   const def = loc.board ? G.MAPS.find(m => m.id === loc.board) : null;
   const src = locateId('js/campaign2.js', loc.id, loc.name);
   const badges =
@@ -1038,19 +1068,19 @@ function locationCard(act, planet, loc, idx, page, register) {
 
 /* ctx is set only on a power's page: { fac, ENC, placed, placedActs }. With
    it, the planet also carries the older world text that belongs to it. */
-function planetBlock(act, planet, page, register, ctx) {
-  const ref = 'campaign:' + act.id + '/' + planet.id;
-  const anchor = 'cp-' + act.id + '-' + planet.id;
-  const src = locateId('js/campaign2.js', planet.id, planet.name);
+function planetBlock(th, planet, page, register, ctx) {
+  const ref = 'campaign:' + th.id + '/' + planet.id;
+  const anchor = 'cp-' + th.id + '-' + planet.id;
+  const src = locateId('js/campaign2.js', planet.id, planet.name, { not: /\bsystem:/ });
   const need = planet.locations.filter(l => !l.board).length;
   let h = '<div class="planet" id="' + anchor + '">' +
     '<div class="phead"><span class="pname">' + esc(planet.name) + '</span>' +
-    '<span class="pmeta">' + planet.locations.length + ' location' + (planet.locations.length === 1 ? '' : 's') +
+    '<span class="pmeta">' + plural(planet.locations.length, 'location') +
     (need ? ' &middot; <span style="color:#ffd89b">' + need + ' board' + (need === 1 ? '' : 's') + ' to author</span>' : ' &middot; every board ready') +
     '</span>' + campaignRef(ref, 'planet', planet.name, page, anchor, src, register) + '</div>' +
     (planet.premise ? '<p class="sub" style="margin:2px 0 8px">' + esc(planet.premise) + '</p>' : '') +
     '<div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">';
-  planet.locations.forEach((l, i) => { h += locationCard(act, planet, l, i, page, register); });
+  planet.locations.forEach((l, i) => { h += locationCard(th, planet, l, i, page, register); });
   h += '</div>';
   if (ctx) {
     const lw = legacyFor(planet.name);
@@ -1066,86 +1096,111 @@ function planetBlock(act, planet, page, register, ctx) {
   return h + '</div>';
 }
 
-function actBlock(act, actNo, fac, page, register, ctx) {
-  const ref = 'campaign:' + act.id;
-  const anchor = 'ca-' + act.id;
-  const src = locateId('js/campaign2.js', act.id, act.name);
-  const who = fac
-    ? (act.hosts.indexOf(fac) >= 0 ? 'your home' : 'home of ' + act.hosts.map(facName).join(' and '))
-    : 'home of ' + act.hosts.map(facName).join(' and ');
-  const locs = act.planets.reduce((n, p) => n + p.locations.length, 0);
-  const need = act.planets.reduce((n, p) => n + p.locations.filter(l => !l.board).length, 0);
-  let h = '<div class="actblk" id="' + anchor + '" style="--fc:' + facColor(act.hosts[0]) + '">' +
-    '<div class="actbar"><span class="actno">ACT ' + actNo + '</span>' +
-    '<span class="actname">' + esc(act.name) + '</span>' +
-    '<span class="actwho">' + esc(who) + ' &middot; ' + act.planets.length + ' planets, ' + locs +
-    ' locations' + (need ? ', ' + need + ' boards to author' : ', every board ready') + '</span>' +
-    campaignRef(ref, 'act', act.name, page, anchor, src, register) + '</div>' +
-    (act.premise ? '<div class="beat"><b>WHAT THIS ACT IS</b>' + esc(act.premise) + '</div>' : '');
-  if (ctx) {
-    const la = legacyActText(ctx.fac, act.name, ctx, page, act.id);
-    if (la) h += '<details class="tdet legacy" id="' + la.anchor + '"><summary>ACT FRAMING ON MAIN, WRITTEN WHEN THIS WAS ACT ' +
-      (la.ai + 1) + ' OF 5</summary>' + la.html + '</details>';
+/* A theatre: the place, with its planets. On a power's page it also carries
+   the older act framing written for its system, once per system. */
+function theatreBlock(th, page, register, ctx) {
+  const ref = 'campaign:' + th.id;
+  const anchor = 'ct-' + th.id;
+  const src = locateId('js/campaign2.js', th.id, th.name, { also: /\bsystem:/ });
+  const c = countOf([th]);
+  let h = '<div class="theatre" id="' + anchor + '">' +
+    '<div class="thead"><span class="tname">' + esc(th.name) + '</span>' +
+    '<span class="pmeta">' + esc(th.system) + ' &middot; home of ' + esc(theatreHosts(th)) + ' &middot; ' +
+    plural(c.planets, 'planet') + ', ' + plural(c.locs, 'location') + ', ' + needText(c) + '</span>' +
+    campaignRef(ref, 'theatre', th.name, page, anchor, src, register) + '</div>' +
+    (th.premise ? '<div class="beat"><b>WHAT THIS THEATRE IS</b>' + esc(th.premise) + '</div>' : '');
+  if (ctx && !ctx.placedActs.has(th.system)) {
+    const la = legacyActText(ctx.fac, th.system, ctx, page, legacySlug(th.system));
+    if (la) h += '<details class="tdet legacy" id="' + la.anchor + '"><summary>ACT FRAMING ON MAIN, WRITTEN WHEN ' +
+      esc(th.system) + ' WAS ACT ' + (la.ai + 1) + ' OF 5</summary>' + la.html + '</details>';
   }
-  act.planets.forEach(p => { h += planetBlock(act, p, page, register, ctx); });
+  th.planets.forEach(p => { h += planetBlock(th, p, page, register, ctx); });
   return h + '</div>';
 }
 
-/* The power's own campaign: three acts in ITS order, with the older text
-   filed in. Draws only; the index owns every campaign ref. */
+/* One of a power's three acts: its theatres, in order. */
+function powerActBlock(fac, act, actNo, page, ctx) {
+  const ths = (act.theatres || []).map(theatreOf).filter(Boolean);
+  const c = countOf(ths);
+  const ref = fac + '/act' + actNo;
+  const anchor = 'ca-' + actNo;
+  const src = locateKey('js/campaign2.js', 'CAMPAIGN_ACTS_BY_POWER', fac);
+  const home = ths.some(t => (t.hosts || []).indexOf(fac) >= 0);
+  const hosts = [];
+  ths.forEach(t => (t.hosts || []).forEach(h2 => { if (hosts.indexOf(h2) < 0) hosts.push(h2); }));
+  let h = '<div class="actblk" id="' + anchor + '" style="--fc:' + facColor(ths.length && ths[0].hosts.length ? ths[0].hosts[0] : fac) + '">' +
+    '<div class="actbar"><span class="actno">ACT ' + actNo + '</span>' +
+    '<span class="actname">' + esc(act.name) + '</span>' +
+    '<span class="actwho">' + esc(ths.map(t => t.name).join(' and ')) + ' &middot; ' +
+    (home ? 'your home' : 'home of ' + esc(hosts.map(facName).join(' and '))) + ' &middot; ' +
+    plural(c.planets, 'planet') + ', ' + plural(c.locs, 'location') + ', ' + needText(c) + '</span>' +
+    spine(ref, 'act', facName(fac) + ' act ' + actNo + ', ' + act.name, fac, page, anchor, src) + '</div>';
+  ths.forEach(t => { h += theatreBlock(t, page, false, ctx); });
+  return h + '</div>';
+}
+
+/* The power's own campaign: three acts in ITS grouping, with the older text
+   filed in. Place refs are drawn only; the index owns them. */
 function campaignSectionFor(fac, page, ENC) {
-  const order = (G.CAMPAIGN_ORDER || {})[fac];
-  if (!order || !G.CAMPAIGN_ACT_BY_ID) return '';
+  const acts = (G.CAMPAIGN_ACTS_BY_POWER || {})[fac];
+  if (!acts || !G.CAMPAIGN_THEATRE_BY_ID) return '';
   const ctx = { fac: fac, ENC: ENC || {}, placed: new Set(), placedActs: new Set() };
   let h = '<h2 id="campaign">The campaign</h2>' +
-    '<p class="sub">Three acts (docs/CAMPAIGN-REWORK.md), in this power&#39;s order: ' +
-    order.map(id => esc(G.CAMPAIGN_ACT_BY_ID[id].name)).join(' &rarr; ') +
-    '. Each planet is fought a location at a time and its last location is the planetary battle. ' +
+    '<p class="sub">Three acts (docs/CAMPAIGN-REWORK.md): ' +
+    acts.map((a, i) => 'ACT ' + (i + 1) + ' ' + esc(a.name)).join(' &rarr; ') +
+    '. An act is a group of theatres, the faction-independent places every power fights through; ' +
+    'each planet is fought a location at a time and its last location is the planetary battle. ' +
     'Boards draw on the location cards; a card marked BOARD TO AUTHOR is a scheduled work item. ' +
     'Under each planet sits the world text already on main, five beats and their plates with a notes box, ' +
-    'and under each act the framing already on main, both written for the five-system galaxy the engine ' +
-    'still plays until the engine batch lands. What has no planet in the three acts is collected at the end.</p>';
-  order.forEach((id, i) => { h += actBlock(G.CAMPAIGN_ACT_BY_ID[id], i + 1, fac, page, false, ctx); });
+    'and under each theatre the act framing already on main, both written for the five-system galaxy the engine ' +
+    'still plays until the engine batch lands. What has no planet in the four theatres is collected at the end.</p>';
+  acts.forEach((a, i) => { h += powerActBlock(fac, a, i + 1, page, ctx); });
   h += legacyOrphans(fac, ctx, page);
   return h;
 }
 
-/* The canonical structure, once, on the index: registers every ref and
-   carries the act-order table and the parked set. */
+/* The canonical structure, once, on the index: the four theatres register
+   every place ref; the act table shows each power's grouping; the parked set
+   says what was cut and why. */
 function campaignIndexSection() {
-  if (!G.CAMPAIGN_ACTS) return '';
-  const locs = G.CAMPAIGN_ACTS.reduce((n, a) => n + a.planets.reduce((m, p) => m + p.locations.length, 0), 0);
-  const need = G.CAMPAIGN_ACTS.reduce((n, a) => n + a.planets.reduce((m, p) => m + p.locations.filter(l => !l.board).length, 0), 0);
-  const planets = G.CAMPAIGN_ACTS.reduce((n, a) => n + a.planets.length, 0);
-  let h = '<h2 id="campaign">The campaign: three acts, ' + planets + ' planets, ' + locs + ' locations</h2>' +
-    '<p class="sub">The reworked campaign (owner directive, <a href="' + REPO_BLOB + 'docs/CAMPAIGN-REWORK.md">docs/CAMPAIGN-REWORK.md</a>): ' +
-    'act &rarr; planet &rarr; location, the last location of a planet being its planetary battle. ' +
-    'Every power plays all three acts in its own order and opens at home. ' +
-    '<b style="color:#fff">' + (locs - need) + ' locations have a live board, ' + need + ' are scheduled to be built.</b> ' +
+  const TH = G.CAMPAIGN_THEATRES;
+  if (!TH) return '';
+  const c = countOf(TH);
+  let h = '<h2 id="campaign">The campaign: ' + TH.length + ' theatres, ' + c.planets + ' planets, ' + c.locs +
+    ' locations, three acts per power</h2>' +
+    '<p class="sub">The reworked campaign (owner directives, <a href="' + REPO_BLOB + 'docs/CAMPAIGN-REWORK.md">docs/CAMPAIGN-REWORK.md</a>): ' +
+    'theatre &rarr; planet &rarr; location, the last location of a planet being its planetary battle. ' +
+    'A theatre is a place; an act is a power&#39;s grouping of theatres, three per power, every theatre once. ' +
+    'Humanity&#39;s acts are the owner&#39;s boundaries: Act 1 is just Earth, Act 2 the entire Solar System, ' +
+    'Act 3 the other two systems that exist. The other powers open at home. ' +
+    '<b style="color:#fff">' + (c.locs - c.need) + ' locations have a live board, ' + c.need + ' are scheduled to be built.</b> ' +
     'The structure is data on main (js/campaign2.js, gated by probe-campaign2) and is not yet wired into ' +
     'the engine, which still plays the five-system galaxy. The story text written for that galaxy is filed ' +
-    'under the matching planets and acts on each power&#39;s page.</p>';
-  h += '<table class="dec"><tr><td>POWER</td><td><b>ACT 1</b> &middot; ACT 2 &middot; ACT 3</td><td>opens at home</td></tr>';
+    'under the matching planets and theatres on each power&#39;s page.</p>';
+  h += '<table class="dec"><tr><td>POWER</td><td><b>ACT 1</b> &middot; ACT 2 &middot; ACT 3, each with its theatres</td><td>opens at home in</td></tr>';
   FACS.forEach(f => {
-    const o = (G.CAMPAIGN_ORDER || {})[f] || [];
+    const acts = (G.CAMPAIGN_ACTS_BY_POWER || {})[f] || [];
+    const cell = (a, i) => (i === 0 ? '<b>' : '') + esc(a.name) + (i === 0 ? '</b>' : '') +
+      ' <span style="color:#75899e">(' + a.theatres.map(id => { const t = theatreOf(id); return esc(t ? t.name : id); }).join(', ') + ')</span>';
+    const first = acts[0] ? acts[0].theatres.map(theatreOf).filter(t => t && t.hosts.indexOf(f) >= 0).map(t => t.name).join(', ') : '';
     h += '<tr class="y"><td style="color:' + facColor(f) + '">' + esc(facName(f)) + '</td><td>' +
-      o.map((id, i) => (i === 0 ? '<b>' : '') + esc(G.CAMPAIGN_ACT_BY_ID[id].name) + (i === 0 ? '</b>' : '')).join(' &middot; ') +
-      '</td><td>' + esc(G.CAMPAIGN_ACT_BY_ID[o[0]] ? G.CAMPAIGN_ACT_BY_ID[o[0]].name : '') + '</td></tr>';
+      acts.map(cell).join(' &middot; ') + '</td><td>' + esc(first) + '</td></tr>';
   });
   h += '</table>';
-  G.CAMPAIGN_ACTS.forEach((a, i) => { h += actBlock(a, i + 1, null, 'index.html', true); });
-  const USED_BOARDS = new Set();
-  G.CAMPAIGN_ACTS.forEach(a => a.planets.forEach(p => p.locations.forEach(l => { if (l.board) USED_BOARDS.add(l.board); })));
-  /* How many of a re-parented system's boards actually moved, counted off
-     the data rather than asserted (the Pleiades moved six of seven). */
-  const movedNote = b => {
-    const sysKey = Object.keys(G.GX_HOME_SYSTEMS).find(f => G.GX_HOME_SYSTEMS[f].name === b.name);
-    const boards = sysKey ? G.GX_HOME_SYSTEMS[sysKey].worlds.map(wn => G.WORLD_MAP_BY_NAME[wn]).filter(Boolean) : [];
-    const moved = boards.filter(m => USED_BOARDS.has(m.id)).length;
-    return (boards.length ? moved + ' of its ' + boards.length + ' boards' : 'Its boards') +
-      ' moved with their power and are Act ' + (G.CAMPAIGN_ACTS.findIndex(a => a.id === b.reparentedTo) + 1) + ' location boards.';
-  };
+  TH.forEach(t => { h += theatreBlock(t, 'index.html', true); });
   if (G.CAMPAIGN_BONUS && G.CAMPAIGN_BONUS.length) {
+    const USED_BOARDS = new Set();
+    TH.forEach(t => t.planets.forEach(p => p.locations.forEach(l => { if (l.board) USED_BOARDS.add(l.board); })));
+    /* How many of a re-parented system's boards actually moved, counted off
+       the data rather than asserted (the Pleiades moved six of seven). */
+    const movedNote = b => {
+      const sysKey = Object.keys(G.GX_HOME_SYSTEMS).find(f => G.GX_HOME_SYSTEMS[f].name === b.name);
+      const boards = sysKey ? G.GX_HOME_SYSTEMS[sysKey].worlds.map(wn => G.WORLD_MAP_BY_NAME[wn]).filter(Boolean) : [];
+      const moved = boards.filter(m => USED_BOARDS.has(m.id)).length;
+      const to = theatreOf(b.reparentedTo);
+      return (boards.length ? moved + ' of its ' + boards.length + ' boards' : 'Its boards') +
+        ' moved with their power and are ' + (to ? to.name : b.reparentedTo) + ' location boards.';
+    };
     h += '<h2 id="parked" style="font-size:13px;margin-top:26px">Parked: bonus bodies and systems, ' + G.CAMPAIGN_BONUS.length + '</h2>' +
       '<p class="sub">Places the canon keeps and the campaign does not visit, each with the reason it was ' +
       'parked, so a later session can tell what was cut on purpose from what was lost in an edit.</p>' +
@@ -1352,7 +1407,7 @@ function index() {
    ['commander:' + (G.COMMANDER_ROSTER.find(c => c.faction) || {}).id, 'a commander, under WHO LEADS'],
    ['boon:' + (G.BOONS[0] || {}).id, 'a war boon, under WAR BOONS'],
    ['vigil:' + Object.keys(G.ENEMY_TYPES).find(id => !(G.ENEMY_TYPES[id].faction)), 'a Vigil machine, on this page'],
-   ['campaign:sol/earth/long-island', 'a location in the reworked campaign; campaign:sol/earth is its planet, campaign:sol its act, bonus:mercury a parked body'],
+   ['campaign:earth/earth/long-island', 'a location in the campaign; campaign:earth/earth is its planet, campaign:earth its theatre, human/act1 the act that theatre falls in for humanity, bonus:mercury a parked body'],
    ['human/world/' + esc((G.GX_HOME_SYSTEMS.human.worlds || [])[2] || 'MARS'), 'the world text for one power on one planet, five beats and their plates, filed under that planet in THE CAMPAIGN; human/act-text/sol is the act framing written for the five-system galaxy'],
    ['human/intro/slide7', 'one slide of a power&#39;s opening cinematic'],
    ['human/beat3', 'one beat of a power&#39;s story spine; human/voice/seat is an alternate voice'],
@@ -1519,12 +1574,12 @@ function index() {
     'terrain codex: class, flow, cover, barriers, sight, closed vocabularies that double as the brief ' +
     'for future procedural families. The campaign section above is the structure; this is the ' +
     'per-board detail, one card per board. Contested worlds fight on the shared tri boards instead.</p>');
-  /* Grouped by where the campaign uses each board, in path order. A board no
+  /* Grouped by the theatre that uses each board, in path order. A board no
      location uses is listed last with whatever keeps it, so nothing
      handcrafted goes missing quietly. */
   const usedBy = {};
-  (G.CAMPAIGN_ACTS || []).forEach((a, ai) => a.planets.forEach(p => p.locations.forEach(l => {
-    if (l.board) usedBy[l.board] = { act: a, actNo: ai + 1, planet: p, loc: l };
+  (G.CAMPAIGN_THEATRES || []).forEach(t => t.planets.forEach(p => p.locations.forEach(l => {
+    if (l.board) usedBy[l.board] = { th: t, planet: p, loc: l };
   })));
   const groundCard = (m, u, extra) => '<div class="card" id="mp-' + esc(m.id) + '">' +
     '<b>' + (u ? esc(u.planet.name) + ' &middot; ' + esc(u.loc.name) : esc(m.name)) + '</b>' +
@@ -1534,21 +1589,21 @@ function index() {
     boardSVG(m) + terraChips(m) +
     (m.terra ? '<span class="quote">' + esc(m.terra.basis) + '</span>' : '') +
     (m.sigNote ? '<span>' + esc(m.sigNote) + '</span>' : '') +
-    (u ? '<a class="src" href="#cl-' + esc(u.act.id + '-' + u.planet.id + '-' + u.loc.id) + '">campaign:' +
-         esc(u.act.id + '/' + u.planet.id + '/' + u.loc.id) + ' &middot; act ' + u.actNo + '</a>' : '') +
+    (u ? '<a class="src" href="#cl-' + esc(u.th.id + '-' + u.planet.id + '-' + u.loc.id) + '">campaign:' +
+         esc(u.th.id + '/' + u.planet.id + '/' + u.loc.id) + '</a>' : '') +
     (extra || '') +
     spine('map:' + m.id, 'map', m.name, null, 'index.html', 'mp-' + m.id,
           locateIdUnder('js/worldmaps.js', 'WORLD_MAPS', m.id, m.name)) + '</div>';
   const placedBoards = new Set();
-  (G.CAMPAIGN_ACTS || []).forEach((a, ai) => {
+  (G.CAMPAIGN_THEATRES || []).forEach(t => {
     const boards = [];
-    a.planets.forEach(p => p.locations.forEach(l => {
+    t.planets.forEach(p => p.locations.forEach(l => {
       const m = l.board ? worldBoards.find(x => x.id === l.board) : null;
       if (m) boards.push(m);
     }));
     if (!boards.length) return;
-    w('<h2 style="font-size:12px;margin-top:20px;color:' + facColor(a.hosts[0]) + '">ACT ' + (ai + 1) +
-      ' &middot; ' + esc(a.name) + ' &middot; ' + boards.length + ' boards on the path</h2>');
+    w('<h2 style="font-size:12px;margin-top:20px;color:' + facColor(t.hosts[0]) + '">' + esc(t.name) +
+      ' &middot; ' + boards.length + ' boards on the path</h2>');
     w('<div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(330px,1fr))">');
     boards.forEach(m => { placedBoards.add(m.id); w(groundCard(m, usedBy[m.id])); });
     w('</div>');
@@ -1705,7 +1760,7 @@ function index() {
     ['TODO', 'Re-baseline the balance pins IN A BROWSER',
      'Verified headlessly that no existing stat moved: 54 bodies unchanged, 15 added, 0 removed. But PINS is window.PINS and this project compares pins only inside one page session, so the A/B still needs a live build. See docs/BALANCE-BASELINE.md.'],
     ['TODO', 'Wire the reworked campaign into the engine',
-     'js/campaign2.js is the structure of record and this document renders it, but the engine still plays the five-system galaxy. The batch is scheduled in docs/CAMPAIGN-REWORK.md: system count and its boon guard, a location component in the save key with a save reset, completion roll-up, faction residency, CAMPAIGN_ORDER in place of campTier, a navigation level in the UI, and a NET bump.'],
+     'js/campaign2.js is the structure of record and this document renders it, but the engine still plays the five-system galaxy. The batch is scheduled in docs/CAMPAIGN-REWORK.md: system count and its boon guard, a location component in the save key with a save reset, completion roll-up, faction residency, CAMPAIGN_ACTS_BY_POWER in place of campTier, a navigation level in the UI, and a NET bump.'],
     ['LORE', 'The five bonus systems stay lore, by decision',
      'Kepler, Arcturus, Vega and the two demoted acts are NOT being built. They remain in the canon and in GALAXY-SCOPE-S42.md so the galaxy has edges the player can hear about, and nothing in the game promises them.'],
   ];

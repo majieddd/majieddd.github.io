@@ -1,10 +1,10 @@
-/* campaign2.js. THE THREE-ACT CAMPAIGN, AS DATA.
+/* campaign2.js. THE CAMPAIGN, AS DATA: four theatres, three acts per power.
  *
- * Owner directive, Session 46 (design: docs/CAMPAIGN-REWORK.md). The campaign
- * stops being "five systems of seven worlds, one battle each" and becomes a
- * three-level hierarchy:
+ * Owner directives, Sessions 46 and 47 (design: docs/CAMPAIGN-REWORK.md). The
+ * campaign stops being "five systems of seven worlds, one battle each" and
+ * becomes a hierarchy of places:
  *
- *     ACT (a star system)  ->  PLANET (5 to 7 per act)  ->  LOCATION (1 to 9)
+ *     THEATRE  ->  PLANET  ->  LOCATION (1 to 12 per planet)
  *
  * A location is one battle on one board. A planet is taken when its locations
  * are, and the last location of a planet is its WHOLE-BODY battle: the
@@ -12,6 +12,26 @@
  * the eventual 3D port turns into a single continuous globe, so the split
  * between "locations" and "the whole planet" is deliberate structure, not a
  * menu convenience.
+ *
+ * FOUR THEATRES, THREE ACTS. The places are faction-independent: EARTH alone
+ * (one planet fought twelve locations deep), THE SOLAR SYSTEM beyond it (Luna
+ * to Saturn; Mercury is bonus content), PROXIMA CENTAURI (home of the
+ * Federation and the Vigil) and ZETA RETICULI (home of the Xeno and the
+ * Pirates). An ACT is a power's grouping of theatres, three per power, and the
+ * grouping is the story. Humanity's is the owner's stated shape (Session 47):
+ * Act 1 is just Earth, Act 2 is the entire Solar System, Act 3 is the other
+ * two systems that exist. The other four powers open at home and take the
+ * Earth System (both Sol theatres) as one act, in the orders the owner gave
+ * in Session 46 (CAMPAIGN_ACTS_BY_POWER below).
+ *
+ * That is a consolidation from five home systems: the Federation and the
+ * Vigil now share Proxima, the Xeno and the Pirates share Zeta. The Pleiades
+ * and Sirius stop being campaign systems and demote to bonus systems, exactly
+ * as Barnard's Star and Tabby's Star already did, so the canon keeps its
+ * edges. NOTHING AUTHORED IS LOST: thirteen of their fourteen handcrafted
+ * boards are re-parented here as location boards inside the Proxima theatre,
+ * which is why that theatre needs no new geometry at all, and the Pleiades
+ * keep the fourteenth as the bonus location's own board.
  *
  * NOT WIRED INTO THE ENGINE YET, ON PURPOSE. js/galaxy.js still generates the
  * five-system galaxy the live game plays, and this module is pure data with no
@@ -21,16 +41,6 @@
  * about thirty new boards, is a scheduling problem the owner asked to see laid
  * out before it is built. tools/probe-campaign2.js holds this table to its own
  * rules so it cannot rot while it waits.
- *
- * THREE SYSTEMS, FIVE POWERS. The acts are Sol, Proxima Centauri and Zeta
- * Reticuli, and every power's campaign visits all three in its own order
- * (CAMPAIGN_ORDER below). That is a consolidation from five home systems: the
- * Federation and the Vigil now share Proxima, the Xeno and the Pirates share
- * Zeta. The Pleiades and Sirius stop being campaign systems and demote to
- * bonus systems, exactly as Barnard's Star and Tabby's Star already did, so
- * the canon keeps its edges. NOTHING AUTHORED IS LOST: their fourteen
- * handcrafted boards are re-parented here as location boards inside Act 2,
- * which is why Act 2 needs no new geometry at all.
  *
  * `board` on a location is a live MAPS id where an authored board already
  * fits, or null where one has to be built. A null is a work item, counted by
@@ -44,13 +54,13 @@
    geometry has to be three-way or wider before anybody draws it. */
 const CAMPAIGN_MULTI = 'multi';
 
-const CAMPAIGN_ACTS = [
+const CAMPAIGN_THEATRES = [
 
-  /* ══════════════════════════════════════════════════ ACT: SOL ═══
-     Humanity's home and, in every other power's campaign, the middle act.
-     The longest act in the game because it is the one that teaches it. */
+  /* ═══════════════════════════════════════════ THEATRE: EARTH ═══
+     One planet, fought twelve locations deep. Humanity's whole first act
+     (owner, Session 47), and the part of the game that teaches it. */
   {
-    id: 'sol', name: 'THE EARTH SYSTEM', hosts: ['human'],
+    id: 'earth', name: 'EARTH', system: 'THE EARTH SYSTEM', hosts: ['human'],
     premise: 'The rock came apart over Earth and it was hollow. Everything after is the answer to that.',
     planets: [
 
@@ -90,7 +100,17 @@ const CAMPAIGN_ACTS = [
           { id: 'global', name: 'EARTH: GLOBAL WARFARE', board: null, whole: true, challenge: 'brutal', seats: CAMPAIGN_MULTI,
             brief: 'Every front at once, every surviving commander in play. The whole planet as one battle, and the shape the 3D port turns into a globe.' }
         ]
-      },
+      }
+    ]
+  },
+
+  /* ═════════════════════════════════ THEATRE: THE SOLAR SYSTEM ═══
+     Everything in Sol beyond Earth: humanity's second act, and part of
+     everyone else's Earth act. Mercury is bonus content (CAMPAIGN_BONUS). */
+  {
+    id: 'sol', name: 'THE SOLAR SYSTEM', system: 'THE EARTH SYSTEM', hosts: ['human'],
+    premise: 'The war leaves the ground it started on and finds out how much of the neighbourhood was already taken.',
+    planets: [
 
       {
         id: 'luna', name: 'LUNA',
@@ -166,12 +186,12 @@ const CAMPAIGN_ACTS = [
     ]
   },
 
-  /* ═══════════════════════════════════════ ACT: PROXIMA CENTAURI ═══
+  /* ═══════════════════════════════════════ THEATRE: PROXIMA CENTAURI ═══
      Home of the Galactic Federation AND the Vigil, who share a system and
      agree on very little about it. Needs no new geometry: the re-parented
      Pleiades and Sirius boards carry it. */
   {
-    id: 'proxima', name: 'PROXIMA CENTAURI', hosts: ['light', 'robot'],
+    id: 'proxima', name: 'PROXIMA CENTAURI', system: 'PROXIMA CENTAURI', hosts: ['light', 'robot'],
     premise: 'The closest star to home, holding two powers who both believe they are the reason it is still standing.',
     planets: [
 
@@ -250,11 +270,11 @@ const CAMPAIGN_ACTS = [
     ]
   },
 
-  /* ══════════════════════════════════════ ACT: ZETA RETICULI ═══
+  /* ══════════════════════════════════════ THEATRE: ZETA RETICULI ═══
      Home of the Xeno compact and the Free Captains, who are not allies and
      are not strangers either. */
   {
-    id: 'zeta', name: 'ZETA RETICULI', hosts: ['xeno', 'pirate'],
+    id: 'zeta', name: 'ZETA RETICULI', system: 'ZETA RETICULI', hosts: ['xeno', 'pirate'],
     premise: 'A binary pair, a compact that counts everything, and the captains who move what it counts.',
     planets: [
 
@@ -330,20 +350,44 @@ const CAMPAIGN_ACTS = [
   }
 ];
 
-/* WHICH ACTS, IN WHICH ORDER, PER POWER (owner directive). Every campaign
-   plays all three acts; only the order changes, and the order is the story.
-   A power always opens at home, which is what makes the middle act the one
-   where somebody else's home is the ground. */
-const CAMPAIGN_ORDER = {
-  human:  ['sol', 'proxima', 'zeta'],
-  light:  ['proxima', 'sol', 'zeta'],
-  robot:  ['proxima', 'sol', 'zeta'],
-  xeno:   ['zeta', 'proxima', 'sol'],
-  pirate: ['zeta', 'sol', 'proxima']
+/* ACTS, PER POWER (owner directives, Sessions 46 and 47). An act is an ordered
+   group of theatres; every power plays three acts and every theatre exactly
+   once. Humanity's boundaries are the owner's words: "Act 1 will be just
+   Earth, then Act 2 will be the entire Solar system, then Act 3 will be the
+   other 2 solar systems that exist." The other four powers open at home and
+   take the two Sol theatres together as their Earth act, in the Session 46
+   orders: the Federation and the Vigil go home, Earth, Zeta; the Xeno go
+   Zeta, Proxima, Earth; the Pirates go Zeta, Earth, Proxima. */
+const CAMPAIGN_ACTS_BY_POWER = {
+  human: [
+    { name: 'EARTH',                 theatres: ['earth'] },
+    { name: 'THE SOLAR SYSTEM',      theatres: ['sol'] },
+    { name: 'THE OTHER TWO SYSTEMS', theatres: ['proxima', 'zeta'] }
+  ],
+  light: [
+    { name: 'PROXIMA CENTAURI', theatres: ['proxima'] },
+    { name: 'THE EARTH SYSTEM', theatres: ['earth', 'sol'] },
+    { name: 'ZETA RETICULI',    theatres: ['zeta'] }
+  ],
+  robot: [
+    { name: 'PROXIMA CENTAURI', theatres: ['proxima'] },
+    { name: 'THE EARTH SYSTEM', theatres: ['earth', 'sol'] },
+    { name: 'ZETA RETICULI',    theatres: ['zeta'] }
+  ],
+  xeno: [
+    { name: 'ZETA RETICULI',    theatres: ['zeta'] },
+    { name: 'PROXIMA CENTAURI', theatres: ['proxima'] },
+    { name: 'THE EARTH SYSTEM', theatres: ['earth', 'sol'] }
+  ],
+  pirate: [
+    { name: 'ZETA RETICULI',    theatres: ['zeta'] },
+    { name: 'THE EARTH SYSTEM', theatres: ['earth', 'sol'] },
+    { name: 'PROXIMA CENTAURI', theatres: ['proxima'] }
+  ]
 };
 
-const CAMPAIGN_ACT_BY_ID = {};
-CAMPAIGN_ACTS.forEach(a => { CAMPAIGN_ACT_BY_ID[a.id] = a; });
+const CAMPAIGN_THEATRE_BY_ID = {};
+CAMPAIGN_THEATRES.forEach(t => { CAMPAIGN_THEATRE_BY_ID[t.id] = t; });
 
 /* ==========================================================================
    PARKED: BONUS BODIES AND SYSTEMS (owner calls, Session 46).
@@ -356,21 +400,21 @@ CAMPAIGN_ACTS.forEach(a => { CAMPAIGN_ACT_BY_ID[a.id] = a; });
 
    `boards` names geometry that already exists and is NOT consumed by any
    campaign location. Where a bonus body's board is instead re-parented into
-   an act (the Pleiades and Sirius sets), that is stated on the entry, because
+   a theatre (the Pleiades and Sirius sets), that is stated on the entry, because
    a board cannot serve a campaign location and a bonus body at once and the
    probe enforces exactly that.
    ========================================================================== */
 const CAMPAIGN_BONUS = [
   {
     id: 'mercury', name: 'MERCURY', kind: 'body',
-    why: 'Dropped from Act 1 by owner call: Sol reads complete at six planets, and Mercury is a two-location detour on a body with one survivable stripe.',
+    why: 'Dropped by owner call: the Solar System theatre reads complete at five planets beyond Earth, and Mercury is a two-location detour on a body with one survivable stripe.',
     boards: ['w_mercury'], reparented: false
   },
   {
     id: 'pleiades', name: 'THE PLEIADES', kind: 'system',
     why: 'Was the Federation home. The Federation now shares Proxima Centauri, so the cluster stops being a campaign system and stays in the canon as somewhere the game can talk about.',
     /* Its boards carry Federation architecture, so they moved with the
-       Federation: six of the seven are Act 2 location boards now, not free
+       Federation: six of the seven are Proxima theatre location boards now, not free
        geometry. The seventh, the Dust Wake, stays with the cluster as the
        bonus location's own board (Session 47: it was the one handcrafted
        board no location and no parked entry kept). */

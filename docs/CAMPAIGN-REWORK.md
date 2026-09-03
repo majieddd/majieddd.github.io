@@ -1,10 +1,12 @@
 # THE CAMPAIGN REWORK: acts, planets, locations
 
-Owner directive, Session 46. The campaign stops being "five systems of seven
-worlds, one battle each" and becomes a three-level hierarchy:
+Owner directives, Sessions 46 and 47. The campaign stops being "five systems of
+seven worlds, one battle each" and becomes a hierarchy of places, grouped into
+acts per power:
 
 ```
-ACT (a star system)  ->  PLANET (5 to 7 per act)  ->  LOCATION (1 to 12 per planet)
+THEATRE (a place)   ->  PLANET  ->  LOCATION (1 to 12 per planet)
+ACT (per power)     =   an ordered group of theatres; three acts, every theatre once
 ```
 
 A **location** is one battle on one board. A **planet** is taken when its
@@ -19,38 +21,48 @@ by **tools/probe-campaign2.js** (10 checks, in the gate). It is **not wired into
 the engine yet, on purpose**: see the impact analysis below for why that is a
 separate batch.
 
-## Three systems, five powers
+## Four theatres, three acts per power
 
-The acts are Sol, Proxima Centauri and Zeta Reticuli, and every power plays all
-three in its own order. This is a consolidation from five home systems: the
-Federation and the Vigil now share Proxima, the Xeno and the Pirates share Zeta.
+The places are faction-independent: **EARTH** alone (one planet, fought twelve
+locations deep), **THE SOLAR SYSTEM** beyond it (Luna, Mars, Venus, Jupiter,
+Saturn; Mercury is bonus content), **PROXIMA CENTAURI** (home of the Federation
+and the Vigil) and **ZETA RETICULI** (home of the Xeno and the Pirates). This is
+a consolidation from five home systems: the Federation and the Vigil now share
+Proxima, the Xeno and the Pirates share Zeta.
+
+An act is a power's ordered grouping of theatres, three per power, every theatre
+exactly once. Humanity's are the owner's boundaries (Session 47): "Act 1 will be
+just Earth, then Act 2 will be the entire Solar system, then Act 3 will be the
+other 2 solar systems that exist." The other four powers open at home and take
+Earth and the Solar System together as one act, in the Session 46 orders.
 
 | Power | Act 1 | Act 2 | Act 3 |
 | --- | --- | --- | --- |
-| Humanity | **Sol** | Proxima | Zeta |
-| Galactic Federation | **Proxima** | Sol | Zeta |
-| The Vigil | **Proxima** | Sol | Zeta |
-| The Xeno | **Zeta** | Proxima | Sol |
-| The Pirates | **Zeta** | Sol | Proxima |
+| Humanity | **Earth** | The Solar System | Proxima and Zeta |
+| Galactic Federation | **Proxima** | Earth and the Solar System | Zeta |
+| The Vigil | **Proxima** | Earth and the Solar System | Zeta |
+| The Xeno | **Zeta** | Proxima | Earth and the Solar System |
+| The Pirates | **Zeta** | Earth and the Solar System | Proxima |
 
-Every power opens at home; the probe asserts it. The middle act is always
-somebody else's home, which is the shape the story wants.
+Every power opens at home and humanity's three are asserted word for word; the
+probe holds both (C2.7).
 
 **The Pleiades and Sirius are bonus content** (owner call), parked in
 `CAMPAIGN_BONUS` exactly as Barnard's Star and Tabby's Star already were, so the
 canon keeps its edges. **Nothing authored is lost**: thirteen of their fourteen handcrafted
-boards moved with the powers that built them and are Act 2 location boards now,
-which is why Act 2 needs no new geometry at all, and the Pleiades keep the
+boards moved with the powers that built them and are Proxima Centauri location
+boards now, which is why that theatre needs no new geometry at all, and the Pleiades keep the
 fourteenth, the Dust Wake, as the bonus location board. **Mercury is bonus content too**
 and keeps its board.
 
-## The three acts
+## The four theatres
 
-### Act 1: THE EARTH SYSTEM, home of humanity
+### Theatres EARTH and THE SOLAR SYSTEM, home of humanity (its Acts 1 and 2)
 
 *The rock came apart over Earth and it was hollow. Everything after is the answer to that.*
 
-6 planets, 29 locations, 23 boards to author.
+EARTH is a theatre on its own: 1 planet, 12 locations, 11 boards to author.
+THE SOLAR SYSTEM is the second: 5 planets, 17 locations, 12 boards to author.
 
 | Planet | Locations, in order | Ready | New |
 | --- | --- | ---: | ---: |
@@ -67,10 +79,10 @@ people cancer and gave a few of them something else), New York under Swami,
 Washington under a truce nobody enjoys, the Tri-City line where the player
 stops being able to be everywhere, then **all seven continents** at
 continental scale, then the planet entire. Twelve battles on one body is
-deliberate: Earth is the act that teaches the game and the only world the
-whole campaign comes back to.
+deliberate: Earth is humanity's whole first act, the theatre that teaches the
+game, and the only world the whole campaign comes back to.
 
-### Act 2: PROXIMA CENTAURI, home of the Federation and the Vigil
+### Theatre PROXIMA CENTAURI, home of the Federation and the Vigil
 
 *The closest star to home, holding two powers who both believe they are the reason it is still standing.*
 
@@ -89,7 +101,7 @@ Toliman and Rigil Kentaurus are Alpha Centauri B and A, which are really
 gravitationally bound to Proxima: the act is one triple star system, not three
 unrelated stops.
 
-### Act 3: ZETA RETICULI, home of the Xeno and the Pirates
+### Theatre ZETA RETICULI, home of the Xeno and the Pirates
 
 *A binary pair, a compact that counts everything, and the captains who move what it counts.*
 
@@ -112,11 +124,11 @@ measured in the current tree, not a guess.
 | What | Where | Why it moves |
 | --- | --- | --- |
 | `SYSTEMS_PER_GALAXY = 5` | js/galaxy.js:14 | Becomes 3. There is a hard guard at galaxy.js:49 asserting `RENEGADE_BOON_KINDS.length + 1 === SYSTEMS_PER_GALAXY`, so the own-power boon promise (one of each kind, one apex) has to be re-derived for three systems or the guard has to change its claim. |
-| `WORLDS_PER_SYSTEM = 7` | js/galaxy.js:32 | Survives as PLANETS per act (5 to 7), but stops being the battle count. It is currently used to derive world names, boons, map picks and unit rewards by `si * WORLDS_PER_SYSTEM + wi`; every one of those index derivations now needs a location index too. |
+| `WORLDS_PER_SYSTEM = 7` | js/galaxy.js:32 | Survives as PLANETS per theatre (5 to 7 beyond Earth), but stops being the battle count. It is currently used to derive world names, boons, map picks and unit rewards by `si * WORLDS_PER_SYSTEM + wi`; every one of those index derivations now needs a location index too. |
 | World id `'s' + si + 'w' + wi` | js/galaxy.js:571 | Needs a third component. Campaign progress is `stars: { 's0w3': 2 }` (commanders.js), so the id shape IS the save format. |
 | Star progress and planet completion | js/commanders.js:620-659 | `home.worlds.every(w => stars[w.id] >= 1)` becomes a two-level roll-up: a planet is taken when its locations are, an act when its planets are. |
 | The five-faction to five-system mapping | js/galaxy.js:189 `GX_UNIVERSE_ORDER`, :351 `GX_V2_HOLDER`, :101 `GX_HOME_SYSTEMS` | Five powers now live in three systems, two of them shared. The holder table is keyed system-by-player and needs rebuilding for the new residency. |
-| `campTier` act ordering | js/galaxy.js:494 | Currently rotates five systems from the player's home. Becomes a lookup into `CAMPAIGN_ORDER`, which is authored per power rather than derived. |
+| `campTier` act ordering | js/galaxy.js:494 | Currently rotates five systems from the player's home. Becomes a lookup into `CAMPAIGN_ACTS_BY_POWER`, an ordered grouping of theatres authored per power rather than derived. |
 | The galaxy map screen and routes | js/ui.js, js/galaxy.js route graph | Has to show planets inside an act and locations inside a planet: one more level of navigation than exists today. |
 | Duel / net | js/net.js | Duels are per board and per world id. The id change reaches the lobby table and the seat lens. NET_PROTOCOL bumps. |
 
@@ -146,8 +158,8 @@ part the owner is designing against:
 | A | Earth's first four: Long Island, D.C., Tri-City, plus the Global finale | The opening of the game and the two multi-commander shapes. Long Island is the new tutorial board and needs the most care. |
 | B | Earth's seven continents | One archetype reused seven ways with different point layouts, so they are cheap once A settles the idiom. Antarctica is the exception and should be built last: it is the one that explains the others. |
 | C | Mars 3, Venus 2, Luna 1 | The inner-system whole-body battles. |
-| D | Jupiter 3, Saturn 3 | The act's back half, including the north pole facility. |
-| E | Zeta's 7 | Act 3, mostly whole-body battles over existing terrain vocabulary. |
+| D | Jupiter 3, Saturn 3 | The Solar System theatre's back half, including the north pole facility. |
+| E | Zeta's 7 | The Zeta theatre, mostly whole-body battles over existing terrain vocabulary. |
 
 Every new board still owes: geometry, a terrain codex entry (class, flow, cover,
 barriers, sight, challenge, basis), a wave roster, and a world dossier in
@@ -160,20 +172,26 @@ commander portraits for the new named characters (Swami, Ronald Dump, the Long
 Island protagonist), and the story beats for four campaigns whose act order
 changed.
 
-## Owner calls, all settled (Session 46)
+## Owner calls, all settled (Sessions 46 and 47)
 
-1. **Mercury is bonus content**, not an Act 1 planet. Sol runs six planets. It
-   keeps `w_mercury` and its entry in `CAMPAIGN_BONUS`.
+1. **Mercury is bonus content**, not a Solar System planet. The Solar System
+   theatre runs five planets beyond Earth. Mercury keeps `w_mercury` and its
+   entry in `CAMPAIGN_BONUS`.
 2. **In-flight campaign saves are reset** at migration. The profile survives
    with its commanders, unlocks, soul vault and ratings; the run does not. This
    is what makes the id-shape change tractable at all.
 3. **The Pleiades and Sirius are bonus content**, parked in `CAMPAIGN_BONUS`.
    Thirteen of their fourteen boards moved with the powers that built them and
-   are Act 2 location boards now, which is recorded on the parked entries and
+   are Proxima Centauri location boards now, which is recorded on the parked entries and
    enforced: a board cannot serve a campaign location and a bonus body at once.
    The Pleiades keep the fourteenth, the Dust Wake, as the bonus location board.
 4. **All seven continents** are Earth fights: North America, South America,
    Europe, Africa, Asia, Oceania, Antarctica. Earth is twelve locations.
+5. **The act boundaries** (Session 47): "Act 1 will be just Earth, then Act 2
+   will be the entire Solar system, then Act 3 will be the other 2 solar
+   systems that exist." Encoded for humanity word for word (C2.7). The other
+   four powers keep their Session 46 orders, opening at home and taking Earth
+   and the Solar System together as one act.
 
 Parked places live in `CAMPAIGN_BONUS` with the reason recorded, so a later
 session can tell what was cut on purpose from what was lost in an edit. C2.10
@@ -181,14 +199,14 @@ fails on a parked entry with no reason.
 
 ## Verification
 
-`node tools/probe-campaign2.js`, in the gate (10 checks): three acts at 5 to 7
-planets, the location budget (up to twelve, which is Earth), one whole-body battle per planet and it comes last, unique ids
-and refs, every named board resolves, no board serves two locations, challenge
-in the codex vocabulary, every power plays three acts and opens at home, one
-home act per power, and every board still to be built carries its brief.
+`node tools/probe-campaign2.js`, in the gate (10 checks): four theatres with
+Earth alone and deep and the others at 5 to 7 planets, the location budget (up
+to twelve, which is Earth), one whole-body battle per planet and it comes last,
+unique ids and refs, every named board resolves, no board serves two locations,
+challenge in the codex vocabulary, three acts per power covering every theatre
+once and opening at home with humanity's boundaries word for word, every
+theatre with a resident and Sol humanity's alone, and every board still to be
+built carries its brief.
 
-Mutation tested, four plants, each caught by its predicted check with control
-green: a power opening away from home, two locations sharing a board, a board
-id that does not exist, and a whole-body battle that is not last. C2.10 adds
-three more: a parked body claiming a board a campaign location uses, a parked
-body with no reason recorded, and a re-parented system still claiming boards.
+Mutation tested (Session 47), 8 plants, each caught by its predicted
+check with control green before and after: humanity opening on Earth and the Solar System together (C2.7); the Federation opening on Earth instead of at home (C2.7); the Xeno never visiting Zeta (C2.7); a second power resident on Earth (C2.8); a theatre that names no system (C2.1); two locations sharing a board (C2.5); a board id that does not exist (C2.4); a parked body claiming a board a location uses (C2.10).
