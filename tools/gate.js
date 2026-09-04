@@ -163,7 +163,7 @@ if (!STATIC_ONLY) {
      predicted check. Placed after owner-sweep and before MPT because it reads
      source-level state and MPT installs wrappers (invariant 3). */
   browserHarness('planet-cutscenes', '/tools/probe-s39.js', null);
-  /* Same-page relative pins for the targeting hot path. Absolute
+  /* Same-page relative pins for the hostile-query hot paths. Absolute
      milliseconds are INFO; semantic parity and the relative wins are gated. */
   browserHarness('performance', '/tools/performance_test.js', null);
   if (!QUICK) browserHarness('mpt', '/tools/multiplayer_test.js', ';MPT.all()');

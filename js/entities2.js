@@ -1095,7 +1095,7 @@ Projectile.prototype.rollOverkill = function (surplus, corpse, game) {
   let at = corpse, carry = surplus;
   for (let hop = 0; hop < 3 && carry > 1; hop++) {
     let next = null, bd = Infinity;
-    for (const e of game.enemies) {
+    for (const e of hostileCandidates(game.enemies, this.side)) {
       if (e.dead || e.hostileTo !== this.side) continue;
       if (this.groundOnly && e.flying && !e.grounded) continue;
       const d2 = dist2(at.x, at.y, e.x, e.y);

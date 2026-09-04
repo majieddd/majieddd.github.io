@@ -22,6 +22,16 @@ const rand = (a, b) => a + Math.random() * (b - a);
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 const TAU = Math.PI * 2;
 
+/* A hostile query inside the guarded step phases can use the seat-local view
+   prepared by Game.step. The fallback is deliberate: render probes and unit
+   tests also drive individual entities outside that phase, where the scratch
+   pools are stale and the caller's collection is authoritative. */
+function hostileCandidates(enemies, side) {
+  if (TARGET_POOLS_ACTIVE && enemies === Game.enemies && TARGET_POOLS[side])
+    return TARGET_POOLS[side];
+  return enemies;
+}
+
 function angleLerp(a, b, t) {
   const d = ((b - a + Math.PI) % TAU + TAU) % TAU - Math.PI;
   return a + d * t;
@@ -1905,8 +1915,7 @@ class Tower {
 
   /** Only ever returns units hostile to THIS tower's side. */
   acquire(enemies, rangeOverride) {
-    if (TARGET_POOLS_ACTIVE && enemies === Game.enemies && TARGET_POOLS[this.side])
-      enemies = TARGET_POOLS[this.side];
+    enemies = hostileCandidates(enemies, this.side);
     const R = rangeOverride || this.rangePx;
     const r2 = R * R;
     /* MORTAR's fire mission. Indirect fire does not have to SEE the target --
@@ -1953,8 +1962,7 @@ class Tower {
 
   /** All hostile units within range, used by area mechanics. */
   acquireAll(enemies, rangeOverride) {
-    if (TARGET_POOLS_ACTIVE && enemies === Game.enemies && TARGET_POOLS[this.side])
-      enemies = TARGET_POOLS[this.side];
+    enemies = hostileCandidates(enemies, this.side);
     const R = rangeOverride || this.rangePx, r2 = R * R;
     const out = [];
     for (const e of enemies) {
@@ -2385,7 +2393,7 @@ class Tower {
     const fall = s.runFalloff || 0.85;
     const points = [{ x: this.x, y: this.y - 8 }];
     const hit = [];
-    for (const e of game.enemies) {
+    for (const e of hostileCandidates(game.enemies, this.side)) {
       if (e.dead || e.hostileTo !== this.side || e.path !== target.path) continue;
       const d = Math.abs(e.dist - target.dist);
       if (d > reach) continue;
@@ -3108,7 +3116,7 @@ class Projectile {
       if (wallBlocksShot(px, py, this.x, this.y)) { this.dead = true; return; }
     }
     if (this.age > 3 || this.x < -80 || this.y < -80 || this.x > game.width + 80 || this.y > game.height + 80) { this.dead = true; return; }
-    for (const e of game.enemies) {
+    for (const e of hostileCandidates(game.enemies, this.side)) {
       if (!this.hostile(e)) continue;
       const rr = e.radius + this.radius;
       if (dist2(this.x, this.y, e.x, e.y) <= rr * rr) {
@@ -3141,7 +3149,7 @@ class Projectile {
       if (s.execGold) game.awardGold(t.side, s.execGold, t);
       if (s.execFear) {
         const r2 = (1.6 * TILE) ** 2;
-        for (const o of game.enemies)
+        for (const o of hostileCandidates(game.enemies, this.side))
           if (!o.dead && o.hostileTo === t.side && dist2(enemy.x, enemy.y, o.x, o.y) <= r2)
             o.applySlow(s.execFear, 2);
       }
@@ -3186,7 +3194,7 @@ class Projectile {
       game.shake(clamp(this.splash * 2.2, 1.2, 7));
       game.spawnExplosion(this.x, this.y, r, this.color);
       const r2 = r * r;
-      for (const e of game.enemies) {
+      for (const e of hostileCandidates(game.enemies, this.side)) {
         if (e.dead || e.hostileTo !== this.side) continue;
         if (this.groundOnly && e.flying && !e.grounded) continue;
         if (this.airOnly && !e.flying) continue;

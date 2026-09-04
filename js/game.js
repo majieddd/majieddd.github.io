@@ -4382,10 +4382,19 @@ const Game = {
     }
 
     /* --- projectiles --- */
-    for (let i = this.projectiles.length - 1; i >= 0; i--) {
-      const p = this.projectiles[i];
-      p.update(dt, this);
-      if (p.dead) this.projectiles.splice(i, 1);
+    /* The pool still names the same bodies after movement: only coordinates
+       and dead flags changed, and pending spawns do not join enemies until
+       after the reap below. Guard this phase so every projectile, splash and
+       overkill scan skips the other nineteen boards in a full Maelstrom. */
+    TARGET_POOLS_ACTIVE = true;
+    try {
+      for (let i = this.projectiles.length - 1; i >= 0; i--) {
+        const p = this.projectiles[i];
+        p.update(dt, this);
+        if (p.dead) this.projectiles.splice(i, 1);
+      }
+    } finally {
+      TARGET_POOLS_ACTIVE = false;
     }
 
     /* --- reap --- */
