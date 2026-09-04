@@ -163,6 +163,9 @@ if (!STATIC_ONLY) {
      predicted check. Placed after owner-sweep and before MPT because it reads
      source-level state and MPT installs wrappers (invariant 3). */
   browserHarness('planet-cutscenes', '/tools/probe-s39.js', null);
+  /* Same-page relative pins for the targeting hot path. Absolute
+     milliseconds are INFO; semantic parity and the relative wins are gated. */
+  browserHarness('performance', '/tools/performance_test.js', null);
   if (!QUICK) browserHarness('mpt', '/tools/multiplayer_test.js', ';MPT.all()');
   /* THE PHONE. Its own run at a real phone size, because every check above
      runs at 1600x900 where none of the phone rules exist. The owner's report

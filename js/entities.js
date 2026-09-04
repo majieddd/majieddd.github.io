@@ -1905,13 +1905,16 @@ class Tower {
 
   /** Only ever returns units hostile to THIS tower's side. */
   acquire(enemies, rangeOverride) {
+    if (TARGET_POOLS_ACTIVE && enemies === Game.enemies && TARGET_POOLS[this.side])
+      enemies = TARGET_POOLS[this.side];
     const R = rangeOverride || this.rangePx;
     const r2 = R * R;
     /* MORTAR's fire mission. Indirect fire does not have to SEE the target --
        somebody on this side does -- so the tube reaches this much further,
        but only onto ground one of your own weapons is currently holding. */
     const spot = (this.stats.spotting || 0) * TILE;
-    const sr2 = spot > 0 ? (R + spot) * (R + spot) : r2;
+    const sr = spot > 0 ? R + spot : R;
+    const sr2 = sr * sr;
     /* BOMBARD's dead zone. A barrel this long cannot depress inside it, so
        acquire() refuses the near ground outright -- the tooltip never lies. */
     const mr = (this.stats.minRange || 0) * TILE, mr2 = mr * mr;
@@ -1923,7 +1926,11 @@ class Tower {
       /* A FLAK-downed flyer is on the deck and every ground gun may have it. */
       if (groundOnly && e.flying && !e.grounded) continue;
       if (airOnly && !e.flying) continue;
-      const d2 = dist2(this.x, this.y, e.x, e.y);
+      const dx = this.x - e.x;
+      if (dx > sr || dx < -sr) continue;
+      const dy = this.y - e.y;
+      if (dy > sr || dy < -sr) continue;
+      const d2 = dx * dx + dy * dy;
       if (d2 > sr2) continue;
       if (d2 < mr2) continue;
       /* Shot-blocking terrain: a tower without spotting cannot see through
@@ -1946,13 +1953,19 @@ class Tower {
 
   /** All hostile units within range, used by area mechanics. */
   acquireAll(enemies, rangeOverride) {
+    if (TARGET_POOLS_ACTIVE && enemies === Game.enemies && TARGET_POOLS[this.side])
+      enemies = TARGET_POOLS[this.side];
     const R = rangeOverride || this.rangePx, r2 = R * R;
     const out = [];
     for (const e of enemies) {
       if (e.dead || e.hostileTo !== this.side) continue;
       if (this.def.groundOnly && e.flying && !e.grounded) continue;
       if (this.def.airOnly && !e.flying) continue;
-      if (dist2(this.x, this.y, e.x, e.y) <= r2) out.push(e);
+      const dx = this.x - e.x;
+      if (dx > R || dx < -R) continue;
+      const dy = this.y - e.y;
+      if (dy > R || dy < -R) continue;
+      if (dx * dx + dy * dy <= r2) out.push(e);
     }
     return out;
   }

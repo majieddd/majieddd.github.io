@@ -9,6 +9,25 @@ const MAX_STEPS = 8;
 const MAX_PARTICLES = 420;
 const MAX_FLOATERS = 80;
 
+/* TARGET POOLS. Tower targeting used to walk the whole enemy array even
+   though hostileTo rejects every body assigned to another board. That is
+   half the list in a duel and up to nineteen twentieths in the Maelstrom.
+   Reuse one array per seat, filled in the original enemy order, so target
+   ties and area-effect order remain exactly the same without per-step
+   allocation. The active flag keeps calls outside the tower phase on the
+   caller-provided collection rather than on a stale scratch view. */
+const TARGET_POOLS = [];
+let TARGET_POOLS_ACTIVE = false;
+
+/* Floater type is chosen when the event is created, not sixty times a second
+   while it drifts. Cache the handful of authored sizes so the render loop
+   only installs an existing string. */
+const FLOATER_FONTS = Object.create(null);
+function floaterFont(size) {
+  return FLOATER_FONTS[size] || (FLOATER_FONTS[size] =
+    'bold ' + size + 'px ui-monospace, Consolas, monospace');
+}
+
 /* REDUCED MOTION, the OS preference OR the OPTIONS checkbox. Cached, and
    read through one function: the gates below run per spawned particle, and a
    matchMedia() construction per call would cost more than the particles do.
@@ -4058,11 +4077,12 @@ const Game = {
     const jx = x + rand(-5, 5);
     if (dmg && !damageNumbersOn()) return;
     if (this.floaters.length >= MAX_FLOATERS) this.floaters.shift();
+    const px = size || (crit ? 18 : 11);
     this.floaters.push({ x: jx, y,
       text: typeof text === 'number' ? formatNum(text) : text,
       life: crit ? 1.0 : 0.7, maxLife: crit ? 1.0 : 0.7,
       color: color || (crit ? '#ffffff' : '#ffe9a8'),
-      size: size || (crit ? 18 : 11), vy: crit ? -36 : -26 });
+      size: px, font: floaterFont(px), vy: crit ? -36 : -26 });
   },
 
   /* ================================================================ LOOP */
@@ -4173,7 +4193,22 @@ const Game = {
     this.checkSurviveWin();
 
     /* --- towers --- */
-    for (const S of this.sides) for (const t of S.towers) { t.tickCooldowns(dt); t.update(dt, this); }
+    TARGET_POOLS_ACTIVE = false;
+    TARGET_POOLS.length = this.sides.length;
+    for (let i = 0; i < this.sides.length; i++) {
+      if (!TARGET_POOLS[i]) TARGET_POOLS[i] = [];
+      else TARGET_POOLS[i].length = 0;
+    }
+    for (const e of this.enemies) {
+      const pool = TARGET_POOLS[e.hostileTo];
+      if (pool) pool.push(e);
+    }
+    TARGET_POOLS_ACTIVE = true;
+    try {
+      for (const S of this.sides) for (const t of S.towers) { t.tickCooldowns(dt); t.update(dt, this); }
+    } finally {
+      TARGET_POOLS_ACTIVE = false;
+    }
 
     /* --- ability constructs ---
        They are not towers and no tower owns them, so nothing else would tick
@@ -4966,10 +5001,11 @@ const Game = {
     for (const f of this.floaters) {
       const t = f.life / f.maxLife;
       ctx.globalAlpha = Math.min(1, t * 1.8);
-      ctx.font = `bold ${f.size}px ui-monospace, Consolas, monospace`;
+      ctx.font = f.font || floaterFont(f.size);
       ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.8)';
-      ctx.strokeText(f.text, f.x, f.y);
-      ctx.fillStyle = f.color; ctx.fillText(f.text, f.x, f.y);
+      const x = Math.round(f.x), y = Math.round(f.y);
+      ctx.strokeText(f.text, x, y);
+      ctx.fillStyle = f.color; ctx.fillText(f.text, x, y);
     }
     ctx.globalAlpha = 1; ctx.textAlign = 'left';
   },
