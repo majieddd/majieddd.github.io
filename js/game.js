@@ -4672,6 +4672,45 @@ const Game = {
     x.fillStyle = v; x.fillRect(0, 0, this.width, this.height);
   },
 
+  /**
+   * Cache the camera rectangle once per frame. Every hot render loop reads
+   * this same allocation-free boundary instead of asking Canvas to clip work
+   * which can never contribute a pixel. The padding is expressed in screen
+   * pixels, so glow and camera shake stay safely outside the pop boundary at
+   * every zoom level.
+   */
+  updateRenderView(c, z) {
+    const scale = (this.viewScale || 1) * z;
+    const pad = 24 / Math.max(0.001, scale);
+    const v = this._renderView || (this._renderView = {});
+    v.left = c.x - pad;
+    v.top = c.y - pad;
+    v.right = c.x + this.viewW / scale + pad;
+    v.bottom = c.y + this.viewH / scale + pad;
+    v.scale = scale;
+    /* Below sixteen screen pixels per tile, health slivers, tier pips and
+       broad shadows stop carrying information and become flickering noise.
+       The strategic silhouette remains, and all detail returns on zoom-in. */
+    this.renderOverview = TILE * scale < 16;
+    return v;
+  },
+
+  /** True when a world-space circle can contribute to the current frame. */
+  renderCircleVisible(x, y, radius) {
+    const v = this._renderView;
+    if (!v) return true;
+    const r = radius || 0;
+    return x + r >= v.left && x - r <= v.right &&
+           y + r >= v.top && y - r <= v.bottom;
+  },
+
+  /** True when an effect's world-space bounds touch the current frame. */
+  renderBoundsVisible(left, top, right, bottom) {
+    const v = this._renderView;
+    return !v || right >= v.left && left <= v.right &&
+                 bottom >= v.top && top <= v.bottom;
+  },
+
   draw() {
     const ctx = this.ctx;
     /* This MUST include viewScale. Resetting to dpr alone drew the world at 1:1
@@ -4685,7 +4724,8 @@ const Game = {
        space first, because a translated world transform no longer covers the
        whole backing store. */
     const z = this.camZoom();
-    const c = this.camClamped();
+    const c = this.camClamped(this._drawCamera || (this._drawCamera = { x: 0, y: 0 }));
+    this.updateRenderView(c, z);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     ctx.setTransform(k * z, 0, 0, k * z, -c.x * k * z, -c.y * k * z);
@@ -4697,6 +4737,7 @@ const Game = {
     this.drawLaneFlow(ctx);
     this.drawPuddles(ctx);
     for (const S of this.sides) for (const t of S.towers) {
+      if (!this.renderCircleVisible(t.x, t.y, (t.rangePx || 0) + TILE)) continue;
       if (t.isSupport) t.drawAuraField(ctx);
       if (t.drawExpansionField) t.drawExpansionField(ctx);
     }
@@ -4704,11 +4745,31 @@ const Game = {
     this.drawAimOverlay(ctx);
     this.drawSelection(ctx);
 
-    for (const S of this.sides) for (const t of S.towers) t.draw(ctx, this);
-    for (const c of this.constructs) c.draw(ctx, this);
-    for (const e of this.enemies) if (!e.flying) e.draw(ctx);
-    for (const e of this.enemies) if (e.flying) e.draw(ctx);
-    for (const p of this.projectiles) p.draw(ctx);
+    for (const S of this.sides) for (const t of S.towers) {
+      /* Wards may remain anywhere a Sepulchre once stood, so their owner is
+         the one tower that cannot safely be rejected by its own position. */
+      if ((!t.wards || !t.wards.length) &&
+          !this.renderCircleVisible(t.x, t.y, Math.max(t.rangePx || 0, (t.foot || 1) * TILE) + 32)) continue;
+      t.draw(ctx, this);
+    }
+    for (const c2 of this.constructs) {
+      const reach = Math.max(c2.range || 0, TILE * 6);
+      if (this.renderCircleVisible(c2.x, c2.y, reach)) c2.draw(ctx, this);
+    }
+    for (const e of this.enemies) if (!e.flying) {
+      const aura = e.def && e.def.aura ? e.def.aura.radius * TILE : 0;
+      if (this.renderCircleVisible(e.x, e.y, Math.max((e.radius || 0) + 34, aura + 8))) e.draw(ctx);
+    }
+    for (const e of this.enemies) if (e.flying) {
+      const aura = e.def && e.def.aura ? e.def.aura.radius * TILE : 0;
+      if (this.renderCircleVisible(e.x, e.y, Math.max((e.radius || 0) + 42, aura + 8))) e.draw(ctx);
+    }
+    for (const p of this.projectiles) {
+      /* A lobbed shot occupies the whole segment from its ground shadow to
+         the elevated shell, not merely the shell's ground coordinate. */
+      const h = Math.abs(p.height || 0);
+      if (this.renderCircleVisible(p.x, p.y - h * 0.5, h * 0.5 + (p.radius || 0) * 3 + 14)) p.draw(ctx);
+    }
     this.drawBeams(ctx);
     this.drawIncubators(ctx);
     this.drawParticles(ctx);
@@ -4798,6 +4859,7 @@ const Game = {
 
   drawPuddles(ctx) {
     for (const p of this.puddles) {
+      if (!this.renderCircleVisible(p.x, p.y, p.radius + 8)) continue;
       const f = p.life / p.maxLife;
       ctx.save(); ctx.globalAlpha = 0.26 + f * 0.32;
       const g = ctx.createRadialGradient(p.x, p.y, 2, p.x, p.y, p.radius);
@@ -4909,6 +4971,7 @@ const Game = {
       const f = b.life / b.maxLife;
       /* A jam pulse is an expanding ring, not a line. */
       if (b.ring) {
+        if (!this.renderCircleVisible(b.points[0].x, b.points[0].y, b.ring + 18)) continue;
         ctx.save();
         ctx.globalAlpha = f * 0.8;
         ctx.strokeStyle = b.color; ctx.lineWidth = 3;
@@ -4916,11 +4979,18 @@ const Game = {
         ctx.restore();
         continue;
       }
+      const pts = b.points;
+      let left = pts[0].x, right = left, top = pts[0].y, bottom = top;
+      for (let i = 1; i < pts.length; i++) {
+        const p = pts[i];
+        if (p.x < left) left = p.x; else if (p.x > right) right = p.x;
+        if (p.y < top) top = p.y; else if (p.y > bottom) bottom = p.y;
+      }
+      if (!this.renderBoundsVisible(left - 20, top - 20, right + 20, bottom + 20)) continue;
       ctx.save();
       ctx.globalAlpha = f; ctx.shadowColor = b.color; ctx.shadowBlur = 14;
       ctx.strokeStyle = b.color; ctx.lineWidth = b.width * f + 0.5; ctx.lineCap = 'round';
       ctx.beginPath();
-      const pts = b.points;
       ctx.moveTo(pts[0].x, pts[0].y);
       for (let i = 1; i < pts.length; i++) {
         if (b.jagged) {
@@ -4946,6 +5016,7 @@ const Game = {
 
   drawParticles(ctx) {
     for (const p of this.particles) {
+      if (!this.renderCircleVisible(p.x, p.y, p.size * 1.2 + 6)) continue;
       const f = p.life / p.maxLife;
       if (p.kind === 'shock' || p.kind === 'implode') {
         const grow = p.kind === 'shock' ? (1.15 - f) : f;
@@ -4957,6 +5028,7 @@ const Game = {
       }
       ctx.globalAlpha = f; ctx.fillStyle = p.color;
       const s = p.size * (p.kind === 'fire' ? f : 1);
+      if (this.renderOverview && s * this._renderView.scale < 0.75) continue;
       ctx.fillRect(p.x - s / 2, p.y - s / 2, s, s);
     }
     ctx.globalAlpha = 1;
@@ -4975,6 +5047,7 @@ const Game = {
     if (!this.incubators.length) return;
     for (const pod of this.incubators) {
       if (pod.side !== this.viewSide) continue;
+      if (!this.renderCircleVisible(pod.x, pod.y, 20)) continue;
       const def = ENEMY_TYPES[pod.unitId];
       const col = (def && def.color) || '#a855f7';
       const frac = clamp(1 - pod.t / Math.max(0.001, pod.need), 0, 1);
@@ -5008,6 +5081,9 @@ const Game = {
   drawFloaters(ctx) {
     ctx.textAlign = 'center';
     for (const f of this.floaters) {
+      /* At overview scale even the largest floater is only a few screen
+         pixels high. Hiding that unreadable churn protects the board read. */
+      if (this.renderOverview || !this.renderCircleVisible(f.x, f.y, 72)) continue;
       const t = f.life / f.maxLife;
       ctx.globalAlpha = Math.min(1, t * 1.8);
       ctx.font = f.font || floaterFont(f.size);
@@ -5500,7 +5576,7 @@ const Game = {
   /** The camera's top-left in world pixels, clamped so the view can never
       leave the board. At zoom 1 the view IS the board, so this is the
       origin and the transform above collapses to the fitted one. */
-  camClamped() {
+  camClamped(out) {
     const z = this.camZoom();
     /* THE VISIBLE SPAN IN WORLD UNITS, from the canvas's real CSS size rather
        than from the board's -- under a cover fit the two are different, and
@@ -5516,8 +5592,10 @@ const Game = {
        being able to zoom out to the fitted view -- there is nothing to pan
        along that axis, and the board is CENTRED in the surplus rather than
        shoved against the top-left corner. */
-    return { x: vw >= this.width ? (this.width - vw) / 2 : clamp(cx, 0, this.width - vw),
-             y: vh >= this.height ? (this.height - vh) / 2 : clamp(cy, 0, this.height - vh) };
+    const x = vw >= this.width ? (this.width - vw) / 2 : clamp(cx, 0, this.width - vw);
+    const y = vh >= this.height ? (this.height - vh) / 2 : clamp(cy, 0, this.height - vh);
+    if (out) { out.x = x; out.y = y; return out; }
+    return { x, y };
   },
   /** Zoom about a fixed world point, so the tile under the cursor stays put. */
   zoomAt(worldX, worldY, factor) {

@@ -166,6 +166,10 @@ if (!STATIC_ONLY) {
   /* Same-page relative pins for the hostile-query hot paths. Absolute
      milliseconds are INFO; semantic parity and the relative wins are gated. */
   browserHarness('performance', '/tools/performance_test.js', null);
+  /* Canvas draw has its own hot path. This page proves both the camera
+     boundary and the whole-board detail contract, then measures the saved
+     offscreen work against an unculled control in the same browser. */
+  browserHarness('render-performance', '/tools/render_performance_test.js', null);
   if (!QUICK) browserHarness('mpt', '/tools/multiplayer_test.js', ';MPT.all()');
   /* THE PHONE. Its own run at a real phone size, because every check above
      runs at 1600x900 where none of the phone rules exist. The owner's report

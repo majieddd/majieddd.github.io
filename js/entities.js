@@ -859,7 +859,10 @@ class Enemy {
     const hurt = this.flash > 0;
     /* Phased units render as a hollow ghost, you can see it is untouchable. */
     if (this.phaseOn) ctx.globalAlpha = 0.35;
-    ctx.shadowColor = c; ctx.shadowBlur = this.boss ? 24 : this.miniboss ? 18 : 9;
+    const overview = Game && Game.renderOverview;
+    ctx.shadowColor = c;
+    ctx.shadowBlur = overview ? (this.boss ? 8 : this.miniboss ? 5 : 0)
+                              : (this.boss ? 24 : this.miniboss ? 18 : 9);
     ctx.fillStyle = hurt ? '#ffffff' : c;
     ctx.strokeStyle = hurt ? '#ffffff' : 'rgba(0,0,0,0.55)';
     ctx.lineWidth = 2;
@@ -930,8 +933,12 @@ class Enemy {
       ctx.beginPath(); ctx.arc(0, 0, this.radius + 6, 0, TAU); ctx.fill(); ctx.stroke();
     }
     ctx.restore();
-    this.drawHealthBar(ctx);
-    this.drawStatusGlyphs(ctx);
+    /* Overview is for threat shape and board control. Normal-unit bars and
+       glyph stacks are subpixel there, so retain only elites, carriers and
+       genuinely critical health. Zooming in restores the complete read. */
+    const priority = this.boss || this.miniboss || this.carrier;
+    if (!overview || priority || this.hp / this.maxHp < 0.3) this.drawHealthBar(ctx);
+    if (!overview || priority) this.drawStatusGlyphs(ctx);
   }
 
   drawHealthBar(ctx) {
@@ -2713,15 +2720,17 @@ class Tower {
     ctx.strokeStyle = d.color; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.roundRect(-16, -16, 32, 32, 6); ctx.fill(); ctx.stroke();
 
-    /* tier pips: four for the branch track, then a numeric ascension badge */
-    const t = Math.min(4, this.branch ? 4 : this.level);
-    for (let i = 0; i < t; i++) { ctx.fillStyle = i === 3 ? '#fff' : d.color; ctx.fillRect(-13 + i * 7, 11, 4.5, 2.4); }
-    if (this.asc > 0) {
-      ctx.fillStyle = '#ffd166'; ctx.font = 'bold 8px ui-monospace, monospace'; ctx.textAlign = 'right';
-      ctx.fillText('+' + this.asc, 15, -9); ctx.textAlign = 'left';
+    /* Tier marks become subpixel shimmer in the whole-board overview. */
+    if (!game.renderOverview) {
+      const t = Math.min(4, this.branch ? 4 : this.level);
+      for (let i = 0; i < t; i++) { ctx.fillStyle = i === 3 ? '#fff' : d.color; ctx.fillRect(-13 + i * 7, 11, 4.5, 2.4); }
+      if (this.asc > 0) {
+        ctx.fillStyle = '#ffd166'; ctx.font = 'bold 8px ui-monospace, monospace'; ctx.textAlign = 'right';
+        ctx.fillText('+' + this.asc, 15, -9); ctx.textAlign = 'left';
+      }
     }
 
-    ctx.shadowColor = d.color; ctx.shadowBlur = 11;
+    ctx.shadowColor = d.color; ctx.shadowBlur = game.renderOverview ? 0 : 11;
     if (this.jamTimer > 0) ctx.globalAlpha = 0.4;
     const fn = this['draw_' + this.type];
     if (fn) fn.call(this, ctx, this.age);
@@ -3221,7 +3230,7 @@ class Projectile {
       ctx.globalAlpha = 1;
       ctx.translate(this.x, this.y - (this.height || 0));
     } else { ctx.translate(this.x, this.y); ctx.rotate(this.angle); }
-    ctx.shadowColor = this.color; ctx.shadowBlur = 10; ctx.fillStyle = this.color;
+    ctx.shadowColor = this.color; ctx.shadowBlur = Game.renderOverview ? 0 : 10; ctx.fillStyle = this.color;
     if (this.lobbed) {
       ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, TAU); ctx.fill();
       ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.beginPath(); ctx.arc(-1, -1, this.radius * 0.4, 0, TAU); ctx.fill();
