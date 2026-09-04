@@ -98,7 +98,8 @@ function loadGame() {
                 'ENEMY_TYPES', 'FACTION_UNITS', 'FACTION_ENEMIES', 'FACTIONS',
                 'POWER_ORDER', 'FACTION_ORDER', 'COMMANDER_ROSTER', 'COMMANDERS',
                 'LOADOUT_SIZE', 'LOADOUT_OWN_ORIGIN', 'MUSTER_LOADOUT_SIZE',
-                'originKeyOf', 'POWER_ORIGIN', 'SUMMON_DOCTRINES', 'DOCTRINE_ORDER'];
+                'originKeyOf', 'POWER_ORIGIN', 'SUMMON_DOCTRINES', 'DOCTRINE_ORDER',
+                'freshTraits', 'COMMANDER_SHAPES', 'COMMANDER_PRESTIGE'];
   const picked = new Function('window', 'document', 'self',
     body.replace('; return this;', '; return {' + want.map(w =>
       'get ' + w + '(){ return typeof ' + w + ' === "undefined" ? undefined : ' + w + '; }').join(',') + '};'))
@@ -253,6 +254,66 @@ function cmdCheck(G) {
     }
   }
 
+  /* TREE SHAPES AND PRESTIGE TRACKS (Session 41). Every chart keeps nine
+     nodes with stable ids (the duel contract carries them), each node has a
+     column and a parent exactly one tier up, no two nodes share a column in a
+     tier, no two commanders share a parent map, and every commander has five
+     prestige passives that each change something when applied. The mutation
+     test is what keeps a passive from being a dead field with a name. */
+  const seenShape = new Map();
+  const freshMods = () => ({ damage: 1, rate: 1, range: 1, splash: 1, status: 1, gold: 1,
+                             pierce: 0, crit: 0, critMult: 0, cost: 1, upCost: 1, reanim: 1,
+                             doubleReanim: 0, sellRate: 0.7, interest: 1, relocFee: 0.33 });
+  for (const c of G.COMMANDER_ROSTER) {
+    const tech = c.tech || [];
+    if (tech.length !== 9) { fails.push(c.id + ' has ' + tech.length + ' tech nodes, expected 9'); continue; }
+    for (const t of tech) {
+      if (!(t.x >= 0 && t.x <= 4)) fails.push(c.id + '/' + t.id + ' column ' + t.x + ' is off the 5-column map');
+      if (t.row === 0 && t.parent) fails.push(c.id + '/' + t.id + ' is a root with a parent');
+      if (t.row > 0) {
+        const p = tech.find(q => q.id === t.parent);
+        if (!p) fails.push(c.id + '/' + t.id + ' parent ' + t.parent + ' does not exist');
+        else if (p.row !== t.row - 1) fails.push(c.id + '/' + t.id + ' hangs from tier ' + p.row + ', not ' + (t.row - 1));
+      }
+    }
+    for (let r = 0; r < 3; r++) {
+      const xs = tech.filter(t => t.row === r).map(t => t.x);
+      if (new Set(xs).size !== xs.length) fails.push(c.id + ' tier ' + r + ' has two nodes in one column');
+    }
+    const shape = tech.filter(t => t.row > 0).map(t => String(t.parent).replace(/^[a-z_]+/, '')).join(',');
+    if (seenShape.has(shape)) fails.push(c.id + ' has the same tree shape as ' + seenShape.get(shape));
+    else seenShape.set(shape, c.id);
+
+    const pr = c.prestige || [];
+    if (pr.length !== 5) fails.push(c.id + ' has ' + pr.length + ' prestige passives, expected 5');
+    /* A passive named like a talent on the same chart, like the trait, or like
+       an earlier passive is two things with one name on one screen. Measured
+       before this rule existed: 90 of 140 passives echoed a talent, and the
+       first chart the owner would open showed a tier-5 NO LIMITS on the track
+       beside a talent called NO LIMITS on the map. */
+    const taken = new Map(tech.map(t => [String(t.name).toUpperCase(), 'talent ' + t.id]));
+    if (c.trait && c.trait.name) taken.set(String(c.trait.name).toUpperCase(), 'the trait');
+    pr.forEach((p, i) => {
+      if (!p || !p.name) return;
+      const n = String(p.name).toUpperCase();
+      if (taken.has(n)) fails.push(c.id + ' prestige ' + (i + 1) + ' ' + p.name + ' shares its name with ' + taken.get(n));
+      taken.set(n, 'prestige ' + (i + 1));
+    });
+    pr.forEach((p, i) => {
+      if (!p || !p.name || !p.desc || typeof p.apply !== 'function') { fails.push(c.id + ' prestige ' + (i + 1) + ' is incomplete'); return; }
+      const t = G.freshTraits(), m = freshMods(), s = { maxLives: 20, lives: 20, gold: 100, traits: t, mods: m };
+      const before = JSON.stringify([t, m, s.maxLives, s.gold]);
+      try { p.apply(t, s, m); } catch (e) { fails.push(c.id + ' prestige ' + (i + 1) + ' threw: ' + e.message); return; }
+      if (JSON.stringify([t, m, s.maxLives, s.gold]) === before)
+        fails.push(c.id + ' prestige ' + (i + 1) + ' ' + p.name + ' changes nothing when applied');
+      /* Built from the code point, not written: the em dash gate scans this
+         file too and refuses BOTH the character and its backslash-u escape,
+         which is correct (the escaped form once survived a literal-only grep
+         and shipped). fromCharCode is the one spelling that is not a dash. */
+      if ((p.name + p.desc).includes(String.fromCharCode(0x2014))) fails.push(c.id + ' prestige ' + (i + 1) + ' carries an em dash');
+    });
+  }
+
   /* The banner-key trap that caused all of this: every power must map to a
      real origin, or flyTheBanner silently finds nothing to fly. */
   for (const f of G.POWER_ORDER) {
@@ -271,7 +332,8 @@ function cmdCheck(G) {
   }
   console.log('facts check OK: ' + seenT.size + ' commanders, all signature towers own-origin, ' +
               seenT.size + ' distinct tower pairs, ' + seenU.size + ' distinct denizen pairs, ' +
-              G.POWER_ORDER.length + ' powers map to a real origin');
+              G.POWER_ORDER.length + ' powers map to a real origin, ' + seenShape.size + ' distinct tree shapes, ' +
+              G.COMMANDER_ROSTER.reduce((n, c) => n + (c.prestige || []).length, 0) + ' prestige passives each live and uniquely named');
 }
 
 function main() {

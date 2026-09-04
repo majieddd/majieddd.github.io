@@ -2905,6 +2905,112 @@
     });
   })();
 
+  /* == 43. THE TALENT MAP AND THE PRESTIGE TRACK (Session 41) ==============
+     Owner: every commander's chart with its own silhouette of lines, and a
+     prestige tracker on the right where each star is +20% to talent values
+     plus a passive unique to that commander. tools/facts.js check holds the
+     DATA contract (nine nodes, valid parents, distinct shapes, five live
+     passives). These hold what the player actually SEES and can DO, which the
+     data contract cannot: that the renderer draws what the data says.
+
+     Nothing here had a check before this block. The chart shipped for forty
+     sessions with zero coverage of its DOM, which is how a renderer could
+     have quietly drawn nine nodes on top of each other. */
+  (function talentMapAndTrack() {
+    var CMD = COMMANDER_ROSTER.filter(function (c) { return c.tech && c.tech.length; });
+    /* Profile state is NOT restored between these checks, on purpose. Each one
+       sets up exactly the XP, unlocks and stars it needs on the commander it
+       uses, and the gate hands every harness a fresh headless profile, so a
+       leftover cannot reach anything else. A restore that guessed at the
+       storage key would be a silent no-op dressed as tidiness. */
+    var savedSel = UI.sel.commander;
+    function restore() { UI.sel.commander = savedSel; }
+    function render(id) { UI.sel.commander = id; UI.show('screen-command'); UI.renderCommanders(); }
+    var q = function (sel) { return document.querySelectorAll('#commander-detail ' + sel); };
+
+    T('43.1 every commander draws nine nodes, six lines and five tiers', function () {
+      var bad = [];
+      CMD.forEach(function (c) {
+        render(c.id);
+        var cells = q('.tm-cell'), lines = q('.tm-line'), tiers = q('.pt-tier');
+        var pos = {};
+        for (var i = 0; i < cells.length; i++) pos[cells[i].style.left + '|' + cells[i].style.top] = 1;
+        var distinct = Object.keys(pos).length;
+        if (cells.length !== 9 || distinct !== 9 || lines.length !== 6 || tiers.length !== 5)
+          bad.push(c.id + ' cells=' + cells.length + ' distinct=' + distinct + ' lines=' + lines.length + ' tiers=' + tiers.length);
+      });
+      ok('43.1 every commander draws nine nodes, six lines and five tiers',
+         bad.length === 0,
+         bad.length ? bad.slice(0, 4).join('; ') : CMD.length + ' charts, each 9 nodes at 9 distinct positions, 6 lines, 5 tiers');
+    });
+
+    T('43.2 a line lights exactly when the node it hangs from is owned', function () {
+      /* Driven, not read: own a root and one of its children on a scratch
+         profile and count lit lines against what the data says should be lit. */
+      var c = CMD.find(function (x) { return x.id === 'nyx'; }) || CMD[1];
+      var prof = Meta.load(); prof.commanders[c.id].xp = Meta.xpForLevel(6); prof.commanders[c.id].unlocked = []; Meta.save();
+      var root = c.tech.filter(function (t) { return t.row === 0; })[0];
+      Meta.unlock(c.id, root.id);
+      var kid = c.tech.find(function (t) { return t.row === 1 && t.parent === root.id; });
+      if (kid) Meta.unlock(c.id, kid.id);
+      render(c.id);
+      var lit = q('.tm-line.lit').length;
+      var expect = c.tech.filter(function (t) { return t.row > 0 && Meta.isUnlocked(c.id, t.parent); }).length;
+      restore();
+      ok('43.2 a line lights exactly when the node it hangs from is owned',
+         lit === expect && expect > 0,
+         'lit ' + lit + ', children of owned parents ' + expect + (kid ? '' : ' (no child hangs from the first root, shape has a bare root)'));
+    });
+
+    T('43.3 no two commanders draw the same tree', function () {
+      var seen = {}, dupes = [];
+      CMD.forEach(function (c) {
+        render(c.id);
+        var key = [].map.call(q('.tm-line'), function (l) {
+          return [l.getAttribute('x1'), l.getAttribute('y1'), l.getAttribute('x2'), l.getAttribute('y2')].join(',');
+        }).sort().join(';');
+        if (seen[key]) dupes.push(c.id + '=' + seen[key]); else seen[key] = c.id;
+      });
+      ok('43.3 no two commanders draw the same tree',
+         dupes.length === 0,
+         dupes.length ? dupes.join(', ') : CMD.length + ' distinct line sets');
+    });
+
+    T('43.4 a complete chart offers one PRESTIGE, and taking it earns the tier and its passive', function () {
+      var c = CMD.find(function (x) { return x.id === 'halder'; }) || CMD[2];
+      var prof = Meta.load(); prof.commanders[c.id].xp = Meta.xpForLevel(30); prof.commanders[c.id].unlocked = []; prof.prestige[c.id] = 0; Meta.save();
+      for (var pass = 0; pass < 12; pass++) c.tech.forEach(function (t) { if (!Meta.isUnlocked(c.id, t.id)) Meta.unlock(c.id, t.id); });
+      render(c.id);
+      var ready = q('.pt-tier.ready').length, btns = q('[data-prestige]').length;
+      var why = [];
+      if (!Meta.canPrestige(c.id)) why.push('chart complete but canPrestige false');
+      if (ready !== 1) why.push(ready + ' ready tiers');
+      if (btns !== 1) why.push(btns + ' prestige buttons');
+      /* The passive itself, applied to a scratch side. Compared against the
+         same side WITHOUT the star, so the commander trait's own life bonus
+         does not masquerade as the passive. */
+      var before = Meta.prestigeOf(c.id);
+      var res = Meta.doPrestige(c.id);
+      render(c.id);
+      if (!res || Meta.prestigeOf(c.id) !== before + 1) why.push('doPrestige did not add a star');
+      if (q('.pt-tier.earned').length !== before + 1) why.push('earned tiers ' + q('.pt-tier.earned').length);
+      if (!c.tech.every(function (t) { return !Meta.isUnlocked(c.id, t.id); })) why.push('tree did not reset');
+      var withStar = { traits: null, mods: freshMods(), maxLives: 20, lives: 20, gold: 100 };
+      Meta.applyTo(withStar, c.id);
+      var p = Meta.load(); p.prestige[c.id] = 0; Meta.save();
+      var without = { traits: null, mods: freshMods(), maxLives: 20, lives: 20, gold: 100 };
+      Meta.applyTo(without, c.id);
+      var changed = JSON.stringify([withStar.traits, withStar.mods, withStar.maxLives, withStar.gold]) !==
+                    JSON.stringify([without.traits, without.mods, without.maxLives, without.gold]);
+      if (!changed) why.push('tier-1 passive ' + (c.prestige[0] && c.prestige[0].name) + ' changed nothing on a side');
+      restore();
+      ok('43.4 a complete chart offers one PRESTIGE, and taking it earns the tier and its passive',
+         why.length === 0,
+         why.length ? why.join('; ') : 'one PRESTIGE button, star ' + (before + 1) + ' earned, tree reset, ' +
+                                       (c.prestige[0] && c.prestige[0].name) + ' measurably applied');
+    });
+  })();
+
   const pass = C.filter(function (c) { return c.verdict === 'PASS'; }).length;
   const fail = C.filter(function (c) { return c.verdict === 'FAIL'; }).length;
   const info = C.filter(function (c) { return c.verdict === 'INFO'; }).length;

@@ -703,14 +703,17 @@ const Game = {
       if (!(this.aiTier >= 0)) this.aiTier = AI_TIER_BASELINE;
     }
     if (this.isSeatBattle) rivalTech = 18;
-    Meta.applyToAI(this.sides[1], rival.id, rivalTech);
     /* Stage 2: the commander arrives PRESTIGED, the way a late-campaign power
-       should. One star, through the same applyPrestigeBonus every prestiged
-       player commander uses, applied after the fold exactly as applyTo does. */
-    if (this.rivalStage === 2 && typeof applyPrestigeBonus === 'function') {
-      this.sides[1].prestigeStars = Math.max(1, this.sides[1].prestigeStars || 0);
+       should. The star is set BEFORE applyToAI now (Session 41), because the
+       commander's own prestige passives run inside applyToAI ahead of its
+       fold and read this field; set afterwards, as it used to be, they would
+       apply to accumulators that had already been folded and do nothing. The
+       faction bonus still lands after, exactly as applyTo does. */
+    const prestiged = this.rivalStage === 2 && typeof applyPrestigeBonus === 'function';
+    if (prestiged) this.sides[1].prestigeStars = Math.max(1, this.sides[1].prestigeStars || 0);
+    Meta.applyToAI(this.sides[1], rival.id, rivalTech);
+    if (prestiged)
       applyPrestigeBonus(this.sides[1], rival.faction || this.sides[1].faction || 'human', 1);
-    }
 
     /* Loadouts: LOADOUT_SIZE towers each. The rival drafts its own coherent set. */
     this.sides[0].loadout = (opts.loadout && opts.loadout.length ? opts.loadout : TOWER_ORDER.slice(0, LOADOUT_SIZE)).slice(0, LOADOUT_SIZE);

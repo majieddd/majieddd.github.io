@@ -70,6 +70,26 @@ function freshTraits() {
 }
 
 /**
+ * The commander's own prestige passives, one per star earned, in order.
+ *
+ * Session 41: prestige used to grant the FACTION's flat bonus and the +20%
+ * fold below, and nothing that was about the commander. Each roster entry now
+ * carries five `prestige` passives that say what THIS commander becomes at
+ * each star, and several of them are the first writers of engine hooks that
+ * have had live readers and no writer for twenty sessions (surgeMul,
+ * vaultBonus, mods.interest, compileRateMul: see the freshTraits comment).
+ *
+ * Runs before foldTraits, like a chart node, because most passives write the
+ * same accumulators a node does. Tolerates a commander with no table so an
+ * unconverted entry loses nothing.
+ */
+function applyPrestigePassives(side, cmd, stars) {
+  const list = (cmd && cmd.prestige) || [];
+  for (let i = 0; i < Math.min(stars || 0, list.length); i++)
+    if (list[i] && typeof list[i].apply === 'function') list[i].apply(side.traits, side, side.mods);
+}
+
+/**
  * Fold the roster's trait accumulators into the side's live modifier set.
  * Called once, after the commander trait and every unlocked tech node has run.
  */
@@ -1482,8 +1502,21 @@ const Meta = {
   isUnlocked(id, techId) { return this.load().commanders[id].unlocked.includes(techId); },
 
   /** The node directly above this one, which acts as its prerequisite. */
+  /**
+   * The node this one hangs from.
+   *
+   * An EXPLICIT `parent` id wins when the commander's shape sets one (Session
+   * 41: every chart now has its own topology, and a child may hang from any
+   * node one tier up rather than only the one directly above it). The old
+   * same-column rule stays as the fallback so a chart with no shape stamped
+   * on it still resolves exactly as it always did. `row` remains the tier and
+   * is what the spend gate and the rival's build order read, which is why a
+   * shape may move a node sideways but never between tiers.
+   */
   parentOf(cmd, node) {
-    return node.row === 0 ? null : cmd.tech.find(t => t.col === node.col && t.row === node.row - 1);
+    if (node.row === 0) return null;
+    if (node.parent) return cmd.tech.find(t => t.id === node.parent) || null;
+    return cmd.tech.find(t => t.col === node.col && t.row === node.row - 1);
   },
 
   /** Gated by points available, by the node above, and by total points spent. */
@@ -1639,6 +1672,13 @@ const Meta = {
     side.prestigeStars = this.prestigeOf(cmd.id);
     cmd.trait.apply(side.traits, side, side.mods);
     for (const t of cmd.tech) if (this.isUnlocked(cmd.id, t.id)) t.apply(side.traits, side, side.mods);
+    /* PRESTIGE PASSIVES run BEFORE the fold, alongside the chart, because most
+       of them write the same trait accumulators a chart node does and the
+       fold is what turns those into live modifiers. The faction star bonus
+       below still runs after, exactly as it always has. `prestigeStars` is
+       the lensed value under Net, so a duel applies the same passives on both
+       clients. */
+    applyPrestigePassives(side, cmd, side.prestigeStars);
     foldTraits(side);
     applyPrestigeBonus(side, cmd.faction || this.faction() || 'human', side.prestigeStars);
     initAbilities(side, cmd, this.hasSecondAbility(cmd.id));
@@ -1658,6 +1698,11 @@ const Meta = {
       t.apply(side.traits, side, side.mods);
       budget -= t.cost;
     }
+    /* A prestiged rival earns its passives too, and they have to land BEFORE
+       this fold or the ones that write trait accumulators are inert. Game.start
+       sets prestigeStars on a stage-2 rival ahead of this call for exactly that
+       reason; an ordinary rival has zero and this is a no-op. */
+    applyPrestigePassives(side, cmd, side.prestigeStars || 0);
     foldTraits(side);
     /* The rival gets both abilities once it is deep enough to have earned them. */
     initAbilities(side, cmd, techDepth >= 10);

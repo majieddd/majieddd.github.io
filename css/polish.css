@@ -5110,3 +5110,103 @@ body.phone-hud .ps-body > #shop-list { display: grid; grid-template-columns: 1fr
   .pb-btn, .ps-scrim, .ps-panel, .pb-cd, .pr-btn, .pr-scrim,
   .pc-dot, .pc-tray { transition: none; }
 }
+
+/* ── THE TALENT MAP AND THE PRESTIGE TRACK (Session 41) ───────────────────
+   Owner's reference is a WoW-style talent chart: every commander with its own
+   silhouette of connecting lines, and a vertical prestige tracker at the
+   right. The map is nine absolutely placed nodes over one SVG of lines; the
+   track is five tiers on a spine.
+
+   The node itself is the SAME .tal-node the old grid used, with the same
+   owned / can / locked / ready classes, so every binding, pulse, focus ring
+   and contrast exemption written against it keeps applying. Only where it
+   sits changed. The old .talent-tree grid rules stay in style.css for any
+   caller that still builds one.
+
+   ONE ACCENT per surface: --cc (the commander's colour) marks what is
+   takeable, --gold marks what is owned or earned. Lines and locked tiers use
+   the line and mute tokens, which is what makes the lit path read as a path.
+   Motion is opacity and transform only. */
+.talent-wrap { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 12px; }
+.talent-scroll { flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: hidden;
+                 background: rgba(0,0,0,.28); border: 1px solid var(--line); border-radius: 10px;
+                 padding: 8px 8px 8px 58px; }
+.talent-map { position: relative; margin: 0 auto; }
+.tm-svg { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.tm-line { stroke: var(--line-2); stroke-width: 2; stroke-linecap: round; }
+.tm-line.lit { stroke: var(--gold); stroke-width: 2.5; }
+
+/* The tier gate sits in the left gutter at the tier's centre line. */
+.tm-gate { position: absolute; left: -52px; transform: translateY(-50%);
+           font-size: 10px; letter-spacing: .12em; color: var(--text-mute);
+           text-align: right; width: 44px; }
+.tm-gate.locked { opacity: .55; }
+
+/* left/top are the node CENTRE, so the cell translates back by half of
+   itself. The name hangs below without affecting the centre. */
+.tm-cell { position: absolute; transform: translate(-50%, -50%);
+           display: flex; flex-direction: column; align-items: center; gap: 4px; width: 88px; }
+.tm-cell .tal-name { font-size: 10px; font-weight: 700; letter-spacing: .05em; text-align: center;
+                     line-height: 1.15; max-width: 88px; color: var(--text-dim); }
+.tm-cell .tal-node.owned + .tal-name { color: var(--text); }
+.tm-cell .tal-node.locked + .tal-name { opacity: .5; }
+
+/* ---- the track ---- */
+.prestige-track { flex: 0 0 132px; background: rgba(0,0,0,.28); border: 1px solid var(--line);
+                  border-radius: 10px; padding: 10px 10px 12px; }
+.pt-head { display: flex; justify-content: space-between; align-items: baseline;
+           padding: 0 2px 8px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+.pt-head b  { font-size: 10px; letter-spacing: .16em; color: var(--text-dim); }
+.pt-head em { font: 700 12px/1 var(--num); font-style: normal; color: var(--gold); }
+/* The spine is one line behind the tiers, so the column reads as a path. */
+.pt-spine { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 4px 0; }
+.pt-spine::before { content: ''; position: absolute; left: 50%; top: 8px; bottom: 8px;
+                    width: 2px; transform: translateX(-50%); background: var(--line-2); }
+.pt-tier { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center;
+           gap: 3px; width: 100%; padding: 8px 4px; border-radius: 10px;
+           background: #0b1220; border: 2px solid #33405a; color: var(--text);
+           font: inherit; cursor: default; text-align: center;
+           transition: transform .13s var(--e-tap), opacity .13s var(--e-tap); }
+.pt-icon { font-size: 20px; line-height: 1; color: var(--text-dim); }
+.pt-name { font-size: 9px; font-weight: 700; letter-spacing: .06em; line-height: 1.15;
+           color: var(--text-dim); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pt-pct, .pt-cta { font: 700 9px/1 var(--num); letter-spacing: .06em; color: var(--text-mute); }
+.pt-tier.earned { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 14%, #0b1220); }
+.pt-tier.earned .pt-icon, .pt-tier.earned .pt-pct { color: var(--gold); }
+.pt-tier.earned .pt-name { color: var(--text); }
+/* Ready is the only tier that is a button, and the only one lit in the
+   commander's colour: it is the one thing on the track you can press. */
+.pt-tier.ready { border-color: var(--cc); cursor: pointer;
+                 box-shadow: 0 0 0 1px color-mix(in srgb, var(--cc) 40%, transparent); }
+.pt-tier.ready .pt-icon, .pt-tier.ready .pt-cta { color: var(--cc); }
+.pt-tier.ready:hover { transform: translateY(-2px); }
+.pt-tier.ready:focus-visible { outline: 2px solid var(--cc); outline-offset: 2px; }
+.pt-tier.next { border-color: var(--line-2); }
+.pt-tier.locked { opacity: .38; filter: grayscale(1); }
+
+/* Below the two-column setup breakpoint the detail pane is one column and
+   the tree has to give the track its own row. The map keeps its width and
+   scrolls sideways inside .talent-scroll, which is the one place on this
+   screen a horizontal scroll is the right answer: a five-column chart
+   squeezed to 320px is unreadable, a scrolling one is a chart. The track
+   turns sideways so five tiers fit in a row. */
+@media (max-width: 900px) {
+  .talent-wrap { flex-direction: column; min-width: 0; }
+  /* WIDTH IS PINNED TO THE PANE, or the map does not scroll, it CLIPS.
+     Measured at 390px before this line: .talent-scroll was 526px wide (the
+     460px map plus its gutters) inside a 390px viewport, scrollWidth equalled
+     clientWidth, and the fifth column was cut off by an ancestor's overflow
+     with no way to reach it. In a column flex the item's width defaults to
+     its content, so `flex: 1 1 auto; min-width: 0` does nothing for width.
+     mobile M14 asserts scrollWidth exceeds clientWidth here. */
+  .talent-scroll { width: 100%; max-width: 100%; box-sizing: border-box; }
+  .prestige-track { flex: 0 0 auto; width: 100%; }
+  .pt-spine { flex-direction: row; }
+  .pt-spine::before { left: 8px; right: 8px; top: 50%; bottom: auto; width: auto; height: 2px;
+                      transform: translateY(-50%); }
+  .pt-tier { flex: 1 1 0; min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pt-tier { transition: none; }
+  .pt-tier.ready:hover { transform: none; }
+}

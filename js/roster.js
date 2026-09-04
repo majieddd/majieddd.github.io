@@ -806,3 +806,316 @@ function freeCommanderOf(factionId) {
   const pick = list.find(c => c.free) || list[0];
   return pick ? pick.id : 'cadre';
 }
+
+
+/* ==========================================================================
+   COMMANDER TREE SHAPES AND PRESTIGE TRACKS (Session 41)
+
+   Owner: "Make all the commander's talent trees look more like [a WoW talent
+   tree], where each one has a unique shape of lines for different talents,
+   and on the right is the prestige tracker where each prestige unlocks 20%
+   increase in talent stats in addition to a unique passive power that
+   further defines the role and use of the commander."
+
+   TWO TABLES AND A LOADER, keyed by commander id and stamped onto the roster
+   at load. Kept apart from the chart() calls above on purpose: the charts
+   are content the wire depends on and the tables are shape and progression.
+
+   SHAPES. Every chart keeps its nine nodes, its ids and its three themes.
+   What a shape changes is which node each one HANGS FROM. A node's `row` is
+   its tier and never moves (the spend gate and the rival's build order read
+   it, and the duel contract carries node ids, so nothing here may renumber).
+   A shape is six parent choices: the three tier-1 nodes each pick a tier-0
+   parent, the three tier-2 nodes each pick a tier-1 parent. Written as node
+   NUMBERS 1..9 in chart order (col 0 = 1,2,3; col 1 = 4,5,6; col 2 = 7,8,9),
+   so a shape reads the same for every commander regardless of id prefix.
+   Twenty-eight distinct parent maps, and owner-sweep 43.3 holds them
+   distinct. Columns on screen are laid out by the loader from the parents,
+   so a child sits under the node it hangs from and two children of one
+   parent spread to either side.
+
+   PRESTIGE. Five passives per commander, one per star, applied by
+   applyPrestigePassives ahead of the fold like a chart node. The +20% per
+   star on every talent value already lives in foldTraits and is only
+   DISPLAYED by the track; the passive is the new half. Several of these are
+   the first writers of engine hooks that have had readers and no writer for
+   twenty sessions: surgeMul (the ascension surge), vaultBonus (the Vault's
+   skim), mods.interest (banked capital), compileRateMul (the machine
+   commanders' compile metric). Granting them here is what the freshTraits
+   comment asks for, and it is why those hooks stop being dead fields.
+
+   Every desc leads with the mechanic. Where a figure is gold it goes through
+   sqGold like the rest of this file.
+   ========================================================================== */
+
+const COMMANDER_SHAPES = {
+  /*            p2 p3 p5 p6 p8 p9   silhouette */
+  cadre:       [1, 2, 4, 5, 7, 8], /* the lattice: three straight lineages, the baseline */
+  vanta:       [1, 2, 1, 5, 1, 8], /* the index: one root, everything cross-referenced from it */
+  korrin:      [1, 2, 4, 2, 7, 8], /* the ledger: two columns settle into one account */
+  nyx:         [1, 2, 1, 5, 4, 8], /* the redline: a fork that feeds back */
+  orin:        [1, 2, 4, 5, 7, 5], /* the gantry: three uprights, one shared crossbeam */
+  vess:        [1, 5, 4, 5, 7, 5], /* the wall: every deep talent stands behind the centre */
+  isa:         [4, 2, 4, 5, 4, 8], /* the well: all three lineages draw from the middle */
+  seraph:      [4, 2, 4, 5, 7, 8], /* the sunburst: one dawn, two rays */
+  aurelia:     [1, 2, 4, 5, 4, 8], /* the chorus: two voices join under one */
+  lumen:       [1, 2, 7, 5, 7, 8], /* the lighthouse: the beam lineage anchors the ward */
+  cantor:      [1, 5, 4, 5, 7, 8], /* the sermon: the doubt branch answers the refrain */
+  halder:      [4, 5, 4, 5, 4, 5], /* the citadel: a single spine, every tier a wall */
+  ashtar:      [4, 2, 4, 2, 4, 2], /* the decree: one word, then one word again */
+  sevra:       [1, 2, 1, 2, 7, 8], /* the ossuary: two lineages grow from the first grave */
+  mawlord:     [7, 2, 4, 5, 7, 8], /* the gullet: it all starts at the maw */
+  thrax:       [1, 2, 4, 8, 7, 8], /* the hive: the mind talent feeds two bodies */
+  vorn:        [1, 8, 4, 5, 7, 8], /* the bloom: the spore lineage roots the plague */
+  ulgrim:      [7, 8, 7, 8, 7, 8], /* the jaw: everything hangs from CRUSH */
+  rake:        [4, 2, 1, 5, 7, 8], /* the rigging: crossed lines, nothing straight */
+  scarlet:     [1, 2, 4, 5, 1, 8], /* the blade: two edges off one hilt */
+  grist:       [1, 5, 4, 2, 7, 8], /* the scrapyard: parts bolted where they fit */
+  cinder:      [7, 2, 7, 5, 7, 8], /* the flashpoint: one spark lights three fuses */
+  dregg:       [1, 2, 7, 8, 7, 8], /* the fist: the iron lineage takes the tribute */
+  axiom:       [4, 5, 4, 5, 7, 8], /* the pipeline: the clock lineage drives the parse */
+  nyx_r:       [1, 2, 4, 5, 4, 5], /* the heatsink: cooling hangs off the pre-fetch */
+  lumen_r:     [4, 2, 1, 5, 4, 8], /* the bulkhead: the watchdog gates both shields */
+  mawlord_r:   [1, 2, 7, 8, 1, 2], /* the dataset: sample and prune, prune and sample */
+  dregg_r:     [7, 2, 4, 5, 1, 8]  /* the audit: the levy opens the books */
+};
+
+/* EVERY NODE STAYS ON ITS OWN LINEAGE'S COLUMN (0, 2, 4), and a link to a
+   parent in another lineage draws as a diagonal between columns.
+
+   The first cut did the opposite: it placed each child under its PARENT'S
+   column and spread siblings to either side. That un-crossed every
+   cross-lineage link, and owner-sweep 43.3 caught what that costs on its
+   first run: five commanders with different parent maps drew IDENTICAL
+   trees (rake and grist and dregg_r all drew cadre's lattice, scarlet drew
+   nyx's, lumen_r drew aurelia's), because the drawing depended only on where
+   the layout put things and not on what hung from what. A unique parent map
+   that draws identically is not unique to the eye.
+
+   Anchoring on the lineage column makes the drawing a one-to-one image of
+   the parent map: two shapes differ exactly when their lines do. It also
+   makes a collision impossible by construction (one node per lineage per
+   tier) and it is what the reference chart does, straight drops inside a
+   lineage and diagonals across them. Deterministic, so every client lays a
+   chart out the same way. */
+function layoutTechShape(cmd) {
+  const tech = cmd.tech;
+  const byNum = n => tech[n - 1];
+  const spec = COMMANDER_SHAPES[cmd.id];
+  tech.forEach(t => { t.x = t.col * 2; t.parent = null; });
+  if (spec) {
+    const kids = [2, 3, 5, 6, 8, 9];
+    kids.forEach((n, i) => { byNum(n).parent = byNum(spec[i]).id; });
+  } else {
+    /* No shape: the classic lattice, which is what parentOf's fallback draws. */
+    tech.forEach(t => { if (t.row > 0) t.parent = byNum(t.col * 3 + t.row).id; });
+  }
+}
+
+const COMMANDER_PRESTIGE = {
+  cadre: [
+    { name: 'EVEN KEEL',     icon: '⌂', desc: '+4% damage, rate and range.', apply: t => { t.dmg += 0.04; t.rate += 0.04; t.rng += 0.04; } },
+    { name: 'RESERVES',      icon: '⛨', desc: '+4 maximum lives.', apply: (t, s) => { s.maxLives += 4; s.lives += 4; } },
+    { name: 'QUARTERMASTER', icon: '◈', desc: 'Upgrades cost 8% less.', apply: t => { t.upgradeMul *= 0.92; } },
+    { name: 'DRILLED',       icon: '◉', desc: 'Every tower starts one level higher.', apply: t => { t.startLevel += 1; } },
+    { name: 'THE HOUSE',     icon: '★', desc: 'Reanimated attackers 15% weaker.', apply: t => { t.reanimResist += 0.15; } }
+  ],
+  vanta: [
+    { name: 'ANNOTATED',   icon: '◎', desc: 'Command upgrades offer one more option.', apply: t => { t.draftOptions += 1; } },
+    { name: 'CROSS-FILED', icon: '⊙', desc: '+6% damage for every command upgrade taken.', apply: t => { t.perModDamage += 0.06; } },
+    { name: 'FIRST EDITION', icon: '◈', desc: 'Begin with 2 command upgrades already drafted.', apply: t => { t.startingMods += 2; } },
+    { name: 'PRESS RUN',   icon: '⛁', desc: 'Command upgrades arrive one wave sooner.', apply: t => { t.draftEvery = Math.max(2, t.draftEvery - 1); } },
+    { name: 'THE ARCHIVE', icon: '★', desc: 'One more option and +6% more damage per upgrade.', apply: t => { t.draftOptions += 1; t.perModDamage += 0.06; } }
+  ],
+  korrin: [
+    { name: 'BULK ORDER',  icon: '◈', desc: 'Per-copy price growth 10% gentler.', apply: t => { t.costGrowthMul *= 0.90; } },
+    { name: 'WAREHOUSE',   icon: '⛁', desc: 'The Vault skims 25% more gold.', apply: t => { t.vaultBonus *= 1.25; } },
+    { name: 'CREDIT LINE', icon: '◉', desc: 'Banked gold earns 30% more interest.', apply: (t, s, m) => { m.interest *= 1.30; } },
+    { name: 'FREE SAMPLE', icon: '◎', desc: 'The first copy of every tower is free.', apply: t => { t.freeCopies += 1; } },
+    { name: 'WAR ECONOMY', icon: '★', desc: '+15% kill gold and the Vault skims 25% more again.', apply: t => { t.goldMul += 0.15; t.vaultBonus *= 1.25; } }
+  ],
+  nyx: [
+    { name: 'HOT START',   icon: '◎', desc: 'Ascension costs 10% less.', apply: t => { t.ascCostMul *= 0.90; } },
+    { name: 'OVERDRIVE',   icon: '⊙', desc: 'Each ascension adds +4% more damage.', apply: t => { t.perAscDamage += 0.04; } },
+    { name: 'SURGE COIL',  icon: '◈', desc: 'Surges are 40% stronger.', apply: t => { t.surgeMul *= 1.40; } },
+    { name: 'FLASHOVER',   icon: '⛁', desc: 'Every ascension also gives +3% rate.', apply: t => { t.ascendBonusRate += 0.03; } },
+    { name: 'MELTDOWN',    icon: '★', desc: 'Surges 40% stronger again and ascension 10% cheaper again.', apply: t => { t.surgeMul *= 1.40; t.ascCostMul *= 0.90; } }
+  ],
+  orin: [
+    { name: 'PRE-ASSEMBLED', icon: '◎', desc: 'Every tower starts one level higher.', apply: t => { t.startLevel += 1; } },
+    { name: 'SPARE PARTS',   icon: '◈', desc: 'Upgrades cost 10% less.', apply: t => { t.upgradeMul *= 0.90; } },
+    { name: 'SIGHTED IN',    icon: '⊙', desc: '+8% range.', apply: t => { t.rng += 0.08; } },
+    { name: 'SHOP FLOOR',    icon: '⛁', desc: 'Selling returns 15% more.', apply: t => { t.sellRate += 0.15; } },
+    { name: 'FACTORY FRESH', icon: '★', desc: 'Towers start two levels higher.', apply: t => { t.startLevel += 2; } }
+  ],
+  vess: [
+    { name: 'SANDBAGS',    icon: '⛨', desc: 'Leaks cost one fewer life.', apply: t => { t.leakReduce += 1; } },
+    { name: 'BUNKER',      icon: '◈', desc: '+6 maximum lives.', apply: (t, s) => { s.maxLives += 6; s.lives += 6; } },
+    { name: 'FIELD SURGERY', icon: '◎', desc: 'Recover 1 life every 3 waves.', apply: t => { t.waveHeal += 1 / 3; } },
+    { name: 'DIG DEEPER',  icon: '⛰', desc: 'Life recovery 30% more effective.', apply: t => { t.lifeGainMul += 0.30; } },
+    { name: 'BACKS TO THE WALL', icon: '★', desc: 'At 5 lives or fewer, +25% damage.', apply: t => { t.lastStandAt = Math.max(t.lastStandAt, 5); t.lastStandDmg += 0.25; } }
+  ],
+  isa: [
+    { name: 'STILLNESS',   icon: '◎', desc: 'Reanimated attackers 12% weaker.', apply: t => { t.reanimResist += 0.12; } },
+    { name: 'FORBEARANCE', icon: '⛨', desc: '+4 maximum lives.', apply: (t, s) => { s.maxLives += 4; s.lives += 4; } },
+    { name: 'THE VIGIL',   icon: '◈', desc: 'Life recovery 35% more effective.', apply: t => { t.lifeGainMul += 0.35; } },
+    { name: 'MERCY',       icon: '⊙', desc: 'Leaks cost one fewer life.', apply: t => { t.leakReduce += 1; } },
+    { name: 'THE THIRD DAY', icon: '★', desc: 'Recover 1 life every 2 waves.', apply: t => { t.waveHeal += 0.5; } }
+  ],
+  seraph: [
+    { name: 'FIRST LIGHT',  icon: '☀', desc: '+6% damage and range.', apply: t => { t.dmg += 0.06; t.rng += 0.06; } },
+    { name: 'WIDE HALO',    icon: '◎', desc: 'Support auras 20% wider.', apply: t => { t.auraRangeMul *= 1.20; } },
+    { name: 'GLARE',        icon: '⊙', desc: '+10% status effect strength.', apply: t => { t.status += 0.10; } },
+    { name: 'FULL SUN',     icon: '◈', desc: '+8% damage and range again.', apply: t => { t.dmg += 0.08; t.rng += 0.08; } },
+    { name: 'MERIDIAN',     icon: '★', desc: 'Auras 20% wider again and +10% rate.', apply: t => { t.auraRangeMul *= 1.20; t.rate += 0.10; } }
+  ],
+  aurelia: [
+    { name: 'HYMN',         icon: '◎', desc: '+0.2 life regeneration per wave.', apply: t => { t.lifeRegen += 0.2; } },
+    { name: 'DESCANT',      icon: '◈', desc: 'Life recovery 30% more effective.', apply: t => { t.lifeGainMul += 0.30; } },
+    { name: 'REFUGE',       icon: '⛨', desc: '+5 maximum lives.', apply: (t, s) => { s.maxLives += 5; s.lives += 5; } },
+    { name: 'ABSOLUTION',   icon: '⊙', desc: 'Leaks cost one fewer life.', apply: t => { t.leakReduce += 1; } },
+    { name: 'EVENSONG',     icon: '★', desc: '+0.3 regeneration per wave and recovery 30% more effective again.', apply: t => { t.lifeRegen += 0.3; t.lifeGainMul += 0.30; } }
+  ],
+  lumen: [
+    { name: 'WARDED',       icon: '⛨', desc: 'Towers resist jamming 30% more.', apply: t => { t.jamResist += 0.30; } },
+    { name: 'BRIGHT',       icon: '◎', desc: '+8% range.', apply: t => { t.rng += 0.08; } },
+    { name: 'LANCEHEAD',    icon: '⊙', desc: '+10% armour pierce.', apply: t => { t.pierce += 0.10; } },
+    { name: 'FLOODLIGHT',   icon: '◈', desc: 'Support auras 20% wider.', apply: t => { t.auraRangeMul *= 1.20; } },
+    { name: 'VERDICT',      icon: '★', desc: '+10% pierce again and +8% damage.', apply: t => { t.pierce += 0.10; t.dmg += 0.08; } }
+  ],
+  cantor: [
+    { name: 'SLOW VERSE',   icon: '◎', desc: 'Slows and weakens last 15% longer.', apply: t => { t.status += 0.15; } },
+    { name: 'SECOND THOUGHTS', icon: '⊙', desc: 'Slowed enemies take 10% more damage.', apply: t => { t.slowVuln += 0.10; } },
+    { name: 'HOMILY',       icon: '◈', desc: 'Damage over time 20% stronger.', apply: t => { t.dotMul += 0.20; } },
+    { name: 'LAST WORD',    icon: '⛨', desc: 'Statuses last 15% longer again.', apply: t => { t.status += 0.15; } },
+    { name: 'AMEN',         icon: '★', desc: 'Slowed enemies take 15% more damage again.', apply: t => { t.slowVuln += 0.15; } }
+  ],
+  halder: [
+    { name: 'BULWARK',      icon: '⛨', desc: '+8 maximum lives.', apply: (t, s) => { s.maxLives += 8; s.lives += 8; } },
+    { name: 'SHIELD WALL',  icon: '◎', desc: 'Leaks cost one fewer life.', apply: t => { t.leakReduce += 1; } },
+    { name: 'SECOND WIND',  icon: '◈', desc: 'Life recovery 40% more effective.', apply: t => { t.lifeGainMul += 0.40; } },
+    { name: 'STAND FAST',   icon: '⊙', desc: 'At 8 lives or fewer, +20% damage.', apply: t => { t.lastStandAt = Math.max(t.lastStandAt, 8); t.lastStandDmg += 0.20; } },
+    { name: 'BEDROCK',      icon: '★', desc: '+8 maximum lives again and +0.25 regeneration per wave.', apply: (t, s) => { s.maxLives += 8; s.lives += 8; t.lifeRegen += 0.25; } }
+  ],
+  ashtar: [
+    { name: 'THE PREAMBLE', icon: '◎', desc: '+5% damage, range and rate.', apply: t => { t.dmg += 0.05; t.rng += 0.05; t.rate += 0.05; } },
+    { name: 'THE CORDON',   icon: '⊙', desc: 'Support auras 15% wider.', apply: t => { t.auraRangeMul *= 1.15; } },
+    { name: 'THE INNER WALL', icon: '⛨', desc: '+4 maximum lives.', apply: (t, s) => { s.maxLives += 4; s.lives += 4; } },
+    { name: 'THE SEAL',     icon: '◈', desc: 'Towers resist jamming 40% more.', apply: t => { t.jamResist += 0.40; } },
+    { name: 'THE CHARTER',  icon: '★', desc: '+7% damage, range and rate again.', apply: t => { t.dmg += 0.07; t.rng += 0.07; t.rate += 0.07; } }
+  ],
+  sevra: [
+    { name: 'GRAVE DIRT',   icon: '◐', desc: 'Reanimates +20% health.', apply: t => { t.reanimHp += 0.20; } },
+    { name: 'QUICKENING',   icon: '◑', desc: 'Reanimates move 15% faster.', apply: t => { t.reanimSpeed += 0.15; } },
+    { name: 'TITHE',        icon: '◈', desc: 'Each reanimate pays ' + sqGold(3) + ' gold.', apply: t => { t.reanimGold += sqGold(3); } },
+    { name: 'LEGION',       icon: '⊗', desc: 'Reanimates +25% health again.', apply: t => { t.reanimHp += 0.25; } },
+    { name: 'RISEN',        icon: '★', desc: 'Every reanimation sends a second body 20% of the time.', apply: (t, s, m) => { m.doubleReanim += 0.20; } }
+  ],
+  mawlord: [
+    { name: 'APPETITE',     icon: '◎', desc: '+10% kill gold.', apply: t => { t.goldMul += 0.10; } },
+    { name: 'SECOND HELPING', icon: '◈', desc: 'Towers gain 1% damage per 15 kills.', apply: t => { t.killRamp += 1 / 15; } },
+    { name: 'GIRTH',        icon: '⊙', desc: '+8% splash radius.', apply: t => { t.splash += 0.08; } },
+    { name: 'MARROW',       icon: '⛁', desc: '+12% kill gold again.', apply: t => { t.goldMul += 0.12; } },
+    { name: 'ALL IS FOOD',  icon: '★', desc: 'Kill ramp 1% per 10 kills, without limit.', apply: t => { t.killRamp += 1 / 10; } }
+  ],
+  thrax: [
+    { name: 'CLUTCH',       icon: '◎', desc: 'Per-copy price growth 12% gentler.', apply: t => { t.costGrowthMul *= 0.88; } },
+    { name: 'MANDIBLE',     icon: '⛨', desc: '+6% rate.', apply: t => { t.rate += 0.06; } },
+    { name: 'HATCHERY',     icon: '◈', desc: 'The first copy of every tower is free.', apply: t => { t.freeCopies += 1; } },
+    { name: 'GANGLION',     icon: '⊙', desc: '+8% rate again.', apply: t => { t.rate += 0.08; } },
+    { name: 'THE SWARM',    icon: '★', desc: 'Price growth 12% gentler again and a second free copy.', apply: t => { t.costGrowthMul *= 0.88; t.freeCopies += 1; } }
+  ],
+  vorn: [
+    { name: 'FESTER',       icon: '◎', desc: 'Damage over time 20% stronger.', apply: t => { t.dotMul += 0.20; } },
+    { name: 'LINGERING',    icon: '⊙', desc: 'Statuses last 15% longer.', apply: t => { t.status += 0.15; } },
+    { name: 'ROT SETS IN',  icon: '◈', desc: 'Slowed enemies take 10% more damage.', apply: t => { t.slowVuln += 0.10; } },
+    { name: 'GANGRENE',     icon: '⛁', desc: 'Damage over time 25% stronger again.', apply: t => { t.dotMul += 0.25; } },
+    { name: 'PLAGUE YEAR',  icon: '★', desc: 'Statuses 20% longer again and +8% status strength.', apply: t => { t.status += 0.28; } }
+  ],
+  ulgrim: [
+    { name: 'BIG GAME',     icon: '◎', desc: '+15% damage to bosses and minibosses.', apply: t => { t.eliteDamage += 0.15; } },
+    { name: 'TROPHY',       icon: '◈', desc: 'Elites pay 30% more bounty.', apply: t => { t.eliteBounty += 0.30; } },
+    { name: 'JAWS',         icon: '⊙', desc: '+8% crit chance.', apply: t => { t.crit += 0.08; } },
+    { name: 'BONE BREAKER', icon: '⛁', desc: 'Crits deal 25% more.', apply: t => { t.critMult += 0.25; } },
+    { name: 'APEX PREDATOR', icon: '★', desc: '+20% elite damage again and elites pay 30% more again.', apply: t => { t.eliteDamage += 0.20; t.eliteBounty += 0.30; } }
+  ],
+  rake: [
+    { name: 'BOOTY',        icon: '◈', desc: '+12% kill gold.', apply: t => { t.goldMul += 0.12; } },
+    { name: 'PURSE',        icon: '⛁', desc: 'Begin with ' + sqGold(40) + ' extra gold.', apply: (t, s) => { s.gold += sqGold(40); } },
+    { name: 'FENCE',        icon: '◎', desc: 'Selling returns 20% more.', apply: t => { t.sellRate += 0.20; } },
+    { name: 'SMUGGLER',     icon: '⊙', desc: 'Banked gold earns 25% more interest.', apply: (t, s, m) => { m.interest *= 1.25; } },
+    { name: 'TREASURE FLEET', icon: '★', desc: '+15% kill gold again and ' + sqGold(60) + ' more starting gold.', apply: (t, s) => { t.goldMul += 0.15; s.gold += sqGold(60); } }
+  ],
+  scarlet: [
+    { name: 'RED MIST',     icon: '◎', desc: '+8% damage.', apply: t => { t.dmg += 0.08; } },
+    { name: 'OPEN VEIN',    icon: '⊙', desc: '+8% crit chance.', apply: t => { t.crit += 0.08; } },
+    { name: 'CLEAVER',      icon: '◈', desc: 'Crits deal 30% more.', apply: t => { t.critMult += 0.30; } },
+    { name: 'BLOOD DRUNK',  icon: '⛁', desc: '+10% damage again.', apply: t => { t.dmg += 0.10; } },
+    { name: 'CORNERED',     icon: '★', desc: 'At 6 lives or fewer, +30% damage.', apply: t => { t.lastStandAt = Math.max(t.lastStandAt, 6); t.lastStandDmg += 0.30; } }
+  ],
+  grist: [
+    { name: 'SCRAP VALUE',  icon: '◎', desc: 'Selling returns 15% more.', apply: t => { t.sellRate += 0.15; } },
+    { name: 'BODGE',        icon: '◈', desc: 'Upgrades cost 12% less.', apply: t => { t.upgradeMul *= 0.88; } },
+    { name: 'MAGPIE',       icon: '⛁', desc: 'The Vault skims 30% more gold.', apply: t => { t.vaultBonus *= 1.30; } },
+    { name: 'SPARE HULLS',  icon: '⊙', desc: 'Per-copy price growth 10% gentler.', apply: t => { t.costGrowthMul *= 0.90; } },
+    { name: 'NOTHING WASTED', icon: '★', desc: 'Selling returns 25% more again.', apply: t => { t.sellRate += 0.25; } }
+  ],
+  cinder: [
+    { name: 'TINDER',       icon: '◎', desc: '+10% splash radius.', apply: t => { t.splash += 0.10; } },
+    { name: 'SLOW MATCH',   icon: '⊙', desc: 'Damage over time 20% stronger.', apply: t => { t.dotMul += 0.20; } },
+    { name: 'WHITE HEAT',   icon: '◈', desc: '+8% damage.', apply: t => { t.dmg += 0.08; } },
+    { name: 'BACKDRAFT',    icon: '⛁', desc: '+12% splash radius again.', apply: t => { t.splash += 0.12; } },
+    { name: 'BURN IT ALL',   icon: '★', desc: 'Damage over time 25% stronger again and +10% status.', apply: t => { t.dotMul += 0.25; t.status += 0.10; } }
+  ],
+  dregg: [
+    { name: 'PRESS GANG',   icon: '◎', desc: '+8% damage and rate.', apply: t => { t.dmg += 0.08; t.rate += 0.08; } },
+    { name: 'PROTECTION MONEY', icon: '◈', desc: '+10% kill gold.', apply: t => { t.goldMul += 0.10; } },
+    { name: 'KNUCKLES',     icon: '⊙', desc: '+8% crit chance.', apply: t => { t.crit += 0.08; } },
+    { name: 'REIGN OF FEAR', icon: '⛁', desc: '+10% damage and rate again.', apply: t => { t.dmg += 0.10; t.rate += 0.10; } },
+    { name: 'THE THRONE',   icon: '★', desc: 'Every tower starts one level higher and crits deal 20% more.', apply: t => { t.startLevel += 1; t.critMult += 0.20; } }
+  ],
+  axiom: [
+    { name: 'WARM CACHE',   icon: '◎', desc: 'The compile metric counts 25% faster.', apply: t => { t.compileRateMul *= 1.25; } },
+    { name: 'TURBO',        icon: '⊙', desc: '+6% rate.', apply: t => { t.rate += 0.06; } },
+    { name: 'PRECOMPILED',  icon: '◈', desc: 'Begin one compile level up.', apply: t => { t.compileFloor += 1; } },
+    { name: 'MULTITHREAD',  icon: '⛁', desc: 'The compile metric counts 25% faster again.', apply: t => { t.compileRateMul *= 1.25; } },
+    { name: 'RELEASE BUILD', icon: '★', desc: 'Begin one more compile level up and +6% damage.', apply: t => { t.compileFloor += 1; t.dmg += 0.06; } }
+  ],
+  nyx_r: [
+    { name: 'UNDERVOLT',    icon: '◎', desc: 'Ascension costs 10% less.', apply: t => { t.ascCostMul *= 0.90; } },
+    { name: 'BOOST CLOCK',  icon: '⊙', desc: 'Surges are 35% stronger.', apply: t => { t.surgeMul *= 1.35; } },
+    { name: 'THERMAL PASTE', icon: '◈', desc: 'The compile metric counts 25% faster.', apply: t => { t.compileRateMul *= 1.25; } },
+    { name: 'BURST MODE',   icon: '⛁', desc: 'Each ascension adds +4% more damage.', apply: t => { t.perAscDamage += 0.04; } },
+    { name: 'CRYOGENIC',     icon: '★', desc: 'Surges 35% stronger again and ascension 10% cheaper again.', apply: t => { t.surgeMul *= 1.35; t.ascCostMul *= 0.90; } }
+  ],
+  lumen_r: [
+    { name: 'FIREWALL',     icon: '⛨', desc: 'Towers resist jamming 35% more.', apply: t => { t.jamResist += 0.35; } },
+    { name: 'HEARTBEAT',    icon: '◎', desc: 'The compile metric counts 25% faster.', apply: t => { t.compileRateMul *= 1.25; } },
+    { name: 'AIR GAP',      icon: '◈', desc: '+5 maximum lives.', apply: (t, s) => { s.maxLives += 5; s.lives += 5; } },
+    { name: 'HARDENED KERNEL', icon: '⊙', desc: 'Jam resistance 35% more again.', apply: t => { t.jamResist += 0.35; } },
+    { name: 'ZERO TRUST',   icon: '★', desc: 'Leaks cost one fewer life and +8% range.', apply: t => { t.leakReduce += 1; t.rng += 0.08; } }
+  ],
+  mawlord_r: [
+    { name: 'WARM START',   icon: '◎', desc: 'The compile metric counts 25% faster.', apply: t => { t.compileRateMul *= 1.25; } },
+    { name: 'EPOCH',        icon: '◈', desc: 'Towers gain 1% damage per 15 kills.', apply: t => { t.killRamp += 1 / 15; } },
+    { name: 'LABELLED',     icon: '⊙', desc: '+10% kill gold.', apply: t => { t.goldMul += 0.10; } },
+    { name: 'MIXED PRECISION', icon: '⛁', desc: 'The compile metric counts 25% faster again.', apply: t => { t.compileRateMul *= 1.25; } },
+    { name: 'CONVERGED',    icon: '★', desc: 'Kill ramp 1% per 10 kills and begin one compile level up.', apply: t => { t.killRamp += 1 / 10; t.compileFloor += 1; } }
+  ],
+  dregg_r: [
+    { name: 'COMPOUNDING',  icon: '◎', desc: 'Banked gold earns 30% more interest.', apply: (t, s, m) => { m.interest *= 1.30; } },
+    { name: 'TAX BREAK',    icon: '◈', desc: 'Upgrades cost 10% less.', apply: t => { t.upgradeMul *= 0.90; } },
+    { name: 'FAST CLOSE',   icon: '⊙', desc: 'The compile metric counts 25% faster.', apply: t => { t.compileRateMul *= 1.25; } },
+    { name: 'DIVIDEND',     icon: '⛁', desc: 'Interest 30% more again.', apply: (t, s, m) => { m.interest *= 1.30; } },
+    { name: 'HOSTILE TAKEOVER', icon: '★', desc: 'The Vault skims 40% more gold and +6% damage.', apply: t => { t.vaultBonus *= 1.40; t.dmg += 0.06; } }
+  ]
+};
+
+/* Stamp both tables onto the roster at load. Idempotent, and it never
+   renumbers or reorders a node: ids are what the duel contract carries. */
+(function stampCommanderTrees() {
+  COMMANDER_ROSTER.forEach(cmd => {
+    if (cmd.tech && cmd.tech.length) layoutTechShape(cmd);
+    cmd.prestige = COMMANDER_PRESTIGE[cmd.id] || [];
+  });
+})();

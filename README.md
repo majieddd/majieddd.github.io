@@ -338,7 +338,7 @@ posed mid-animation, so the loadout grid, the shop, the tooltips, the talent
 trees and the soul shop all show real artwork rather than an icon font.
 
 
-## Cosmic Conquest — Poly Protocol (3D TD demo)
+## Cosmic Conquest: Poly Protocol (3D TD demo)
 
 A self-contained medium/low-poly WebGL2 tower defense using the **Neon Reliquary**
 art register (painted skybox, toon bands, posterized grain). Custom micro-engine,

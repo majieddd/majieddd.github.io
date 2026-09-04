@@ -597,6 +597,42 @@
          ? 'the ring opened with ' + radialWhy.slice(3) + ' controls, spread apart and all on screen'
          : radialWhy);
 
+    /* ---- M14 the talent map scrolls on a phone instead of clipping ------- */
+    /* Session 41 put every commander's chart on a five-column map beside a
+       prestige track. Measured at 390px before its CSS was fixed: the track
+       dropped below correctly, but .talent-scroll was 526px wide inside a
+       390px viewport with scrollWidth equal to clientWidth, so the fifth
+       column was cut off by an ancestor's overflow and nothing could reach
+       it. Owner-sweep 43.x holds the desktop DOM; this is the one phone
+       property that desktop cannot see. Leaves the battle screen exactly as
+       it found it, since the checks after this one assume it. */
+    var mapWhy = 'not attempted';
+    if (typeof UI !== 'undefined' && UI.renderCommanders && typeof COMMANDER_ROSTER !== 'undefined') {
+      var keepSel = UI.sel && UI.sel.commander;
+      try {
+        UI.sel.commander = (COMMANDER_ROSTER[1] || COMMANDER_ROSTER[0]).id;
+        UI.show('screen-command'); UI.renderCommanders();
+        var wrapEl = document.querySelector('#commander-detail .talent-wrap');
+        var scrollEl = document.querySelector('#commander-detail .talent-scroll');
+        var spineEl = document.querySelector('#commander-detail .pt-spine');
+        if (!wrapEl || !scrollEl || !spineEl) mapWhy = 'talent map or track not rendered';
+        else {
+          var problems = [];
+          if (getComputedStyle(wrapEl).flexDirection !== 'column') problems.push('tree and track are side by side at ' + window.innerWidth + 'px');
+          if (getComputedStyle(spineEl).flexDirection !== 'row') problems.push('track is still a column');
+          if (!(scrollEl.scrollWidth > scrollEl.clientWidth + 1))
+            problems.push('map does not scroll: scrollWidth ' + scrollEl.scrollWidth + ' vs clientWidth ' + scrollEl.clientWidth + ', so its right edge is clipped');
+          if (document.documentElement.scrollWidth > window.innerWidth + 1) problems.push('the page itself scrolls sideways');
+          mapWhy = problems.length ? problems.join('; ') : 'ok';
+        }
+      } catch (e) { mapWhy = 'threw: ' + e.message; }
+      UI.sel.commander = keepSel;
+      UI.show('screen-game');
+    } else mapWhy = 'commander screen unavailable';
+    ok('M14 the talent map scrolls on a phone instead of clipping its right edge',
+       mapWhy === 'ok',
+       mapWhy === 'ok' ? 'tree above track, track in a row, map scrolls inside its box, page does not' : mapWhy);
+
     /* ---- M9 a tap on a tile places a tower, which is the whole point ---- */
     var placed = 'not attempted';
     if (typeof Phone !== 'undefined' && Phone.on && typeof Game !== 'undefined' && Game.canBuild) {

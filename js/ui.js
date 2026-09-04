@@ -1801,12 +1801,7 @@ const UI = {
       </div>
       ${this.renderTechChart(c)}
       <div class="cd-foot">
-        <p class="hint">Talents are permanent. Fight with a commander to earn levels; each level grants one point. Deeper rows unlock once enough points are spent in the tree.</p>
-        ${Meta.canPrestige(c.id)
-          ? `<button class="btn btn-sm prestige-btn" data-prestige="1">✦ PRESTIGE (${Meta.prestigeOf(c.id)}/5)</button>`
-          : Meta.prestigeOf(c.id)
-            ? `<span class="prestige-tag" data-tt="PRESTIGE ${Meta.prestigeOf(c.id)}/5|Talent values +${Meta.prestigeOf(c.id) * 20}%, plus the stacking faction bonus. Max the chart again to prestige further.">✦ ${Meta.prestigeOf(c.id)}/5 · talents +${Meta.prestigeOf(c.id) * 20}%</span>`
-            : ''}
+        <p class="hint">Talents are permanent. Fight with a commander to earn levels; each level grants one point. Deeper tiers unlock once enough points are spent. Complete the chart to prestige on the track beside it.</p>
         <button class="btn btn-sm" data-reset-tree="1">RESET TREE</button>
       </div>`;
 
@@ -1842,11 +1837,16 @@ const UI = {
     if (pbtn) pbtn.addEventListener('click', () => {
       const next = Meta.prestigeOf(c.id) + 1;
       const fb = PRESTIGE_BONUS[c.faction || Meta.faction() || 'human'];
+      /* The commander's own passive for this star, which is the reason to
+         prestige THIS commander rather than another. Named first because it
+         is the one line of the three that differs between commanders. */
+      const pp = (c.prestige || [])[next - 1];
       this.confirmBox('PRESTIGE ' + c.name + '?',
         '<p>Their level and technology chart <b>reset</b>. In return, permanently:</p>' +
         '<ul class="cfm-list"><li>\u2726 prestige star <b>' + next + ' of 5</b></li>' +
-        '<li>\u2726 ' + fb.desc + '</li>' +
-        '<li>\u2726 every talent value <b>+20%</b> per star</li></ul>',
+        (pp ? '<li>\u2726 <b>' + pp.name + '</b>: ' + pp.desc + '</li>' : '') +
+        '<li>\u2726 every talent value <b>+20%</b> per star</li>' +
+        '<li>\u2726 ' + fb.desc + '</li></ul>',
         '\u2726 PRESTIGE',
         () => {
           Meta.doPrestige(c.id);
@@ -1861,54 +1861,106 @@ const UI = {
    * A classic talent tree: three columns, three rows, icon frames, vertical
    * dependency arrows, and rows gated behind total points spent in the tree.
    */
+  /**
+   * A talent tree with a SHAPE, and a prestige track beside it (Session 41).
+   *
+   * Owner's reference was a WoW-style chart: every commander has its own
+   * silhouette of connecting lines, and a vertical prestige tracker on the
+   * right. So the nine nodes are placed on a five-column, three-tier map at
+   * the `x` and `row` the roster's shape loader stamped on them, and the
+   * lines are drawn in one SVG underneath from each child to its `parent`,
+   * lit gold once the parent is owned. Three commanders sharing a lineage
+   * therefore read as three different trees, because they ARE: the parent
+   * map is what differs, and owner-sweep 43.3 holds all twenty-eight distinct.
+   *
+   * What did NOT change, on purpose: the `tal-node` button and its classes
+   * (owned / can / locked / ready), `data-tech`, the title carrying the
+   * reason, and the row gate. Every existing binding, pulse and contrast
+   * exemption keeps working because the node is the same node in a new
+   * place. The per-node description paragraph is gone from the map, since a
+   * map is read at a glance; it lives in the title, one hover away, as the
+   * reference image does it.
+   */
   renderTechChart(c) {
+    const CW = 92, TH = 112, NODE = 52, PAD = 10;
+    const W = 5 * CW, H = 3 * TH + PAD;
     const spent = Meta.spentIn(c.id);
     /* Only while a post-match detour is standing on THIS commander. A chart
        that pulses every time it has a spare point would stop meaning
        anything, and the point of the route is that this visit is different. */
     const lit = !!(this._levelRoute && this._levelRoute.commander === c.id);
-    const grid = [];
-    for (let row = 0; row < 3; row++) {
-      const gate = TALENT_ROW_GATE[row] || 0;
-      const rowLocked = spent < gate;
-      const cells = [];
-      for (let col = 0; col < 3; col++) {
-        const n = c.tech.find(t => t.col === col && t.row === row);
-        if (!n) { cells.push('<div class="tal-cell empty"></div>'); continue; }
-        const owned = Meta.isUnlocked(c.id, n.id);
-        const reason = Meta.lockReason(c.id, n.id);
-        const can = reason === null;
-        const parent = Meta.parentOf(c, n);
-        /* aria-hidden because this glyph is a DECORATIVE EDGE, not information.
-           Whether a tech is takeable is already carried by the button below it,
-           which renders owned / can / locked / ready and states the reason in
-           its own title. The arrow only draws the line between parent and
-           child, so six screen readers announcing a bare triangle is noise.
-           This is also what exempts its 1.75:1 unlit contrast from WCAG 1.4.3:
-           the dim state is a deliberately recessive connector that lights gold
-           when the parent unlocks, and the lit state is the one that carries
-           meaning. Measured 2026-08-26: it was the last contrast failure
-           standing across six screens, 6 nodes on the commander chart. */
-        const arrow = parent
-          ? `<span class="tal-arrow ${Meta.isUnlocked(c.id, parent.id) ? 'lit' : ''}" aria-hidden="true">▲</span>` : '';
-        cells.push(`<div class="tal-cell">
-          ${arrow}
-          <button class="tal-node ${owned ? 'owned' : can ? 'can' : 'locked'}${lit && !owned && can ? ' ready' : ''}"
-                  data-tech="${n.id}" ${owned || !can ? 'disabled' : ''} style="--cc:${c.color}"
-                  title="${n.desc}${owned ? '' : reason ? ', ' + reason : ''}">
-            <span class="tal-icon">${n.icon}</span>
-            <span class="tal-rank">${owned ? n.cost + '/' + n.cost : '0/' + n.cost}</span>
-          </button>
-          <span class="tal-name">${n.name}</span>
-          <span class="tal-desc">${n.desc}</span>
-        </div>`);
-      }
-      grid.push(`<div class="tal-row ${rowLocked ? 'row-locked' : ''}">
-        <div class="tal-gate">${gate === 0 ? 'OPEN' : gate + ' PTS'}</div>
-        <div class="tal-cells">${cells.join('')}</div>
-      </div>`);
-    }
-    return `<div class="talent-tree">${grid.join('')}</div>`;
+    const at = t => ({ cx: t.x * CW + CW / 2, cy: t.row * TH + PAD + NODE / 2 });
+
+    /* LINES FIRST, in one SVG under the nodes. A child's line is lit when its
+       parent is owned, which is exactly when the child becomes takeable. */
+    const lines = c.tech.filter(t => t.row > 0).map(t => {
+      const p = Meta.parentOf(c, t);
+      if (!p) return '';
+      const a = at(p), b = at(t);
+      const on = Meta.isUnlocked(c.id, p.id);
+      return `<line class="tm-line${on ? ' lit' : ''}" x1="${a.cx}" y1="${a.cy}" x2="${b.cx}" y2="${b.cy}"></line>`;
+    }).join('');
+
+    const gates = [0, 1, 2].map(r => {
+      const g = TALENT_ROW_GATE[r] || 0;
+      return `<div class="tm-gate${spent < g ? ' locked' : ''}" style="top:${r * TH + PAD + NODE / 2}px">${g === 0 ? 'OPEN' : g + ' PTS'}</div>`;
+    }).join('');
+
+    const nodes = c.tech.map(n => {
+      const owned = Meta.isUnlocked(c.id, n.id);
+      const reason = Meta.lockReason(c.id, n.id);
+      const can = reason === null;
+      const pos = at(n);
+      return `<div class="tm-cell" style="left:${pos.cx}px;top:${pos.cy}px">
+        <button class="tal-node ${owned ? 'owned' : can ? 'can' : 'locked'}${lit && !owned && can ? ' ready' : ''}"
+                data-tech="${n.id}" ${owned || !can ? 'disabled' : ''} style="--cc:${c.color}"
+                title="${n.desc}${owned ? '' : reason ? ', ' + reason : ''}">
+          <span class="tal-icon">${n.icon}</span>
+          <span class="tal-rank">${owned ? n.cost + '/' + n.cost : '0/' + n.cost}</span>
+        </button>
+        <span class="tal-name">${n.name}</span>
+      </div>`;
+    }).join('');
+
+    return `<div class="talent-wrap">
+      <div class="talent-scroll"><div class="talent-map" style="width:${W}px;height:${H}px">
+        <svg class="tm-svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true">${lines}</svg>
+        ${gates}${nodes}
+      </div></div>
+      ${this.renderPrestigeTrack(c)}
+    </div>`;
+  },
+
+  /**
+   * The prestige tracker: five tiers on a vertical spine, earned ones lit, the
+   * next one carrying the PRESTIGE button when the chart is complete.
+   *
+   * Each tier states the two things a star grants. The +20% to every talent
+   * value is applied in foldTraits and has been since prestige shipped; the
+   * track only puts a number on it. The passive is the commander's own, from
+   * the roster's prestige table, and is what makes ASHTAR's fifth star a
+   * different decision from MAWLORD's. The faction star bonus still applies
+   * and is named once in the header rather than five times down the column.
+   */
+  renderPrestigeTrack(c) {
+    const stars = Meta.prestigeOf(c.id);
+    const can = Meta.canPrestige(c.id);
+    const fb = PRESTIGE_BONUS[c.faction || Meta.faction() || 'human'];
+    const list = c.prestige || [];
+    const tiers = [1, 2, 3, 4, 5].map(i => {
+      const p = list[i - 1] || { name: 'PRESTIGE ' + i, icon: '✦', desc: '' };
+      const state = i <= stars ? 'earned' : i === stars + 1 ? (can ? 'ready' : 'next') : 'locked';
+      const tip = ttEsc('PRESTIGE ' + i + ' of 5: ' + p.name) + '|' +
+                  ttEsc('+20% to every talent value (+' + (20 * i) + '% at this star). ' + p.desc);
+      const inner = `<span class="pt-icon">${p.icon}</span><span class="pt-name">${p.name}</span>`;
+      return state === 'ready'
+        ? `<button class="pt-tier ${state}" data-prestige="1" data-tt="${tip}" style="--cc:${c.color}">${inner}<span class="pt-cta">✦ PRESTIGE</span></button>`
+        : `<div class="pt-tier ${state}" data-tt="${tip}" style="--cc:${c.color}">${inner}<span class="pt-pct">+${20 * i}%</span></div>`;
+    }).join('');
+    return `<aside class="prestige-track" data-tt="${ttEsc('PRESTIGE')}|${ttEsc('Complete the whole chart to prestige. Each star resets the chart and level, and permanently grants +20% to every talent value, the commander passive shown on that tier, and the faction bonus: ' + fb.desc + '.')}">
+      <div class="pt-head"><b>PRESTIGE</b><em>${stars}/5</em></div>
+      <div class="pt-spine">${tiers}</div>
+    </aside>`;
   },
 
   /* ══════════════════════════════════════════════ SCREEN 2. THEATRE ═══ */

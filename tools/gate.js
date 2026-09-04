@@ -88,7 +88,7 @@ function staticGates() {
      whole life: docs/ART-BIBLE.md carried one for months and was flagged in
      three separate sessions as "outside the gate's scan" rather than fixed.
      A rule phrased with never needs an exhaustive scan or it is a preference. */
-  const em = run(process.execPath, ['tools/emdash.js', 'js', 'css', 'tools', 'docs', 'build.js', 'index.html']);
+  const em = run(process.execPath, ['tools/emdash.js', 'js', 'css', 'tools', 'docs', 'build.js', 'index.html', 'README.md']);
   if (/would fix 0 occurrences/.test(em.out)) say('em dash: clean');
   else fail('em dash: ' + em.out.trim().split('\n').slice(0, 4).join(' | '));
 
