@@ -50,7 +50,7 @@ const G = vm.runInContext(
   'ACT_MORALS, ACT_SCENARIOS, BOONS, GX_SOL_ENCOUNTERS, GX_ACT_ENCOUNTERS, ' +
   'TOWER_TYPES, TOWER_ORDER, ENEMY_TYPES, FACTION_UNITS, POWER_ORDER, ' +
   'ELEMENTS, COMBOS, ABILITIES, PLAYER_MODS, ENEMY_MODS, SUMMON_DOCTRINES, ' +
-  'MACHINE_HOST, originKeyOf, ARTPACK, ' +
+  'MACHINE_HOST, originKeyOf, ARTPACK, LOADOUT_SIZE, ' +
   'MAPS, SCENARIOS, ARENA_MODS, TARGET_MODES, LEVEL_ROLLS, SECRET_FACTIONS, LORE_CODEX, ' +
   'WORLD_MAPS, WORLD_MAP_BY_NAME, TERRA_VOCAB, FAMILY_REFERENCE, FAMILY_REFERENCE_BY_ID, ' +
   'CAMPAIGN_THEATRES, CAMPAIGN_THEATRE_BY_ID, CAMPAIGN_ACTS_BY_POWER, CAMPAIGN_BONUS })', ctx);
@@ -1375,7 +1375,7 @@ function index() {
   const w = s => o.push(s);
   w('<!doctype html><meta charset="utf-8"><title>Cosmic Conquest spine</title>');
   w('<style>' + CSS + '</style><body data-fac="index">');
-  w('<div class="wrap"><h1>COSMIC CONQUEST &mdash; THE SPINE</h1>');
+  w('<div class="wrap"><h1>COSMIC CONQUEST: THE SPINE</h1>');
   w('<p class="sub">The canonical reference for everything on main: every campaign in play order, ' +
     'every tower, denizen, commander, boon, element, reaction and ability, each with its stable ' +
     'ref and the exact source line it is generated from. Rebuilt from the game itself on every ' +
@@ -1427,6 +1427,96 @@ function index() {
     'spine.json are regenerated together by <a href="' + REPO_BLOB + 'tools/storyboard.js">' +
     'tools/storyboard.js</a>; tools/gate.js fails if they go stale, and the deploy workflow ' +
     'rebuilds them on every push to main, so only what is actually on main can appear here.</p>');
+
+  /* ---- THE BLUEPRINT (Session 41): the nine sections a design document
+     carries that a catalogue does not. Measured before this block existed,
+     with the aegis-suite instrument (node tools/blueprint.js check
+     narrative/index.html): 5 of the 14 contract sections in 14,864 words,
+     namely the shared systems, the boards, Decided, Task list and Where we
+     are. A page a person reads as complete was missing the reference game,
+     the pillars, the loop, the kit, the concept record, the numbers, the
+     interface, the build order and the verification. Every count below is
+     read from the game at generation and never typed; every file named is
+     linked at its source; each section registers a blueprint:<id> ref in
+     spine.json so a note can quote it like tower:flak. Nothing below this
+     block moves. ---- */
+  const bp = (id, title, body) => {
+    w('<h2 id="bp-' + id + '">' + title + '</h2>');
+    w('<p class="sub">' + body + ' ' +
+      spine('blueprint:' + id, 'blueprint', title, null, 'index.html', 'bp-' + id, 'tools/storyboard.js') + '</p>');
+  };
+  /* Origins are read off the towers, in first-appearance order, because the
+     sandbox above exposes TOWER_TYPES and not ORIGIN_ORDER. */
+  const origins = [...new Set(G.TOWER_ORDER.map(t => G.TOWER_TYPES[t].origin))];
+  const perOrigin = origins.map(o => G.TOWER_ORDER.filter(t => G.TOWER_TYPES[t].origin === o).length);
+  const plates = (require('fs').readFileSync(require('path').join(__dirname, '..', 'js', 'artpack.js'), 'utf8')
+                  .match(/"data:image/g) || []).length;
+  const doc = f => '<a href="' + REPO_BLOB + f + '">' + f + '</a>';
+  w('<h2 id="blueprint" style="margin-top:34px">The blueprint</h2>');
+  w('<p class="sub">The design document this page was missing. A catalogue says what exists; a blueprint ' +
+    'says what was borrowed, what the game stands for, what it is built from, how it is proven, and in ' +
+    'what order. The nine sections below are the ones the aegis-suite contract asks for ' +
+    '(<code>node tools/blueprint.js check narrative/index.html</code>) and this page did not carry until ' +
+    'Session 41. They regenerate with the rest of the page.</p>');
+  bp('reference', 'Reference',
+     'Kingdom Rush and Bloons TD 6 for tower identity and the upgrade branch, Hades for how much ' +
+     'distinctness a small roster can carry (' + doc('docs/NEW-TOWERS-DESIGN.md') + '). Borrowed: towers ' +
+     'with branching upgrades and a radial upgrade menu on a phone; a rival that builds on the far half ' +
+     'and sends denizens at you; commanders as builds, with talents and prestige. What this game does ' +
+     'that none of them do: a two-seat duel in deterministic lockstep, so one seed and one input stream ' +
+     'replay bit for bit on both seats.');
+  bp('pillars', 'Pillars',
+     '<b style="color:#fff">1.</b> Every power fights with its own arsenal: ' + G.TOWER_ORDER.length +
+     ' towers, ' + perOrigin.join(', ') + ' per origin across ' + origins.length + ' origins, and ' +
+     'every commander drafts its own signature first. <b style="color:#fff">2.</b> Decisions, not ' +
+     'busywork: a loadout of ' + G.LOADOUT_SIZE + ', a talent chart spent to its last point, prestige that ' +
+     'resets the chart for a passive. <b style="color:#fff">3.</b> Determinism: a duel is a seed and an ' +
+     'input stream, and the fingerprint proves both seats agree. <b style="color:#fff">4.</b> Fully ' +
+     'playable on a phone: tap a tile to build, tap a tower for its radial, and the bar always shows the ' +
+     'base, the skill and the units.');
+  bp('loop', 'Core loop',
+     'Moment to moment: a wave arrives, kills pay gold, gold buys a tower, an upgrade or a sent denizen, ' +
+     'and the next wave can be rushed for its bonus. Session: one board from the first wave to the win or ' +
+     'the loss, the commander skill on cooldown, the base upgrading between waves; the board pays souls ' +
+     'and commander XP. Long term: the campaign across its theatres and planets, the talent chart, ' +
+     'prestige, the soul shop.');
+  bp('kit', 'Kit',
+     'Everything drawn is generated into the game from its own catalogue, not bought: ' + plates +
+     ' painted plates inlined as data URIs in ' + doc('js/artpack.js') + ', the canvas painters in js/, ' +
+     'and the fonts and audio the bundle carries. The manifest is the art catalogue itself, governed by ' +
+     doc('docs/ART-BIBLE.md') + ', ' + doc('docs/LOOKBOOK.md') + ' and ' + doc('docs/BRAND.md') +
+     '. The plate count above is read from the file at generation, never typed.');
+  bp('concept', 'Concept',
+     'The concept record is the art-catalogue campaign: every plate keyed and seeded so a re-render ' +
+     'restores instead of re-rolling, reviewed on a sheet beside its prompt and its neighbours, and ' +
+     'audited for colour per identity. The method and its instruments are the aegis-suite art-catalogue ' +
+     'skill; the per-world plates are filed under each planet on the power pages.');
+  bp('numbers', 'Numbers',
+     'Every balance value lives in ' + doc('js/config.js') + ' and every reason in ' +
+     doc('docs/BALANCE-BASELINE.md') + ': the pins, the pick rates, and the session each baseline was ' +
+     'measured in. A number that moves re-baselines the pins in the same commit, because pins compare ' +
+     'only inside one browser session. Printed, never typed: node tools/facts.js counts.');
+  bp('interface', 'Interface',
+     'Desktop: the board, the tower bar, the muster bar for sending denizens, the base upgrade, the ' +
+     'commander skill, pause and speed. Phone: a top strip with lives, gold, wave and both healths; a ' +
+     'bottom bar that always shows the base upgrade, the skill and the sendable units with RUSH on the ' +
+     'right; tap a tile to build, tap a tower for its radial upgrade menu; pause and speed folded into one ' +
+     'dot above the bar. The command screen: the talent map, each commander with its own shape of lines, ' +
+     'and the prestige track beside it. Interface law is the aegis-suite design-forge skill.');
+  bp('build', 'Build order',
+     'The first end-to-end playable came first and shipped before any style was named (' +
+     doc('docs/ROADMAP.md') + ', the P0 rows), then the style lock (' + doc('docs/BRAND.md') + '), then ' +
+     'the seeded balance baseline, then the art campaign, then the reference and this document. That ' +
+     'is the honest order, and its cost is on the record: three governing art documents where one ' +
+     'manifest would have done. What remains is the Task list below.');
+  bp('verification', 'Verification',
+     'One command runs every gate, each on its own page load and in the order the invariants require: ' +
+     'node tools/gate.js. Parse, the em dash in both spellings, the byte gate, the module list, dead ' +
+     'config fields, CSS braces, the data contract (facts.js check), the map geometry probe, the build, ' +
+     'this page&#39;s own staleness (storyboard.js --check), then the browser harnesses: the owner ' +
+     'sweep, the planet cutscenes, real battles on every board, the lockstep duel, the phone HUD, the ' +
+     'board view, audio silence. The count is the gate&#39;s own output, never this page&#39;s, and ' +
+     'every check was proven by planting the defect it catches.');
 
   /* ---- the commander everyone starts with ---- */
   const cadre = G.COMMANDER_ROSTER.filter(c => !c.faction);

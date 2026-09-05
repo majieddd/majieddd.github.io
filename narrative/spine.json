@@ -3987,6 +3987,78 @@
    "src": "js/cutscenes.js:139"
   },
   {
+   "ref": "blueprint:reference",
+   "kind": "blueprint",
+   "name": "Reference",
+   "faction": null,
+   "page": "index.html#bp-reference",
+   "src": "tools/storyboard.js"
+  },
+  {
+   "ref": "blueprint:pillars",
+   "kind": "blueprint",
+   "name": "Pillars",
+   "faction": null,
+   "page": "index.html#bp-pillars",
+   "src": "tools/storyboard.js"
+  },
+  {
+   "ref": "blueprint:loop",
+   "kind": "blueprint",
+   "name": "Core loop",
+   "faction": null,
+   "page": "index.html#bp-loop",
+   "src": "tools/storyboard.js"
+  },
+  {
+   "ref": "blueprint:kit",
+   "kind": "blueprint",
+   "name": "Kit",
+   "faction": null,
+   "page": "index.html#bp-kit",
+   "src": "tools/storyboard.js"
+  },
+  {
+   "ref": "blueprint:concept",
+   "kind": "blueprint",
+   "name": "Concept",
+   "faction": null,
+   "page": "index.html#bp-concept",
+   "src": "tools/storyboard.js"
+  },
+  {
+   "ref": "blueprint:numbers",
+   "kind": "blueprint",
+   "name": "Numbers",
+   "faction": null,
+   "page": "index.html#bp-numbers",
+   "src": "tools/storyboard.js"
+  },
+  {
+   "ref": "blueprint:interface",
+   "kind": "blueprint",
+   "name": "Interface",
+   "faction": null,
+   "page": "index.html#bp-interface",
+   "src": "tools/storyboard.js"
+  },
+  {
+   "ref": "blueprint:build",
+   "kind": "blueprint",
+   "name": "Build order",
+   "faction": null,
+   "page": "index.html#bp-build",
+   "src": "tools/storyboard.js"
+  },
+  {
+   "ref": "blueprint:verification",
+   "kind": "blueprint",
+   "name": "Verification",
+   "faction": null,
+   "page": "index.html#bp-verification",
+   "src": "tools/storyboard.js"
+  },
+  {
    "ref": "commander:cadre",
    "kind": "commander",
    "name": "CADRE",
