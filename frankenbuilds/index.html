@@ -129,6 +129,24 @@ select:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .qty{min-width:38px;height:38px;border-radius:9px;background:var(--chip);border:1px solid var(--border);
   color:var(--accent);font-weight:700;font-size:14px;display:grid;place-items:center;flex-shrink:0}
+.thumb{width:56px;height:56px;border-radius:10px;border:1px solid var(--border);background:var(--card);
+  object-fit:contain;flex-shrink:0;padding:3px}
+.thumb.ph{display:grid;place-items:center;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+.cat{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);
+  border:1px solid var(--accent);border-radius:99px;padding:2px 8px;background:transparent}
+.dev{margin:12px 0 0;border:1px solid var(--bad);border-left-width:4px;border-radius:10px;
+  padding:10px 12px;font-size:12.5px;color:var(--foreground);background:var(--chip)}
+.dev b{color:var(--bad)}
+.nav{display:flex;gap:4px;margin-right:8px}
+.navb{border:1px solid transparent;background:transparent;color:var(--muted);font:inherit;font-size:13px;
+  font-weight:600;padding:7px 12px;border-radius:99px;cursor:pointer;transition:all .18s var(--e-tap)}
+.navb:hover{color:var(--foreground);background:var(--chip)}
+.navb.on{color:var(--accent);border-color:var(--border);background:var(--chip)}
+.cmpimg{width:44px;height:44px;border-radius:8px;border:1px solid var(--border);object-fit:contain;background:var(--card);padding:2px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+.chip{border:1px solid var(--border);background:var(--chip);color:var(--muted);border-radius:99px;
+  padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s var(--e-tap)}
+.chip.on{color:var(--accent);border-color:var(--accent)}
 .info{flex:1;min-width:0}
 .nm{font-weight:600;font-size:14.5px}
 .st{font-size:12.5px;color:var(--muted);margin-top:3px}
@@ -192,6 +210,10 @@ footer b{color:var(--fg)}
       <div class="sub">budget supercomputer builds · memory bandwidth per dollar</div>
     </div>
     <div class="spacer"></div>
+    <nav class="nav" aria-label="Pages">
+      <button class="navb on" id="navBuilds" data-view="builds">Builds</button>
+      <button class="navb" id="navComps" data-view="components">Components</button>
+    </nav>
     <button class="pill" id="theme" aria-label="Toggle theme">
       <span id="themeIcon">◐</span> Theme
     </button>
@@ -199,6 +221,7 @@ footer b{color:var(--fg)}
 </header>
 
 <main class="wrap">
+<div id="viewBuilds">
   <section class="hero">
     <h1 id="h1">Frankenbuilds, ranked by bandwidth per dollar</h1>
     <p class="lede">Decommissioned datacenter HBM2 cards are the arbitrage: a $5,000–$11,500 launch card now sells for
@@ -230,6 +253,22 @@ footer b{color:var(--fg)}
     <p class="h3s">The site ships with a refresh system that re-checks every listing over a real browser and rewrites the data file. A build is only shown as purchasable when every line is in stock.</p>
     <div class="status" id="status"></div>
   </section>
+</div>
+
+<div id="viewComps" hidden>
+  <section class="hero">
+    <h1>Components, compared</h1>
+    <p class="lede">Every part the builds are made of, with its live listing, price, and the stats that decide a build:
+      memory bandwidth, VRAM, watts, slots, channels. Sorted by the metric you pick. Prices are the verified asking
+      price on the live listing.</p>
+    <div class="stats" id="compStats"></div>
+  </section>
+  <section class="sec">
+    <div class="chips" id="catChips" role="tablist" aria-label="Component category"></div>
+    <p class="h3s" id="compHint">Click a column header to sort. $/GB/s = price ÷ memory bandwidth (lower is better). $/GB VRAM = price ÷ VRAM.</p>
+    <div class="scroll"><table id="ctab"></table></div>
+  </section>
+</div>
 </main>
 
 <footer class="wrap">
@@ -273,9 +312,15 @@ function render(){
   gates.push({t:"≥ 3 TB/s throughput", ok:b.throughput>=3000});
   const rows=b.components.map((c,i)=>{
     const flagged=c.flag;
+    const cat=catOf(c.name);
+    const img=c.img
+      ? `<img class="thumb" src="${c.img}" alt="${c.name}" loading="lazy" onerror="this.outerHTML='<div class=\\'thumb ph\\'>no img</div>'">`
+      : `<div class="thumb ph">${cat.slice(0,4)}</div>`;
     return `<div class="row" style="--i:${i}">
       <div class="qty">${c.qty}×</div>
+      ${img}
       <div class="info">
+        <div class="meta" style="margin:0 0 4px"><span class="cat">${cat}</span></div>
         <div class="nm">${c.name}</div>
         <div class="st">${c.stats}</div>
         <div class="meta">
@@ -296,6 +341,7 @@ function render(){
       <p>${b.tagline}</p>
       ${b.why?`<p class="why">${b.why}</p>`:''}
       <div class="gates">${gates.map(g=>`<span class="gate ${g.ok?'pass':'fail'}">${g.ok?'✓':'✗'} ${g.t}</span>`).join("")}</div>
+      ${b.deviation?`<div class="dev"><b>Flagged deviation.</b> ${b.deviation}</div>`:''}
     </div>
     <div class="grid">
       <div class="cell"><div class="k">Total throughput</div><div class="v">${fmt(b.throughput)}</div><div class="u">GB/s</div></div>
@@ -420,9 +466,14 @@ async function boot(){
   if(idx>=0){current=idx;sel.value=idx;syncTabs();}
   window.onhashchange=()=>{
     const id=decodeURIComponent(location.hash.replace(/^#/, ""));
+    if(id==="components"){showView("components");return;}
+    if(id==="builds"){showView("builds");return;}
     const i=DATA.builds.findIndex(b=>b.id===id);
-    if(i>=0){current=i;sel.value=i;syncTabs();render();}
+    if(i>=0){showView("builds");current=i;sel.value=i;syncTabs();render();}
   };
+  document.getElementById("navBuilds").onclick=()=>{showView("builds");location.hash="builds";};
+  document.getElementById("navComps").onclick=()=>{showView("components");location.hash="components";};
+  if(decodeURIComponent(location.hash.replace(/^#/, ""))==="components") showView("components");
   document.querySelectorAll(".tab").forEach((t,i,arr)=>{
     t.onkeydown=e=>{
       if(e.key==="ArrowRight"||e.key==="ArrowLeft"){
@@ -438,6 +489,106 @@ async function boot(){
 }
 function syncTabs(){document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",+t.dataset.i===current));
   document.getElementById("panel").setAttribute("aria-labelledby","tab-"+DATA.builds[current].id);}
+
+/* ---------- component category label (from the component name) ---------- */
+function catOf(n){
+  const s=n.toLowerCase();
+  if(/mi25|mi50|mi60|mi100|vega|radeon|geforce|rtx|gtx|rx \d|3090|2080|1080|hbm|gpu/.test(s)) return "GPU";
+  if(/motherboard|board|x99|h110|b250|tb360|h31dm|x10sdv|btc/.test(s)) return "Motherboard";
+  if(/xeon|pentium|core|cpu|g3930|e5-|l5422/.test(s)) return "CPU";
+  if(/ddr4|ddr3|rdimm|udimm|sodimm|ecc/.test(s)) return "Memory";
+  if(/\bpsu\b|power supply|supernova|watt|\bw\b.*mining|mining.*psu/.test(s)) return "Power";
+  if(/riser|extender|adder|pcie.*cable/.test(s)) return "Expansion";
+  if(/frame|rig|chassis|shelf|case/.test(s)) return "Chassis";
+  if(/nvme|ssd|m\.?2|sata/.test(s)) return "Storage";
+  if(/shroud|fan|cooler|cooling|thermal|paste/.test(s)) return "Cooling";
+  return "Part";
+}
+
+/* ---------- Components page ---------- */
+let COMPS=null, compCat="gpu", compSort={k:"per_gb", d:1};
+const CCOLS={
+  gpu:[["name","GPU"],["price","Price"],["bw","Bandwidth"],["vram","VRAM"],["watts","Watts"],
+       ["per_gb","$/GB/s"],["per_vram","$/GB VRAM"],["stock","Stock"]],
+  board:[["name","Board"],["price","Price"],["slots","GPU slots"],["ddr_bw","DDR bandwidth"],
+       ["ram_max","Max RAM"],["mem","Type"],["socket","Socket"],["stock","Stock"]],
+  cpu:[["name","CPU"],["price","Price"],["socket","Socket"],["watts","Watts"],["stock","Stock"]],
+  memory:[["name","Memory"],["price","Price"],["gb","Capacity"],["ddr_bw","Bandwidth"],
+       ["mem","Type"],["per_gb","$/GB RAM"],["stock","Stock"]],
+  power:[["name","Power supply"],["price","Price"],["watts","Watts"],["pcie","PCIe power"],
+       ["stock","Stock"]],
+  _default:[["name","Component"],["price","Price"],["stock","Stock"]],
+};
+const UNIT={bw:v=>fmt(v)+" GB/s", ddr_bw:v=>fmt(v)+" GB/s", vram:v=>v+" GB", gb:v=>v+" GB",
+  watts:v=>v+" W", slots:v=>v, pcie:v=>v+"× 6-pin", ram_max:v=>v+" GB",
+  per_gb:v=>"$"+v.toFixed(3), per_vram:v=>"$"+v.toFixed(2), price:v=>money(v)};
+
+async function loadComps(){
+  if(COMPS) return;
+  const r=await fetch("data/components.json");
+  if(!r.ok) throw new Error("data/components.json returned "+r.status);
+  COMPS=await r.json();
+  const cats=[...new Set(COMPS.map(c=>c.category))];
+  document.getElementById("catChips").innerHTML=cats.map(c=>
+    `<button class="chip${c===compCat?' on':''}" role="tab" aria-selected="${c===compCat}" data-c="${c}">${c} (${COMPS.filter(x=>x.category===c).length})</button>`).join("");
+  document.querySelectorAll("#catChips .chip").forEach(ch=>ch.onclick=()=>{
+    compCat=ch.dataset.c; compSort={k:(CCOLS[compCat]||CCOLS._default).find(c=>c[0]==="price")? "price":"name", d:1};
+    document.querySelectorAll("#catChips .chip").forEach(o=>{o.classList.toggle("on",o===ch);o.setAttribute("aria-selected",o===ch);});
+    compsTable();
+  });
+  const g=COMPS.filter(c=>c.category==="gpu"&&c.per_gb);
+  const best=g.reduce((a,b)=>b.per_gb<a.per_gb?b:a);
+  const vr=COMPS.filter(c=>c.category==="gpu").reduce((a,b)=>b.per_vram<a.per_vram?b:a);
+  document.getElementById("compStats").innerHTML=[
+    ["Components tracked", COMPS.length, "live listings"],
+    ["Cheapest bandwidth", "$"+best.per_gb.toFixed(3), best.name.split(" ").slice(0,3).join(" ")+" · per GB/s"],
+    ["Cheapest VRAM", "$"+vr.per_vram.toFixed(2), vr.name.split(" ").slice(0,3).join(" ")+" · per GB"],
+    ["Categories", new Set(COMPS.map(c=>c.category)).size, "GPU · board · CPU · memory · power"],
+  ].map(([k,v,u])=>`<div class="cell"><div class="k">${k}</div><div class="v">${v}</div><div class="u">${u}</div></div>`).join("");
+  compsTable();
+}
+function compsTable(){
+  const cols=CCOLS[compCat]||CCOLS._default;
+  const rows=COMPS.filter(c=>c.category===compCat).slice();
+  rows.sort((a,b)=>{const x=a[compSort.k],y=b[compSort.k];
+    if(typeof x==="string") return compSort.d*x.localeCompare(y);
+    return compSort.d*((x??1e12)-(y??1e12));});
+  const bestPP=rows.length&&rows[0].per_gb?Math.min(...rows.map(r=>r.per_gb)):null;
+  const head=cols.map(([k,l])=>`<th data-k="${k}" tabindex="0" role="columnheader" title="Sort by ${l}">${l}${compSort.k===k?(compSort.d<0?" ↓":" ↑"):""}</th>`).join("")+"<th></th>";
+  const body=rows.map(r=>{
+    const tds=cols.map(([k])=>{
+      if(k==="name"){
+        const img=r.img?`<img class="cmpimg" src="${r.img}" alt="${r.name}" loading="lazy" onerror="this.remove()">`:'';
+        return `<td><div style="display:flex;gap:10px;align-items:center">${img}<span>${r.name}${(k==="name"&&bestPP&&r.per_gb===bestPP)?' <span class="bestmark">★ cheapest/GB/s</span>':''}</span></div></td>`;
+      }
+      const v=r[k];
+      if(v===undefined||v===null) return `<td class="n">—</td>`;
+      const f=UNIT[k]?UNIT[k](v):v;
+      return `<td class="n">${f}</td>`;
+    }).join("");
+    return `<tr>${tds}<td class="n"><a class="buy" href="${r.url}" target="_blank" rel="noopener noreferrer">Listing ↗</a></td></tr>`;
+  }).join("");
+  document.getElementById("ctab").innerHTML=`<thead><tr>${head}</tr></thead><tbody>${body}</tbody>`;
+  document.querySelectorAll("#ctab th").forEach(th=>{
+    th.onclick=()=>{const k=th.dataset.k;
+      if(compSort.k===k)compSort.d=-compSort.d; else{compSort.k=k;compSort.d=(k==="name")?1:-1;}
+      compsTable();};
+    th.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();th.click();}};
+  });
+}
+
+/* ---------- view switching ---------- */
+function showView(v){
+  document.getElementById("viewBuilds").hidden = v!=="builds";
+  document.getElementById("viewComps").hidden  = v!=="components";
+  document.getElementById("navBuilds").classList.toggle("on", v==="builds");
+  document.getElementById("navComps").classList.toggle("on", v==="components");
+  document.getElementById("navBuilds").setAttribute("aria-current", v==="builds"?"page":"false");
+  document.getElementById("navComps").setAttribute("aria-current", v==="components"?"page":"false");
+  if(v==="components") loadComps().catch(e=>{
+    document.getElementById("ctab").innerHTML=`<tbody><tr><td>Components data failed to load: ${e.message}. Run <code>python export_components.py</code>.</td></tr></tbody>`;
+  });
+}
 boot().catch(err=>{
   document.getElementById("panel").innerHTML=
     `<div class="cardh"><h2>Data file failed to load</h2>
