@@ -111,12 +111,12 @@
     "key": "frame",
     "category": "chassis",
     "name": "open-air mining frame",
-    "price": 25.0,
-    "url": "https://www.ebay.com/itm/198696539852",
-    "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l400.jpg",
-    "cond": "Open Box",
+    "price": 19.99,
+    "url": "https://www.ebay.com/itm/366668903553",
+    "img": null,
+    "cond": "Brand New",
     "stock": "in stock",
-    "seller": "Open Box"
+    "seller": "harborgiant3d 98.4%"
   },
   {
     "key": "g3930",
@@ -235,21 +235,38 @@
     "per_vram": 4.687
   },
   {
+    "key": "ddr4-64",
+    "category": "memory",
+    "name": "Crucial 64 GB (4x16) DDR4-2666 ECC RDIMM",
+    "price": 91.0,
+    "url": "https://www.ebay.com/itm/176685220753",
+    "img": "https://i.ebayimg.com/images/g/UiMAAeSwH99qxwde/s-l500.webp",
+    "cond": "Pre-Owned",
+    "stock": "in stock",
+    "seller": "patriotmemory 99.7%",
+    "gb": 64,
+    "channels": 4,
+    "mt": 2666,
+    "mem": "RDIMM",
+    "ddr_bw": 85.3,
+    "per_gb": 1.422
+  },
+  {
     "key": "udimm-32",
     "category": "memory",
     "name": "32 GB (2x16) DDR4-2666 UDIMM",
-    "price": 20.5,
-    "url": "https://www.ebay.com/itm/287636254521",
-    "img": "https://i.ebayimg.com/images/g/X5kAAeSws2pqyBdC/s-l500.webp",
+    "price": 134.99,
+    "url": "https://www.ebay.com/itm/128131585716",
+    "img": null,
     "cond": "Pre-Owned",
     "stock": "in stock",
-    "seller": "Pre-Owned",
+    "seller": "various",
     "gb": 32,
     "channels": 2,
     "mt": 2666,
     "mem": "UDIMM",
     "ddr_bw": 42.7,
-    "per_gb": 0.641
+    "per_gb": 4.218
   },
   {
     "key": "psu2000",
@@ -268,11 +285,11 @@
     "key": "nvme2tb",
     "category": "storage",
     "name": "WD Black SN770 2 TB NVMe",
-    "price": 150.0,
+    "price": 210.0,
     "url": "https://www.ebay.com/itm/206615696648",
-    "img": "https://i.ebayimg.com/images/g/Yh0AAeSwuV5qydBR/s-l500.webp",
+    "img": null,
     "cond": "Pre-Owned",
     "stock": "in stock",
-    "seller": "Pre-Owned"
+    "seller": "various"
   }
 ]
