@@ -98,3 +98,6 @@ jobs:
           npm --prefix reliquary-forge ci
           npm --prefix reliquary-forge run check
           npm --prefix reliquary-forge run build
+
+# Re-enabled 2026-10-12: GitHub auto-disabled this gate after the frankenbuilds
+# deploys pushed CRLF JSON. Data files are LF-normalized at the deploy boundary now.
