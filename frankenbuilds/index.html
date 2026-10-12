@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Majied Frankenbuilds — budget supercomputer builds, bandwidth per dollar</title>
+<meta name="description" content="Budget multi-GPU builds spec'd for maximum memory bandwidth per dollar. Every component verified in stock with live links, refreshed by a listing-verification script.">
+<meta property="og:title" content="Majied Frankenbuilds — budget supercomputer builds">
+<meta property="og:description" content="Seven frankenbuilds ranked by memory bandwidth per dollar. Every component verified in stock with live links.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<style>
+:root{
+  --radius:0.625rem;
+  --radius-sm:calc(var(--radius)*0.6);
+  --radius-md:calc(var(--radius)*0.8);
+  --radius-lg:var(--radius);
+  --radius-xl:calc(var(--radius)*1.4);
+  --radius-full:9999px;
+  --e-enter:cubic-bezier(.16,1,.3,1);
+  --e-pop:cubic-bezier(.34,1.56,.64,1);
+  --dur:420ms;
+  --font:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono","Cascadia Code",ui-monospace,Consolas,monospace;
+}
+[data-theme="dark"]{
+  --bg:hsl(222 47% 6%); --card:hsl(222 40% 9%); --card2:hsl(222 38% 12%);
+  --fg:hsl(210 40% 98%); --muted:hsl(215 20% 65%); --border:hsl(222 30% 18%);
+  --accent:hsl(190 90% 55%); --accent-fg:hsl(190 90% 12%);
+  --secondary:hsl(222 34% 16%); --secondary-fg:hsl(210 30% 88%);
+  --ring:hsl(190 70% 55%);
+  --good:hsl(150 60% 50%); --warn:hsl(38 92% 58%); --bad:hsl(0 72% 60%);
+  --chip:hsl(222 38% 14%);
+  --chart-1:hsl(190 90% 55%); --chart-2:hsl(38 92% 58%); --chart-3:hsl(150 60% 50%);
+}
+[data-theme="light"]{
+  --bg:hsl(0 0% 100%); --card:hsl(0 0% 100%); --card2:hsl(210 40% 98%);
+  --fg:hsl(222 47% 11%); --muted:hsl(215 16% 47%); --border:hsl(214 32% 91%);
+  --accent:hsl(190 90% 30%); --accent-fg:hsl(190 90% 98%);
+  --secondary:hsl(210 40% 96%); --secondary-fg:hsl(222 40% 20%);
+  --ring:hsl(190 70% 40%);
+  --good:hsl(150 55% 35%); --warn:hsl(32 88% 40%); --bad:hsl(0 72% 45%);
+  --chip:hsl(210 40% 96%);
+  --chart-1:hsl(190 90% 30%); --chart-2:hsl(32 88% 40%); --chart-3:hsl(150 55% 35%);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--fg);line-height:1.55;
+  font-size:15px;overflow-wrap:anywhere;word-break:break-word;
+  transition:background var(--dur) var(--e-enter),color var(--dur) var(--e-enter)}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+/* header */
+header{border-bottom:1px solid var(--border);background:var(--card)}
+.hdr{display:flex;align-items:center;gap:14px;padding:14px 0}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--accent);color:var(--accent-fg);
+  display:grid;place-items:center;font-weight:800;font-size:15px;flex-shrink:0}
+.title{font-size:16px;font-weight:650;letter-spacing:-.02em}
+.sub{font-size:12px;color:var(--muted)}
+.spacer{flex:1}
+.pill{border:1px solid var(--border);background:var(--card2);color:var(--fg);border-radius:99px;
+  padding:7px 13px;font-size:12.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;
+  transition:border-color 180ms var(--e-enter),background 180ms var(--e-enter)}
+.pill:hover{border-color:var(--accent)}
+.pill:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+/* hero */
+.hero{padding:34px 0 22px}
+h1{font-size:clamp(24px,4.5vw,38px);font-weight:700;letter-spacing:-.03em;line-height:1.15}
+.lede{color:var(--muted);font-size:15px;max-width:62ch;margin-top:10px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:22px}
+.stat{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);padding:14px 16px;
+  transition:border-color 180ms var(--e-enter),transform 180ms var(--e-enter)}
+.stat:hover{border-color:var(--accent);transform:translateY(-2px)}
+.stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.stat .v{font-size:24px;font-weight:700;letter-spacing:-.02em;margin-top:4px;font-variant-numeric:tabular-nums}
+.stat .u{font-size:12px;color:var(--muted)}
+/* selector */
+.sel{padding:8px 0 4px}
+.selrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+select{border:1px solid var(--border);background:var(--card2);color:var(--fg);border-radius:var(--radius);
+  padding:10px 12px;font-size:14px;font-family:inherit;min-width:250px;cursor:pointer}
+select:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.tab{border:1px solid var(--border);background:var(--card2);color:var(--muted);border-radius:99px;
+  padding:8px 14px;font-size:13px;cursor:pointer;transition:all 180ms var(--e-enter)}
+.tab:hover{color:var(--fg);border-color:var(--accent)}
+.tab:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}
+/* panel */
+.panel{padding:22px 0 10px}
+.card{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);overflow:hidden}
+.cardh{padding:16px 18px;border-bottom:1px solid var(--border);background:var(--card2)}
+.cardh h2{font-size:19px;font-weight:650;letter-spacing:-.02em}
+.cardh p{font-size:13px;color:var(--muted);margin-top:3px}
+.cardh p.why{font-size:13.5px;color:var(--fg);margin-top:10px;padding:10px 12px;border-left:3px solid var(--accent);
+  background:var(--chip);border-radius:0 var(--radius) var(--radius) 0}
+.gates{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.gate{font-size:11.5px;border-radius:99px;padding:4px 10px;border:1px solid var(--border);background:var(--chip)}
+.gate.pass{color:var(--good);border-color:var(--good)}
+.gate.fail{color:var(--bad);border-color:var(--bad)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--border)}
+.cell{background:var(--card);padding:14px 16px}
+.cell .k{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.cell .v{font-size:20px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.cell .u{font-size:11px;color:var(--muted)}
+/* throughput bar */
+.bar{padding:16px 18px;border-top:1px solid var(--border)}
+.barlab{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:8px}
+.track{height:26px;border-radius:6px;background:var(--chip);border:1px solid var(--border);display:flex;overflow:hidden}
+.seg{height:100%;transition:width 700ms var(--e-enter)}
+.seg.gpu{background:var(--accent)}
+.seg.ddr{background:var(--warn)}
+.legend{display:flex;gap:14px;font-size:11.5px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:5px}
+/* skeleton (shadcn pattern) */
+.skeleton{background:var(--chip);border-radius:var(--radius-md);animation:shim 1.4s var(--e-enter) infinite}
+@keyframes shim{0%,100%{opacity:.55}50%{opacity:1}}
+.skrow{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.skq{width:38px;height:38px;border-radius:9px}
+.skline{height:12px;flex:1}
+.skline.short{max-width:180px}
+/* components */
+.rows{padding:6px 18px 18px}
+.row{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border);
+  animation:rise var(--dur) var(--e-enter) both;animation-delay:calc(var(--i)*45ms)}
+.row:last-child{border-bottom:0}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.qty{min-width:38px;height:38px;border-radius:9px;background:var(--chip);border:1px solid var(--border);
+  color:var(--accent);font-weight:700;font-size:14px;display:grid;place-items:center;flex-shrink:0}
+.info{flex:1;min-width:0}
+.nm{font-weight:600;font-size:14.5px}
+.st{font-size:12.5px;color:var(--muted);margin-top:3px}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.tag{font-size:11px;border:1px solid var(--border);border-radius:99px;padding:3px 9px;background:var(--chip)}
+.tag.stock{color:var(--good);border-color:var(--good)}
+.tag.flag{color:var(--bad);border-color:var(--bad)}
+.right{text-align:right;flex-shrink:0;min-width:110px}
+.price{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
+.line{font-size:11.5px;color:var(--muted)}
+.buy{display:inline-block;margin-top:6px;border:1px solid var(--border);border-radius:var(--radius);
+  padding:6px 11px;font-size:12.5px;transition:all 180ms var(--e-enter);color:var(--fg)}
+.buy:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+.total{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;
+  border-top:2px solid var(--border);background:var(--card2)}
+.total .t{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+/* table */
+.sec{padding:30px 0}
+h3{font-size:20px;font-weight:650;letter-spacing:-.02em;margin-bottom:6px}
+.h3s{font-size:13px;color:var(--muted);margin-bottom:16px}
+.scroll{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:13px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:var(--card2);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;
+  cursor:pointer;user-select:none;white-space:nowrap}
+th:hover{color:var(--fg)}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+tbody tr{transition:background 160ms var(--e-enter)}
+tbody tr:hover{background:var(--card2)}
+tbody tr.best{background:var(--chip)}
+.bestmark{color:var(--accent);font-size:11px;font-weight:600}
+/* status */
+.status{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);padding:16px 18px}
+.status .hd{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.dot{width:9px;height:9px;border-radius:99px;background:var(--good);flex-shrink:0}
+.dot.bad{background:var(--bad)}
+.status .txt{font-size:13.5px;font-weight:600}
+.status .dt{font-size:12px;color:var(--muted)}
+.status ul{margin:8px 0 0 18px;font-size:12.5px;color:var(--muted)}
+.status code{font-family:var(--mono);font-size:12px;background:var(--chip);padding:1px 5px;border-radius:4px;
+  word-break:break-all}
+footer{border-top:1px solid var(--border);margin-top:30px;padding:26px 0 40px;font-size:12.5px;color:var(--muted)}
+footer b{color:var(--fg)}
+@media(max-width:640px){
+  .right{min-width:0;width:auto}
+  .row{gap:9px}
+  .hdr .sub{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap hdr">
+    <div class="logo">MF</div>
+    <div>
+      <div class="title">Majied Frankenbuilds</div>
+      <div class="sub">budget supercomputer builds · memory bandwidth per dollar</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="pill" id="theme" aria-label="Toggle theme">
+      <span id="themeIcon">◐</span> Theme
+    </button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1 id="h1">Frankenbuilds, ranked by bandwidth per dollar</h1>
+    <p class="lede">Decommissioned datacenter HBM2 cards are the arbitrage: a $5,000–$11,500 launch card now sells for
+      $75–$700 with a wider memory bus than any consumer GPU. Every component below was verified in stock on the live
+      listing — price, quantity available, condition, shipping, and seller feedback.</p>
+    <div class="stats" id="heroStats"></div>
+  </section>
+
+  <section class="sel">
+    <div class="selrow">
+      <label for="pick">Choose a build</label>
+      <select id="pick" aria-label="Choose a build"></select>
+    </div>
+    <div class="tabs" id="tabs" role="tablist" aria-label="Builds"></div>
+  </section>
+
+  <section class="panel">
+    <div class="card" id="panel"></div>
+  </section>
+
+  <section class="sec">
+    <h3>Head-to-head — all builds</h3>
+    <p class="h3s">Click a column header to sort. Total throughput = GPU HBM bandwidth × GPU count + system DDR bandwidth. NVLink is GPU-to-GPU fabric, counted separately.</p>
+    <div class="scroll"><table id="cmp"></table></div>
+  </section>
+
+  <section class="sec">
+    <h3>Listing verification status</h3>
+    <p class="h3s">The site ships with a refresh system that re-checks every listing over a real browser and rewrites the data file. A build is only shown as purchasable when every line is in stock.</p>
+    <div class="status" id="status"></div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <b>Throughput formula:</b> total = (GPU HBM bandwidth × GPU count) + system DDR bandwidth. DDR = channels × 8 bytes (64-bit channel) × MT/s ÷ 1000. 8-channel DDR4-2400 = 153.6 GB/s; 16-channel DDR4-2666 = 341.1 GB/s.<br>
+  <b>Cheapest bandwidth per GB/s:</b> MI25 $0.075 · V100 SXM2 16 GB $0.159 · MI50 16 GB $0.175 · MI100 $1.128.<br>
+  <b>Caveats:</b> asking prices, not completed sales · MI25 is Vega 20 (GCN), off AMD's current ROCm support list — expect an older ROCm release · MI50 is CDNA with better current ROCm standing · the quad SXM2 baseboard has only 2 units in stock · every GPU in Builds 4 and 5 ships passive, so the shroud + fan line is not optional · 2 TB NVMe retail is $380+ right now, the $240.99 KingSpec is the cheap end · X99-F8D boards have documented QC variance.<br>
+  <b>Refresh the data:</b> run <code>python refresh.py</code> to re-verify every listing over CDP and rewrite <code>data/builds.json</code>. Run <code>python add_build.py</code> to append a new build with sum and gate validation.
+</footer>
+
+<script>
+const E_ENTER="cubic-bezier(.16,1,.3,1)";
+let DATA=null, current=0, sortKey="throughput", sortDir=-1;
+
+const fmt=n=>n.toLocaleString("en-US",{maximumFractionDigits:1});
+const money=n=>"$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function heroStats(){
+  const b=DATA.builds;
+  document.getElementById("h1").textContent=`${b.length} frankenbuilds, ranked by bandwidth per dollar`;
+  const bestBW=Math.max(...b.map(x=>x.throughput));
+  const bestPP=Math.min(...b.map(x=>x.per_gb));
+  const bestVR=Math.max(...b.map(x=>x.vram));
+  const cheapest=Math.min(...b.map(x=>x.total));
+  const items=[
+    ["Builds spec'd",b.length,"all in stock",0,""],
+    ["Peak throughput",bestBW,"GB/s aggregate",0,""],
+    ["Cheapest per GB/s",bestPP,"per GB/s",1,3],
+    ["Largest VRAM",bestVR,"GB HBM2",0,""],
+    ["Cheapest build",cheapest,"total",1,2],
+  ];
+  document.getElementById("heroStats").innerHTML=items.map(([k,v,u,pre,dec])=>
+    `<div class="stat"><div class="k">${k}</div><div class="v" data-num="${v}" data-pre="${pre?'$':''}" data-dec="${dec}">0</div><div class="u">${u}</div></div>`).join("");
+}
+
+function render(){
+  const b=DATA.builds[current];
+  const maxBW=Math.max(...DATA.builds.map(x=>x.throughput));
+  const gpuPct=b.gpu_bw/maxBW*100, ddrPct=b.ddr_bw/maxBW*100;
+  const gates=[];
+  gates.push({t:"under $6,000", ok:b.total<6000});
+  gates.push({t:"≥ 3 TB/s throughput", ok:b.throughput>=3000});
+  const rows=b.components.map((c,i)=>{
+    const flagged=c.flag;
+    return `<div class="row" style="--i:${i}">
+      <div class="qty">${c.qty}×</div>
+      <div class="info">
+        <div class="nm">${c.name}</div>
+        <div class="st">${c.stats}</div>
+        <div class="meta">
+          <span class="tag ${flagged?'flag':'stock'}">${flagged?'FLAGGED: '+flagged:c.stock}</span>
+          <span class="tag">${c.seller}</span>
+        </div>
+      </div>
+      <div class="right">
+        <div class="price">${money(c.price)}${c.qty>1?' <span style="font-weight:400;color:var(--muted);font-size:12px">ea</span>':''}</div>
+        <div class="line">${money(c.price*c.qty)} line total</div>
+        <a class="buy" href="${c.url}" target="_blank" rel="noopener noreferrer">View listing ↗</a>
+      </div>
+    </div>`;
+  }).join("");
+  document.getElementById("panel").innerHTML=`
+    <div class="cardh">
+      <h2>${b.name}</h2>
+      <p>${b.tagline}</p>
+      ${b.why?`<p class="why">${b.why}</p>`:''}
+      <div class="gates">${gates.map(g=>`<span class="gate ${g.ok?'pass':'fail'}">${g.ok?'✓':'✗'} ${g.t}</span>`).join("")}</div>
+    </div>
+    <div class="grid">
+      <div class="cell"><div class="k">Total throughput</div><div class="v">${fmt(b.throughput)}</div><div class="u">GB/s</div></div>
+      <div class="cell"><div class="k">Cost per GB/s</div><div class="v">$${b.per_gb.toFixed(3)}</div><div class="u">per GB/s</div></div>
+      <div class="cell"><div class="k">GPU HBM</div><div class="v">${fmt(b.gpu_bw)}</div><div class="u">GB/s · ${b.vram} GB VRAM</div></div>
+      <div class="cell"><div class="k">System DDR</div><div class="v">${fmt(b.ddr_bw)}</div><div class="u">GB/s · ${b.ram} GB RAM</div></div>
+      <div class="cell"><div class="k">NVLink fabric</div><div class="v">${b.nvlink?fmt(b.nvlink):'—'}</div><div class="u">${b.nvlink?'GB/s aggregate':'PCIe only'}</div></div>
+      <div class="cell"><div class="k">Draw</div><div class="v">${fmt(b.power)}</div><div class="u">watts</div></div>
+    </div>
+    <div class="bar">
+      <div class="barlab"><span>Relative throughput vs the peak build (${fmt(maxBW)} GB/s)</span><span>${fmt(b.throughput)} GB/s</span></div>
+      <div class="track">
+        <div class="seg gpu" style="width:${gpuPct}%"></div>
+        <div class="seg ddr" style="width:${ddrPct}%"></div>
+      </div>
+      <div class="legend"><span><i style="background:var(--accent)"></i>GPU HBM ${fmt(b.gpu_bw)} GB/s</span>
+        <span><i style="background:var(--warn)"></i>System DDR ${fmt(b.ddr_bw)} GB/s</span>
+        ${b.nvlink?`<span><i style="background:var(--good)"></i>NVLink ${fmt(b.nvlink)} GB/s (separate fabric)</span>`:''}</div>
+    </div>
+    <div class="rows">${rows}</div>
+    <div class="total">
+      <div><div class="t">${money(b.total)}</div><div class="line">sum of all ${b.components.length} component lines</div></div>
+      <div style="text-align:right"><div class="t">$${b.per_gb.toFixed(3)}</div><div class="line">per GB/s · RAM max ${fmt(b.ram_max)} GB · storage max ${fmt(b.storage_max)} TB</div></div>
+    </div>`;
+  // animate the bar from 0
+  const segs=document.querySelectorAll("#panel .seg");
+  segs.forEach(s=>{const w=s.style.width; s.style.width="0%"; requestAnimationFrame(()=>{s.style.width=w;});});
+  countUp();
+}
+
+function countUp(){
+  document.querySelectorAll("[data-num]").forEach(el=>{
+    const target=parseFloat(el.dataset.num);
+    if(isNaN(target))return;
+    const pre=el.dataset.pre||"", dec=el.dataset.dec!==""?parseInt(el.dataset.dec):null;
+    const start=performance.now(), dur=520;
+    function tick(t){
+      const p=Math.min(1,(t-start)/dur);
+      const e=1-Math.pow(1-p,3);
+      const v=target*e;
+      el.textContent=dec===2?money(v):pre+(dec!==null?v.toFixed(dec):fmt(Math.round(v*10)/10));
+      if(p<1)requestAnimationFrame(tick);
+      else el.textContent=dec===2?money(target):pre+(dec!==null?target.toFixed(dec):fmt(target));
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
+function table(){
+  const cols=[["name","Build"],["total","Total"],["throughput","Throughput"],["per_gb","$/GB/s"],
+              ["vram","VRAM"],["nvlink","NVLink"],["power","Watts"]];
+  const rows=[...DATA.builds];
+  rows.sort((a,b)=>{const x=a[sortKey],y=b[sortKey];
+    return typeof x==="string"?sortDir*x.localeCompare(y):sortDir*(x-y);});
+  const bestBW=Math.max(...rows.map(r=>r.throughput));
+  const bestPP=Math.min(...rows.map(r=>r.per_gb));
+  const bestVR=Math.max(...rows.map(r=>r.vram));
+  const bestPrice=Math.min(...rows.map(r=>r.total));
+  const head=cols.map(([k,l])=>`<th data-k="${k}" title="Sort by ${l}">${l}${sortKey===k?(sortDir<0?" ↓":" ↑"):""}</th>`).join("");
+  const body=rows.map(r=>`<tr class="${r.per_gb===bestPP?'best':''}">
+    <td>${r.name}${r.per_gb===bestPP?' <span class="bestmark">★ cheapest/GB/s</span>':''}</td>
+    <td class="n">${money(r.total)}${r.total===bestPrice?' <span class="bestmark">★</span>':''}</td>
+    <td class="n">${fmt(r.throughput)}${r.throughput===bestBW?' <span class="bestmark">★</span>':''}</td>
+    <td class="n">$${r.per_gb.toFixed(3)}</td>
+    <td class="n">${r.vram}${r.vram===bestVR?' <span class="bestmark">★</span>':''}</td>
+    <td class="n">${r.nvlink?fmt(r.nvlink)+" GB/s":"—"}</td>
+    <td class="n">${fmt(r.power)}</td>
+  </tr>`).join("");
+  document.getElementById("cmp").innerHTML=`<thead><tr>${head}</tr></thead><tbody>${body}</tbody>`;
+  document.querySelectorAll("#cmp th").forEach(th=>{
+    th.setAttribute("tabindex","0");
+    th.setAttribute("role","columnheader");
+    th.onclick=()=>{
+      const k=th.dataset.k;
+      if(sortKey===k)sortDir=-sortDir; else{sortKey=k;sortDir=(k==="name")?1:-1;}
+      table();
+    };
+    th.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();th.click();}};
+  });
+}
+
+function status(){
+  const el=document.getElementById("status");
+  const s=DATA.status;
+  if(!s){el.innerHTML='<div class="hd"><span class="dot"></span><span class="txt">No verification run recorded.</span></div>'+
+    '<div class="dt">Run <code>python refresh.py</code> to re-check every listing over a real browser and rewrite <code>data/builds.json</code>.</div>';return;}
+  const flagged=DATA.builds.flatMap(b=>b.components.filter(c=>c.flag).map(c=>({b:b.name,c})));
+  el.innerHTML=`<div class="hd"><span class="dot ${flagged.length?'bad':''}"></span>
+    <span class="txt">${flagged.length?flagged.length+' listing(s) flagged':'All '+s.listings+' listings verified in stock'}</span>
+    <span class="dt">· verified ${s.verified}</span></div>
+    <div class="dt">${s.method}</div>
+    ${flagged.length?'<ul>'+flagged.map(f=>`<li><b>${f.c.name}</b> (${f.b}) — ${f.c.flag}</li>`).join("")+'</ul>':''}
+    <div class="dt" style="margin-top:10px">Refresh: <code>python refresh.py</code> · Add a build: <code>python add_build.py</code></div>`;
+}
+
+function setTheme(t){
+  document.documentElement.dataset.theme=t;
+  document.getElementById("themeIcon").textContent=t==="dark"?"◐":"◑";
+  try{localStorage.setItem("mf-theme",t);}catch(e){}
+}
+
+async function boot(){
+  // skeleton while the data file loads (shadcn loading pattern)
+  document.getElementById("panel").innerHTML=
+    `<div class="cardh"><div class="skeleton skline short"></div></div>
+     <div class="rows">${'<div class="skrow"><div class="skeleton skq"></div><div class="skeleton skline"></div></div>'.repeat(5)}</div>`;
+  const r=await fetch("data/builds.json");
+  if(!r.ok) throw new Error("data/builds.json returned "+r.status);
+  DATA=await r.json();
+  if(!DATA.builds||!DATA.builds.length) throw new Error("data/builds.json has no builds");
+  const sel=document.getElementById("pick");
+  sel.innerHTML=DATA.builds.map((b,i)=>`<option value="${i}">${b.name} — ${money(b.total)} · ${fmt(b.throughput)} GB/s</option>`).join("");
+  document.getElementById("tabs").innerHTML=DATA.builds.map((b,i)=>
+    `<button class="tab" role="tab" id="tab-${b.id}" aria-controls="panel" aria-selected="${i===0}" data-i="${i}">${b.name.split("·")[0].trim()}</button>`).join("");
+  document.getElementById("panel").setAttribute("role","tabpanel");
+  document.getElementById("panel").setAttribute("aria-labelledby","tab-"+DATA.builds[0].id);
+  sel.onchange=()=>{current=+sel.value;syncTabs();render();location.hash=DATA.builds[current].id;};
+  document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{current=+t.dataset.i;sel.value=current;syncTabs();render();location.hash=DATA.builds[current].id;});
+  // deep link: #build-4 opens that build
+  const h=decodeURIComponent(location.hash.replace(/^#/, ""));
+  const idx=DATA.builds.findIndex(b=>b.id===h);
+  if(idx>=0){current=idx;sel.value=idx;syncTabs();}
+  window.onhashchange=()=>{
+    const id=decodeURIComponent(location.hash.replace(/^#/, ""));
+    const i=DATA.builds.findIndex(b=>b.id===id);
+    if(i>=0){current=i;sel.value=i;syncTabs();render();}
+  };
+  document.querySelectorAll(".tab").forEach((t,i,arr)=>{
+    t.onkeydown=e=>{
+      if(e.key==="ArrowRight"||e.key==="ArrowLeft"){
+        e.preventDefault();
+        const n=(i+(e.key==="ArrowRight"?1:arr.length-1))%arr.length;
+        current=n;sel.value=n;syncTabs();render();arr[n].focus();
+      }
+    };
+  });
+  document.getElementById("theme").onclick=()=>setTheme(document.documentElement.dataset.theme==="dark"?"light":"dark");
+  try{const t=localStorage.getItem("mf-theme");if(t)setTheme(t);}catch(e){}
+  heroStats(); render(); table(); status();
+}
+function syncTabs(){document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",+t.dataset.i===current));
+  document.getElementById("panel").setAttribute("aria-labelledby","tab-"+DATA.builds[current].id);}
+boot().catch(err=>{
+  document.getElementById("panel").innerHTML=
+    `<div class="cardh"><h2>Data file failed to load</h2>
+       <p>${String(err.message||err)}</p>
+       <p class="why">The site renders from <code>data/builds.json</code>. Run
+       <code>python refresh.py</code> to regenerate it, then reload this page.</p></div>`;
+});
+</script>
+</body>
+</html>
