@@ -107,7 +107,7 @@
       "id": "build-2",
       "name": "Build 2 \u00b7 NVLink quad",
       "tagline": "4x V100 SXM2 32 GB on a quad NVLink baseboard \u00b7 GPU-to-GPU at supercomputer speed",
-      "total": 5056.23,
+      "total": 5456.23,
       "gpu_bw": 3600,
       "ddr_bw": 153.6,
       "throughput": 3753.6,
@@ -118,18 +118,19 @@
       "storage": 2,
       "storage_max": 92,
       "power": 1450,
-      "per_gb": 1.347,
+      "per_gb": 1.4536,
       "why": "The only build where GPUs talk to each other at supercomputer speed: NVLink 6 links per card = 300 GB/s, 100 GB/s per pair, against PCIe 3.0's ~28 GB/s. This is what makes tensor-parallel model sharding fast.",
       "components": [
         {
           "qty": 4,
           "name": "NVIDIA Tesla V100 SXM2 32 GB HBM2",
-          "price": 699.9,
+          "price": 799.9,
           "stats": "900 GB/s each \u00b7 4,096-bit HBM2 + ECC \u00b7 5,120 CUDA + 640 Tensor cores \u00b7 15.7 TF FP32 \u00b7 NVLink 6 links = 300 GB/s \u00b7 300 W \u00b7 ships bare",
           "url": "https://www.ebay.com/itm/287621214160",
           "stock": "More than 10 available",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l300.jpg"
+          "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l300.jpg",
+          "flag": "price moved $699.9 -> $799.9"
         },
         {
           "qty": 1,
@@ -507,7 +508,7 @@
       "id": "build-6",
       "name": "Build 6 \u00b7 NVLink quad (AI)",
       "tagline": "4x V100 SXM2 32 GB \u00b7 the only GPU-to-GPU supercomputer fabric",
-      "total": 5056.23,
+      "total": 5456.23,
       "gpu_bw": 3600,
       "ddr_bw": 153.6,
       "throughput": 3753.6,
@@ -518,18 +519,19 @@
       "storage": 2,
       "storage_max": 92,
       "power": 1450,
-      "per_gb": 1.347,
+      "per_gb": 1.4536,
       "why": "The CUDA pick: mature stack, real Tensor cores, and the only GPU-to-GPU fabric in the list. NVLink 100 GB/s per pair vs PCIe 3.0's ~28 GB/s is what makes tensor-parallel sharding fast. Most expensive per GB/s, and the baseboard has only 2 units in stock.",
       "components": [
         {
           "qty": 4,
           "name": "NVIDIA Tesla V100 SXM2 32 GB HBM2",
-          "price": 699.9,
+          "price": 799.9,
           "stats": "900 GB/s each \u00b7 5,120 CUDA + 640 Tensor \u00b7 15.7 TF FP32 \u00b7 NVLink 6 links = 300 GB/s \u00b7 300 W \u00b7 ships bare",
           "url": "https://www.ebay.com/itm/287621214160",
           "stock": "More than 10 available",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l300.jpg"
+          "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l300.jpg",
+          "flag": "price moved $699.9 -> $799.9"
         },
         {
           "qty": 1,
@@ -728,7 +730,7 @@
           "stock": "2 available",
           "seller": "Pre-owned",
           "flag": "not buyable",
-          "img": "https://i.ebayimg.com/images/g/cxMAAeSwKTRqgkV6/s-l1600.webp"
+          "img": "https://i.ebayimg.com/images/g/cxMAAeSwKTRqgkV6/s-l400.jpg"
         }
       ],
       "total": 1594.42,
@@ -738,10 +740,10 @@
       "deviation": "FLAGGED DEVIATION: system RAM is 32 GB (board max 32 GB), below the standing 64 GB / 128 GB-expandable requirement. No board in the catalog offers 12 GPU slots AND 64+ GB RAM \u2014 12-slot mining boards cap at 32 GB. GPU VRAM totals 192 GB, which is what the model reads; system RAM only stages the dataset. The 64/128 GB requirement is met by builds 1-6 on workstation boards."
     },
     {
-      "id": "build-auto-1791844103",
+      "id": "build-auto-1791846019",
       "name": "Auto \u00b7 13\u00d7 MI25 rig",
-      "tagline": "auto-generated \u00b7 13,034.1 GB/s \u00b7 208 GB VRAM \u00b7 $0.130/GB/s",
-      "total": 1634.85,
+      "tagline": "auto-generated \u00b7 13,034.1 GB/s \u00b7 208 GB VRAM \u00b7 $0.131/GB/s",
+      "total": 1709.88,
       "gpu_bw": 13000,
       "ddr_bw": 34.1,
       "throughput": 13034.1,
@@ -751,11 +753,11 @@
       "ram_max": 32,
       "storage": "2 TB NVMe",
       "storage_max": "~92 TB",
-      "power": "4800 W (64% load)",
-      "per_gb": 0.1254,
+      "power": "5400 W (57% load)",
+      "per_gb": 0.1312,
       "deviation": "FLAGGED DEVIATION: system RAM is 32 GB (board max 32 GB), below the standing 64 GB / 128 GB-expandable requirement. 12-slot mining boards cap at 32 GB; no board in the catalog offers 12 GPU slots AND 64+ GB RAM. GPU VRAM totals 208 GB, which is what the model reads; system RAM only stages the dataset.",
       "mode": "rig",
-      "why": "Auto-built to beat every existing build on all three metrics: 13\u00d7 AMD Radeon Instinct MI25 16 GB HBM2 = 13,000 GB/s + 34.1 GB/s system DDR = 13,034.1 GB/s total \u00b7 208 GB VRAM \u00b7 $1,694.85 = $0.130 per GB/s.",
+      "why": "Auto-built to beat every existing build on all three metrics: 13\u00d7 AMD Radeon Instinct MI25 16 GB HBM2 = 13,000 GB/s + 34.1 GB/s system DDR = 13,034.1 GB/s total \u00b7 208 GB VRAM \u00b7 $1,709.88 = $0.131 per GB/s.",
       "components": [
         {
           "qty": 13,
@@ -799,13 +801,13 @@
         },
         {
           "qty": 3,
-          "name": "1600 W mining PSU (17x 6-pin)",
-          "price": 9.98,
-          "stats": "1600 W \u00b7 17x 6-pin PCIe \u00b7 3 PSU = 4800 W for 3078 W load (64%)",
-          "url": "https://www.ebay.com/itm/363412283734",
-          "stock": "3 available",
+          "name": "Soontech ST1800W 1800 W mining PSU (10x 6+2-pin)",
+          "price": 34.99,
+          "stats": "1800 W \u00b7 10x 6-pin PCIe \u00b7 3 PSU = 5400 W for 3078 W load (57%)",
+          "url": "https://www.ebay.com/itm/307210589596",
+          "stock": "In stock (Buy It Now / Best Offer)",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/MqUAAOSwVExgrt6Q/s-l400.jpg"
+          "img": "https://i.ebayimg.com/images/g/ygcAAeSwSEpqv~J7/s-l400.jpg"
         },
         {
           "qty": 13,
@@ -845,8 +847,7 @@
           "url": "https://www.ebay.com/itm/206615696648",
           "stock": "In stock (Buy It Now / Best Offer)",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/Yh0AAeSwuV5qydBR/s-l400.jpg",
-          "flag": "price moved $210.0 -> $150.0"
+          "img": "https://i.ebayimg.com/images/g/Yh0AAeSwuV5qydBR/s-l400.jpg"
         },
         {
           "qty": 13,
@@ -856,15 +857,15 @@
           "url": "https://www.ebay.com/itm/137629627141",
           "stock": "2 available",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/cxMAAeSwKTRqgkV6/s-l1600.webp"
+          "img": "https://i.ebayimg.com/images/g/cxMAAeSwKTRqgkV6/s-l400.jpg"
         }
       ]
     }
   ],
   "status": {
-    "verified": "2026-10-12 17:34",
+    "verified": "2026-10-12 18:03",
     "listings": 29,
-    "flagged": 1,
+    "flagged": 2,
     "method": "Every listing re-checked over a real browser (CDP): live price, quantity available, buyable, ENDED. Totals recomputed from verified prices."
   }
 }
