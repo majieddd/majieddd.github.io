@@ -28,7 +28,8 @@
           "stats": "1,024 GB/s each \u00b7 4,096-bit HBM2 + ECC \u00b7 3,840 stream \u00b7 13.4 TF FP32 \u00b7 PCIe3 x16 \u00b7 300 W \u00b7 passive, no display out",
           "url": "https://www.ebay.com/itm/318540915485",
           "stock": "5 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/ZnAAAeSwEBxoeb6N/s-l300.jpg"
         },
         {
           "qty": 1,
@@ -37,7 +38,8 @@
           "stats": "3x PCIe3 x16 + 3x x8 = 6 GPU slots \u00b7 8 DIMM, 8-channel = 153.6 GB/s \u00b7 3x M.2 + 10 SATA \u00b7 max 512 GB RAM",
           "url": "https://www.ebay.com/itm/177555061971",
           "stock": "10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/gLUAAOSwKrxl~Rg3/s-l400.jpg"
         },
         {
           "qty": 2,
@@ -46,7 +48,8 @@
           "stats": "50 MB L3 \u00b7 40 PCIe lanes each \u00b7 4-ch DDR4-2400",
           "url": "https://www.ebay.com/itm/405896421405",
           "stock": "More than 10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/66AAAOSwm9RoMtlv/s-l400.jpg"
         },
         {
           "qty": 4,
@@ -55,7 +58,8 @@
           "stats": "128 GB installed, 8-channel, ECC \u00b7 $4.97/GB",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l300.png"
         },
         {
           "qty": 1,
@@ -64,7 +68,8 @@
           "stats": "4,000 MB/s \u00b7 expandable to ~92 TB via 3x M.2 + 10 SATA",
           "url": "https://www.newegg.com/kingspec-2tb-xf-series-nvme-1-4/p/0D9-000D-001A6",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by KingSpec Official Store, Shipped by Newegg"
+          "seller": "Sold by KingSpec Official Store, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B1V8S26040205J8S56D.jpg"
         },
         {
           "qty": 1,
@@ -73,7 +78,8 @@
           "stats": "6x 6+2-pin PCIe \u00b7 80+ Gold \u00b7 85% load at 1,365 W",
           "url": "https://www.newegg.com/p/1HU-0339-00003",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by Corn Electronics, Shipped by Newegg"
+          "seller": "Sold by Corn Electronics, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B351S211015E4EB9.jpg"
         },
         {
           "qty": 1,
@@ -82,7 +88,8 @@
           "stats": "passive cards need forced airflow \u2014 the open frame IS the cooling strategy",
           "url": "https://www.ebay.com/itm/284198010699",
           "stock": "5 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/1FQAAOSwF-tgOBfW/s-l400.jpg"
         },
         {
           "qty": 4,
@@ -91,7 +98,8 @@
           "stats": "MI50 ships fanless \u00b7 custom cooling per card",
           "url": "https://www.ebay.com/itm/286347517173",
           "stock": "More than 10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/maMAAOSw81Rnt7GN/s-l400.jpg"
         }
       ]
     },
@@ -120,7 +128,8 @@
           "stats": "900 GB/s each \u00b7 4,096-bit HBM2 + ECC \u00b7 5,120 CUDA + 640 Tensor cores \u00b7 15.7 TF FP32 \u00b7 NVLink 6 links = 300 GB/s \u00b7 300 W \u00b7 ships bare",
           "url": "https://www.ebay.com/itm/287621214160",
           "stock": "More than 10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l300.jpg"
         },
         {
           "qty": 1,
@@ -129,7 +138,8 @@
           "stats": "4x SXM2 sockets \u00b7 NVLink 2.0 \u00b7 PEX8749 PCIe switch, 1x x16 uplink \u00b7 ATX 24-pin + 2x CPU 8-pin + 2x GPU 16-pin",
           "url": "https://www.ebay.com/itm/188936960864",
           "stock": "2 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l300.png"
         },
         {
           "qty": 4,
@@ -138,7 +148,8 @@
           "stats": "SXM2 modules ship bare \u2014 hotspot temps are the reported failure mode",
           "url": "https://www.ebay.com/itm/197987210120",
           "stock": "More than 10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/o4wAAeSwlKlqD0jI/s-l400.jpg"
         },
         {
           "qty": 1,
@@ -147,7 +158,8 @@
           "stats": "feeds the baseboard's x16 uplink \u00b7 8-ch DDR4 = 153.6 GB/s \u00b7 max 512 GB",
           "url": "https://www.ebay.com/itm/177555061971",
           "stock": "10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/gLUAAOSwKrxl~Rg3/s-l400.jpg"
         },
         {
           "qty": 2,
@@ -156,7 +168,8 @@
           "stats": "40 PCIe lanes each",
           "url": "https://www.ebay.com/itm/405896421405",
           "stock": "More than 10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/66AAAOSwm9RoMtlv/s-l400.jpg"
         },
         {
           "qty": 4,
@@ -165,7 +178,8 @@
           "stats": "128 GB, 8-channel, ECC",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l300.png"
         },
         {
           "qty": 1,
@@ -174,7 +188,8 @@
           "stats": "4,000 MB/s \u00b7 expandable to ~92 TB",
           "url": "https://www.newegg.com/kingspec-2tb-xf-series-nvme-1-4/p/0D9-000D-001A6",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by KingSpec Official Store, Shipped by Newegg"
+          "seller": "Sold by KingSpec Official Store, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B1V8S26040205J8S56D.jpg"
         },
         {
           "qty": 1,
@@ -183,7 +198,8 @@
           "stats": "baseboard wants ATX 24-pin + 2x CPU 8-pin + 2x GPU 16-pin",
           "url": "https://www.newegg.com/p/1HU-034G-00009",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by Jiamayanonly, Shipped by Newegg"
+          "seller": "Sold by Jiamayanonly, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B694S2201130CUD6FF7.jpg"
         },
         {
           "qty": 1,
@@ -192,7 +208,8 @@
           "stats": "baseboard is 304x270 mm \u2014 needs an open frame",
           "url": "https://www.newegg.com/p/3C6-0688-01A96",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by YunYunKeJiShiZhuangDian, Shipped by Newegg"
+          "seller": "Sold by YunYunKeJiShiZhuangDian, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B5ZAD2512280TQ4HHA0.jpg"
         }
       ]
     },
@@ -221,7 +238,8 @@
           "stats": "1,024 GB/s each \u00b7 4,096-bit HBM2 + ECC \u00b7 300 W \u00b7 passive",
           "url": "https://www.ebay.com/itm/318540915485",
           "stock": "5 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/ZnAAAeSwEBxoeb6N/s-l300.jpg"
         },
         {
           "qty": 1,
@@ -230,7 +248,8 @@
           "stats": "5 PCIe3 slots (2x x16 + 3x x8) \u00b7 16 DIMM, 16-channel = 340.8 GB/s \u00b7 max 2,048 GB ECC DDR4 \u00b7 10 SATA + 2 M.2 \u00b7 dual 10 GbE + IPMI \u00b7 tested working",
           "url": "https://www.ebay.com/itm/407256081708",
           "stock": "In stock (Buy It Now / Best Offer)",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/QmMAAeSwf2tqvHgf/s-l300.jpg"
         },
         {
           "qty": 8,
@@ -239,7 +258,8 @@
           "stats": "256 GB installed, 16-channel, ECC \u00b7 16 DIMM to 2,048 GB max",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l300.png"
         },
         {
           "qty": 1,
@@ -248,7 +268,8 @@
           "stats": "4,000 MB/s \u00b7 10 SATA + 2 M.2 = 12 drive connections, expandable to ~150 TB",
           "url": "https://www.newegg.com/kingspec-2tb-xf-series-nvme-1-4/p/0D9-000D-001A6",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by KingSpec Official Store, Shipped by Newegg"
+          "seller": "Sold by KingSpec Official Store, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B1V8S26040205J8S56D.jpg"
         },
         {
           "qty": 2,
@@ -257,7 +278,8 @@
           "stats": "4,000 W total \u00b7 41% load at 1,650 W",
           "url": "https://www.newegg.com/p/1HU-034G-00009",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by Jiamayanonly, Shipped by Newegg"
+          "seller": "Sold by Jiamayanonly, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B694S2201130CUD6FF7.jpg"
         },
         {
           "qty": 1,
@@ -266,7 +288,8 @@
           "stats": "5 passive cards + 2 PSUs need free airflow",
           "url": "https://www.newegg.com/p/3C6-0688-01A96",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by YunYunKeJiShiZhuangDian, Shipped by Newegg"
+          "seller": "Sold by YunYunKeJiShiZhuangDian, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B5ZAD2512280TQ4HHA0.jpg"
         },
         {
           "qty": 5,
@@ -275,7 +298,8 @@
           "stats": "custom cooling per card",
           "url": "https://www.ebay.com/itm/286347517173",
           "stock": "More than 10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/maMAAOSw81Rnt7GN/s-l400.jpg"
         }
       ]
     },
@@ -304,7 +328,8 @@
           "stats": "1,000 GB/s each \u00b7 2,048-bit HBM2 + ECC \u00b7 2,304 stream \u00b7 12.3 TF FP32 \u00b7 PCIe3 x16 \u00b7 220 W \u00b7 passive",
           "url": "https://www.ebay.com/itm/278212490817",
           "stock": "More than 10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/e2UAAeSwRT1qXup3/s-l400.jpg"
         },
         {
           "qty": 1,
@@ -313,7 +338,8 @@
           "stats": "3x x16 + 3x x8 = 6 GPU slots \u00b7 8 DIMM, 8-ch = 153.6 GB/s \u00b7 max 512 GB",
           "url": "https://www.ebay.com/itm/177555061971",
           "stock": "10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/gLUAAOSwKrxl~Rg3/s-l400.jpg"
         },
         {
           "qty": 2,
@@ -322,7 +348,8 @@
           "stats": "40 PCIe lanes each \u00b7 50 MB L3",
           "url": "https://www.ebay.com/itm/405896421405",
           "stock": "More than 10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/66AAAOSwm9RoMtlv/s-l400.jpg"
         },
         {
           "qty": 4,
@@ -331,7 +358,8 @@
           "stats": "128 GB installed, 8-channel, ECC \u00b7 $4.97/GB",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l300.png"
         },
         {
           "qty": 1,
@@ -340,7 +368,8 @@
           "stats": "PCIe 4.0 x4 \u00b7 4,000 MB/s \u00b7 expandable to ~92 TB (3x M.2 + 10 SATA)",
           "url": "https://www.newegg.com/kingspec-2tb-xf-series-nvme-1-4/p/0D9-000D-001A6",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by KingSpec Official Store, Shipped by Newegg"
+          "seller": "Sold by KingSpec Official Store, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B1V8S26040205J8S56D.jpg"
         },
         {
           "qty": 1,
@@ -349,7 +378,8 @@
           "stats": "supports 8 GPU \u00b7 44% load at 1,570 W",
           "url": "https://www.newegg.com/p/1HU-034G-00009",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by Jiamayanonly, Shipped by Newegg"
+          "seller": "Sold by Jiamayanonly, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B694S2201130CUD6FF7.jpg"
         },
         {
           "qty": 1,
@@ -358,7 +388,8 @@
           "stats": "free airflow for 6 passive cards + PSU",
           "url": "https://www.newegg.com/p/3C6-0688-01A96",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by YunYunKeJiShiZhuangDian, Shipped by Newegg"
+          "seller": "Sold by YunYunKeJiShiZhuangDian, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B5ZAD2512280TQ4HHA0.jpg"
         },
         {
           "qty": 6,
@@ -367,7 +398,8 @@
           "stats": "MI25 ships fanless \u2014 forced airflow is the cooling strategy",
           "url": "https://www.ebay.com/itm/286347517173",
           "stock": "More than 10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/maMAAOSw81Rnt7GN/s-l400.jpg"
         }
       ]
     },
@@ -396,7 +428,8 @@
           "stats": "1,024 GB/s each \u00b7 4,096-bit HBM2 + ECC \u00b7 3,840 stream \u00b7 13.4 TF FP32 \u00b7 PCIe4 x16 \u00b7 300 W \u00b7 passive",
           "url": "https://www.ebay.com/itm/205802298789",
           "stock": "More than 10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/0t0AAeSwMoJo-dh6/s-l400.jpg"
         },
         {
           "qty": 1,
@@ -405,7 +438,8 @@
           "stats": "6 GPU slots \u00b7 8-ch DDR4 = 153.6 GB/s \u00b7 max 512 GB",
           "url": "https://www.ebay.com/itm/177555061971",
           "stock": "10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/gLUAAOSwKrxl~Rg3/s-l400.jpg"
         },
         {
           "qty": 2,
@@ -414,7 +448,8 @@
           "stats": "40 PCIe lanes each",
           "url": "https://www.ebay.com/itm/405896421405",
           "stock": "More than 10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/66AAAOSwm9RoMtlv/s-l400.jpg"
         },
         {
           "qty": 4,
@@ -423,7 +458,8 @@
           "stats": "128 GB, 8-channel, ECC",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l300.png"
         },
         {
           "qty": 1,
@@ -432,7 +468,8 @@
           "stats": "4,000 MB/s \u00b7 expandable to ~92 TB",
           "url": "https://www.newegg.com/kingspec-2tb-xf-series-nvme-1-4/p/0D9-000D-001A6",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by KingSpec Official Store, Shipped by Newegg"
+          "seller": "Sold by KingSpec Official Store, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B1V8S26040205J8S56D.jpg"
         },
         {
           "qty": 1,
@@ -441,7 +478,8 @@
           "stats": "44% load at 1,450 W",
           "url": "https://www.newegg.com/p/1HU-034G-00009",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by Jiamayanonly, Shipped by Newegg"
+          "seller": "Sold by Jiamayanonly, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B694S2201130CUD6FF7.jpg"
         },
         {
           "qty": 1,
@@ -450,7 +488,8 @@
           "stats": "airflow for 4 passive cards",
           "url": "https://www.newegg.com/p/3C6-0688-01A96",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by YunYunKeJiShiZhuangDian, Shipped by Newegg"
+          "seller": "Sold by YunYunKeJiShiZhuangDian, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B5ZAD2512280TQ4HHA0.jpg"
         },
         {
           "qty": 4,
@@ -459,7 +498,8 @@
           "stats": "MI50 ships fanless",
           "url": "https://www.ebay.com/itm/286347517173",
           "stock": "More than 10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/maMAAOSw81Rnt7GN/s-l400.jpg"
         }
       ]
     },
@@ -488,7 +528,8 @@
           "stats": "900 GB/s each \u00b7 5,120 CUDA + 640 Tensor \u00b7 15.7 TF FP32 \u00b7 NVLink 6 links = 300 GB/s \u00b7 300 W \u00b7 ships bare",
           "url": "https://www.ebay.com/itm/287621214160",
           "stock": "More than 10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l300.jpg"
         },
         {
           "qty": 1,
@@ -497,7 +538,8 @@
           "stats": "NVLink 2.0 \u00b7 PEX8749 switch, 1x x16 uplink \u00b7 ATX 24-pin + 2x CPU 8-pin + 2x GPU 16-pin",
           "url": "https://www.ebay.com/itm/188936960864",
           "stock": "2 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l300.png"
         },
         {
           "qty": 4,
@@ -506,7 +548,8 @@
           "stats": "SXM2 ships bare \u2014 hotspot temps are the failure mode",
           "url": "https://www.ebay.com/itm/197987210120",
           "stock": "More than 10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/o4wAAeSwlKlqD0jI/s-l400.jpg"
         },
         {
           "qty": 1,
@@ -515,7 +558,8 @@
           "stats": "feeds the x16 uplink \u00b7 8-ch DDR4 = 153.6 GB/s",
           "url": "https://www.ebay.com/itm/177555061971",
           "stock": "10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/gLUAAOSwKrxl~Rg3/s-l400.jpg"
         },
         {
           "qty": 2,
@@ -524,7 +568,8 @@
           "stats": "40 PCIe lanes each",
           "url": "https://www.ebay.com/itm/405896421405",
           "stock": "More than 10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/66AAAOSwm9RoMtlv/s-l400.jpg"
         },
         {
           "qty": 4,
@@ -533,7 +578,8 @@
           "stats": "128 GB, 8-channel, ECC",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "Pre-owned"
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l300.png"
         },
         {
           "qty": 1,
@@ -542,7 +588,8 @@
           "stats": "4,000 MB/s \u00b7 expandable to ~92 TB",
           "url": "https://www.newegg.com/kingspec-2tb-xf-series-nvme-1-4/p/0D9-000D-001A6",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by KingSpec Official Store, Shipped by Newegg"
+          "seller": "Sold by KingSpec Official Store, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B1V8S26040205J8S56D.jpg"
         },
         {
           "qty": 1,
@@ -551,7 +598,8 @@
           "stats": "baseboard wants 2x CPU 8-pin + 2x GPU 16-pin",
           "url": "https://www.newegg.com/p/1HU-034G-00009",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by Jiamayanonly, Shipped by Newegg"
+          "seller": "Sold by Jiamayanonly, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B694S2201130CUD6FF7.jpg"
         },
         {
           "qty": 1,
@@ -560,7 +608,8 @@
           "stats": "baseboard is 304x270 mm \u2014 needs an open frame",
           "url": "https://www.newegg.com/p/3C6-0688-01A96",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by YunYunKeJiShiZhuangDian, Shipped by Newegg"
+          "seller": "Sold by YunYunKeJiShiZhuangDian, Shipped by Newegg",
+          "img": "https://c1.neweggimages.com/ProductImage/B5ZAD2512280TQ4HHA0.jpg"
         }
       ]
     },
@@ -581,20 +630,22 @@
         {
           "qty": 12,
           "name": "AMD Radeon Instinct MI25 16 GB HBM2",
-          "price": 74.99,
+          "price": 77.0,
           "stats": "1,000 GB/s each \u00b7 2,048-bit HBM2 + ECC \u00b7 2,304 stream \u00b7 12.3 TF FP32 \u00b7 PCIe3 x16 \u00b7 300 W \u00b7 passive, no display out",
           "url": "https://www.ebay.com/itm/168137791505",
-          "stock": "in stock",
-          "seller": "Pre-owned"
+          "stock": "More than 10 available",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/a-kAAeSwgZhqzTMh/s-l400.jpg"
         },
         {
           "qty": 1,
           "name": "BIOSTAR TB360-BTC Pro 2.0 12-GPU mining board",
-          "price": 22.5,
+          "price": 24.49,
           "stats": "12 GPU slots (1x + 11x via risers) \u00b7 2-channel DDR4-2666 = 42.7 GB/s \u00b7 2x UDIMM, max 32 GB \u00b7 LGA1151",
           "url": "https://www.ebay.com/itm/178561608867",
-          "stock": "in stock",
-          "seller": "Open Box"
+          "stock": "5 available",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/RNoAAeSwoyJqxRl9/s-l400.jpg"
         },
         {
           "qty": 1,
@@ -602,84 +653,95 @@
           "price": 1.99,
           "stats": "2c/2t \u00b7 54 W \u00b7 drives the rig; GPUs do the compute",
           "url": "https://www.ebay.com/itm/357072414206",
-          "stock": "in stock",
-          "seller": "Pre-owned"
+          "stock": "Last one",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/28sAAOSwhL9oKDU8/s-l400.jpg"
         },
         {
           "qty": 1,
           "name": "32 GB (2x16) DDR4-2666 UDIMM",
-          "price": 39.99,
+          "price": 134.99,
           "stats": "2-channel DDR4-2666 = 42.7 GB/s \u00b7 board caps at 32 GB \u2014 see deviation",
-          "url": "https://www.ebay.com/sch/i.html?_nkw=2x16GB+DDR4-2666+UDIMM",
-          "stock": "in stock",
-          "seller": "various"
+          "url": "https://www.ebay.com/itm/128131585716",
+          "stock": "In stock (Buy It Now / Best Offer)",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/R5MAAeSwZZxqzUmY/s-l400.jpg"
         },
         {
           "qty": 2,
           "name": "1600 W mining PSU (17x 6-pin PCIe)",
-          "price": 26.03,
+          "price": 34.0,
           "stats": "2 PSU = 3,200 W for 3,660 W load \u2014 run 12 cards at 76% power cap (standard mining practice)",
           "url": "https://www.ebay.com/itm/117424151252",
-          "stock": "in stock",
-          "seller": "Brand New"
+          "stock": "More than 10 available",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/8y8AAeSwXFlqsWIT/s-l400.jpg"
         },
         {
           "qty": 12,
           "name": "VER009S PCIe 1x\u219216x riser + USB 3.0 cable",
-          "price": 6.98,
+          "price": 6.95,
           "stats": "one per GPU \u00b7 powered USB 3.0 data line \u00b7 the mining-rig standard for >6 GPUs",
           "url": "https://www.ebay.com/itm/227512716634",
-          "stock": "in stock",
-          "seller": "Brand New"
+          "stock": "7 available",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/VaEAAeSwVDVqoHQL/s-l400.jpg"
         },
         {
           "qty": 1,
           "name": "ATX PSU adder board (2nd PSU trigger)",
-          "price": 9.99,
+          "price": 7.68,
           "stats": "triggers PSU 2 from PSU 1 \u2014 standard dual-PSU mining wiring",
-          "url": "https://www.ebay.com/sch/i.html?_nkw=ATX+PSU+adder+board",
-          "stock": "in stock",
-          "seller": "various"
+          "url": "https://www.ebay.com/itm/233978712206",
+          "stock": "More than 10 available",
+          "seller": "Brand New",
+          "flag": "price moved $9.99 -> $7.68",
+          "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg"
         },
         {
           "qty": 1,
           "name": "13-GPU open-air mining frame",
-          "price": 24.95,
+          "price": 19.99,
           "stats": "open frame IS the cooling strategy for 12 passive cards",
           "url": "https://www.ebay.com/itm/366668903553",
-          "stock": "in stock",
-          "seller": "Brand New"
+          "stock": "5 available",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/-s8AAeSwDW5qqDSA/s-l300.jpg"
         },
         {
           "qty": 1,
           "name": "WD Black SN770 2 TB NVMe",
           "price": 150.0,
           "stats": "PCIe 4.0 x4 \u00b7 5,150 MB/s",
-          "url": "https://www.ebay.com/itm/407111176069",
-          "stock": "in stock",
-          "seller": "Pre-owned"
+          "url": "https://www.ebay.com/itm/206615696648",
+          "stock": "In stock (Buy It Now / Best Offer)",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/Yh0AAeSwuV5qydBR/s-l400.jpg",
+          "flag": "price moved $210.0 -> $150.0"
         },
         {
           "qty": 12,
           "name": "shroud + 120 mm fan per card",
-          "price": 23.98,
+          "price": 14.99,
           "stats": "MI25 ships fanless \u2014 forced airflow is the cooling strategy",
-          "url": "https://www.ebay.com/sch/i.html?_nkw=GPU+blower+shroud+120mm+fan",
-          "stock": "in stock",
-          "seller": "various"
+          "url": "https://www.ebay.com/itm/137629627141",
+          "stock": "2 available",
+          "seller": "Pre-owned",
+          "flag": "not buyable",
+          "img": "https://i.ebayimg.com/images/g/cxMAAeSwKTRqgkV6/s-l400.jpg"
         }
       ],
-      "total": 1572.88,
+      "total": 1594.42,
       "throughput": 12042.7,
-      "per_gb": 0.1306,
+      "per_gb": 0.1324,
       "id": "build-7",
       "deviation": "FLAGGED DEVIATION: system RAM is 32 GB (board max 32 GB), below the standing 64 GB / 128 GB-expandable requirement. No board in the catalog offers 12 GPU slots AND 64+ GB RAM \u2014 12-slot mining boards cap at 32 GB. GPU VRAM totals 192 GB, which is what the model reads; system RAM only stages the dataset. The 64/128 GB requirement is met by builds 1-6 on workstation boards."
     },
     {
-      "id": "build-auto-1791843472",
+      "id": "build-auto-1791844103",
       "name": "Auto \u00b7 13\u00d7 MI25 rig",
-      "tagline": "auto-generated \u00b7 13,034.1 GB/s \u00b7 208 GB VRAM \u00b7 $0.125/GB/s",
-      "total": 1634.56,
+      "tagline": "auto-generated \u00b7 13,034.1 GB/s \u00b7 208 GB VRAM \u00b7 $0.130/GB/s",
+      "total": 1634.85,
       "gpu_bw": 13000,
       "ddr_bw": 34.1,
       "throughput": 13034.1,
@@ -693,7 +755,7 @@
       "per_gb": 0.1254,
       "deviation": "FLAGGED DEVIATION: system RAM is 32 GB (board max 32 GB), below the standing 64 GB / 128 GB-expandable requirement. 12-slot mining boards cap at 32 GB; no board in the catalog offers 12 GPU slots AND 64+ GB RAM. GPU VRAM totals 208 GB, which is what the model reads; system RAM only stages the dataset.",
       "mode": "rig",
-      "why": "Auto-built to beat every existing build on all three metrics: 13\u00d7 AMD Radeon Instinct MI25 16 GB HBM2 = 13,000 GB/s + 34.1 GB/s system DDR = 13,034.1 GB/s total \u00b7 208 GB VRAM \u00b7 $1,634.56 = $0.125 per GB/s.",
+      "why": "Auto-built to beat every existing build on all three metrics: 13\u00d7 AMD Radeon Instinct MI25 16 GB HBM2 = 13,000 GB/s + 34.1 GB/s system DDR = 13,034.1 GB/s total \u00b7 208 GB VRAM \u00b7 $1,694.85 = $0.130 per GB/s.",
       "components": [
         {
           "qty": 13,
@@ -701,9 +763,9 @@
           "price": 74.99,
           "stats": "1,000 GB/s each \u00b7 16 GB HBM \u00b7 300 W \u00b7 PCIe3 x16",
           "url": "https://www.ebay.com/itm/278212490817",
-          "stock": "in stock",
-          "seller": "animuscompute",
-          "img": "https://i.ebayimg.com/images/g/e2UAAeSwRT1qXup3/s-l500.webp"
+          "stock": "More than 10 available",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/e2UAAeSwRT1qXup3/s-l400.jpg"
         },
         {
           "qty": 1,
@@ -711,9 +773,9 @@
           "price": 22.5,
           "stats": "13 GPU slots \u00b7 2-channel DDR4-2133 = 34.1 GB/s \u00b7 max 32 GB RAM",
           "url": "https://www.ebay.com/itm/178526436336",
-          "stock": "in stock",
-          "seller": "Open Box",
-          "img": null
+          "stock": "In stock (Buy It Now / Best Offer)",
+          "seller": "FOR PARTS",
+          "img": "https://i.ebayimg.com/images/g/jnUAAeSwruJqtd~u/s-l400.jpg"
         },
         {
           "qty": 1,
@@ -721,19 +783,19 @@
           "price": 1.98,
           "stats": "LGA1151 \u00b7 54 W",
           "url": "https://www.ebay.com/itm/168747984797",
-          "stock": "in stock",
-          "seller": "Pre-Owned",
-          "img": "https://i.ebayimg.com/images/g/mLEAAeSwG7pqveCD/s-l500.webp"
+          "stock": "In stock (Buy It Now / Best Offer)",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/mLEAAeSwG7pqveCD/s-l400.jpg"
         },
         {
           "qty": 1,
           "name": "32 GB (2x16) DDR4-2666 UDIMM",
-          "price": 20.5,
+          "price": 134.99,
           "stats": "32 GB \u00b7 2-channel DDR4-2666 \u00b7 UDIMM \u00b7 42.7 GB/s",
-          "url": "https://www.ebay.com/itm/287636254521",
-          "stock": "in stock",
-          "seller": "Pre-Owned",
-          "img": "https://i.ebayimg.com/images/g/X5kAAeSws2pqyBdC/s-l500.webp"
+          "url": "https://www.ebay.com/itm/128131585716",
+          "stock": "In stock (Buy It Now / Best Offer)",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/R5MAAeSwZZxqzUmY/s-l400.jpg"
         },
         {
           "qty": 3,
@@ -741,9 +803,9 @@
           "price": 9.98,
           "stats": "1600 W \u00b7 17x 6-pin PCIe \u00b7 3 PSU = 4800 W for 3078 W load (64%)",
           "url": "https://www.ebay.com/itm/363412283734",
-          "stock": "in stock",
-          "seller": "nifty-tech-llc",
-          "img": "https://i.ebayimg.com/images/g/MqUAAOSwVExgrt6Q/s-l500.webp"
+          "stock": "3 available",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/MqUAAOSwVExgrt6Q/s-l400.jpg"
         },
         {
           "qty": 13,
@@ -751,29 +813,29 @@
           "price": 6.95,
           "stats": "one per GPU \u00b7 powered USB 3.0 data line",
           "url": "https://www.ebay.com/itm/227512716634",
-          "stock": "in stock",
-          "seller": "Brand New",
-          "img": "https://i.ebayimg.com/images/g/VaEAAeSwVDVqoHQL/s-l500.webp"
+          "stock": "7 available",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/VaEAAeSwVDVqoHQL/s-l400.jpg"
         },
         {
-          "qty": 1,
+          "qty": 2,
           "name": "ATX PSU adder board (2nd PSU trigger)",
           "price": 7.68,
-          "stats": "triggers the 2nd PSU from the 1st \u2014 standard mining-rig wiring",
+          "stats": "one per extra PSU \u2014 triggers each adder PSU from the main one (standard mining-rig wiring)",
           "url": "https://www.ebay.com/itm/233978712206",
-          "stock": "in stock",
+          "stock": "More than 10 available",
           "seller": "dorigift442",
-          "img": null
+          "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg"
         },
         {
           "qty": 1,
           "name": "open-air mining frame",
-          "price": 25.0,
+          "price": 19.99,
           "stats": "open-air frame; passive cards need forced airflow",
-          "url": "https://www.ebay.com/itm/198696539852",
-          "stock": "in stock",
-          "seller": "Open Box",
-          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l400.jpg"
+          "url": "https://www.ebay.com/itm/366668903553",
+          "stock": "5 available",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/-s8AAeSwDW5qqDSA/s-l300.jpg"
         },
         {
           "qty": 1,
@@ -781,27 +843,28 @@
           "price": 150.0,
           "stats": "2 TB NVMe \u00b7 PCIe 4.0 x4",
           "url": "https://www.ebay.com/itm/206615696648",
-          "stock": "in stock",
-          "seller": "Pre-Owned",
-          "img": "https://i.ebayimg.com/images/g/Yh0AAeSwuV5qydBR/s-l500.webp"
+          "stock": "In stock (Buy It Now / Best Offer)",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/Yh0AAeSwuV5qydBR/s-l400.jpg",
+          "flag": "price moved $210.0 -> $150.0"
         },
         {
           "qty": 13,
           "name": "shroud + 120 mm fan per card",
-          "price": 23.98,
+          "price": 14.99,
           "stats": "passive cards ship fanless \u2014 forced airflow is the cooling strategy",
-          "url": "https://www.ebay.com/itm/286347517173",
-          "stock": "More than 10 available",
-          "seller": "various",
-          "img": "https://i.ebayimg.com/images/g/s-l500.webp"
+          "url": "https://www.ebay.com/itm/137629627141",
+          "stock": "2 available",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/cxMAAeSwKTRqgkV6/s-l400.jpg"
         }
       ]
     }
   ],
   "status": {
-    "verified": "2026-10-12 15:02",
-    "listings": 16,
-    "flagged": 0,
+    "verified": "2026-10-12 17:34",
+    "listings": 29,
+    "flagged": 1,
     "method": "Every listing re-checked over a real browser (CDP): live price, quantity available, buyable, ENDED. Totals recomputed from verified prices."
   }
 }
