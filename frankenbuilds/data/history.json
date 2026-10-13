@@ -1,0 +1,360 @@
+{
+  "days": [
+    "2026-10-13"
+  ],
+  "components": {
+    "gpu/mi25": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 74.99,
+          "unit": "$/GB VRAM",
+          "unit_price": 4.686875,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/278212490817",
+          "title": "AMD Radeon Instinct MI25 16GB HBM2 PCIE 3.0 GPU Passive Cooling Accelorator Card",
+          "seller": "animuscompute"
+        }
+      ],
+      "unit": "$/GB VRAM",
+      "label": "AMD Radeon Instinct MI25 16 GB HBM2"
+    },
+    "gpu/rx580": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 43.0,
+          "unit": "$/GB VRAM",
+          "unit_price": 5.375,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/800768911549",
+          "title": "SAPPHIRE NITRO+ AMD Radeon RX 580 8GB GDDR5 Dual BIOS PCIe x16 GPU",
+          "seller": "achris-35"
+        }
+      ],
+      "unit": "$/GB VRAM",
+      "label": "Sapphire Nitro+ RX 580 8 GB GDDR5"
+    },
+    "gpu/1080ti": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 47.0,
+          "unit": "$/GB VRAM",
+          "unit_price": 4.272727,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/920027748812",
+          "title": "ZOTAC Blower GeForce GTX 1080 Ti 11GB RAM - Graphics Card",
+          "seller": null
+        }
+      ],
+      "unit": "$/GB VRAM",
+      "label": "ZOTAC GTX 1080 Ti 11 GB GDDR5X"
+    },
+    "gpu/2080": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 61.0,
+          "unit": "$/GB VRAM",
+          "unit_price": 7.625,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/880005172975",
+          "title": "ZOTAC GAMING GeForce RTX 2080 AMP NVIDIA 8GB GDDR6 RGB Graphics Card",
+          "seller": null
+        }
+      ],
+      "unit": "$/GB VRAM",
+      "label": "ZOTAC RTX 2080 AMP 8 GB GDDR6"
+    },
+    "board/tb360btc": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 22.5,
+          "unit": "$/GPU slot",
+          "unit_price": 1.875,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/178561608867",
+          "title": "BIOSTAR TB360-BTC Pro 2.0 12 GPU Mining Motherboard LGA1151",
+          "seller": null
+        }
+      ],
+      "unit": "$/GPU slot",
+      "label": "BIOSTAR TB360-BTC Pro 2.0 12-GPU mining board"
+    },
+    "board/h110btc": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 22.5,
+          "unit": "$/GPU slot",
+          "unit_price": 1.730769,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/178526436336",
+          "title": "ASRock H110 Pro BTC+ 13GPU Crypto Mining Motherboard",
+          "seller": null
+        }
+      ],
+      "unit": "$/GPU slot",
+      "label": "ASRock H110 Pro BTC+ 13-GPU mining board"
+    },
+    "board/b250btc": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 22.99,
+          "unit": "$/GPU slot",
+          "unit_price": 1.915833,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/307099120256",
+          "title": "B250C BTC DDR4 Computer Mining Motherboard W Intel G3930 MULTIPLE AVAILABLE",
+          "seller": null
+        }
+      ],
+      "unit": "$/GPU slot",
+      "label": "B250C-BTC 12-GPU mining board (incl. G3930)"
+    },
+    "board/h31dm": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 335.0,
+          "unit": "$/GPU slot",
+          "unit_price": 335.0,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/298725155065",
+          "title": "Supermicro X10SDV-4C-TLN2F Xeon D-1521 CSE-E300 Barebones Server 2x10GbE PSU",
+          "seller": "recyclops_surplus"
+        }
+      ],
+      "unit": "$/GPU slot",
+      "label": "Supermicro X10SDV-4C-TLN2F (Xeon D-1521 SoC)"
+    },
+    "board/x99d": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 42.97,
+          "unit": "$/GPU slot",
+          "unit_price": 10.7425,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/296956430635",
+          "title": "X99 LGA 2011-v3 White Motherboard 4 x DDR4 RAM PCI-e 3.0 M.2 USB 2.0 SATA 2.0",
+          "seller": "mailanghu"
+        }
+      ],
+      "unit": "$/GPU slot",
+      "label": "Huananzhi X99 PR9 LGA2011-3"
+    },
+    "board/x99f8d": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 147.27,
+          "unit": "$/GPU slot",
+          "unit_price": 24.545,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/406403251375",
+          "title": "X99 F8D PLUS Dual CPU Motherboard E-ATX - Supports Intel E5-2699 v4",
+          "seller": null
+        }
+      ],
+      "unit": "$/GPU slot",
+      "label": "ASUS X99-F8D PLUS dual LGA2011-3"
+    },
+    "cpu/g3930": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 1.98,
+          "unit": "$",
+          "unit_price": 1.98,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/168747984797",
+          "title": "Intel Celeron G3930 2.90GHz Dual-Core LGA1151 CPU Processor SR35K",
+          "seller": null
+        }
+      ],
+      "unit": "$",
+      "label": "Intel Pentium G3930 (LGA1151 v1, 7th gen, HD 610)"
+    },
+    "cpu/e52680": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 14.49,
+          "unit": "$",
+          "unit_price": 14.49,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/198698891715",
+          "title": "INTEL Xeon E5-2680V4 SR2N7 2.40 GHz 35 MB SmartCache 120 W SKU 13482",
+          "seller": "didionorf"
+        }
+      ],
+      "unit": "$",
+      "label": "Intel Xeon E5-2680 v4 14c (LGA2011-3, headless)"
+    },
+    "cpu/i38100": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 17.0,
+          "unit": "$",
+          "unit_price": 17.0,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/168781077302",
+          "title": "SR3N5 - Intel Core i3-8100 4 Cores Coffee Lake LGA1151 3.6GHz 6MB Cache",
+          "seller": null
+        }
+      ],
+      "unit": "$",
+      "label": "Intel Core i3-8100 (LGA1151 v2, 8th gen, UHD 630)"
+    },
+    "memory/ddr4-64": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 91.0,
+          "unit": "$/GB RAM",
+          "unit_price": 1.421875,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/176685220753",
+          "title": "Crucial 64GB (4x16GB) DDR4-2666 PC4-2666V ECC Registered 288-Pin RDIMM",
+          "seller": null
+        }
+      ],
+      "unit": "$/GB RAM",
+      "label": "Crucial 64 GB (4x16) DDR4-2666 ECC RDIMM"
+    },
+    "memory/udimm-32": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 134.99,
+          "unit": "$/GB RAM",
+          "unit_price": 4.218438,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/128131585716",
+          "title": "SK hynix 32GB (2x16GB) DDR4 2666MHz UDIMM Desktop",
+          "seller": null
+        }
+      ],
+      "unit": "$/GB RAM",
+      "label": "32 GB (2x16) DDR4-2666 UDIMM"
+    },
+    "power/psu2000": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 34.99,
+          "unit": "$/W",
+          "unit_price": 0.019439,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/307210589596",
+          "title": "Soontech ST1800W Power Supply Mining PSU | Fast Ship, US Seller",
+          "seller": null
+        }
+      ],
+      "unit": "$/W",
+      "label": "Soontech ST1800W 1800 W mining PSU (10x 6+2-pin, 110-240 V)"
+    },
+    "expansion/riser": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 6.95,
+          "unit": "$/riser",
+          "unit_price": 6.95,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/227512716634",
+          "title": "PCI-E 1x to 16x Powered USB 3.0 GPU Riser Extender Adapter",
+          "seller": null
+        }
+      ],
+      "unit": "$/riser",
+      "label": "VER009S PCIe 1x->16x riser + USB3.0 cable"
+    },
+    "expansion/psu_adder": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 7.68,
+          "unit": "$",
+          "unit_price": 7.68,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/233978712206",
+          "title": "Dual PSU Power Supply 24-pin ATX Motherboard Mainboard Adapter Connector Cable",
+          "seller": "dorigift442"
+        }
+      ],
+      "unit": "$",
+      "label": "ATX PSU adder board (triggers one extra PSU)"
+    },
+    "chassis/frame": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 19.99,
+          "unit": "$/GPU slot",
+          "unit_price": 1.665833,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/366668903553",
+          "title": "Mining Rig Open Air Frame 2020 Extrusion 12 GPU",
+          "seller": null
+        }
+      ],
+      "unit": "$/GPU slot",
+      "label": "open-air mining frame (12 GPU positions)"
+    },
+    "storage/nvme2tb": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 150.0,
+          "unit": "$/GB",
+          "unit_price": 0.075,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/206615696648",
+          "title": "Western Digital WD_BLACK SN770 2TB M.2 NVMe Internal SSD",
+          "seller": null
+        }
+      ],
+      "unit": "$/GB",
+      "label": "WD Black SN770 2 TB NVMe"
+    },
+    "storage/sata1tb": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 119.99,
+          "unit": "$/GB",
+          "unit_price": 0.11999,
+          "stock": "10 available",
+          "url": "https://www.ebay.com/itm/313969708276",
+          "title": "Netac 1TB SSD 2.5'' SATA III 6 Gb/s Internal Solid State Drive 500MB/s MAC/PC",
+          "seller": null
+        }
+      ],
+      "unit": "$/GB",
+      "label": "1 TB SATA 2.5\" SSD"
+    },
+    "cooling/shroud": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 14.99,
+          "unit": "$/card cooled",
+          "unit_price": 14.99,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/137629627141",
+          "title": "92mm GPU COOLING FAN SHROUD - AMD RADEON MI60 MI50 MI25",
+          "seller": null
+        }
+      ],
+      "unit": "$/card cooled",
+      "label": "blower shroud + 120 mm fan (one per passive card)"
+    }
+  },
+  "updated": "2026-10-13T00:24:07Z"
+}
