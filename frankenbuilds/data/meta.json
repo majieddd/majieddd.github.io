@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-13T00:28:35Z",
+  "generated": "2026-10-13T00:48:38Z",
   "builds": 8,
   "best_throughput": 13034.1,
   "best_vram": 208,
@@ -14,12 +14,14 @@
     "build-7": "clean",
     "build-auto-1791850845": "warn"
   },
-  "audit_rules": 14,
+  "audit_rules": 29,
   "history_days": 1,
   "history_components": 22,
   "pages": [
     "builds",
     "components",
     "prices"
-  ]
+  ],
+  "listings": 29,
+  "flagged": 0
 }
