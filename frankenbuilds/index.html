@@ -645,19 +645,30 @@ function catOf(n){
 let COMPS=null, compCat="gpu", compSort={k:"per_gb", d:1};
 const CCOLS={
   gpu:[["name","GPU"],["price","Price"],["bw","Bandwidth"],["vram","VRAM"],["watts","Watts"],
-       ["per_gb","$/GB/s"],["per_vram","$/GB VRAM"],["stock","Stock"]],
-  board:[["name","Board"],["price","Price"],["slots","GPU slots"],["ddr_bw","DDR bandwidth"],
-       ["ram_max","Max RAM"],["mem","Type"],["socket","Socket"],["stock","Stock"]],
-  cpu:[["name","CPU"],["price","Price"],["socket","Socket"],["watts","Watts"],["stock","Stock"]],
+       ["conn","Power conns"],["passive","Cooling"],["per_gb","$/GB/s"],["per_vram","$/GB VRAM"],["stock","Stock"]],
+  board:[["name","Board"],["price","Price"],["slots","GPU slots"],["slot_w","Slot widths"],
+       ["ddr_bw","DDR bandwidth"],["ram_max","Max RAM"],["mem","Type"],["dimms","DIMM slots"],
+       ["socket","Socket"],["gen","CPU gens"],["m2","M.2"],["per_slot","$/slot"],["stock","Stock"]],
+  cpu:[["name","CPU"],["price","Price"],["socket","Socket"],["gen","Gen"],["tdp","TDP"],
+       ["igpu","iGPU"],["watts","Watts"],["stock","Stock"]],
   memory:[["name","Memory"],["price","Price"],["gb","Capacity"],["ddr_bw","Bandwidth"],
-       ["mem","Type"],["per_gb","$/GB RAM"],["stock","Stock"]],
+       ["mem","Type"],["dimms","Sticks"],["ecc","ECC"],["per_gb","$/GB RAM"],["stock","Stock"]],
   power:[["name","Power supply"],["price","Price"],["watts","Watts"],["pcie","PCIe power"],
-       ["stock","Stock"]],
+       ["mains","Mains input"],["per_w","$/W"],["stock","Stock"]],
+  expansion:[["name","Component"],["price","Price"],["role","Role"],["iface","Interface"],["stock","Stock"]],
+  chassis:[["name","Component"],["price","Price"],["gpu_capacity","GPU positions"],
+       ["per_slot","$/slot"],["stock","Stock"]],
+  cooling:[["name","Component"],["price","Price"],["cools","Cools per unit"],["stock","Stock"]],
+  storage:[["name","Component"],["price","Price"],["gb","Capacity"],["iface","Interface"],
+       ["per_gb","$/GB"],["stock","Stock"]],
   _default:[["name","Component"],["price","Price"],["stock","Stock"]],
 };
 const UNIT={bw:v=>fmt(v)+" GB/s", ddr_bw:v=>fmt(v)+" GB/s", vram:v=>v+" GB", gb:v=>v+" GB",
-  watts:v=>v+" W", slots:v=>v, pcie:v=>v+"× 6-pin", ram_max:v=>v+" GB",
-  per_gb:v=>"$"+v.toFixed(3), per_vram:v=>"$"+v.toFixed(2), price:v=>money(v)};
+  watts:v=>v+" W", tdp:v=>v+" W", slots:v=>v, dimms:v=>v, pcie:v=>v+"× 6+2-pin",
+  conn:v=>v+"× 8-pin", cools:v=>v+" card"+(v===1?"":"s"), gpu_capacity:v=>v,
+  ram_max:v=>v+" GB", min_v:v=>v?v+" V":"100-240 V",
+  per_gb:v=>"$"+v.toFixed(3), per_vram:v=>"$"+v.toFixed(2), per_slot:v=>"$"+v.toFixed(3),
+  per_w:v=>"$"+v.toFixed(4), price:v=>money(v)};
 
 async function loadComps(){
   if(COMPS) return;
