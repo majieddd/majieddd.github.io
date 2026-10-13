@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-13T00:48:29Z",
+  "generated": "2026-10-13T01:04:12Z",
   "rules": [
     "cooling",
     "cpu",
@@ -11,12 +11,13 @@
     "psu-conn",
     "psu-trigger",
     "psu-watt",
+    "psu-zones",
     "slot-bw",
     "storage",
     "sxm2-host",
     "total"
   ],
-  "rule_count": 29,
+  "rule_count": 30,
   "unlisted": [],
   "builds": {
     "build-1": {
@@ -184,6 +185,28 @@
         "psu-conn",
         "psu-watt",
         "psu-trigger",
+        "cooling",
+        "frame",
+        "storage",
+        "total"
+      ]
+    },
+    "build-auto-1791853256": {
+      "verdict": "warn",
+      "fails": [],
+      "warns": [
+        {
+          "rule": "mem-speed",
+          "msg": "32 GB (2x16) DDR4-2666 UDIMM is rated 2666 MT/s; ASUS B250 Mining Expert 19-GPU mining board runs memory at 2400 MT/s \u2014 it will train down, so the bandwidth figure should use 2400, not 2666"
+        }
+      ],
+      "passed": [
+        "cpu",
+        "gpu-slots",
+        "psu-conn",
+        "psu-watt",
+        "psu-trigger",
+        "psu-zones",
         "cooling",
         "frame",
         "storage",

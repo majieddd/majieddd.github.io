@@ -354,7 +354,23 @@
       ],
       "unit": "$/card cooled",
       "label": "blower shroud + 120 mm fan (one per passive card)"
+    },
+    "board/b250me": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 30.0,
+          "unit": "$/GPU slot",
+          "unit_price": 1.578947,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/267811214381",
+          "title": "ASUS B250 Mining Expert Motherboard (19 GPU Support)",
+          "seller": null
+        }
+      ],
+      "unit": "$/GPU slot",
+      "label": "ASUS B250 Mining Expert 19-GPU mining board"
     }
   },
-  "updated": "2026-10-13T00:48:29Z"
+  "updated": "2026-10-13T01:04:12Z"
 }
