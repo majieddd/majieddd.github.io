@@ -220,7 +220,7 @@
           "unit_price": 0.78125,
           "stock": "in stock",
           "url": "https://www.ebay.com/itm/237121243905",
-          "title": "NEW LISTINGTEAMGROUP T-Force Vulcan Z 64GB (2x32GB) DDR4-3600 DIMM 288-Pin",
+          "title": "TEAMGROUP T-Force Vulcan Z 64GB (2x32GB) DDR4-3600 DIMM 288-Pin",
           "seller": null
         }
       ],
@@ -380,7 +380,7 @@
           "unit_price": 11.874375,
           "stock": "in stock",
           "url": "https://www.ebay.com/itm/860036978994",
-          "title": "NEW LISTINGAMD Radeon Instinct MI50 16GB HBM2 PCIe GPU Accelerator AI ROCm HPC",
+          "title": "AMD Radeon Instinct MI50 16GB HBM2 PCIe GPU Accelerator AI ROCm HPC",
           "seller": null
         }
       ],
@@ -413,7 +413,7 @@
           "stock": "in stock",
           "url": "https://www.ebay.com/itm/407162226979",
           "title": "Intel Xeon E5-2698V3 16 Core CPU Server Processor 40M Cache, 2.30 GHz SR1XE",
-          "seller": "parts-quick"
+          "seller": null
         }
       ],
       "unit": "$",
@@ -429,7 +429,7 @@
           "stock": "in stock",
           "url": "https://www.ebay.com/itm/127822818498",
           "title": "INTEL Xeon E5-2697 V4 SR2JV 2.30GHZ 45MB 18-Core LGA2011-3 CPU",
-          "seller": "parts-quick"
+          "seller": null
         }
       ],
       "unit": "$",
@@ -445,7 +445,7 @@
           "stock": "in stock",
           "url": "https://www.ebay.com/itm/317748750349",
           "title": "AMD Epyc 7402P Server Processor (3.35 GHz, 24 Cores, Socket SP3) Dell locked",
-          "seller": "aj.electronics"
+          "seller": null
         }
       ],
       "unit": "$",
@@ -461,7 +461,7 @@
           "stock": "in stock",
           "url": "https://www.ebay.com/itm/137172396187",
           "title": "AMD EPYC 7351P Naples 16C/32T 2.4\u20112.9GHz SP3 1P\u2011Only Unlocked CPU",
-          "seller": "inwm9492"
+          "seller": null
         }
       ],
       "unit": "$",
@@ -514,7 +514,39 @@
       ],
       "unit": "$/W",
       "label": "EVGA Supernova 1600 P2 (6x PCIe 8-pin)"
+    },
+    "gpu/mi100": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 720.0,
+          "unit": "$/GB VRAM",
+          "unit_price": 22.5,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/287608377700",
+          "title": "AMD 102-D34228 MI100 RADEON 32GB HBM2 AI & MACHINE LEARNING GPU",
+          "seller": null
+        }
+      ],
+      "unit": "$/GB VRAM",
+      "label": "AMD Radeon Instinct MI100 32 GB HBM2"
+    },
+    "cpu/e52650v4": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 4.5,
+          "unit": "$",
+          "unit_price": 4.5,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/800428870090",
+          "title": "Intel Xeon E5-2650v4 2.2GHz 12 Core 105W SR2N3 Server Processor",
+          "seller": null
+        }
+      ],
+      "unit": "$",
+      "label": "Intel Xeon E5-2650 v4 12c/24t (LGA2011-3, headless)"
     }
   },
-  "updated": "2026-10-13T04:18:47Z"
+  "updated": "2026-10-13T10:25:06Z"
 }

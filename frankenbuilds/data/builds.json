@@ -29,7 +29,7 @@
           "url": "https://www.ebay.com/itm/318540915485",
           "stock": "25 available across 4 listings",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/ZnAAAeSwEBxoeb6N/s-l300.jpg",
+          "img": "https://i.ebayimg.com/images/g/ZnAAAeSwEBxoeb6N/s-l500.jpg",
           "section": "gpu",
           "spec": "mi50",
           "avail": 25,
@@ -55,7 +55,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $179.5\u2013$179.95 each",
-          "price_moved": "$179.5 -> $258.0 on 2026-10-12 (blended)"
+          "price_moved": "$179.5 -> $179.61 on 2026-10-13 (blended)"
         },
         {
           "qty": 1,
@@ -90,8 +90,8 @@
           "stats": "128 GB installed, 8-channel, ECC \u00b7 $4.97/GB",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l300.png",
+          "seller": "open box",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l500.png",
           "section": "memory",
           "spec": "rdimm-32",
           "avail": 10,
@@ -192,8 +192,8 @@
           "stats": "900 GB/s each \u00b7 4,096-bit HBM2 + ECC \u00b7 5,120 CUDA + 640 Tensor cores \u00b7 15.7 TF FP32 \u00b7 NVLink 6 links = 300 GB/s \u00b7 300 W \u00b7 ships bare",
           "url": "https://www.ebay.com/itm/287621214160",
           "stock": "More than 10 available",
-          "seller": "refurbished",
-          "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l300.jpg",
+          "seller": "Refurbished",
+          "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l500.jpg",
           "section": "gpu",
           "spec": "v100-sxm2-32",
           "avail": 10,
@@ -206,8 +206,8 @@
           "stats": "4x SXM2 sockets \u00b7 NVLink 2.0 \u00b7 PEX8749 PCIe switch, 1x x16 uplink \u00b7 ATX 24-pin + 2x CPU 8-pin + 2x GPU 16-pin",
           "url": "https://www.ebay.com/itm/188936960864",
           "stock": "2 available",
-          "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l300.png",
+          "seller": "Refurbished",
+          "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l500.png",
           "section": "board",
           "spec": "v100base"
         },
@@ -218,7 +218,7 @@
           "stats": "SXM2 modules ship bare \u2014 hotspot temps are the reported failure mode",
           "url": "https://www.ebay.com/itm/197987210120",
           "stock": "More than 10 available",
-          "seller": "Pre-owned",
+          "seller": "for Parts",
           "img": "https://i.ebayimg.com/images/g/o4wAAeSwlKlqD0jI/s-l400.jpg",
           "section": "cooling",
           "spec": "sxm2hs",
@@ -258,8 +258,8 @@
           "stats": "128 GB, 8-channel, ECC",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l300.png",
+          "seller": "open box",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l500.png",
           "section": "memory",
           "spec": "rdimm-32",
           "avail": 10,
@@ -330,7 +330,7 @@
           "url": "https://www.ebay.com/itm/318540915485",
           "stock": "25 available across 4 listings",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/ZnAAAeSwEBxoeb6N/s-l300.jpg",
+          "img": "https://i.ebayimg.com/images/g/ZnAAAeSwEBxoeb6N/s-l500.jpg",
           "section": "gpu",
           "spec": "mi50",
           "avail": 25,
@@ -356,7 +356,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $179.5\u2013$179.95 each",
-          "price_moved": "$179.5 -> $258.0 on 2026-10-12 (blended)"
+          "price_moved": "$179.5 -> $179.68 on 2026-10-13 (blended)"
         },
         {
           "qty": 1,
@@ -366,7 +366,7 @@
           "url": "https://www.ebay.com/itm/407256081708",
           "stock": "In stock (Buy It Now / Best Offer)",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/QmMAAeSwf2tqvHgf/s-l300.jpg",
+          "img": "https://i.ebayimg.com/images/g/QmMAAeSwf2tqvHgf/s-l500.jpg",
           "section": "board",
           "spec": "h11dsi",
           "carries": [
@@ -384,8 +384,8 @@
           "stats": "256 GB installed, 16-channel, ECC \u00b7 16 DIMM to 2,048 GB max",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l300.png",
+          "seller": "open box",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l500.png",
           "section": "memory",
           "spec": "rdimm-32",
           "avail": 10,
@@ -535,8 +535,8 @@
           "stats": "128 GB installed, 8-channel, ECC \u00b7 $4.97/GB",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l300.png",
+          "seller": "open box",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l500.png",
           "section": "memory",
           "spec": "rdimm-32",
           "avail": 10,
@@ -603,7 +603,7 @@
             }
           ],
           "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each",
-          "price_moved": "$23.98 -> $7.5 on 2026-10-12 (blended)"
+          "price_moved": "$23.98 -> $7.5 on 2026-10-13 (blended)"
         },
         {
           "qty": 1,
@@ -650,7 +650,7 @@
           "stats": "1,024 GB/s each \u00b7 4,096-bit HBM2 + ECC \u00b7 3,840 stream \u00b7 13.4 TF FP32 \u00b7 PCIe4 x16 \u00b7 300 W \u00b7 passive",
           "url": "https://www.ebay.com/itm/205802298789",
           "stock": "More than 10 available",
-          "seller": "Pre-owned",
+          "seller": "Refurbished",
           "img": "https://i.ebayimg.com/images/g/0t0AAeSwMoJo-dh6/s-l400.jpg",
           "section": "gpu",
           "spec": "mi50-32",
@@ -690,8 +690,8 @@
           "stats": "128 GB, 8-channel, ECC",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l300.png",
+          "seller": "open box",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l500.png",
           "section": "memory",
           "spec": "rdimm-32",
           "avail": 10,
@@ -775,8 +775,8 @@
           "stats": "900 GB/s each \u00b7 5,120 CUDA + 640 Tensor \u00b7 15.7 TF FP32 \u00b7 NVLink 6 links = 300 GB/s \u00b7 300 W \u00b7 ships bare",
           "url": "https://www.ebay.com/itm/287621214160",
           "stock": "More than 10 available",
-          "seller": "refurbished",
-          "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l300.jpg",
+          "seller": "Refurbished",
+          "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l500.jpg",
           "section": "gpu",
           "spec": "v100-sxm2-32",
           "avail": 10,
@@ -789,8 +789,8 @@
           "stats": "NVLink 2.0 \u00b7 PEX8749 switch, 1x x16 uplink \u00b7 ATX 24-pin + 2x CPU 8-pin + 2x GPU 16-pin",
           "url": "https://www.ebay.com/itm/188936960864",
           "stock": "2 available",
-          "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l300.png",
+          "seller": "Refurbished",
+          "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l500.png",
           "section": "board",
           "spec": "v100base"
         },
@@ -801,7 +801,7 @@
           "stats": "SXM2 ships bare \u2014 hotspot temps are the failure mode",
           "url": "https://www.ebay.com/itm/197987210120",
           "stock": "More than 10 available",
-          "seller": "Pre-owned",
+          "seller": "for Parts",
           "img": "https://i.ebayimg.com/images/g/o4wAAeSwlKlqD0jI/s-l400.jpg",
           "section": "cooling",
           "spec": "sxm2hs",
@@ -841,8 +841,8 @@
           "stats": "128 GB, 8-channel, ECC",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l300.png",
+          "seller": "open box",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l500.png",
           "section": "memory",
           "spec": "rdimm-32",
           "avail": 10,
@@ -935,7 +935,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $74.99\u2013$75.0 each",
-          "price_moved": "$77.0 -> $74.99 on 2026-10-12 (blended)"
+          "price_moved": "$77.0 -> $74.99 on 2026-10-13 (blended)"
         },
         {
           "qty": 1,
@@ -968,8 +968,8 @@
           "price": 134.99,
           "stats": "2-channel DDR4-2666 = 42.7 GB/s \u00b7 board caps at 32 GB \u2014 see deviation",
           "url": "https://www.ebay.com/itm/128131585716",
-          "stock": null,
-          "seller": "Pre-owned",
+          "stock": "LAST ONE",
+          "seller": "Refurbished",
           "img": "https://i.ebayimg.com/images/g/R5MAAeSwZZxqzUmY/s-l400.jpg",
           "section": "memory",
           "spec": "udimm-32",
@@ -996,7 +996,7 @@
           "stats": "one per GPU \u00b7 powered USB 3.0 data line \u00b7 the mining-rig standard for >6 GPUs",
           "url": "https://www.ebay.com/itm/227512716634",
           "stock": "187 available across 3 listings",
-          "seller": "open box",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/VaEAAeSwVDVqoHQL/s-l400.jpg",
           "section": "expansion",
           "spec": "riser",
@@ -1023,7 +1023,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $6.95\u2013$6.98 each",
-          "price_moved": "$6.95 -> $6.96 on 2026-10-12 (blended)"
+          "price_moved": "$6.95 -> $6.96 on 2026-10-13 (blended)"
         },
         {
           "qty": 2,
@@ -1059,7 +1059,7 @@
           "url": "https://www.ebay.com/itm/366668903553",
           "stock": "5 available",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/-s8AAeSwDW5qqDSA/s-l300.jpg",
+          "img": "https://i.ebayimg.com/images/g/-s8AAeSwDW5qqDSA/s-l500.jpg",
           "section": "chassis",
           "spec": "frame13"
         },
@@ -1071,12 +1071,11 @@
           "url": "https://www.ebay.com/itm/267811552241",
           "section": "storage",
           "spec": "sata1tb",
-          "stock": "in stock",
-          "seller": "Open Box",
-          "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l500.webp",
-          "avail": null,
-          "avail_floor": false,
-          "relisted": "was https://www.ebay.com/itm/313969708276 (flagged: listing ENDED)"
+          "stock": "LAST ONE",
+          "seller": "Open box",
+          "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l400.jpg",
+          "relisted": "was https://www.ebay.com/itm/313969708276 (flagged: listing ENDED)",
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
         {
           "qty": 12,
@@ -1112,7 +1111,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each",
-          "price_moved": "$14.99 -> $7.5 on 2026-10-12 (blended)"
+          "price_moved": "$14.99 -> $7.5 on 2026-10-13 (blended)"
         }
       ],
       "total": 1400.21,
@@ -1211,8 +1210,8 @@
           "url": "https://www.ebay.com/itm/128131585716",
           "section": "memory",
           "spec": "udimm-32",
-          "stock": null,
-          "seller": "Pre-owned",
+          "stock": "LAST ONE",
+          "seller": "Refurbished",
           "img": "https://i.ebayimg.com/images/g/R5MAAeSwZZxqzUmY/s-l400.jpg",
           "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
@@ -1225,7 +1224,7 @@
           "section": "power",
           "spec": "psu2000",
           "stock": "in stock across 1 listings (no quantity cap)",
-          "seller": "Refurbished",
+          "seller": "OPEN BOX",
           "img": "https://i.ebayimg.com/images/g/ygcAAeSwSEpqv~J7/s-l400.jpg",
           "avail": null,
           "avail_floor": false,
@@ -1241,7 +1240,7 @@
             }
           ],
           "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $35.0\u2013$35.0 each",
-          "price_moved": "$34.99 -> $35.0 on 2026-10-12 (blended)"
+          "price_moved": "$34.99 -> $35.0 on 2026-10-13 (blended)"
         },
         {
           "qty": 13,
@@ -1252,7 +1251,7 @@
           "section": "expansion",
           "spec": "riser",
           "stock": "187 available across 3 listings",
-          "seller": "open box",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/VaEAAeSwVDVqoHQL/s-l400.jpg",
           "avail": 187,
           "avail_floor": false,
@@ -1277,7 +1276,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $6.95\u2013$6.98 each",
-          "price_moved": "$6.95 -> $6.96 on 2026-10-12 (blended)"
+          "price_moved": "$6.95 -> $6.96 on 2026-10-13 (blended)"
         },
         {
           "qty": 2,
@@ -1310,14 +1309,17 @@
           "name": "open-air mining frame (12 GPU positions)",
           "price": 25.0,
           "stats": "open-air frame \u00b7 12 GPU positions each \u00b7 2 stacked for 13 GPUs; passive cards need forced airflow",
-          "url": "https://www.ebay.com/itm/366668903553",
+          "url": "https://www.ebay.com/itm/198696539852",
           "section": "chassis",
           "spec": "frame",
-          "stock": "2 available across 2 listings",
-          "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/-s8AAeSwDW5qqDSA/s-l300.jpg",
+          "stock": "in stock",
+          "seller": "gokame-sales",
+          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l500.webp",
           "avail": null,
           "avail_floor": false,
+          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $25.0\u2013$25.0 each",
+          "price_moved": "$19.99 -> $25.0 on 2026-10-13 (blended)",
+          "relisted": "was https://www.ebay.com/itm/366668903553 (flagged: quantity short: the 1 listings supplying this line hold 1 in total, the build needs 2)",
           "sources": [
             {
               "url": "https://www.ebay.com/itm/198696539852",
@@ -1328,9 +1330,7 @@
               "title": "12 GPU Mining Rig Frame Open Air Server Case Stackable Aluminum Crypto ETH BTC",
               "qty_bought": 2
             }
-          ],
-          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $25.0\u2013$25.0 each",
-          "price_moved": "$19.99 -> $27.47 on 2026-10-12 (blended)"
+          ]
         },
         {
           "qty": 1,
@@ -1340,12 +1340,11 @@
           "url": "https://www.ebay.com/itm/267811552241",
           "section": "storage",
           "spec": "sata1tb",
-          "stock": "in stock",
-          "seller": "Open Box",
-          "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l500.webp",
-          "avail": null,
-          "avail_floor": false,
-          "relisted": "was https://www.ebay.com/itm/313969708276 (flagged: listing ENDED)"
+          "stock": "LAST ONE",
+          "seller": "Open box",
+          "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l400.jpg",
+          "relisted": "was https://www.ebay.com/itm/313969708276 (flagged: listing ENDED)",
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
         {
           "qty": 13,
@@ -1381,7 +1380,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each",
-          "price_moved": "$14.99 -> $7.5 on 2026-10-12 (blended)"
+          "price_moved": "$14.99 -> $7.5 on 2026-10-13 (blended)"
         }
       ],
       "audit": "warn",
@@ -1477,8 +1476,8 @@
           "url": "https://www.ebay.com/itm/128131585716",
           "section": "memory",
           "spec": "udimm-32",
-          "stock": null,
-          "seller": "Pre-owned",
+          "stock": "LAST ONE",
+          "seller": "Refurbished",
           "img": "https://i.ebayimg.com/images/g/R5MAAeSwZZxqzUmY/s-l400.jpg",
           "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
@@ -1491,7 +1490,7 @@
           "section": "power",
           "spec": "psu2000",
           "stock": "in stock across 1 listings (no quantity cap)",
-          "seller": "Refurbished",
+          "seller": "OPEN BOX",
           "img": "https://i.ebayimg.com/images/g/ygcAAeSwSEpqv~J7/s-l400.jpg",
           "avail": null,
           "avail_floor": false,
@@ -1507,7 +1506,7 @@
             }
           ],
           "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $35.0\u2013$35.0 each",
-          "price_moved": "$34.99 -> $35.0 on 2026-10-12 (blended)"
+          "price_moved": "$34.99 -> $35.0 on 2026-10-13 (blended)"
         },
         {
           "qty": 19,
@@ -1518,7 +1517,7 @@
           "section": "expansion",
           "spec": "riser",
           "stock": "187 available across 3 listings",
-          "seller": "open box",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/VaEAAeSwVDVqoHQL/s-l400.jpg",
           "avail": 187,
           "avail_floor": false,
@@ -1552,7 +1551,7 @@
             }
           ],
           "price_note": "blended across 3 listing(s) \u2014 cheapest-first, $6.95\u2013$6.99 each",
-          "price_moved": "$6.95 -> $6.97 on 2026-10-12 (blended)"
+          "price_moved": "$6.95 -> $6.97 on 2026-10-13 (blended)"
         },
         {
           "qty": 3,
@@ -1585,14 +1584,17 @@
           "name": "open-air mining frame (12 GPU positions)",
           "price": 25.0,
           "stats": "open-air frame \u00b7 12 GPU positions each \u00b7 2 stacked for 19 GPUs; passive cards need forced airflow",
-          "url": "https://www.ebay.com/itm/366668903553",
+          "url": "https://www.ebay.com/itm/198696539852",
           "section": "chassis",
           "spec": "frame",
-          "stock": "2 available across 2 listings",
-          "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/-s8AAeSwDW5qqDSA/s-l300.jpg",
+          "stock": "in stock",
+          "seller": "gokame-sales",
+          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l500.webp",
           "avail": null,
           "avail_floor": false,
+          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $25.0\u2013$25.0 each",
+          "price_moved": "$19.99 -> $25.0 on 2026-10-13 (blended)",
+          "relisted": "was https://www.ebay.com/itm/366668903553 (flagged: quantity short: the 1 listings supplying this line hold 1 in total, the build needs 2)",
           "sources": [
             {
               "url": "https://www.ebay.com/itm/198696539852",
@@ -1603,9 +1605,7 @@
               "title": "12 GPU Mining Rig Frame Open Air Server Case Stackable Aluminum Crypto ETH BTC",
               "qty_bought": 2
             }
-          ],
-          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $25.0\u2013$25.0 each",
-          "price_moved": "$19.99 -> $27.47 on 2026-10-12 (blended)"
+          ]
         },
         {
           "qty": 1,
@@ -1615,13 +1615,12 @@
           "url": "https://www.ebay.com/itm/267811552241",
           "section": "storage",
           "spec": "sata1tb",
-          "stock": "in stock",
-          "seller": "Open Box",
-          "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l500.webp",
+          "stock": "LAST ONE",
+          "seller": "Open box",
+          "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l400.jpg",
           "price_moved": "$119.99 -> $109.99 on 2026-10-12",
-          "avail": null,
-          "avail_floor": false,
-          "relisted": "was https://www.ebay.com/itm/313969708276 (flagged: listing ENDED)"
+          "relisted": "was https://www.ebay.com/itm/313969708276 (flagged: listing ENDED)",
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
         {
           "qty": 19,
@@ -1657,7 +1656,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each",
-          "price_moved": "$14.99 -> $7.5 on 2026-10-12 (blended)"
+          "price_moved": "$14.99 -> $7.5 on 2026-10-13 (blended)"
         }
       ],
       "audit": "warn",
@@ -1696,8 +1695,8 @@
           "stock": "21 available across 2 listings",
           "avail": 21,
           "avail_floor": false,
-          "seller": "animuscompute",
-          "img": "https://i.ebayimg.com/images/g/e2UAAeSwRT1qXup3/s-l500.webp",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/e2UAAeSwRT1qXup3/s-l400.jpg",
           "sources": [
             {
               "url": "https://www.ebay.com/itm/278212490817",
@@ -1719,10 +1718,8 @@
           "url": "https://www.ebay.com/itm/178526436336",
           "section": "board",
           "spec": "h110btc",
-          "stock": "in stock",
-          "avail": null,
-          "avail_floor": false,
-          "seller": "Open Box",
+          "stock": "In stock (Buy It Now / Best Offer)",
+          "seller": "Open box",
           "img": "https://i.ebayimg.com/images/g/jnUAAeSwruJqtd~u/s-l400.jpg"
         },
         {
@@ -1733,11 +1730,9 @@
           "url": "https://www.ebay.com/itm/168747984797",
           "section": "cpu",
           "spec": "g3930",
-          "stock": "in stock",
-          "avail": null,
-          "avail_floor": false,
-          "seller": "Pre-Owned",
-          "img": "https://i.ebayimg.com/images/g/mLEAAeSwG7pqveCD/s-l500.webp"
+          "stock": "In stock (Buy It Now / Best Offer)",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/mLEAAeSwG7pqveCD/s-l400.jpg"
         },
         {
           "qty": 1,
@@ -1747,11 +1742,10 @@
           "url": "https://www.ebay.com/itm/267808517801",
           "section": "memory",
           "spec": "udimm-32",
-          "stock": "in stock",
-          "avail": null,
-          "avail_floor": false,
-          "seller": "Pre-Owned",
-          "img": "https://i.ebayimg.com/images/g/y9wAAeSw0IxqyHLH/s-l500.webp"
+          "stock": null,
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/y9wAAeSw0IxqyHLH/s-l400.jpg",
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
         {
           "qty": 2,
@@ -1761,11 +1755,11 @@
           "url": "https://www.ebay.com/itm/147507363697",
           "section": "power",
           "spec": "psu2000",
-          "stock": "in stock",
+          "stock": "in stock across 1 listings (no quantity cap)",
           "avail": null,
           "avail_floor": false,
-          "seller": "Pre-Owned",
-          "img": "https://i.ebayimg.com/images/g/rTEAAeSwC-FqgNj8/s-l500.webp",
+          "seller": "OPEN BOX",
+          "img": "https://i.ebayimg.com/images/g/rTEAAeSwC-FqgNj8/s-l400.jpg",
           "sources": [
             {
               "url": "https://www.ebay.com/itm/147507363697",
@@ -1790,8 +1784,8 @@
           "stock": "187 available across 3 listings",
           "avail": 187,
           "avail_floor": false,
-          "seller": "Brand New",
-          "img": "https://i.ebayimg.com/images/g/VaEAAeSwVDVqoHQL/s-l500.webp",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/VaEAAeSwVDVqoHQL/s-l400.jpg",
           "sources": [
             {
               "url": "https://www.ebay.com/itm/227512716634",
@@ -1812,7 +1806,8 @@
               "qty_bought": 3
             }
           ],
-          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $6.95\u2013$6.98 each"
+          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $6.95\u2013$6.98 each",
+          "price_moved": "$6.95 -> $6.96 on 2026-10-13 (blended)"
         },
         {
           "qty": 1,
@@ -1822,9 +1817,7 @@
           "url": "https://www.ebay.com/itm/233978712206",
           "section": "expansion",
           "spec": "psu_adder",
-          "stock": "10 available",
-          "avail": 10,
-          "avail_floor": true,
+          "stock": "More than 10 available",
           "seller": "dorigift442",
           "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg"
         },
@@ -1836,11 +1829,10 @@
           "url": "https://www.ebay.com/itm/198696539852",
           "section": "chassis",
           "spec": "frame",
-          "stock": "1 available",
-          "avail": 1,
-          "avail_floor": false,
-          "seller": "gokame-sales",
-          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l500.webp"
+          "stock": "LAST ONE",
+          "seller": "Open box",
+          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l400.jpg",
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
         {
           "qty": 1,
@@ -1850,11 +1842,10 @@
           "url": "https://www.ebay.com/itm/267811552241",
           "section": "storage",
           "spec": "sata1tb",
-          "stock": "in stock",
-          "avail": null,
-          "avail_floor": false,
-          "seller": "Open Box",
-          "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l500.webp"
+          "stock": "LAST ONE",
+          "seller": "Open box",
+          "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l400.jpg",
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
         {
           "qty": 10,
@@ -1865,10 +1856,10 @@
           "stock": "23 available across 3 listings",
           "avail": 23,
           "avail_floor": false,
-          "seller": "various",
+          "seller": "Pre-owned",
           "section": "cooling",
           "spec": "shroud",
-          "img": "https://i.ebayimg.com/images/g/cxMAAeSwKTRqgkV6/s-l500.webp",
+          "img": "https://i.ebayimg.com/images/g/cxMAAeSwKTRqgkV6/s-l400.jpg",
           "sources": [
             {
               "url": "https://www.ebay.com/itm/225795594396",
@@ -1880,7 +1871,8 @@
               "qty_bought": 10
             }
           ],
-          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each"
+          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each",
+          "price_moved": "$14.99 -> $7.5 on 2026-10-13 (blended)"
         }
       ],
       "audit": "warn",
@@ -1891,13 +1883,13 @@
     }
   ],
   "status": {
-    "verified": "2026-10-12 23:02",
-    "listings": 39,
-    "flagged": 3,
-    "qty_short": 0,
+    "verified": "2026-10-13 05:25",
+    "listings": 40,
+    "flagged": 2,
+    "qty_short": 2,
     "qty_unproven": 0,
-    "price_changes": 28,
-    "unverified": 3,
+    "price_changes": 32,
+    "unverified": 9,
     "method": "Every listing re-checked over a real browser (CDP): live price, quantity available, buyable, ENDED. A line the build needs N of is only purchasable when the listing shows at least N available. Totals recomputed from verified prices."
   }
 }

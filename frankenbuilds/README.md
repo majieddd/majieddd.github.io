@@ -143,9 +143,25 @@ expensive. The loop runs `history.py` every pass, so the charts fill in over tim
 
 ## Design notes
 
-shadcn/ui conventions: CSS-variable theme tokens with background/foreground pairs, a derived
-radius scale from a single `--radius`, `ring` for focus outlines, `secondary`/`chart` tokens,
-dark mode toggled by overriding tokens under a theme selector, and a skeleton loading state.
-Motion uses three cubic-bezier curves (enter, pop, tap) with a `prefers-reduced-motion`
-override. Layout is verified to fit a 390px phone viewport (the comparison table scrolls
-inside a wrapper; long tokens wrap).
+The UI follows the shadcn/ui + ReUI component language (https://reui.io/components): a
+sidebar app-shell, page header with breadcrumbs, stat cards, badges, alerts, a searchable
+sortable data grid, a command palette, and a light/dark/system theme switcher.
+
+Tokens use the shadcn v4 naming in `oklch` (`--background`, `--card`, `--primary`,
+`--muted-foreground`, `--border`, `--ring`, `--sidebar-*`, …) with background/foreground
+pairs, a radius scale derived from a single `--radius`, `ring` for focus outlines, and a
+skeleton loading state. Both pages read the same token block, so a ReUI theme (Vega, Nova,
+Maia, …) drops in by swapping that one block. The theme is chosen by a `data-theme`
+attribute (not a media query) and persisted in `localStorage` under `mf-theme`, which
+`index.html` and `sourcing.html` share, so switching on one page carries to the other.
+
+Motion uses two cubic-beziers (enter, pop) with a `prefers-reduced-motion` override.
+Layout is verified at 390px phone, 820px tablet and desktop over CDP: the sidebar goes
+off-canvas under 1024px with a scrim, the data grids scroll inside a wrapper with a sticky
+header, and no viewport produces horizontal overflow. Text/background pairs are checked
+against WCAG AA (4.5:1) in both themes; the light theme's amber/red text tokens are
+darkened to clear it.
+
+Prose that quotes a price is derived from the data files, never hardcoded: the footer's
+cheapest-bandwidth line is rendered from `data/components.json` at load, and
+`report_sourcing.py` derives its baselines from `catalog.json` + `specs.py`.
