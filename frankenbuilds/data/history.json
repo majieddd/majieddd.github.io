@@ -215,12 +215,12 @@
       "points": [
         {
           "date": "2026-10-13",
-          "price": 91.0,
+          "price": 50.0,
           "unit": "$/GB RAM",
-          "unit_price": 1.421875,
+          "unit_price": 0.78125,
           "stock": "in stock",
-          "url": "https://www.ebay.com/itm/176685220753",
-          "title": "Crucial 64GB (4x16GB) DDR4-2666 PC4-2666V ECC Registered 288-Pin RDIMM",
+          "url": "https://www.ebay.com/itm/237121243905",
+          "title": "NEW LISTINGTEAMGROUP T-Force Vulcan Z 64GB (2x32GB) DDR4-3600 DIMM 288-Pin",
           "seller": null
         }
       ],
@@ -231,12 +231,12 @@
       "points": [
         {
           "date": "2026-10-13",
-          "price": 134.99,
+          "price": 51.0,
           "unit": "$/GB RAM",
-          "unit_price": 4.218438,
+          "unit_price": 1.59375,
           "stock": "in stock",
-          "url": "https://www.ebay.com/itm/128131585716",
-          "title": "SK hynix 32GB (2x16GB) DDR4 2666MHz UDIMM Desktop",
+          "url": "https://www.ebay.com/itm/267808517801",
+          "title": "32GB Lot (4x8GB) SK Hynix DDR4 2666MHz DesktopRAM UDIMM HMA81GU6JJR8N-VK 288-Pin",
           "seller": null
         }
       ],
@@ -247,12 +247,12 @@
       "points": [
         {
           "date": "2026-10-13",
-          "price": 34.99,
+          "price": 35.0,
           "unit": "$/W",
-          "unit_price": 0.019439,
+          "unit_price": 0.019444,
           "stock": "in stock",
-          "url": "https://www.ebay.com/itm/307210589596",
-          "title": "Soontech ST1800W Power Supply Mining PSU | Fast Ship, US Seller",
+          "url": "https://www.ebay.com/itm/147507363697",
+          "title": "HUAXUCHENG ST 1800 W 90 Plus Gold Mining Power Supply 1800w",
           "seller": null
         }
       ],
@@ -295,13 +295,13 @@
       "points": [
         {
           "date": "2026-10-13",
-          "price": 19.99,
+          "price": 25.0,
           "unit": "$/GPU slot",
-          "unit_price": 1.665833,
+          "unit_price": 2.083333,
           "stock": "in stock",
-          "url": "https://www.ebay.com/itm/366668903553",
-          "title": "Mining Rig Open Air Frame 2020 Extrusion 12 GPU",
-          "seller": null
+          "url": "https://www.ebay.com/itm/198696539852",
+          "title": "12 GPU Mining Rig Frame Open Air Server Case Stackable Aluminum Crypto ETH BTC",
+          "seller": "gokame-sales"
         }
       ],
       "unit": "$/GPU slot",
@@ -348,7 +348,7 @@
           "unit_price": 14.99,
           "stock": "in stock",
           "url": "https://www.ebay.com/itm/137629627141",
-          "title": "92mm GPU COOLING FAN SHROUD - AMD RADEON MI60 MI50 MI25",
+          "title": "92mm GPU COOLING FAN SHROUD - AMD RADEON MI60 MI50 MI25 (Fan NOT Included)",
           "seller": null
         }
       ],
@@ -370,7 +370,23 @@
       ],
       "unit": "$/GPU slot",
       "label": "ASUS B250 Mining Expert 19-GPU mining board"
+    },
+    "gpu/mi50": {
+      "points": [
+        {
+          "date": "2026-10-13",
+          "price": 258.0,
+          "unit": "$/GB VRAM",
+          "unit_price": 16.125,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/358844478037",
+          "title": "AMD Radeon Instinct Mi50 Accelerator 16GB HBM2 Radeon VII",
+          "seller": "xzkjshop1"
+        }
+      ],
+      "unit": "$/GB VRAM",
+      "label": "AMD Radeon Instinct MI50 16 GB HBM2"
     }
   },
-  "updated": "2026-10-13T01:04:12Z"
+  "updated": "2026-10-13T01:44:36Z"
 }

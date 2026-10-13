@@ -29,6 +29,42 @@ python refresh.py --dry-run   # verify, report, do not write
 python refresh.py --port 9224
 ```
 
+## Stock quantity (the gate that "in stock" does not satisfy)
+
+A line the build buys **N** of is only purchasable when the listings can supply
+**N**. "In stock" on a listing holding 2 units does not build a 19-GPU rig, so
+the site enforces it in three places:
+
+- `audit.py` rule **`stock-qty`** — a hard count below the need is a FAIL;
+  `"More than N available"` is a FLOOR (proves N+1), so a need above it is a
+  WARN (unproven), never a defect.
+- `builder.py` — a candidate whose parts cannot supply the rig is rejected, so
+  a dominance claim is never built on a rig you cannot assemble.
+- `refresh.py` — re-reads every source's live count and flags a short line.
+
+When one listing cannot supply the need, the line is **sourced across listings**
+the way a rig is actually bought: `repair_qty_sources.py` allocates
+cheapest-first across the primary listing plus the alternates the sweep
+recorded, sets the line's price to the blended per-unit cost, and records
+`sources` so the site shows where each unit comes from. A line no listings can
+supply stays flagged — that is a real market limit and the site says so.
+
+`python catalog_sweep.py --quantities` reads the availability line on every
+item page. eBay search cards carry no quantity line, so without this pass the
+catalog has `qty=None`, which means **unknown** — treating unknown as "1 in
+stock" would flag live listings as short. A listing with no printed count has
+no seller-set cap, so it is never counted as 1.
+
+```
+python catalog_sweep.py --quantities   # fill qty/qty_floor on every listing
+python repair_qty_sources.py           # source short lines + relist flagged ones
+python repair_qty_sources.py --dry-run
+```
+
+`repair_qty_sources.py` also **relists** a flagged line onto the catalog's
+verified listing for the same spec key, recording `relisted` on the component.
+A line with no catalog replacement keeps its flag.
+
 ## Adding a build
 
 `python add_build.py new_build.json --max-cost 6000 --min-bw 3000`

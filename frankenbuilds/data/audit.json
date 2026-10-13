@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-13T01:04:12Z",
+  "generated": "2026-10-13T01:48:56Z",
   "rules": [
     "cooling",
     "cpu",
@@ -13,11 +13,12 @@
     "psu-watt",
     "psu-zones",
     "slot-bw",
+    "stock-qty",
     "storage",
     "sxm2-host",
     "total"
   ],
-  "rule_count": 30,
+  "rule_count": 31,
   "unlisted": [],
   "builds": {
     "build-1": {
@@ -42,6 +43,7 @@
         "cooling",
         "frame",
         "storage",
+        "stock-qty",
         "total"
       ]
     },
@@ -61,6 +63,7 @@
         "psu-watt",
         "frame",
         "storage",
+        "stock-qty",
         "total"
       ]
     },
@@ -78,6 +81,7 @@
         "cooling",
         "frame",
         "storage",
+        "stock-qty",
         "total"
       ]
     },
@@ -103,6 +107,7 @@
         "cooling",
         "frame",
         "storage",
+        "stock-qty",
         "total"
       ]
     },
@@ -127,6 +132,7 @@
         "cooling",
         "frame",
         "storage",
+        "stock-qty",
         "total"
       ]
     },
@@ -146,6 +152,7 @@
         "psu-watt",
         "frame",
         "storage",
+        "stock-qty",
         "total"
       ]
     },
@@ -163,6 +170,7 @@
         "cooling",
         "frame",
         "storage",
+        "stock-qty",
         "total"
       ]
     },
@@ -188,6 +196,7 @@
         "cooling",
         "frame",
         "storage",
+        "stock-qty",
         "total"
       ]
     },
@@ -210,6 +219,7 @@
         "cooling",
         "frame",
         "storage",
+        "stock-qty",
         "total"
       ]
     }

@@ -154,6 +154,7 @@ select:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
 .tag{font-size:11px;border:1px solid var(--border);border-radius:99px;padding:3px 9px;background:var(--chip)}
 .tag.stock{color:var(--good);border-color:var(--good)}
 .tag.flag{color:var(--bad);border-color:var(--bad)}
+.tag.warn{color:var(--warn);border-color:var(--warn)}
 .right{text-align:right;flex-shrink:0;min-width:110px}
 .price{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
 .line{font-size:11.5px;color:var(--muted)}
@@ -287,8 +288,9 @@ footer b{color:var(--fg)}
   <section class="hero">
     <h1 id="h1">Frankenbuilds, ranked by bandwidth per dollar</h1>
     <p class="lede">Decommissioned datacenter HBM2 cards are the arbitrage: a $5,000–$11,500 launch card now sells for
-      $75–$700 with a wider memory bus than any consumer GPU. Every component below was verified in stock on the live
-      listing — price, quantity available, condition, shipping, and seller feedback.</p>
+      $75–$700 with a wider memory bus than any consumer GPU. Every component below was verified on the live
+      listing — price, quantity available, condition, shipping, and seller feedback. A line the build needs N of
+      is only counted as purchasable when the listing shows at least N in stock.</p>
     <div class="stats" id="heroStats"></div>
   </section>
 
@@ -371,8 +373,11 @@ function heroStats(){
   const bestPP=Math.min(...b.map(x=>x.per_gb));
   const bestVR=Math.max(...b.map(x=>x.vram));
   const cheapest=Math.min(...b.map(x=>x.total));
+  // Honest hero sub-label: a build counts as purchasable only when NO line is
+  // flagged AND no multi-qty line is short of the listing's stock count.
+  const ready=b.filter(x=>!x.components.some(c=>c.flag||c.qty_short)).length;
   const items=[
-    ["Builds spec'd",b.length,"all in stock",0,""],
+    ["Builds spec'd",b.length,ready===b.length?"all in stock":ready+" fully purchasable",0,""],
     ["Peak throughput",bestBW,"GB/s aggregate",0,""],
     ["Cheapest per GB/s",bestPP,"per GB/s",1,3],
     ["Largest VRAM",bestVR,"GB HBM2",0,""],
@@ -396,7 +401,7 @@ const RULENAME={
   "psu-mains":"mains input voltage","cooling":"passive-card airflow",
   "frame":"frame GPU capacity","riser":"riser count","sxm2-host":"SXM2 baseboard",
   "sxm2-slots":"SXM2 socket count","storage":"drive interface",
-  "storage-m2":"M.2 interface","total":"component sum equals stated total"};
+  "storage-m2":"M.2 interface","stock-qty":"stock quantity vs build quantity","total":"component sum equals stated total"};
 function auditPanel(b){
   const a=AUDIT && AUDIT.builds && AUDIT.builds[b.id];
   if(!a) return "";
@@ -436,8 +441,12 @@ function render(){
         <div class="meta" style="margin:0 0 4px"><span class="cat">${cat}</span></div>
         <div class="nm">${c.name}</div>
         <div class="st">${c.stats}</div>
+        ${c.sources?`<details class="ap" style="margin-top:5px"><summary style="font-size:11.5px">bought across ${c.sources.length} listing(s) — ${c.price_note}</summary>
+          <ul style="font-size:12px;margin:6px 0 0 0">${c.sources.map(s=>`<li><a href="${s.url}" target="_blank" rel="noopener noreferrer">${s.qty_bought}× at ${money(s.price)}</a>${s.avail?` · ${s.avail}${s.avail_floor?'+':''} in stock`:''}</li>`).join("")}</ul></details>`:''}
         <div class="meta">
           <span class="tag ${flagged?'flag':'stock'}">${flagged?'FLAGGED: '+flagged:c.stock}</span>
+          ${c.qty_short?`<span class="tag flag" title="the build needs ${c.qty}, the listing has ${c.avail} available">only ${c.avail} in stock · needs ${c.qty}</span>`:''}
+          ${c.qty_unproven?`<span class="tag warn" title="${c.qty_unproven}">stock &gt;${c.avail} · needs ${c.qty} (unconfirmed)</span>`:''}
           ${c.price_moved?`<span class="tag" title="refresh.py re-priced this listing to the live value">price updated: ${c.price_moved}</span>`:''}
           <span class="tag">${c.seller}</span>
         </div>
@@ -557,12 +566,21 @@ function status(){
     '<div class="dt">Run <code>python refresh.py</code> to re-check every listing over a real browser and rewrite <code>data/builds.json</code>.</div>';return;}
   const flagged=DATA.builds.flatMap(b=>b.components.filter(c=>c.flag).map(c=>({b:b.name,c})));
   const moved=DATA.builds.flatMap(b=>b.components.filter(c=>c.price_moved).map(c=>({b:b.name,c})));
+  // A line the build buys N of is only purchasable when the listing shows N.
+  // short = a hard count below the need; unproven = the listing only says
+  // "more than N", which proves N+1 and never the full quantity.
+  const short=DATA.builds.flatMap(b=>b.components.filter(c=>c.qty_short).map(c=>({b:b.name,c})));
+  const unproven=DATA.builds.flatMap(b=>b.components.filter(c=>c.qty_unproven).map(c=>({b:b.name,c})));
   const auditFails=DATA.builds.filter(b=>b.audit==="fail").length;
   el.innerHTML=`<div class="hd"><span class="dot ${flagged.length||auditFails?'bad':''}"></span>
     <span class="txt">${flagged.length?flagged.length+' listing(s) flagged':'All '+s.listings+' listings verified in stock'}</span>
     <span class="dt">· verified ${s.verified}${s.price_changes?' · '+s.price_changes+' price(s) updated to live':''}</span></div>
     <div class="dt">${s.method}</div>
     ${flagged.length?'<ul>'+flagged.map(f=>`<li><b>${f.c.name}</b> (${f.b}) — ${f.c.flag}</li>`).join("")+'</ul>':''}
+    ${short.length?`<details class="ap" open style="margin-top:8px"><summary>${short.length} line(s) cannot be bought at the quantity the build needs</summary>
+      <ul>${short.map(f=>`<li><b>${f.c.name}</b> (${f.b}) — ${f.c.qty_short}</li>`).join("")}</ul></details>`:''}
+    ${unproven.length?`<details class="ap" style="margin-top:8px"><summary>${unproven.length} line(s) where the listing only says "more than N available"</summary>
+      <ul>${unproven.map(f=>`<li><b>${f.c.name}</b> (${f.b}) — ${f.c.qty_unproven}</li>`).join("")}</ul></details>`:''}
     ${moved.length?`<details class="ap" style="margin-top:8px"><summary>${moved.length} price move(s) applied today</summary>
       <ul>${moved.map(f=>`<li><b>${f.c.name}</b> (${f.b}) — ${f.c.price_moved}</li>`).join("")}</ul></details>`:''}
     <div class="dt" style="margin-top:10px">Refresh: <code>python refresh.py</code> · Audit: <code>python audit.py</code> · Auto-build: <code>python builder.py</code></div>`;
