@@ -1,7 +1,25 @@
 {
-  "generated": "2026-10-12T18:48:09-0500",
+  "generated": "2026-10-13T00:28:35Z",
   "builds": 8,
   "best_throughput": 13034.1,
   "best_vram": 208,
-  "best_per_gb": 0.1312
+  "best_per_gb": 0.1312,
+  "audit": {
+    "build-1": "warn",
+    "build-2": "warn",
+    "build-3": "clean",
+    "build-4": "warn",
+    "build-5": "warn",
+    "build-6": "warn",
+    "build-7": "clean",
+    "build-auto-1791850845": "warn"
+  },
+  "audit_rules": 14,
+  "history_days": 1,
+  "history_components": 22,
+  "pages": [
+    "builds",
+    "components",
+    "prices"
+  ]
 }
