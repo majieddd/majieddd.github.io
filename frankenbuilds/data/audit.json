@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-13T01:48:56Z",
+  "generated": "2026-10-13T04:18:47Z",
   "rules": [
     "cooling",
     "cpu",
@@ -216,6 +216,32 @@
         "psu-watt",
         "psu-trigger",
         "psu-zones",
+        "cooling",
+        "frame",
+        "storage",
+        "stock-qty",
+        "total"
+      ]
+    },
+    "build-auto-1791865019": {
+      "verdict": "warn",
+      "fails": [],
+      "warns": [
+        {
+          "rule": "mem-speed",
+          "msg": "32 GB (2x16) DDR4-2666 UDIMM is rated 2666 MT/s; ASRock H110 Pro BTC+ 13-GPU mining board runs memory at 2400 MT/s \u2014 it will train down, so the bandwidth figure should use 2400, not 2666"
+        },
+        {
+          "rule": "slot-bw",
+          "msg": "ASRock H110 Pro BTC+ 13-GPU mining board runs its extra slots at PCIe 2.0 x1 (~500 MB/s each). Fine for kernel dispatch and mining; it will starve any workload that streams tensors host->device"
+        }
+      ],
+      "passed": [
+        "cpu",
+        "gpu-slots",
+        "psu-conn",
+        "psu-watt",
+        "psu-trigger",
         "cooling",
         "frame",
         "storage",

@@ -7,7 +7,7 @@
       "id": "build-1",
       "name": "Build 1 \u00b7 Bandwidth-per-dollar king",
       "tagline": "X99 dual-socket \u00b7 6 GPU slots \u00b7 8-channel DDR4",
-      "total": 2571.5,
+      "total": 2257.94,
       "gpu_bw": 4096,
       "ddr_bw": 153.6,
       "throughput": 4249.6,
@@ -18,34 +18,44 @@
       "storage": 2,
       "storage_max": 92,
       "power": "3,200 W (2 PSU)",
-      "per_gb": 0.6051,
+      "per_gb": 0.5313,
       "why": "Four passive MI50 cards on a six-slot dual-socket board. The cheapest 4.2 TB/s on the market, and two spare slots mean +1,024 GB/s for $180.",
       "components": [
         {
           "qty": 4,
           "name": "AMD Radeon Instinct MI50 16 GB HBM2",
-          "price": 258.0,
+          "price": 179.61,
           "stats": "1,024 GB/s each \u00b7 4,096-bit HBM2 + ECC \u00b7 3,840 stream \u00b7 13.4 TF FP32 \u00b7 PCIe3 x16 \u00b7 300 W \u00b7 passive, no display out",
           "url": "https://www.ebay.com/itm/318540915485",
-          "stock": "5 available",
+          "stock": "25 available across 4 listings",
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/ZnAAAeSwEBxoeb6N/s-l300.jpg",
           "section": "gpu",
           "spec": "mi50",
-          "avail": 19,
+          "avail": 25,
           "avail_floor": false,
           "sources": [
             {
-              "url": "https://www.ebay.com/itm/358844478037",
-              "price": 258.0,
-              "qty": 19,
+              "url": "https://www.ebay.com/itm/377321223033",
+              "price": 179.5,
+              "qty": 3,
               "qty_floor": false,
               "last": false,
-              "title": "AMD Radeon Instinct Mi50 Accelerator 16GB HBM2 Radeon VII",
-              "qty_bought": 4
+              "title": "AMD Radeon Instinct MI50 Accelerator Vega 20 16GB HBM2 PCIe 4.0 x16 for AI",
+              "qty_bought": 3
+            },
+            {
+              "url": "https://www.ebay.com/itm/800004964656",
+              "price": 179.95,
+              "qty": 2,
+              "qty_floor": false,
+              "last": false,
+              "title": "AMD Radeon Instinct MI50 Accelerator Vega 20 16GB HBM2 PCIe 4.0 x16 for AI",
+              "qty_bought": 1
             }
           ],
-          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $258.0\u2013$258.0 each"
+          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $179.5\u2013$179.95 each",
+          "price_moved": "$179.5 -> $258.0 on 2026-10-12 (blended)"
         },
         {
           "qty": 1,
@@ -57,9 +67,7 @@
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/gLUAAOSwKrxl~Rg3/s-l400.jpg",
           "section": "board",
-          "spec": "x99f8d",
-          "avail": 10,
-          "avail_floor": false
+          "spec": "x99f8d"
         },
         {
           "qty": 2,
@@ -123,9 +131,7 @@
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/1FQAAOSwF-tgOBfW/s-l400.jpg",
           "section": "chassis",
-          "spec": "frame7",
-          "avail": 5,
-          "avail_floor": false
+          "spec": "frame7"
         },
         {
           "qty": 4,
@@ -151,9 +157,7 @@
           "spec": "psu_adder",
           "stock": "More than 10 available",
           "seller": "Brand New",
-          "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg",
-          "avail": 10,
-          "avail_floor": true
+          "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg"
         }
       ],
       "audit": "warn",
@@ -188,7 +192,7 @@
           "stats": "900 GB/s each \u00b7 4,096-bit HBM2 + ECC \u00b7 5,120 CUDA + 640 Tensor cores \u00b7 15.7 TF FP32 \u00b7 NVLink 6 links = 300 GB/s \u00b7 300 W \u00b7 ships bare",
           "url": "https://www.ebay.com/itm/287621214160",
           "stock": "More than 10 available",
-          "seller": "Pre-owned",
+          "seller": "refurbished",
           "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l300.jpg",
           "section": "gpu",
           "spec": "v100-sxm2-32",
@@ -205,9 +209,7 @@
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l300.png",
           "section": "board",
-          "spec": "v100base",
-          "avail": 2,
-          "avail_floor": false
+          "spec": "v100base"
         },
         {
           "qty": 4,
@@ -233,9 +235,7 @@
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/gLUAAOSwKrxl~Rg3/s-l400.jpg",
           "section": "board",
-          "spec": "x99f8d",
-          "avail": 10,
-          "avail_floor": false
+          "spec": "x99f8d"
         },
         {
           "qty": 2,
@@ -308,7 +308,7 @@
       "id": "build-3",
       "name": "Build 3 \u00b7 Dual-EPYC bandwidth monster",
       "tagline": "Supermicro H11DSi-NT \u00b7 16 DIMM \u00b7 2 TB RAM ceiling \u00b7 5 GPU slots",
-      "total": 3699.36,
+      "total": 3307.76,
       "gpu_bw": 5120,
       "ddr_bw": 340.8,
       "throughput": 5460.8,
@@ -319,34 +319,44 @@
       "storage": 2,
       "storage_max": 150,
       "power": "4,000 W (2 PSU)",
-      "per_gb": 0.6774,
+      "per_gb": 0.6057,
       "why": "Highest aggregate bandwidth and the 2 TB RAM ceiling. 16-channel DDR4 is 340.8 GB/s \u2014 more system memory bandwidth than any X99 board here.",
       "components": [
         {
           "qty": 5,
           "name": "AMD Radeon Instinct MI50 16 GB HBM2",
-          "price": 258.0,
+          "price": 179.68,
           "stats": "1,024 GB/s each \u00b7 4,096-bit HBM2 + ECC \u00b7 300 W \u00b7 passive",
           "url": "https://www.ebay.com/itm/318540915485",
-          "stock": "5 available",
+          "stock": "25 available across 4 listings",
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/ZnAAAeSwEBxoeb6N/s-l300.jpg",
           "section": "gpu",
           "spec": "mi50",
-          "avail": 19,
+          "avail": 25,
           "avail_floor": false,
           "sources": [
             {
-              "url": "https://www.ebay.com/itm/358844478037",
-              "price": 258.0,
-              "qty": 19,
+              "url": "https://www.ebay.com/itm/377321223033",
+              "price": 179.5,
+              "qty": 3,
               "qty_floor": false,
               "last": false,
-              "title": "AMD Radeon Instinct Mi50 Accelerator 16GB HBM2 Radeon VII",
-              "qty_bought": 5
+              "title": "AMD Radeon Instinct MI50 Accelerator Vega 20 16GB HBM2 PCIe 4.0 x16 for AI",
+              "qty_bought": 3
+            },
+            {
+              "url": "https://www.ebay.com/itm/800004964656",
+              "price": 179.95,
+              "qty": 2,
+              "qty_floor": false,
+              "last": false,
+              "title": "AMD Radeon Instinct MI50 Accelerator Vega 20 16GB HBM2 PCIe 4.0 x16 for AI",
+              "qty_bought": 2
             }
           ],
-          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $258.0\u2013$258.0 each"
+          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $179.5\u2013$179.95 each",
+          "price_moved": "$179.5 -> $258.0 on 2026-10-12 (blended)"
         },
         {
           "qty": 1,
@@ -441,9 +451,7 @@
           "spec": "psu_adder",
           "stock": "More than 10 available",
           "seller": "Brand New",
-          "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg",
-          "avail": 10,
-          "avail_floor": true
+          "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg"
         }
       ],
       "audit": "clean",
@@ -504,9 +512,7 @@
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/gLUAAOSwKrxl~Rg3/s-l400.jpg",
           "section": "board",
-          "spec": "x99f8d",
-          "avail": 10,
-          "avail_floor": false
+          "spec": "x99f8d"
         },
         {
           "qty": 2,
@@ -596,7 +602,8 @@
               "qty_bought": 6
             }
           ],
-          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each"
+          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each",
+          "price_moved": "$23.98 -> $7.5 on 2026-10-12 (blended)"
         },
         {
           "qty": 1,
@@ -608,9 +615,7 @@
           "spec": "psu_adder",
           "stock": "More than 10 available",
           "seller": "Brand New",
-          "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg",
-          "avail": 10,
-          "avail_floor": true
+          "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg"
         }
       ],
       "audit": "warn",
@@ -662,9 +667,7 @@
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/gLUAAOSwKrxl~Rg3/s-l400.jpg",
           "section": "board",
-          "spec": "x99f8d",
-          "avail": 10,
-          "avail_floor": false
+          "spec": "x99f8d"
         },
         {
           "qty": 2,
@@ -772,7 +775,7 @@
           "stats": "900 GB/s each \u00b7 5,120 CUDA + 640 Tensor \u00b7 15.7 TF FP32 \u00b7 NVLink 6 links = 300 GB/s \u00b7 300 W \u00b7 ships bare",
           "url": "https://www.ebay.com/itm/287621214160",
           "stock": "More than 10 available",
-          "seller": "Pre-owned",
+          "seller": "refurbished",
           "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l300.jpg",
           "section": "gpu",
           "spec": "v100-sxm2-32",
@@ -789,9 +792,7 @@
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l300.png",
           "section": "board",
-          "spec": "v100base",
-          "avail": 2,
-          "avail_floor": false
+          "spec": "v100base"
         },
         {
           "qty": 4,
@@ -817,9 +818,7 @@
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/gLUAAOSwKrxl~Rg3/s-l400.jpg",
           "section": "board",
-          "spec": "x99f8d",
-          "avail": 10,
-          "avail_floor": false
+          "spec": "x99f8d"
         },
         {
           "qty": 2,
@@ -935,7 +934,8 @@
               "qty_bought": 1
             }
           ],
-          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $74.99\u2013$75.0 each"
+          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $74.99\u2013$75.0 each",
+          "price_moved": "$77.0 -> $74.99 on 2026-10-12 (blended)"
         },
         {
           "qty": 1,
@@ -947,9 +947,7 @@
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/RNoAAeSwoyJqxRl9/s-l400.jpg",
           "section": "board",
-          "spec": "tb360btc",
-          "avail": 5,
-          "avail_floor": false
+          "spec": "tb360btc"
         },
         {
           "qty": 1,
@@ -959,11 +957,9 @@
           "url": "https://www.ebay.com/itm/960004196152",
           "section": "cpu",
           "spec": "i38100",
-          "stock": "in stock",
-          "seller": "Pre-Owned",
-          "img": "https://i.ebayimg.com/images/g/O7cAAeSwGcxqv-3S/s-l500.webp",
-          "avail": null,
-          "avail_floor": false,
+          "stock": "In stock (Buy It Now / Best Offer)",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/O7cAAeSwGcxqv-3S/s-l400.jpg",
           "relisted": "was https://www.ebay.com/itm/168781077302 (flagged: not buyable)"
         },
         {
@@ -972,11 +968,12 @@
           "price": 134.99,
           "stats": "2-channel DDR4-2666 = 42.7 GB/s \u00b7 board caps at 32 GB \u2014 see deviation",
           "url": "https://www.ebay.com/itm/128131585716",
-          "stock": "In stock (Buy It Now / Best Offer)",
+          "stock": null,
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/R5MAAeSwZZxqzUmY/s-l400.jpg",
           "section": "memory",
-          "spec": "udimm-32"
+          "spec": "udimm-32",
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
         {
           "qty": 3,
@@ -999,7 +996,7 @@
           "stats": "one per GPU \u00b7 powered USB 3.0 data line \u00b7 the mining-rig standard for >6 GPUs",
           "url": "https://www.ebay.com/itm/227512716634",
           "stock": "187 available across 3 listings",
-          "seller": "Pre-owned",
+          "seller": "open box",
           "img": "https://i.ebayimg.com/images/g/VaEAAeSwVDVqoHQL/s-l400.jpg",
           "section": "expansion",
           "spec": "riser",
@@ -1025,7 +1022,8 @@
               "qty_bought": 5
             }
           ],
-          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $6.95\u2013$6.98 each"
+          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $6.95\u2013$6.98 each",
+          "price_moved": "$6.95 -> $6.96 on 2026-10-12 (blended)"
         },
         {
           "qty": 2,
@@ -1033,19 +1031,19 @@
           "price": 7.68,
           "stats": "one per extra PSU \u2014 2 adders trigger PSU 2 and PSU 3 from the main one (standard mining-rig wiring)",
           "url": "https://www.ebay.com/itm/233978712206",
-          "stock": "More than 10 available",
+          "stock": "11 available across 1 listings",
           "seller": "Brand New",
           "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg",
           "section": "expansion",
           "spec": "psu_adder",
-          "avail": 11,
+          "avail": null,
           "avail_floor": false,
           "sources": [
             {
               "url": "https://www.ebay.com/itm/233978712206",
               "price": 7.68,
-              "qty": 10,
-              "qty_floor": true,
+              "qty": null,
+              "qty_floor": false,
               "last": false,
               "title": "Dual PSU Power Supply 24-pin ATX Motherboard Mainboard Adapter Connector Cable",
               "qty_bought": 2
@@ -1063,23 +1061,22 @@
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/-s8AAeSwDW5qqDSA/s-l300.jpg",
           "section": "chassis",
-          "spec": "frame13",
-          "avail": 5,
-          "avail_floor": false
+          "spec": "frame13"
         },
         {
           "qty": 1,
           "name": "Netac 1 TB 2.5\" SATA III SSD",
-          "price": 109.99,
+          "price": 19.99,
           "stats": "1 TB SATA \u00b7 plugs into the board's SATA port (its M.2 slot is SATA3-only, so an NVMe drive there is not detected)",
-          "url": "https://www.ebay.com/itm/313969708276",
+          "url": "https://www.ebay.com/itm/267811552241",
           "section": "storage",
           "spec": "sata1tb",
-          "stock": "More than 10 available",
-          "seller": "netac_official_store",
-          "img": "https://i.ebayimg.com/images/g/h4oAAOSwSkFk7pmb/s-l400.jpg",
-          "avail": 10,
-          "avail_floor": true
+          "stock": "in stock",
+          "seller": "Open Box",
+          "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l500.webp",
+          "avail": null,
+          "avail_floor": false,
+          "relisted": "was https://www.ebay.com/itm/313969708276 (flagged: listing ENDED)"
         },
         {
           "qty": 12,
@@ -1114,12 +1111,13 @@
               "qty_bought": 2
             }
           ],
-          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each"
+          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each",
+          "price_moved": "$14.99 -> $7.5 on 2026-10-12 (blended)"
         }
       ],
-      "total": 1490.21,
+      "total": 1400.21,
       "throughput": 12042.7,
-      "per_gb": 0.1237,
+      "per_gb": 0.1163,
       "id": "build-7",
       "deviation": "FLAGGED DEVIATION: system RAM is 32 GB (board max 32 GB), below the standing 64 GB / 128 GB-expandable requirement. No board in the catalog offers 12 GPU slots AND 64+ GB RAM \u2014 12-slot mining boards cap at 32 GB. GPU VRAM totals 192 GB, which is what the model reads; system RAM only stages the dataset. The 64/128 GB requirement is met by builds 1-6 on workstation boards.",
       "audit": "clean",
@@ -1130,7 +1128,7 @@
       "id": "build-auto-1791850845",
       "name": "Auto \u00b7 13\u00d7 MI25 rig",
       "tagline": "auto-generated \u00b7 13,038.4 GB/s \u00b7 208 GB VRAM \u00b7 $0.130/GB/s",
-      "total": 1607.61,
+      "total": 1512.67,
       "gpu_bw": 13000,
       "ddr_bw": 38.4,
       "throughput": 13038.4,
@@ -1141,7 +1139,7 @@
       "storage": "1 TB SATA",
       "storage_max": "~92 TB",
       "power": "5400 W (57% load)",
-      "per_gb": 0.1233,
+      "per_gb": 0.116,
       "deviation": "FLAGGED DEVIATION: system RAM is 32 GB (board max 32 GB), below the standing 64 GB / 128 GB-expandable requirement. 12-slot mining boards cap at 32 GB; no board in the catalog offers 12 GPU slots AND 64+ GB RAM. GPU VRAM totals 208 GB, which is what the model reads; system RAM only stages the dataset.",
       "mode": "rig",
       "why": "Auto-built to beat every existing build on all three metrics: 13\u00d7 AMD Radeon Instinct MI25 16 GB HBM2 = 13,000 GB/s + 38.4 GB/s system DDR = 13,038.4 GB/s total \u00b7 208 GB VRAM \u00b7 $1,699.86 = $0.130 per GB/s.",
@@ -1190,7 +1188,7 @@
           "section": "board",
           "spec": "h110btc",
           "stock": "In stock (Buy It Now / Best Offer)",
-          "seller": "FOR PARTS",
+          "seller": "Open box",
           "img": "https://i.ebayimg.com/images/g/jnUAAeSwruJqtd~u/s-l400.jpg"
         },
         {
@@ -1213,9 +1211,10 @@
           "url": "https://www.ebay.com/itm/128131585716",
           "section": "memory",
           "spec": "udimm-32",
-          "stock": "In stock (Buy It Now / Best Offer)",
+          "stock": null,
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/R5MAAeSwZZxqzUmY/s-l400.jpg"
+          "img": "https://i.ebayimg.com/images/g/R5MAAeSwZZxqzUmY/s-l400.jpg",
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
         {
           "qty": 3,
@@ -1225,7 +1224,7 @@
           "url": "https://www.ebay.com/itm/307210589596",
           "section": "power",
           "spec": "psu2000",
-          "stock": "LAST ONE",
+          "stock": "in stock across 1 listings (no quantity cap)",
           "seller": "Refurbished",
           "img": "https://i.ebayimg.com/images/g/ygcAAeSwSEpqv~J7/s-l400.jpg",
           "avail": null,
@@ -1241,7 +1240,8 @@
               "qty_bought": 3
             }
           ],
-          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $35.0\u2013$35.0 each"
+          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $35.0\u2013$35.0 each",
+          "price_moved": "$34.99 -> $35.0 on 2026-10-12 (blended)"
         },
         {
           "qty": 13,
@@ -1252,7 +1252,7 @@
           "section": "expansion",
           "spec": "riser",
           "stock": "187 available across 3 listings",
-          "seller": "Pre-owned",
+          "seller": "open box",
           "img": "https://i.ebayimg.com/images/g/VaEAAeSwVDVqoHQL/s-l400.jpg",
           "avail": 187,
           "avail_floor": false,
@@ -1276,7 +1276,8 @@
               "qty_bought": 6
             }
           ],
-          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $6.95\u2013$6.98 each"
+          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $6.95\u2013$6.98 each",
+          "price_moved": "$6.95 -> $6.96 on 2026-10-12 (blended)"
         },
         {
           "qty": 2,
@@ -1286,17 +1287,17 @@
           "url": "https://www.ebay.com/itm/233978712206",
           "section": "expansion",
           "spec": "psu_adder",
-          "stock": "More than 10 available",
+          "stock": "11 available across 1 listings",
           "seller": "dorigift442",
           "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg",
-          "avail": 11,
+          "avail": null,
           "avail_floor": false,
           "sources": [
             {
               "url": "https://www.ebay.com/itm/233978712206",
               "price": 7.68,
-              "qty": 10,
-              "qty_floor": true,
+              "qty": null,
+              "qty_floor": false,
               "last": false,
               "title": "Dual PSU Power Supply 24-pin ATX Motherboard Mainboard Adapter Connector Cable",
               "qty_bought": 2
@@ -1307,7 +1308,7 @@
         {
           "qty": 2,
           "name": "open-air mining frame (12 GPU positions)",
-          "price": 27.47,
+          "price": 25.0,
           "stats": "open-air frame \u00b7 12 GPU positions each \u00b7 2 stacked for 13 GPUs; passive cards need forced airflow",
           "url": "https://www.ebay.com/itm/366668903553",
           "section": "chassis",
@@ -1315,43 +1316,36 @@
           "stock": "2 available across 2 listings",
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/-s8AAeSwDW5qqDSA/s-l300.jpg",
-          "avail": 2,
+          "avail": null,
           "avail_floor": false,
           "sources": [
             {
               "url": "https://www.ebay.com/itm/198696539852",
               "price": 25.0,
-              "qty": 1,
+              "qty": null,
               "qty_floor": false,
               "last": false,
               "title": "12 GPU Mining Rig Frame Open Air Server Case Stackable Aluminum Crypto ETH BTC",
-              "qty_bought": 1
-            },
-            {
-              "url": "https://www.ebay.com/itm/257534976242",
-              "price": 29.94,
-              "qty": 1,
-              "qty_floor": false,
-              "last": false,
-              "title": "ENWEGEY 8-GPU Steel Mining Rig Open Air Frame Chassis - Complete Kit",
-              "qty_bought": 1
+              "qty_bought": 2
             }
           ],
-          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $25.0\u2013$29.94 each"
+          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $25.0\u2013$25.0 each",
+          "price_moved": "$19.99 -> $27.47 on 2026-10-12 (blended)"
         },
         {
           "qty": 1,
           "name": "1 TB SATA 2.5\" SSD",
-          "price": 109.99,
+          "price": 19.99,
           "stats": "1 TB SATA \u00b7 plugs into this board's SATA port",
-          "url": "https://www.ebay.com/itm/313969708276",
+          "url": "https://www.ebay.com/itm/267811552241",
           "section": "storage",
           "spec": "sata1tb",
-          "stock": "More than 10 available",
-          "seller": "Brand New",
-          "img": "https://i.ebayimg.com/images/g/h4oAAOSwSkFk7pmb/s-l400.jpg",
-          "avail": 10,
-          "avail_floor": true
+          "stock": "in stock",
+          "seller": "Open Box",
+          "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l500.webp",
+          "avail": null,
+          "avail_floor": false,
+          "relisted": "was https://www.ebay.com/itm/313969708276 (flagged: listing ENDED)"
         },
         {
           "qty": 13,
@@ -1386,7 +1380,8 @@
               "qty_bought": 3
             }
           ],
-          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each"
+          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each",
+          "price_moved": "$14.99 -> $7.5 on 2026-10-12 (blended)"
         }
       ],
       "audit": "warn",
@@ -1399,7 +1394,7 @@
       "id": "build-auto-1791853256",
       "name": "Auto \u00b7 19\u00d7 MI25 rig",
       "tagline": "auto-generated \u00b7 19,038.4 GB/s \u00b7 304 GB VRAM \u00b7 $0.122/GB/s",
-      "total": 2194.68,
+      "total": 2099.74,
       "gpu_bw": 19000,
       "ddr_bw": 38.4,
       "throughput": 19038.4,
@@ -1410,7 +1405,7 @@
       "storage": "1 TB SATA",
       "storage_max": "~92 TB",
       "power": "7200 W (62% load)",
-      "per_gb": 0.1153,
+      "per_gb": 0.1103,
       "deviation": "FLAGGED DEVIATION: system RAM is 32 GB (board max 32 GB), below the standing 64 GB / 128 GB-expandable requirement. 12-slot mining boards cap at 32 GB; no board in the catalog offers 12 GPU slots AND 64+ GB RAM. GPU VRAM totals 304 GB, which is what the model reads; system RAM only stages the dataset.",
       "mode": "rig",
       "why": "Auto-built to beat every existing build on all three metrics: 19\u00d7 AMD Radeon Instinct MI25 16 GB HBM2 = 19,000 GB/s + 38.4 GB/s system DDR = 19,038.4 GB/s total \u00b7 304 GB VRAM \u00b7 $2,331.61 = $0.122 per GB/s.",
@@ -1460,9 +1455,7 @@
           "spec": "b250me",
           "stock": "LAST ONE",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/ySIAAeSwzKdpUfbQ/s-l400.jpg",
-          "avail": 1,
-          "avail_floor": false
+          "img": "https://i.ebayimg.com/images/g/ySIAAeSwzKdpUfbQ/s-l400.jpg"
         },
         {
           "qty": 1,
@@ -1484,9 +1477,10 @@
           "url": "https://www.ebay.com/itm/128131585716",
           "section": "memory",
           "spec": "udimm-32",
-          "stock": "In stock (Buy It Now / Best Offer)",
+          "stock": null,
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/R5MAAeSwZZxqzUmY/s-l400.jpg"
+          "img": "https://i.ebayimg.com/images/g/R5MAAeSwZZxqzUmY/s-l400.jpg",
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
         {
           "qty": 4,
@@ -1496,7 +1490,7 @@
           "url": "https://www.ebay.com/itm/307210589596",
           "section": "power",
           "spec": "psu2000",
-          "stock": "LAST ONE",
+          "stock": "in stock across 1 listings (no quantity cap)",
           "seller": "Refurbished",
           "img": "https://i.ebayimg.com/images/g/ygcAAeSwSEpqv~J7/s-l400.jpg",
           "avail": null,
@@ -1512,7 +1506,8 @@
               "qty_bought": 4
             }
           ],
-          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $35.0\u2013$35.0 each"
+          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $35.0\u2013$35.0 each",
+          "price_moved": "$34.99 -> $35.0 on 2026-10-12 (blended)"
         },
         {
           "qty": 19,
@@ -1523,7 +1518,7 @@
           "section": "expansion",
           "spec": "riser",
           "stock": "187 available across 3 listings",
-          "seller": "Pre-owned",
+          "seller": "open box",
           "img": "https://i.ebayimg.com/images/g/VaEAAeSwVDVqoHQL/s-l400.jpg",
           "avail": 187,
           "avail_floor": false,
@@ -1556,7 +1551,8 @@
               "qty_bought": 1
             }
           ],
-          "price_note": "blended across 3 listing(s) \u2014 cheapest-first, $6.95\u2013$6.99 each"
+          "price_note": "blended across 3 listing(s) \u2014 cheapest-first, $6.95\u2013$6.99 each",
+          "price_moved": "$6.95 -> $6.97 on 2026-10-12 (blended)"
         },
         {
           "qty": 3,
@@ -1566,17 +1562,17 @@
           "url": "https://www.ebay.com/itm/233978712206",
           "section": "expansion",
           "spec": "psu_adder",
-          "stock": "More than 10 available",
+          "stock": "11 available across 1 listings",
           "seller": "dorigift442",
           "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg",
-          "avail": 11,
+          "avail": null,
           "avail_floor": false,
           "sources": [
             {
               "url": "https://www.ebay.com/itm/233978712206",
               "price": 7.68,
-              "qty": 10,
-              "qty_floor": true,
+              "qty": null,
+              "qty_floor": false,
               "last": false,
               "title": "Dual PSU Power Supply 24-pin ATX Motherboard Mainboard Adapter Connector Cable",
               "qty_bought": 3
@@ -1587,7 +1583,7 @@
         {
           "qty": 2,
           "name": "open-air mining frame (12 GPU positions)",
-          "price": 27.47,
+          "price": 25.0,
           "stats": "open-air frame \u00b7 12 GPU positions each \u00b7 2 stacked for 19 GPUs; passive cards need forced airflow",
           "url": "https://www.ebay.com/itm/366668903553",
           "section": "chassis",
@@ -1595,44 +1591,37 @@
           "stock": "2 available across 2 listings",
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/-s8AAeSwDW5qqDSA/s-l300.jpg",
-          "avail": 2,
+          "avail": null,
           "avail_floor": false,
           "sources": [
             {
               "url": "https://www.ebay.com/itm/198696539852",
               "price": 25.0,
-              "qty": 1,
+              "qty": null,
               "qty_floor": false,
               "last": false,
               "title": "12 GPU Mining Rig Frame Open Air Server Case Stackable Aluminum Crypto ETH BTC",
-              "qty_bought": 1
-            },
-            {
-              "url": "https://www.ebay.com/itm/257534976242",
-              "price": 29.94,
-              "qty": 1,
-              "qty_floor": false,
-              "last": false,
-              "title": "ENWEGEY 8-GPU Steel Mining Rig Open Air Frame Chassis - Complete Kit",
-              "qty_bought": 1
+              "qty_bought": 2
             }
           ],
-          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $25.0\u2013$29.94 each"
+          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $25.0\u2013$25.0 each",
+          "price_moved": "$19.99 -> $27.47 on 2026-10-12 (blended)"
         },
         {
           "qty": 1,
           "name": "1 TB SATA 2.5\" SSD",
-          "price": 109.99,
+          "price": 19.99,
           "stats": "1 TB SATA \u00b7 plugs into this board's SATA port",
-          "url": "https://www.ebay.com/itm/313969708276",
+          "url": "https://www.ebay.com/itm/267811552241",
           "section": "storage",
           "spec": "sata1tb",
-          "stock": "More than 10 available",
-          "seller": "Brand New",
-          "img": "https://i.ebayimg.com/images/g/h4oAAOSwSkFk7pmb/s-l400.jpg",
+          "stock": "in stock",
+          "seller": "Open Box",
+          "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l500.webp",
           "price_moved": "$119.99 -> $109.99 on 2026-10-12",
-          "avail": 10,
-          "avail_floor": true
+          "avail": null,
+          "avail_floor": false,
+          "relisted": "was https://www.ebay.com/itm/313969708276 (flagged: listing ENDED)"
         },
         {
           "qty": 19,
@@ -1667,20 +1656,248 @@
               "qty_bought": 9
             }
           ],
-          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each"
+          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each",
+          "price_moved": "$14.99 -> $7.5 on 2026-10-12 (blended)"
         }
       ],
       "audit": "warn",
       "audit_warns": [
         "32 GB (2x16) DDR4-2666 UDIMM is rated 2666 MT/s; ASUS B250 Mining Expert 19-GPU mining board runs memory at 2400 MT/s \u2014 it will train down, so the bandwidth figure should use 2400, not 2666"
       ]
+    },
+    {
+      "id": "build-auto-1791865019",
+      "name": "Auto \u00b7 10\u00d7 MI25 rig",
+      "tagline": "auto-generated \u00b7 10,038.4 GB/s \u00b7 160 GB VRAM \u00b7 $0.109/GB/s",
+      "total": 1092.65,
+      "gpu_bw": 10000,
+      "ddr_bw": 38.4,
+      "throughput": 10038.4,
+      "nvlink": "none (PCIe)",
+      "vram": 160,
+      "ram": 32,
+      "ram_max": 32,
+      "storage": "1 TB SATA",
+      "storage_max": "~92 TB",
+      "power": "3600 W (66% load)",
+      "per_gb": 0.1088,
+      "deviation": "FLAGGED DEVIATION: system RAM is 32 GB (board max 32 GB), below the standing 64 GB / 128 GB-expandable requirement. 12-slot mining boards cap at 32 GB; no board in the catalog offers 12 GPU slots AND 64+ GB RAM. GPU VRAM totals 160 GB, which is what the model reads; system RAM only stages the dataset.",
+      "mode": "rig",
+      "why": "Auto-built to beat every existing build on all three metrics: 10\u00d7 AMD Radeon Instinct MI25 16 GB HBM2 = 10,000 GB/s + 38.4 GB/s system DDR = 10,038.4 GB/s total \u00b7 160 GB VRAM \u00b7 $1,092.65 = $0.109 per GB/s.",
+      "components": [
+        {
+          "qty": 10,
+          "name": "AMD Radeon Instinct MI25 16 GB HBM2",
+          "price": 74.99,
+          "stats": "1,000 GB/s each \u00b7 16 GB HBM \u00b7 300 W \u00b7 PCIe3 x16",
+          "url": "https://www.ebay.com/itm/278212490817",
+          "section": "gpu",
+          "spec": "mi25",
+          "stock": "21 available across 2 listings",
+          "avail": 21,
+          "avail_floor": false,
+          "seller": "animuscompute",
+          "img": "https://i.ebayimg.com/images/g/e2UAAeSwRT1qXup3/s-l500.webp",
+          "sources": [
+            {
+              "url": "https://www.ebay.com/itm/278212490817",
+              "price": 74.99,
+              "qty": 10,
+              "qty_floor": true,
+              "last": false,
+              "title": "AMD Radeon Instinct MI25 16GB HBM2 PCIE 3.0 GPU Passive Cooling Accelorator Card",
+              "qty_bought": 10
+            }
+          ],
+          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $74.99\u2013$74.99 each"
+        },
+        {
+          "qty": 1,
+          "name": "ASRock H110 Pro BTC+ 13-GPU mining board",
+          "price": 22.5,
+          "stats": "13 GPU slots \u00b7 2-channel DDR4-2400 = 38.4 GB/s \u00b7 max 32 GB RAM",
+          "url": "https://www.ebay.com/itm/178526436336",
+          "section": "board",
+          "spec": "h110btc",
+          "stock": "in stock",
+          "avail": null,
+          "avail_floor": false,
+          "seller": "Open Box",
+          "img": "https://i.ebayimg.com/images/g/jnUAAeSwruJqtd~u/s-l400.jpg"
+        },
+        {
+          "qty": 1,
+          "name": "Intel Pentium G3930 (LGA1151 v1, 7th gen, HD 610)",
+          "price": 1.98,
+          "stats": "LGA1151 \u00b7 54 W",
+          "url": "https://www.ebay.com/itm/168747984797",
+          "section": "cpu",
+          "spec": "g3930",
+          "stock": "in stock",
+          "avail": null,
+          "avail_floor": false,
+          "seller": "Pre-Owned",
+          "img": "https://i.ebayimg.com/images/g/mLEAAeSwG7pqveCD/s-l500.webp"
+        },
+        {
+          "qty": 1,
+          "name": "32 GB (2x16) DDR4-2666 UDIMM",
+          "price": 51.0,
+          "stats": "32 GB \u00b7 2-channel DDR4-2666 \u00b7 UDIMM \u00b7 42.7 GB/s",
+          "url": "https://www.ebay.com/itm/267808517801",
+          "section": "memory",
+          "spec": "udimm-32",
+          "stock": "in stock",
+          "avail": null,
+          "avail_floor": false,
+          "seller": "Pre-Owned",
+          "img": "https://i.ebayimg.com/images/g/y9wAAeSw0IxqyHLH/s-l500.webp"
+        },
+        {
+          "qty": 2,
+          "name": "Soontech ST1800W 1800 W mining PSU (10x 6+2-pin, 110-240 V)",
+          "price": 35.0,
+          "stats": "1800 W \u00b7 10x 6+2-pin PCIe \u00b7 2 PSU = 3600 W for 2394 W load (66%) \u00b7 10 cards x 2 = 20 connectors needed",
+          "url": "https://www.ebay.com/itm/147507363697",
+          "section": "power",
+          "spec": "psu2000",
+          "stock": "in stock",
+          "avail": null,
+          "avail_floor": false,
+          "seller": "Pre-Owned",
+          "img": "https://i.ebayimg.com/images/g/rTEAAeSwC-FqgNj8/s-l500.webp",
+          "sources": [
+            {
+              "url": "https://www.ebay.com/itm/147507363697",
+              "price": 35.0,
+              "qty": null,
+              "qty_floor": false,
+              "last": false,
+              "title": "HUAXUCHENG ST 1800 W 90 Plus Gold Mining Power Supply 1800w",
+              "qty_bought": 2
+            }
+          ],
+          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $35.0\u2013$35.0 each"
+        },
+        {
+          "qty": 10,
+          "name": "VER009S PCIe 1x->16x riser + USB3.0 cable",
+          "price": 6.96,
+          "stats": "one per GPU \u00b7 powered USB 3.0 data line",
+          "url": "https://www.ebay.com/itm/227512716634",
+          "section": "expansion",
+          "spec": "riser",
+          "stock": "187 available across 3 listings",
+          "avail": 187,
+          "avail_floor": false,
+          "seller": "Brand New",
+          "img": "https://i.ebayimg.com/images/g/VaEAAeSwVDVqoHQL/s-l500.webp",
+          "sources": [
+            {
+              "url": "https://www.ebay.com/itm/227512716634",
+              "price": 6.95,
+              "qty": 7,
+              "qty_floor": false,
+              "last": false,
+              "title": "PCI-E 1x to 16x Powered USB 3.0 GPU Riser Extender Adapter",
+              "qty_bought": 7
+            },
+            {
+              "url": "https://www.ebay.com/itm/255523506359",
+              "price": 6.98,
+              "qty": 10,
+              "qty_floor": true,
+              "last": false,
+              "title": "New VER009S PCI-E 1x to 16x USB3.0 GPU Riser Card Extender Adapter Mining",
+              "qty_bought": 3
+            }
+          ],
+          "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $6.95\u2013$6.98 each"
+        },
+        {
+          "qty": 1,
+          "name": "ATX PSU adder board (triggers one extra PSU)",
+          "price": 7.68,
+          "stats": "one per extra PSU \u2014 triggers each adder PSU from the main one (standard mining-rig wiring)",
+          "url": "https://www.ebay.com/itm/233978712206",
+          "section": "expansion",
+          "spec": "psu_adder",
+          "stock": "10 available",
+          "avail": 10,
+          "avail_floor": true,
+          "seller": "dorigift442",
+          "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg"
+        },
+        {
+          "qty": 1,
+          "name": "open-air mining frame (12 GPU positions)",
+          "price": 25.0,
+          "stats": "open-air frame \u00b7 12 GPU positions each \u00b7 1 stacked for 10 GPUs; passive cards need forced airflow",
+          "url": "https://www.ebay.com/itm/198696539852",
+          "section": "chassis",
+          "spec": "frame",
+          "stock": "1 available",
+          "avail": 1,
+          "avail_floor": false,
+          "seller": "gokame-sales",
+          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l500.webp"
+        },
+        {
+          "qty": 1,
+          "name": "1 TB SATA 2.5\" SSD",
+          "price": 19.99,
+          "stats": "1 TB SATA \u00b7 plugs into this board's SATA port",
+          "url": "https://www.ebay.com/itm/267811552241",
+          "section": "storage",
+          "spec": "sata1tb",
+          "stock": "in stock",
+          "avail": null,
+          "avail_floor": false,
+          "seller": "Open Box",
+          "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l500.webp"
+        },
+        {
+          "qty": 10,
+          "name": "shroud + 120 mm fan per card",
+          "price": 7.5,
+          "stats": "passive cards ship fanless \u2014 forced airflow is the cooling strategy",
+          "url": "https://www.ebay.com/itm/137629627141",
+          "stock": "23 available across 3 listings",
+          "avail": 23,
+          "avail_floor": false,
+          "seller": "various",
+          "section": "cooling",
+          "spec": "shroud",
+          "img": "https://i.ebayimg.com/images/g/cxMAAeSwKTRqgkV6/s-l500.webp",
+          "sources": [
+            {
+              "url": "https://www.ebay.com/itm/225795594396",
+              "price": 7.5,
+              "qty": 10,
+              "qty_floor": false,
+              "last": false,
+              "title": "Radeon Instinct MI25, MI50, MI60 Cooling Shroud",
+              "qty_bought": 10
+            }
+          ],
+          "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each"
+        }
+      ],
+      "audit": "warn",
+      "audit_warns": [
+        "32 GB (2x16) DDR4-2666 UDIMM is rated 2666 MT/s; ASRock H110 Pro BTC+ 13-GPU mining board runs memory at 2400 MT/s \u2014 it will train down, so the bandwidth figure should use 2400, not 2666",
+        "ASRock H110 Pro BTC+ 13-GPU mining board runs its extra slots at PCIe 2.0 x1 (~500 MB/s each). Fine for kernel dispatch and mining; it will starve any workload that streams tensors host->device"
+      ]
     }
   ],
   "status": {
-    "verified": "2026-10-12 20:04",
-    "listings": 30,
-    "flagged": 1,
-    "price_changes": 1,
-    "method": "Every listing re-checked over a real browser (CDP): live price, quantity available, buyable, ENDED. Totals recomputed from verified prices."
+    "verified": "2026-10-12 23:02",
+    "listings": 39,
+    "flagged": 3,
+    "qty_short": 0,
+    "qty_unproven": 0,
+    "price_changes": 28,
+    "unverified": 3,
+    "method": "Every listing re-checked over a real browser (CDP): live price, quantity available, buyable, ENDED. A line the build needs N of is only purchasable when the listing shows at least N available. Totals recomputed from verified prices."
   }
 }
