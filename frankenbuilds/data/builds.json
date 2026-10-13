@@ -206,7 +206,7 @@
           "stats": "4x SXM2 sockets \u00b7 NVLink 2.0 \u00b7 PEX8749 PCIe switch, 1x x16 uplink \u00b7 ATX 24-pin + 2x CPU 8-pin + 2x GPU 16-pin",
           "url": "https://www.ebay.com/itm/188936960864",
           "stock": "2 available",
-          "seller": "Refurbished",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l500.png",
           "section": "board",
           "spec": "v100base"
@@ -650,7 +650,7 @@
           "stats": "1,024 GB/s each \u00b7 4,096-bit HBM2 + ECC \u00b7 3,840 stream \u00b7 13.4 TF FP32 \u00b7 PCIe4 x16 \u00b7 300 W \u00b7 passive",
           "url": "https://www.ebay.com/itm/205802298789",
           "stock": "More than 10 available",
-          "seller": "Refurbished",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/0t0AAeSwMoJo-dh6/s-l400.jpg",
           "section": "gpu",
           "spec": "mi50-32",
@@ -789,7 +789,7 @@
           "stats": "NVLink 2.0 \u00b7 PEX8749 switch, 1x x16 uplink \u00b7 ATX 24-pin + 2x CPU 8-pin + 2x GPU 16-pin",
           "url": "https://www.ebay.com/itm/188936960864",
           "stock": "2 available",
-          "seller": "Refurbished",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l500.png",
           "section": "board",
           "spec": "v100base"
@@ -969,7 +969,7 @@
           "stats": "2-channel DDR4-2666 = 42.7 GB/s \u00b7 board caps at 32 GB \u2014 see deviation",
           "url": "https://www.ebay.com/itm/128131585716",
           "stock": "LAST ONE",
-          "seller": "Refurbished",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/R5MAAeSwZZxqzUmY/s-l400.jpg",
           "section": "memory",
           "spec": "udimm-32",
@@ -1071,7 +1071,7 @@
           "url": "https://www.ebay.com/itm/267811552241",
           "section": "storage",
           "spec": "sata1tb",
-          "stock": "LAST ONE",
+          "stock": null,
           "seller": "Open box",
           "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l400.jpg",
           "relisted": "was https://www.ebay.com/itm/313969708276 (flagged: listing ENDED)",
@@ -1198,7 +1198,7 @@
           "url": "https://www.ebay.com/itm/168747984797",
           "section": "cpu",
           "spec": "g3930",
-          "stock": "In stock (Buy It Now / Best Offer)",
+          "stock": "LAST ONE",
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/mLEAAeSwG7pqveCD/s-l400.jpg"
         },
@@ -1211,7 +1211,7 @@
           "section": "memory",
           "spec": "udimm-32",
           "stock": "LAST ONE",
-          "seller": "Refurbished",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/R5MAAeSwZZxqzUmY/s-l400.jpg",
           "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
@@ -1224,7 +1224,7 @@
           "section": "power",
           "spec": "psu2000",
           "stock": "in stock across 1 listings (no quantity cap)",
-          "seller": "OPEN BOX",
+          "seller": "Refurbished",
           "img": "https://i.ebayimg.com/images/g/ygcAAeSwSEpqv~J7/s-l400.jpg",
           "avail": null,
           "avail_floor": false,
@@ -1312,9 +1312,9 @@
           "url": "https://www.ebay.com/itm/198696539852",
           "section": "chassis",
           "spec": "frame",
-          "stock": "in stock",
-          "seller": "gokame-sales",
-          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l500.webp",
+          "stock": "1 available across 1 listings",
+          "seller": "Open box",
+          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l400.jpg",
           "avail": null,
           "avail_floor": false,
           "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $25.0\u2013$25.0 each",
@@ -1330,7 +1330,8 @@
               "title": "12 GPU Mining Rig Frame Open Air Server Case Stackable Aluminum Crypto ETH BTC",
               "qty_bought": 2
             }
-          ]
+          ],
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
         {
           "qty": 1,
@@ -1340,7 +1341,7 @@
           "url": "https://www.ebay.com/itm/267811552241",
           "section": "storage",
           "spec": "sata1tb",
-          "stock": "LAST ONE",
+          "stock": null,
           "seller": "Open box",
           "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l400.jpg",
           "relisted": "was https://www.ebay.com/itm/313969708276 (flagged: listing ENDED)",
@@ -1464,7 +1465,7 @@
           "url": "https://www.ebay.com/itm/168747984797",
           "section": "cpu",
           "spec": "g3930",
-          "stock": "In stock (Buy It Now / Best Offer)",
+          "stock": "LAST ONE",
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/mLEAAeSwG7pqveCD/s-l400.jpg"
         },
@@ -1477,7 +1478,7 @@
           "section": "memory",
           "spec": "udimm-32",
           "stock": "LAST ONE",
-          "seller": "Refurbished",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/R5MAAeSwZZxqzUmY/s-l400.jpg",
           "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
@@ -1490,7 +1491,7 @@
           "section": "power",
           "spec": "psu2000",
           "stock": "in stock across 1 listings (no quantity cap)",
-          "seller": "OPEN BOX",
+          "seller": "Refurbished",
           "img": "https://i.ebayimg.com/images/g/ygcAAeSwSEpqv~J7/s-l400.jpg",
           "avail": null,
           "avail_floor": false,
@@ -1587,9 +1588,9 @@
           "url": "https://www.ebay.com/itm/198696539852",
           "section": "chassis",
           "spec": "frame",
-          "stock": "in stock",
-          "seller": "gokame-sales",
-          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l500.webp",
+          "stock": "1 available across 1 listings",
+          "seller": "Open box",
+          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l400.jpg",
           "avail": null,
           "avail_floor": false,
           "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $25.0\u2013$25.0 each",
@@ -1605,7 +1606,8 @@
               "title": "12 GPU Mining Rig Frame Open Air Server Case Stackable Aluminum Crypto ETH BTC",
               "qty_bought": 2
             }
-          ]
+          ],
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
         {
           "qty": 1,
@@ -1615,7 +1617,7 @@
           "url": "https://www.ebay.com/itm/267811552241",
           "section": "storage",
           "spec": "sata1tb",
-          "stock": "LAST ONE",
+          "stock": null,
           "seller": "Open box",
           "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l400.jpg",
           "price_moved": "$119.99 -> $109.99 on 2026-10-12",
@@ -1730,7 +1732,7 @@
           "url": "https://www.ebay.com/itm/168747984797",
           "section": "cpu",
           "spec": "g3930",
-          "stock": "In stock (Buy It Now / Best Offer)",
+          "stock": "LAST ONE",
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/mLEAAeSwG7pqveCD/s-l400.jpg"
         },
@@ -1758,7 +1760,7 @@
           "stock": "in stock across 1 listings (no quantity cap)",
           "avail": null,
           "avail_floor": false,
-          "seller": "OPEN BOX",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/rTEAAeSwC-FqgNj8/s-l400.jpg",
           "sources": [
             {
@@ -1842,7 +1844,7 @@
           "url": "https://www.ebay.com/itm/267811552241",
           "section": "storage",
           "spec": "sata1tb",
-          "stock": "LAST ONE",
+          "stock": null,
           "seller": "Open box",
           "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l400.jpg",
           "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
@@ -1883,13 +1885,13 @@
     }
   ],
   "status": {
-    "verified": "2026-10-13 05:25",
+    "verified": "2026-10-13 11:32",
     "listings": 40,
     "flagged": 2,
     "qty_short": 2,
     "qty_unproven": 0,
-    "price_changes": 32,
-    "unverified": 9,
+    "price_changes": 28,
+    "unverified": 11,
     "method": "Every listing re-checked over a real browser (CDP): live price, quantity available, buyable, ENDED. A line the build needs N of is only purchasable when the listing shows at least N available. Totals recomputed from verified prices."
   }
 }
