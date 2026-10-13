@@ -164,7 +164,6 @@
           "stock": "More than 10 available",
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l300.jpg",
-          "flag": "price moved $699.9 -> $799.9",
           "section": "gpu",
           "spec": "v100-sxm2-32"
         },
@@ -671,7 +670,6 @@
           "stock": "More than 10 available",
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l300.jpg",
-          "flag": "price moved $699.9 -> $799.9",
           "section": "gpu",
           "spec": "v100-sxm2-32"
         },
@@ -822,8 +820,7 @@
           "spec": "i38100",
           "stock": "In stock (Buy It Now / Best Offer)",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/Jo4AAeSwLB5qqBWF/s-l400.jpg",
-          "flag": "price moved $17.0 -> $14.0"
+          "img": "https://i.ebayimg.com/images/g/Jo4AAeSwLB5qqBWF/s-l400.jpg"
         },
         {
           "qty": 1,
@@ -869,7 +866,6 @@
           "url": "https://www.ebay.com/itm/233978712206",
           "stock": "More than 10 available",
           "seller": "Brand New",
-          "flag": "price moved $9.99 -> $7.68",
           "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg",
           "section": "expansion",
           "spec": "psu_adder"
@@ -896,8 +892,7 @@
           "spec": "sata1tb",
           "stock": "More than 10 available",
           "seller": "netac_official_store",
-          "img": "https://i.ebayimg.com/images/g/h4oAAOSwSkFk7pmb/s-l400.jpg",
-          "flag": "price moved $119.99 -> $109.99"
+          "img": "https://i.ebayimg.com/images/g/h4oAAOSwSkFk7pmb/s-l400.jpg"
         },
         {
           "qty": 12,
@@ -907,7 +902,6 @@
           "url": "https://www.ebay.com/itm/137629627141",
           "stock": "2 available",
           "seller": "Pre-owned",
-          "flag": "not buyable",
           "img": "https://i.ebayimg.com/images/g/cxMAAeSwKTRqgkV6/s-l400.jpg",
           "section": "cooling",
           "spec": "shroud"
@@ -1048,8 +1042,7 @@
           "spec": "sata1tb",
           "stock": "More than 10 available",
           "seller": "Brand New",
-          "img": "https://i.ebayimg.com/images/g/h4oAAOSwSkFk7pmb/s-l400.jpg",
-          "flag": "price moved $119.99 -> $109.99"
+          "img": "https://i.ebayimg.com/images/g/h4oAAOSwSkFk7pmb/s-l400.jpg"
         },
         {
           "qty": 13,
@@ -1072,9 +1065,10 @@
     }
   ],
   "status": {
-    "verified": "2026-10-12 19:39",
+    "verified": "2026-10-12 19:48",
     "listings": 29,
-    "flagged": 3,
+    "flagged": 0,
+    "price_changes": 0,
     "method": "Every listing re-checked over a real browser (CDP): live price, quantity available, buyable, ENDED. Totals recomputed from verified prices."
   }
 }
