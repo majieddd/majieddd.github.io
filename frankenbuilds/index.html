@@ -438,6 +438,7 @@ function render(){
         <div class="st">${c.stats}</div>
         <div class="meta">
           <span class="tag ${flagged?'flag':'stock'}">${flagged?'FLAGGED: '+flagged:c.stock}</span>
+          ${c.price_moved?`<span class="tag" title="refresh.py re-priced this listing to the live value">price updated: ${c.price_moved}</span>`:''}
           <span class="tag">${c.seller}</span>
         </div>
       </div>
@@ -555,12 +556,16 @@ function status(){
   if(!s){el.innerHTML='<div class="hd"><span class="dot"></span><span class="txt">No verification run recorded.</span></div>'+
     '<div class="dt">Run <code>python refresh.py</code> to re-check every listing over a real browser and rewrite <code>data/builds.json</code>.</div>';return;}
   const flagged=DATA.builds.flatMap(b=>b.components.filter(c=>c.flag).map(c=>({b:b.name,c})));
-  el.innerHTML=`<div class="hd"><span class="dot ${flagged.length?'bad':''}"></span>
+  const moved=DATA.builds.flatMap(b=>b.components.filter(c=>c.price_moved).map(c=>({b:b.name,c})));
+  const auditFails=DATA.builds.filter(b=>b.audit==="fail").length;
+  el.innerHTML=`<div class="hd"><span class="dot ${flagged.length||auditFails?'bad':''}"></span>
     <span class="txt">${flagged.length?flagged.length+' listing(s) flagged':'All '+s.listings+' listings verified in stock'}</span>
-    <span class="dt">· verified ${s.verified}</span></div>
+    <span class="dt">· verified ${s.verified}${s.price_changes?' · '+s.price_changes+' price(s) updated to live':''}</span></div>
     <div class="dt">${s.method}</div>
     ${flagged.length?'<ul>'+flagged.map(f=>`<li><b>${f.c.name}</b> (${f.b}) — ${f.c.flag}</li>`).join("")+'</ul>':''}
-    <div class="dt" style="margin-top:10px">Refresh: <code>python refresh.py</code> · Add a build: <code>python add_build.py</code></div>`;
+    ${moved.length?`<details class="ap" style="margin-top:8px"><summary>${moved.length} price move(s) applied today</summary>
+      <ul>${moved.map(f=>`<li><b>${f.c.name}</b> (${f.b}) — ${f.c.price_moved}</li>`).join("")}</ul></details>`:''}
+    <div class="dt" style="margin-top:10px">Refresh: <code>python refresh.py</code> · Audit: <code>python audit.py</code> · Auto-build: <code>python builder.py</code></div>`;
 }
 
 function setTheme(t){
