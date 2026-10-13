@@ -125,8 +125,9 @@
           "url": "https://www.ebay.com/itm/233978712206",
           "section": "expansion",
           "spec": "psu_adder",
-          "stock": "in stock",
-          "seller": "Brand New"
+          "stock": "More than 10 available",
+          "seller": "Brand New",
+          "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg"
         }
       ],
       "audit": "warn",
@@ -383,8 +384,9 @@
           "url": "https://www.ebay.com/itm/233978712206",
           "section": "expansion",
           "spec": "psu_adder",
-          "stock": "in stock",
-          "seller": "Brand New"
+          "stock": "More than 10 available",
+          "seller": "Brand New",
+          "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg"
         }
       ],
       "audit": "clean",
@@ -513,8 +515,9 @@
           "url": "https://www.ebay.com/itm/233978712206",
           "section": "expansion",
           "spec": "psu_adder",
-          "stock": "in stock",
-          "seller": "Brand New"
+          "stock": "More than 10 available",
+          "seller": "Brand New",
+          "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg"
         }
       ],
       "audit": "warn",
@@ -812,14 +815,15 @@
         {
           "qty": 1,
           "name": "Intel Core i3-8100 (LGA1151 v2, 8th gen, UHD 630)",
-          "price": 17.0,
+          "price": 14.0,
           "stats": "LGA1151 v2 \u00b7 8th gen \u00b7 65 W \u00b7 UHD 630 iGPU carries the board's video out",
           "url": "https://www.ebay.com/itm/168781077302",
           "section": "cpu",
           "spec": "i38100",
-          "stock": "in stock",
+          "stock": "In stock (Buy It Now / Best Offer)",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/Jo4AAeSwLB5qqBWF/s-l1600.webp"
+          "img": "https://i.ebayimg.com/images/g/Jo4AAeSwLB5qqBWF/s-l400.jpg",
+          "flag": "price moved $17.0 -> $14.0"
         },
         {
           "qty": 1,
@@ -885,14 +889,15 @@
         {
           "qty": 1,
           "name": "Netac 1 TB 2.5\" SATA III SSD",
-          "price": 119.99,
+          "price": 109.99,
           "stats": "1 TB SATA \u00b7 plugs into the board's SATA port (its M.2 slot is SATA3-only, so an NVMe drive there is not detected)",
           "url": "https://www.ebay.com/itm/313969708276",
           "section": "storage",
           "spec": "sata1tb",
-          "stock": "10 available",
+          "stock": "More than 10 available",
           "seller": "netac_official_store",
-          "img": "https://i.ebayimg.com/images/g/h4oAAOSwSkFk7pmb/s-l1600.webp"
+          "img": "https://i.ebayimg.com/images/g/h4oAAOSwSkFk7pmb/s-l400.jpg",
+          "flag": "price moved $119.99 -> $109.99"
         },
         {
           "qty": 12,
@@ -908,9 +913,9 @@
           "spec": "shroud"
         }
       ],
-      "total": 1621.1,
+      "total": 1608.1,
       "throughput": 12042.7,
-      "per_gb": 0.1346,
+      "per_gb": 0.1335,
       "id": "build-7",
       "deviation": "FLAGGED DEVIATION: system RAM is 32 GB (board max 32 GB), below the standing 64 GB / 128 GB-expandable requirement. No board in the catalog offers 12 GPU slots AND 64+ GB RAM \u2014 12-slot mining boards cap at 32 GB. GPU VRAM totals 192 GB, which is what the model reads; system RAM only stages the dataset. The 64/128 GB requirement is met by builds 1-6 on workstation boards.",
       "audit": "clean",
@@ -921,7 +926,7 @@
       "id": "build-auto-1791850845",
       "name": "Auto \u00b7 13\u00d7 MI25 rig",
       "tagline": "auto-generated \u00b7 13,038.4 GB/s \u00b7 208 GB VRAM \u00b7 $0.130/GB/s",
-      "total": 1699.86,
+      "total": 1689.86,
       "gpu_bw": 13000,
       "ddr_bw": 38.4,
       "throughput": 13038.4,
@@ -932,7 +937,7 @@
       "storage": "1 TB SATA",
       "storage_max": "~92 TB",
       "power": "5400 W (57% load)",
-      "per_gb": 0.1304,
+      "per_gb": 0.1296,
       "deviation": "FLAGGED DEVIATION: system RAM is 32 GB (board max 32 GB), below the standing 64 GB / 128 GB-expandable requirement. 12-slot mining boards cap at 32 GB; no board in the catalog offers 12 GPU slots AND 64+ GB RAM. GPU VRAM totals 208 GB, which is what the model reads; system RAM only stages the dataset.",
       "mode": "rig",
       "why": "Auto-built to beat every existing build on all three metrics: 13\u00d7 AMD Radeon Instinct MI25 16 GB HBM2 = 13,000 GB/s + 38.4 GB/s system DDR = 13,038.4 GB/s total \u00b7 208 GB VRAM \u00b7 $1,699.86 = $0.130 per GB/s.",
@@ -945,9 +950,9 @@
           "url": "https://www.ebay.com/itm/278212490817",
           "section": "gpu",
           "spec": "mi25",
-          "stock": "in stock",
-          "seller": "animuscompute",
-          "img": "https://i.ebayimg.com/images/g/e2UAAeSwRT1qXup3/s-l500.webp"
+          "stock": "More than 10 available",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/e2UAAeSwRT1qXup3/s-l400.jpg"
         },
         {
           "qty": 1,
@@ -957,8 +962,8 @@
           "url": "https://www.ebay.com/itm/178526436336",
           "section": "board",
           "spec": "h110btc",
-          "stock": "in stock",
-          "seller": "Open Box",
+          "stock": "In stock (Buy It Now / Best Offer)",
+          "seller": "FOR PARTS",
           "img": "https://i.ebayimg.com/images/g/jnUAAeSwruJqtd~u/s-l400.jpg"
         },
         {
@@ -969,9 +974,9 @@
           "url": "https://www.ebay.com/itm/168747984797",
           "section": "cpu",
           "spec": "g3930",
-          "stock": "in stock",
-          "seller": "Pre-Owned",
-          "img": "https://i.ebayimg.com/images/g/mLEAAeSwG7pqveCD/s-l500.webp"
+          "stock": "In stock (Buy It Now / Best Offer)",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/mLEAAeSwG7pqveCD/s-l400.jpg"
         },
         {
           "qty": 1,
@@ -981,8 +986,8 @@
           "url": "https://www.ebay.com/itm/128131585716",
           "section": "memory",
           "spec": "udimm-32",
-          "stock": "in stock",
-          "seller": "Pre-Owned",
+          "stock": "In stock (Buy It Now / Best Offer)",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/R5MAAeSwZZxqzUmY/s-l400.jpg"
         },
         {
@@ -993,8 +998,8 @@
           "url": "https://www.ebay.com/itm/307210589596",
           "section": "power",
           "spec": "psu2000",
-          "stock": "in stock",
-          "seller": "Pre-Owned",
+          "stock": "In stock (Buy It Now / Best Offer)",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/ygcAAeSwSEpqv~J7/s-l400.jpg"
         },
         {
@@ -1005,9 +1010,9 @@
           "url": "https://www.ebay.com/itm/227512716634",
           "section": "expansion",
           "spec": "riser",
-          "stock": "in stock",
-          "seller": "Brand New",
-          "img": "https://i.ebayimg.com/images/g/VaEAAeSwVDVqoHQL/s-l500.webp"
+          "stock": "7 available",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/VaEAAeSwVDVqoHQL/s-l400.jpg"
         },
         {
           "qty": 2,
@@ -1017,7 +1022,7 @@
           "url": "https://www.ebay.com/itm/233978712206",
           "section": "expansion",
           "spec": "psu_adder",
-          "stock": "in stock",
+          "stock": "More than 10 available",
           "seller": "dorigift442",
           "img": "https://i.ebayimg.com/images/g/~bcAAOSwq3pggemI/s-l400.jpg"
         },
@@ -1029,21 +1034,22 @@
           "url": "https://www.ebay.com/itm/366668903553",
           "section": "chassis",
           "spec": "frame",
-          "stock": "in stock",
-          "seller": "Brand New",
+          "stock": "5 available",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/-s8AAeSwDW5qqDSA/s-l300.jpg"
         },
         {
           "qty": 1,
           "name": "1 TB SATA 2.5\" SSD",
-          "price": 119.99,
+          "price": 109.99,
           "stats": "1 TB SATA \u00b7 plugs into this board's SATA port",
           "url": "https://www.ebay.com/itm/313969708276",
           "section": "storage",
           "spec": "sata1tb",
-          "stock": "in stock",
+          "stock": "More than 10 available",
           "seller": "Brand New",
-          "img": "https://i.ebayimg.com/images/g/h4oAAOSwSkFk7pmb/s-l1600.webp"
+          "img": "https://i.ebayimg.com/images/g/h4oAAOSwSkFk7pmb/s-l400.jpg",
+          "flag": "price moved $119.99 -> $109.99"
         },
         {
           "qty": 13,
@@ -1051,11 +1057,11 @@
           "price": 14.99,
           "stats": "passive cards ship fanless \u2014 forced airflow is the cooling strategy",
           "url": "https://www.ebay.com/itm/137629627141",
-          "stock": "in stock",
-          "seller": "various",
+          "stock": "2 available",
+          "seller": "Pre-owned",
           "section": "cooling",
           "spec": "shroud",
-          "img": "https://i.ebayimg.com/images/g/cxMAAeSwKTRqgkV6/s-l1600.webp"
+          "img": "https://i.ebayimg.com/images/g/cxMAAeSwKTRqgkV6/s-l400.jpg"
         }
       ],
       "audit": "warn",
@@ -1066,9 +1072,9 @@
     }
   ],
   "status": {
-    "verified": "2026-10-12 18:03",
+    "verified": "2026-10-12 19:39",
     "listings": 29,
-    "flagged": 2,
+    "flagged": 3,
     "method": "Every listing re-checked over a real browser (CDP): live price, quantity available, buyable, ENDED. Totals recomputed from verified prices."
   }
 }
