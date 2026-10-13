@@ -178,7 +178,68 @@ tr:last-child td{border-bottom:0}
 tbody tr{transition:background 160ms var(--e-enter)}
 tbody tr:hover{background:var(--card2)}
 tbody tr.best{background:var(--chip)}
+/* ---------- compatibility audit ---------- */
+.av{font-size:11px;font-weight:600;white-space:nowrap}
+.av.ok{color:var(--good)} .av.warn{color:var(--warn)} .av.bad{color:var(--bad)}
+.audit{margin:14px 0 0;border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:var(--card2,var(--card))}
+.audit .ah{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ab{font-size:12px;font-weight:650;padding:4px 10px;border-radius:99px;border:1px solid}
+.ab.ok{color:var(--good);border-color:var(--good)}
+.ab.warn{color:var(--warn);border-color:var(--warn)}
+.ab.bad{color:var(--bad);border-color:var(--bad)}
+.audit .as{font-size:11px;color:var(--muted)}
+.audit .al{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:6px}
+.audit .al li{font-size:12.5px;line-height:1.5;padding-left:14px;position:relative;color:var(--muted-foreground,var(--muted))}
+.audit .al li b{color:var(--fg)}
+.audit .al li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:2px}
+.audit .al li.bad::before{background:var(--bad)}
+.audit .al li.warn::before{background:var(--warn)}
+.audit .al li.ok::before{background:var(--good)}
+.audit .ap{margin:10px 0 0;font-size:12px;color:var(--muted)}
+.audit .ap summary{cursor:pointer;color:var(--good);font-weight:600}
+.audit .ap ul{margin:8px 0 0;padding:0;list-style:none;display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:4px}
+.audit .ap li{font-size:11.5px;padding-left:14px;position:relative}
+@media (prefers-reduced-motion:reduce){.pcard{transition:none}}
+
 .bestmark{color:var(--accent);font-size:11px;font-weight:600}
+
+/* ---------- price history ---------- */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+/* auto-fill cannot resolve a percentage floor during intrinsic sizing, so the
+   narrow case is a plain media query: one full-width card per row. */
+@media (max-width:640px){.pgrid{grid-template-columns:1fr}}
+.pcard{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);padding:14px 16px;min-width:0;
+  transition:border-color 180ms var(--e-enter),transform 180ms var(--e-enter)}
+.pcard *{min-width:0}
+.pcard:hover{border-color:var(--accent);transform:translateY(-2px)}
+.pcard .ph{display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
+.pcard .pn{font-size:14px;font-weight:650;letter-spacing:-.01em;flex:1;min-width:0}
+.pcard .pn span{display:block;font-size:10.5px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.06em;font-weight:600;margin-bottom:2px}
+.pcard .pd{font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pcard .pd.up{color:var(--bad)} .pcard .pd.dn{color:var(--good)}
+.pcard .pv{font-size:22px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:6px}
+.pcard .pu{font-size:11.5px;color:var(--muted)}
+.pcard svg{display:block;width:100%;height:74px;margin-top:8px;overflow:visible}
+.pcard .pfoot{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--muted);
+  margin-top:6px;font-variant-numeric:tabular-nums}
+.pcard .pavg{font-size:11.5px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+.pcard .pavg b{color:var(--fg);font-weight:650}
+.pcard .pavg .up{color:var(--bad)} .pcard .pavg .dn{color:var(--good)}
+.pcard .prow{display:flex;gap:10px;align-items:flex-start}
+.pcard .pcol{flex:1;min-width:0}
+.pcard .plab{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:8px}
+.pcard .ptip{position:fixed;pointer-events:none;z-index:50;background:var(--card2);border:1px solid var(--accent);
+  border-radius:8px;padding:6px 9px;font-size:11.5px;font-variant-numeric:tabular-nums;opacity:0;
+  transition:opacity .12s ease;box-shadow:0 6px 20px rgba(0,0,0,.25);white-space:nowrap}
+.pcard .ptip.on{opacity:1}
+.pcard .pdot{fill:var(--accent)}
+.pcard .pline{fill:none;stroke:var(--accent);stroke-width:1.75;stroke-linejoin:round;stroke-linecap:round}
+.pcard .punit{fill:none;stroke:var(--muted);stroke-width:1.25;stroke-dasharray:3 3;opacity:.85}
+.pcard .pbase{stroke:var(--border);stroke-width:1}
+.pcard .pfill{fill:var(--accent);opacity:.10}
+.pcard .pempty{font-size:11.5px;color:var(--muted);margin-top:8px}
 /* status */
 .status{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);padding:16px 18px}
 .status .hd{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
@@ -213,6 +274,7 @@ footer b{color:var(--fg)}
     <nav class="nav" aria-label="Pages">
       <button class="navb on" id="navBuilds" data-view="builds">Builds</button>
       <button class="navb" id="navComps" data-view="components">Components</button>
+      <button class="navb" id="navPrices" data-view="prices">Prices</button>
     </nav>
     <button class="pill" id="theme" aria-label="Toggle theme">
       <span id="themeIcon">◐</span> Theme
@@ -269,6 +331,23 @@ footer b{color:var(--fg)}
     <div class="scroll"><table id="ctab"></table></div>
   </section>
 </div>
+
+<div id="viewPrices" hidden>
+  <section class="hero">
+    <h1 id="priceH1">Price history</h1>
+    <p class="lede">Every tracked component is re-priced from its live listing once a day. Each card plots the asking
+      price over time (the price-shift dynamics) and the same series normalized to the unit you actually buy —
+      $/GB of VRAM for a GPU, $/GB of RAM for memory, $/W for a supply, $/GPU-slot for a board, frame, riser or shroud —
+      so a $75 card and a $22 board can be compared on what is getting more expensive.</p>
+    <div class="stats" id="priceStats"></div>
+  </section>
+  <section class="sec">
+    <div class="chips" id="priceChips" role="tablist" aria-label="Component category"></div>
+    <p class="h3s" id="priceHint">Hover a chart to read a day's exact price. The dashed line is the series average.
+      A flat chart means the component has only been recorded for one day so far — the history grows one point per day.</p>
+    <div class="pgrid" id="priceGrid"></div>
+  </section>
+</div>
 </main>
 
 <footer class="wrap">
@@ -301,6 +380,40 @@ function heroStats(){
   ];
   document.getElementById("heroStats").innerHTML=items.map(([k,v,u,pre,dec])=>
     `<div class="stat"><div class="k">${k}</div><div class="v" data-num="${v}" data-pre="${pre?'$':''}" data-dec="${dec}">0</div><div class="u">${u}</div></div>`).join("");
+}
+
+/* ---------- compatibility audit panel ---------- */
+let AUDIT=null;
+const RULENAME={
+  "cpu":"CPU fits the board","cpu-socket":"CPU socket","cpu-gen":"CPU generation",
+  "cpu-tdp":"CPU socket TDP","cpu-igpu":"CPU integrated graphics","cpu-soc":"SoC board",
+  "cpu-count":"CPU socket count","cpu-video":"display output path",
+  "memory":"memory fits the board","mem-type":"memory type (UDIMM/RDIMM)",
+  "mem-slots":"DIMM slot count","mem-max":"board max RAM","mem-speed":"memory speed",
+  "gpu-slots":"GPU count vs PCIe slots","slot-bw":"PCIe slot bandwidth",
+  "psu-conn":"PCIe power connectors","psu-eps":"CPU/EPS connectors",
+  "psu-watt":"wattage headroom","psu-trigger":"multi-PSU trigger board",
+  "psu-mains":"mains input voltage","cooling":"passive-card airflow",
+  "frame":"frame GPU capacity","riser":"riser count","sxm2-host":"SXM2 baseboard",
+  "sxm2-slots":"SXM2 socket count","storage":"drive interface",
+  "storage-m2":"M.2 interface","total":"component sum equals stated total"};
+function auditPanel(b){
+  const a=AUDIT && AUDIT.builds && AUDIT.builds[b.id];
+  if(!a) return "";
+  const v=a.verdict;
+  const badge=v==="clean"
+    ? `<span class="ab ok">✓ Compatible — ${a.passed.length} rules passed</span>`
+    : v==="warn"
+      ? `<span class="ab warn">⚠ Compatible with ${a.warns.length} caveat${a.warns.length===1?"":"s"}</span>`
+      : `<span class="ab bad">✗ ${a.fails.length} incompatibilit${a.fails.length===1?"y":"ies"}</span>`;
+  const li=(x,cls)=>`<li class="${cls}"><b>${RULENAME[x.rule]||x.rule}</b> — ${x.msg}</li>`;
+  return `<div class="audit">
+    <div class="ah">${badge}<span class="as">checked by ${AUDIT.rule_count||AUDIT.rules.length} hardware rules · ${AUDIT.generated.slice(0,10)}</span></div>
+    ${a.fails.length?`<ul class="al">${a.fails.map(x=>li(x,"bad")).join("")}</ul>`:""}
+    ${a.warns.length?`<ul class="al">${a.warns.map(x=>li(x,"warn")).join("")}</ul>`:""}
+    ${a.passed.length?`<details class="ap"><summary>${a.passed.length} rules passed</summary>
+      <ul>${a.passed.map(r=>`<li class="ok"><b>${RULENAME[r]||r}</b></li>`).join("")}</ul></details>`:""}
+  </div>`;
 }
 
 function render(){
@@ -342,6 +455,8 @@ function render(){
       ${b.why?`<p class="why">${b.why}</p>`:''}
       <div class="gates">${gates.map(g=>`<span class="gate ${g.ok?'pass':'fail'}">${g.ok?'✓':'✗'} ${g.t}</span>`).join("")}</div>
       ${b.deviation?`<div class="dev"><b>Flagged deviation.</b> ${b.deviation}</div>`:''}
+      ${b.fixed?`<div class="dev"><b>Repaired by the compatibility audit.</b> ${b.fixed}</div>`:''}
+      ${auditPanel(b)}
     </div>
     <div class="grid">
       <div class="cell"><div class="k">Total throughput</div><div class="v">${fmt(b.throughput)}</div><div class="u">GB/s</div></div>
@@ -392,7 +507,7 @@ function countUp(){
 
 function table(){
   const cols=[["name","Build"],["total","Total"],["throughput","Throughput"],["per_gb","$/GB/s"],
-              ["vram","VRAM"],["nvlink","NVLink"],["power","Watts"]];
+              ["vram","VRAM"],["nvlink","NVLink"],["power","Watts"],["audit","Compatible"]];
   const rows=[...DATA.builds];
   rows.sort((a,b)=>{const x=a[sortKey],y=b[sortKey];
     return typeof x==="string"?sortDir*x.localeCompare(y):sortDir*(x-y);});
@@ -401,6 +516,16 @@ function table(){
   const bestVR=Math.max(...rows.map(r=>r.vram));
   const bestPrice=Math.min(...rows.map(r=>r.total));
   const head=cols.map(([k,l])=>`<th data-k="${k}" title="Sort by ${l}">${l}${sortKey===k?(sortDir<0?" ↓":" ↑"):""}</th>`).join("");
+  const vmark=r=>{
+    const A=(AUDIT&&AUDIT.builds)?AUDIT.builds[r.id]:null;
+    const v=A?A.verdict:(r.audit||null);
+    if(v==="clean") return '<span class="av ok">✓ clean</span>';
+    if(v==="warn"){const n=A?(A.warns||[]).length:0;
+      return `<span class="av warn">⚠ ${n} caveat${n===1?"":"s"}</span>`;}
+    if(v==="fail"){const n=A?(A.fails||[]).length:0;
+      return `<span class="av bad">✗ ${n} blocking</span>`;}
+    return '<span class="av">—</span>';
+  };
   const body=rows.map(r=>`<tr class="${r.per_gb===bestPP?'best':''}">
     <td>${r.name}${r.per_gb===bestPP?' <span class="bestmark">★ cheapest/GB/s</span>':''}</td>
     <td class="n">${money(r.total)}${r.total===bestPrice?' <span class="bestmark">★</span>':''}</td>
@@ -409,6 +534,7 @@ function table(){
     <td class="n">${r.vram}${r.vram===bestVR?' <span class="bestmark">★</span>':''}</td>
     <td class="n">${r.nvlink?fmt(r.nvlink)+" GB/s":"—"}</td>
     <td class="n">${fmt(r.power)}</td>
+    <td class="n">${vmark(r)}</td>
   </tr>`).join("");
   document.getElementById("cmp").innerHTML=`<thead><tr>${head}</tr></thead><tbody>${body}</tbody>`;
   document.querySelectorAll("#cmp th").forEach(th=>{
@@ -452,6 +578,12 @@ async function boot(){
   if(!r.ok) throw new Error("data/builds.json returned "+r.status);
   DATA=await r.json();
   if(!DATA.builds||!DATA.builds.length) throw new Error("data/builds.json has no builds");
+  // compatibility verdicts come from the rule engine's export; a missing file
+  // must not break the page, so it is fetched best-effort and the panel hides.
+  try{
+    const ar=await fetch("data/audit.json");
+    if(ar.ok) AUDIT=await ar.json();
+  }catch(e){ AUDIT=null; }
   const sel=document.getElementById("pick");
   sel.innerHTML=DATA.builds.map((b,i)=>`<option value="${i}">${b.name} — ${money(b.total)} · ${fmt(b.throughput)} GB/s</option>`).join("");
   document.getElementById("tabs").innerHTML=DATA.builds.map((b,i)=>
@@ -467,13 +599,17 @@ async function boot(){
   window.onhashchange=()=>{
     const id=decodeURIComponent(location.hash.replace(/^#/, ""));
     if(id==="components"){showView("components");return;}
+    if(id==="prices"){showView("prices");return;}
     if(id==="builds"){showView("builds");return;}
     const i=DATA.builds.findIndex(b=>b.id===id);
     if(i>=0){showView("builds");current=i;sel.value=i;syncTabs();render();}
   };
   document.getElementById("navBuilds").onclick=()=>{showView("builds");location.hash="builds";};
   document.getElementById("navComps").onclick=()=>{showView("components");location.hash="components";};
-  if(decodeURIComponent(location.hash.replace(/^#/, ""))==="components") showView("components");
+  document.getElementById("navPrices").onclick=()=>{showView("prices");location.hash="prices";};
+  wirePriceTip();
+  const h0=decodeURIComponent(location.hash.replace(/^#/, ""));
+  if(h0==="components"||h0==="prices") showView(h0);
   document.querySelectorAll(".tab").forEach((t,i,arr)=>{
     t.onkeydown=e=>{
       if(e.key==="ArrowRight"||e.key==="ArrowLeft"){
@@ -577,16 +713,142 @@ function compsTable(){
   });
 }
 
+/* ---------- price history ---------- */
+let HIST=null, priceCat="gpu";
+const CATLABEL={gpu:"GPU",board:"Motherboard",cpu:"CPU",memory:"Memory",power:"Power",
+  expansion:"Expansion",chassis:"Chassis",cooling:"Cooling",storage:"Storage"};
+
+function pchart(pts, pick, W=280, H=74){
+  // one point cannot make a line; draw it as a single dot on a baseline
+  const vals=pts.map(pick).filter(v=>typeof v==="number"&&isFinite(v));
+  if(!vals.length) return `<div class="pempty">no numeric series</div>`;
+  const pad=6, lo=Math.min(...vals), hi=Math.max(...vals);
+  const span=(hi-lo)||Math.abs(hi)||1;
+  const n=pts.length;
+  const X=i=> n===1 ? W/2 : pad + i*(W-2*pad)/(n-1);
+  const Y=v=> H-pad - ((v-lo)/span)*(H-2*pad);
+  const d=pts.map((p,i)=>{const v=pick(p); return (i?"L":"M")+X(i).toFixed(1)+" "+(typeof v==="number"?Y(v):H/2).toFixed(1);}).join(" ");
+  const area=d+` L ${X(n-1).toFixed(1)} ${H-pad} L ${X(0).toFixed(1)} ${H-pad} Z`;
+  const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+  const dots=pts.map((p,i)=>{const v=pick(p);
+    return `<circle class="pdot" cx="${X(i).toFixed(1)}" cy="${(typeof v==="number"?Y(v):H/2).toFixed(1)}" r="${n===1?3:2.2}" data-i="${i}"/>`;}).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="price trend">
+    <line class="pbase" x1="${pad}" y1="${H-pad}" x2="${W-pad}" y2="${H-pad}"/>
+    <path class="pfill" d="${area}"/>
+    <line class="pbase" x1="${pad}" y1="${Y(avg).toFixed(1)}" x2="${W-pad}" y2="${Y(avg).toFixed(1)}" stroke-dasharray="3 3"/>
+    <path class="pline" d="${d}"/>${dots}</svg>`;
+}
+
+function pchg(pts, pick){
+  const v=pts.map(pick).filter(x=>typeof x==="number"&&isFinite(x));
+  if(v.length<2) return null;
+  return v[0] ? v[v.length-1]/v[0]-1 : null;
+}
+
+function priceCard(key, ser){
+  const pts=(ser.points||[]).slice().sort((a,b)=>a.date<b.date?-1:1);
+  if(!pts.length) return "";
+  const sec=key.split("/")[0], last=pts[pts.length-1], first=pts[0];
+  const dchg=pchg(pts,p=>p.price), uchg=pchg(pts,p=>p.unit_price);
+  const avg=pts.reduce((a,p)=>a+(p.price||0),0)/pts.length;
+  const avgU=pts.filter(p=>p.unit_price).reduce((a,p)=>a+p.unit_price,0)/Math.max(1,pts.filter(p=>p.unit_price).length);
+  const cls=d=>d===null?"":(d>0?"up":"dn");
+  const pct=d=>d===null?"single day":(d>0?"+":"")+(d*100).toFixed(1)+"%";
+  const name=(ser.label||key.split("/")[1]);
+  const unit=ser.unit||last.unit||"$";
+  const money=v=>"$"+Number(v).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const unitFmt=v=>unit==="$"?money(v):unit==="$ per GB"||unit.startsWith("$/GB")?"$"+Number(v).toFixed(3)
+    :unit==="$ per W"||unit==="$/W"?"$"+Number(v).toFixed(4):"$"+Number(v).toFixed(3);
+  return `<div class="pcard" data-key="${key}">
+    <div class="ph"><div class="pn"><span>${CATLABEL[sec]||sec}</span>${name}</div>
+      <div class="pd ${cls(dchg)}">${pct(dchg)}</div></div>
+    <div class="pv">${money(last.price)}</div>
+    <div class="pu">${last.date} · ${last.stock||"—"}${last.seller?" · "+last.seller:""}</div>
+    <div class="plab">asking price over time</div>
+    ${pchart(pts,p=>p.price)}
+    ${last.unit_price!=null?`<div class="plab">${unit} over time</div>
+      <div class="pavg">now <b>${unitFmt(last.unit_price)}</b> · avg ${unitFmt(avgU)}
+      ${uchg!==null?`· <span class="${cls(uchg)}">${pct(uchg)}</span>`:""}</div>
+      ${pchart(pts,p=>p.unit_price)}`:""}
+    <div class="pavg">avg ${money(avg)} over ${pts.length} day${pts.length===1?"":"s"}
+      · low ${money(Math.min(...pts.map(p=>p.price)))} · high ${money(Math.max(...pts.map(p=>p.price)))}</div>
+    <div class="pfoot"><span>${first.date}</span>
+      <span>${last.url?`<a class="buy" href="${last.url}" target="_blank" rel="noopener noreferrer">Listing ↗</a>`:""}</span></div>
+  </div>`;
+}
+
+async function loadPrices(){
+  if(HIST){ renderPrices(); return; }
+  const r=await fetch("data/history.json");
+  if(!r.ok) throw new Error("data/history.json returned "+r.status);
+  HIST=await r.json();
+  const cats=[...new Set(Object.keys(HIST.components||{}).map(k=>k.split("/")[0]))]
+    .sort((a,b)=>Object.keys(CATLABEL).indexOf(a)-Object.keys(CATLABEL).indexOf(b));
+  if(!cats.length) throw new Error("history has no components yet — run python history.py");
+  if(!cats.includes(priceCat)) priceCat=cats[0];
+  document.getElementById("priceChips").innerHTML=cats.map(c=>
+    `<button class="chip${c===priceCat?' on':''}" role="tab" aria-selected="${c===priceCat}" data-c="${c}">${CATLABEL[c]||c} (${Object.keys(HIST.components).filter(k=>k.startsWith(c+"/")).length})</button>`).join("");
+  document.querySelectorAll("#priceChips .chip").forEach(ch=>ch.onclick=()=>{
+    priceCat=ch.dataset.c;
+    document.querySelectorAll("#priceChips .chip").forEach(o=>{o.classList.toggle("on",o===ch);o.setAttribute("aria-selected",o===ch);});
+    renderPrices();
+  });
+  const keys=Object.keys(HIST.components||{});
+  const moves=keys.map(k=>{const pts=HIST.components[k].points||[];
+    const d=pchg(pts,p=>p.price); return d===null?null:[k,d,pts];}).filter(Boolean);
+  const up=moves.slice().sort((a,b)=>b[1]-a[1])[0], dn=moves.slice().sort((a,b)=>a[1]-b[1])[0];
+  const nm=k=>(HIST.components[k].label||k.split("/")[1]).split(" ").slice(0,4).join(" ");
+  document.getElementById("priceH1").textContent=
+    `${keys.length} components tracked over ${(HIST.days||[]).length} day${(HIST.days||[]).length===1?"":"s"}`;
+  document.getElementById("priceStats").innerHTML=[
+    ["Days recorded",(HIST.days||[]).length,"one point per day"],
+    ["Components tracked",keys.length,"live listings re-priced daily"],
+    ["Getting pricier",up?((up[1]>0?"+":"")+(up[1]*100).toFixed(1)+"%"):"—",up?nm(up[0]):"needs 2+ days"],
+    ["Getting cheaper",dn?((dn[1]>0?"+":"")+(dn[1]*100).toFixed(1)+"%"):"—",dn?nm(dn[0]):"needs 2+ days"],
+    ["Last update",HIST.updated?HIST.updated.slice(0,10):"—","from the daily loop"],
+  ].map(([k,v,u])=>`<div class="cell"><div class="k">${k}</div><div class="v">${v}</div><div class="u">${u}</div></div>`).join("");
+  renderPrices();
+}
+function renderPrices(){
+  const keys=Object.keys(HIST.components||{}).filter(k=>k.startsWith(priceCat+"/"));
+  keys.sort((a,b)=>{const A=HIST.components[a].points||[],B=HIST.components[b].points||[];
+    return (B[B.length-1]?.price||0)-(A[A.length-1]?.price||0);});
+  document.getElementById("priceGrid").innerHTML=keys.map(k=>priceCard(k,HIST.components[k])).join("")
+    || `<div class="pempty">no components recorded in this category yet.</div>`;
+}
+function wirePriceTip(){
+  const tip=document.createElement("div"); tip.className="ptip"; document.body.appendChild(tip);
+  document.addEventListener("mousemove",e=>{
+    const c=e.target.closest?.(".pcard circle[data-i]");
+    if(!c){ tip.classList.remove("on"); return; }
+    const card=c.closest(".pcard"), key=card.dataset.key;
+    const pts=(HIST?.components?.[key]?.points||[]).slice().sort((a,b)=>a.date<b.date?-1:1);
+    const p=pts[+c.dataset.i]; if(!p){ tip.classList.remove("on"); return; }
+    tip.innerHTML=`${p.date}<br><b>$${Number(p.price).toFixed(2)}</b>`+
+      (p.unit_price!=null?` · ${HIST.components[key].unit||"$"} ${Number(p.unit_price).toFixed(3)}`:"");
+    tip.style.left=(e.clientX+12)+"px"; tip.style.top=(e.clientY-34)+"px";
+    tip.classList.add("on");
+  }, true);
+}
+
 /* ---------- view switching ---------- */
 function showView(v){
   document.getElementById("viewBuilds").hidden = v!=="builds";
   document.getElementById("viewComps").hidden  = v!=="components";
+  document.getElementById("viewPrices").hidden = v!=="prices";
   document.getElementById("navBuilds").classList.toggle("on", v==="builds");
   document.getElementById("navComps").classList.toggle("on", v==="components");
+  document.getElementById("navPrices").classList.toggle("on", v==="prices");
   document.getElementById("navBuilds").setAttribute("aria-current", v==="builds"?"page":"false");
   document.getElementById("navComps").setAttribute("aria-current", v==="components"?"page":"false");
+  document.getElementById("navPrices").setAttribute("aria-current", v==="prices"?"page":"false");
   if(v==="components") loadComps().catch(e=>{
     document.getElementById("ctab").innerHTML=`<tbody><tr><td>Components data failed to load: ${e.message}. Run <code>python export_components.py</code>.</td></tr></tbody>`;
+  });
+  if(v==="prices") loadPrices().catch(e=>{
+    document.getElementById("priceGrid").innerHTML=
+      `<div class="pempty">Price history failed to load: ${e.message}. The daily loop writes
+       <code>data/history.json</code> — run <code>python history.py</code> to seed it.</div>`;
   });
 }
 boot().catch(err=>{
