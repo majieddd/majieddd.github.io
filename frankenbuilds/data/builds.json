@@ -55,7 +55,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $179.5\u2013$179.95 each",
-          "price_moved": "$179.5 -> $179.61 on 2026-10-13 (blended)"
+          "price_moved": "$179.5 -> $179.61 on 2026-10-14 (blended)"
         },
         {
           "qty": 1,
@@ -171,7 +171,7 @@
       "id": "build-2",
       "name": "Build 2 \u00b7 NVLink quad",
       "tagline": "4x V100 SXM2 32 GB on a quad NVLink baseboard \u00b7 GPU-to-GPU at supercomputer speed",
-      "total": 5456.23,
+      "total": 5458.03,
       "gpu_bw": 3600,
       "ddr_bw": 153.6,
       "throughput": 3753.6,
@@ -182,7 +182,7 @@
       "storage": 2,
       "storage_max": 92,
       "power": 1450,
-      "per_gb": 1.4536,
+      "per_gb": 1.4541,
       "why": "The only build where GPUs talk to each other at supercomputer speed: NVLink 6 links per card = 300 GB/s, 100 GB/s per pair, against PCIe 3.0's ~28 GB/s. This is what makes tensor-parallel model sharding fast.",
       "components": [
         {
@@ -206,7 +206,7 @@
           "stats": "4x SXM2 sockets \u00b7 NVLink 2.0 \u00b7 PEX8749 PCIe switch, 1x x16 uplink \u00b7 ATX 24-pin + 2x CPU 8-pin + 2x GPU 16-pin",
           "url": "https://www.ebay.com/itm/188936960864",
           "stock": "2 available",
-          "seller": "Pre-owned",
+          "seller": "Refurbished",
           "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l300.png",
           "section": "board",
           "spec": "v100base"
@@ -292,14 +292,15 @@
         {
           "qty": 1,
           "name": "12-GPU open-air frame",
-          "price": 110.19,
+          "price": 111.99,
           "stats": "baseboard is 304x270 mm \u2014 needs an open frame",
           "url": "https://www.newegg.com/p/3C6-0688-01A96",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by YunYunKeJiShiZhuangDian, Shipped by Newegg",
+          "seller": "Sold by Tactifans Outdoor Sport Goods, Shipped by Newegg",
           "img": "https://c1.neweggimages.com/ProductImage/B5ZAD2512280TQ4HHA0.jpg",
           "section": "chassis",
-          "spec": "frame12"
+          "spec": "frame12",
+          "price_moved": "$110.19 -> $111.99 on 2026-10-14"
         }
       ],
       "audit": "warn"
@@ -308,7 +309,7 @@
       "id": "build-3",
       "name": "Build 3 \u00b7 Dual-EPYC bandwidth monster",
       "tagline": "Supermicro H11DSi-NT \u00b7 16 DIMM \u00b7 2 TB RAM ceiling \u00b7 5 GPU slots",
-      "total": 3287.76,
+      "total": 3289.56,
       "gpu_bw": 5120,
       "ddr_bw": 340.8,
       "throughput": 5460.8,
@@ -319,7 +320,7 @@
       "storage": 2,
       "storage_max": 150,
       "power": "4,000 W (2 PSU)",
-      "per_gb": 0.6021,
+      "per_gb": 0.6024,
       "why": "Highest aggregate bandwidth and the 2 TB RAM ceiling. 16-channel DDR4 is 340.8 GB/s \u2014 more system memory bandwidth than any X99 board here.",
       "components": [
         {
@@ -356,7 +357,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $179.5\u2013$179.95 each",
-          "price_moved": "$179.5 -> $179.68 on 2026-10-13 (blended)"
+          "price_moved": "$179.5 -> $179.68 on 2026-10-14 (blended)"
         },
         {
           "qty": 1,
@@ -364,7 +365,7 @@
           "price": 429.0,
           "stats": "5 PCIe3 slots (2x x16 + 3x x8) \u00b7 16 DIMM, 16-channel = 340.8 GB/s \u00b7 max 2,048 GB ECC DDR4 \u00b7 10 SATA + 2 M.2 \u00b7 dual 10 GbE + IPMI \u00b7 tested working",
           "url": "https://www.ebay.com/itm/407256081708",
-          "stock": null,
+          "stock": "LAST ONE",
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/QmMAAeSwf2tqvHgf/s-l300.jpg",
           "section": "board",
@@ -420,14 +421,15 @@
         {
           "qty": 1,
           "name": "12-GPU open-air frame",
-          "price": 110.19,
+          "price": 111.99,
           "stats": "5 passive cards + 2 PSUs need free airflow",
           "url": "https://www.newegg.com/p/3C6-0688-01A96",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by YunYunKeJiShiZhuangDian, Shipped by Newegg",
+          "seller": "Sold by Tactifans Outdoor Sport Goods, Shipped by Newegg",
           "img": "https://c1.neweggimages.com/ProductImage/B5ZAD2512280TQ4HHA0.jpg",
           "section": "chassis",
-          "spec": "frame12"
+          "spec": "frame12",
+          "price_moved": "$110.19 -> $111.99 on 2026-10-14"
         },
         {
           "qty": 5,
@@ -464,7 +466,7 @@
       "id": "build-4",
       "name": "Build 4 \u00b7 Bandwidth king",
       "tagline": "6x MI25 \u00b7 the cheapest 3 TB/s machine on the market, by 2.6x",
-      "total": 1907.38,
+      "total": 1909.18,
       "gpu_bw": 6000,
       "ddr_bw": 153.6,
       "throughput": 6153.6,
@@ -475,7 +477,7 @@
       "storage": 2,
       "storage_max": 92,
       "power": "4,000 W (2 PSU)",
-      "per_gb": 0.31,
+      "per_gb": 0.3103,
       "why": "The throughput-per-dollar winner: $0.308 per GB/s, the lowest of any build. Caveat: MI25 is Vega 20 (GCN), off AMD's current ROCm list \u2014 expect an older ROCm release.",
       "components": [
         {
@@ -571,14 +573,15 @@
         {
           "qty": 1,
           "name": "12-GPU open-air frame",
-          "price": 110.19,
+          "price": 111.99,
           "stats": "free airflow for 6 passive cards + PSU",
           "url": "https://www.newegg.com/p/3C6-0688-01A96",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by YunYunKeJiShiZhuangDian, Shipped by Newegg",
+          "seller": "Sold by Tactifans Outdoor Sport Goods, Shipped by Newegg",
           "img": "https://c1.neweggimages.com/ProductImage/B5ZAD2512280TQ4HHA0.jpg",
           "section": "chassis",
-          "spec": "frame12"
+          "spec": "frame12",
+          "price_moved": "$110.19 -> $111.99 on 2026-10-14"
         },
         {
           "qty": 6,
@@ -605,7 +608,7 @@
             }
           ],
           "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each",
-          "price_moved": "$23.98 -> $7.5 on 2026-10-13 (blended)"
+          "price_moved": "$23.98 -> $7.5 on 2026-10-14 (blended)"
         },
         {
           "qty": 1,
@@ -631,7 +634,7 @@
       "id": "build-5",
       "name": "Build 5 \u00b7 High-VRAM AI machine",
       "tagline": "4x MI50 32 GB \u00b7 128 GB VRAM fits a 70B model in 8-bit",
-      "total": 3911.88,
+      "total": 3913.68,
       "gpu_bw": 4096,
       "ddr_bw": 153.6,
       "throughput": 4249.6,
@@ -642,7 +645,7 @@
       "storage": 2,
       "storage_max": 92,
       "power": 1450,
-      "per_gb": 0.9205,
+      "per_gb": 0.921,
       "why": "The model-size pick: 128 GB VRAM fits a 70B-parameter model in 8-bit quantization with room for KV cache. MI50 is CDNA with better current ROCm standing than MI25.",
       "components": [
         {
@@ -652,7 +655,7 @@
           "stats": "1,024 GB/s each \u00b7 4,096-bit HBM2 + ECC \u00b7 3,840 stream \u00b7 13.4 TF FP32 \u00b7 PCIe4 x16 \u00b7 300 W \u00b7 passive",
           "url": "https://www.ebay.com/itm/205802298789",
           "stock": "More than 10 available",
-          "seller": "Pre-owned",
+          "seller": "Refurbished",
           "img": "https://i.ebayimg.com/images/g/0t0AAeSwMoJo-dh6/s-l400.jpg",
           "section": "gpu",
           "spec": "mi50-32",
@@ -726,14 +729,15 @@
         {
           "qty": 1,
           "name": "12-GPU open-air frame",
-          "price": 110.19,
+          "price": 111.99,
           "stats": "airflow for 4 passive cards",
           "url": "https://www.newegg.com/p/3C6-0688-01A96",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by YunYunKeJiShiZhuangDian, Shipped by Newegg",
+          "seller": "Sold by Tactifans Outdoor Sport Goods, Shipped by Newegg",
           "img": "https://c1.neweggimages.com/ProductImage/B5ZAD2512280TQ4HHA0.jpg",
           "section": "chassis",
-          "spec": "frame12"
+          "spec": "frame12",
+          "price_moved": "$110.19 -> $111.99 on 2026-10-14"
         },
         {
           "qty": 4,
@@ -756,7 +760,7 @@
       "id": "build-6",
       "name": "Build 6 \u00b7 NVLink quad (AI)",
       "tagline": "4x V100 SXM2 32 GB \u00b7 the only GPU-to-GPU supercomputer fabric",
-      "total": 5456.23,
+      "total": 5458.03,
       "gpu_bw": 3600,
       "ddr_bw": 153.6,
       "throughput": 3753.6,
@@ -767,7 +771,7 @@
       "storage": 2,
       "storage_max": 92,
       "power": 1450,
-      "per_gb": 1.4536,
+      "per_gb": 1.4541,
       "why": "The CUDA pick: mature stack, real Tensor cores, and the only GPU-to-GPU fabric in the list. NVLink 100 GB/s per pair vs PCIe 3.0's ~28 GB/s is what makes tensor-parallel sharding fast. Most expensive per GB/s, and the baseboard has only 2 units in stock.",
       "components": [
         {
@@ -791,7 +795,7 @@
           "stats": "NVLink 2.0 \u00b7 PEX8749 switch, 1x x16 uplink \u00b7 ATX 24-pin + 2x CPU 8-pin + 2x GPU 16-pin",
           "url": "https://www.ebay.com/itm/188936960864",
           "stock": "2 available",
-          "seller": "Pre-owned",
+          "seller": "Refurbished",
           "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l300.png",
           "section": "board",
           "spec": "v100base"
@@ -877,14 +881,15 @@
         {
           "qty": 1,
           "name": "12-GPU open-air frame",
-          "price": 110.19,
+          "price": 111.99,
           "stats": "baseboard is 304x270 mm \u2014 needs an open frame",
           "url": "https://www.newegg.com/p/3C6-0688-01A96",
           "stock": "In stock, Add to cart",
-          "seller": "Sold by YunYunKeJiShiZhuangDian, Shipped by Newegg",
+          "seller": "Sold by Tactifans Outdoor Sport Goods, Shipped by Newegg",
           "img": "https://c1.neweggimages.com/ProductImage/B5ZAD2512280TQ4HHA0.jpg",
           "section": "chassis",
-          "spec": "frame12"
+          "spec": "frame12",
+          "price_moved": "$110.19 -> $111.99 on 2026-10-14"
         }
       ],
       "audit": "warn"
@@ -937,7 +942,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $74.99\u2013$75.0 each",
-          "price_moved": "$77.0 -> $74.99 on 2026-10-13 (blended)"
+          "price_moved": "$77.0 -> $74.99 on 2026-10-14 (blended)"
         },
         {
           "qty": 1,
@@ -1025,7 +1030,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $6.95\u2013$6.98 each",
-          "price_moved": "$6.95 -> $6.96 on 2026-10-13 (blended)"
+          "price_moved": "$6.95 -> $6.96 on 2026-10-14 (blended)"
         },
         {
           "qty": 2,
@@ -1114,7 +1119,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each",
-          "price_moved": "$14.99 -> $7.5 on 2026-10-13 (blended)"
+          "price_moved": "$14.99 -> $7.5 on 2026-10-14 (blended)"
         }
       ],
       "total": 1402.72,
@@ -1227,7 +1232,7 @@
           "section": "power",
           "spec": "psu2000",
           "stock": "in stock across 1 listings (no quantity cap)",
-          "seller": "Pre-owned",
+          "seller": "OPEN BOX",
           "img": "https://i.ebayimg.com/images/g/ygcAAeSwSEpqv~J7/s-l400.jpg",
           "avail": null,
           "avail_floor": false,
@@ -1243,7 +1248,7 @@
             }
           ],
           "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $35.0\u2013$35.0 each",
-          "price_moved": "$34.99 -> $35.0 on 2026-10-13 (blended)"
+          "price_moved": "$34.99 -> $35.0 on 2026-10-14 (blended)"
         },
         {
           "qty": 13,
@@ -1279,7 +1284,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $6.95\u2013$6.98 each",
-          "price_moved": "$6.95 -> $6.96 on 2026-10-13 (blended)"
+          "price_moved": "$6.95 -> $6.96 on 2026-10-14 (blended)"
         },
         {
           "qty": 2,
@@ -1315,9 +1320,9 @@
           "url": "https://www.ebay.com/itm/198696539852",
           "section": "chassis",
           "spec": "frame",
-          "stock": "in stock",
-          "seller": "gokame-sales",
-          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l500.webp",
+          "stock": "1 available across 1 listings",
+          "seller": "Open box",
+          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l400.jpg",
           "avail": null,
           "avail_floor": false,
           "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $25.0\u2013$25.0 each",
@@ -1333,7 +1338,8 @@
               "title": "12 GPU Mining Rig Frame Open Air Server Case Stackable Aluminum Crypto ETH BTC",
               "qty_bought": 2
             }
-          ]
+          ],
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
         {
           "qty": 1,
@@ -1384,7 +1390,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each",
-          "price_moved": "$14.99 -> $7.5 on 2026-10-13 (blended)"
+          "price_moved": "$14.99 -> $7.5 on 2026-10-14 (blended)"
         }
       ],
       "audit": "warn",
@@ -1494,7 +1500,7 @@
           "section": "power",
           "spec": "psu2000",
           "stock": "in stock across 1 listings (no quantity cap)",
-          "seller": "Pre-owned",
+          "seller": "OPEN BOX",
           "img": "https://i.ebayimg.com/images/g/ygcAAeSwSEpqv~J7/s-l400.jpg",
           "avail": null,
           "avail_floor": false,
@@ -1510,7 +1516,7 @@
             }
           ],
           "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $35.0\u2013$35.0 each",
-          "price_moved": "$34.99 -> $35.0 on 2026-10-13 (blended)"
+          "price_moved": "$34.99 -> $35.0 on 2026-10-14 (blended)"
         },
         {
           "qty": 19,
@@ -1555,7 +1561,7 @@
             }
           ],
           "price_note": "blended across 3 listing(s) \u2014 cheapest-first, $6.95\u2013$6.99 each",
-          "price_moved": "$6.95 -> $6.97 on 2026-10-13 (blended)"
+          "price_moved": "$6.95 -> $6.97 on 2026-10-14 (blended)"
         },
         {
           "qty": 3,
@@ -1591,9 +1597,9 @@
           "url": "https://www.ebay.com/itm/198696539852",
           "section": "chassis",
           "spec": "frame",
-          "stock": "in stock",
-          "seller": "gokame-sales",
-          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l500.webp",
+          "stock": "1 available across 1 listings",
+          "seller": "Open box",
+          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l400.jpg",
           "avail": null,
           "avail_floor": false,
           "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $25.0\u2013$25.0 each",
@@ -1609,7 +1615,8 @@
               "title": "12 GPU Mining Rig Frame Open Air Server Case Stackable Aluminum Crypto ETH BTC",
               "qty_bought": 2
             }
-          ]
+          ],
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
         {
           "qty": 1,
@@ -1660,7 +1667,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each",
-          "price_moved": "$14.99 -> $7.5 on 2026-10-13 (blended)"
+          "price_moved": "$14.99 -> $7.5 on 2026-10-14 (blended)"
         }
       ],
       "audit": "warn",
@@ -1672,7 +1679,7 @@
       "id": "build-auto-1791865019",
       "name": "Auto \u00b7 10\u00d7 MI25 rig",
       "tagline": "auto-generated \u00b7 10,038.4 GB/s \u00b7 160 GB VRAM \u00b7 $0.109/GB/s",
-      "total": 1095.16,
+      "total": 1097.16,
       "gpu_bw": 10000,
       "ddr_bw": 38.4,
       "throughput": 10038.4,
@@ -1683,7 +1690,7 @@
       "storage": "1 TB SATA",
       "storage_max": "~92 TB",
       "power": "3600 W (66% load)",
-      "per_gb": 0.1091,
+      "per_gb": 0.1093,
       "deviation": "FLAGGED DEVIATION: system RAM is 32 GB (board max 32 GB), below the standing 64 GB / 128 GB-expandable requirement. 12-slot mining boards cap at 32 GB; no board in the catalog offers 12 GPU slots AND 64+ GB RAM. GPU VRAM totals 160 GB, which is what the model reads; system RAM only stages the dataset.",
       "mode": "rig",
       "why": "Auto-built to beat every existing build on all three metrics: 10\u00d7 AMD Radeon Instinct MI25 16 GB HBM2 = 10,000 GB/s + 38.4 GB/s system DDR = 10,038.4 GB/s total \u00b7 160 GB VRAM \u00b7 $1,092.65 = $0.109 per GB/s.",
@@ -1699,7 +1706,7 @@
           "stock": "21 available across 2 listings",
           "avail": 21,
           "avail_floor": false,
-          "seller": "animuscompute",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/e2UAAeSwRT1qXup3/s-l400.jpg",
           "sources": [
             {
@@ -1741,7 +1748,7 @@
         {
           "qty": 1,
           "name": "32 GB (2x16) DDR4-2666 UDIMM",
-          "price": 51.0,
+          "price": 53.0,
           "stats": "32 GB \u00b7 2-channel DDR4-2666 \u00b7 UDIMM \u00b7 42.7 GB/s",
           "url": "https://www.ebay.com/itm/267808517801",
           "section": "memory",
@@ -1749,7 +1756,8 @@
           "stock": null,
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/y9wAAeSw0IxqyHLH/s-l400.jpg",
-          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts",
+          "price_moved": "$51.0 -> $53.0 on 2026-10-14"
         },
         {
           "qty": 2,
@@ -1762,7 +1770,7 @@
           "stock": "in stock across 1 listings (no quantity cap)",
           "avail": null,
           "avail_floor": false,
-          "seller": "Pre-owned",
+          "seller": "OPEN BOX",
           "img": "https://i.ebayimg.com/images/g/rTEAAeSwC-FqgNj8/s-l400.jpg",
           "sources": [
             {
@@ -1811,7 +1819,7 @@
             }
           ],
           "price_note": "blended across 2 listing(s) \u2014 cheapest-first, $6.95\u2013$6.98 each",
-          "price_moved": "$6.95 -> $6.96 on 2026-10-13 (blended)"
+          "price_moved": "$6.95 -> $6.96 on 2026-10-14 (blended)"
         },
         {
           "qty": 1,
@@ -1877,7 +1885,7 @@
             }
           ],
           "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $7.5\u2013$7.5 each",
-          "price_moved": "$14.99 -> $7.5 on 2026-10-13 (blended)"
+          "price_moved": "$14.99 -> $7.5 on 2026-10-14 (blended)"
         }
       ],
       "audit": "warn",
@@ -1888,13 +1896,13 @@
     }
   ],
   "status": {
-    "verified": "2026-10-13 23:47",
+    "verified": "2026-10-14 12:02",
     "listings": 40,
     "flagged": 2,
     "qty_short": 2,
     "qty_unproven": 0,
-    "price_changes": 37,
-    "unverified": 10,
+    "price_changes": 28,
+    "unverified": 12,
     "method": "Every listing re-checked over a real browser (CDP): live price, quantity available, buyable, ENDED. A line the build needs N of is only purchasable when the listing shows at least N available. Totals recomputed from verified prices."
   }
 }
