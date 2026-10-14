@@ -29,7 +29,7 @@
           "url": "https://www.ebay.com/itm/318540915485",
           "stock": "25 available across 4 listings",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/ZnAAAeSwEBxoeb6N/s-l500.jpg",
+          "img": "https://i.ebayimg.com/images/g/ZnAAAeSwEBxoeb6N/s-l300.jpg",
           "section": "gpu",
           "spec": "mi50",
           "avail": 25,
@@ -90,8 +90,8 @@
           "stats": "128 GB installed, 8-channel, ECC \u00b7 $4.97/GB",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "open box",
-          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l500.png",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l400.jpg",
           "section": "memory",
           "spec": "rdimm-32",
           "avail": 10,
@@ -193,7 +193,7 @@
           "url": "https://www.ebay.com/itm/287621214160",
           "stock": "More than 10 available",
           "seller": "Refurbished",
-          "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l500.jpg",
+          "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l300.jpg",
           "section": "gpu",
           "spec": "v100-sxm2-32",
           "avail": 10,
@@ -207,7 +207,7 @@
           "url": "https://www.ebay.com/itm/188936960864",
           "stock": "2 available",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l500.png",
+          "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l300.png",
           "section": "board",
           "spec": "v100base"
         },
@@ -258,8 +258,8 @@
           "stats": "128 GB, 8-channel, ECC",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "open box",
-          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l500.png",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l400.jpg",
           "section": "memory",
           "spec": "rdimm-32",
           "avail": 10,
@@ -308,7 +308,7 @@
       "id": "build-3",
       "name": "Build 3 \u00b7 Dual-EPYC bandwidth monster",
       "tagline": "Supermicro H11DSi-NT \u00b7 16 DIMM \u00b7 2 TB RAM ceiling \u00b7 5 GPU slots",
-      "total": 3307.76,
+      "total": 3287.76,
       "gpu_bw": 5120,
       "ddr_bw": 340.8,
       "throughput": 5460.8,
@@ -319,7 +319,7 @@
       "storage": 2,
       "storage_max": 150,
       "power": "4,000 W (2 PSU)",
-      "per_gb": 0.6057,
+      "per_gb": 0.6021,
       "why": "Highest aggregate bandwidth and the 2 TB RAM ceiling. 16-channel DDR4 is 340.8 GB/s \u2014 more system memory bandwidth than any X99 board here.",
       "components": [
         {
@@ -330,7 +330,7 @@
           "url": "https://www.ebay.com/itm/318540915485",
           "stock": "25 available across 4 listings",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/ZnAAAeSwEBxoeb6N/s-l500.jpg",
+          "img": "https://i.ebayimg.com/images/g/ZnAAAeSwEBxoeb6N/s-l300.jpg",
           "section": "gpu",
           "spec": "mi50",
           "avail": 25,
@@ -361,12 +361,12 @@
         {
           "qty": 1,
           "name": "Supermicro H11DSi-NT dual SP3 + 2x EPYC 7401 24c",
-          "price": 449.0,
+          "price": 429.0,
           "stats": "5 PCIe3 slots (2x x16 + 3x x8) \u00b7 16 DIMM, 16-channel = 340.8 GB/s \u00b7 max 2,048 GB ECC DDR4 \u00b7 10 SATA + 2 M.2 \u00b7 dual 10 GbE + IPMI \u00b7 tested working",
           "url": "https://www.ebay.com/itm/407256081708",
-          "stock": "In stock (Buy It Now / Best Offer)",
+          "stock": null,
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/QmMAAeSwf2tqvHgf/s-l500.jpg",
+          "img": "https://i.ebayimg.com/images/g/QmMAAeSwf2tqvHgf/s-l300.jpg",
           "section": "board",
           "spec": "h11dsi",
           "carries": [
@@ -375,7 +375,9 @@
               "spec": "epyc7401",
               "qty": 2
             }
-          ]
+          ],
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts",
+          "price_moved": "$449.0 -> $429.0 on 2026-10-13"
         },
         {
           "qty": 8,
@@ -384,8 +386,8 @@
           "stats": "256 GB installed, 16-channel, ECC \u00b7 16 DIMM to 2,048 GB max",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "open box",
-          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l500.png",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l400.jpg",
           "section": "memory",
           "spec": "rdimm-32",
           "avail": 10,
@@ -535,8 +537,8 @@
           "stats": "128 GB installed, 8-channel, ECC \u00b7 $4.97/GB",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "open box",
-          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l500.png",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l400.jpg",
           "section": "memory",
           "spec": "rdimm-32",
           "avail": 10,
@@ -690,8 +692,8 @@
           "stats": "128 GB, 8-channel, ECC",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "open box",
-          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l500.png",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l400.jpg",
           "section": "memory",
           "spec": "rdimm-32",
           "avail": 10,
@@ -776,7 +778,7 @@
           "url": "https://www.ebay.com/itm/287621214160",
           "stock": "More than 10 available",
           "seller": "Refurbished",
-          "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l500.jpg",
+          "img": "https://i.ebayimg.com/images/g/qdkAAeSw~2dqvwYd/s-l300.jpg",
           "section": "gpu",
           "spec": "v100-sxm2-32",
           "avail": 10,
@@ -790,7 +792,7 @@
           "url": "https://www.ebay.com/itm/188936960864",
           "stock": "2 available",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l500.png",
+          "img": "https://i.ebayimg.com/images/g/bJYAAeSwKEtqIS1B/s-l300.png",
           "section": "board",
           "spec": "v100base"
         },
@@ -841,8 +843,8 @@
           "stats": "128 GB, 8-channel, ECC",
           "url": "https://www.ebay.com/itm/307194930015",
           "stock": "10 available",
-          "seller": "open box",
-          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l500.png",
+          "seller": "Pre-owned",
+          "img": "https://i.ebayimg.com/images/g/zSgAAeSwundqs~CX/s-l400.jpg",
           "section": "memory",
           "spec": "rdimm-32",
           "avail": 10,
@@ -1059,14 +1061,14 @@
           "url": "https://www.ebay.com/itm/366668903553",
           "stock": "5 available",
           "seller": "Pre-owned",
-          "img": "https://i.ebayimg.com/images/g/-s8AAeSwDW5qqDSA/s-l500.jpg",
+          "img": "https://i.ebayimg.com/images/g/-s8AAeSwDW5qqDSA/s-l300.jpg",
           "section": "chassis",
           "spec": "frame13"
         },
         {
           "qty": 1,
           "name": "Netac 1 TB 2.5\" SATA III SSD",
-          "price": 19.99,
+          "price": 22.5,
           "stats": "1 TB SATA \u00b7 plugs into the board's SATA port (its M.2 slot is SATA3-only, so an NVMe drive there is not detected)",
           "url": "https://www.ebay.com/itm/267811552241",
           "section": "storage",
@@ -1075,7 +1077,8 @@
           "seller": "Open box",
           "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l400.jpg",
           "relisted": "was https://www.ebay.com/itm/313969708276 (flagged: listing ENDED)",
-          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts",
+          "price_moved": "$19.99 -> $22.5 on 2026-10-13"
         },
         {
           "qty": 12,
@@ -1114,9 +1117,9 @@
           "price_moved": "$14.99 -> $7.5 on 2026-10-13 (blended)"
         }
       ],
-      "total": 1400.21,
+      "total": 1402.72,
       "throughput": 12042.7,
-      "per_gb": 0.1163,
+      "per_gb": 0.1165,
       "id": "build-7",
       "deviation": "FLAGGED DEVIATION: system RAM is 32 GB (board max 32 GB), below the standing 64 GB / 128 GB-expandable requirement. No board in the catalog offers 12 GPU slots AND 64+ GB RAM \u2014 12-slot mining boards cap at 32 GB. GPU VRAM totals 192 GB, which is what the model reads; system RAM only stages the dataset. The 64/128 GB requirement is met by builds 1-6 on workstation boards.",
       "audit": "clean",
@@ -1127,7 +1130,7 @@
       "id": "build-auto-1791850845",
       "name": "Auto \u00b7 13\u00d7 MI25 rig",
       "tagline": "auto-generated \u00b7 13,038.4 GB/s \u00b7 208 GB VRAM \u00b7 $0.130/GB/s",
-      "total": 1512.67,
+      "total": 1515.18,
       "gpu_bw": 13000,
       "ddr_bw": 38.4,
       "throughput": 13038.4,
@@ -1138,7 +1141,7 @@
       "storage": "1 TB SATA",
       "storage_max": "~92 TB",
       "power": "5400 W (57% load)",
-      "per_gb": 0.116,
+      "per_gb": 0.1162,
       "deviation": "FLAGGED DEVIATION: system RAM is 32 GB (board max 32 GB), below the standing 64 GB / 128 GB-expandable requirement. 12-slot mining boards cap at 32 GB; no board in the catalog offers 12 GPU slots AND 64+ GB RAM. GPU VRAM totals 208 GB, which is what the model reads; system RAM only stages the dataset.",
       "mode": "rig",
       "why": "Auto-built to beat every existing build on all three metrics: 13\u00d7 AMD Radeon Instinct MI25 16 GB HBM2 = 13,000 GB/s + 38.4 GB/s system DDR = 13,038.4 GB/s total \u00b7 208 GB VRAM \u00b7 $1,699.86 = $0.130 per GB/s.",
@@ -1198,7 +1201,7 @@
           "url": "https://www.ebay.com/itm/168747984797",
           "section": "cpu",
           "spec": "g3930",
-          "stock": "LAST ONE",
+          "stock": "In stock (Buy It Now / Best Offer)",
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/mLEAAeSwG7pqveCD/s-l400.jpg"
         },
@@ -1224,7 +1227,7 @@
           "section": "power",
           "spec": "psu2000",
           "stock": "in stock across 1 listings (no quantity cap)",
-          "seller": "Refurbished",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/ygcAAeSwSEpqv~J7/s-l400.jpg",
           "avail": null,
           "avail_floor": false,
@@ -1312,9 +1315,9 @@
           "url": "https://www.ebay.com/itm/198696539852",
           "section": "chassis",
           "spec": "frame",
-          "stock": "1 available across 1 listings",
-          "seller": "Open box",
-          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l400.jpg",
+          "stock": "in stock",
+          "seller": "gokame-sales",
+          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l500.webp",
           "avail": null,
           "avail_floor": false,
           "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $25.0\u2013$25.0 each",
@@ -1330,13 +1333,12 @@
               "title": "12 GPU Mining Rig Frame Open Air Server Case Stackable Aluminum Crypto ETH BTC",
               "qty_bought": 2
             }
-          ],
-          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
+          ]
         },
         {
           "qty": 1,
           "name": "1 TB SATA 2.5\" SSD",
-          "price": 19.99,
+          "price": 22.5,
           "stats": "1 TB SATA \u00b7 plugs into this board's SATA port",
           "url": "https://www.ebay.com/itm/267811552241",
           "section": "storage",
@@ -1345,7 +1347,8 @@
           "seller": "Open box",
           "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l400.jpg",
           "relisted": "was https://www.ebay.com/itm/313969708276 (flagged: listing ENDED)",
-          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts",
+          "price_moved": "$19.99 -> $22.5 on 2026-10-13"
         },
         {
           "qty": 13,
@@ -1394,7 +1397,7 @@
       "id": "build-auto-1791853256",
       "name": "Auto \u00b7 19\u00d7 MI25 rig",
       "tagline": "auto-generated \u00b7 19,038.4 GB/s \u00b7 304 GB VRAM \u00b7 $0.122/GB/s",
-      "total": 2099.74,
+      "total": 2102.25,
       "gpu_bw": 19000,
       "ddr_bw": 38.4,
       "throughput": 19038.4,
@@ -1405,7 +1408,7 @@
       "storage": "1 TB SATA",
       "storage_max": "~92 TB",
       "power": "7200 W (62% load)",
-      "per_gb": 0.1103,
+      "per_gb": 0.1104,
       "deviation": "FLAGGED DEVIATION: system RAM is 32 GB (board max 32 GB), below the standing 64 GB / 128 GB-expandable requirement. 12-slot mining boards cap at 32 GB; no board in the catalog offers 12 GPU slots AND 64+ GB RAM. GPU VRAM totals 304 GB, which is what the model reads; system RAM only stages the dataset.",
       "mode": "rig",
       "why": "Auto-built to beat every existing build on all three metrics: 19\u00d7 AMD Radeon Instinct MI25 16 GB HBM2 = 19,000 GB/s + 38.4 GB/s system DDR = 19,038.4 GB/s total \u00b7 304 GB VRAM \u00b7 $2,331.61 = $0.122 per GB/s.",
@@ -1465,7 +1468,7 @@
           "url": "https://www.ebay.com/itm/168747984797",
           "section": "cpu",
           "spec": "g3930",
-          "stock": "LAST ONE",
+          "stock": "In stock (Buy It Now / Best Offer)",
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/mLEAAeSwG7pqveCD/s-l400.jpg"
         },
@@ -1491,7 +1494,7 @@
           "section": "power",
           "spec": "psu2000",
           "stock": "in stock across 1 listings (no quantity cap)",
-          "seller": "Refurbished",
+          "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/ygcAAeSwSEpqv~J7/s-l400.jpg",
           "avail": null,
           "avail_floor": false,
@@ -1588,9 +1591,9 @@
           "url": "https://www.ebay.com/itm/198696539852",
           "section": "chassis",
           "spec": "frame",
-          "stock": "1 available across 1 listings",
-          "seller": "Open box",
-          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l400.jpg",
+          "stock": "in stock",
+          "seller": "gokame-sales",
+          "img": "https://i.ebayimg.com/images/g/s84AAeSw5ahqxoeX/s-l500.webp",
           "avail": null,
           "avail_floor": false,
           "price_note": "blended across 1 listing(s) \u2014 cheapest-first, $25.0\u2013$25.0 each",
@@ -1606,13 +1609,12 @@
               "title": "12 GPU Mining Rig Frame Open Air Server Case Stackable Aluminum Crypto ETH BTC",
               "qty_bought": 2
             }
-          ],
-          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
+          ]
         },
         {
           "qty": 1,
           "name": "1 TB SATA 2.5\" SSD",
-          "price": 19.99,
+          "price": 22.5,
           "stats": "1 TB SATA \u00b7 plugs into this board's SATA port",
           "url": "https://www.ebay.com/itm/267811552241",
           "section": "storage",
@@ -1620,7 +1622,7 @@
           "stock": null,
           "seller": "Open box",
           "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l400.jpg",
-          "price_moved": "$119.99 -> $109.99 on 2026-10-12",
+          "price_moved": "$19.99 -> $22.5 on 2026-10-13",
           "relisted": "was https://www.ebay.com/itm/313969708276 (flagged: listing ENDED)",
           "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
         },
@@ -1670,7 +1672,7 @@
       "id": "build-auto-1791865019",
       "name": "Auto \u00b7 10\u00d7 MI25 rig",
       "tagline": "auto-generated \u00b7 10,038.4 GB/s \u00b7 160 GB VRAM \u00b7 $0.109/GB/s",
-      "total": 1092.65,
+      "total": 1095.16,
       "gpu_bw": 10000,
       "ddr_bw": 38.4,
       "throughput": 10038.4,
@@ -1681,7 +1683,7 @@
       "storage": "1 TB SATA",
       "storage_max": "~92 TB",
       "power": "3600 W (66% load)",
-      "per_gb": 0.1088,
+      "per_gb": 0.1091,
       "deviation": "FLAGGED DEVIATION: system RAM is 32 GB (board max 32 GB), below the standing 64 GB / 128 GB-expandable requirement. 12-slot mining boards cap at 32 GB; no board in the catalog offers 12 GPU slots AND 64+ GB RAM. GPU VRAM totals 160 GB, which is what the model reads; system RAM only stages the dataset.",
       "mode": "rig",
       "why": "Auto-built to beat every existing build on all three metrics: 10\u00d7 AMD Radeon Instinct MI25 16 GB HBM2 = 10,000 GB/s + 38.4 GB/s system DDR = 10,038.4 GB/s total \u00b7 160 GB VRAM \u00b7 $1,092.65 = $0.109 per GB/s.",
@@ -1697,7 +1699,7 @@
           "stock": "21 available across 2 listings",
           "avail": 21,
           "avail_floor": false,
-          "seller": "Pre-owned",
+          "seller": "animuscompute",
           "img": "https://i.ebayimg.com/images/g/e2UAAeSwRT1qXup3/s-l400.jpg",
           "sources": [
             {
@@ -1732,7 +1734,7 @@
           "url": "https://www.ebay.com/itm/168747984797",
           "section": "cpu",
           "spec": "g3930",
-          "stock": "LAST ONE",
+          "stock": "In stock (Buy It Now / Best Offer)",
           "seller": "Pre-owned",
           "img": "https://i.ebayimg.com/images/g/mLEAAeSwG7pqveCD/s-l400.jpg"
         },
@@ -1839,7 +1841,7 @@
         {
           "qty": 1,
           "name": "1 TB SATA 2.5\" SSD",
-          "price": 19.99,
+          "price": 22.5,
           "stats": "1 TB SATA \u00b7 plugs into this board's SATA port",
           "url": "https://www.ebay.com/itm/267811552241",
           "section": "storage",
@@ -1847,7 +1849,8 @@
           "stock": null,
           "seller": "Open box",
           "img": "https://i.ebayimg.com/images/g/YJ8AAeSwQutqtnJp/s-l400.jpg",
-          "unverified": "eBay returned a page shell (no buybox) on 3 attempts"
+          "unverified": "eBay returned a page shell (no buybox) on 3 attempts",
+          "price_moved": "$19.99 -> $22.5 on 2026-10-13"
         },
         {
           "qty": 10,
@@ -1885,13 +1888,13 @@
     }
   ],
   "status": {
-    "verified": "2026-10-13 11:32",
+    "verified": "2026-10-13 23:47",
     "listings": 40,
     "flagged": 2,
     "qty_short": 2,
     "qty_unproven": 0,
-    "price_changes": 28,
-    "unverified": 11,
+    "price_changes": 37,
+    "unverified": 10,
     "method": "Every listing re-checked over a real browser (CDP): live price, quantity available, buyable, ENDED. A line the build needs N of is only purchasable when the listing shows at least N available. Totals recomputed from verified prices."
   }
 }
