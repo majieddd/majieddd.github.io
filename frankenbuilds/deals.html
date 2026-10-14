@@ -309,7 +309,7 @@ th.srt .ar{font-size:9px;margin-left:3px}
         <div class="sub">9,097 listings scored from 6 live retailers, each one on a page you can buy from now.
           Scored the way this site scores everything: <b>dollars per GB/s of memory bandwidth</b> first, then per GB of RAM and per GB of storage.
           Ranked cheapest-bandwidth-per-dollar, so the top of each table is the best value in it.</div>
-        <div class="statgrid"><div class="statcard"><span>Listings scored</span><b class="win">9,097</b><i>buyable now</i></div><div class="statcard"><span>Desktops</span><b class="">5,103</b><i>prebuilt</i></div><div class="statcard"><span>Servers</span><b class="">844</b><i>rack / tower / used</i></div><div class="statcard"><span>Laptops</span><b class="">3,150</b><i>prebuilt</i></div><div class="statcard"><span>Retailers</span><b class="">6</b><i>live pages</i></div><div class="statcard"><span>Cards screened</span><b class="">37,498</b><i>28,401 dropped</i></div><div class="statcard"><span>Availability re-checked</span><b class="bad">1,368</b><i>46 sold out since</i></div></div>
+        <div class="statgrid"><div class="statcard"><span>Listings scored</span><b class="win">9,097</b><i>buyable now</i></div><div class="statcard"><span>Desktops</span><b class="">5,103</b><i>prebuilt</i></div><div class="statcard"><span>Servers</span><b class="">844</b><i>rack / tower / used</i></div><div class="statcard"><span>Laptops</span><b class="">3,150</b><i>prebuilt</i></div><div class="statcard"><span>Retailers</span><b class="">6</b><i>live pages</i></div><div class="statcard"><span>Cards screened</span><b class="">45,147</b><i>28,401 dropped</i></div><div class="statcard"><span>Duplicate URLs merged</span><b class="">7,649</b><i>same item, cheaper kept</i></div><div class="statcard"><span>Availability re-checked</span><b class="bad">1,368</b><i>46 sold out since</i></div></div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px">
           <button class="avbtn" id="liveBtn">Re-check live availability</button>
           <span style="font-size:11px;color:var(--muted-foreground)">Live checks run in your browser for retailers that allow cross-origin reads (Shopify stores). The rest show the verdict from the last build-time re-read.</span>
@@ -500,7 +500,7 @@ th.srt .ar{font-size:9px;margin-left:3px}
           ships in N days, N available). Out-of-stock, sold-out, pre-order and "see all buying options" cards are dropped.
           Price ranges and "from" prices are dropped too, because a range has no single number to divide by.
           eBay queries are restricted to Buy It Now so every eBay row is an instant purchase, not an auction.<br><br>
-          <b>What got screened out</b> — 28,401 of 37,498 cards:
+          <b>What got screened out</b> — 28,401 of 31,551 cards:
           <div class="gridwrap" style="margin-top:10px;max-height:260px"><table style="min-width:420px"><thead><tr>
             <th>Drop reason</th><th class="p">Cards</th></tr></thead><tbody><tr><td class="t">RAM not stated in title</td><td class="p">9,326</td></tr><tr><td class="t">no bandwidth basis (no GPU/CPU/platform match)</td><td class="p">6,230</td></tr><tr><td class="t">storage not stated in title</td><td class="p">5,806</td></tr><tr><td class="t">price below $150 (not a whole machine)</td><td class="p">1,748</td></tr><tr><td class="t">no machine word in title</td><td class="p">1,724</td></tr><tr><td class="t">bare part: motherboard</td><td class="p">311</td></tr><tr><td class="t">bare part: bezel</td><td class="p">264</td></tr><tr><td class="t">accessory: compatible with</td><td class="p">233</td></tr><tr><td class="t">bare part: graphics card</td><td class="p">222</td></tr><tr><td class="t">bare part: power supply</td><td class="p">187</td></tr></tbody></table></div>
         </div>
@@ -514,7 +514,7 @@ th.srt .ar{font-size:9px;margin-left:3px}
           Reproduce: <code>python deals/deals_scrape.py --site all --cat all</code> (writes <code>deals/raw_*.jsonl</code>),
           then <code>python deals/deals_score.py</code> (writes <code>deals/scored.json</code> + <code>deals/dropped.json</code>),
           then <code>python report_deals.py</code>. Spec tables: <code>deals/spec_gpu_bw.json</code>,
-          <code>deals/spec_mem_bw.json</code>. Generated 2026-10-13 21:33.
+          <code>deals/spec_mem_bw.json</code>. Generated 2026-10-13 21:48.
         </footer>
       </div>
     </div>
