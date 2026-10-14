@@ -1,0 +1,21 @@
+module.exports = [
+  { size: [1600, 900] },
+  { wait: 1800 },
+  { eval: 'window.__RQ.start({ faction: "human", enemyFaction: "xeno", commander: "vanta", board: 0, difficulty: 1 }); "ok"' },
+  { wait: 900 },
+  { eval: 'window.__RQ.closeScreens(); document.getElementById("banner").style.display="none"; "ok"' },
+  { eval: 'window.__RQ.spawn("stockman", 1, 5); window.__RQ.step(0.7); "spawned"' },
+  { eval: '(function(){var G=GAME.state;var d=G.denizens[0];if(!d)return "none";var p=d.pos;window.__RQ.camera({focus:[p[0],p[1]+0.8,p[2]],dist:9.0,pitch:0.40,yaw:d.yaw});return JSON.stringify({p:p,yaw:d.yaw});})()' },
+  { wait: 600 },
+  { shot: 'swim-t1-front' },
+  { eval: '(function(){var G=GAME.state;var d=G.denizens[0];if(!d)return "none";var p=d.pos;window.__RQ.camera({focus:[p[0],p[1]+0.8,p[2]],dist:9.0,pitch:0.40,yaw:d.yaw+1.6});return JSON.stringify({p:p,yaw:d.yaw});})()' },
+  { wait: 600 },
+  { shot: 'swim-t1-side' },
+  { eval: 'window.__RQ.step(3.5); (function(){var G=GAME.state;var d=G.denizens[0];if(!d)return "gone";var p=d.pos;window.__RQ.camera({focus:[p[0],p[1]+0.8,p[2]],dist:9.0,pitch:0.40,yaw:d.yaw});return JSON.stringify({p:p,yaw:d.yaw});})()' },
+  { wait: 600 },
+  { shot: 'swim-t2-front' },
+  { eval: '(function(){var G=GAME.state;var d=G.denizens[0];if(!d)return "gone";var p=d.pos;window.__RQ.camera({focus:[p[0],p[1]+0.8,p[2]],dist:9.0,pitch:0.40,yaw:d.yaw+1.6});return JSON.stringify({p:p,yaw:d.yaw});})()' },
+  { wait: 600 },
+  { shot: 'swim-t2-side' },
+  { eval: '(function(){var G=GAME.state;var d=G.denizens[0];if(!d)return JSON.stringify({gone:true});return JSON.stringify({pos:d.pos,yaw:d.yaw,alive:d.alive,hp:d.hp});})()' }
+];

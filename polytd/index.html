@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COSMIC CONQUEST — POLY PROTOCOL</title>
+<link rel="stylesheet" href="css/polytd.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- 3D canvas -->
+  <canvas id="gl"></canvas>
+  <div id="gl-fallback" class="hidden"><p>POLY PROTOCOL requires WebGL2.</p><p class="dim">Try a current Chrome, Edge or Firefox.</p></div>
+
+  <!-- HUD -->
+  <header id="hud-top" class="hud hidden">
+    <div class="hud-top-left">
+      <div class="chip" id="wave-chip"><b>WAVE</b><span id="hud-wave">1/12</span></div>
+      <div class="chip" id="next-chip" title="Next wave composition"><b>NEXT</b><span id="hud-next"></span></div>
+    </div>
+    <div class="hud-top-center" id="wave-announce" class="hidden"></div>
+    <div class="hud-top-right">
+      <div class="chip res" id="lives-chip"><b class="t-lives">&#9673;</b><span id="hud-lives">20</span></div>
+      <div class="chip res" id="gold-chip"><b class="t-gold">&#9679;</b><span id="hud-gold">220</span></div>
+      <div class="chip click" id="speed-chip" title="Simulation speed (Alt+1/2/3)"><b>SPD</b><span id="hud-speed">1&#215;</span></div>
+      <div class="chip click" id="pause-chip" title="Pause (Space)"><b id="hud-pause">&#10073;&#10073;</b></div>
+    </div>
+  </header>
+
+  <div id="announce" class="hidden"></div>
+
+  <!-- Build hint -->
+  <div id="build-hint" class="hud hidden"><span id="hint-text"></span></div>
+
+  <!-- Tower dock -->
+  <nav id="dock" class="hud hidden"></nav>
+
+  <!-- Ability tray -->
+  <div id="abilities" class="hud hidden"></div>
+
+  <!-- Inspector -->
+  <aside id="inspector" class="hud hidden"></aside>
+
+  <!-- Screens -->
+  <section id="screen-root" class="screen-root"></section>
+
+  <!-- Toast layer -->
+  <div id="toasts"></div>
+</div>
+<script src="js/gl.js"></script>
+<script src="js/skin.js"></script>
+<script src="js/art.js"></script>
+<script src="js/geo.js"></script>
+<script src="js/data.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

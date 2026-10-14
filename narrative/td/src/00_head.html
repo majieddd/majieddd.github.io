@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Cosmic Conquest — Tower Defense</title>
+<style>
+  :root{
+    --bg:#05080e; --panel:rgba(13,19,32,0.82); --panel-2:rgba(19,27,45,0.9);
+    --line:rgba(110,165,210,0.16); --line-2:rgba(110,165,210,0.34);
+    --text:#e2eefa; --text-dim:#a8bdd0; --text-mute:#7e94aa;
+    --cyan:#38e8ff; --rose:#ff6b9d; --gold:#fbbf24; --green:#4ade80; --red:#ef4444;
+    --faction:#38e8ff; --accent:#bafcff;
+    --font:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono","Roboto Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%; width:100%; overflow:hidden; background:var(--bg); color:var(--text); font-family:var(--font); -webkit-font-smoothing:antialiased; user-select:none;}
+  #app{position:fixed; inset:0;}
+  #scene{position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none;}
+  .hud{position:absolute; inset:0; pointer-events:none; z-index:5;}
+  .hud *{pointer-events:auto;}
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:12px; backdrop-filter:blur(8px); box-shadow:0 6px 24px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04);}
+
+  /* Top bar */
+  #topbar{position:absolute; top:12px; left:12px; right:12px; display:flex; gap:10px; align-items:center; padding:10px 14px;}
+  #title{font-weight:800; letter-spacing:2px; font-size:13px; color:var(--text);}
+  #title small{display:block; font-weight:500; letter-spacing:1px; font-size:10px; color:var(--text-mute);}
+  .stat{display:flex; flex-direction:column; line-height:1.05; padding:0 10px; border-left:1px solid var(--line);}
+  .stat .k{font-size:9px; letter-spacing:1.5px; color:var(--text-mute); text-transform:uppercase;}
+  .stat .v{font-family:var(--mono); font-size:16px; font-weight:700;}
+  .stat.gold .v{color:var(--gold);} .stat.lives .v{color:var(--cyan);} .stat.wave .v{color:var(--text);}
+  .spacer{flex:1;}
+  .btn{pointer-events:auto; cursor:pointer; border:1px solid var(--line-2); background:var(--panel-2); color:var(--text); font-family:var(--mono); font-size:12px; letter-spacing:1px; padding:9px 14px; border-radius:9px; transition:all .12s; text-transform:uppercase;}
+  .btn:hover{border-color:var(--cyan); color:var(--accent); box-shadow:0 0 14px rgba(56,232,255,0.25); transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn.primary{border-color:var(--cyan); color:var(--cyan);}
+  .btn.warn{border-color:var(--red); color:var(--red);}
+  .btn.ghost{background:transparent;}
+
+  /* Build palette */
+  #palette{position:absolute; left:12px; bottom:12px; width:300px; padding:12px; }
+  #palette h3{font-size:10px; letter-spacing:2px; color:var(--text-mute); text-transform:uppercase; margin-bottom:8px;}
+  .cards{display:grid; grid-template-columns:repeat(5,1fr); gap:8px;}
+  .card{position:relative; cursor:pointer; border:1px solid var(--line); background:var(--panel-2); border-radius:10px; padding:8px 4px 6px; text-align:center; transition:all .12s;}
+  .card:hover{border-color:var(--cyan); transform:translateY(-2px);}
+  .card.sel{border-color:var(--cyan); box-shadow:0 0 16px rgba(56,232,255,0.4); background:rgba(56,232,255,0.08);}
+  .card.poor{opacity:0.45;}
+  .card .ic{width:100%; height:46px; display:flex; align-items:center; justify-content:center;}
+  .card .ic svg{width:40px; height:40px; filter:drop-shadow(0 0 6px rgba(56,232,255,0.4));}
+  .card .nm{font-size:8.5px; letter-spacing:0.5px; color:var(--text-dim); margin-top:2px; line-height:1.1;}
+  .card .cost{font-family:var(--mono); font-size:11px; color:var(--gold); font-weight:700; margin-top:3px;}
+
+  /* Inspect panel */
+  #inspect{position:absolute; right:12px; bottom:12px; width:288px; padding:14px; display:none;}
+  #inspect.show{display:block;}
+  #inspect .ttl{font-size:13px; font-weight:800; letter-spacing:1px; color:var(--accent);}
+  #inspect .role{font-size:10px; color:var(--text-mute); letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;}
+  #inspect .row{display:flex; justify-content:space-between; font-size:12px; padding:4px 0; border-top:1px solid var(--line);}
+  #inspect .row .k{color:var(--text-dim);} #inspect .row .v{font-family:var(--mono); font-weight:700;}
+  #inspect .acts{display:flex; gap:8px; margin-top:10px;}
+  #inspect .acts .btn{flex:1; padding:9px 6px; text-align:center;}
+
+  /* Wave control */
+  #wavectl{position:absolute; bottom:12px; left:50%; transform:translateX(-50%); display:flex; gap:10px; align-items:center; padding:10px 14px;}
+  #wavectl .big{font-family:var(--mono); font-size:14px; color:var(--text);}
+  #wavectl .pips{display:flex; gap:3px; margin:0 6px;}
+  .pip{width:7px; height:7px; border-radius:50%; background:var(--line-2);}
+  .pip.done{background:var(--cyan);} .pip.active{background:var(--gold); box-shadow:0 0 8px var(--gold);}
+
+  /* Toast */
+  #toast{position:absolute; top:84px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; gap:6px; align-items:center;}
+  .toast{background:var(--panel-2); border:1px solid var(--line-2); border-left:3px solid var(--gold); padding:8px 16px; border-radius:8px; font-size:12px; letter-spacing:0.5px; color:var(--text); opacity:0; transform:translateY(-8px); transition:all .3s;}
+  .toast.show{opacity:1; transform:translateY(0);}
+  .toast.win{border-left-color:var(--green);} .toast.bad{border-left-color:var(--red);}
+
+  /* Tooltip */
+  #tip{position:absolute; pointer-events:none; max-width:240px; background:var(--panel-2); border:1px solid var(--line-2); border-radius:8px; padding:8px 10px; font-size:11px; color:var(--text-dim); display:none; z-index:20; line-height:1.35; box-shadow:0 8px 24px rgba(0,0,0,0.5);}
+  #tip b{color:var(--accent);}
+
+  /* Help / legend */
+  #legend{position:absolute; top:64px; right:12px; padding:10px 12px; font-size:10px; color:var(--text-mute); line-height:1.5; max-width:200px;}
+  #legend b{color:var(--text-dim);}
+
+  /* Overlay (intro / end) */
+  #overlay{position:absolute; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; background:radial-gradient(ellipse at center, rgba(10,14,23,0.7), rgba(5,8,14,0.96)); }
+  #overlay.hide{display:none;}
+  .modal{width:min(560px,90vw); padding:28px; text-align:center;}
+  .modal h1{font-size:24px; letter-spacing:3px; color:var(--cyan); text-shadow:0 0 24px rgba(56,232,255,0.5);}
+  .modal h1.lose{color:var(--red); text-shadow:0 0 24px rgba(239,68,68,0.5);}
+  .modal h1.win{color:var(--green); text-shadow:0 0 24px rgba(74,222,128,0.5);}
+  .modal .sub{font-size:12px; letter-spacing:2px; color:var(--text-mute); text-transform:uppercase; margin-top:6px;}
+  .modal p{font-size:13px; color:var(--text-dim); line-height:1.6; margin:16px 0;}
+  .modal .stats{display:flex; justify-content:center; gap:24px; margin:16px 0; font-family:var(--mono);}
+  .modal .stats div{font-size:11px; color:var(--text-mute);} .modal .stats b{display:block; font-size:22px; color:var(--text);}
+  .modal .btn{font-size:14px; padding:12px 28px; letter-spacing:2px; margin-top:8px;}
+
+  /* Start gate (needed for audio autoplay policy) */
+  #gate{position:absolute; inset:0; z-index:40; display:flex; align-items:center; justify-content:center; background:radial-gradient(ellipse at center, rgba(14,18,30,0.85), rgba(5,8,14,0.98)); cursor:pointer;}
+  #gate.hide{display:none;}
+  #gate .g{text-align:center;}
+  #gate h1{font-size:30px; letter-spacing:4px; color:var(--cyan); text-shadow:0 0 30px rgba(56,232,255,0.55);}
+  #gate .sub{font-size:12px; letter-spacing:3px; color:var(--text-mute); text-transform:uppercase; margin-top:8px;}
+  #gate .pulse{margin-top:24px; font-size:13px; letter-spacing:2px; color:var(--accent); animation:blink 1.4s infinite;}
+  @keyframes blink{50%{opacity:0.3;}}
+
+  #err{position:absolute; bottom:8px; right:8px; font-family:var(--mono); font-size:10px; color:var(--red); max-width:40vw; display:none;}
+  @media (max-width:720px){
+    #palette{width:calc(100% - 24px);} #inspect{display:none;} #legend{display:none;}
+    #topbar{font-size:11px; padding:8px;} .cards{grid-template-columns:repeat(5,1fr);}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="scene"></canvas>
+  <div class="hud" id="hud">
+    <div class="panel" id="topbar">
+      <div id="title">COSMIC CONQUEST<small>TOWER DEFENSE · EARTH</small></div>
+      <div class="stat gold"><span class="k">Gold</span><span class="v" id="s-gold">0</span></div>
+      <div class="stat lives"><span class="k">Core</span><span class="v" id="s-lives">20</span></div>
+      <div class="stat wave"><span class="k">Wave</span><span class="v" id="s-wave">0/20</span></div>
+      <div class="stat"><span class="k">Score</span><span class="v" id="s-score">0</span></div>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="b-speed">1×</button>
+      <button class="btn ghost" id="b-pause">PAUSE</button>
+      <button class="btn ghost" id="b-mute">♪</button>
+      <button class="btn ghost" id="b-restart">RESTART</button>
+    </div>
+
+    <div class="panel" id="legend">
+      <b>OBJECTIVE</b><br>Place HUMANITY craft along the approach. Deny <b style="color:#7c3aed">The Hungry</b> the Core.<br><br>
+      <b>DRAG</b> to orbit · <b>SCROLL</b> to zoom · <b>CLICK</b> a tile to build · <b>CLICK</b> a tower to upgrade.
+    </div>
+
+    <div class="panel" id="palette">
+      <h3>Deploy Craft</h3>
+      <div class="cards" id="cards"></div>
+    </div>
+
+    <div class="panel" id="inspect">
+      <div class="ttl" id="insp-name">—</div>
+      <div class="role" id="insp-role">—</div>
+      <div class="row"><span class="k">Damage</span><span class="v" id="insp-dmg">—</span></div>
+      <div class="row"><span class="k">Range</span><span class="v" id="insp-range">—</span></div>
+      <div class="row"><span class="k">Rate</span><span class="v" id="insp-rate">—</span></div>
+      <div class="row"><span class="k">Level</span><span class="v" id="insp-lvl">—</span></div>
+      <div class="acts">
+        <button class="btn primary" id="b-up">UPGRADE</button>
+        <button class="btn warn" id="b-sell">SELL</button>
+      </div>
+    </div>
+
+    <div class="panel" id="wavectl">
+      <span class="big" id="wave-label">WAVE 0</span>
+      <div class="pips" id="pips"></div>
+      <button class="btn primary" id="b-wave">START WAVE</button>
+    </div>
+
+    <div id="toast"></div>
+    <div id="tip"></div>
+  </div>
+
+  <div id="overlay" class="hide">
+    <div class="panel modal" id="modal"></div>
+  </div>
+
+  <div id="gate">
+    <div class="g">
+      <h1>COSMIC CONQUEST</h1>
+      <div class="sub">Tower Defense · Earth, World Zero</div>
+      <div class="pulse">▶ CLICK TO ENGAGE</div>
+    </div>
+  </div>
+  <div id="err"></div>
+</div>

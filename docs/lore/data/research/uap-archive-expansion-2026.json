@@ -1,0 +1,543 @@
+{
+  "schema_version": "1.1.0",
+  "release": "0.3.2",
+  "reviewed": "2026-08-25",
+  "scope": "Delta audit of NARA Record Group 615 and bulk exports, Black Vault releases, AARO reporting/media/information papers, FOIA process, material analysis, narrative infrastructure, and contactee-network records.",
+  "evidence_rule": "An authentic record establishes the record, report, program, classification action, or administrative event. It does not automatically establish the extraordinary interpretation of its contents.",
+  "sources": [
+    {
+      "id": "nara-rg615-current",
+      "title": "Record Group 615 current agency inventory",
+      "publisher": "National Archives and Records Administration",
+      "source_type": "official-index",
+      "evidence": "A",
+      "url": "https://www.archives.gov/research/topics/uaps/rg-615",
+      "establishes": "RG 615 currently lists FAA, NRC, ODNI, OSD, NSA, Department of State, and FBI series and is updated as agencies transfer records.",
+      "does_not_establish": "Completeness, online availability of every object, or truth of claims within transferred records.",
+      "lore_tags": [
+        "open-archive",
+        "seven-custodians",
+        "rolling-transfer",
+        "agency-schema"
+      ]
+    },
+    {
+      "id": "nara-uap-bulk",
+      "title": "UAP bulk downloads",
+      "publisher": "National Archives and Records Administration",
+      "source_type": "official-bulk-export",
+      "evidence": "A",
+      "url": "https://www.archives.gov/research/catalog/catalog-bulk-downloads/uap-bulk-download",
+      "establishes": "NARA provides ZIP packages of digital objects and JSON metadata for listed collections.",
+      "does_not_establish": "That the bulk page is the newest complete agency inventory or that every catalog description has an online object.",
+      "lore_tags": [
+        "metadata-first",
+        "export-lag",
+        "archive-ingestion"
+      ]
+    },
+    {
+      "id": "nara-uap-faq",
+      "title": "UAP Records Collection FAQ",
+      "publisher": "National Archives and Records Administration",
+      "source_type": "official-guidance",
+      "evidence": "A",
+      "url": "https://www.archives.gov/research/topics/uaps/faqs",
+      "establishes": "Federal agencies must review, identify, organize, and transfer UAP records under the statutory collection framework.",
+      "does_not_establish": "Immediate public release of classified or otherwise restricted material.",
+      "lore_tags": [
+        "custody-state",
+        "record-definition",
+        "public-copy"
+      ]
+    },
+    {
+      "id": "aaro-fy2025",
+      "title": "Fiscal Year 2025 Consolidated Annual Report on UAP",
+      "publisher": "All-domain Anomaly Resolution Office",
+      "source_type": "official-report",
+      "evidence": "A/B",
+      "url": "https://www.aaro.mil/Portals/136/PDFs/FY25%20UAP%20Annual%20Report/AARO_FY2025_Consolidated_Annual_Report_on_UAP.pdf",
+      "establishes": "AARO received 319 reports, resolved 114 current and 256 earlier cases, referred nine for further analysis, and placed 191 in an active archive pending better data.",
+      "does_not_establish": "Exotic origin for active-archive or technically reviewed cases.",
+      "lore_tags": [
+        "active-archive",
+        "incident-merge",
+        "all-source-analysis",
+        "sensor-bias"
+      ]
+    },
+    {
+      "id": "aaro-virginia-maritime",
+      "title": "FY2025 Virginia maritime-domain report",
+      "publisher": "All-domain Anomaly Resolution Office",
+      "source_type": "official-report-entry",
+      "evidence": "B",
+      "url": "https://www.aaro.mil/Portals/136/PDFs/FY25%20UAP%20Annual%20Report/AARO_FY2025_Consolidated_Annual_Report_on_UAP.pdf",
+      "establishes": "A Navy report described approximately 100 airborne observations and two likely uncrewed surface systems and remained under investigation at the report cutoff.",
+      "does_not_establish": "A transmedium swarm, submerged base, one coordinated actor, or extraterrestrial origin.",
+      "lore_tags": [
+        "surface-pair",
+        "track-association",
+        "maritime",
+        "counting-problem"
+      ]
+    },
+    {
+      "id": "aaro-nuclear-uas",
+      "title": "FY2025 nuclear-infrastructure UAS reports",
+      "publisher": "All-domain Anomaly Resolution Office",
+      "source_type": "official-report-entry",
+      "evidence": "A",
+      "url": "https://www.aaro.mil/Portals/136/PDFs/FY25%20UAP%20Annual%20Report/AARO_FY2025_Consolidated_Annual_Report_on_UAP.pdf",
+      "establishes": "AARO received 50 reports of UAS incidents near nuclear infrastructure, weapons, and launch sites; the report states none were reported as UAP.",
+      "does_not_establish": "That the incursions were harmless, fully attributed, or extraterrestrial.",
+      "lore_tags": [
+        "nuclear-security",
+        "uas",
+        "taxonomy-discipline"
+      ]
+    },
+    {
+      "id": "black-vault-ufo-releases-1-5",
+      "title": "Black Vault UFO Files Search, Releases 1-5",
+      "publisher": "The Black Vault",
+      "source_type": "derivative-search-archive",
+      "evidence": "A as publication history; B varies by underlying record",
+      "url": "https://www.theblackvault.com/documentarchive/ufo-files-search-engine/",
+      "establishes": "The search corpus indexes 375 records: 212 documents, 133 videos, and 30 images, using processed PDFs, OCR, metadata, and transcripts where available.",
+      "does_not_establish": "OCR accuracy, completeness of older Black Vault holdings, or common origin of indexed reports.",
+      "lore_tags": [
+        "ocr-confidence",
+        "release-batch",
+        "derivative-record",
+        "greenewald-standard"
+      ]
+    },
+    {
+      "id": "space-tiger-team",
+      "title": "UAP Space Tiger Team record",
+      "publisher": "Department of War record released through FOIA; indexed by The Black Vault",
+      "source_type": "foia-record",
+      "evidence": "B",
+      "url": "https://www.theblackvault.com/documentarchive/newly-released-documents-show-uap-space-tiger-team-built-around-space-and-transmedium-cases/",
+      "establishes": "A 2023 coordination effort addressed spaceborne and transmedium UAP detection and operational frameworks.",
+      "does_not_establish": "Successful detection of exotic craft or proof that any event crossed domains.",
+      "lore_tags": [
+        "all-domain-fusion",
+        "spaceborne",
+        "transmedium",
+        "jurisdiction"
+      ]
+    },
+    {
+      "id": "navy-78-photos",
+      "title": "Navy FOIA appeal concerning 78 UAP photographs",
+      "publisher": "Department of the Navy record indexed by The Black Vault",
+      "source_type": "foia-denial-appeal",
+      "evidence": "B administrative",
+      "url": "https://www.theblackvault.com/documentarchive/despite-trumps-call-to-release-uap-files-navy-denies-appeal-for-78-classified-uap-photographs/",
+      "establishes": "The Navy identified responsive photographs and continued to withhold them as classified, with no segregable portion released.",
+      "does_not_establish": "The content, quality, anomaly, or origin depicted in the photographs.",
+      "lore_tags": [
+        "negative-space-evidence",
+        "classification",
+        "seventy-eight-frames"
+      ]
+    },
+    {
+      "id": "nasa-et-communications-planning",
+      "title": "NASA extraterrestrial-life communications planning",
+      "publisher": "NASA records released through FOIA; indexed by The Black Vault",
+      "source_type": "foia-record",
+      "evidence": "B",
+      "url": "https://www.theblackvault.com/documentarchive/nasa-documents-show-renewed-internal-planning-on-how-to-announce-discovery-of-extraterrestrial-life/",
+      "establishes": "NASA personnel discussed communications planning for a definitive discovery of extraterrestrial life in June 2025.",
+      "does_not_establish": "That a discovery occurred or that a final approved protocol exists.",
+      "lore_tags": [
+        "first-contact-communications",
+        "public-trust",
+        "confirmation-threshold"
+      ]
+    },
+    {
+      "id": "immaculate-constellation-search-appeal",
+      "title": "Immaculate Constellation FOIA search appeal",
+      "publisher": "Department of War records and Black Vault appeal reporting",
+      "source_type": "foia-process",
+      "evidence": "B/E",
+      "url": "https://www.theblackvault.com/documentarchive/pentagon-refuses-to-search-for-immaculate-constellation-emails/",
+      "establishes": "A January 26, 2026 refusal declined to search because the alleged subject was said not to exist; a May 26, 2026 appeal was granted and a records search was ordered.",
+      "does_not_establish": "Existence of the alleged program.",
+      "lore_tags": [
+        "search-the-allegation",
+        "records-about-rumors",
+        "appeal"
+      ]
+    },
+    {
+      "id": "elizondo-mirror-archive",
+      "title": "Reconstructed archive of deleted or unavailable correspondence",
+      "publisher": "The Black Vault",
+      "source_type": "foia-reconstruction",
+      "evidence": "B administrative",
+      "url": "https://www.theblackvault.com/documentarchive/archive-of-luis-elizondos-deleted-emails/",
+      "establishes": "Correspondent archives and related custodians can preserve portions of communications missing from one account.",
+      "does_not_establish": "Completeness or validation of every later claim.",
+      "lore_tags": [
+        "mirror-archive",
+        "records-retention",
+        "custody-gap"
+      ]
+    },
+    {
+      "id": "project-moon-dust",
+      "title": "Project Moon Dust recovery records",
+      "publisher": "Department of State, CIA, DIA, and related records indexed by The Black Vault",
+      "source_type": "historical-government-records",
+      "evidence": "A/B",
+      "url": "https://www.theblackvault.com/documentarchive/project-moon-dust/",
+      "establishes": "Historical programs and procedures existed to recover and analyze reentered foreign or unidentified space debris.",
+      "does_not_establish": "Alien crash retrieval.",
+      "lore_tags": [
+        "foreign-materiel",
+        "fragology",
+        "recovery-team",
+        "contaminated-legend"
+      ]
+    },
+    {
+      "id": "faa-pwa192-nevada",
+      "title": "FAA PWA192 Nevada encounter records",
+      "publisher": "Federal Aviation Administration records indexed by The Black Vault",
+      "source_type": "foia-record-and-audio",
+      "evidence": "B",
+      "url": "https://www.theblackvault.com/documentarchive/faa-records-detail-pilot-encounter-with-unidentified-object-pacing-aircraft-over-nevada/",
+      "establishes": "FAA logs and ATC audio document a May 20, 2025 report of an aircraft-like object pacing a business jet; the released log reports no radar target and twelve ERAM radar files were withheld as Sensitive Security Information.",
+      "does_not_establish": "Exact kinematics, exotic origin, or absence from all sensor systems.",
+      "lore_tags": [
+        "aviation-safety",
+        "withheld-radar",
+        "witness-evolution",
+        "pacing-track"
+      ]
+    },
+    {
+      "id": "nps-uap-data-vetting",
+      "title": "Data Vetting and Accessibility for the Study of UAP",
+      "publisher": "Naval Postgraduate School",
+      "source_type": "technical-guidance",
+      "evidence": "A",
+      "url": "https://nps.edu/documents/110773463/165192597/Data%2BVetting%2Band%2Baccessibility%2Bfor%2Bthe%2BStudy%2Bof%2BUAP.pdf",
+      "establishes": "Direct measurements, derived quantities, metadata, processing, range geometry, and data quality must be separated; multiple sensors can support triangulation and confuser rejection.",
+      "does_not_establish": "That a multi-sensor event is extraordinary or that processed imagery preserves native object properties.",
+      "lore_tags": [
+        "measurement-lineage",
+        "triangulation",
+        "metadata",
+        "known-quality"
+      ]
+    },
+    {
+      "id": "nps-watcher-event-sensing",
+      "title": "Event-Based Sensing for UAP Detection, Tracking, and Characterization",
+      "publisher": "Naval Postgraduate School / Sandia National Laboratories",
+      "source_type": "technical-research",
+      "evidence": "A/speculative application",
+      "url": "https://nps.edu/documents/110773463/165192597/Event-Based%2BSensing%2Bfor%2BUnidentified%2BAnomalous%2BPhenomena%2BDetection%2BTracking%2Band%2BCharacterization.pdf",
+      "establishes": "The WATCHER pipeline can detect, track, and characterize known drone signatures in event-based sensor data; the sensing architecture supports fast, low-bandwidth persistent monitoring.",
+      "does_not_establish": "Extraterrestrial detection or a finished universal UAP classifier.",
+      "lore_tags": [
+        "watcher-mesh",
+        "provisional-unknown",
+        "persistent-monitoring",
+        "uas-confusers"
+      ]
+    },
+    {
+      "id": "nps-uap-photography-integrity",
+      "title": "Capturing UAP Events: A Practical Photography Guide for Everyday Observers",
+      "publisher": "Naval Postgraduate School",
+      "source_type": "technical-guidance",
+      "evidence": "A",
+      "url": "https://nps.edu/documents/110773463/165192597/Capturing%2BUnidentified%2BAnomalous%2BPhenomena%2BEvents-%2BA%2BPractical%2BPhotography%2BGuide%2Bfor%2BEveryday%2BObservers.pdf",
+      "establishes": "Recommended evidence practice includes immediate hashing, native unprocessed masters, high-bitrate video, UTC/location/equipment metadata, calibration, and separately labeled derivatives.",
+      "does_not_establish": "That an intact image proves an extraordinary object.",
+      "lore_tags": [
+        "native-master",
+        "sha256",
+        "chain-of-custody",
+        "fork-law"
+      ]
+    },
+    {
+      "id": "aaro-declassification-source-subject",
+      "title": "AARO and the Declassification Process",
+      "publisher": "AARO",
+      "source_type": "official-information-paper",
+      "evidence": "A",
+      "url": "https://www.aaro.mil/Portals/136/PDFs/Information%20Papers/AARO_Declassification_Info_Paper_2025.pdf",
+      "establishes": "UAP-related imagery can be classified to protect the platform, location, metadata, source, method, or sensor capability even when the subject is ordinary; originating agencies control declassification.",
+      "does_not_establish": "That classification implies an extraordinary subject.",
+      "lore_tags": [
+        "source-subject-split",
+        "classification",
+        "sensor-security",
+        "negative-space-records"
+      ]
+    },
+    {
+      "id": "aaro-workshop-refusal-state",
+      "title": "2025 UAP Workshop: Narrative Data, Infrastructures, and Analysis",
+      "publisher": "AARO / Associated Universities, Inc.",
+      "source_type": "official-workshop-paper",
+      "evidence": "A",
+      "url": "https://www.aaro.mil/Portals/136/PDFs/Information%20Papers/2025_UAP_Workshop_Paper.pdf",
+      "establishes": "Workshop participants emphasized provenance, structured plus narrative reporting, optional metadata, human review, and explicit refusal-to-answer fields.",
+      "does_not_establish": "That standardization eliminates memory error, hoaxes, or interpretive disputes.",
+      "lore_tags": [
+        "refusal-is-data",
+        "narrative-infrastructure",
+        "human-in-loop",
+        "reporting-ontology"
+      ]
+    },
+    {
+      "id": "nara-cross-record-group-index",
+      "title": "UFO and UAP records by Record Group or collection",
+      "publisher": "National Archives and Records Administration",
+      "source_type": "official-index",
+      "evidence": "A",
+      "url": "https://www.archives.gov/research/topics/uaps/rg-collections",
+      "establishes": "NARA indexes UFO/UAP-related records across legacy FAA, NASA, CIA, OSD, Air Force, Navy, public-diplomacy, broadcasting, records-administration, and media collections in addition to RG 615.",
+      "does_not_establish": "One unified UAP program, a common attribution, or truth of every report preserved in those holdings.",
+      "lore_tags": [
+        "institutional-shadow-map",
+        "cross-custodian-provenance",
+        "media-ecology",
+        "open-archive"
+      ]
+    },
+    {
+      "id": "nara-known-fabricated-photo-controls",
+      "title": "Known physically and optically fabricated UFO photographs in NARA scientific-study holdings",
+      "publisher": "National Archives and Records Administration",
+      "source_type": "official-catalog-records",
+      "evidence": "A",
+      "url": "https://catalog.archives.gov/id/481616458",
+      "related_urls": [
+        "https://catalog.archives.gov/id/481616491",
+        "https://www.archives.gov/research/topics/uaps/rg-collections"
+      ],
+      "establishes": "NARA catalog records explicitly identify fabricated and optically fabricated UFO photographs created or assessed within a scientific-study context.",
+      "does_not_establish": "That adjacent images are fabricated or that a known-fake example resolves an unrelated case.",
+      "lore_tags": [
+        "known-fake-control-set",
+        "image-provenance",
+        "classifier-calibration",
+        "deception-training"
+      ]
+    },
+    {
+      "id": "aaro-media-provenance",
+      "title": "AARO UAP report documents and imagery",
+      "publisher": "All-domain Anomaly Resolution Office",
+      "source_type": "official-media-index",
+      "evidence": "A/B",
+      "url": "https://www.aaro.mil/Next-AARO-Home-redesign/Next-Parent/Next-UAP-Report-Documents/",
+      "establishes": "AARO labels secondary display captures, digitally altered copies presented as received, artistic reconstructions, and descriptive-only report text as distinct evidence objects.",
+      "does_not_establish": "The origin of the reported phenomena or equal evidentiary strength across all published media.",
+      "lore_tags": [
+        "media-integrity",
+        "native-master",
+        "secondary-capture",
+        "artistic-reconstruction"
+      ]
+    },
+    {
+      "id": "aaro-kona-blue",
+      "title": "KONA BLUE information release",
+      "publisher": "All-domain Anomaly Resolution Office",
+      "source_type": "official-information-release",
+      "evidence": "A/E",
+      "url": "https://www.aaro.mil/UAP-Records/",
+      "establishes": "KONA BLUE was proposed as a prospective special access program but, according to AARO, was never approved, established, funded, or supplied with material.",
+      "does_not_establish": "An operational retrieval or exploitation program.",
+      "lore_tags": [
+        "proposal-program-operation",
+        "code-name",
+        "program-maturity"
+      ]
+    },
+    {
+      "id": "aaro-ornl-aluminum",
+      "title": "ORNL analysis of an aluminum specimen",
+      "publisher": "Oak Ridge National Laboratory / AARO",
+      "source_type": "official-material-analysis",
+      "evidence": "A/B",
+      "url": "https://www.aaro.mil/UAP-Records/",
+      "establishes": "The specimen as received was assessed as consistent with an ordinary aluminum alloy made for common applications.",
+      "does_not_establish": "That every alleged specimen is ordinary or that the accompanying recovery story was independently validated.",
+      "lore_tags": [
+        "chain-of-custody",
+        "negative-result",
+        "ordinary-alloy",
+        "materials"
+      ]
+    },
+    {
+      "id": "aaro-narrative-data-workshop",
+      "title": "2025 UAP Workshop - Narrative Data, Infrastructures, and Analysis",
+      "publisher": "AARO / Associated Universities, Inc.",
+      "source_type": "official-white-paper",
+      "evidence": "A",
+      "url": "https://www.aaro.mil/UAP-Records/",
+      "establishes": "AARO sponsored an August 2025 workshop with 40 participants on narrative reports, infrastructure, and analysis.",
+      "does_not_establish": "That narrative reports are equivalent to calibrated sensor data or analytically worthless.",
+      "lore_tags": [
+        "narrative-infrastructure",
+        "witness-language",
+        "data-model"
+      ]
+    },
+    {
+      "id": "evaluation-proposal-585",
+      "title": "Evaluation Proposal 585",
+      "publisher": "Department of War Office of Inspector General record indexed by The Black Vault",
+      "source_type": "foia-inspector-general-record",
+      "evidence": "B",
+      "url": "https://www.theblackvault.com/documentarchive/department-of-war-cites-national-security-to-hide-core-uap-evaluation-details/",
+      "establishes": "The proposal states an objective to evaluate DoD intelligence and counterintelligence actions for detecting, collecting, exploiting, analyzing, and addressing UAP.",
+      "does_not_establish": "The content of classified benefits, protected capabilities, evaluation results, or extraterrestrial findings.",
+      "lore_tags": [
+        "blind-metrics",
+        "evaluation",
+        "counterintelligence",
+        "redaction"
+      ]
+    },
+    {
+      "id": "fbi-paranormal-contactees",
+      "title": "FBI paranormal and contactee collection",
+      "publisher": "Federal Bureau of Investigation records indexed by The Black Vault",
+      "source_type": "foia-collection",
+      "evidence": "B/C/D",
+      "url": "https://www.theblackvault.com/documentarchive/fbi-files-the-paranormal-collection/",
+      "establishes": "Files document correspondence, monitoring, fraud concerns, organizations, investigators, and public controversies involving contactees and UFO movements.",
+      "does_not_establish": "FBI endorsement of the contact claims recorded in the files.",
+      "lore_tags": [
+        "contactee-network",
+        "ufo-religion",
+        "fraud-inquiry",
+        "belief-history"
+      ]
+    },
+    {
+      "id": "nara-legacy-uap-corpus",
+      "title": "NARA legacy UAP-related bulk collections",
+      "publisher": "National Archives and Records Administration",
+      "source_type": "official-bulk-corpus",
+      "evidence": "A/B",
+      "url": "https://www.archives.gov/research/catalog/catalog-bulk-downloads/uap-bulk-download",
+      "establishes": "The bulk surface includes Blue Book, Air Intelligence, 4602D, OSI, Condon, Roswell-source, Avrocar, audiovisual, photographic, and presidential-library collections.",
+      "does_not_establish": "One coherent secret program or the truth of each underlying report.",
+      "lore_tags": [
+        "institutional-genealogy",
+        "legacy-corpus",
+        "investigation-history"
+      ]
+    }
+  ],
+  "accepted_lore_concepts": [
+    {
+      "id": "open-archive-versioned-graph",
+      "faction": "humans",
+      "summary": "The Open Archive stores relationships among reports, incidents, sensor files, custody states, appeals, OCR derivatives, and later analyses rather than pretending one file is the truth."
+    },
+    {
+      "id": "first-contact-communications-protocol",
+      "faction": "federation",
+      "summary": "Ashtar's open arrival becomes a constitutional and communications problem involving authentication, uncertainty, access, consent, and narrative capture."
+    },
+    {
+      "id": "negative-space-records",
+      "faction": "all",
+      "summary": "Indexes, denial letters, classification actions, attachment lists, and transfer logs can be mission objects without inventing unseen content."
+    },
+    {
+      "id": "mirror-archive-method",
+      "faction": "humans-machines-pirates",
+      "summary": "Missing correspondence is reconstructed through recipient copies, routing logs, calendars, attachment hashes, legal reviews, and Machine memory witnesses."
+    },
+    {
+      "id": "recovery-does-not-equal-alien",
+      "faction": "humans",
+      "summary": "Historical foreign-materiel and space-debris recovery procedures inspire later anomalous-material teams without retroactively proving alien retrieval."
+    },
+    {
+      "id": "measurement-lineage",
+      "faction": "humans-machines",
+      "summary": "Every derived motion, size, or material claim remains linked to direct measurements, metadata, calibration, assumptions, transformations, uncertainty, and independent reproduction."
+    },
+    {
+      "id": "native-master-fork-law",
+      "faction": "all",
+      "summary": "The first immutable hash defines the native master; every crop, enhancement, transcript, OCR layer, reconstruction, and briefing product is a separately authenticated fork."
+    },
+    {
+      "id": "watcher-mesh-provisional-unknown",
+      "faction": "humans-machines",
+      "summary": "Persistent event-based sensors create provisional tracks before identities; strategic advantage comes from maintaining custody and characterizing signatures rather than assigning faction immediately."
+    },
+    {
+      "id": "source-subject-classification-split",
+      "faction": "all",
+      "summary": "Classification and withholding are recorded separately for subject, platform, location, sensor capability, method, partner data, and witness identity."
+    },
+    {
+      "id": "refusal-is-data",
+      "faction": "humans-federation",
+      "summary": "No, unknown, not observed, not remembered, withheld, not applicable, and refuse to answer are distinct evidence states."
+    },
+    {
+      "id": "institutional-shadow-map",
+      "faction": "humans",
+      "summary": "The Open Archive maps how one subject leaves different records in aviation, intelligence, military operations, science, public affairs, broadcasting, and records administration without flattening those institutional viewpoints into one file."
+    },
+    {
+      "id": "known-fake-control-set",
+      "faction": "all",
+      "summary": "Fabricated, staged, optically altered, and misidentified examples are preserved as calibration controls. They test whether an analytical method can detect known error modes without prejudging unrelated unknowns."
+    },
+    {
+      "id": "archive-version-skew",
+      "faction": "humans-machines",
+      "summary": "Catalog, transfer, bulk export, mirror, and local-ingestion states are versioned separately; disagreement between surfaces is not automatically fraud."
+    },
+    {
+      "id": "media-integrity-ladder",
+      "faction": "all",
+      "summary": "Every visual record carries a class from native sensor product through documented export, secondary display capture, altered copy, artistic reconstruction, or narrative-only record."
+    },
+    {
+      "id": "proposal-program-operation-ladder",
+      "faction": "humans-machines",
+      "summary": "Code names are tracked through allegation, suggestion, briefing, proposed compartment, approved program, funded operation, material receipt, and produced result."
+    },
+    {
+      "id": "blind-metrics",
+      "faction": "humans",
+      "summary": "An audit can reveal what is measured while protected methods, vulnerabilities, and results remain unknown; classification cannot stand in for the answer."
+    },
+    {
+      "id": "narrative-infrastructure",
+      "faction": "humans-federation",
+      "summary": "Original wording, interviewer effects, agency summaries, later retellings, and independent sensor evidence remain linked but distinct."
+    },
+    {
+      "id": "null-search-paradox",
+      "faction": "all",
+      "summary": "Program existence, phrase occurrence, official discussion, and responsive records are distinct propositions; an ordered search does not validate an allegation."
+    }
+  ]
+}

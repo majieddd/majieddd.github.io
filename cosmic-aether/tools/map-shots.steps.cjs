@@ -1,0 +1,21 @@
+module.exports = [
+  { size: [1600, 900] },
+  { wait: 1800 },
+  { eval: 'window.__RQ.start({ faction: "human", enemyFaction: "xeno", commander: "vanta", board: 0, difficulty: 1 }); "ok"' },
+  { wait: 900 },
+  { eval: 'window.__RQ.closeScreens(); "ok"' },
+  { eval: 'window.__RQ.setGold(9000); window.__RQ.buildAll(); "built"' },
+  { eval: 'window.__RQ.camera({ dist: 30, pitch: 0.78, yaw: 0.4 }); "wide"' },
+  { wait: 250 },
+  { shot: 'map-wide' },
+  { eval: 'window.__RQ.camera({ dist: 14, pitch: 0.30, yaw: 0.3 }); "low"' },
+  { wait: 250 },
+  { shot: 'map-low' },
+  { eval: 'window.__RQ.camera({ dist: 22, pitch: 0.5, yaw: 1.9 }); "edge"' },
+  { wait: 250 },
+  { shot: 'map-edge' },
+  { eval: 'window.__RQ.spawn("stockman", 2, 7); window.__RQ.step(1.0); "horde"' },
+  { eval: '(function(){ var G=GAME.state; var d=G.denizens[0]; if(!d) return "none"; var p=d.pos; window.__RQ.camera({ focus:[p[0],1.5,p[2]], dist:13, pitch:0.45, yaw:0 }); return JSON.stringify(p); })()' },
+  { wait: 250 },
+  { shot: 'map-creature' }
+];

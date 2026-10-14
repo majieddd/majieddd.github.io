@@ -1,0 +1,24 @@
+{
+  "name": "cosmic-conquest-reliquary-forge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "assets": "blender -b --python tools/blender/generate_assets.py",
+    "dev": "vite --host 127.0.0.1 --port 8752",
+    "build": "vite build",
+    "check": "tsc --noEmit",
+    "verify": "node tools/verify.mjs",
+    "adversarial": "node tools/adversarial.mjs",
+    "compare": "node tools/compare.mjs",
+    "gate": "npm run check && npm run build && npm run verify && npm run adversarial"
+  },
+  "dependencies": {
+    "three": "0.185.1"
+  },
+  "devDependencies": {
+    "@types/three": "0.185.4",
+    "typescript": "7.0.2",
+    "vite": "8.2.2"
+  }
+}

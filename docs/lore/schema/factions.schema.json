@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://majieddd.github.io/cosmic-conquest-lore/schema/factions.schema.json",
+  "title": "Cosmic Conquest Factions",
+  "type": "object",
+  "required": ["schema_version", "factions"],
+  "properties": {
+    "schema_version": {"type": "integer", "minimum": 1},
+    "factions": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["id", "display_name", "game_id", "conquest_verb", "resource", "doctrine", "status"],
+        "properties": {
+          "id": {"type": "string"},
+          "display_name": {"type": "string"},
+          "game_id": {"enum": ["human", "light", "xeno", "pirate", "robot"]},
+          "conquest_verb": {"enum": ["Settle", "Accord", "Bind", "Route", "Continue"]},
+          "status": {"enum": ["core", "provisional"]}
+        }
+      }
+    }
+  }
+}

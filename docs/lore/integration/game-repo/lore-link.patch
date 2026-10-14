@@ -1,0 +1,44 @@
+diff --git a/README.md b/README.md
+--- a/README.md
++++ b/README.md
+@@ -21,10 +21,16 @@ original single-player version is kept at
+ **What's next?** [`docs/BACKLOG.md`](docs/BACKLOG.md) is the standing list of
+ everything unfinished, with the root cause already found for most of it.
+
+ **Want to work on it?** Read [CONTRIBUTING.md](CONTRIBUTING.md) first. It carries
+ the setup, the module map, the branch etiquette that keeps two people out of the
+ same 6,000-line file, what CI will fail you on, and the traps that have each cost
+ somebody a day.
++
++**Universe lore.** The complete, evidence-coded *Cosmic Conquest* universe bible
++is maintained separately at
++[`majieddd/cosmic-conquest-lore`](https://github.com/majieddd/cosmic-conquest-lore).
++This game repository keeps only player-facing excerpts and code-facing IDs; see
++[`docs/LORE-CONTRACT.md`](docs/LORE-CONTRACT.md).
+
+ **Where the rest of the paper lives.** [`docs/ROADMAP.md`](docs/ROADMAP.md) is
+ the one to open if work stopped and is resuming — every session's decisions, and
+diff --git a/docs/LORE-CONTRACT.md b/docs/LORE-CONTRACT.md
+new file mode 100644
+--- /dev/null
++++ b/docs/LORE-CONTRACT.md
+@@ -0,0 +1,19 @@
++# Lore Contract
++
++The canonical universe bible is maintained at
++<https://github.com/majieddd/cosmic-conquest-lore>.
++
++The live game IDs remain stable:
++
++- `human` → Humanity / Solar Schism
++- `light` → Federation of Light / Luminous Accord
++- `xeno` → Extraction Compact / Severed Houses
++- `pirate` → Free Captains / Scrap Constellation
++- `robot` → The Parallel, a playable Continuance coalition
++
++The neutral Vigil is legacy Old Weather enforcement and is not the same polity
++as the playable Parallel. Lore changes must preserve save keys, balance, and the
++mechanical identities documented in the game repository.
++
++Research sources, evidence labels, and extended canon remain in the lore
++repository; the game should import only concise, player-facing summaries.
