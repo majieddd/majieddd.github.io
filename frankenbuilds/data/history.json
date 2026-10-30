@@ -16,7 +16,8 @@
     "2026-10-26",
     "2026-10-27",
     "2026-10-28",
-    "2026-10-29"
+    "2026-10-29",
+    "2026-10-30"
   ],
   "components": {
     "gpu/mi25": {
@@ -183,6 +184,16 @@
         },
         {
           "date": "2026-10-29",
+          "price": 74.99,
+          "unit": "$/GB VRAM",
+          "unit_price": 4.686875,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/278212490817",
+          "title": "AMD Radeon Instinct MI25 16GB HBM2 PCIE 3.0 GPU Passive Cooling Accelorator Card",
+          "seller": "animuscompute"
+        },
+        {
+          "date": "2026-10-30",
           "price": 74.99,
           "unit": "$/GB VRAM",
           "unit_price": 4.686875,
@@ -414,6 +425,16 @@
           "url": "https://www.ebay.com/itm/158068388876",
           "title": "BIOSTAR TB360-BTC Pro 6Gb/s, LGA1151 Intel (TB360BTCPRO) Motherboard",
           "seller": "vanguardarchive"
+        },
+        {
+          "date": "2026-10-30",
+          "price": 22.5,
+          "unit": "$/GPU slot",
+          "unit_price": 1.875,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/158068388876",
+          "title": "BIOSTAR TB360-BTC Pro 6Gb/s, LGA1151 Intel (TB360BTCPRO) Motherboard",
+          "seller": "vanguardarchive"
         }
       ],
       "unit": "$/GPU slot",
@@ -583,6 +604,16 @@
         },
         {
           "date": "2026-10-29",
+          "price": 22.5,
+          "unit": "$/GPU slot",
+          "unit_price": 1.730769,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/178526436336",
+          "title": "ASRock H110 Pro BTC+ 13GPU Crypto Mining Motherboard (PLS READ) (S8-8)",
+          "seller": "cjcollective2012"
+        },
+        {
+          "date": "2026-10-30",
           "price": 22.5,
           "unit": "$/GPU slot",
           "unit_price": 1.730769,
@@ -766,6 +797,16 @@
           "url": "https://www.ebay.com/itm/307099120256",
           "title": "B250C BTC DDR4 Computer Mining Motherboard W Intel G3930 MULTIPLE AVAILABLE",
           "seller": null
+        },
+        {
+          "date": "2026-10-30",
+          "price": 22.99,
+          "unit": "$/GPU slot",
+          "unit_price": 1.915833,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/307099120256",
+          "title": "B250C BTC DDR4 Computer Mining Motherboard W Intel G3930 MULTIPLE AVAILABLE",
+          "seller": null
         }
       ],
       "unit": "$/GPU slot",
@@ -935,6 +976,16 @@
         },
         {
           "date": "2026-10-29",
+          "price": 335.0,
+          "unit": "$/GPU slot",
+          "unit_price": 335.0,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/298725155065",
+          "title": "Supermicro X10SDV-4C-TLN2F Xeon D-1521 CSE-E300 Barebones Server 2x10GbE PSU",
+          "seller": "recyclops_surplus"
+        },
+        {
+          "date": "2026-10-30",
           "price": 335.0,
           "unit": "$/GPU slot",
           "unit_price": 335.0,
@@ -1118,6 +1169,16 @@
           "url": "https://www.ebay.com/itm/296956430635",
           "title": "X99 LGA 2011-v3 White Motherboard 4 x DDR4 RAM PCI-e 3.0 M.2 USB 2.0 SATA 2.0",
           "seller": "mailanghu"
+        },
+        {
+          "date": "2026-10-30",
+          "price": 42.97,
+          "unit": "$/GPU slot",
+          "unit_price": 10.7425,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/296956430635",
+          "title": "X99 LGA 2011-v3 White Motherboard 4 x DDR4 RAM PCI-e 3.0 M.2 USB 2.0 SATA 2.0",
+          "seller": "mailanghu"
         }
       ],
       "unit": "$/GPU slot",
@@ -1287,6 +1348,16 @@
         },
         {
           "date": "2026-10-29",
+          "price": 147.27,
+          "unit": "$/GPU slot",
+          "unit_price": 24.545,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/406403251375",
+          "title": "X99 F8D PLUS Dual CPU Motherboard E-ATX - Supports Intel E5-2699 v4",
+          "seller": null
+        },
+        {
+          "date": "2026-10-30",
           "price": 147.27,
           "unit": "$/GPU slot",
           "unit_price": 24.545,
@@ -1470,6 +1541,16 @@
           "url": "https://www.ebay.com/itm/396875282031",
           "title": "Intel Celeron G3930 2.90 GHz 2-Core 2MB SR35K GPU LGA-1151 Desktop CPU Processor",
           "seller": "micr5023"
+        },
+        {
+          "date": "2026-10-30",
+          "price": 7.5,
+          "unit": "$",
+          "unit_price": 7.5,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/396875282031",
+          "title": "Intel Celeron G3930 2.90 GHz 2-Core 2MB SR35K GPU LGA-1151 Desktop CPU Processor",
+          "seller": "micr5023"
         }
       ],
       "unit": "$",
@@ -1639,6 +1720,16 @@
         },
         {
           "date": "2026-10-29",
+          "price": 14.49,
+          "unit": "$",
+          "unit_price": 14.49,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/198698891715",
+          "title": "INTEL Xeon E5-2680V4 SR2N7 2.40 GHz 35 MB SmartCache 120 W SKU 13482",
+          "seller": "didionorf"
+        },
+        {
+          "date": "2026-10-30",
           "price": 14.49,
           "unit": "$",
           "unit_price": 14.49,
@@ -1822,6 +1913,16 @@
           "url": "https://www.ebay.com/itm/960004196152",
           "title": "Intel Core i3-8100 3.60GHz Quad-Core CPU SR3N5 LGA1151 Working Pull",
           "seller": null
+        },
+        {
+          "date": "2026-10-30",
+          "price": 9.99,
+          "unit": "$",
+          "unit_price": 9.99,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/960004196152",
+          "title": "Intel Core i3-8100 3.60GHz Quad-Core CPU SR3N5 LGA1151 Working Pull",
+          "seller": null
         }
       ],
       "unit": "$",
@@ -1991,6 +2092,16 @@
         },
         {
           "date": "2026-10-29",
+          "price": 50.0,
+          "unit": "$/GB RAM",
+          "unit_price": 0.78125,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/237121243905",
+          "title": "TEAMGROUP T-Force Vulcan Z 64GB (2x32GB) DDR4-3600 DIMM 288-Pin",
+          "seller": null
+        },
+        {
+          "date": "2026-10-30",
           "price": 50.0,
           "unit": "$/GB RAM",
           "unit_price": 0.78125,
@@ -2174,6 +2285,16 @@
           "url": "https://www.ebay.com/itm/267808517801",
           "title": "32GB Lot (4x8GB) SK Hynix DDR4 2666MHz DesktopRAM UDIMM HMA81GU6JJR8N-VK 288-Pin",
           "seller": null
+        },
+        {
+          "date": "2026-10-30",
+          "price": 51.0,
+          "unit": "$/GB RAM",
+          "unit_price": 1.59375,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/267808517801",
+          "title": "32GB Lot (4x8GB) SK Hynix DDR4 2666MHz DesktopRAM UDIMM HMA81GU6JJR8N-VK 288-Pin",
+          "seller": null
         }
       ],
       "unit": "$/GB RAM",
@@ -2343,6 +2464,16 @@
         },
         {
           "date": "2026-10-29",
+          "price": 35.0,
+          "unit": "$/W",
+          "unit_price": 0.019444,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/147507363697",
+          "title": "HUAXUCHENG ST 1800 W 90 Plus Gold Mining Power Supply 1800w",
+          "seller": null
+        },
+        {
+          "date": "2026-10-30",
           "price": 35.0,
           "unit": "$/W",
           "unit_price": 0.019444,
@@ -2526,6 +2657,16 @@
           "url": "https://www.ebay.com/itm/227512716634",
           "title": "PCI-E 1x to 16x Powered USB 3.0 GPU Riser Extender Adapter",
           "seller": null
+        },
+        {
+          "date": "2026-10-30",
+          "price": 6.95,
+          "unit": "$/riser",
+          "unit_price": 6.95,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/227512716634",
+          "title": "PCI-E 1x to 16x Powered USB 3.0 GPU Riser Extender Adapter",
+          "seller": null
         }
       ],
       "unit": "$/riser",
@@ -2695,6 +2836,16 @@
         },
         {
           "date": "2026-10-29",
+          "price": 7.68,
+          "unit": "$",
+          "unit_price": 7.68,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/233978712206",
+          "title": "Dual PSU Power Supply 24-pin ATX Motherboard Mainboard Adapter Connector Cable",
+          "seller": "dorigift442"
+        },
+        {
+          "date": "2026-10-30",
           "price": 7.68,
           "unit": "$",
           "unit_price": 7.68,
@@ -2878,6 +3029,16 @@
           "url": "https://www.ebay.com/itm/198696539852",
           "title": "12 GPU Mining Rig Frame Open Air Server Case Stackable Aluminum Crypto ETH BTC",
           "seller": "gokame-sales"
+        },
+        {
+          "date": "2026-10-30",
+          "price": 25.0,
+          "unit": "$/GPU slot",
+          "unit_price": 2.083333,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/198696539852",
+          "title": "12 GPU Mining Rig Frame Open Air Server Case Stackable Aluminum Crypto ETH BTC",
+          "seller": "gokame-sales"
         }
       ],
       "unit": "$/GPU slot",
@@ -3047,6 +3208,16 @@
         },
         {
           "date": "2026-10-29",
+          "price": 150.0,
+          "unit": "$/GB",
+          "unit_price": 0.075,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/206615696648",
+          "title": "Western Digital WD_BLACK SN770 2TB M.2 NVMe Internal SSD WDBBDL0020BNC",
+          "seller": null
+        },
+        {
+          "date": "2026-10-30",
           "price": 150.0,
           "unit": "$/GB",
           "unit_price": 0.075,
@@ -3246,6 +3417,16 @@
           "url": "https://www.ebay.com/itm/137629627141",
           "title": "92mm GPU COOLING FAN SHROUD - AMD RADEON MI60 MI50 MI25 (Fan NOT Included)",
           "seller": null
+        },
+        {
+          "date": "2026-10-30",
+          "price": 14.99,
+          "unit": "$/card cooled",
+          "unit_price": 14.99,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/137629627141",
+          "title": "92mm GPU COOLING FAN SHROUD - AMD RADEON MI60 MI50 MI25 (Fan NOT Included)",
+          "seller": null
         }
       ],
       "unit": "$/card cooled",
@@ -3438,6 +3619,16 @@
           "url": "https://www.ebay.com/itm/860036978994",
           "title": "AMD Radeon Instinct MI50 16GB HBM2 PCIe GPU Accelerator AI ROCm HPC",
           "seller": null
+        },
+        {
+          "date": "2026-10-30",
+          "price": 189.99,
+          "unit": "$/GB VRAM",
+          "unit_price": 11.874375,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/860036978994",
+          "title": "AMD Radeon Instinct MI50 16GB HBM2 PCIe GPU Accelerator AI ROCm HPC",
+          "seller": null
         }
       ],
       "unit": "$/GB VRAM",
@@ -3607,6 +3798,16 @@
         },
         {
           "date": "2026-10-29",
+          "price": 7.99,
+          "unit": "$",
+          "unit_price": 7.99,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/377451113719",
+          "title": "Intel Pentium Gold G5400 SR3X9 3.70Ghz Dual Core Processor",
+          "seller": "rawko"
+        },
+        {
+          "date": "2026-10-30",
           "price": 7.99,
           "unit": "$",
           "unit_price": 7.99,
@@ -3790,6 +3991,16 @@
           "url": "https://www.ebay.com/itm/407162226979",
           "title": "Intel Xeon E5-2698V3 16 Core CPU Server Processor 40M Cache, 2.30 GHz SR1XE",
           "seller": null
+        },
+        {
+          "date": "2026-10-30",
+          "price": 6.5,
+          "unit": "$",
+          "unit_price": 6.5,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/407162226979",
+          "title": "Intel Xeon E5-2698V3 16 Core CPU Server Processor 40M Cache, 2.30 GHz SR1XE",
+          "seller": null
         }
       ],
       "unit": "$",
@@ -3959,6 +4170,16 @@
         },
         {
           "date": "2026-10-29",
+          "price": 18.99,
+          "unit": "$",
+          "unit_price": 18.99,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/127822818498",
+          "title": "INTEL Xeon E5-2697 V4 SR2JV 2.30GHZ 45MB 18-Core LGA2011-3 CPU",
+          "seller": null
+        },
+        {
+          "date": "2026-10-30",
           "price": 18.99,
           "unit": "$",
           "unit_price": 18.99,
@@ -4142,6 +4363,16 @@
           "url": "https://www.ebay.com/itm/317748750349",
           "title": "AMD Epyc 7402P Server Processor (3.35 GHz, 24 Cores, Socket SP3) Dell locked",
           "seller": null
+        },
+        {
+          "date": "2026-10-30",
+          "price": 40.0,
+          "unit": "$",
+          "unit_price": 40.0,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/317748750349",
+          "title": "AMD Epyc 7402P Server Processor (3.35 GHz, 24 Cores, Socket SP3) Dell locked",
+          "seller": null
         }
       ],
       "unit": "$",
@@ -4311,6 +4542,16 @@
         },
         {
           "date": "2026-10-29",
+          "price": 15.96,
+          "unit": "$",
+          "unit_price": 15.96,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/137172396187",
+          "title": "AMD EPYC 7351P Naples 16C/32T 2.4\u20112.9GHz SP3 1P\u2011Only Unlocked CPU",
+          "seller": null
+        },
+        {
+          "date": "2026-10-30",
           "price": 15.96,
           "unit": "$",
           "unit_price": 15.96,
@@ -4510,6 +4751,16 @@
           "url": "https://www.ebay.com/itm/336724042061",
           "title": "DDR 3 Total 64 GB ECC",
           "seller": null
+        },
+        {
+          "date": "2026-10-30",
+          "price": 25.0,
+          "unit": "$/GB RAM",
+          "unit_price": 0.390625,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/336724042061",
+          "title": "DDR 3 Total 64 GB ECC",
+          "seller": null
         }
       ],
       "unit": "$/GB RAM",
@@ -4686,6 +4937,16 @@
           "url": "https://www.ebay.com/itm/168773121410",
           "title": "EVGA 1600 P2 SUPERNOVA PSU POWER SUPPLY UNIT 220-P2-1600",
           "seller": "cartridge_man07"
+        },
+        {
+          "date": "2026-10-30",
+          "price": 64.99,
+          "unit": "$/W",
+          "unit_price": 0.040619,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/168773121410",
+          "title": "EVGA 1600 P2 SUPERNOVA PSU POWER SUPPLY UNIT 220-P2-1600",
+          "seller": "cartridge_man07"
         }
       ],
       "unit": "$/W",
@@ -4845,6 +5106,16 @@
         },
         {
           "date": "2026-10-29",
+          "price": 720.0,
+          "unit": "$/GB VRAM",
+          "unit_price": 22.5,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/287608377700",
+          "title": "AMD 102-D34228 MI100 RADEON 32GB HBM2 AI & MACHINE LEARNING GPU",
+          "seller": null
+        },
+        {
+          "date": "2026-10-30",
           "price": 720.0,
           "unit": "$/GB VRAM",
           "unit_price": 22.5,
@@ -5018,11 +5289,21 @@
           "url": "https://www.ebay.com/itm/800428870090",
           "title": "Intel Xeon E5-2650v4 2.2GHz 12 Core 105W SR2N3 Server Processor",
           "seller": null
+        },
+        {
+          "date": "2026-10-30",
+          "price": 4.5,
+          "unit": "$",
+          "unit_price": 4.5,
+          "stock": "in stock",
+          "url": "https://www.ebay.com/itm/800428870090",
+          "title": "Intel Xeon E5-2650v4 2.2GHz 12 Core 105W SR2N3 Server Processor",
+          "seller": null
         }
       ],
       "unit": "$",
       "label": "Intel Xeon E5-2650 v4 12c/24t (LGA2011-3, headless)"
     }
   },
-  "updated": "2026-10-29T23:53:48Z"
+  "updated": "2026-10-30T05:54:48Z"
 }
